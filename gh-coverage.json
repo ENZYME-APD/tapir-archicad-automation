@@ -1,14 +1,14 @@
 {
- "generatedAt": "2026-10-28 03:08 UTC",
+ "generatedAt": "2026-10-28 05:13 UTC",
  "counts": {
   "done": 302,
-  "open": 117,
-  "in progress": 11,
+  "open": 138,
+  "in progress": 16,
   "not applicable": 1
  },
  "parameters": {
-  "all": 237,
-  "partial": 19,
+  "all": 236,
+  "partial": 20,
   "json": 46
  },
  "items": [
@@ -295,6 +295,21 @@
    "issues": []
   },
   {
+   "id": "GetEditModeState",
+   "group": "Application Commands",
+   "version": "1.7.3",
+   "brief": "Tells whether Archicad is in a hierarchical editing mode (curtain wall, stair, beam or column editing), and which element is being edited. Read only: it never enters, leaves or cancels an editing mode. Commands that modify the project can fail while such a mode is active. The overall inEditMode flag requires Archicad 29 or later; the command requires Archicad 27 or later.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetProductVersionInfo",
    "group": "Application Commands",
    "version": "1.7.3",
@@ -459,6 +474,106 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetProjectInfoGroups",
+   "group": "Project Commands",
+   "version": "1.7.3",
+   "brief": "Retrieves the Project Info groups in their order, each with its fields: id, name, value and, when exactly one project info autotext has the name of the field, the autotext key that SetProjectInfoField takes. Available from Archicad 30.",
+   "status": "in progress",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1012,
+     "title": "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "CreateProjectInfoGroups",
+   "group": "Project Commands",
+   "version": "1.7.3",
+   "brief": "Creates Project Info groups with the given names, at the end of the group list. Available from Archicad 30.",
+   "status": "in progress",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1012,
+     "title": "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "RenameProjectInfoGroups",
+   "group": "Project Commands",
+   "version": "1.7.3",
+   "brief": "Renames Project Info groups. Available from Archicad 30.",
+   "status": "in progress",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1012,
+     "title": "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "DeleteProjectInfoGroups",
+   "group": "Project Commands",
+   "version": "1.7.3",
+   "brief": "Deletes Project Info groups. A group that contains fixed (built-in) fields cannot be deleted. Available from Archicad 30.",
+   "status": "in progress",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1012,
+     "title": "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "MoveProjectInfoGroups",
+   "group": "Project Commands",
+   "version": "1.7.3",
+   "brief": "Moves Project Info groups before another group, or to the end of the group list when no other group is given. Available from Archicad 30.",
+   "status": "in progress",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1012,
+     "title": "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30"
+    }
+   ],
    "issues": []
   },
   {
@@ -700,6 +815,21 @@
    "issues": []
   },
   {
+   "id": "GetHotlinkOwnersOfElements",
+   "group": "Project Commands",
+   "version": "1.7.3",
+   "brief": "Tells for each element whether it comes from a hotlinked module, and returns the hotlink element that contains it and the hotlink instance it belongs to. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetHotlinkProxyElementTable",
    "group": "Project Commands",
    "version": "1.7.3",
@@ -922,7 +1052,7 @@
    "id": "GetProjectPreferences",
    "group": "Project Commands",
    "version": "1.7.2",
-   "brief": "Gets pages of the project preferences (Options > Project Preferences): the working units, the dimensions and the calculation units. Further pages may follow.",
+   "brief": "Gets pages of the project preferences (Options > Project Preferences): the working units, the dimensions, the calculation units and the zones. Further pages may follow.",
    "status": "in progress",
    "reason": "",
    "components": [],
@@ -942,12 +1072,12 @@
    "id": "SetProjectPreferences",
    "group": "Project Commands",
    "version": "1.7.2",
-   "brief": "Changes pages of the project preferences (Options > Project Preferences): the working units, the dimensions and the calculation units. Only the given fields change, the rest of each page keeps its value. In Teamwork the PreferencesDialog lockable object set has to be reserved first (ReserveLockableObjectSet). Available from Archicad 27.",
+   "brief": "Changes pages of the project preferences (Options > Project Preferences): the working units, the dimensions, the calculation units and the zones. Only the given fields change, the rest of each page keeps its value. In Teamwork the PreferencesDialog lockable object set has to be reserved first (ReserveLockableObjectSet). Available from Archicad 27.",
    "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
-   "parameterCount": 21,
+   "parameterCount": 28,
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [
@@ -1089,6 +1219,36 @@
    "coveredParameters": [
     "regenerate"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetAutoIntersect",
+   "group": "Project Commands",
+   "version": "1.7.3",
+   "brief": "Gets whether Auto-Intersection (Options > Auto-Intersection) is on. It changes what the wall and beam creation commands produce: with it on, the new elements are joined at their intersections.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetAutoIntersect",
+   "group": "Project Commands",
+   "version": "1.7.3",
+   "brief": "Turns Auto-Intersection on or off. It is a setting of the running Archicad, not of the project; remember to restore the previous state afterwards.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -1475,6 +1635,21 @@
    "issues": []
   },
   {
+   "id": "GetVisibleSkinStatus",
+   "group": "Element Commands",
+   "version": "1.7.3",
+   "brief": "Checks whether elements have a visible skin in a given Partial Structure Display mode (EntireStructure, CoreOnly, WithoutFinishes or StructureOnly), e.g. a finish-only slab has none in CoreOnly. The current window is not changed. The output is aligned with the input array of elements.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetQuantitiesOfElements",
    "group": "Element Commands",
    "version": "1.7.2",
@@ -1569,6 +1744,36 @@
    "components": [],
    "parameters": null,
    "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "EditHierarchicalElement",
+   "group": "Element Commands",
+   "version": "1.7.3",
+   "brief": "Opens the given hierarchical element (Curtain Wall, Stair, Railing, Beam or Column) in its hierarchical 3D editing mode, as the Edit button of the element does. Fails when Archicad is already in an editing mode. Leave the mode with FinishHierarchicalEditing. Requires Archicad 27 or later.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "FinishHierarchicalEditing",
+   "group": "Element Commands",
+   "version": "1.7.3",
+   "brief": "Finishes the current hierarchical editing mode (Curtain Wall, Stair, Railing, Beam or Column): accept true keeps the changes (OK), accept false discards them (Cancel). The accept parameter is required, so changes are never discarded silently. Fails when Archicad is not in such an editing mode. Requires Archicad 27 or later.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
@@ -2006,7 +2211,7 @@
    "id": "DeleteElements",
    "group": "Element Commands",
    "version": "1.2.1",
-   "brief": "Deletes elements. The zones of the call are deleted before all the other elements, so an automatic zone deleted together with its bounding walls is gone before its boundary is; deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found' dialog, which blocks the command until someone clicks it in Archicad. Returns an execution result for each input element: an element that could not be deleted (for example because its layer is locked) gets a failed execution result instead of being skipped silently.",
+   "brief": "Deletes elements. The zones of the call are deleted before all the other elements, so an automatic zone deleted together with its bounding walls is gone before its boundary is; deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found' dialog, which blocks the command until someone clicks it in Archicad. Returns an execution result for each input element: an element that could not be deleted (for example because its layer is locked) or a guid that is not in the project gets a failed execution result instead of being skipped silently, and does not stop the other elements from being deleted.",
    "status": "done",
    "reason": "",
    "components": [
@@ -2083,6 +2288,21 @@
    "coveredParameters": [
     "elements"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "RefreshElements",
+   "group": "Element Commands",
+   "version": "1.7.3",
+   "brief": "Refreshes (rebuilds) the given elements, for example placed Objects, Windows and Doors that still show the old geometry after their library part's script or embedded file changed. Set force to true to run the parameter script of GDL-based elements too. The elements are looked up in the current database (floor plan, section or detail window). Returns an execution result for each input element. The refresh cannot be undone.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -3967,6 +4187,21 @@
    "issues": []
   },
   {
+   "id": "ChangeTextContent",
+   "group": "Element Commands",
+   "version": "1.7.3",
+   "brief": "Replaces a range of the content of Text elements and text Labels, keeping the styles of the runs and the autotexts in the rest of the content.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 5,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "MeasureTexts",
    "group": "Element Commands",
    "version": "1.7.2",
@@ -4319,6 +4554,21 @@
    "issues": []
   },
   {
+   "id": "GetFavoriteDetails",
+   "group": "Favorites Commands",
+   "version": "1.7.3",
+   "brief": "Returns the classifications, property values and element category values stored in the given favorites, so they can be audited before elements are placed. Each property value comes with its evaluation status and default-value flag; the value itself is only returned when it has been evaluated.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "ApplyFavoritesToElementDefaults",
    "group": "Favorites Commands",
    "version": "1.1.2",
@@ -4511,6 +4761,21 @@
    "issues": []
   },
   {
+   "id": "GetFavoriteFolders",
+   "group": "Favorites Commands",
+   "version": "1.7.3",
+   "brief": "Returns the folder tree of the Favorites palette from its root folder: the name and path of every folder and the names of the Favorites in it. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetFavoriteSettings",
    "group": "Favorites Commands",
    "version": "1.7.3",
@@ -4624,7 +4889,7 @@
    "id": "GetPropertyValuesOfAttributes",
    "group": "Property Commands",
    "version": "1.1.8",
-   "brief": "Returns the property values of the attributes for the given property.",
+   "brief": "Returns the property values of the attributes for the given property. With includeStatus it also returns whether each property is available, editable and visible for the attribute (from 1.7.3).",
    "status": "done",
    "reason": "",
    "components": [
@@ -4633,13 +4898,15 @@
      "path": "Components/PropertiesComponents/GetPropertyValuesOfAttributesComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 2,
+   "parameters": "partial",
+   "parameterCount": 3,
    "coveredParameters": [
     "attributeIds",
     "properties"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "includeStatus"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -4869,6 +5136,21 @@
     "conflictPolicy",
     "xml"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ModifyPropertyValueOfElements",
+   "group": "Property Commands",
+   "version": "1.7.3",
+   "brief": "Sets one property value on all the given elements in a single step. If the property is not available for any of the elements, none of them is changed. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -6179,6 +6461,21 @@
    "issues": []
   },
   {
+   "id": "SetGraphicOverrideRuleOrder",
+   "group": "Attribute Commands",
+   "version": "1.7.3",
+   "brief": "Sets the order of the rules in graphic override rule groups, found by name. The listed rules come first, in the given order; the other rules of the group keep their order after them. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "RenameGraphicOverrideRuleGroups",
    "group": "Attribute Commands",
    "version": "1.7.3",
@@ -6415,6 +6712,51 @@
    "issues": []
   },
   {
+   "id": "GetIFCClassificationReferencesOfElements",
+   "group": "IFC Commands",
+   "version": "1.7.3",
+   "brief": "Retrieves the IFC classification references of the given elements, subelements included: identification, name, location, description (from Archicad 29), the referenced classification (name, source, edition) and whether the reference comes from the preview translator or is stored locally. On Archicad 25, 26 and 27 the source is not given, the referenced classification also has its edition date, description and location, and storedOnly returns only the references stored on the elements.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetIFCClassificationReferencesOfElements",
+   "group": "IFC Commands",
+   "version": "1.7.3",
+   "brief": "Stores IFC classification references (identification, name, location and the referenced classification with its name, edition, edition date, description and location) on elements. Available only in Archicad 25, 26 and 27 for now.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 9,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "RemoveIFCClassificationReferencesOfElements",
+   "group": "IFC Commands",
+   "version": "1.7.3",
+   "brief": "Removes IFC classification references stored on elements, given by the name of their classification and optionally their identification; without identification every stored reference of that classification is removed. Available only in Archicad 25, 26 and 27 for now.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 5,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "RemoveIFCPropertiesOfElements",
    "group": "IFC Commands",
    "version": "1.7.3",
@@ -6607,6 +6949,21 @@
    "coveredParameters": [
     "filterByTypeId"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "IsUsableGDLString",
+   "group": "Library Commands",
+   "version": "1.7.3",
+   "brief": "Checks whether each of the given strings is usable in GDL, e.g. before writing it into a GDL parameter or script. Returns one boolean for each string.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -7792,7 +8149,7 @@
    "id": "RenameNavigatorItem",
    "group": "Navigator Commands",
    "version": "1.1.7",
-   "brief": "Renames a navigator item or changes its ID. newId sets the custom layout number of a layout and the custom ID of any other item. Fails when Archicad refuses the change or does not apply the new name or ID (e.g. Project Map items, whose schedule items are named by their scheme). With customName false the item drops its custom name and follows its Project Map source again.",
+   "brief": "Renames a navigator item or changes its ID. newId sets the custom layout number of a layout and the custom ID of any other item. For a Project Map section, elevation, detail or worksheet the name and ID of the element behind the viewpoint are changed, for an interior elevation those of the segment the item stands for; the change is undone when the item does not show the new name. The name and ID of other Project Map items (stories, schedules, ...) cannot be changed. Fails when Archicad refuses the change or does not apply the new name or ID. With customName false the item drops its custom name and follows its Project Map source again.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7817,7 +8174,7 @@
    "id": "DeleteNavigatorItems",
    "group": "Navigator Commands",
    "version": "1.1.7",
-   "brief": "Deletes navigator items from the navigator tree: views and folders of the View Map, layouts and master layouts of the Layout Book, and independent worksheets and details of the Project Map. Layout subsets and marker-linked worksheets and details cannot be deleted.",
+   "brief": "Deletes navigator items from the navigator tree: views and folders of the View Map, layouts and master layouts of the Layout Book, and independent worksheets and details of the Project Map. Layout subsets and marker-linked worksheets and details cannot be deleted. An item that Archicad refuses to delete (in a Teamwork project: it is not reserved or the user has no right to delete it) is reported as a failed execution result.",
    "status": "open",
    "reason": "",
    "components": [],
@@ -9719,6 +10076,21 @@
    "issues": []
   },
   {
+   "id": "GetMEPElementDetails",
+   "group": "MEP Commands",
+   "version": "1.7.3",
+   "brief": "Retrieves the type-specific details of the given MEP elements: insulation thickness and routing segment of rigid segments, control points of flexible segments, radius factor, insulation thickness, preference table and routing node of elbows (from Archicad 29), angle, length and insulation thickness of branches, and offsets, wider and narrower ports, insulation thickness, routing node and (from Archicad 29) preference table of transitions. Available from Archicad 28.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetCurrentAnalyticalModel",
    "group": "Analytical Commands",
    "version": "1.7.3",
@@ -9910,6 +10282,51 @@
    "coveredParameters": [
     "elements"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "MergeElements",
+   "group": "Solid Element Operation Commands",
+   "version": "1.7.3",
+   "brief": "Merges the given construction elements (the Merge command of Archicad, which cleans up the junctions of slabs, beams, walls and similar elements). Undoable. The element types are not filtered: Archicad reports the ones it cannot merge.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "UnmergeElements",
+   "group": "Solid Element Operation Commands",
+   "version": "1.7.3",
+   "brief": "Removes the merge between the two elements of each given pair. Undoable; one execution result per pair.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetMergedElements",
+   "group": "Solid Element Operation Commands",
+   "version": "1.7.3",
+   "brief": "Gets the elements each queried element is merged with, one item per queried element; an unknown element is an error item.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []

@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-28 03:08 UTC",
+ "generatedAt": "2026-10-28 05:13 UTC",
  "versions": [
   25,
   26,
@@ -11,10 +11,10 @@
  "counts": {
   "not applicable": 620,
   "done": 1099,
-  "claimed": 59,
-  "in progress": 982,
+  "claimed": 56,
+  "in progress": 917,
   "open": 114,
-  "merged": 5
+  "merged": 73
  },
  "items": [
   {
@@ -3623,14 +3623,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1354,
-     "title": "[2/4] Status of attribute properties in GetPropertyValuesOfAttributes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3706,14 +3701,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1354,
-     "title": "[2/4] Status of attribute properties in GetPropertyValuesOfAttributes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3732,14 +3722,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1354,
-     "title": "[2/4] Status of attribute properties in GetPropertyValuesOfAttributes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3758,14 +3743,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1354,
-     "title": "[2/4] Status of attribute properties in GetPropertyValuesOfAttributes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4017,12 +3997,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1095,
-     "title": "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4101,12 +4076,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1095,
-     "title": "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4170,10 +4140,6 @@
     {
      "number": 1010,
      "title": "[2/3] Project Info fields on Archicad 30: rename and move fields, create in a group, delete by field id"
-    },
-    {
-     "number": 1000,
-     "title": "[1/3] Project Info groups on Archicad 30: get, create, rename, delete and move groups"
     },
     {
      "number": 674,
@@ -4648,10 +4614,6 @@
      "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
     },
     {
-     "number": 1370,
-     "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
-    },
-    {
      "number": 1365,
      "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
     },
@@ -4680,14 +4642,6 @@
      "title": "Add SetDefaultDesignOption, ReorderDesignOptionSets and ReorderDesignOptionsInSet"
     },
     {
-     "number": 1269,
-     "title": "Add EditHierarchicalElement and FinishHierarchicalEditing commands"
-    },
-    {
-     "number": 1235,
-     "title": "Add RefreshElements command (ACAPI_Element_RefreshElement)"
-    },
-    {
      "number": 1188,
      "title": "Add CreateElementSets command (ACAPI_ElementSet_Create)"
     },
@@ -4700,24 +4654,12 @@
      "title": "Add SetGraphicOverrideRuleGroupOrder command"
     },
     {
-     "number": 1148,
-     "title": "[3/4] ModifyPropertyValueOfElements: set one property value on several elements, all or nothing (AC27+)"
-    },
-    {
      "number": 1115,
      "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
     },
     {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
-    },
-    {
-     "number": 1095,
-     "title": "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"
-    },
-    {
-     "number": 1075,
-     "title": "Add SetGraphicOverrideRuleOrder: order the rules of a graphic override rule group"
     },
     {
      "number": 1035,
@@ -4742,14 +4684,6 @@
     {
      "number": 1007,
      "title": "Add GetURLReferencesOfElements and SetURLReferencesOfElements (element web links)"
-    },
-    {
-     "number": 1006,
-     "title": "Add MergeElements, UnmergeElements and GetMergedElements commands"
-    },
-    {
-     "number": 1000,
-     "title": "[1/3] Project Info groups on Archicad 30: get, create, rename, delete and move groups"
     },
     {
      "number": 995,
@@ -4782,10 +4716,6 @@
     {
      "number": 899,
      "title": "Zones: expose height, base offset, top link and floor thickness; add ModifyZones"
-    },
-    {
-     "number": 756,
-     "title": "Rename Project Map viewpoints through their element and verify renames"
     }
    ],
    "issues": [
@@ -4804,10 +4734,6 @@
     {
      "number": 1108,
      "title": "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846"
-    },
-    {
-     "number": 1092,
-     "title": "Expose ACAPI_Element_ChangeContent, and return the raw Autotext keys of a Text (edit one line without losing the Autotexts)"
     },
     {
      "number": 1048,
@@ -6174,12 +6100,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 755,
-     "title": "RenameNavigatorItem reports success without renaming Project Map exterior elevations (AC28, Tapir 1.6.0); View Map control works"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_NewDatabase",
@@ -6809,10 +6730,6 @@
      "title": "Add ReadFavoritesFile command (ACAPI_Favorite_Read)"
     },
     {
-     "number": 1095,
-     "title": "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     },
@@ -6823,10 +6740,6 @@
     {
      "number": 813,
      "title": "Keep 2D GDL arrays intact on flat-list writes, apply Favorites to windows and doors, capture opening markers"
-    },
-    {
-     "number": 756,
-     "title": "Rename Project Map viewpoints through their element and verify renames"
     },
     {
      "number": 463,
@@ -7929,10 +7842,6 @@
      "title": "Keep 2D GDL arrays intact on flat-list writes, apply Favorites to windows and doors, capture opening markers"
     },
     {
-     "number": 756,
-     "title": "Rename Project Map viewpoints through their element and verify renames"
-    },
-    {
      "number": 463,
      "title": "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters"
     }
@@ -7970,20 +7879,10 @@
    "olderNames": [
     "APIAny_ChangeContentID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1095,
-     "title": "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1092,
-     "title": "Expose ACAPI_Element_ChangeContent, and return the raw Autotext keys of a Text (edit one line without losing the Autotexts)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Element_ChangeDefaults",
@@ -8362,10 +8261,6 @@
     {
      "number": 1588,
      "title": "Keep Label/Text widthFactor and charSpaceFactor on create and content changes"
-    },
-    {
-     "number": 751,
-     "title": "DeleteElements: a guid that is not in the project no longer blocks the batch, and reports APIERR_BADID (#749)"
     }
    ],
    "issues": []
@@ -8510,20 +8405,10 @@
    "olderNames": [
     "APIAny_ElemHasVisibleSkinID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1133,
-     "title": "Add GetVisibleSkinStatus command (ACAPI_Element_ElemHasVisibleSkin)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1124,
-     "title": "Expose ACAPI_Element_ElemHasVisibleSkin (is an element visible under a Partial Structure Display mode)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Element_ElemTypeToNeigID",
@@ -8649,10 +8534,6 @@
      "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
     },
     {
-     "number": 1095,
-     "title": "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"
-    },
-    {
      "number": 1086,
      "title": "Add GetCalculatedParametersOfCurtainWallSubElements (ACAPI_CurtainWall_GetCWSubElemParams)"
     },
@@ -8679,10 +8560,6 @@
     {
      "number": 813,
      "title": "Keep 2D GDL arrays intact on flat-list writes, apply Favorites to windows and doors, capture opening markers"
-    },
-    {
-     "number": 756,
-     "title": "Rename Project Map viewpoints through their element and verify renames"
     },
     {
      "number": 463,
@@ -9330,24 +9207,12 @@
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
     {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
-    },
-    {
      "number": 1276,
      "title": "Add GetClassificationItemVisibility command"
     },
     {
-     "number": 1133,
-     "title": "Add GetVisibleSkinStatus command (ACAPI_Element_ElemHasVisibleSkin)"
-    },
-    {
      "number": 1132,
      "title": "Add GetLibPartTransformations command (ACAPI_Element_GetSyTran)"
-    },
-    {
-     "number": 1110,
-     "title": "Add GetHotlinkOwnersOfElements (which hotlink an element comes from)"
     },
     {
      "number": 1087,
@@ -9426,20 +9291,12 @@
      "title": "Add GetRoofPlanes: the single planes of multi-plane roofs"
     },
     {
-     "number": 1095,
-     "title": "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"
-    },
-    {
      "number": 940,
      "title": "Add ModifyCurtainWalls command"
     },
     {
      "number": 813,
      "title": "Keep 2D GDL arrays intact on flat-list writes, apply Favorites to windows and doors, capture opening markers"
-    },
-    {
-     "number": 756,
-     "title": "Rename Project Map viewpoints through their element and verify renames"
     },
     {
      "number": 463,
@@ -10251,14 +10108,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1006,
-     "title": "Add MergeElements, UnmergeElements and GetMergedElements commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10277,14 +10129,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1006,
-     "title": "Add MergeElements, UnmergeElements and GetMergedElements commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10303,14 +10150,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1006,
-     "title": "Add MergeElements, UnmergeElements and GetMergedElements commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10378,20 +10220,10 @@
    "olderNames": [
     "APIDb_RefreshElementID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1235,
-     "title": "Add RefreshElements command (ACAPI_Element_RefreshElement)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1224,
-     "title": "Expose ACAPI_Element_RefreshElement (rebuild instances after a library change)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Element_RemoveClassificationItem",
@@ -11124,10 +10956,6 @@
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    },
-    {
-     "number": 1241,
-     "title": "Add GetFavoriteDetails: audit a Favorite's classifications, properties and categories"
     }
    ],
    "issues": [
@@ -12367,12 +12195,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1075,
-     "title": "Add SetGraphicOverrideRuleOrder: order the rules of a graphic override rule group"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12678,20 +12501,10 @@
     "APIDo_CancelHierarchicalElemID",
     "APIIo_CancelHierarchicalElemID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1269,
-     "title": "Add EditHierarchicalElement and FinishHierarchicalEditing commands"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1246,
-     "title": "Expose ACAPI_HierarchicalEditing_EditHierarchicalElem / OkHierarchicalElem / CancelHierarchicalElem"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_HierarchicalEditing_EditHierarchicalElem",
@@ -12712,20 +12525,10 @@
     "APIDo_EditHierarchicalElemID",
     "APIIo_EditHierarchicalElemID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1269,
-     "title": "Add EditHierarchicalElement and FinishHierarchicalEditing commands"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1246,
-     "title": "Expose ACAPI_HierarchicalEditing_EditHierarchicalElem / OkHierarchicalElem / CancelHierarchicalElem"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_HierarchicalEditing_GetHierarchicalElementOwner",
@@ -12768,20 +12571,10 @@
    "olderNames": [
     "APIEnv_IsInBeamEditModeID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1213,
-     "title": "Add GetEditModeState command (hierarchical editing mode query)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1208,
-     "title": "Expose ACAPI_HierarchicalEditing_IsIn*EditMode (tell scripts why writes are refused)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_HierarchicalEditing_IsInColumnEditMode",
@@ -12801,20 +12594,10 @@
    "olderNames": [
     "APIEnv_IsInColumnEditModeID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1213,
-     "title": "Add GetEditModeState command (hierarchical editing mode query)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1208,
-     "title": "Expose ACAPI_HierarchicalEditing_IsIn*EditMode (tell scripts why writes are refused)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_HierarchicalEditing_IsInCurtainWallEditMode",
@@ -12834,20 +12617,10 @@
    "olderNames": [
     "APIEnv_IsInCurtainWallEditModeID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1213,
-     "title": "Add GetEditModeState command (hierarchical editing mode query)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1208,
-     "title": "Expose ACAPI_HierarchicalEditing_IsIn*EditMode (tell scripts why writes are refused)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_HierarchicalEditing_IsInEditMode",
@@ -12861,20 +12634,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1213,
-     "title": "Add GetEditModeState command (hierarchical editing mode query)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1208,
-     "title": "Expose ACAPI_HierarchicalEditing_IsIn*EditMode (tell scripts why writes are refused)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_HierarchicalEditing_IsInStairEditMode",
@@ -12894,20 +12657,10 @@
    "olderNames": [
     "APIEnv_IsInStairEditModeID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1213,
-     "title": "Add GetEditModeState command (hierarchical editing mode query)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1208,
-     "title": "Expose ACAPI_HierarchicalEditing_IsIn*EditMode (tell scripts why writes are refused)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_HierarchicalEditing_OkHierarchicalElem",
@@ -12928,20 +12681,10 @@
     "APIDo_OkHierarchicalElemID",
     "APIIo_OkHierarchicalElemID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1269,
-     "title": "Add EditHierarchicalElement and FinishHierarchicalEditing commands"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1246,
-     "title": "Expose ACAPI_HierarchicalEditing_EditHierarchicalElem / OkHierarchicalElem / CancelHierarchicalElem"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_HierarchicalEditing_SolveStair",
@@ -13068,20 +12811,10 @@
    "olderNames": [
     "APIAny_GetContainingHotlinkGuidID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1110,
-     "title": "Add GetHotlinkOwnersOfElements (which hotlink an element comes from)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1104,
-     "title": "Expose ACAPI_Hotlink_GetContainingHotlinkGuid and ACAPI_Hotlink_GetHotLinkOwner (which hotlink an element comes from)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Hotlink_GetHotLinkOwner",
@@ -13101,20 +12834,10 @@
    "olderNames": [
     "APIDb_GetHotLinkOwnerID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1110,
-     "title": "Add GetHotlinkOwnersOfElements (which hotlink an element comes from)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1104,
-     "title": "Expose ACAPI_Hotlink_GetContainingHotlinkGuid and ACAPI_Hotlink_GetHotLinkOwner (which hotlink an element comes from)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Hotlink_GetHotlinkInstances",
@@ -13959,14 +13682,9 @@
    "olderNames": [
     "APIAny_UsableGDLStringID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1361,
-     "title": "[3/3] Add IsUsableGDLString command"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16460,18 +16178,9 @@
     {
      "number": 1489,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
-    },
-    {
-     "number": 756,
-     "title": "Rename Project Map viewpoints through their element and verify renames"
     }
    ],
-   "issues": [
-    {
-     "number": 755,
-     "title": "RenameNavigatorItem reports success without renaming Project Map exterior elevations (AC28, Tapir 1.6.0); View Map control works"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_ChangeNavigatorVPItem",
@@ -17011,26 +16720,14 @@
      "title": "Navigator: name the refused item type on delete, verify MoveNavigatorItem's position"
     },
     {
-     "number": 841,
-     "title": "DeleteNavigatorItems: report a refused delete as a failure instead of success"
-    },
-    {
      "number": 765,
      "title": "RenameNavigatorItem: set a view's ID with newId and fail when the ID is kept"
-    },
-    {
-     "number": 756,
-     "title": "Rename Project Map viewpoints through their element and verify renames"
     }
    ],
    "issues": [
     {
      "number": 1428,
      "title": "Archicad crashes (internal assertion) after CreateLayout + RenameNavigatorItem + DeleteNavigatorItems in quick succession"
-    },
-    {
-     "number": 755,
-     "title": "RenameNavigatorItem reports success without renaming Project Map exterior elevations (AC28, Tapir 1.6.0); View Map control works"
     }
    ]
   },
@@ -18489,7 +18186,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -18499,10 +18196,6 @@
     {
      "number": 1010,
      "title": "[2/3] Project Info fields on Archicad 30: rename and move fields, create in a group, delete by field id"
-    },
-    {
-     "number": 1000,
-     "title": "[1/3] Project Info groups on Archicad 30: get, create, rename, delete and move groups"
     }
    ],
    "issues": []
@@ -18543,7 +18236,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -18553,10 +18246,6 @@
     {
      "number": 1010,
      "title": "[2/3] Project Info fields on Archicad 30: rename and move fields, create in a group, delete by field id"
-    },
-    {
-     "number": 1000,
-     "title": "[1/3] Project Info groups on Archicad 30: get, create, rename, delete and move groups"
     }
    ],
    "issues": []
@@ -18572,7 +18261,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -18582,10 +18271,6 @@
     {
      "number": 1010,
      "title": "[2/3] Project Info fields on Archicad 30: rename and move fields, create in a group, delete by field id"
-    },
-    {
-     "number": 1000,
-     "title": "[1/3] Project Info groups on Archicad 30: get, create, rename, delete and move groups"
     }
    ],
    "issues": []
@@ -18601,7 +18286,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -18611,10 +18296,6 @@
     {
      "number": 1010,
      "title": "[2/3] Project Info fields on Archicad 30: rename and move fields, create in a group, delete by field id"
-    },
-    {
-     "number": 1000,
-     "title": "[1/3] Project Info groups on Archicad 30: get, create, rename, delete and move groups"
     }
    ],
    "issues": []
@@ -18630,7 +18311,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -18640,10 +18321,6 @@
     {
      "number": 1010,
      "title": "[2/3] Project Info fields on Archicad 30: rename and move fields, create in a group, delete by field id"
-    },
-    {
-     "number": 1000,
-     "title": "[1/3] Project Info groups on Archicad 30: get, create, rename, delete and move groups"
     }
    ],
    "issues": []
@@ -18659,7 +18336,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -18669,10 +18346,6 @@
     {
      "number": 1010,
      "title": "[2/3] Project Info fields on Archicad 30: rename and move fields, create in a group, delete by field id"
-    },
-    {
-     "number": 1000,
-     "title": "[1/3] Project Info groups on Archicad 30: get, create, rename, delete and move groups"
     }
    ],
    "issues": []
@@ -18713,7 +18386,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -18723,10 +18396,6 @@
     {
      "number": 1010,
      "title": "[2/3] Project Info fields on Archicad 30: rename and move fields, create in a group, delete by field id"
-    },
-    {
-     "number": 1000,
-     "title": "[1/3] Project Info groups on Archicad 30: get, create, rename, delete and move groups"
     }
    ],
    "issues": []
@@ -18767,7 +18436,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -18777,10 +18446,6 @@
     {
      "number": 1010,
      "title": "[2/3] Project Info fields on Archicad 30: rename and move fields, create in a group, delete by field id"
-    },
-    {
-     "number": 1000,
-     "title": "[1/3] Project Info groups on Archicad 30: get, create, rename, delete and move groups"
     }
    ],
    "issues": []
@@ -19100,10 +18765,6 @@
     {
      "number": 955,
      "title": "[1/3] Teamwork: add the GetTeamworkProjectInfo command"
-    },
-    {
-     "number": 841,
-     "title": "DeleteNavigatorItems: report a refused delete as a failure instead of success"
     }
    ],
    "issues": []
@@ -19390,10 +19051,6 @@
     {
      "number": 1038,
      "title": "[4/4] Add GetCutPolygonsOfElements: the floor plan cut polygons and area of elements"
-    },
-    {
-     "number": 1028,
-     "title": "[3/4] Add the Zones page to GetProjectPreferences and SetProjectPreferences"
     }
    ],
    "issues": []
@@ -19735,10 +19392,6 @@
      "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
     },
     {
-     "number": 1354,
-     "title": "[2/4] Status of attribute properties in GetPropertyValuesOfAttributes"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -19749,10 +19402,6 @@
     {
      "number": 1238,
      "title": "Add GetPropertyEditability command (property value editability and visibility)"
-    },
-    {
-     "number": 1148,
-     "title": "[3/4] ModifyPropertyValueOfElements: set one property value on several elements, all or nothing (AC27+)"
     },
     {
      "number": 1147,
@@ -19897,10 +19546,6 @@
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    },
-    {
-     "number": 1354,
-     "title": "[2/4] Status of attribute properties in GetPropertyValuesOfAttributes"
     }
    ],
    "issues": []
@@ -20009,14 +19654,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1148,
-     "title": "[3/4] ModifyPropertyValueOfElements: set one property value on several elements, all or nothing (AC27+)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1145,
@@ -20092,10 +19732,6 @@
     {
      "number": 1362,
      "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
-    },
-    {
-     "number": 1148,
-     "title": "[3/4] ModifyPropertyValueOfElements: set one property value on several elements, all or nothing (AC27+)"
     },
     {
      "number": 1147,
@@ -22762,14 +22398,9 @@
    "olderNames": [
     "APIEnv_ChangeAutoIntersectID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 962,
-     "title": "[1/3] Add GetAutoIntersect and SetAutoIntersect commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -23482,14 +23113,9 @@
    "olderNames": [
     "APIEnv_IsAutoIntersectOnID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 962,
-     "title": "[1/3] Add GetAutoIntersect and SetAutoIntersect commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24110,10 +23736,6 @@
     {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
-    },
-    {
-     "number": 756,
-     "title": "Rename Project Map viewpoints through their element and verify renames"
     }
    ],
    "issues": []
@@ -24691,10 +24313,6 @@
      "title": "Add ModelToScreen and ScreenToModel commands"
     },
     {
-     "number": 1235,
-     "title": "Add RefreshElements command (ACAPI_Element_RefreshElement)"
-    },
-    {
      "number": 1161,
      "title": "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"
     },
@@ -25013,13 +24631,9 @@
     28
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1370,
-     "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
-    },
     {
      "number": 1363,
      "title": "[3/6] GetIFCClassificationReferencesOfElements on Archicad 25-27"
@@ -25132,14 +24746,9 @@
     28
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1370,
-     "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25194,14 +24803,9 @@
     28
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1370,
-     "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25349,10 +24953,6 @@
      "title": "[1/3] Add GetSunSettings and CalculateSunPosition"
     },
     {
-     "number": 962,
-     "title": "[1/3] Add GetAutoIntersect and SetAutoIntersect commands"
-    },
-    {
      "number": 954,
      "title": "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"
     },
@@ -25412,10 +25012,6 @@
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
     },
     {
-     "number": 1361,
-     "title": "[3/3] Add IsUsableGDLString command"
-    },
-    {
      "number": 1353,
      "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
     },
@@ -25442,14 +25038,6 @@
     {
      "number": 1146,
      "title": "[1/4] Add CheckPropertyExpressions and GetPropertyExpressionReferences"
-    },
-    {
-     "number": 1133,
-     "title": "Add GetVisibleSkinStatus command (ACAPI_Element_ElemHasVisibleSkin)"
-    },
-    {
-     "number": 1095,
-     "title": "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"
     },
     {
      "number": 1094,
@@ -25484,10 +25072,6 @@
     {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    },
-    {
-     "number": 1092,
-     "title": "Expose ACAPI_Element_ChangeContent, and return the raw Autotext keys of a Text (edit one line without losing the Autotexts)"
     },
     {
      "number": 1091,
@@ -32251,12 +31835,7 @@
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     }
    ],
-   "issues": [
-    {
-     "number": 1232,
-     "title": "Expose ACAPI::Favorite::Favorite::GetProperties / GetClassifications (audit favorites)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetElemCategoryValues",
@@ -32278,12 +31857,7 @@
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     }
    ],
-   "issues": [
-    {
-     "number": 1232,
-     "title": "Expose ACAPI::Favorite::Favorite::GetProperties / GetClassifications (audit favorites)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetElementDefault",
@@ -32452,14 +32026,6 @@
      "title": "[2/4] Add CreateFavoriteFolder and RenameFavoriteFolder commands"
     },
     {
-     "number": 1241,
-     "title": "Add GetFavoriteDetails: audit a Favorite's classifications, properties and categories"
-    },
-    {
-     "number": 1240,
-     "title": "[1/4] Add GetFavoriteFolders command (Favorites palette folder tree)"
-    },
-    {
      "number": 1237,
      "title": "Add ReadFavoritesFile command (ACAPI_Favorite_Read)"
     }
@@ -32557,12 +32123,7 @@
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     }
    ],
-   "issues": [
-    {
-     "number": 1232,
-     "title": "Expose ACAPI::Favorite::Favorite::GetProperties / GetClassifications (audit favorites)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetSubElements",
@@ -32620,7 +32181,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -32638,10 +32199,6 @@
     {
      "number": 1257,
      "title": "[2/4] Add CreateFavoriteFolder and RenameFavoriteFolder commands"
-    },
-    {
-     "number": 1240,
-     "title": "[1/4] Add GetFavoriteFolders command (Favorites palette folder tree)"
     }
    ],
    "issues": [
@@ -32689,14 +32246,6 @@
     {
      "number": 1257,
      "title": "[2/4] Add CreateFavoriteFolder and RenameFavoriteFolder commands"
-    },
-    {
-     "number": 1241,
-     "title": "Add GetFavoriteDetails: audit a Favorite's classifications, properties and categories"
-    },
-    {
-     "number": 1240,
-     "title": "[1/4] Add GetFavoriteFolders command (Favorites palette folder tree)"
     },
     {
      "number": 1237,
@@ -32771,7 +32320,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -32793,10 +32342,6 @@
     {
      "number": 1257,
      "title": "[2/4] Add CreateFavoriteFolder and RenameFavoriteFolder commands"
-    },
-    {
-     "number": 1240,
-     "title": "[1/4] Add GetFavoriteFolders command (Favorites palette folder tree)"
     }
    ],
    "issues": [
@@ -33066,12 +32611,7 @@
      "title": "[3/4] Add MoveFavorites command (move Favorites into a folder by path)"
     }
    ],
-   "issues": [
-    {
-     "number": 1232,
-     "title": "Expose ACAPI::Favorite::Favorite::GetProperties / GetClassifications (audit favorites)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::FavoriteManager::GetFavoritesByElementType",
@@ -33102,7 +32642,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -33124,10 +32664,6 @@
     {
      "number": 1257,
      "title": "[2/4] Add CreateFavoriteFolder and RenameFavoriteFolder commands"
-    },
-    {
-     "number": 1240,
-     "title": "[1/4] Add GetFavoriteFolders command (Favorites palette folder tree)"
     }
    ],
    "issues": [
@@ -33352,10 +32888,6 @@
     {
      "number": 1257,
      "title": "[2/4] Add CreateFavoriteFolder and RenameFavoriteFolder commands"
-    },
-    {
-     "number": 1240,
-     "title": "[1/4] Add GetFavoriteFolders command (Favorites palette folder tree)"
     }
    ],
    "issues": []
@@ -36577,10 +36109,6 @@
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
     },
     {
-     "number": 1361,
-     "title": "[3/3] Add IsUsableGDLString command"
-    },
-    {
      "number": 1353,
      "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
     },
@@ -38106,10 +37634,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -38425,10 +37949,6 @@
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -38701,10 +38221,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     },
     {
      "number": 1281,
@@ -39014,10 +38530,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -39036,14 +38548,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39060,14 +38567,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39143,16 +38645,12 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -41164,10 +40662,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -41798,10 +41292,6 @@
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -42759,10 +42249,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -43042,10 +42528,6 @@
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -43900,10 +43382,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -44185,10 +43663,6 @@
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -45558,10 +45032,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -45860,10 +45330,6 @@
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -46424,10 +45890,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -46490,7 +45952,7 @@
    "olderNames": [
     "ACAPI::MEP::Bend::GetFactorRadius"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -46504,10 +45966,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -46562,16 +46020,12 @@
    "olderNames": [
     "ACAPI::MEP::Bend::GetInsulationThickness"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -46591,7 +46045,7 @@
    "olderNames": [
     "ACAPI::MEP::Bend::GetPreferenceTable"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -46605,10 +46059,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -46650,14 +46100,9 @@
    "olderNames": [
     "ACAPI::MEP::Bend::GetRoutingNodeId"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47019,10 +46464,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -47557,10 +46998,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -47930,10 +47367,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -48484,10 +47917,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -48970,10 +48399,6 @@
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     },
     {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
-    },
-    {
      "number": 1281,
      "title": "Add GetRoofPlanes: the single planes of multi-plane roofs"
     },
@@ -48982,20 +48407,12 @@
      "title": "Add GetClassificationItemVisibility command"
     },
     {
-     "number": 1269,
-     "title": "Add EditHierarchicalElement and FinishHierarchicalEditing commands"
-    },
-    {
      "number": 1266,
      "title": "Add GetMainGroups, GetAllElementsOfGroups and GetAutoGroupMode commands"
     },
     {
      "number": 1238,
      "title": "Add GetPropertyEditability command (property value editability and visibility)"
-    },
-    {
-     "number": 1235,
-     "title": "Add RefreshElements command (ACAPI_Element_RefreshElement)"
     },
     {
      "number": 1234,
@@ -49026,20 +48443,8 @@
      "title": "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"
     },
     {
-     "number": 1133,
-     "title": "Add GetVisibleSkinStatus command (ACAPI_Element_ElemHasVisibleSkin)"
-    },
-    {
      "number": 1132,
      "title": "Add GetLibPartTransformations command (ACAPI_Element_GetSyTran)"
-    },
-    {
-     "number": 1110,
-     "title": "Add GetHotlinkOwnersOfElements (which hotlink an element comes from)"
-    },
-    {
-     "number": 1095,
-     "title": "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"
     },
     {
      "number": 1094,
@@ -49066,10 +48471,6 @@
      "title": "[2/4] Add GetHotspotsOfElements: the hotspots of elements with their neig kind and subindex"
     },
     {
-     "number": 1028,
-     "title": "[3/4] Add the Zones page to GetProjectPreferences and SetProjectPreferences"
-    },
-    {
      "number": 1026,
      "title": "[3/4] Add folderPath to GetAttributesByType"
     },
@@ -49090,10 +48491,6 @@
      "title": "[2/3] Project Info fields on Archicad 30: rename and move fields, create in a group, delete by field id"
     },
     {
-     "number": 1000,
-     "title": "[1/3] Project Info groups on Archicad 30: get, create, rename, delete and move groups"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     },
@@ -49108,10 +48505,6 @@
     {
      "number": 963,
      "title": "[1/2] Add the DeselectAll, GetMarquee and SetMarquee commands"
-    },
-    {
-     "number": 962,
-     "title": "[1/3] Add GetAutoIntersect and SetAutoIntersect commands"
     },
     {
      "number": 956,
@@ -49537,16 +48930,12 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -50094,10 +49483,6 @@
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     },
     {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
-    },
-    {
      "number": 1052,
      "title": "Graphic override criterion: library part element types, new fields and operators (on top of #994)"
     }
@@ -50328,10 +49713,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -50600,10 +49981,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": [
@@ -50627,14 +50004,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52382,10 +51754,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -52432,10 +51800,6 @@
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -52704,10 +52068,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -53338,10 +52698,6 @@
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -54303,10 +53659,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -54588,10 +53940,6 @@
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -55430,10 +54778,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -55713,10 +55057,6 @@
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -56565,10 +55905,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -56846,10 +56182,6 @@
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -57961,10 +57293,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -59337,10 +58665,6 @@
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -59642,10 +58966,6 @@
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     },
     {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
-    },
-    {
      "number": 1281,
      "title": "Add GetRoofPlanes: the single planes of multi-plane roofs"
     },
@@ -59878,10 +59198,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -59968,16 +59284,12 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -60015,14 +59327,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -60254,10 +59561,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": [
@@ -61781,10 +61084,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": [
@@ -62798,10 +62097,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": [
@@ -64646,10 +63941,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -64696,10 +63987,6 @@
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -64931,10 +64218,6 @@
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     },
     {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
-    },
-    {
      "number": 1281,
      "title": "Add GetRoofPlanes: the single planes of multi-plane roofs"
     },
@@ -65137,10 +64420,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -65445,10 +64724,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -65729,10 +65004,6 @@
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -65835,16 +65106,12 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -65882,14 +65149,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -65906,7 +65168,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -65920,10 +65182,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -65942,7 +65200,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -65956,10 +65214,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -65976,7 +65230,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -65990,10 +65244,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
     }
    ],
    "issues": []
@@ -66012,14 +65262,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -66036,14 +65281,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -66058,14 +65298,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1290,
-     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -72400,10 +71635,6 @@
      "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
     },
     {
-     "number": 1370,
-     "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
-    },
-    {
      "number": 1365,
      "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
     },
@@ -72450,10 +71681,6 @@
     {
      "number": 1238,
      "title": "Add GetPropertyEditability command (property value editability and visibility)"
-    },
-    {
-     "number": 1148,
-     "title": "[3/4] ModifyPropertyValueOfElements: set one property value on several elements, all or nothing (AC27+)"
     },
     {
      "number": 1147,
@@ -72572,12 +71799,12 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
-     "number": 1370,
-     "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
+     "number": 1583,
+     "title": "[2/4] Add GetIFCClassificationReferencesOfElements"
     },
     {
      "number": 1363,
@@ -72603,12 +71830,12 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
-     "number": 1370,
-     "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
+     "number": 1583,
+     "title": "[2/4] Add GetIFCClassificationReferencesOfElements"
     },
     {
      "number": 1363,
@@ -72643,9 +71870,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1583,
+     "title": "[2/4] Add GetIFCClassificationReferencesOfElements"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -72666,12 +71898,12 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
-     "number": 1370,
-     "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
+     "number": 1583,
+     "title": "[2/4] Add GetIFCClassificationReferencesOfElements"
     },
     {
      "number": 1363,
@@ -72701,6 +71933,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1583,
+     "title": "[2/4] Add GetIFCClassificationReferencesOfElements"
+    },
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    },
+    {
      "number": 1536,
      "title": "[4/5] Pens, attribute classification and built-in properties, element info strings"
     },
@@ -72713,16 +71953,20 @@
      "title": "[1/6] Add ConvertUnitValues, GetPrinterAndPlotterInfo, GetRenovationStatusNames and GetClassificationItemParents"
     },
     {
-     "number": 1370,
-     "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
-    },
-    {
      "number": 1363,
      "title": "[3/6] GetIFCClassificationReferencesOfElements on Archicad 25-27"
     },
     {
+     "number": 1338,
+     "title": "[1/6] GetIFCAttributesOfElements: read IFC attributes on Archicad 25-27"
+    },
+    {
      "number": 1309,
      "title": "[3/3] Add GetIFCClassificationReferencesOfElements command"
+    },
+    {
+     "number": 1307,
+     "title": "[1/3] Add GetIFCAttributesOfElements command"
     },
     {
      "number": 1276,
@@ -72753,12 +71997,12 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
-     "number": 1370,
-     "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
+     "number": 1583,
+     "title": "[2/4] Add GetIFCClassificationReferencesOfElements"
     },
     {
      "number": 1363,
@@ -72788,12 +72032,12 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
-     "number": 1370,
-     "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
+     "number": 1583,
+     "title": "[2/4] Add GetIFCClassificationReferencesOfElements"
     },
     {
      "number": 1363,
@@ -72824,12 +72068,12 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
-     "number": 1370,
-     "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
+     "number": 1583,
+     "title": "[2/4] Add GetIFCClassificationReferencesOfElements"
     },
     {
      "number": 1363,
@@ -72860,9 +72104,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1583,
+     "title": "[2/4] Add GetIFCClassificationReferencesOfElements"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -72883,12 +72132,12 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
-     "number": 1370,
-     "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
+     "number": 1583,
+     "title": "[2/4] Add GetIFCClassificationReferencesOfElements"
     },
     {
      "number": 1363,
@@ -72919,20 +72168,32 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
-     "number": 1370,
-     "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
+     "number": 1583,
+     "title": "[2/4] Add GetIFCClassificationReferencesOfElements"
+    },
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
     },
     {
      "number": 1363,
      "title": "[3/6] GetIFCClassificationReferencesOfElements on Archicad 25-27"
     },
     {
+     "number": 1338,
+     "title": "[1/6] GetIFCAttributesOfElements: read IFC attributes on Archicad 25-27"
+    },
+    {
      "number": 1309,
      "title": "[3/3] Add GetIFCClassificationReferencesOfElements command"
+    },
+    {
+     "number": 1307,
+     "title": "[1/3] Add GetIFCAttributesOfElements command"
     }
    ],
    "issues": [
@@ -72955,12 +72216,12 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
-     "number": 1370,
-     "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
+     "number": 1583,
+     "title": "[2/4] Add GetIFCClassificationReferencesOfElements"
     },
     {
      "number": 1363,
@@ -72990,9 +72251,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1583,
+     "title": "[2/4] Add GetIFCClassificationReferencesOfElements"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -73041,10 +72307,6 @@
     {
      "number": 1542,
      "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    },
-    {
-     "number": 1370,
-     "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
     },
     {
      "number": 1363,
@@ -73487,10 +72749,6 @@
      "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
     },
     {
-     "number": 1370,
-     "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
-    },
-    {
      "number": 1363,
      "title": "[3/6] GetIFCClassificationReferencesOfElements on Archicad 25-27"
     },
@@ -73895,10 +73153,6 @@
      "title": "[5/6] Add GetLibraryPartOriginalLocations (Archicad 27+)"
     },
     {
-     "number": 1370,
-     "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
-    },
-    {
      "number": 1365,
      "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
     },
@@ -73913,10 +73167,6 @@
     {
      "number": 1362,
      "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
-    },
-    {
-     "number": 1361,
-     "title": "[3/3] Add IsUsableGDLString command"
     },
     {
      "number": 1353,
@@ -73985,10 +73235,6 @@
     {
      "number": 1227,
      "title": "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"
-    },
-    {
-     "number": 1148,
-     "title": "[3/4] ModifyPropertyValueOfElements: set one property value on several elements, all or nothing (AC27+)"
     },
     {
      "number": 1147,
@@ -74099,16 +73345,12 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 1583,
      "title": "[2/4] Add GetIFCClassificationReferencesOfElements"
-    },
-    {
-     "number": 1370,
-     "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
     },
     {
      "number": 1363,
@@ -74157,16 +73399,12 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 1583,
      "title": "[2/4] Add GetIFCClassificationReferencesOfElements"
-    },
-    {
-     "number": 1370,
-     "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
     },
     {
      "number": 1363,
