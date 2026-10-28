@@ -79,6 +79,64 @@ static void AddStairBaseLineFromMemo (const API_Guid& guid, GS::ObjectState& os)
     }
 }
 
+// The section line and the depth line of a Section (CutPlane) live in the memo's
+// sectionSegmentMainCoords and sectionSegmentDepthCoords, 0-based pointers with
+// cutPlane.segment.nMainCoord and nDepthCoord points: the very ones CreateSectionsCommand
+// fills in to place one (#1607). The counts are checked against the pointer sizes. depth and
+// viewDirection are derived from the first segment of the section line and the first depth
+// point, the way CreateSections puts the depth line to the left of start -> end.
+static void AddSectionLinesFromMemo (const API_Guid& guid, GSSize nMainCoord, GSSize nDepthCoord, GS::ObjectState& os)
+{
+    const auto& mainCoords = os.AddList<GS::ObjectState> ("mainCoordinates");
+    const auto& depthCoords = os.AddList<GS::ObjectState> ("depthCoordinates");
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_All) != NoError || memo.sectionSegmentMainCoords == nullptr) {
+        return;
+    }
+
+    const GSSize nMain = std::min<GSSize> (nMainCoord,
+        BMGetPtrSize (reinterpret_cast<GSPtr> (memo.sectionSegmentMainCoords)) / sizeof (API_Coord));
+    for (GSIndex i = 0; i < nMain; ++i) {
+        mainCoords (Create2DCoordinateObjectState (memo.sectionSegmentMainCoords[i]));
+    }
+    if (nMain < 2) {
+        return;
+    }
+    const API_Coord& begC = memo.sectionSegmentMainCoords[0];
+    const API_Coord& endC = memo.sectionSegmentMainCoords[nMain - 1];
+    os.Add ("startCoordinate", Create2DCoordinateObjectState (begC));
+    os.Add ("endCoordinate", Create2DCoordinateObjectState (endC));
+
+    if (memo.sectionSegmentDepthCoords == nullptr) {
+        return;
+    }
+    const GSSize nDepth = std::min<GSSize> (nDepthCoord,
+        BMGetPtrSize (reinterpret_cast<GSPtr> (memo.sectionSegmentDepthCoords)) / sizeof (API_Coord));
+    for (GSIndex i = 0; i < nDepth; ++i) {
+        depthCoords (Create2DCoordinateObjectState (memo.sectionSegmentDepthCoords[i]));
+    }
+    if (nDepth < 1) {
+        return;
+    }
+
+    const API_Coord& secondC = memo.sectionSegmentMainCoords[1];
+    const double dx = secondC.x - begC.x;
+    const double dy = secondC.y - begC.y;
+    const double length = std::sqrt (dx * dx + dy * dy);
+    if (length < 1e-9) {
+        return;
+    }
+    // Signed distance of the first depth point from the first segment, positive on its left.
+    const API_Coord& depthC = memo.sectionSegmentDepthCoords[0];
+    const double leftDistance = (dx * (depthC.y - begC.y) - dy * (depthC.x - begC.x)) / length;
+    os.Add ("depth", std::fabs (leftDistance));
+    const double side = leftDistance < 0.0 ? -1.0 : 1.0;
+    const API_Coord viewDirection = { -dy / length * side, dx / length * side };
+    os.Add ("viewDirection", Create2DCoordinateObjectState (viewDirection));
+}
+
 
 // Shared "line-family settings" fields present on Line/PolyLine/Arc/Circle/Spline
 // (API_LineType/API_PolyLineType/API_ArcType/API_SplineType all share this exact shape).
@@ -1990,6 +2048,13 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.stair.basePlane.basePoint.z, stories));
                 typeSpecificDetails.Add ("finishVisible", elem.stair.finishVisible);
                 AddStairBaseLineFromMemo (elem.header.guid, typeSpecificDetails);
+            } break;
+
+            case API_CutPlaneID: {
+                // The fields CreateSections writes, read back (#1607).
+                typeSpecificDetails.Add ("name", GS::UniString (elem.cutPlane.segment.cutPlName));
+                typeSpecificDetails.Add ("idStr", GS::UniString (elem.cutPlane.segment.cutPlIdStr));
+                AddSectionLinesFromMemo (elem.header.guid, static_cast<GSSize> (elem.cutPlane.segment.nMainCoord), static_cast<GSSize> (elem.cutPlane.segment.nDepthCoord), typeSpecificDetails);
             } break;
 
             default:

@@ -8315,7 +8315,7 @@ GS::Optional<GS::UniString> CreateSectionsCommand::GetInputParametersSchema () c
                     "properties": {
                         "startCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
-                        "depth": { "type": "number" },
+                        "depth": { "type": "number", "description": "The distance of the depth line from the section line, on the left of the start to end direction, which is the direction the section looks in. Default is 1." },
                         "name": { "type": "string" },
                         "floorIndex": { "type": "integer" }
                     },

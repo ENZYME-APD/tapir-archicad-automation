@@ -1825,7 +1825,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateSectionsCommand> (
             navigatorCommands, "1.5.0",
-            "Creates Section elements on the floor plan."
+            "Creates Section elements on the floor plan. A section looks to the left of its start to end direction, with its depth line that far on that side. GetDetailsOfElements reads the geometry of existing sections back."
         );
         err |= RegisterCommand<CreateInteriorElevationsCommand> (
             navigatorCommands, "1.5.8",

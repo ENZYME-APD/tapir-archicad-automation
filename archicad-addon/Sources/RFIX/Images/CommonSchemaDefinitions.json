@@ -9833,6 +9833,57 @@
             "baseLinePoints"
         ]
     },
+    "SectionDetails": {
+        "type": "object",
+        "description": "The geometry of a Section (CutPlane) marker on the floor plan, the fields CreateSections takes.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the section."
+            },
+            "idStr": {
+                "type": "string",
+                "description": "The reference ID of the section."
+            },
+            "mainCoordinates": {
+                "type": "array",
+                "description": "The points of the section line, from start to end. More than two for a broken section line. Empty when the line cannot be read.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "depthCoordinates": {
+                "type": "array",
+                "description": "The points of the depth line, the far boundary of the section. Empty when it cannot be read.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "startCoordinate": {
+                "$ref": "#/Coordinate2D",
+                "description": "The first point of the section line (startCoordinate of CreateSections)."
+            },
+            "endCoordinate": {
+                "$ref": "#/Coordinate2D",
+                "description": "The last point of the section line (endCoordinate of CreateSections)."
+            },
+            "depth": {
+                "type": "number",
+                "description": "The distance of the first depth point from the first segment of the section line (depth of CreateSections)."
+            },
+            "viewDirection": {
+                "$ref": "#/Coordinate2D",
+                "description": "The unit vector perpendicular to the first segment of the section line, pointing to the side of the depth line: the direction the section looks in. CreateSections puts it to the left of the start to end direction."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "idStr",
+            "mainCoordinates",
+            "depthCoordinates"
+        ]
+    },
     "NotYetSupportedElementTypeDetails": {
         "type": "object",
         "properties": {
@@ -9923,6 +9974,9 @@
             },
             {
                 "$ref": "#/StairDetails"
+            },
+            {
+                "$ref": "#/SectionDetails"
             },
             {
                 "$ref": "#/NotYetSupportedElementTypeDetails"
