@@ -19,15 +19,115 @@ struct LibraryPartScriptSection
 {
     const char* key;
     std::function<ACAPI::Result<void> (GSMObject::Modifier&, const GS::UniString&)> set;
+    std::function<ACAPI::Result<void> (GSMObject::Modifier&)> remove;
 };
 
 static const LibraryPartScriptSection libraryPartScriptSections[] = {
-    { "master",     [] (GSMObject::Modifier& modifier, const GS::UniString& script) { return modifier.SetMasterScript (script); } },
-    { "parameter",  [] (GSMObject::Modifier& modifier, const GS::UniString& script) { return modifier.SetParameterScript (script); } },
-    { "2d",         [] (GSMObject::Modifier& modifier, const GS::UniString& script) { return modifier.Set2DScript (script); } },
-    { "3d",         [] (GSMObject::Modifier& modifier, const GS::UniString& script) { return modifier.Set3DScript (script); } },
-    { "properties", [] (GSMObject::Modifier& modifier, const GS::UniString& script) { return modifier.SetPropertiesScript (script); } }
+    { "master",
+        [] (GSMObject::Modifier& modifier, const GS::UniString& script) { return modifier.SetMasterScript (script); },
+        [] (GSMObject::Modifier& modifier) { return modifier.DeleteMasterScript (); } },
+    { "parameter",
+        [] (GSMObject::Modifier& modifier, const GS::UniString& script) { return modifier.SetParameterScript (script); },
+        [] (GSMObject::Modifier& modifier) { return modifier.DeleteParameterScript (); } },
+    { "2d",
+        [] (GSMObject::Modifier& modifier, const GS::UniString& script) { return modifier.Set2DScript (script); },
+        [] (GSMObject::Modifier& modifier) { return modifier.Delete2DScript (); } },
+    { "3d",
+        [] (GSMObject::Modifier& modifier, const GS::UniString& script) { return modifier.Set3DScript (script); },
+        [] (GSMObject::Modifier& modifier) { return modifier.Delete3DScript (); } },
+    { "properties",
+        [] (GSMObject::Modifier& modifier, const GS::UniString& script) { return modifier.SetPropertiesScript (script); },
+        [] (GSMObject::Modifier& modifier) { return modifier.DeletePropertiesScript (); } },
+    { "interface",
+        [] (GSMObject::Modifier& modifier, const GS::UniString& script) { return modifier.SetInterfaceScript (script); },
+        [] (GSMObject::Modifier& modifier) { return modifier.DeleteInterfaceScript (); } },
+    { "forwardMigration",
+        [] (GSMObject::Modifier& modifier, const GS::UniString& script) { return modifier.SetForwardMigrationScript (script); },
+        [] (GSMObject::Modifier& modifier) { return modifier.DeleteForwardMigrationScript (); } },
+    { "backwardMigration",
+        [] (GSMObject::Modifier& modifier, const GS::UniString& script) { return modifier.SetBackwardMigrationScript (script); },
+        [] (GSMObject::Modifier& modifier) { return modifier.DeleteBackwardMigrationScript (); } }
 };
+
+static const LibraryPartScriptSection* FindLibraryPartScriptSection (const GS::UniString& key)
+{
+    for (const LibraryPartScriptSection& section : libraryPartScriptSections) {
+        if (key == GS::UniString (section.key)) {
+            return &section;
+        }
+    }
+    return nullptr;
+}
+
+struct LibraryPartStringMetadata
+{
+    const char* key;
+    std::function<ACAPI::Result<void> (GSMObject::Modifier&, const GS::UniString&)> set;
+};
+
+static const LibraryPartStringMetadata libraryPartStringMetadata[] = {
+    { "author",         [] (GSMObject::Modifier& modifier, const GS::UniString& value) { return modifier.SetAuthor (value); } },
+    { "keywords",       [] (GSMObject::Modifier& modifier, const GS::UniString& value) { return modifier.SetKeywords (value); } },
+    { "license",        [] (GSMObject::Modifier& modifier, const GS::UniString& value) { return modifier.SetLicense (value); } },
+    { "licenseVersion", [] (GSMObject::Modifier& modifier, const GS::UniString& value) { return modifier.SetLicenseVersion (value); } },
+    { "password",       [] (GSMObject::Modifier& modifier, const GS::UniString& value) { return modifier.SetPassword (value); } }
+};
+
+struct LibraryPartBoolMetadata
+{
+    const char* key;
+    std::function<ACAPI::Result<void> (GSMObject::Modifier&, bool)> set;
+};
+
+static const LibraryPartBoolMetadata libraryPartBoolMetadata[] = {
+    { "placeable",             [] (GSMObject::Modifier& modifier, bool value) { return modifier.SetPlaceable (value); } },
+    { "uiDefault",             [] (GSMObject::Modifier& modifier, bool value) { return modifier.SetUIDefault (value); } },
+    { "isSubtype",             [] (GSMObject::Modifier& modifier, bool value) { return modifier.SetIsSubtype (value); } },
+    { "hierarchicalPagesUsed", [] (GSMObject::Modifier& modifier, bool value) { return modifier.SetHierarchicalPagesUsed (value); } }
+};
+
+// Runs modify on the GSM object of the loaded library part called name, and returns the execution result.
+// A part that is not editable is refused. When modify fails, it sets failedWhat (e.g. "setting the '3d' script")
+// and failedText (the error text of the failed call), which go into the error message.
+template <typename LibraryManagerResult>
+static GS::ObjectState ModifyLibraryPart (
+    LibraryManagerResult& libraryManager,
+    const GS::UniString& name,
+    const std::function<GSErrCode (GSMObject::Modifier&)>& modify,
+    const GS::UniString& failedWhat,
+    const GS::UniString& failedText)
+{
+    auto libPart = libraryManager->GetLibPartByName (name);
+    if (libPart.IsErr ()) {
+        return CreateFailedExecutionResult (libPart.UnwrapErr ().kind, "No loaded library part with the name '" + name + "'. Use the fileName (with extension) returned by GetAvailableLibraryParts.");
+    }
+
+    auto gsmObject = libraryManager->GetGSMObjectOfLibPart (libPart.Unwrap ());
+    if (gsmObject.IsErr ()) {
+        return CreateFailedExecutionResult (gsmObject.UnwrapErr ().kind, "Failed to get the GSM object of the library part '" + name + "'.");
+    }
+
+    if (!gsmObject->IsEditable ()) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, "The library part '" + name + "' is not editable, nothing was changed. Only a library part loaded from a writable file can be modified; a part of a library package or a read-only library must first be copied into a writable library.");
+    }
+
+    ACAPI::Result<void> modifyResult = gsmObject->Modify (modify);
+    if (!modifyResult.IsErr ()) {
+        return CreateSuccessfulExecutionResult ();
+    }
+
+    GS::UniString errorMessage = "Failed to modify the library part '" + name + "'";
+    GS::UniString errorText = modifyResult.UnwrapErr ().text.c_str ();
+    if (!failedWhat.IsEmpty ()) {
+        errorMessage += ": " + failedWhat + " failed";
+        errorText = failedText;
+    }
+    if (!errorText.IsEmpty ()) {
+        errorMessage += " (" + errorText + ")";
+    }
+    errorMessage += ".";
+    return CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, errorMessage);
+}
 #endif
 
 AddFilesToEmbeddedLibraryCommand::AddFilesToEmbeddedLibraryCommand () :
@@ -1043,7 +1143,7 @@ GS::Optional<GS::UniString> SetLibraryPartScriptsCommand::GetInputParametersSche
         "properties": {
             "libraryParts": {
                 "type": "array",
-                "description": "The library parts to modify and the scripts to set in each.",
+                "description": "The library parts to modify, with the scripts to set and to delete in each.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -1053,7 +1153,7 @@ GS::Optional<GS::UniString> SetLibraryPartScriptsCommand::GetInputParametersSche
                         },
                         "scripts": {
                             "type": "object",
-                            "description": "The scripts to set. Only the scripts given here are changed, the others are kept. An empty string makes that script section empty, it does not delete it.",
+                            "description": "Optional. The scripts to set. Only the scripts given here are changed, the others are kept. An empty string makes that script section empty, it does not delete it; use deleteScripts for that.",
                             "properties": {
                                 "master": {
                                     "type": "string",
@@ -1074,16 +1174,50 @@ GS::Optional<GS::UniString> SetLibraryPartScriptsCommand::GetInputParametersSche
                                 "properties": {
                                     "type": "string",
                                     "description": "The properties script."
+                                },
+                                "interface": {
+                                    "type": "string",
+                                    "description": "The interface (user interface) script."
+                                },
+                                "forwardMigration": {
+                                    "type": "string",
+                                    "description": "The forward migration script."
+                                },
+                                "backwardMigration": {
+                                    "type": "string",
+                                    "description": "The backward migration script."
                                 }
                             },
                             "additionalProperties": false,
                             "minProperties": 1
+                        },
+                        "deleteScripts": {
+                            "type": "array",
+                            "description": "Optional. The script sections to delete from the library part. A script cannot be both set in scripts and deleted here.",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "master",
+                                    "parameter",
+                                    "2d",
+                                    "3d",
+                                    "properties",
+                                    "interface",
+                                    "forwardMigration",
+                                    "backwardMigration"
+                                ]
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
                         }
                     },
                     "additionalProperties": false,
                     "required": [
-                        "name",
-                        "scripts"
+                        "name"
+                    ],
+                    "anyOf": [
+                        { "required": ["scripts"] },
+                        { "required": ["deleteScripts"] }
                     ]
                 }
             }
@@ -1131,41 +1265,55 @@ GS::ObjectState SetLibraryPartScriptsCommand::Execute (const GS::ObjectState& pa
         for (const GS::ObjectState& libraryPart : libraryParts) {
             GS::UniString name;
             const GS::ObjectState* scripts = libraryPart.Get ("scripts");
-            if (!libraryPart.Get ("name", name) || name.IsEmpty () || scripts == nullptr) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'name' or 'scripts' parameter."));
+            GS::Array<GS::UniString> deleteScripts;
+            libraryPart.Get ("deleteScripts", deleteScripts);
+            if (!libraryPart.Get ("name", name) || name.IsEmpty () || (scripts == nullptr && deleteScripts.IsEmpty ())) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'name' parameter, or neither 'scripts' nor 'deleteScripts' is given."));
                 continue;
             }
 
             bool hasScript = false;
-            for (const LibraryPartScriptSection& section : libraryPartScriptSections) {
-                GS::UniString script;
-                hasScript = hasScript || scripts->Get (section.key, script);
+            if (scripts != nullptr) {
+                for (const LibraryPartScriptSection& section : libraryPartScriptSections) {
+                    GS::UniString script;
+                    hasScript = hasScript || scripts->Get (section.key, script);
+                }
             }
-            if (!hasScript) {
+            if (!hasScript && deleteScripts.IsEmpty ()) {
                 executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "No script is given in 'scripts'."));
                 continue;
             }
 
-            auto libPart = libraryManager->GetLibPartByName (name);
-            if (libPart.IsErr ()) {
-                executionResults (CreateFailedExecutionResult (libPart.UnwrapErr ().kind, "No loaded library part with the name '" + name + "'. Use the fileName (with extension) returned by GetAvailableLibraryParts."));
+            GS::Array<const LibraryPartScriptSection*> sectionsToDelete;
+            GS::UniString badDeleteScript;
+            for (const GS::UniString& key : deleteScripts) {
+                const LibraryPartScriptSection* section = FindLibraryPartScriptSection (key);
+                GS::UniString script;
+                if (section == nullptr || (scripts != nullptr && scripts->Get (section->key, script))) {
+                    badDeleteScript = key;
+                    break;
+                }
+                sectionsToDelete.Push (section);
+            }
+            if (!badDeleteScript.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The script '" + badDeleteScript + "' in 'deleteScripts' is unknown or is also given in 'scripts'. Nothing was changed."));
                 continue;
             }
 
-            auto gsmObject = libraryManager->GetGSMObjectOfLibPart (libPart.Unwrap ());
-            if (gsmObject.IsErr ()) {
-                executionResults (CreateFailedExecutionResult (gsmObject.UnwrapErr ().kind, "Failed to get the GSM object of the library part '" + name + "'."));
-                continue;
-            }
-
-            if (!gsmObject->IsEditable ()) {
-                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "The library part '" + name + "' is not editable, nothing was changed. Only a library part loaded from a writable file can be modified; a part of a library package or a read-only library must first be copied into a writable library."));
-                continue;
-            }
-
-            GS::UniString failedSection;
+            GS::UniString failedWhat;
             GS::UniString failedText;
-            ACAPI::Result<void> modifyResult = gsmObject->Modify ([&] (GSMObject::Modifier& modifier) -> GSErrCode {
+            executionResults (ModifyLibraryPart (libraryManager, name, [&] (GSMObject::Modifier& modifier) -> GSErrCode {
+                for (const LibraryPartScriptSection* section : sectionsToDelete) {
+                    ACAPI::Result<void> deleteResult = section->remove (modifier);
+                    if (deleteResult.IsErr ()) {
+                        failedWhat = GS::UniString ("deleting the '") + section->key + "' script";
+                        failedText = deleteResult.UnwrapErr ().text.c_str ();
+                        return deleteResult.UnwrapErr ().kind;
+                    }
+                }
+                if (scripts == nullptr) {
+                    return NoError;
+                }
                 for (const LibraryPartScriptSection& section : libraryPartScriptSections) {
                     GS::UniString script;
                     if (!scripts->Get (section.key, script)) {
@@ -1173,30 +1321,193 @@ GS::ObjectState SetLibraryPartScriptsCommand::Execute (const GS::ObjectState& pa
                     }
                     ACAPI::Result<void> setResult = section.set (modifier, script);
                     if (setResult.IsErr ()) {
-                        failedSection = section.key;
+                        failedWhat = GS::UniString ("setting the '") + section.key + "' script";
                         failedText = setResult.UnwrapErr ().text.c_str ();
                         return setResult.UnwrapErr ().kind;
                     }
                 }
                 return NoError;
-            });
+            }, failedWhat, failedText));
+        }
+        return NoError;
+    });
 
-            if (modifyResult.IsErr ()) {
-                GS::UniString errorMessage = "Failed to modify the library part '" + name + "'";
-                GS::UniString errorText = modifyResult.UnwrapErr ().text.c_str ();
-                if (!failedSection.IsEmpty ()) {
-                    errorMessage += ": setting the '" + failedSection + "' script failed";
-                    errorText = failedText;
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
+}
+
+SetLibraryPartMetadataCommand::SetLibraryPartMetadataCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetLibraryPartMetadataCommand::GetName () const
+{
+    return "SetLibraryPartMetadata";
+}
+
+GS::Optional<GS::UniString> SetLibraryPartMetadataCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "description": "The library parts to modify and the metadata to set in each.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm')."
+                        },
+                        "metadata": {
+                            "type": "object",
+                            "description": "The metadata to set. Only the fields given here are changed, the others are kept.",
+                            "properties": {
+                                "author": {
+                                    "type": "string",
+                                    "description": "The author of the library part."
+                                },
+                                "keywords": {
+                                    "type": "string",
+                                    "description": "The keywords of the library part."
+                                },
+                                "license": {
+                                    "type": "string",
+                                    "description": "The license of the library part."
+                                },
+                                "licenseVersion": {
+                                    "type": "string",
+                                    "description": "The version of the license."
+                                },
+                                "password": {
+                                    "type": "string",
+                                    "description": "The new password of the library part."
+                                },
+                                "placeable": {
+                                    "type": "boolean",
+                                    "description": "Whether the library part can be placed in the project."
+                                },
+                                "uiDefault": {
+                                    "type": "boolean",
+                                    "description": "The UI Default flag of the library part."
+                                },
+                                "isSubtype": {
+                                    "type": "boolean",
+                                    "description": "Whether the library part is a subtype template."
+                                },
+                                "hierarchicalPagesUsed": {
+                                    "type": "boolean",
+                                    "description": "Whether the library part uses hierarchical pages in its user interface."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "minProperties": 1
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "metadata"
+                    ]
                 }
-                if (!errorText.IsEmpty ()) {
-                    errorMessage += " (" + errorText + ")";
-                }
-                errorMessage += ".";
-                executionResults (CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, errorMessage));
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryParts"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetLibraryPartMetadataCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetLibraryPartMetadataCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::Array<GS::ObjectState> libraryParts;
+    if (!parameters.Get ("libraryParts", libraryParts)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'libraryParts' parameter.");
+    }
+
+    auto libraryManager = ACAPI::Library::GetLibraryManager ();
+    if (libraryManager.IsErr ()) {
+        return CreateErrorResponse (libraryManager.UnwrapErr ().kind, "Failed to get the Library Manager.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("Set Library Part Metadata", [&]() -> GSErrCode {
+        for (const GS::ObjectState& libraryPart : libraryParts) {
+            GS::UniString name;
+            const GS::ObjectState* metadata = libraryPart.Get ("metadata");
+            if (!libraryPart.Get ("name", name) || name.IsEmpty () || metadata == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'name' or 'metadata' parameter."));
                 continue;
             }
 
-            executionResults (CreateSuccessfulExecutionResult ());
+            bool hasField = false;
+            for (const LibraryPartStringMetadata& field : libraryPartStringMetadata) {
+                GS::UniString value;
+                hasField = hasField || metadata->Get (field.key, value);
+            }
+            for (const LibraryPartBoolMetadata& field : libraryPartBoolMetadata) {
+                bool value = false;
+                hasField = hasField || metadata->Get (field.key, value);
+            }
+            if (!hasField) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "No field is given in 'metadata'."));
+                continue;
+            }
+
+            GS::UniString failedWhat;
+            GS::UniString failedText;
+            executionResults (ModifyLibraryPart (libraryManager, name, [&] (GSMObject::Modifier& modifier) -> GSErrCode {
+                for (const LibraryPartStringMetadata& field : libraryPartStringMetadata) {
+                    GS::UniString value;
+                    if (!metadata->Get (field.key, value)) {
+                        continue;
+                    }
+                    ACAPI::Result<void> setResult = field.set (modifier, value);
+                    if (setResult.IsErr ()) {
+                        failedWhat = GS::UniString ("setting '") + field.key + "'";
+                        failedText = setResult.UnwrapErr ().text.c_str ();
+                        return setResult.UnwrapErr ().kind;
+                    }
+                }
+                for (const LibraryPartBoolMetadata& field : libraryPartBoolMetadata) {
+                    bool value = false;
+                    if (!metadata->Get (field.key, value)) {
+                        continue;
+                    }
+                    ACAPI::Result<void> setResult = field.set (modifier, value);
+                    if (setResult.IsErr ()) {
+                        failedWhat = GS::UniString ("setting '") + field.key + "'";
+                        failedText = setResult.UnwrapErr ().text.c_str ();
+                        return setResult.UnwrapErr ().kind;
+                    }
+                }
+                return NoError;
+            }, failedWhat, failedText));
         }
         return NoError;
     });
