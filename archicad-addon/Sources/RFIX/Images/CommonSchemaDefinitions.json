@@ -1306,6 +1306,12 @@
                 "items": {
                     "$ref": "#/Coordinate2D"
                 }
+            },
+            "symbolSolidFills": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/FillSymbolSolidFill"
+                }
             }
         },
         "additionalProperties": false,
@@ -1397,6 +1403,36 @@
             "begin",
             "origin",
             "angle"
+        ]
+    },
+    "FillSymbolSolidFill": {
+        "type": "object",
+        "description": "A filled polygon of a symbol fill's pattern, as Archicad stores it (sfill_SolidFills). The three arrays are the polygon's slices of sfill_FillCoords, sfill_SubPolys and sfill_PolyArcs, unchanged, so the indices follow Archicad's own polygon conventions. Read them with GetFills and pass them back to CreateFills as they are.",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "subPolygons": {
+                "type": "array",
+                "description": "End indices of the polygon's contours in coordinates.",
+                "items": {
+                    "type": "integer"
+                }
+            },
+            "arcs": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinates",
+            "subPolygons"
         ]
     },
     "ZoneCategoryAttribute": {
@@ -3436,7 +3472,8 @@
             "lineItems",
             "symbolLines",
             "symbolArcs",
-            "symbolHotspots"
+            "symbolHotspots",
+            "symbolSolidFills"
         ]
     },
     "ZoneCategoryAttributeField": {
