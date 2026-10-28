@@ -1244,7 +1244,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetAttributesFromProjectCommand> (
             attributeCommands, "1.7.3",
-            "Reads the attributes of the given types from another project or template file without opening it, for example to compare them with the attributes of the open project. Nothing is imported into the open project. The names are the legacy 8-bit names, so non-ASCII characters may not come through. Available from Archicad 27."
+            "Reads the attributes of the given types from another project or template file without opening it, for example to compare them with the attributes of the open project. Nothing is imported into the open project (ImportAttributesFromProject does that). The names are the legacy 8-bit names, so non-ASCII characters may not come through. The attributeId is not the guid stored in the file: Archicad hands out a new one on every read. Available from Archicad 27."
+        );
+        err |= RegisterCommand<ImportAttributesFromProjectCommand> (
+            attributeCommands, "1.7.4",
+            "Imports Line, Fill, ZoneCategory, PenTable and OperationProfile attributes from another project or template file into the open project, with their complete definition (symbol and percent fills included), like Append or Overwrite by name in Archicad's Attribute Manager. A new attribute gets a new guid: Archicad does not hand out the guids stored in the source file. An attribute whose name already exists is skipped, or overwritten in place with overwriteExisting. dryRun reports what would happen without changing anything. The names are the legacy 8-bit names of the source file. Available from Archicad 27."
         );
         err |= RegisterCommand<DeleteAttributesCommand> (
             attributeCommands, "1.5.4",
