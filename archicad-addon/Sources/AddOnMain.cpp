@@ -1263,19 +1263,19 @@ GSErrCode Initialize (void)
             "Runs the Fill Consolidation menu command of Archicad on the current window, as the menu does, and reports whether it ran together with what Archicad answered. Available from Archicad 27."
         );
         err |= RegisterCommand<CreateAttributeFoldersCommand> (
-            attributeCommands, "1.7.2",
+            attributeCommands, "1.7.3",
             "Creates attribute folders, each given by attribute type and path (the folder names from the root folder down). Missing parent folders are created too; a folder that already exists is kept and reported as success. Available from Archicad 26."
         );
         err |= RegisterCommand<DeleteAttributeFoldersCommand> (
-            attributeCommands, "1.7.2",
+            attributeCommands, "1.7.3",
             "Deletes attribute folders, each given by attribute type and path, together with all the subfolders and deletable attributes they contain (a folder holding an attribute that cannot be deleted is kept). The root folder cannot be deleted. Available from Archicad 26."
         );
         err |= RegisterCommand<RenameAttributeFoldersCommand> (
-            attributeCommands, "1.7.2",
+            attributeCommands, "1.7.3",
             "Renames attribute folders, each given by attribute type and path, to the given new names. The root folder cannot be renamed. Available from Archicad 26."
         );
         err |= RegisterCommand<MoveAttributesAndFoldersCommand> (
-            attributeCommands, "1.7.2",
+            attributeCommands, "1.7.3",
             "Moves attributes and attribute folders (with their contents) into the target folder, which must be of the same attribute type; an empty target path is the root folder. Returns one execution result per attribute and per folder. Available from Archicad 26."
         );
         err |= RegisterCommand<CreateLayersCommand> (
