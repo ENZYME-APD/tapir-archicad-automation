@@ -59,6 +59,20 @@ static IO::Location GetProjectPreviewsFolder (const IO::Location& projectLocatio
 #define TAPIR_HAS_LICENSE_INFO
 #endif
 
+#if defined (ServerMainVers_2800) && __has_include ("ACAPI/LicenseInfo/ProductVersionInfo.hpp")
+#include "ACAPI/LicenseInfo/ProductVersionInfo.hpp"
+#endif
+
+#if defined (ServerMainVers_2900) && __has_include ("ACAPI/DomainAvailability.hpp")
+#include "ACAPI/DomainAvailability.hpp"
+#define TAPIR_HAS_DOMAIN_AVAILABILITY
+#endif
+
+#if defined (ServerMainVers_2900) && __has_include ("ACAPI/ProjectID.hpp")
+#include "ACAPI/ProjectID.hpp"
+#define TAPIR_HAS_CEIP_PROJECT_ID
+#endif
+
 #if defined (ServerMainVers_2800) && __has_include ("ACAPI/CuttingPlane.hpp")
 #include "ACAPI/CuttingPlane.hpp"
 #define TAPIR_HAS_CUTTING_PLANE
@@ -1277,6 +1291,18 @@ GS::Optional<GS::UniString> GetProductVersionInfoCommand::GetRawResponseSchema (
                     "type": "integer"
                 },
                 "description": "The three parts of the version number. Archicad 28 only."
+            },
+            "availableDomains": {
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "enum": ["Architecture", "MEP"]
+                },
+                "description": "The domains available in the running Archicad. Archicad 29 or later."
+            },
+            "ceipProjectId": {
+                "type": "string",
+                "description": "The CEIP project identifier of the open project. Left out when no saved project is open. Archicad 29 or later."
             }
         },
         "additionalProperties": false,
@@ -1297,7 +1323,7 @@ GS::ObjectState GetProductVersionInfoCommand::Execute (const GS::ObjectState& /*
         return CreateErrorResponse (licenseInfoManager.UnwrapErr ().kind, "Failed to get the license info manager.");
     }
 
-    const auto versionInfo = licenseInfoManager->GetProductVersionInfo ();
+    const ACAPI::LicenseInfo::ProductVersionInfo versionInfo = licenseInfoManager->GetProductVersionInfo ();
 
     GS::ObjectState response;
     response.Add ("productFamilyId", versionInfo.GetProductFamilyId ());
@@ -1317,6 +1343,25 @@ GS::ObjectState GetProductVersionInfoCommand::Execute (const GS::ObjectState& /*
     versionNumbers.Push (versionInfo.GetVersionNum2 ());
     versionNumbers.Push (versionInfo.GetVersionNum3 ());
     response.Add ("versionNumbers", versionNumbers);
+#endif
+#ifdef TAPIR_HAS_DOMAIN_AVAILABILITY
+    const auto& availableDomains = response.AddList<GS::UniString> ("availableDomains");
+    if (ACAPI::IsDomainAvailable (ACAPI::Domain::Architecture)) {
+        availableDomains (GS::UniString ("Architecture"));
+    }
+    if (ACAPI::IsDomainAvailable (ACAPI::Domain::MEP)) {
+        availableDomains (GS::UniString ("MEP"));
+    }
+#endif
+#ifdef TAPIR_HAS_CEIP_PROJECT_ID
+    API_ProjectInfo projectInfo = {};
+    if (ACAPI_ProjectOperation_Project (&projectInfo) == NoError && !projectInfo.untitled) {
+        const IO::Location* projectLocation = projectInfo.teamwork ? projectInfo.location_team : projectInfo.location;
+        const GS::UniString ceipProjectId = projectLocation != nullptr ? ACAPI::GetCEIPProjectID (*projectLocation) : GS::UniString ();
+        if (!ceipProjectId.IsEmpty ()) {
+            response.Add ("ceipProjectId", ceipProjectId);
+        }
+    }
 #endif
     return response;
 #else
