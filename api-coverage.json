@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-28 15:00 UTC",
+ "generatedAt": "2026-10-28 15:38 UTC",
  "versions": [
   25,
   26,
@@ -3034,7 +3034,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1619,
+     "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
+    }
+   ],
    "issues": []
   },
   {
@@ -3158,6 +3163,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1619,
+     "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
+    },
+    {
      "number": 1618,
      "title": "SetDetailsOfElements: say why Archicad refused the element (hidden or locked layer)"
     },
@@ -3247,6 +3256,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1619,
+     "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
+    },
     {
      "number": 1595,
      "title": "GetAttributesFromProject: report Layer, Surface, BuildingMaterial and MEPSystem as not read instead of an empty list"
@@ -3776,6 +3789,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1619,
+     "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
+    },
     {
      "number": 975,
      "title": "Add ModifyPens: change single pens of the active pen table"
@@ -6539,6 +6556,10 @@
    "status": "not applicable",
    "reason": "memory management",
    "pullRequests": [
+    {
+     "number": 1619,
+     "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
+    },
     {
      "number": 1398,
      "title": "Allow partial modify of Composites and Layer Combinations"
@@ -29586,6 +29607,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1620,
+     "title": "Hatch fill orientation in Get/SetDetailsOfElements; make a fill origin writable (#662)"
+    },
+    {
+     "number": 1618,
+     "title": "SetDetailsOfElements: say why Archicad refused the element (hidden or locked layer)"
+    },
+    {
      "number": 1611,
      "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
     },
@@ -35201,6 +35230,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1619,
+     "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
+    },
+    {
      "number": 1587,
      "title": "[4/4] Add OpenLibraryPartInEditor command"
     },
@@ -37111,6 +37144,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1620,
+     "title": "Hatch fill orientation in Get/SetDetailsOfElements; make a fill origin writable (#662)"
+    },
     {
      "number": 1611,
      "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
@@ -46559,6 +46596,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1621,
+     "title": "[2/2] GetFills/CreateFills: filled polygons of Symbol fills (builds on #1617, fixes #1614)"
+    },
+    {
+     "number": 1620,
+     "title": "Hatch fill orientation in Get/SetDetailsOfElements; make a fill origin writable (#662)"
+    },
+    {
+     "number": 1619,
+     "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
+    },
     {
      "number": 1617,
      "title": "[1/2] GetFills/CreateFills: symbol fill offsets (c1/c2)"
@@ -56318,6 +56367,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1620,
+     "title": "Hatch fill orientation in Get/SetDetailsOfElements; make a fill origin writable (#662)"
+    },
+    {
      "number": 1611,
      "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
     },
@@ -61142,6 +61195,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1620,
+     "title": "Hatch fill orientation in Get/SetDetailsOfElements; make a fill origin writable (#662)"
+    },
     {
      "number": 1611,
      "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
@@ -68520,6 +68577,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1619,
+     "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
+    },
     {
      "number": 1583,
      "title": "[2/4] Add GetIFCClassificationReferencesOfElements"
