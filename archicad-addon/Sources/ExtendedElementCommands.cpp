@@ -7227,10 +7227,10 @@ static GS::Optional<GS::UniString> GetIgnoredSlabFillOrientation (const API_Guid
         { "matrix00", orientation.matrix00 }, { "matrix10", orientation.matrix10 },
         { "matrix01", orientation.matrix01 }, { "matrix11", orientation.matrix11 }
     };
-    for (const auto& [name, current] : matrix) {
-        double requested = current;
-        if (orientationOs.Get (name, requested) && GS::Abs (requested - current) > 1e-9) {
-            ignored.Push (GS::UniString::Printf ("%s (it stayed %g)", name, current));
+    for (const auto& entry : matrix) {
+        double requested = entry.second;
+        if (orientationOs.Get (entry.first, requested) && GS::Abs (requested - entry.second) > 1e-9) {
+            ignored.Push (GS::UniString::Printf ("%s (it stayed %g)", entry.first, entry.second));
         }
     }
     if (ignored.IsEmpty ()) {
