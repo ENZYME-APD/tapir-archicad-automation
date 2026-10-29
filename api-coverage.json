@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-29 08:29 UTC",
+ "generatedAt": "2026-10-29 08:44 UTC",
  "versions": [
   25,
   26,
@@ -7515,6 +7515,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1629,
+     "title": "ModifySlabs: report a floor fill origin or matrix that Archicad ignored (#662)"
+    },
+    {
      "number": 1618,
      "title": "SetDetailsOfElements: say why Archicad refused the element (hidden or locked layer)"
     },
@@ -8194,6 +8198,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1629,
+     "title": "ModifySlabs: report a floor fill origin or matrix that Archicad ignored (#662)"
+    },
     {
      "number": 1588,
      "title": "Keep Label/Text widthFactor and charSpaceFactor on create and content changes"
@@ -29098,6 +29106,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1629,
+     "title": "ModifySlabs: report a floor fill origin or matrix that Archicad ignored (#662)"
+    },
+    {
      "number": 1618,
      "title": "SetDetailsOfElements: say why Archicad refused the element (hidden or locked layer)"
     },
@@ -45939,6 +45951,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1629,
+     "title": "ModifySlabs: report a floor fill origin or matrix that Archicad ignored (#662)"
+    },
     {
      "number": 1624,
      "title": "GetAttributesByType: return the attribute folder path (replaces #1026)"
