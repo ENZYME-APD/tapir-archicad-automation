@@ -994,7 +994,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetUserDataOfGroupsCommand> (
             elementGroupingCommands, "1.7.2",
-            "Gets the user data an add-on attached to each given group: its version, platform sign, flags and bytes (base64 encoded). Returns an error for groups that have no user data."
+            "Gets the user data an add-on attached to each given group: its version, platform sign, flags and bytes (base64 encoded), and, when its version is 1 (the layout SetUserDataOfGroups writes), its key-value pairs. Returns an error for groups that have no user data."
+        );
+        err |= RegisterCommand<SetUserDataOfGroupsCommand> (
+            elementGroupingCommands, "1.7.3",
+            "Stores string values under keys in the user data of groups, for scripts to keep their own state on a group. The given pairs are merged into what each group already holds: a key that exists gets the new value, other keys are left as they are, and the keys listed in keysToDelete are removed. Prefix the keys with the script's name so that scripts do not overwrite each other's data. User data in another layout is left unchanged and reported as an error. One undo step per call."
         );
         err |= RegisterCommand<GetSuspendGroupsModeCommand> (
             elementGroupingCommands, "1.5.6",
@@ -1456,6 +1460,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<MoveGraphicOverrideRulesCommand> (
             attributeCommands, "1.7.3",
             "Moves graphic override rules to another rule group, or to another place in their own group. Available from Archicad 27."
+        );
+        err |= RegisterCommand<GetUserDataOfAttributesCommand> (
+            attributeCommands, "1.7.3",
+            "Reads the key-value pairs stored on attributes by SetUserDataOfAttributes. An attribute without user data returns no pairs; one holding user data in another layout returns an error."
+        );
+        err |= RegisterCommand<SetUserDataOfAttributesCommand> (
+            attributeCommands, "1.7.3",
+            "Stores string values under keys in the user data of attributes, for scripts to keep their own state on an attribute. The given pairs are merged into what each attribute already holds: a key that exists gets the new value, other keys are left as they are, and the keys listed in keysToDelete are removed. Prefix the keys with the script's name so that scripts do not overwrite each other's data. User data in another layout is left unchanged and reported as an error. Archicad does not record this change as an undo step, so Undo does not revert it."
+        );
+        err |= RegisterCommand<DeleteUserDataOfAttributesCommand> (
+            attributeCommands, "1.7.3",
+            "Removes the user data of attributes, every key at once. Archicad does not record this change as an undo step, so Undo does not revert it."
         );
         AddCommandGroup (attributeCommands);
     }

@@ -175,6 +175,9 @@ inline GSErrCode ACAPI_Navigator_ChangeLayoutSets (const API_LayoutInfo* layoutI
 #define ACAPI_Grouping_GetGroupedElems      ACAPI_ElementGroup_GetGroupedElems
 #define ACAPI_Grouping_GetAllGroupedElems   ACAPI_ElementGroup_GetAllGroupedElems
 #define ACAPI_Grouping_GetUserData          ACAPI_ElementGroup_GetUserData
+#define ACAPI_Grouping_SetUserData          ACAPI_ElementGroup_SetUserData
+#define ACAPI_UserData_GetUserData          ACAPI_Attribute_GetUserData
+#define ACAPI_UserData_SetUserData          ACAPI_Attribute_SetUserData
 #define ACAPI_Grouping_Tool                 ACAPI_Element_Tool
 
 #define ACAPI_ProjectSetting_GetPreferences(par1, par2) ACAPI_Environment (APIEnv_GetPreferencesID, par1, (void*)par2)

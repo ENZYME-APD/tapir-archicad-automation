@@ -12038,6 +12038,41 @@
             "groupId"
         ]
     },
+    "UserDataPair": {
+        "type": "object",
+        "description": "A string value stored under a key in user data.",
+        "properties": {
+            "key": {
+                "type": "string",
+                "description": "The key of the value. Scripts should prefix their keys (for example 'myscript.databaseId') so that different scripts do not overwrite each other's data.",
+                "minLength": 1
+            },
+            "value": {
+                "type": "string",
+                "description": "The stored value: any text, for example an id, a timestamp or a JSON document the script encodes itself."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "key",
+            "value"
+        ]
+    },
+    "UserDataPairs": {
+        "type": "array",
+        "description": "Key-value pairs stored in user data.",
+        "items": {
+            "$ref": "#/UserDataPair"
+        }
+    },
+    "UserDataKeysToDelete": {
+        "type": "array",
+        "description": "The keys to remove from the user data. A key that is not stored is ignored. Applied after pairs.",
+        "items": {
+            "type": "string",
+            "minLength": 1
+        }
+    },
     "ElementsWrapper": {
         "type": "object",
         "description": "A list of elements wrapped in an object.",
