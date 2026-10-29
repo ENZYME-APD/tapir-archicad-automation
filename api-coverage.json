@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-29 13:20 UTC",
+ "generatedAt": "2026-10-29 14:11 UTC",
  "versions": [
   25,
   26,
@@ -5319,6 +5319,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1634,
+     "title": "IFCFileOperation: storyIndex for merge, so the IFC's storeys no longer follow the active story (#1616)"
+    },
     {
      "number": 1569,
      "title": "RemoveSolidElementLinks: no false failure when the 3D window is active"
@@ -18297,6 +18301,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1634,
+     "title": "IFCFileOperation: storyIndex for merge, so the IFC's storeys no longer follow the active story (#1616)"
+    },
+    {
      "number": 1632,
      "title": "SetStories: set every story's level directly with SetElevation"
     },
@@ -18492,6 +18500,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1634,
+     "title": "IFCFileOperation: storyIndex for merge, so the IFC's storeys no longer follow the active story (#1616)"
+    },
     {
      "number": 1606,
      "title": "Add CreateRailings and the Railing case of GetDetailsOfElements"
@@ -22773,6 +22785,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1634,
+     "title": "IFCFileOperation: storyIndex for merge, so the IFC's storeys no longer follow the active story (#1616)"
+    },
+    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
@@ -22878,7 +22894,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1634,
+     "title": "IFCFileOperation: storyIndex for merge, so the IFC's storeys no longer follow the active story (#1616)"
+    }
+   ],
    "issues": []
   },
   {
@@ -22902,6 +22923,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1634,
+     "title": "IFCFileOperation: storyIndex for merge, so the IFC's storeys no longer follow the active story (#1616)"
+    },
     {
      "number": 1584,
      "title": "[3/4] DeleteGhostRecords, HighlightElements on Archicad 25, GetDetailsOfElements for elements of other databases"
@@ -44816,6 +44841,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1634,
+     "title": "IFCFileOperation: storyIndex for merge, so the IFC's storeys no longer follow the active story (#1616)"
+    },
     {
      "number": 1630,
      "title": "CreateClassificationSystems/Items: one result per input, and the new ids"
