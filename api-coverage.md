@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 57 % | 82 | 39 | 8 | 13 | 3 | 19 |  | 57 |
 | C++ API (ACAPI::, IFCAPI::) | 78 % | 1436 | 679 | 450 | 274 | 32 | 1 |  | 391 |
 
-Archicad 25–30 DevKits; updated 2026-10-29 11:06 UTC.
+Archicad 25–30 DevKits; updated 2026-10-29 11:58 UTC.
 
 | | Status |
 |---|---|
@@ -1001,7 +1001,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 ## ProjectSetting
 
 - ✅ `ACAPI_ProjectSetting_ChangeProjectNotes` – Changes the data of the 'Project Info' dialog. <sub>(was `APIEnv_ChangeProjectNotesID`)</sub>
-- ✅ `ACAPI_ProjectSetting_ChangeStorySettings` – Modifies the story structure. <sub>(was `APIEnv_ChangeStorySettingsID`)</sub> — [#1606](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1606 "Add CreateRailings and the Railing case of GetDetailsOfElements"), [#900](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/900 "UpdateZones: optional list of Zones to update instead of the current selection")
+- ✅ `ACAPI_ProjectSetting_ChangeStorySettings` – Modifies the story structure. <sub>(was `APIEnv_ChangeStorySettingsID`)</sub> — [#1632](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1632 "SetStories: set every story's level directly with SetElevation"), [#1606](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1606 "Add CreateRailings and the Railing case of GetDetailsOfElements"), [#900](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/900 "UpdateZones: optional list of Zones to update instead of the current selection")
 - 🚧 `ACAPI_ProjectSetting_GetExportTolerance` – Returns information on curve tracing parameters. <sub>(was `APIEnv_GetExportToleranceID`)</sub> — [#1359](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1359 "[2/6] Add GetExportTolerance and Get/SetLast3DDefaultLevels commands")
 - 🚧 `ACAPI_ProjectSetting_GetLast3DDefLevels` – Retrieves the 3D default levels for the construction elems. <sub>(was `ACAPI_Database_GetLast3DDefLevels`, `APIDb_GetLast3DDefLevelsID`)</sub> — [#1359](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1359 "[2/6] Add GetExportTolerance and Get/SetLast3DDefaultLevels commands")
 - 🚧 `ACAPI_ProjectSetting_GetOffset` – Returns the offset of the origin of the virtual coordinate system. <sub>(was `APIDb_GetOffsetID`)</sub> — [#1123](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1123 "Add GetCoordinateOrigins command (virtual origin offset and user origin)"), [#1117](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1117 "Expose ACAPI_ProjectSetting_GetOffset and ACAPI_Database_GetLocOrigo (virtual origin offset and user origin)")
