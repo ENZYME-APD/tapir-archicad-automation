@@ -708,6 +708,11 @@ inline GSErrCode ACAPI_Navigator_GetLayoutBook (API_LayoutBook* book)
     return ACAPI_Database (APIDb_GetLayoutBookID, book);
 }
 
+inline GSErrCode ACAPI_Drawing_GetDrawingLink (const API_Guid* guid, API_DrawingLinkInfo* drawingLinkInfo)
+{
+    return ACAPI_Database (APIDb_GetDrawingLinkID, (void*) guid, drawingLinkInfo);
+}
+
 // The ghost story settings of the floor plan (APIEnv_GetGhostStorySettingsID) and the
 // ghost record of a database: before AC27 all four are ACAPI_Environment functions
 // (APIEnv_GetGhostRecordID and its change/create pair).
