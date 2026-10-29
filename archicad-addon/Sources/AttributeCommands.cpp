@@ -1017,7 +1017,10 @@ GS::ObjectState GetFillsCommand::Execute (const GS::ObjectState& parameters, GS:
                 }
                 if (wantsField.Wants ("symbolSolidFills") && attr.filltype.subType == APIFill_Symbol && fillDefs.sfill_Items.sfill_SolidFills != nullptr) {
                     // The polygons' coordinates, contour ends and arcs are stored one polygon after the
-                    // other in three shared handles; each polygon gets its own slices, unchanged.
+                    // other in three shared handles, each polygon in the layout of an element polygon:
+                    // nCoords + 1 coordinates and nSubPolys + 1 contour ends, slot 0 unused (0).
+                    // Slot 0 is skipped, so each polygon reads as closed contours with 1-based ends,
+                    // like coordinates/subPolygons elsewhere in Tapir.
                     const auto& items = fillDefs.sfill_Items;
                     Int32 count = (Int32) (BMGetHandleSize ((GSHandle) items.sfill_SolidFills) / sizeof (API_Polygon));
                     count = GS::Min (count, attr.filltype.filNumb);
@@ -1032,19 +1035,19 @@ GS::ObjectState GetFillsCommand::Execute (const GS::ObjectState& parameters, GS:
                         const API_Polygon& polygon = (*items.sfill_SolidFills)[i];
                         GS::ObjectState solidFill;
                         const auto& coordinatesList = solidFill.AddList<GS::ObjectState> ("coordinates");
-                        for (Int32 j = 0; j < polygon.nCoords && coordOffset + j < coordCount; ++j) {
+                        for (Int32 j = 1; j <= polygon.nCoords && coordOffset + j < coordCount; ++j) {
                             coordinatesList (Create2DCoordinateObjectState ((*items.sfill_FillCoords)[coordOffset + j]));
                         }
                         const auto& subPolygonsList = solidFill.AddList<Int32> ("subPolygons");
-                        for (Int32 j = 0; j < polygon.nSubPolys && subPolyOffset + j < subPolyCount; ++j) {
+                        for (Int32 j = 1; j <= polygon.nSubPolys && subPolyOffset + j < subPolyCount; ++j) {
                             subPolygonsList ((*items.sfill_SubPolys)[subPolyOffset + j]);
                         }
                         const auto& arcsList = solidFill.AddList<GS::ObjectState> ("arcs");
                         for (Int32 j = 0; j < polygon.nArcs && arcOffset + j < arcCount; ++j) {
                             arcsList (CreatePolyArcObjectState ((*items.sfill_PolyArcs)[arcOffset + j]));
                         }
-                        coordOffset += polygon.nCoords;
-                        subPolyOffset += polygon.nSubPolys;
+                        coordOffset += polygon.nCoords + 1;
+                        subPolyOffset += polygon.nSubPolys + 1;
                         arcOffset += polygon.nArcs;
                         solidFillsList (solidFill);
                     }
@@ -4828,7 +4831,8 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
         }
 
         // Filled polygons of the symbol (e.g. the solid parts of an insulation pattern): written back
-        // into the three shared handles in the same order GetFills read them from.
+        // into the three shared handles in the same order and layout GetFills reads them from
+        // (slot 0 of each polygon's coordinates and contour ends stays unused, i.e. 0).
         GS::Array<GS::ObjectState> symbolSolidFills;
         if (data.Get ("symbolSolidFills", symbolSolidFills)) {
             const UInt32 nItems = symbolSolidFills.GetSize ();
@@ -4853,8 +4857,8 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
                     symbolSolidFills[i].Get ("coordinates", coordinates[i]);
                     symbolSolidFills[i].Get ("subPolygons", subPolygons[i]);
                     symbolSolidFills[i].Get ("arcs", arcs[i]);
-                    totalCoords += coordinates[i].GetSize ();
-                    totalSubPolys += subPolygons[i].GetSize ();
+                    totalCoords += coordinates[i].GetSize () + 1;
+                    totalSubPolys += subPolygons[i].GetSize () + 1;
                     totalArcs += arcs[i].GetSize ();
                 }
 
@@ -4878,10 +4882,10 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
                     polygon.nSubPolys = (Int32) subPolygons[i].GetSize ();
                     polygon.nArcs = (Int32) arcs[i].GetSize ();
                     for (UInt32 j = 0; j < coordinates[i].GetSize (); ++j) {
-                        (*fillDefs.sfill_Items.sfill_FillCoords)[coordOffset + j] = Get2DCoordinateFromObjectState (coordinates[i][j]);
+                        (*fillDefs.sfill_Items.sfill_FillCoords)[coordOffset + 1 + j] = Get2DCoordinateFromObjectState (coordinates[i][j]);
                     }
                     for (UInt32 j = 0; j < subPolygons[i].GetSize (); ++j) {
-                        (*fillDefs.sfill_Items.sfill_SubPolys)[subPolyOffset + j] = subPolygons[i][j];
+                        (*fillDefs.sfill_Items.sfill_SubPolys)[subPolyOffset + 1 + j] = subPolygons[i][j];
                     }
                     for (UInt32 j = 0; j < arcs[i].GetSize (); ++j) {
                         API_PolyArc& arc = (*fillDefs.sfill_Items.sfill_PolyArcs)[arcOffset + j];
@@ -4889,8 +4893,8 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
                         arcs[i][j].Get ("endIndex", arc.endIndex);
                         arcs[i][j].Get ("arcAngle", arc.arcAngle);
                     }
-                    coordOffset += coordinates[i].GetSize ();
-                    subPolyOffset += subPolygons[i].GetSize ();
+                    coordOffset += coordinates[i].GetSize () + 1;
+                    subPolyOffset += subPolygons[i].GetSize () + 1;
                     arcOffset += arcs[i].GetSize ();
                 }
             }

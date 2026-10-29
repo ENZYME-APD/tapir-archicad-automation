@@ -1407,7 +1407,7 @@
     },
     "FillSymbolSolidFill": {
         "type": "object",
-        "description": "A filled polygon of a symbol fill's pattern, as Archicad stores it (sfill_SolidFills). The three arrays are the polygon's slices of sfill_FillCoords, sfill_SubPolys and sfill_PolyArcs, unchanged, so the indices follow Archicad's own polygon conventions. Read them with GetFills and pass them back to CreateFills as they are.",
+        "description": "A filled polygon of a symbol fill's pattern (sfill_SolidFills with sfill_FillCoords, sfill_SubPolys and sfill_PolyArcs), in the same form as other polygons in Tapir: closed contours, the first point repeated at the end of each contour.",
         "properties": {
             "coordinates": {
                 "type": "array",
@@ -1417,7 +1417,7 @@
             },
             "subPolygons": {
                 "type": "array",
-                "description": "End indices of the polygon's contours in coordinates.",
+                "description": "1-based index of the last coordinate of each contour (the outline first, then the holes).",
                 "items": {
                     "type": "integer"
                 }

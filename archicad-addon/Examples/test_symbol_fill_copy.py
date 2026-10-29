@@ -15,7 +15,8 @@ def run(cmd, params=None):
 
 
 def strip(fill):
-    return {k: v for k, v in fill.items() if k not in ('attributeId', 'index', 'name')}
+    # CreateFills stores an unused texture size of 0 as 1 for every new non-image fill; not a symbol fill difference.
+    return {k: v for k, v in fill.items() if k not in ('attributeId', 'index', 'name', 'texture')}
 
 
 fills = run('GetAttributesByType', {'attributeType': 'Fill'})['attributes']
@@ -42,7 +43,7 @@ for original in symbols:
           f"{len(original.get('symbolSolidFills', []))} solid polygons")
     if not same:
         for k in sorted(set(original) | set(copy)):
-            if k not in ('attributeId', 'index', 'name') and original.get(k) != copy.get(k):
+            if k not in ('attributeId', 'index', 'name', 'texture') and original.get(k) != copy.get(k):
                 print(f'      {k}: original={original.get(k)!r} copy={copy.get(k)!r}')
 
 if copies and not KEEP_COPIES:
