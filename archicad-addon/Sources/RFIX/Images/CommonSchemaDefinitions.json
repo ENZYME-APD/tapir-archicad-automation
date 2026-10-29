@@ -3684,6 +3684,21 @@
             "FromTopLeftToBottomRight"
         ]
     },
+    "DrawingAnchorPoint": {
+        "type": "string",
+        "description": "The node of a Drawing's box, on a 3x3 grid, that is placed at its pos on the layout when useOwnOrigoAsAnchor is false (API_DrawingType::anchorPoint).",
+        "enum": [
+            "TopLeft",
+            "TopCenter",
+            "TopRight",
+            "MiddleLeft",
+            "Center",
+            "MiddleRight",
+            "BottomLeft",
+            "BottomCenter",
+            "BottomRight"
+        ]
+    },
     "BeamAnchorPoint": {
         "type": "string",
         "description": "Anchor point of the beam cross section on a 3x3 grid.",
@@ -9536,7 +9551,19 @@
         "properties": {
             "pos": {
                 "$ref": "#/Coordinate2D",
-                "description": "Position of the drawing's reference point on the layout."
+                "description": "Position of the drawing's reference point on the layout: its own origin when useOwnOrigoAsAnchor is true, otherwise the anchorPoint node of its box."
+            },
+            "useOwnOrigoAsAnchor": {
+                "type": "boolean",
+                "description": "Whether the drawing is placed by its own origin instead of a node of its box (Drawing Settings > Anchor Point > Drawing Origin)."
+            },
+            "anchorPoint": {
+                "$ref": "#/DrawingAnchorPoint",
+                "description": "The node of the drawing's box placed at pos when useOwnOrigoAsAnchor is false."
+            },
+            "offset": {
+                "$ref": "#/Coordinate2D",
+                "description": "API_DrawingType::offset, read-only: equal to pos when the drawing is clipped, otherwise pos minus the coordinate of the anchor."
             },
             "angle": {
                 "type": "number",
@@ -9620,6 +9647,9 @@
         "additionalProperties": false,
         "required": [
             "pos",
+            "useOwnOrigoAsAnchor",
+            "anchorPoint",
+            "offset",
             "angle",
             "ratio",
             "drawingScale",
@@ -11259,7 +11289,15 @@
         "properties": {
             "pos": {
                 "$ref": "#/Coordinate2D",
-                "description": "Position of the drawing's reference point on the layout."
+                "description": "Position of the drawing's reference point on the layout: its own origin when useOwnOrigoAsAnchor is true, otherwise the anchorPoint node of its box."
+            },
+            "useOwnOrigoAsAnchor": {
+                "type": "boolean",
+                "description": "Place the drawing by its own origin instead of a node of its box."
+            },
+            "anchorPoint": {
+                "$ref": "#/DrawingAnchorPoint",
+                "description": "The node of the drawing's box placed at pos when useOwnOrigoAsAnchor is false."
             },
             "angle": {
                 "type": "number",

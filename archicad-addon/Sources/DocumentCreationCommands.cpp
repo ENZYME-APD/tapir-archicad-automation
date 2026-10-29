@@ -1030,7 +1030,18 @@ GS::Optional<GS::UniString> CreateDrawingsCommand::GetInputParametersSchema () c
                             "$ref": "#/DrawingNameType",
                             "description": "Defaults to CustomName when name is given, otherwise to the Drawing tool's current default."
                         },
-                        "position": { "$ref": "#/Coordinate2D" },
+                        "position": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "Where the Drawing's reference point is placed on the layout: its own origin when useOwnOrigoAsAnchor is true, otherwise the anchorPoint node of its box."
+                        },
+                        "useOwnOrigoAsAnchor": {
+                            "type": "boolean",
+                            "description": "Place the Drawing by its own origin instead of a node of its box. Defaults to the Drawing tool's current default."
+                        },
+                        "anchorPoint": {
+                            "$ref": "#/DrawingAnchorPoint",
+                            "description": "The node of the Drawing's box placed at position when useOwnOrigoAsAnchor is false. Defaults to Center."
+                        },
                         "scale": {
                             "type": "number",
                             "exclusiveMinimum": 0.0,
@@ -1147,7 +1158,11 @@ static GS::ObjectState CreateOneDrawing (const GS::ObjectState& item)
     } else if (hasName) {
         element.drawing.nameType = APIName_CustomName;
     }
-    element.drawing.anchorPoint = APIAnc_MM;
+    // Without an explicit anchorPoint the historic Center is kept; useOwnOrigoAsAnchor otherwise
+    // comes from the Drawing tool defaults, so callers who need a known reference point give it.
+    GS::UniString anchorPointStr;
+    element.drawing.anchorPoint = item.Get ("anchorPoint", anchorPointStr) ? AnchorIdFromString (anchorPointStr, APIAnc_MM) : APIAnc_MM;
+    item.Get ("useOwnOrigoAsAnchor", element.drawing.useOwnOrigoAsAnchor);
     element.drawing.pos = Get2DCoordinateFromObjectState (*item.Get ("position"));
     if (!item.Get ("scale", element.drawing.ratio)) {
         element.drawing.ratio = 1.0;
@@ -1483,6 +1498,8 @@ GS::ObjectState ChangeDrawingLinkCommand::Execute (const GS::ObjectState& parame
             newDrawingItem.Add ("name", GS::UniString (oldElement.drawing.name));
             newDrawingItem.Add ("nameType", DrawingNameTypeToString (oldElement.drawing.nameType));
             newDrawingItem.Add ("position", Create2DCoordinateObjectState (oldElement.drawing.pos));
+            newDrawingItem.Add ("useOwnOrigoAsAnchor", oldElement.drawing.useOwnOrigoAsAnchor);
+            newDrawingItem.Add ("anchorPoint", AnchorIdToString (oldElement.drawing.anchorPoint));
             newDrawingItem.Add ("scale", oldElement.drawing.ratio);
             newDrawingItem.Add ("angle", oldElement.drawing.angle);
             newDrawingItem.Add ("drawingScale", oldElement.drawing.drawingScale);

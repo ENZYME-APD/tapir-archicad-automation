@@ -1883,6 +1883,11 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
 
             case API_DrawingID: {
                 typeSpecificDetails.Add ("pos",           Create2DCoordinateObjectState (elem.drawing.pos));
+                // pos is where the reference point lands on the layout: the drawing's own origin
+                // when useOwnOrigoAsAnchor is set, otherwise the anchorPoint node of its box.
+                typeSpecificDetails.Add ("useOwnOrigoAsAnchor", elem.drawing.useOwnOrigoAsAnchor);
+                typeSpecificDetails.Add ("anchorPoint",   AnchorIdToString (elem.drawing.anchorPoint));
+                typeSpecificDetails.Add ("offset",        Create2DCoordinateObjectState (API_Coord { elem.drawing.offset.x, elem.drawing.offset.y }));
                 typeSpecificDetails.Add ("angle",         elem.drawing.angle);
                 typeSpecificDetails.Add ("ratio",         elem.drawing.ratio);
                 typeSpecificDetails.Add ("drawingScale",  elem.drawing.drawingScale);
@@ -2535,6 +2540,14 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         if (posState != nullptr) {
                             elem.drawing.pos = Get2DCoordinateFromObjectState (*posState);
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, pos);
+                        }
+                        if (typeSpecificDetails->Get ("useOwnOrigoAsAnchor", elem.drawing.useOwnOrigoAsAnchor)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, useOwnOrigoAsAnchor);
+                        }
+                        GS::UniString anchorPointStr;
+                        if (typeSpecificDetails->Get ("anchorPoint", anchorPointStr)) {
+                            elem.drawing.anchorPoint = AnchorIdFromString (anchorPointStr, elem.drawing.anchorPoint);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, anchorPoint);
                         }
                         const GS::ObjectState* modelOffsetState = typeSpecificDetails->Get ("modelOffset");
                         if (modelOffsetState != nullptr) {
