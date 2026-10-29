@@ -2484,6 +2484,11 @@ GS::ObjectState SaveCurrentWindowAsImageCommand::Execute (const GS::ObjectState&
     if (windowErr != NoError) {
         return CreateErrorResponse (windowErr, "Failed to get the current window.");
     }
+    // In a master layout window the picture save writes the floor plan instead,
+    // and ACAPI_View_GetZoom reports the floor plan's zoom (issue #1478).
+    if (currentWindow.typeID == APIWind_MasterLayoutID) {
+        return CreateErrorResponse (APIERR_BADDATABASE, "The current window is a master layout, which cannot be saved as an image: Archicad would write another window instead. Activate a layout that uses this master layout and save that one (see ChangeWindow).");
+    }
     const bool view2D = currentWindow.typeID != APIWind_3DModelID;
 
     API_FileSavePars fileSavePars = {};
