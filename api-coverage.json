@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-29 16:01 UTC",
+ "generatedAt": "2026-10-29 19:23 UTC",
  "versions": [
   25,
   26,
@@ -4073,6 +4073,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1638,
+     "title": "SetProjectNotes: no longer duplicates architect and draftsmen (#1559)"
+    },
+    {
      "number": 1012,
      "title": "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30"
     },
@@ -4218,6 +4222,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1638,
+     "title": "SetProjectNotes: no longer duplicates architect and draftsmen (#1559)"
+    },
     {
      "number": 674,
      "title": "Verify project info field create/delete instead of trusting NoError (#667)"
@@ -5034,6 +5042,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1637,
+     "title": "Add GetAllClassificationSystems Tapir command"
+    },
+    {
+     "number": 1636,
+     "title": "Add GetClassificationSystems command"
+    },
     {
      "number": 1052,
      "title": "Graphic override criterion: library part element types, new fields and operators (on top of #994)"
@@ -18399,7 +18415,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1638,
+     "title": "SetProjectNotes: no longer duplicates architect and draftsmen (#1559)"
+    }
+   ],
    "issues": []
   },
   {
@@ -44973,6 +44994,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1638,
+     "title": "SetProjectNotes: no longer duplicates architect and draftsmen (#1559)"
+    },
+    {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     },
@@ -65791,6 +65816,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1637,
+     "title": "Add GetAllClassificationSystems Tapir command"
+    },
+    {
+     "number": 1636,
+     "title": "Add GetClassificationSystems command"
+    },
+    {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     },
@@ -66104,6 +66137,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1637,
+     "title": "Add GetAllClassificationSystems Tapir command"
+    },
+    {
+     "number": 1636,
+     "title": "Add GetClassificationSystems command"
+    },
     {
      "number": 1583,
      "title": "[2/4] Add GetIFCClassificationReferencesOfElements"
