@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-29 22:05 UTC",
+ "generatedAt": "2026-10-29 22:24 UTC",
  "versions": [
   25,
   26,
@@ -16104,6 +16104,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1643,
+     "title": "DeleteNavigatorItems: say why an item was not deleted (replaces #1419)"
+    },
     {
      "number": 1419,
      "title": "Navigator: name the refused item type on delete, verify MoveNavigatorItem's position"
@@ -36741,10 +36745,6 @@
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
-     "number": 1564,
-     "title": "GetDetailsOfElements: read a Stair's elevation and baseline in model coordinates"
-    },
-    {
      "number": 1542,
      "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
     },
@@ -53889,10 +53889,6 @@
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
-     "number": 1564,
-     "title": "GetDetailsOfElements: read a Stair's elevation and baseline in model coordinates"
-    },
-    {
      "number": 1542,
      "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
     },
@@ -58632,10 +58628,6 @@
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    },
-    {
-     "number": 1564,
-     "title": "GetDetailsOfElements: read a Stair's elevation and baseline in model coordinates"
     },
     {
      "number": 1542,
