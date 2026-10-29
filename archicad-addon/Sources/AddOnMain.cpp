@@ -2334,6 +2334,46 @@ GSErrCode Initialize (void)
             analyticalCommands, "1.7.3",
             "Retrieves the analytical member type (Beam, Column, Roof, Slab, Wall or Unknown) of the given elements."
         );
+        err |= RegisterCommand<GetAnalyticalLoadGroupsCommand> (
+            analyticalCommands, "1.7.3",
+            "Retrieves the structural analysis load groups of the project with all their fields."
+        );
+        err |= RegisterCommand<GetAnalyticalLoadCasesCommand> (
+            analyticalCommands, "1.7.3",
+            "Retrieves the structural analysis load cases of the given load group, or of the project when no load group is given, with all their fields."
+        );
+        err |= RegisterCommand<GetAnalyticalLoadCombinationsCommand> (
+            analyticalCommands, "1.7.3",
+            "Retrieves the structural analysis load combinations of the project with all their fields and load factors."
+        );
+        err |= RegisterCommand<CreateAnalyticalLoadGroupsCommand> (
+            analyticalCommands, "1.7.3",
+            "Creates structural analysis load groups in one undo step and returns their identifiers."
+        );
+        err |= RegisterCommand<CreateAnalyticalLoadCasesCommand> (
+            analyticalCommands, "1.7.3",
+            "Creates structural analysis load cases in the given load groups in one undo step and returns their identifiers."
+        );
+        err |= RegisterCommand<CreateAnalyticalLoadCombinationsCommand> (
+            analyticalCommands, "1.7.3",
+            "Creates structural analysis load combinations, optionally with their load factors, in one undo step and returns their identifiers. The combination type is available from Archicad 27."
+        );
+        err |= RegisterCommand<DeleteAnalyticalLoadGroupsCommand> (
+            analyticalCommands, "1.7.3",
+            "Deletes the given structural analysis load groups in one undo step."
+        );
+        err |= RegisterCommand<DeleteAnalyticalLoadCasesCommand> (
+            analyticalCommands, "1.7.3",
+            "Deletes the given structural analysis load cases in one undo step."
+        );
+        err |= RegisterCommand<DeleteAnalyticalLoadCombinationsCommand> (
+            analyticalCommands, "1.7.3",
+            "Deletes the given structural analysis load combinations in one undo step."
+        );
+        err |= RegisterCommand<AddLoadCasesToLoadCombinationCommand> (
+            analyticalCommands, "1.7.3",
+            "Adds load cases with their factors to the given structural analysis load combination in one undo step."
+        );
         AddCommandGroup (analyticalCommands);
     }
 
