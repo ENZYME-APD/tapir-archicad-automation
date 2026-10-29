@@ -7060,7 +7060,7 @@ GSErrCode GetElementDatabases (GS::Array<API_DatabaseInfo>& databases)
 void AddDatabaseOnce (GS::Array<API_DatabaseInfo>& databases, const API_DatabaseInfo& database)
 {
     for (const API_DatabaseInfo& listed : databases) {
-        if (listed.databaseUnId == database.databaseUnId) {
+        if (listed.databaseUnId.elemSetId == database.databaseUnId.elemSetId) {
             return;
         }
     }
