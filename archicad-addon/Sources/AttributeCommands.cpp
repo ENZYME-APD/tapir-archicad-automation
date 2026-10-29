@@ -6869,3 +6869,644 @@ GS::ObjectState DeleteUserDataOfAttributesCommand::Execute (const GS::ObjectStat
 
     return response;
 }
+
+ReindexLayersCommand::ReindexLayersCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ReindexLayersCommand::GetName () const
+{
+    return "ReindexLayers";
+}
+
+GS::Optional<GS::UniString> ReindexLayersCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "layers": {
+                "type": "array",
+                "description": "The layers to move to a new index, handled in the given order.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "attributeId": {
+                            "$ref": "#/AttributeId",
+                            "description": "The layer to move."
+                        },
+                        "newIndex": {
+                            "type": "integer",
+                            "description": "The index the layer gets. It must not be used by another layer. Index 1 (the Archicad Layer) cannot be used or moved.",
+                            "minimum": 2
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "attributeId",
+                        "newIndex"
+                    ]
+                }
+            },
+            "dryRun": {
+                "type": "boolean",
+                "description": "Only list what would change (the elements on each layer, the tools whose default layer it is, the elements that block the move) without changing anything. The default is false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "layers"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ReindexLayersCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "layers": {
+                "type": "array",
+                "description": "One item per requested layer, in the same order.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "attributeId": {
+                                    "$ref": "#/AttributeId",
+                                    "description": "The layer at its new index. Archicad cannot renumber an attribute in place, so this is a new attribute with a new id; with dryRun it is the layer's current id."
+                                },
+                                "oldIndex": {
+                                    "type": "integer"
+                                },
+                                "newIndex": {
+                                    "type": "integer"
+                                },
+                                "elements": {
+                                    "$ref": "#/Elements",
+                                    "description": "The elements on the layer, in the floor plan and in every section, elevation, interior elevation, detail, worksheet, 3D document, layout and master layout. Moved to the new layer unless dryRun is true. The model elements that sections, elevations, interior elevations and 3D documents show are not listed (see viewsToRebuild)."
+                                },
+                                "blockedElements": {
+                                    "$ref": "#/Elements",
+                                    "description": "Only with dryRun: elements on the layer that cannot be moved, because they come from a hotlinked module. Without dryRun such a layer is not moved."
+                                },
+                                "toolDefaults": {
+                                    "type": "array",
+                                    "description": "The element types whose tool default is on this layer. They are set to the new layer unless dryRun is true.",
+                                    "items": {
+                                        "$ref": "#/ElementType"
+                                    }
+                                },
+                                "viewsToRebuild": {
+                                    "$ref": "#/Databases",
+                                    "description": "The sections, elevations, interior elevations and 3D documents that show elements of the layer. The model elements they show are deleted with the old layer and come back on the new layer when the view is rebuilt: Archicad does that when the view is opened, unless it is set to be rebuilt manually. To rebuild one at once, call ChangeWindow with its databaseId and then RebuildCurrentDatabase."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "attributeId",
+                                "oldIndex",
+                                "newIndex",
+                                "elements",
+                                "toolDefaults",
+                                "viewsToRebuild"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "layers"
+        ]
+    })";
+}
+
+#ifdef ServerMainVers_2700
+
+namespace {
+
+struct ElementInDatabase {
+    API_DatabaseInfo database;
+    API_Guid         guid;
+};
+
+// The floor plan and every database of the views and layouts: together they hold every element that has a layer.
+GSErrCode GetElementDatabases (GS::Array<API_DatabaseInfo>& databases)
+{
+    API_DatabaseInfo floorPlan = {};
+    floorPlan.typeID = APIWind_FloorPlanID;
+    GSErrCode err = ACAPI_Window_GetDatabaseInfo (&floorPlan);
+    if (err != NoError) {
+        return err;
+    }
+    databases.Push (floorPlan);
+
+    const struct {
+        API_WindowTypeID typeID;
+        GSErrCode (*getDatabases) (API_DatabaseUnId**, GS::Array<API_DatabaseUnId>*);
+    } databaseTypes[] = {
+        { APIWind_SectionID,           ACAPI_Database_GetSectionDatabases },
+        { APIWind_ElevationID,         ACAPI_Database_GetElevationDatabases },
+        { APIWind_InteriorElevationID, ACAPI_Database_GetInteriorElevationDatabases },
+        { APIWind_DetailID,            ACAPI_Database_GetDetailDatabases },
+        { APIWind_WorksheetID,         ACAPI_Database_GetWorksheetDatabases },
+        { APIWind_DocumentFrom3DID,    ACAPI_Database_GetDocumentFrom3DDatabases },
+        { APIWind_LayoutID,            ACAPI_Database_GetLayoutDatabases },
+        { APIWind_MasterLayoutID,      ACAPI_Database_GetMasterLayoutDatabases }
+    };
+    for (const auto& databaseType : databaseTypes) {
+        GS::Array<API_DatabaseUnId> databaseUnIds;
+        err = databaseType.getDatabases (nullptr, &databaseUnIds);
+        if (err != NoError) {
+            return err;
+        }
+        for (const API_DatabaseUnId& databaseUnId : databaseUnIds) {
+            API_DatabaseInfo database = {};
+            database.typeID = databaseType.typeID;
+            database.databaseUnId = databaseUnId;
+            err = ACAPI_Window_GetDatabaseInfo (&database);
+            if (err != NoError) {
+                return err;
+            }
+            databases.Push (database);
+        }
+    }
+    return NoError;
+}
+
+void AddDatabaseOnce (GS::Array<API_DatabaseInfo>& databases, const API_DatabaseInfo& database)
+{
+    for (const API_DatabaseInfo& listed : databases) {
+        if (listed.databaseUnId == database.databaseUnId) {
+            return;
+        }
+    }
+    databases.Push (database);
+}
+
+// Lists the elements on the layer in every database. Any database that cannot be read fails the whole scan,
+// because the scan decides whether the layer may be deleted, and deleting a layer deletes its elements.
+// The model elements shown in a section, elevation, interior elevation or 3D document (API_SectElemID) are not
+// listed: changing their layer reports success but keeps it, and a rebuild of their view recreates them from the
+// element they show, on that element's layer (tested on Archicad 29). Their views are added to sectionElementViews.
+GSErrCode CollectElementsOnLayer (const GS::Array<API_DatabaseInfo>& databases, const API_AttributeIndex& layer, GS::Array<ElementInDatabase>& elements, GS::Array<API_DatabaseInfo>* sectionElementViews = nullptr)
+{
+    elements.Clear ();
+    for (const API_DatabaseInfo& database : databases) {
+        API_DatabaseInfo current = database;
+        GSErrCode err = ACAPI_Database_ChangeCurrentDatabase (&current);
+        if (err != NoError) {
+            return err;
+        }
+        GS::Array<API_Guid> guids;
+        err = ACAPI_Element_GetElemList (API_ZombieElemID, &guids);
+        if (err != NoError) {
+            return err;
+        }
+        for (const API_Guid& guid : guids) {
+            API_Elem_Head head = {};
+            head.guid = guid;
+            if (ACAPI_Element_GetHeader (&head) != NoError || head.layer != layer) {
+                continue;
+            }
+            if (GetElemTypeId (head.type) == API_SectElemID) {
+                if (sectionElementViews != nullptr) {
+                    AddDatabaseOnce (*sectionElementViews, database);
+                }
+                continue;
+            }
+            elements.Push ({ database, guid });
+        }
+    }
+    return NoError;
+}
+
+GSErrCode SetLayerOfElementInDatabase (const ElementInDatabase& element, const API_AttributeIndex& layer)
+{
+    API_DatabaseInfo database = element.database;
+    GSErrCode err = ACAPI_Database_ChangeCurrentDatabase (&database);
+    if (err != NoError) {
+        return err;
+    }
+    API_Element elem = {};
+    elem.header.guid = element.guid;
+    err = ACAPI_Element_Get (&elem);
+    if (err != NoError) {
+        return err;
+    }
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
+    elem.header.layer = layer;
+    return ACAPI_Element_Change (&elem, &mask, nullptr, 0, true);
+}
+
+// Reads a layer with its Unicode name (see GetAttributeName for why the name needs uniStringNamePtr).
+GSErrCode GetLayer (API_Attribute& layer, GS::UniString& name)
+{
+    layer.header.typeID = API_LayerID;
+    layer.header.uniStringNamePtr = &name;
+    return ACAPI_Attribute_Get (&layer);
+}
+
+GSErrCode SetLayerFlags (const API_AttributeIndex& index, GSFlags flags)
+{
+    GS::UniString name;
+    API_Attribute layer = {};
+    layer.header.index = index;
+    GSErrCode err = GetLayer (layer, name);
+    if (err != NoError) {
+        return err;
+    }
+    layer.header.flags = flags;
+    return ACAPI_Attribute_Modify (&layer, nullptr);
+}
+
+GSErrCode DeleteLayer (const API_AttributeIndex& index)
+{
+    API_Attr_Head head = {};
+    head.typeID = API_LayerID;
+    head.index = index;
+    return ACAPI_Attribute_Delete (head);
+}
+
+// A name no layer has, for the placeholders and for the copy until the old layer is gone.
+GS::UniString GetTemporaryLayerName (const GS::UniString& prefix)
+{
+    GS::Guid guid;
+    guid.Generate ();
+    return prefix + " " + guid.ToUniString ();
+}
+
+// Every layer combination gets the same state (hidden, locked, wireframe, intersection group) for the new layer as for the old one.
+GSErrCode CopyLayerStateInCombinations (const API_AttributeIndex& from, const API_AttributeIndex& to)
+{
+    GS::Array<API_Attribute> combinations;
+    GSErrCode err = ACAPI_Attribute_GetAttributesByType (API_LayerCombID, combinations);
+    if (err != NoError) {
+        return err;
+    }
+    for (API_Attribute& listed : combinations) {
+        const API_AttributeIndex combinationIndex = listed.header.index;
+        DisposeAttribute (listed);
+
+        GS::UniString name;
+        API_Attribute combination = {};
+        combination.header.typeID = API_LayerCombID;
+        combination.header.index = combinationIndex;
+        combination.header.uniStringNamePtr = &name;
+        err = ACAPI_Attribute_Get (&combination);
+        if (err != NoError) {
+            return err;
+        }
+        API_AttributeDef def = {};
+        err = ACAPI_Attribute_GetDef (API_LayerCombID, combinationIndex, &def);
+        if (err == NoError && def.layer_statItems != nullptr && def.layer_statItems->ContainsKey (from)) {
+            def.layer_statItems->Put (to, def.layer_statItems->Get (from));
+            combination.layerComb.lNumb = static_cast<Int32> (def.layer_statItems->GetSize ());
+            err = ACAPI_Attribute_Modify (&combination, &def);
+        }
+        ACAPI_DisposeAttrDefsHdls (&def);
+        if (err != NoError) {
+            return err;
+        }
+    }
+    return NoError;
+}
+
+// The element types whose tool default is on the layer. With a new layer, those defaults are set to it.
+GS::Array<API_ElemTypeID> UpdateToolDefaultsOnLayer (const API_AttributeIndex& layer, const GS::Optional<API_AttributeIndex>& newLayer)
+{
+    GS::Array<API_ElemTypeID> types;
+    for (Int32 type = API_FirstElemType; type <= API_LastElemType; ++type) {
+        const API_ElemTypeID typeID = static_cast<API_ElemTypeID> (type);
+        API_Element defaults = {};
+        defaults.header.type = typeID;
+        if (ACAPI_Element_GetDefaults (&defaults, nullptr) != NoError || defaults.header.layer != layer) {
+            continue;
+        }
+        if (newLayer.HasValue ()) {
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+            ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
+            defaults.header.layer = newLayer.Get ();
+            if (ACAPI_Element_ChangeDefaults (&defaults, nullptr, &mask) != NoError) {
+                continue;
+            }
+        }
+        types.Push (typeID);
+    }
+    return types;
+}
+
+// The attribute folder that holds the layer, or no value for the root folder (where a new layer is created).
+GS::Optional<API_AttributeFolder> FindFolderOfLayer (const API_AttributeFolder& folder, const GS::Guid& layerGuid, bool isRoot)
+{
+    API_AttributeFolderContent content;
+    if (ACAPI_Attribute_GetFolderContent (folder, content) != NoError) {
+        return GS::NoValue;
+    }
+    if (content.attributeIds.Contains (layerGuid)) {
+        return isRoot ? GS::Optional<API_AttributeFolder> () : GS::Optional<API_AttributeFolder> (folder);
+    }
+    for (const API_AttributeFolder& subFolder : content.subFolders) {
+        GS::Optional<API_AttributeFolder> found = FindFolderOfLayer (subFolder, layerGuid, false);
+        if (found.HasValue ()) {
+            return found;
+        }
+    }
+    return GS::NoValue;
+}
+
+GS::Array<GS::ObjectState> GetElementIds (const GS::Array<ElementInDatabase>& elements)
+{
+    GS::Array<GS::ObjectState> ids;
+    for (const ElementInDatabase& element : elements) {
+        ids.Push (CreateElementIdObjectState (element.guid));
+    }
+    return ids;
+}
+
+GS::Array<GS::ObjectState> GetDatabaseIds (const GS::Array<API_DatabaseInfo>& databases)
+{
+    GS::Array<GS::ObjectState> ids;
+    for (const API_DatabaseInfo& database : databases) {
+        ids.Push (CreateDatabaseIdObjectState (DatabaseIdResolver::Instance ().GetIdOfDatabase (database)));
+    }
+    return ids;
+}
+
+GS::UniString ListElementGuids (const GS::Array<ElementInDatabase>& elements)
+{
+    GS::UniString list;
+    for (UIndex i = 0; i < elements.GetSize () && i < 5; ++i) {
+        list += (i == 0 ? "" : ", ") + APIGuidToString (elements[i].guid);
+    }
+    if (elements.GetSize () > 5) {
+        list += GS::UniString::Printf (" and %u more", elements.GetSize () - 5);
+    }
+    return list;
+}
+
+// Moves one layer to newIndex, as described in the command's registration. On any failure, everything done so far
+// for this layer is undone, and the old layer with its elements is kept.
+GS::ObjectState ReindexLayer (const GS::Array<API_DatabaseInfo>& databases, const API_Guid& layerGuid, Int32 newIndexValue, bool dryRun)
+{
+    GS::UniString name;
+    API_Attribute oldLayer = {};
+    oldLayer.header.guid = layerGuid;
+    if (GetLayer (oldLayer, name) != NoError) {
+        return CreateErrorResponse (APIERR_BADID, "The layer was not found.");
+    }
+    const API_AttributeIndex oldIndex = oldLayer.header.index;
+    const API_AttributeIndex newIndex = ACAPI_CreateAttributeIndex (newIndexValue);
+    if (GetAttributeIndex (oldIndex) == 1) {
+        return CreateErrorResponse (APIERR_BADPARS, "The Archicad Layer (index 1) cannot be moved.");
+    }
+    if (newIndexValue < 2) {
+        return CreateErrorResponse (APIERR_BADPARS, "newIndex must be 2 or higher: index 1 is the Archicad Layer.");
+    }
+
+    // Archicad gives a new layer the lowest free index, so every free index below newIndex gets a placeholder first.
+    GS::Array<API_Attribute> layers;
+    GSErrCode err = ACAPI_Attribute_GetAttributesByType (API_LayerID, layers);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to list the layers.");
+    }
+    GS::HashSet<Int32> usedIndices;
+    for (API_Attribute& layer : layers) {
+        usedIndices.Add (GetAttributeIndex (layer.header.index));
+        DisposeAttribute (layer);
+    }
+    if (oldIndex != newIndex && usedIndices.Contains (newIndexValue)) {
+        API_Attribute other = {};
+        other.header.index = newIndex;
+        GS::UniString otherName;
+        GetLayer (other, otherName);
+        return CreateErrorResponse (APIERR_ATTREXIST, GS::UniString::Printf ("Index %d is used by the layer '%T'. Move that layer first.", newIndexValue, otherName.ToPrintf ()));
+    }
+
+    GS::Array<ElementInDatabase> elements;
+    GS::Array<API_DatabaseInfo> sectionElementViews;
+    err = CollectElementsOnLayer (databases, oldIndex, elements, &sectionElementViews);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to read the elements of every view and layout, so the layer was not moved.");
+    }
+    GS::Array<ElementInDatabase> blocked;
+    for (const ElementInDatabase& element : elements) {
+        API_DatabaseInfo database = element.database;
+        ACAPI_Database_ChangeCurrentDatabase (&database);
+        API_Elem_Head head = {};
+        head.guid = element.guid;
+        if (ACAPI_Element_GetHeader (&head) == NoError && head.hotlinkGuid != APINULLGuid) {
+            blocked.Push (element);
+        }
+    }
+
+    GS::ObjectState result;
+    result.Add ("oldIndex", GetAttributeIndex (oldIndex));
+    result.Add ("newIndex", newIndexValue);
+
+    if (dryRun || oldIndex == newIndex) {
+        result.Add ("attributeId", CreateGuidObjectState (layerGuid));
+        result.Add ("elements", GetElementIds (elements));
+        if (dryRun) {
+            result.Add ("blockedElements", GetElementIds (blocked));
+        }
+        result.Add ("viewsToRebuild", GetDatabaseIds (dryRun ? sectionElementViews : GS::Array<API_DatabaseInfo> ()));
+        const auto& toolDefaults = result.AddList<GS::UniString> ("toolDefaults");
+        for (API_ElemTypeID typeID : UpdateToolDefaultsOnLayer (oldIndex, GS::NoValue)) {
+            toolDefaults (GetElementTypeNonLocalizedName (typeID));
+        }
+        return result;
+    }
+    if (!blocked.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf ("The layer was not moved: %u of its elements come from a hotlinked module and cannot be moved (%T).", blocked.GetSize (), ListElementGuids (blocked).ToPrintf ()));
+    }
+
+    // Elements on a hidden or locked layer cannot be changed, so the old layer is shown and unlocked while its
+    // elements are moved. Its own flags are put back on every path that keeps it. Archicad keeps these flags per
+    // open window: they are read and written in the current one.
+    const GSFlags oldFlags = oldLayer.header.flags;
+    err = SetLayerFlags (oldIndex, oldFlags & ~(APILay_Hidden | APILay_Locked));
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to show and unlock the layer for the move.");
+    }
+
+    GS::Array<API_AttributeIndex> placeholders;
+    const auto deletePlaceholders = [&] () {
+        for (const API_AttributeIndex& placeholder : placeholders) {
+            DeleteLayer (placeholder);
+        }
+        placeholders.Clear ();
+    };
+    const auto fail = [&] (GSErrCode failErr, const GS::UniString& message) {
+        deletePlaceholders ();
+        SetLayerFlags (oldIndex, oldFlags);
+        return CreateErrorResponse (failErr, message);
+    };
+
+    for (Int32 index = 1; index < newIndexValue; ++index) {
+        if (usedIndices.Contains (index)) {
+            continue;
+        }
+        GS::UniString placeholderName = GetTemporaryLayerName ("Tapir ReindexLayers placeholder");
+        API_Attribute placeholder = {};
+        placeholder.header.typeID = API_LayerID;
+        placeholder.header.uniStringNamePtr = &placeholderName;
+        err = ACAPI_Attribute_Create (&placeholder, nullptr);
+        if (err != NoError) {
+            return fail (err, "Failed to create a placeholder layer for a free index below newIndex.");
+        }
+        placeholders.Push (placeholder.header.index);
+    }
+
+    GS::UniString copyName = GetTemporaryLayerName (name);
+    API_Attribute copy = oldLayer;
+    copy.header.guid = APINULLGuid;
+    copy.header.index = APIInvalidAttributeIndex;
+    copy.header.flags = oldFlags & ~(APILay_Hidden | APILay_Locked);
+    copy.header.uniStringNamePtr = &copyName;
+    err = ACAPI_Attribute_Create (&copy, nullptr);
+    if (err != NoError) {
+        return fail (err, "Failed to create the layer at the new index.");
+    }
+    deletePlaceholders ();
+    if (copy.header.index != newIndex) {
+        DeleteLayer (copy.header.index);
+        return fail (APIERR_GENERAL, GS::UniString::Printf ("Archicad created the new layer at index %d instead of %d, so the layer was not moved.", GetAttributeIndex (copy.header.index), newIndexValue));
+    }
+    const auto failAndDeleteCopy = [&] (GSErrCode failErr, const GS::UniString& message) {
+        // The copy is only deleted when it holds no element, since deleting a layer deletes its elements.
+        GS::Array<ElementInDatabase> onCopy;
+        if (CollectElementsOnLayer (databases, newIndex, onCopy) == NoError && onCopy.IsEmpty ()) {
+            DeleteLayer (newIndex);
+        }
+        return fail (failErr, message);
+    };
+
+    err = CopyLayerStateInCombinations (oldIndex, newIndex);
+    if (err != NoError) {
+        return failAndDeleteCopy (err, "Failed to copy the layer's state into the layer combinations.");
+    }
+
+    GS::Array<ElementInDatabase> moved;
+    GS::Array<ElementInDatabase> notMoved;
+    for (const ElementInDatabase& element : elements) {
+        if (SetLayerOfElementInDatabase (element, newIndex) == NoError) {
+            moved.Push (element);
+        } else {
+            notMoved.Push (element);
+        }
+    }
+    GS::Array<ElementInDatabase> left;
+    err = notMoved.IsEmpty () ? CollectElementsOnLayer (databases, oldIndex, left) : NoError;
+    if (!notMoved.IsEmpty () || err != NoError || !left.IsEmpty ()) {
+        for (const ElementInDatabase& element : moved) {
+            SetLayerOfElementInDatabase (element, oldIndex);
+        }
+        if (!notMoved.IsEmpty ()) {
+            return failAndDeleteCopy (APIERR_GENERAL, GS::UniString::Printf ("The layer was not moved: %u of its elements could not be moved to the new layer (they may be locked, or not reserved in Teamwork): %T.", notMoved.GetSize (), ListElementGuids (notMoved).ToPrintf ()));
+        }
+        if (err != NoError) {
+            return failAndDeleteCopy (err, "The layer was not moved: the views and layouts could not be read again to check that the old layer is empty.");
+        }
+        return failAndDeleteCopy (APIERR_GENERAL, GS::UniString::Printf ("The layer was not moved: %u elements were still on the old layer after the move: %T.", left.GetSize (), ListElementGuids (left).ToPrintf ()));
+    }
+
+    const GS::Array<API_ElemTypeID> toolDefaults = UpdateToolDefaultsOnLayer (oldIndex, newIndex);
+
+    // The folder is looked up before the old layer is deleted; the copy is moved there afterwards.
+    API_AttributeFolder root = {};
+    root.typeID = API_LayerID;
+    GS::Optional<API_AttributeFolder> folder;
+    if (ACAPI_Attribute_GetFolder (root) == NoError) {
+        folder = FindFolderOfLayer (root, APIGuid2GSGuid (layerGuid), true);
+    }
+
+    // Only now, with the old layer empty in every view and layout, is it deleted.
+    err = DeleteLayer (oldIndex);
+    if (err != NoError) {
+        UpdateToolDefaultsOnLayer (newIndex, oldIndex);
+        for (const ElementInDatabase& element : moved) {
+            SetLayerOfElementInDatabase (element, oldIndex);
+        }
+        return failAndDeleteCopy (err, "Failed to delete the old layer, so the layer was not moved.");
+    }
+
+    GS::UniString finalName = name;
+    API_Attribute finalLayer = {};
+    finalLayer.header.index = newIndex;
+    GS::UniString readName;
+    GetLayer (finalLayer, readName);
+    finalLayer.header.uniStringNamePtr = &finalName;
+    finalLayer.header.flags = oldFlags;
+    err = ACAPI_Attribute_Modify (&finalLayer, nullptr);
+    if (folder.HasValue ()) {
+        ACAPI_Attribute_Move ({}, { APIGuid2GSGuid (finalLayer.header.guid) }, folder.Get ());
+    }
+
+    result.Add ("attributeId", CreateGuidObjectState (finalLayer.header.guid));
+    result.Add ("elements", GetElementIds (moved));
+    result.Add ("viewsToRebuild", GetDatabaseIds (sectionElementViews));
+    const auto& toolDefaultNames = result.AddList<GS::UniString> ("toolDefaults");
+    for (API_ElemTypeID typeID : toolDefaults) {
+        toolDefaultNames (GetElementTypeNonLocalizedName (typeID));
+    }
+    if (err != NoError) {
+        return CreateErrorResponse (err, GS::UniString::Printf ("The layer was moved to index %d, but its name and flags could not be set back; it is called '%T'.", newIndexValue, copyName.ToPrintf ()));
+    }
+    return result;
+}
+
+}
+
+#endif
+
+GS::ObjectState ReindexLayersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> layers;
+    parameters.Get ("layers", layers);
+    bool dryRun = false;
+    parameters.Get ("dryRun", dryRun);
+
+    API_DatabaseInfo startingDatabase = {};
+    GSErrCode err = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the current database.");
+    }
+    GS::Array<API_DatabaseInfo> databases;
+    err = GetElementDatabases (databases);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to list the views and layouts.");
+    }
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("layers");
+    const auto reindexAll = [&] () -> GSErrCode {
+        for (const GS::ObjectState& layer : layers) {
+            Int32 newIndex = 0;
+            layer.Get ("newIndex", newIndex);
+            results (ReindexLayer (databases, GetGuidFromAttributesArrayItem (layer), newIndex, dryRun));
+        }
+        return NoError;
+    };
+    if (dryRun) {
+        reindexAll ();
+    } else {
+        ACAPI_CallUndoableCommand ("Reindex Layers", reindexAll);
+    }
+    ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "ReindexLayers requires Archicad 27 or newer.");
+#endif
+}
