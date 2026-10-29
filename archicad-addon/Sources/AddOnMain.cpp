@@ -48,6 +48,7 @@
 #include "IFCCommands.hpp"
 #include "SolidElementOperationCommands.hpp"
 #include "MEPCommands.hpp"
+#include "MEPPreferenceTableRowCommands.hpp"
 #include "AnalyticalCommands.hpp"
 #include "KeynoteCommands.hpp"
 #include "ProjectDataCommands.hpp"
@@ -2375,6 +2376,27 @@ GSErrCode Initialize (void)
             "Retrieves the type-specific details of the given MEP elements: insulation thickness and routing segment of rigid segments, control points of flexible segments, radius factor, insulation thickness, preference table and routing node of elbows (from Archicad 29), angle, length and insulation thickness of branches, and offsets, wider and narrower ports, insulation thickness, routing node and (from Archicad 29) preference table of transitions. Available from Archicad 28."
         );
         AddCommandGroup (mepCommands);
+    }
+
+    { // MEP Commands (extended)
+        CommandGroup mepExtendedCommands ("MEP Commands (extended)");
+        err |= RegisterCommand<GetMEPPreferenceTableRowsCommand> (
+            mepExtendedCommands, "1.7.3",
+            "Gets rows of a segment, branch, elbow or (from Archicad 29) transition preference table by their key (the reference ids and, for branch and elbow rows from Archicad 29, the angle): whether the row is valid and its values (diameters, wall thickness, radius, length, angle, branch offset, connection length, description), and whether the table exists. Rectangular duct and cable carrier segment tables only give whether they exist, as their rows have no key. Available from Archicad 28."
+        );
+        err |= RegisterCommand<SetMEPPreferenceTableRowsCommand> (
+            mepExtendedCommands, "1.7.3",
+            "Sets the given values of rows of a segment, branch, elbow or (from Archicad 29) transition preference table, found by their key (the reference ids and, for branch and elbow rows from Archicad 29, the angle). Only the given values are changed, in one undo step. Available from Archicad 28."
+        );
+        err |= RegisterCommand<AddMEPPreferenceTableRowsCommand> (
+            mepExtendedCommands, "1.7.3",
+            "Adds rows with the given keys and optionally values to a branch, elbow or transition preference table and returns their index, in one undo step. Branch tables from Archicad 28, elbow and transition tables from Archicad 29; segment tables have a row for each reference id."
+        );
+        err |= RegisterCommand<DeleteMEPPreferenceTableRowsCommand> (
+            mepExtendedCommands, "1.7.3",
+            "Deletes rows of a segment, branch, elbow or (from Archicad 29) transition preference table by their key (the reference ids and, for branch and elbow rows from Archicad 29, the angle), in one undo step. The rows of segment tables, and of the elbow tables of Archicad 28, are emptied instead. Available from Archicad 28."
+        );
+        AddCommandGroup (mepExtendedCommands);
     }
 
     { // Analytical Commands
