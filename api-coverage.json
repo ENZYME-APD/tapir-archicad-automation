@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-29 20:31 UTC",
+ "generatedAt": "2026-10-29 20:37 UTC",
  "versions": [
   25,
   26,
@@ -23640,6 +23640,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1640,
+     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
+    },
     {
      "number": 1584,
      "title": "[3/4] DeleteGhostRecords, HighlightElements on Archicad 25, GetDetailsOfElements for elements of other databases"
