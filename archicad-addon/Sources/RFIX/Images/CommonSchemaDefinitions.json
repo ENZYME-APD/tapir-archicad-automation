@@ -9857,7 +9857,7 @@
             },
             "treadDepth": {
                 "type": "number",
-                "description": "Depth (going) of each tread."
+                "description": "The tread depth (going) stored in the Stair's settings. Archicad does not keep it in step with the modeled treads: a placed stair can read 0 or 1 here, so take the modeled going from the geometry of its treads or risers (Get3DGeometryOfElements) instead."
             },
             "flightWidth": {
                 "type": "number",
@@ -9881,7 +9881,7 @@
             },
             "baseLinePoints": {
                 "type": "array",
-                "description": "The baseline polyline the stair is placed along, as given to CreateStairs.",
+                "description": "The baseline polyline the stair is placed along, in model coordinates, as given to CreateStairs.",
                 "items": {
                     "$ref": "#/Coordinate2D"
                 }
