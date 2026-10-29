@@ -11181,7 +11181,7 @@
             },
             "fillOrientation": {
                 "$ref": "#/HatchOrientation",
-                "description": "Orientation, origin and distortion of the fill pattern. Omitted properties keep their current values."
+                "description": "Orientation, origin and distortion of the fill pattern. Omitted properties keep their current values. A given origin detaches the fill from the project origin, and a Global fill becomes Rotated unless a type is given as well. Archicad ignores the orientation of Solid fills (there is no pattern to orient)."
             }
         },
         "additionalProperties": false,
@@ -12516,7 +12516,7 @@
             },
             "origin": {
                 "$ref": "#/Coordinate2D",
-                "description": "The origin of the fill relative to the project origin. When modifying an element, a given origin detaches the fill from the project origin, and a Global fill becomes Rotated unless a type is given as well."
+                "description": "The origin of the fill relative to the project origin."
             },
             "matrix00": {
                 "type": "number",
