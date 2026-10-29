@@ -2293,7 +2293,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ConnectMEPElementsCommand> (
             mepCommands, "1.5.6",
-            "Connects MEP routing elements to other MEP elements or routes. Merges routes, splits routes or creates branch elements as needed. Available from Archicad 28."
+            "Connects MEP routing elements to other MEP elements or routes. Merges routes, splits routes or creates branch elements as needed. Archicad 27 does not report the merged, split or created elements. Available from Archicad 27."
+        );
+        err |= RegisterCommand<CheckMEPPortConnectabilityCommand> (
+            mepCommands, "1.7.3",
+            "Checks whether MEP ports can be connected to other ports, for the given pairs of ports. Archicad 28 and later check the physical connection. Available from Archicad 27."
         );
         err |= RegisterCommand<GetMEPPreferenceTablesCommand> (
             mepCommands, "1.5.7",

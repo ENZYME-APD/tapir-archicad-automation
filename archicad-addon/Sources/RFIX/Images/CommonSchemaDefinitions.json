@@ -125,6 +125,10 @@
             "elementId": {
                 "$ref": "#/ElementId"
             },
+            "routingElementId": {
+                "$ref": "#/ElementId",
+                "description": "The routing element the segment belongs to."
+            },
             "crossSectionWidth": {
                 "type": "number"
             },
@@ -203,6 +207,10 @@
         "properties": {
             "elementId": {
                 "$ref": "#/ElementId"
+            },
+            "routingElementId": {
+                "$ref": "#/ElementId",
+                "description": "The routing element the node belongs to."
             },
             "position": {
                 "$ref": "#/Coordinate3D"
@@ -325,6 +333,10 @@
             "portId": {
                 "$ref": "#/Guid"
             },
+            "mepElementId": {
+                "$ref": "#/ElementId",
+                "description": "The MEP element the port belongs to."
+            },
             "name": {
                 "type": "string"
             },
@@ -422,7 +434,7 @@
     },
     "MEPConnectionResult": {
         "type": "object",
-        "description": "The result of connecting an MEP routing element: the routing element deleted by merging, the routing element created by splitting and the branch element created by the connection.",
+        "description": "The result of connecting an MEP routing element: the routing element deleted by merging, the routing element created by splitting and the branch element created by the connection. Empty in Archicad 27, which does not report them.",
         "properties": {
             "deletedRoutingElementId": {
                 "$ref": "#/ElementId"
@@ -7106,6 +7118,10 @@
             "domain": {
                 "type": "string",
                 "description": "The MEP domain of the element. Empty for domain-independent elements (e.g. Equipment)."
+            },
+            "localizedTypeName": {
+                "type": "string",
+                "description": "The type name of the element in the language of Archicad. Only returned by Archicad 28."
             }
         },
         "additionalProperties": false,
