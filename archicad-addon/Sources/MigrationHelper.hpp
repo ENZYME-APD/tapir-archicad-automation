@@ -902,6 +902,35 @@ inline GSErrCode TAPIR_Element_RemoveClassificationItemDefault (API_ElemTypeID t
 #endif
 }
 
+// Every classification of the tool defaults of a plain element type, as (system, item) pairs.
+inline GSErrCode TAPIR_Element_GetClassificationItemsDefault (API_ElemTypeID typeID, GS::Array<GS::Pair<API_Guid, API_Guid>>& systemItemPairs)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_GetClassificationItemsDefault (typeID, systemItemPairs);
+#else
+    return ACAPI_Element_GetClassificationItemsDefault (typeID, APIVarId_Generic, systemItemPairs);
+#endif
+}
+
+// The property definitions and values of the tool defaults of a plain element type.
+inline GSErrCode TAPIR_Element_GetPropertyDefinitionsOfDefaultElem (API_ElemTypeID typeID, API_PropertyDefinitionFilter filter, GS::Array<API_PropertyDefinition>& definitions)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_GetPropertyDefinitionsOfDefaultElem (typeID, filter, definitions);
+#else
+    return ACAPI_Element_GetPropertyDefinitionsOfDefaultElem (typeID, APIVarId_Generic, filter, definitions);
+#endif
+}
+
+inline GSErrCode TAPIR_Element_GetPropertyValueOfDefaultElem (API_ElemTypeID typeID, const API_Guid& propertyDefinitionGuid, API_Property& property)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_GetPropertyValueOfDefaultElem (typeID, propertyDefinitionGuid, property);
+#else
+    return ACAPI_Element_GetPropertyValueOfDefaultElem (typeID, APIVarId_Generic, propertyDefinitionGuid, property);
+#endif
+}
+
 inline GSErrCode TAPIR_Element_SetCategoryValueDefault (const API_Elem_Head& elemHead, const API_ElemCategoryValue& categoryValue)
 {
 #ifdef ServerMainVers_2700

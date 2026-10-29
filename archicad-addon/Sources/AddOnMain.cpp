@@ -1197,6 +1197,10 @@ GSErrCode Initialize (void)
             propertyCommands, "1.7.3",
             "Returns the property definitions of the given attributes (for example Building Materials): the user defined, the fundamental built-in, or all of them."
         );
+        err |= RegisterCommand<GetPropertiesOfToolDefaultsCommand> (
+            propertyCommands, "1.7.3",
+            "Returns the property definitions of the tool defaults (the settings new elements get) of the given element types, filtered by kind (all by default), and optionally the value of each property in the tool default."
+        );
         err |= RegisterCommand<AddPropertyToAttributesCommand> (
             propertyCommands, "1.7.3",
             "Makes an existing custom property available for the given attributes (for example Building Materials), in one undo step. Available in Archicad 25, 26 and 27 only."
@@ -1278,6 +1282,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SetClassificationsOfElementDefaultsCommand> (
             classificationCommands, "1.7.3",
             "Sets the classifications of the tool defaults (the settings new elements get) of the given element types. In order to set a default to unclassified, omit the classificationItemId field."
+        );
+        err |= RegisterCommand<GetClassificationsOfToolDefaultsCommand> (
+            classificationCommands, "1.7.3",
+            "Returns every classification of the tool defaults (the settings new elements get) of the given element types, in all classification systems at once. Unlike GetClassificationsOfElementDefaults it needs no list of classification systems; systems in which a default is unclassified are left out."
         );
         err |= RegisterCommand<CreateClassificationSystemsCommand> (
             classificationCommands, "1.5.0",

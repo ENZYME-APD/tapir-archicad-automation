@@ -833,6 +833,116 @@ GS::ObjectState SetClassificationsOfElementDefaultsCommand::Execute (const GS::O
     return response;
 }
 
+GetClassificationsOfToolDefaultsCommand::GetClassificationsOfToolDefaultsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetClassificationsOfToolDefaultsCommand::GetName () const
+{
+    return "GetClassificationsOfToolDefaults";
+}
+
+GS::Optional<GS::UniString> GetClassificationsOfToolDefaultsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementTypes": {
+                "type": "array",
+                "description": "The element types whose tool defaults (the settings new elements get) are read.",
+                "items": {
+                    "$ref": "#/ElementType"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementTypes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetClassificationsOfToolDefaultsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "classificationsOfToolDefaults": {
+                "type": "array",
+                "description": "The classifications of the tool defaults of each element type, in the order of the given element types. Invalid element types are represented by error objects.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "classificationIds": {
+                                    "type": "array",
+                                    "description": "One item for each classification system in which the tool default is classified. Systems in which it is unclassified are left out.",
+                                    "items": {
+                                        "$ref": "#/ClassificationId"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "classificationIds"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationsOfToolDefaults"
+        ]
+    })";
+}
+
+GS::ObjectState GetClassificationsOfToolDefaultsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> elementTypes;
+    parameters.Get ("elementTypes", elementTypes);
+
+    GS::ObjectState response;
+    const auto& classificationsOfToolDefaults = response.AddList<GS::ObjectState> ("classificationsOfToolDefaults");
+
+    for (const GS::UniString& elementTypeStr : elementTypes) {
+        const API_ElemTypeID typeID = GetElementTypeFromNonLocalizedName (elementTypeStr);
+        if (typeID == API_ZombieElemID) {
+            classificationsOfToolDefaults (CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ())));
+            continue;
+        }
+
+        GS::Array<GS::Pair<API_Guid, API_Guid>> systemItemPairs;
+        const GSErrCode err = TAPIR_Element_GetClassificationItemsDefault (typeID, systemItemPairs);
+        if (err != NoError) {
+            classificationsOfToolDefaults (CreateErrorResponse (err, "Failed to get the classifications of the tool defaults"));
+            continue;
+        }
+
+        GS::ObjectState classificationsOfToolDefault;
+        const auto& classificationIds = classificationsOfToolDefault.AddList<GS::ObjectState> ("classificationIds");
+        for (const GS::Pair<API_Guid, API_Guid>& systemItemPair : systemItemPairs) {
+            if (systemItemPair.second == APINULLGuid) {
+                continue;
+            }
+            classificationIds (GS::ObjectState (
+                "classificationSystemId", GS::ObjectState ("guid", APIGuidToString (systemItemPair.first)),
+                "classificationItemId", GS::ObjectState ("guid", APIGuidToString (systemItemPair.second))));
+        }
+
+        classificationsOfToolDefaults (classificationsOfToolDefault);
+    }
+
+    return response;
+}
+
 CreateClassificationSystemsCommand::CreateClassificationSystemsCommand () :
     CommandBase (CommonSchema::Used)
 {

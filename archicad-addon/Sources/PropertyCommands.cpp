@@ -1166,6 +1166,202 @@ GS::ObjectState GetPropertyDefinitionsOfAttributesCommand::Execute (const GS::Ob
     return response;
 }
 
+GetPropertiesOfToolDefaultsCommand::GetPropertiesOfToolDefaultsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetPropertiesOfToolDefaultsCommand::GetName () const
+{
+    return "GetPropertiesOfToolDefaults";
+}
+
+GS::Optional<GS::UniString> GetPropertiesOfToolDefaultsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementTypes": {
+                "type": "array",
+                "description": "The element types whose tool defaults (the settings new elements get) are read.",
+                "items": {
+                    "$ref": "#/ElementType"
+                }
+            },
+            "filter": {
+                "type": "string",
+                "description": "Which property definitions to return: the user defined (custom) ones, the fundamental built-in ones, the user level built-in ones, or all of them. The default is All. From Archicad 28 the API no longer separates the two kinds of built-in properties, so there FundamentalBuiltIn and UserLevelBuiltIn both return every built-in property.",
+                "enum": [
+                    "UserDefined",
+                    "FundamentalBuiltIn",
+                    "UserLevelBuiltIn",
+                    "All"
+                ]
+            },
+            "includeValues": {
+                "type": "boolean",
+                "description": "Adds the value of each property in the tool default (propertyValue), or an error in its place when it has none. Default is false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementTypes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetPropertiesOfToolDefaultsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "propertiesOfToolDefaults": {
+                "type": "array",
+                "description": "The properties of the tool defaults of each element type, in the order of the given element types. Invalid element types are represented by error objects.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "properties": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "propertyId": {
+                                                "$ref": "#/PropertyId"
+                                            },
+                                            "propertyName": {
+                                                "type": "string"
+                                            },
+                                            "propertyGroupId": {
+                                                "$ref": "#/PropertyGroupId"
+                                            },
+                                            "propertyValue": {
+                                                "$ref": "#/PropertyValue",
+                                                "description": "The value in the tool default, in the format of GetPropertyValuesOfElements. Only returned when includeValues is true."
+                                            },
+                                            "error": {
+                                                "$ref": "#/Error",
+                                                "description": "Why the value could not be read. Only returned when includeValues is true."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "propertyId",
+                                            "propertyName",
+                                            "propertyGroupId"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "properties"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertiesOfToolDefaults"
+        ]
+    })";
+}
+
+GS::ObjectState GetPropertiesOfToolDefaultsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> elementTypes;
+    parameters.Get ("elementTypes", elementTypes);
+
+    GS::UniString filterStr = "All";
+    parameters.Get ("filter", filterStr);
+
+    bool includeValues = false;
+    parameters.Get ("includeValues", includeValues);
+
+    API_PropertyDefinitionFilter filter = API_PropertyDefinitionFilter_All;
+    if (filterStr == "UserDefined") {
+        filter = API_PropertyDefinitionFilter_UserDefined;
+    } else if (filterStr == "FundamentalBuiltIn") {
+#ifdef ServerMainVers_2800
+        filter = API_PropertyDefinitionFilter_BuiltIn;
+#else
+        filter = API_PropertyDefinitionFilter_FundamentalBuiltIn;
+#endif
+    } else if (filterStr == "UserLevelBuiltIn") {
+#ifdef ServerMainVers_2800
+        filter = API_PropertyDefinitionFilter_BuiltIn;
+#else
+        filter = API_PropertyDefinitionFilter_UserLevelBuiltIn;
+#endif
+    }
+
+    GS::ObjectState response;
+    const auto& propertiesOfToolDefaults = response.AddList<GS::ObjectState> ("propertiesOfToolDefaults");
+
+    for (const GS::UniString& elementTypeStr : elementTypes) {
+        const API_ElemTypeID typeID = GetElementTypeFromNonLocalizedName (elementTypeStr);
+        if (typeID == API_ZombieElemID) {
+            propertiesOfToolDefaults (CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ())));
+            continue;
+        }
+
+        GS::Array<API_PropertyDefinition> definitions;
+        GSErrCode err = TAPIR_Element_GetPropertyDefinitionsOfDefaultElem (typeID, filter, definitions);
+        if (err != NoError) {
+            propertiesOfToolDefaults (CreateErrorResponse (err, "Failed to get the property definitions of the tool defaults"));
+            continue;
+        }
+
+        GS::ObjectState propertiesOfToolDefault;
+        const auto& propertyList = propertiesOfToolDefault.AddList<GS::ObjectState> ("properties");
+        for (const API_PropertyDefinition& definition : definitions) {
+            GS::ObjectState details;
+            details.Add ("propertyId", CreateGuidObjectState (definition.guid));
+            details.Add ("propertyName", definition.name);
+            details.Add ("propertyGroupId", CreateGuidObjectState (definition.groupGuid));
+
+            if (includeValues) {
+                const auto addError = [&details] (GSErrCode errorCode, const GS::UniString& errorMessage) {
+                    const GS::ObjectState errorResponse = CreateErrorResponse (errorCode, errorMessage);
+                    details.Add ("error", *errorResponse.Get ("error"));
+                };
+
+                API_Property propertyValue;
+                err = TAPIR_Element_GetPropertyValueOfDefaultElem (typeID, definition.guid, propertyValue);
+                if (err != NoError) {
+                    addError (err, "Failed to get the property value of the tool defaults");
+                } else if (propertyValue.status == API_Property_NotAvailable || propertyValue.status == API_Property_NotEvaluated) {
+                    addError (APIERR_BADPROPERTY, "Not available or not evaluated property");
+                } else {
+                    // GetPropertyValueString reads the value and collection types from the definition.
+                    propertyValue.definition = definition;
+                    GS::UniString propertyValueString;
+                    err = GetPropertyValueString (propertyValue, propertyValueString);
+                    if (err != NoError) {
+                        addError (err, "Failed to get property value as string");
+                    } else {
+                        details.Add ("propertyValue", GS::ObjectState ("value", propertyValueString));
+                    }
+                }
+            }
+
+            propertyList (details);
+        }
+
+        propertiesOfToolDefaults (propertiesOfToolDefault);
+    }
+
+    return response;
+}
+
 #ifndef ServerMainVers_2800
 static bool GetPropertyOfAttributesParameters (const GS::ObjectState& parameters, GS::Array<API_Attr_Head>& attrHeads, API_PropertyDefinition& definition, GS::ObjectState& failedResult)
 {
