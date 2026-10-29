@@ -1485,6 +1485,74 @@ GS::String GetLibrariesCommand::GetName () const
     return "GetLibraries";
 }
 
+#ifdef ServerMainVers_2800
+// The Library Manager's library at the location of an API_LibraryInfo. Several
+// built-in libraries share one location, so the name decides between them; a
+// location that stays ambiguous gives nothing.
+static const ACAPI::Library::Library* FindManagerLibrary (const std::vector<ACAPI::Library::Library>& managerLibraries, const API_LibraryInfo& lib)
+{
+    const ACAPI::Library::Library* found = nullptr;
+    bool ambiguous = false;
+    for (const ACAPI::Library::Library& library : managerLibraries) {
+        auto location = library.GetLocation ();
+        if (location.IsErr () || !SameLocation (location.Unwrap (), lib.location)) {
+            continue;
+        }
+        auto name = library.GetName ();
+        if (name.IsOk () && name.Unwrap () == lib.name) {
+            return &library;
+        }
+        ambiguous = ambiguous || found != nullptr;
+        found = &library;
+    }
+    return ambiguous ? nullptr : found;
+}
+
+// The package information of a library, or nothing when it is not a package.
+// A value the API cannot read is left out.
+static GS::Optional<GS::ObjectState> GetLibraryPackage (const ACAPI::Library::Library& library)
+{
+    auto isPackage = library.IsPackage ();
+    if (isPackage.IsErr () || !isPackage.Unwrap ()) {
+        return {};
+    }
+
+    GS::ObjectState package;
+    auto packageId = library.GetPackageID ();
+    if (packageId.IsOk ()) {
+        package.Add ("packageId", packageId.Unwrap ().ToUniString ());
+    }
+    auto mainVersion = library.GetPackageMainVersion ();
+    if (mainVersion.IsOk ()) {
+        package.Add ("mainVersion", mainVersion.Unwrap ());
+    }
+    auto subVersion = library.GetPackageSubVersion ();
+    if (subVersion.IsOk ()) {
+        package.Add ("subVersion", subVersion.Unwrap ());
+    }
+    auto minArchicadVersion = library.GetPackageMinACVersion ();
+    if (minArchicadVersion.IsOk ()) {
+        package.Add ("minArchicadVersion", minArchicadVersion.Unwrap ());
+    }
+    auto minArchicadBuildNumber = library.GetPackageMinACBuildNumber ();
+    if (minArchicadBuildNumber.IsOk ()) {
+        package.Add ("minArchicadBuildNumber", minArchicadBuildNumber.Unwrap ());
+    }
+    auto dependencies = library.GetPackageDependencies ();
+    if (dependencies.IsOk ()) {
+        const auto& dependencyAdder = package.AddList<GS::ObjectState> ("dependencies");
+        for (const auto& dependency : dependencies.Unwrap ()) {
+            GS::ObjectState dependencyData;
+            dependencyData.Add ("name", std::get<0> (dependency));
+            dependencyData.Add ("packageId", std::get<1> (dependency).ToUniString ());
+            dependencyData.Add ("version", std::get<2> (dependency));
+            dependencyAdder (dependencyData);
+        }
+    }
+    return package;
+}
+#endif
+
 GS::ObjectState GetLibrariesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<API_LibraryInfo> libs;
@@ -1493,6 +1561,16 @@ GS::ObjectState GetLibrariesCommand::Execute (const GS::ObjectState& /*parameter
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to retrive libraries.");
     }
+
+#ifdef ServerMainVers_2800
+    // Package information is optional: without the Library Manager the list is
+    // returned as before.
+    std::vector<ACAPI::Library::Library> managerLibraries;
+    auto libraryManager = ACAPI::Library::GetLibraryManager ();
+    if (libraryManager.IsOk ()) {
+        managerLibraries = libraryManager->FindLibraries (ACAPI::Library::SelectAllLibraries);
+    }
+#endif
 
     GS::ObjectState response;
     const auto& listAdder = response.AddList<GS::ObjectState> ("libraries");
@@ -1539,6 +1617,15 @@ GS::ObjectState GetLibrariesCommand::Execute (const GS::ObjectState& /*parameter
         libraryData.Add ("readOnly", lib.readOnly);
         libraryData.Add ("twServerUrl", twServerUrl);
         libraryData.Add ("urlWebLibrary", urlWebLibrary);
+#ifdef ServerMainVers_2800
+        const ACAPI::Library::Library* managerLibrary = FindManagerLibrary (managerLibraries, lib);
+        if (managerLibrary != nullptr) {
+            const GS::Optional<GS::ObjectState> package = GetLibraryPackage (*managerLibrary);
+            if (package.HasValue ()) {
+                libraryData.Add ("package", *package);
+            }
+        }
+#endif
         listAdder (libraryData);
     }
 
