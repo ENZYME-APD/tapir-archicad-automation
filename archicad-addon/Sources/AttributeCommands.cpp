@@ -6911,6 +6911,11 @@ GS::Optional<GS::UniString> ReindexLayersCommand::GetInputParametersSchema () co
             "dryRun": {
                 "type": "boolean",
                 "description": "Only list what would change (the elements on each layer, the tools whose default layer it is, the elements that block the move) without changing anything. The default is false."
+            },
+            "maxPlaceholders": {
+                "type": "integer",
+                "description": "Every free index below newIndex is filled with a temporary layer first (about 20 ms each), so a newIndex far above the highest index in use takes long. A layer that needs more temporary layers than this is not moved. The default is 1000.",
+                "minimum": 0
             }
         },
         "additionalProperties": false,
@@ -6958,6 +6963,17 @@ GS::Optional<GS::UniString> ReindexLayersCommand::GetRawResponseSchema () const
                                         "$ref": "#/ElementType"
                                     }
                                 },
+                                "placeholders": {
+                                    "type": "integer",
+                                    "description": "The number of temporary layers needed for the free indices below newIndex."
+                                },
+                                "warnings": {
+                                    "type": "array",
+                                    "description": "What did not work after the layer was moved: its name and flags, or the move into its attribute folder.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
                                 "viewsToRebuild": {
                                     "$ref": "#/Databases",
                                     "description": "The sections, elevations, interior elevations and 3D documents that show elements of the layer. The model elements they show are deleted with the old layer and come back on the new layer when the view is rebuilt: Archicad does that when the view is opened, unless it is set to be rebuilt manually. To rebuild one at once, call ChangeWindow with its databaseId and then RebuildCurrentDatabase."
@@ -6970,6 +6986,7 @@ GS::Optional<GS::UniString> ReindexLayersCommand::GetRawResponseSchema () const
                                 "newIndex",
                                 "elements",
                                 "toolDefaults",
+                                "placeholders",
                                 "viewsToRebuild"
                             ]
                         },
@@ -7264,7 +7281,7 @@ GS::UniString ListElementGuids (const GS::Array<ElementInDatabase>& elements)
 
 // Moves one layer to newIndex, as described in the command's registration. On any failure, everything done so far
 // for this layer is undone, and the old layer with its elements is kept.
-GS::ObjectState ReindexLayer (const GS::Array<API_DatabaseInfo>& databases, const API_Guid& layerGuid, Int32 newIndexValue, bool dryRun)
+GS::ObjectState ReindexLayer (const GS::Array<API_DatabaseInfo>& databases, const API_Guid& layerGuid, Int32 newIndexValue, bool dryRun, Int32 maxPlaceholders)
 {
     GS::UniString name;
     API_Attribute oldLayer = {};
@@ -7317,9 +7334,17 @@ GS::ObjectState ReindexLayer (const GS::Array<API_DatabaseInfo>& databases, cons
         }
     }
 
+    Int32 placeholderCount = 0;
+    for (Int32 index = 1; index < newIndexValue && oldIndex != newIndex; ++index) {
+        if (!usedIndices.Contains (index)) {
+            ++placeholderCount;
+        }
+    }
+
     GS::ObjectState result;
     result.Add ("oldIndex", GetAttributeIndex (oldIndex));
     result.Add ("newIndex", newIndexValue);
+    result.Add ("placeholders", placeholderCount);
 
     if (dryRun || oldIndex == newIndex) {
         result.Add ("attributeId", CreateGuidObjectState (layerGuid));
@@ -7333,6 +7358,9 @@ GS::ObjectState ReindexLayer (const GS::Array<API_DatabaseInfo>& databases, cons
             toolDefaults (GetElementTypeNonLocalizedName (typeID));
         }
         return result;
+    }
+    if (placeholderCount > maxPlaceholders) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("The layer was not moved: index %d needs %d temporary layers for the free indices below it, more than maxPlaceholders (%d). Give a larger maxPlaceholders if this index is intended.", newIndexValue, placeholderCount, maxPlaceholders));
     }
     if (!blocked.IsEmpty ()) {
         return CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf ("The layer was not moved: %u of its elements come from a hotlinked module and cannot be moved (%T).", blocked.GetSize (), ListElementGuids (blocked).ToPrintf ()));
@@ -7455,9 +7483,13 @@ GS::ObjectState ReindexLayer (const GS::Array<API_DatabaseInfo>& databases, cons
     GetLayer (finalLayer, readName);
     finalLayer.header.uniStringNamePtr = &finalName;
     finalLayer.header.flags = oldFlags;
-    err = ACAPI_Attribute_Modify (&finalLayer, nullptr);
-    if (folder.HasValue ()) {
-        ACAPI_Attribute_Move ({}, { APIGuid2GSGuid (finalLayer.header.guid) }, folder.Get ());
+    // The layer is moved at this point, so what fails from here on is reported as a warning with the result.
+    GS::Array<GS::UniString> warnings;
+    if (ACAPI_Attribute_Modify (&finalLayer, nullptr) != NoError) {
+        warnings.Push (GS::UniString::Printf ("Its name and flags could not be set back; it is called '%T'.", copyName.ToPrintf ()));
+    }
+    if (folder.HasValue () && ACAPI_Attribute_Move ({}, { APIGuid2GSGuid (finalLayer.header.guid) }, folder.Get ()) != NoError) {
+        warnings.Push ("It could not be moved into the attribute folder of the old layer, so it is in the root folder.");
     }
 
     result.Add ("attributeId", CreateGuidObjectState (finalLayer.header.guid));
@@ -7467,8 +7499,8 @@ GS::ObjectState ReindexLayer (const GS::Array<API_DatabaseInfo>& databases, cons
     for (API_ElemTypeID typeID : toolDefaults) {
         toolDefaultNames (GetElementTypeNonLocalizedName (typeID));
     }
-    if (err != NoError) {
-        return CreateErrorResponse (err, GS::UniString::Printf ("The layer was moved to index %d, but its name and flags could not be set back; it is called '%T'.", newIndexValue, copyName.ToPrintf ()));
+    if (!warnings.IsEmpty ()) {
+        result.Add ("warnings", warnings);
     }
     return result;
 }
@@ -7484,6 +7516,8 @@ GS::ObjectState ReindexLayersCommand::Execute (const GS::ObjectState& parameters
     parameters.Get ("layers", layers);
     bool dryRun = false;
     parameters.Get ("dryRun", dryRun);
+    Int32 maxPlaceholders = 1000;
+    parameters.Get ("maxPlaceholders", maxPlaceholders);
 
     API_DatabaseInfo startingDatabase = {};
     GSErrCode err = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
@@ -7502,7 +7536,7 @@ GS::ObjectState ReindexLayersCommand::Execute (const GS::ObjectState& parameters
         for (const GS::ObjectState& layer : layers) {
             Int32 newIndex = 0;
             layer.Get ("newIndex", newIndex);
-            results (ReindexLayer (databases, GetGuidFromAttributesArrayItem (layer), newIndex, dryRun));
+            results (ReindexLayer (databases, GetGuidFromAttributesArrayItem (layer), newIndex, dryRun, maxPlaceholders));
         }
         return NoError;
     };
