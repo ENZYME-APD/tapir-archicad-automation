@@ -34,6 +34,48 @@ static GSFlags FlagsFromObjectState (const GS::ObjectState& os)
     return flags;
 }
 
+// ACAPI_Element_SolidLink_Remove answers APIERR_BADDATABASE (-2130313110) when the current
+// database is not the floor plan (e.g. the 3D window is active), even though the link is
+// gone afterwards (#1566). Same switch as SwitchCurrentDatabaseToFloorPlan in
+// ExtendedElementCommands.cpp: only the CURRENT DATABASE changes, not the visible window,
+// and `switched` says whether the caller has to put the previous one back.
+static GSErrCode SwitchCurrentDatabaseToFloorPlan (API_DatabaseInfo& previousDatabase, bool& switched)
+{
+    switched = false;
+
+    GSErrCode err = ACAPI_Database_GetCurrentDatabase (&previousDatabase);
+    if (err != NoError) {
+        return err;
+    }
+    if (previousDatabase.typeID == APIWind_FloorPlanID) {
+        return NoError;
+    }
+
+    API_DatabaseInfo floorPlanDatabase = {};
+    floorPlanDatabase.typeID = APIWind_FloorPlanID;
+    err = ACAPI_Window_GetDatabaseInfo (&floorPlanDatabase);
+    if (err != NoError) {
+        return err;
+    }
+
+    err = ACAPI_Database_ChangeCurrentDatabase (&floorPlanDatabase);
+    if (err != NoError) {
+        return err;
+    }
+
+    switched = true;
+    return NoError;
+}
+
+static bool SolidLinkExists (const API_Guid& targetGuid, const API_Guid& operatorGuid)
+{
+    GS::Array<API_Guid> operators;
+    if (ACAPI_Element_SolidLink_GetOperators (targetGuid, &operators) != NoError) {
+        return false;
+    }
+    return operators.Contains (operatorGuid);
+}
+
 static GS::ObjectState FlagsToObjectState (GSFlags flags)
 {
     GS::ObjectState os;
@@ -190,6 +232,17 @@ GS::ObjectState RemoveSolidElementLinksCommand::Execute (const GS::ObjectState& 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    // Remove from the floor plan database whatever window is active (#1566); the previous
+    // database is restored after the undoable command has finished, on every exit path.
+    API_DatabaseInfo previousDatabase = {};
+    bool databaseSwitched = false;
+    SwitchCurrentDatabaseToFloorPlan (previousDatabase, databaseSwitched);
+    const GS::OnExit restoreDatabase ([&] () {
+        if (databaseSwitched) {
+            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
+        }
+    });
+
     ACAPI_CallUndoableCommand ("RemoveSolidElementLinks", [&] () -> GSErrCode {
         for (const GS::ObjectState& link : solidLinks) {
             GS::ObjectState targetIdOs, operatorIdOs;
@@ -201,8 +254,12 @@ GS::ObjectState RemoveSolidElementLinksCommand::Execute (const GS::ObjectState& 
             const API_Guid targetGuid   = GetGuidFromObjectState (targetIdOs);
             const API_Guid operatorGuid = GetGuidFromObjectState (operatorIdOs);
 
+            const bool existedBefore = SolidLinkExists (targetGuid, operatorGuid);
             const GSErrCode err = ACAPI_Element_SolidLink_Remove (targetGuid, operatorGuid);
-            if (err != NoError) {
+            if (err != NoError && existedBefore && !SolidLinkExists (targetGuid, operatorGuid)) {
+                // The API reported an error but the link is gone: report what happened.
+                executionResults (CreateSuccessfulExecutionResult ());
+            } else if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to remove solid element link."));
             } else {
                 executionResults (CreateSuccessfulExecutionResult ());
