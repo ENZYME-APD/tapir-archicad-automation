@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-29 19:23 UTC",
+ "generatedAt": "2026-10-29 19:41 UTC",
  "versions": [
   25,
   26,
@@ -10083,12 +10083,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1554,
-     "title": "GetElementAtCoordinate: no hit is found: false, default z finds a slab top at the story level"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11698,10 +11693,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1552,
-     "title": "Fix the crash of MoveGraphicOverrideRules on a guid that is not a rule"
-    },
-    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -11745,10 +11736,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1552,
-     "title": "Fix the crash of MoveGraphicOverrideRules on a guid that is not a rule"
-    },
-    {
      "number": 1178,
      "title": "Add SetGraphicOverrideRuleGroupOrder command"
     },
@@ -11776,10 +11763,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1552,
-     "title": "Fix the crash of MoveGraphicOverrideRules on a guid that is not a rule"
-    },
     {
      "number": 1178,
      "title": "Add SetGraphicOverrideRuleGroupOrder command"
@@ -11812,10 +11795,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1552,
-     "title": "Fix the crash of MoveGraphicOverrideRules on a guid that is not a rule"
-    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -29245,6 +29224,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1639,
+     "title": "Dimensions: textFrame on the creation commands, text settings in GetDimensionData (replaces #1593)"
+    },
+    {
      "number": 1629,
      "title": "ModifySlabs: report a floor fill origin or matrix that Archicad ignored (#662)"
     },
@@ -36624,6 +36607,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1639,
+     "title": "Dimensions: textFrame on the creation commands, text settings in GetDimensionData (replaces #1593)"
+    },
     {
      "number": 1620,
      "title": "Hatch fill orientation in Get/SetDetailsOfElements"
@@ -44994,6 +44981,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1639,
+     "title": "Dimensions: textFrame on the creation commands, text settings in GetDimensionData (replaces #1593)"
+    },
+    {
      "number": 1638,
      "title": "SetProjectNotes: no longer duplicates architect and draftsmen (#1559)"
     },
@@ -45072,10 +45063,6 @@
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    },
-    {
-     "number": 1554,
-     "title": "GetElementAtCoordinate: no hit is found: false, default z finds a slab top at the story level"
     },
     {
      "number": 1541,
@@ -53765,6 +53752,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1639,
+     "title": "Dimensions: textFrame on the creation commands, text settings in GetDimensionData (replaces #1593)"
+    },
+    {
      "number": 1620,
      "title": "Hatch fill orientation in Get/SetDetailsOfElements"
     },
@@ -58505,6 +58496,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1639,
+     "title": "Dimensions: textFrame on the creation commands, text settings in GetDimensionData (replaces #1593)"
+    },
     {
      "number": 1620,
      "title": "Hatch fill orientation in Get/SetDetailsOfElements"
