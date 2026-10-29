@@ -9548,7 +9548,7 @@
             },
             "clipPolygon": {
                 "type": "array",
-                "description": "Polygon (in model coordinates) used to clip the drawing view. Present only when isCutWithFrame is true.",
+                "description": "Polygon used to clip the drawing view, in layout coordinates (meters on the layout, the same coordinate system as pos and bounds - not the coordinates of the source view's model). Archicad stores it as is; pos, angle, ratio and modelOffset are not applied to it. Present only when isCutWithFrame is true.",
                 "items": {
                     "$ref": "#/Coordinate2D"
                 },
@@ -11267,7 +11267,7 @@
             },
             "clipPolygon": {
                 "type": "array",
-                "description": "Polygon (in model coordinates) used to clip the drawing view. At least 3 points. Setting this also enables polygon clipping (isCutWithFrame becomes true); to remove clipping, set isCutWithFrame to false instead.",
+                "description": "Polygon used to clip the drawing view, in layout coordinates (meters on the layout, the same coordinate system as pos and bounds - not the coordinates of the source view's model). It is stored as given: pos, angle, ratio and modelOffset are not applied to it, so a polygon taken from the model must be transformed to the layout first. At least 3 points. Setting this also enables polygon clipping (isCutWithFrame becomes true); to remove clipping, set isCutWithFrame to false instead.",
                 "items": {
                     "$ref": "#/Coordinate2D"
                 },
