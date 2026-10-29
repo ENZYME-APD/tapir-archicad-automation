@@ -1,6 +1,6 @@
 {
   "title": "GetElementTrims answers for walls and slabs, trimmed or not, with an empty trims list",
-  "minTapir": "1.5.9",
+  "minTapir": "1.7.4",
   "requiresEmpty": [],
   "steps": [
     {
