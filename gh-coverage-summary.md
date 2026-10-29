@@ -1,4 +1,4 @@
-**317 of 538** applicable Tapir commands have a Grasshopper component (58 %): ✅ 302 done, 🔀 15 merged, 🚧 16 in progress, ⬜ 205 open, ➖ 1 not applicable.
+**317 of 542** applicable Tapir commands have a Grasshopper component (58 %): ✅ 302 done, 🔀 15 merged, 🚧 16 in progress, ⬜ 209 open, ➖ 1 not applicable.
 
 Parameters of the 317 used commands: 🟢 251 every parameter has an input, 🟡 46 the rest through a JSON input, 🟠 20 some parameters missing.
 
@@ -24,9 +24,10 @@ Parameters of the 317 used commands: 🟢 251 every parameter has an input, 🟡
 | Keynote Commands | 100 % | 9 | 9 |  |  |  |  |  |  | 9 |  |  |
 | Project Data Commands | 0 % | 8 |  |  |  |  | 8 |  |  |  |  |  |
 | MEP Commands | 80 % | 31 | 25 |  |  |  | 6 |  |  | 23 |  | 2 |
+| MEP Commands (extended) | 0 % | 4 |  |  |  |  | 4 |  |  |  |  |  |
 | Analytical Commands | 0 % | 19 |  |  |  |  | 19 |  |  |  |  |  |
 | Solid Element Operation Commands | 66 % | 9 | 6 |  |  |  | 3 |  |  | 6 |  |  |
 | Script UI Commands | 0 % | 2 |  |  |  |  | 2 |  |  |  |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-10-29 08:44 UTC.
+Updated 2026-10-29 09:25 UTC.
