@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-29 20:37 UTC",
+ "generatedAt": "2026-10-29 21:37 UTC",
  "versions": [
   25,
   26,
@@ -3767,6 +3767,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1641,
+     "title": "SetPropertyValueOfAttributes, clearer results of SetPropertyValuesOfAttributes (replaces #1365)"
+    },
+    {
      "number": 1365,
      "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
     }
@@ -4444,6 +4448,10 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1641,
+     "title": "SetPropertyValueOfAttributes, clearer results of SetPropertyValuesOfAttributes (replaces #1365)"
+    },
     {
      "number": 1640,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
@@ -18925,6 +18933,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1641,
+     "title": "SetPropertyValueOfAttributes, clearer results of SetPropertyValuesOfAttributes (replaces #1365)"
+    },
+    {
      "number": 1365,
      "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
     },
@@ -19262,6 +19274,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1641,
+     "title": "SetPropertyValueOfAttributes, clearer results of SetPropertyValuesOfAttributes (replaces #1365)"
+    },
     {
      "number": 1536,
      "title": "[4/5] Pens, attribute classification and built-in properties, element info strings"
@@ -23449,6 +23465,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1641,
+     "title": "SetPropertyValueOfAttributes, clearer results of SetPropertyValuesOfAttributes (replaces #1365)"
+    },
     {
      "number": 1365,
      "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
@@ -65856,6 +65876,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1641,
+     "title": "SetPropertyValueOfAttributes, clearer results of SetPropertyValuesOfAttributes (replaces #1365)"
+    },
+    {
      "number": 1637,
      "title": "Add GetAllClassificationSystems Tapir command"
     },
@@ -67329,6 +67353,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1641,
+     "title": "SetPropertyValueOfAttributes, clearer results of SetPropertyValuesOfAttributes (replaces #1365)"
+    },
     {
      "number": 1587,
      "title": "[4/4] Add OpenLibraryPartInEditor command"
