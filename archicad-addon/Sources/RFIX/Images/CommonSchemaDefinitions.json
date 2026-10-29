@@ -9556,7 +9556,7 @@
             },
             "navigatorItemId": {
                 "$ref": "#/NavigatorItemId",
-                "description": "The identifier of the navigator item (view/layout) this Drawing was created from. Read-only: Archicad only lets this be set at creation time (see CreateDrawings) - it cannot be changed afterwards to relink the Drawing to a different source."
+                "description": "Archicad's internal identifier of this Drawing's link (API_DrawingType::drawingGuid as Archicad reports it). This is NOT the navigator item id of the source view: CreateDrawings passes the source view in this field, but once the Drawing is created Archicad reports its own identifier, which is different for every Drawing (even two Drawings of the same view), is neither the source view nor the Drawing's item in the Layout Book, and is not accepted by navigator commands such as GetViewSettings. To find the source view of a placed Drawing, use the sourceNavigatorItemId of its DrawingItem in the Layout Book tree (GetNavigatorItemTree). Read-only: Archicad has no API to relink a Drawing to a different source (see ChangeDrawingLink)."
             },
             "nameType": {
                 "$ref": "#/DrawingNameType"
