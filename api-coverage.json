@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-29 19:53 UTC",
+ "generatedAt": "2026-10-29 20:31 UTC",
  "versions": [
   25,
   26,
@@ -4445,6 +4445,10 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1640,
+     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
+    },
+    {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     },
@@ -5380,6 +5384,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1640,
+     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
+    },
+    {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     },
@@ -5528,6 +5536,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1640,
+     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
+    },
     {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
@@ -7006,6 +7018,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1640,
+     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
+    },
+    {
      "number": 837,
      "title": "Expose Drawing Manager data for Drawings and the renovation filter name of views"
     }
@@ -7622,6 +7638,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1640,
+     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
+    },
     {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
@@ -8316,6 +8336,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1640,
+     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
+    },
+    {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     },
@@ -8755,6 +8779,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1640,
+     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
+    },
     {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
@@ -15768,6 +15796,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1640,
+     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
+    },
+    {
      "number": 1489,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
     }
@@ -16308,7 +16340,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1640,
+     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
+    }
+   ],
    "issues": []
   },
   {
@@ -23046,6 +23083,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1640,
+     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
+    },
     {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
