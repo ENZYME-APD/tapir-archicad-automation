@@ -6356,6 +6356,44 @@
             }
         ]
     },
+    "ClassificationSystemIdOrError": {
+        "type": "object",
+        "description": "A classification system identifier or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ClassificationSystemIdArrayItem"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ClassificationSystemIdsOrErrors": {
+        "type": "array",
+        "description": "A list of classification system identifiers or errors.",
+        "items": {
+            "$ref": "#/ClassificationSystemIdOrError"
+        }
+    },
+    "ClassificationItemIdOrError": {
+        "type": "object",
+        "description": "A classification item identifier or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ClassificationItemIdArrayItem"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ClassificationItemIdsOrErrors": {
+        "type": "array",
+        "description": "A list of classification item identifiers or errors.",
+        "items": {
+            "$ref": "#/ClassificationItemIdOrError"
+        }
+    },
     "DesignOptionIdOrError": {
         "type": "object",
         "description": "A design option identifier or an error.",
