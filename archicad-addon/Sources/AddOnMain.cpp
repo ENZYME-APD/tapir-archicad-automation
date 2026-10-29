@@ -1792,6 +1792,13 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.1.7",
             "Gets the Layout Info Panel custom field definitions (name and key) from Book Settings."
         );
+        err |= RegisterCommand<GetDrawingNumberingGridLinesCommand> (
+            navigatorCommands, "1.7.3",
+            "Gets the lines of the grid of the grid-based drawing numbering of the current layout "
+            "(start and end point, pen index, line type index), for example to find which grid cell "
+            "a drawing on the layout sits in. The current window must be a layout (see ChangeWindow), "
+            "and only a layout that uses grid-based drawing numbering has such a grid."
+        );
         err |= RegisterCommand<GetModelViewOptionsCommand> (
             navigatorCommands, "1.1.4",
             "Gets all model view options"
