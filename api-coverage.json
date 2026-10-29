@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-29 21:37 UTC",
+ "generatedAt": "2026-10-29 21:58 UTC",
  "versions": [
   25,
   26,
@@ -4449,6 +4449,10 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1642,
+     "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
+    },
+    {
      "number": 1641,
      "title": "SetPropertyValueOfAttributes, clearer results of SetPropertyValuesOfAttributes (replaces #1365)"
     },
@@ -6437,6 +6441,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1642,
+     "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
+    },
+    {
      "number": 1395,
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
     },
@@ -6576,6 +6584,10 @@
    "status": "not applicable",
    "reason": "memory management",
    "pullRequests": [
+    {
+     "number": 1642,
+     "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
+    },
     {
      "number": 1608,
      "title": "Read the geometry of sections (CutPlane) in GetDetailsOfElements"
@@ -7845,6 +7857,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1642,
+     "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
+    },
     {
      "number": 1383,
      "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
@@ -13515,6 +13531,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1642,
+     "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
+    },
+    {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
     }
@@ -13699,6 +13719,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1642,
+     "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
+    },
     {
      "number": 1587,
      "title": "[4/4] Add OpenLibraryPartInEditor command"
@@ -14067,7 +14091,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1642,
+     "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
+    }
+   ],
    "issues": [
     {
      "number": 1382,
@@ -14160,6 +14189,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1642,
+     "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
+    },
     {
      "number": 1395,
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
@@ -14568,6 +14601,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1642,
+     "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
+    },
     {
      "number": 1543,
      "title": "[5/6] Add UpdateLibraryPartSections and GetLibraryPart2DPrimitives"
@@ -24350,6 +24387,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1642,
+     "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
+    },
     {
      "number": 1581,
      "title": "[1/4] Add GetTextureCoordinates and convex polygons on TriangulatePolygonsOfElements"
@@ -34823,6 +34864,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1642,
+     "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
+    },
+    {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     },
@@ -45045,6 +45090,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1642,
+     "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
+    },
     {
      "number": 1639,
      "title": "Dimensions: textFrame on the creation commands, text settings in GetDimensionData (replaces #1593)"
