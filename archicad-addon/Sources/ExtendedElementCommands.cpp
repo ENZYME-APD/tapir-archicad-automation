@@ -4430,6 +4430,37 @@ static GS::UniString StairSolutionToString (API_StairSolutionID solution)
         default:                return "NotSolved";
     }
 }
+
+// CreateStairs leaves stairBaseLine.edgeData/vertexData null because ACAPI_Element_Create derives
+// them (#444). ACAPI_HierarchicalEditing_SolveStair crashed Archicad with that memo even for a
+// straight stair (#1558), so the solver gets them filled, with the layout CreateStairs used before
+// #444, which ACAPI_Element_Create accepted. Every entry is set, so it does not matter whether the
+// solver indexes them from 0 or 1.
+static void FillStairBaseLineEdgeAndVertexData (API_ElementMemo& memo)
+{
+    const Int32 nCoords = memo.stairBaseLine.polygon.nCoords;
+
+    if (memo.stairBaseLine.edgeData != nullptr) {
+        BMKillPtr (reinterpret_cast<GSPtr*>(&memo.stairBaseLine.edgeData));
+    }
+    if (memo.stairBaseLine.vertexData != nullptr) {
+        BMKillPtr (reinterpret_cast<GSPtr*>(&memo.stairBaseLine.vertexData));
+    }
+
+    memo.stairBaseLine.edgeData = reinterpret_cast<API_StairPolylineEdgeData*> (BMAllocatePtr (nCoords * sizeof (API_StairPolylineEdgeData), ALLOCATE_CLEAR, 0));
+    memo.stairBaseLine.vertexData = reinterpret_cast<API_StairPolylineVertexData*> (BMAllocatePtr ((nCoords + 1) * sizeof (API_StairPolylineVertexData), ALLOCATE_CLEAR, 0));
+
+    for (Int32 i = 0; i < nCoords; ++i) {
+        memo.stairBaseLine.edgeData[i].type = APISP_BaseLine;
+        memo.stairBaseLine.edgeData[i].geometryType = APISG_Edge;
+        memo.stairBaseLine.edgeData[i].subElemId = 0;
+    }
+    for (Int32 i = 0; i <= nCoords; ++i) {
+        memo.stairBaseLine.vertexData[i].type = APISP_BaseLine;
+        memo.stairBaseLine.vertexData[i].geometryType = APISG_Vertex;
+        memo.stairBaseLine.vertexData[i].subElemId = 0;
+    }
+}
 #endif
 
 GS::ObjectState SolveStairBaselineCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -4463,6 +4494,8 @@ GS::ObjectState SolveStairBaselineCommand::Execute (const GS::ObjectState& param
             solutions (*os);
             continue;
         }
+
+        FillStairBaseLineEdgeAndVertexData (memo);
 
         API_StairSolutionID solution = APISS_NotSolved;
         err = ACAPI_HierarchicalEditing_SolveStair (&element.stair, &memo, &solution);
