@@ -7115,7 +7115,15 @@ GSErrCode GetLayer (API_Attribute& layer, GS::UniString& name)
     return ACAPI_Attribute_Get (&layer);
 }
 
-GSErrCode SetLayerFlags (const API_AttributeIndex& index, GSFlags flags)
+// The type of API_Attr_Head::flags: short before Archicad 29, GSFlags from 29.
+using LayerFlags = decltype (API_Attr_Head::flags);
+
+LayerFlags WithoutHiddenAndLocked (LayerFlags flags)
+{
+    return static_cast<LayerFlags> (flags & ~(APILay_Hidden | APILay_Locked));
+}
+
+GSErrCode SetLayerFlags (const API_AttributeIndex& index, LayerFlags flags)
 {
     GS::UniString name;
     API_Attribute layer = {};
@@ -7333,8 +7341,8 @@ GS::ObjectState ReindexLayer (const GS::Array<API_DatabaseInfo>& databases, cons
     // Elements on a hidden or locked layer cannot be changed, so the old layer is shown and unlocked while its
     // elements are moved. Its own flags are put back on every path that keeps it. Archicad keeps these flags per
     // open window: they are read and written in the current one.
-    const GSFlags oldFlags = oldLayer.header.flags;
-    err = SetLayerFlags (oldIndex, oldFlags & ~(APILay_Hidden | APILay_Locked));
+    const LayerFlags oldFlags = oldLayer.header.flags;
+    err = SetLayerFlags (oldIndex, WithoutHiddenAndLocked (oldFlags));
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to show and unlock the layer for the move.");
     }
@@ -7371,7 +7379,7 @@ GS::ObjectState ReindexLayer (const GS::Array<API_DatabaseInfo>& databases, cons
     API_Attribute copy = oldLayer;
     copy.header.guid = APINULLGuid;
     copy.header.index = APIInvalidAttributeIndex;
-    copy.header.flags = oldFlags & ~(APILay_Hidden | APILay_Locked);
+    copy.header.flags = WithoutHiddenAndLocked (oldFlags);
     copy.header.uniStringNamePtr = &copyName;
     err = ACAPI_Attribute_Create (&copy, nullptr);
     if (err != NoError) {
