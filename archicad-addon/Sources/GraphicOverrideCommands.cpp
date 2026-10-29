@@ -240,6 +240,32 @@ bool FindRuleGroupByName (const GS::UniString& name, API_Guid& ruleGroupGuid, GS
     return false;
 }
 
+// The rule functions may crash Archicad when given the guid of something that exists but is not a rule,
+// e.g. an element, so a guid is checked against the rule list and the rules of the rule groups first.
+bool IsGraphicOverrideRule (const API_Guid& guid)
+{
+    if (guid == APINULLGuid) {
+        return false;
+    }
+    GS::Array<API_Guid> ruleIds;
+    if (ACAPI_GraphicalOverride_GetOverrideRuleList (ruleIds) == NoError && ruleIds.Contains (guid)) {
+        return true;
+    }
+    GS::Array<API_Guid> ruleGroupIds;
+    if (ACAPI_GraphicalOverride_GetOverrideRuleGroupList (ruleGroupIds) != NoError) {
+        return false;
+    }
+    for (const API_Guid& ruleGroupId : ruleGroupIds) {
+        API_OverrideRuleGroup ruleGroup = {};
+        ruleGroup.guid = ruleGroupId;
+        GS::Array<API_Guid> groupRuleIds;
+        if (ACAPI_GraphicalOverride_GetOverrideRuleGroup (ruleGroup, &groupRuleIds) == NoError && groupRuleIds.Contains (guid)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 GSErrCode FindOrCreateRuleGroup (const GS::UniString& name, API_Guid& ruleGroupGuid)
 {
     if (FindRuleGroupByName (name, ruleGroupGuid)) {
@@ -717,6 +743,10 @@ GS::ObjectState ModifyGraphicOverrideRulesCommand::Execute (const GS::ObjectStat
             }
             API_OverrideRule rule = {};
             rule.guid = GetGuidFromObjectState (*graphicOverrideRuleId);
+            if (!IsGraphicOverrideRule (rule.guid)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "The graphic override rule does not exist."));
+                continue;
+            }
             GSErrCode err = ACAPI_GraphicalOverride_GetOverrideRuleById (rule);
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "The graphic override rule does not exist."));
@@ -814,6 +844,10 @@ GS::ObjectState DeleteGraphicOverrideRulesCommand::Execute (const GS::ObjectStat
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
     ACAPI_CallUndoableCommand ("Delete Graphic Override Rules", [&] () -> GSErrCode {
         for (const API_Guid& ruleGuid : GetRuleGuidsFromArray (graphicOverrideRuleIds)) {
+            if (!IsGraphicOverrideRule (ruleGuid)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "The graphic override rule does not exist."));
+                continue;
+            }
             const GSErrCode err = ACAPI_GraphicalOverride_DeleteOverrideRule (ruleGuid);
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to delete the graphic override rule."));
@@ -1662,7 +1696,7 @@ GS::ObjectState MoveGraphicOverrideRulesCommand::Execute (const GS::ObjectState&
             }
             API_OverrideRule rule = {};
             rule.guid = GetGuidFromObjectState (*ruleId);
-            if (ACAPI_GraphicalOverride_GetOverrideRuleById (rule) != NoError) {
+            if (!IsGraphicOverrideRule (rule.guid) || ACAPI_GraphicalOverride_GetOverrideRuleById (rule) != NoError) {
                 executionResults (CreateFailedExecutionResult (APIERR_BADID, "The graphic override rule does not exist."));
                 continue;
             }
