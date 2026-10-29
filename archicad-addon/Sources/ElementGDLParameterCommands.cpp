@@ -1889,8 +1889,6 @@ static bool IsMarkerLibraryPartOf (const API_Element& opening, const API_LibPart
     }
 #ifdef ServerMainVers_2700
     return ACAPI_LibraryPart_CheckLibPartSubtypeOf (libPart.ownUnID, ancestor) == NoError;
-#elif ServerMainVers_2600
-    return ACAPI_Goodies_CheckLibPartSubtypeOf (libPart.ownUnID, ancestor) == NoError;
 #else
     return ACAPI_Goodies (APIAny_CheckLibPartSubtypeOfID, (void*) libPart.ownUnID, (void*) ancestor) == NoError;
 #endif
