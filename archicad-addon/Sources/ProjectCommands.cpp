@@ -6293,3 +6293,286 @@ GS::ObjectState GetHotlinkProxyElementTableCommand::Execute (const GS::ObjectSta
 
     return response;
 }
+
+#ifdef ServerMainVers_2700
+// The API_UnitConversionPrefID enumerators by their names without the APIUnitConv_ prefix.
+struct UnitConversionPreferenceName {
+    const char*                 name;
+    API_UnitConversionPrefID    preference;
+};
+
+static const UnitConversionPreferenceName UnitConversionPreferences[] = {
+    { "WorkModel",       APIUnitConv_WorkModel },
+    { "WorkLayout",      APIUnitConv_WorkLayout },
+    { "WorkAngle",       APIUnitConv_WorkAngle },
+    { "DimLinear",       APIUnitConv_DimLinear },
+    { "DimAngle",        APIUnitConv_DimAngle },
+    { "DimRadial",       APIUnitConv_DimRadial },
+    { "DimLevel",        APIUnitConv_DimLevel },
+    { "DimElevation",    APIUnitConv_DimElevation },
+    { "DimDoorWindow",   APIUnitConv_DimDoorWindow },
+    { "DimParapet",      APIUnitConv_DimParapet },
+    { "DimArea",         APIUnitConv_DimArea },
+    { "CalcLength",      APIUnitConv_CalcLength },
+    { "CalcArea",        APIUnitConv_CalcArea },
+    { "CalcVolume",      APIUnitConv_CalcVolume },
+    { "CalcAngle",       APIUnitConv_CalcAngle }
+};
+
+static bool ParseUnitConversionPreference (const GS::UniString& name, API_UnitConversionPrefID& preference)
+{
+    for (const auto& entry : UnitConversionPreferences) {
+        if (name == entry.name) {
+            preference = entry.preference;
+            return true;
+        }
+    }
+    return false;
+}
+#endif
+
+ConvertUnitValuesCommand::ConvertUnitValuesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ConvertUnitValuesCommand::GetName () const
+{
+    return "ConvertUnitValues";
+}
+
+GS::Optional<GS::UniString> ConvertUnitValuesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "values": {
+                "type": "array",
+                "description": "The values to convert.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "value": {
+                            "type": "number",
+                            "description": "The value to convert, in meters, square meters, cubic meters or radians, matching the kind of the preference."
+                        },
+                        "preference": {
+                            "type": "string",
+                            "description": "The Project Preference whose unit and rounding are applied: WorkModel, WorkLayout and WorkAngle are the Working Units; the Dim ones are the Dimensions (DimDoorWindow the door, window and skylight dimensions, DimParapet the sill height, DimArea the area calculations); the Calc ones are the Calculation Units & Rules.",
+                            "enum": [
+                                "WorkModel",
+                                "WorkLayout",
+                                "WorkAngle",
+                                "DimLinear",
+                                "DimAngle",
+                                "DimRadial",
+                                "DimLevel",
+                                "DimElevation",
+                                "DimDoorWindow",
+                                "DimParapet",
+                                "DimArea",
+                                "CalcLength",
+                                "CalcArea",
+                                "CalcVolume",
+                                "CalcAngle"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "value",
+                        "preference"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "values"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ConvertUnitValuesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "convertedValues": {
+                "type": "array",
+                "description": "The converted values, in the order of the input. A value that cannot be converted is an error item.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "convertedValue": {
+                                    "type": "string",
+                                    "description": "The value as Archicad shows it in the unit of the preference, without the extra accuracy decimals. It may contain the unit."
+                                },
+                                "extraAccuracy": {
+                                    "type": "string",
+                                    "description": "The extra accuracy decimals, if any (at most two). Empty when there are none."
+                                },
+                                "unit": {
+                                    "type": "string",
+                                    "description": "The unit of the preference. It may be empty."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "convertedValue",
+                                "extraAccuracy",
+                                "unit"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "convertedValues"
+        ]
+    })";
+}
+
+GS::ObjectState ConvertUnitValuesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> values;
+    parameters.Get ("values", values);
+
+    GS::ObjectState response;
+    const auto& convertedValues = response.AddList<GS::ObjectState> ("convertedValues");
+
+    for (const GS::ObjectState& value : values) {
+        API_UnitConversionData unitConversionData = {};
+        if (!value.Get ("value", unitConversionData.value)) {
+            convertedValues (CreateErrorResponse (APIERR_BADPARS, "value is missing"));
+            continue;
+        }
+
+        GS::UniString preference;
+        value.Get ("preference", preference);
+        if (!ParseUnitConversionPreference (preference, unitConversionData.unitConvPref)) {
+            convertedValues (CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("Invalid preference '%T'.", preference.ToPrintf ())));
+            continue;
+        }
+
+        const GSErrCode err = ACAPI_Conversion_GetConvertedUnitValue (&unitConversionData);
+        if (err != NoError) {
+            convertedValues (CreateErrorResponse (err, "Failed to convert the value."));
+            continue;
+        }
+
+        convertedValues (GS::ObjectState (
+            "convertedValue", GS::UniString (unitConversionData.convertedValue),
+            "extraAccuracy", GS::UniString (unitConversionData.extraAccuracy),
+            "unit", GS::UniString (unitConversionData.unit)));
+    }
+
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
+GetRenovationStatusNamesCommand::GetRenovationStatusNamesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetRenovationStatusNamesCommand::GetName () const
+{
+    return "GetRenovationStatusNames";
+}
+
+GS::Optional<GS::UniString> GetRenovationStatusNamesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "renovationStatuses": {
+                "type": "array",
+                "description": "The renovation statuses an element can have, in the order Existing, New, Demolished.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string",
+                                    "description": "The renovation status.",
+                                    "enum": [
+                                        "Existing",
+                                        "New",
+                                        "Demolished"
+                                    ]
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "description": "The name of the status as the running Archicad shows it (localized)."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "status",
+                                "name"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "renovationStatuses"
+        ]
+    })";
+}
+
+GS::ObjectState GetRenovationStatusNamesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    // API_UndefinedStatus and API_DefaultStatus (input only) are not statuses an element has.
+    struct RenovationStatusName {
+        const char*                 name;
+        API_RenovationStatusType    status;
+    };
+    static const RenovationStatusName Statuses[] = {
+        { "Existing",   API_ExistingStatus },
+        { "New",        API_NewStatus },
+        { "Demolished", API_DemolishedStatus }
+    };
+
+    GS::ObjectState response;
+    const auto& renovationStatuses = response.AddList<GS::ObjectState> ("renovationStatuses");
+
+    for (const auto& status : Statuses) {
+        GS::UniString name;
+        const GSErrCode err = ACAPI_Renovation_GetRenovationStatusName (status.status, &name);
+        if (err != NoError) {
+            renovationStatuses (CreateErrorResponse (err, GS::UniString ("Failed to get the name of the renovation status '") + status.name + "'."));
+            continue;
+        }
+
+        renovationStatuses (GS::ObjectState (
+            "status", GS::UniString (status.name),
+            "name", name));
+    }
+
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}

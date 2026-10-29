@@ -280,6 +280,16 @@ inline GSErrCode ACAPI_ProjectOperation_GetMiscAppInfo (API_MiscAppInfo* miscApp
     return ACAPI_Environment (APIEnv_GetMiscAppInfoID, miscAppInfo);
 }
 
+inline GSErrCode ACAPI_ProjectOperation_GetMiscPrinterInfo (API_MiscPrinterInfo* miscPrinterInfo)
+{
+    return ACAPI_Environment (APIEnv_GetMiscPrinterInfoID, miscPrinterInfo);
+}
+
+inline GSErrCode ACAPI_ProjectOperation_GetMiscPlotterInfo (API_MiscPlotterInfo* miscPlotterInfo)
+{
+    return ACAPI_Environment (APIEnv_GetMiscPlotterInfoID, miscPlotterInfo);
+}
+
 inline GSErrCode ACAPI_View_Zoom ()
 {
     return ACAPI_Automate (APIDo_ZoomID);

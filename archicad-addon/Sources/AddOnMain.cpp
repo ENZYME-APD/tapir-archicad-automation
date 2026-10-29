@@ -223,6 +223,10 @@ GSErrCode Initialize (void)
             applicationCommands, "1.7.3",
             "Retrieves Archicad's current print settings: the print area, grid, fixed text size and scale (the settings PrintView takes)."
         );
+        err |= RegisterCommand<GetPrinterAndPlotterInfoCommand> (
+            applicationCommands, "1.7.3",
+            "Retrieves the printer selected in Archicad, with its name and orientation, and the selected plotter, with its name and model."
+        );
         err |= RegisterCommand<QuitArchicadCommand> (
             applicationCommands, "0.1.0",
             "Performs a quit operation on the currently running Archicad instance."
@@ -432,6 +436,14 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SetProjectPreferencesCommand> (
             projectCommands, "1.7.2",
             "Changes pages of the project preferences (Options > Project Preferences): the working units, the dimensions, the calculation units and the zones. Only the given fields change, the rest of each page keeps its value. In Teamwork the PreferencesDialog lockable object set has to be reserved first (ReserveLockableObjectSet). Available from Archicad 27."
+        );
+        err |= RegisterCommand<ConvertUnitValuesCommand> (
+            projectCommands, "1.7.3",
+            "Formats lengths, areas, volumes and angles (given in meters, square meters, cubic meters and radians) as Archicad shows them with the unit and rounding of the given Project Preference, returning the text, its extra accuracy decimals and the unit. The output is aligned with the input array of values. Available from Archicad 27."
+        );
+        err |= RegisterCommand<GetRenovationStatusNamesCommand> (
+            projectCommands, "1.7.3",
+            "Gets the names the running Archicad shows for the renovation statuses Existing, New and Demolished (localized). Available from Archicad 27."
         );
         err |= RegisterCommand<GetGeoLocationCommand> (
             projectCommands, "1.1.6",
@@ -1277,6 +1289,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<UpdateClassificationItemsCommand> (
             classificationCommands, "1.6.0",
             "Updates the id (code), name and/or description of existing Classification Items, keeping their guid and so the elements classified with them. Items cannot be moved to another parent."
+        );
+        err |= RegisterCommand<GetClassificationItemParentsCommand> (
+            classificationCommands, "1.7.3",
+            "Returns the parent item and the classification system of the given Classification Items; a top level item has no parent. The output is aligned with the input array of items."
         );
         err |= RegisterCommand<ImportClassificationsXmlCommand> (
             classificationCommands, "1.6.0",
