@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-29 07:44 UTC",
+ "generatedAt": "2026-10-29 08:08 UTC",
  "versions": [
   25,
   26,
@@ -12,9 +12,9 @@
   "not applicable": 620,
   "done": 1099,
   "claimed": 52,
-  "in progress": 635,
+  "merged": 422,
   "open": 96,
-  "merged": 377
+  "in progress": 590
  },
  "items": [
   {
@@ -1392,14 +1392,9 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_AddLoadCaseToLoadCombination"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1515,
-     "title": "[4/6] Add analytical load group, load case and load combination commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1443,14 +1438,9 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_CreateAnalyticalLoadCase"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1515,
-     "title": "[4/6] Add analytical load group, load case and load combination commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1471,14 +1461,9 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_CreateAnalyticalLoadCombination"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1515,
-     "title": "[4/6] Add analytical load group, load case and load combination commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1499,14 +1484,9 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_CreateAnalyticalLoadGroup"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1515,
-     "title": "[4/6] Add analytical load group, load case and load combination commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1596,14 +1576,9 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_DeleteAnalyticalLoadCase"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1515,
-     "title": "[4/6] Add analytical load group, load case and load combination commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1624,14 +1599,9 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_DeleteAnalyticalLoadCombination"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1515,
-     "title": "[4/6] Add analytical load group, load case and load combination commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1652,14 +1622,9 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_DeleteAnalyticalLoadGroup"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1515,
-     "title": "[4/6] Add analytical load group, load case and load combination commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1680,14 +1645,9 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAllAnalyticalLoadCases"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1515,
-     "title": "[4/6] Add analytical load group, load case and load combination commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1731,14 +1691,9 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLoadCase"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1515,
-     "title": "[4/6] Add analytical load group, load case and load combination commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1759,14 +1714,9 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLoadCases"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1515,
-     "title": "[4/6] Add analytical load group, load case and load combination commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1787,14 +1737,9 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLoadCombination"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1515,
-     "title": "[4/6] Add analytical load group, load case and load combination commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1815,14 +1760,9 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLoadCombinations"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1515,
-     "title": "[4/6] Add analytical load group, load case and load combination commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1843,14 +1783,9 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLoadGroup"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1515,
-     "title": "[4/6] Add analytical load group, load case and load combination commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1871,14 +1806,9 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLoadGroups"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1515,
-     "title": "[4/6] Add analytical load group, load case and load combination commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1987,10 +1917,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1515,
-     "title": "[4/6] Add analytical load group, load case and load combination commands"
-    },
-    {
      "number": 1503,
      "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
     }
@@ -2018,10 +1944,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1515,
-     "title": "[4/6] Add analytical load group, load case and load combination commands"
-    },
     {
      "number": 1503,
      "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
@@ -2125,10 +2047,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1515,
-     "title": "[4/6] Add analytical load group, load case and load combination commands"
-    },
-    {
      "number": 1503,
      "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
     }
@@ -2156,10 +2074,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1515,
-     "title": "[4/6] Add analytical load group, load case and load combination commands"
-    },
     {
      "number": 1503,
      "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
@@ -2581,10 +2495,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1515,
-     "title": "[4/6] Add analytical load group, load case and load combination commands"
-    },
-    {
      "number": 1503,
      "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
     }
@@ -2887,10 +2797,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1515,
-     "title": "[4/6] Add analytical load group, load case and load combination commands"
-    },
-    {
      "number": 1503,
      "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
     }
@@ -3157,14 +3063,6 @@
     {
      "number": 1578,
      "title": "CreateMorphs, ModifyMorphs: say when the morph's layer is hidden"
-    },
-    {
-     "number": 1505,
-     "title": "[3/6] Add GetCutPolygonsOfElements"
-    },
-    {
-     "number": 1500,
-     "title": "[2/6] Add GetBodyMaterialsOfElements"
     },
     {
      "number": 1398,
@@ -4555,14 +4453,6 @@
      "title": "[6/6] Add Get3DDocumentSettings and Set3DDocumentSettings"
     },
     {
-     "number": 1516,
-     "title": "[5/6] User data of attributes and groups as key/value pairs"
-    },
-    {
-     "number": 1515,
-     "title": "[4/6] Add analytical load group, load case and load combination commands"
-    },
-    {
      "number": 1503,
      "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
     },
@@ -4731,14 +4621,9 @@
    "olderNames": [
     "ACAPI_Element_GetCategoryValueDefault"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1501,
-     "title": "[2/6] Add GetCategoryValuesOfDefaults: element category values of tool defaults"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4977,12 +4862,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1504,
-     "title": "[1/6] Add ConvertUnitValues, GetPrinterAndPlotterInfo, GetRenovationStatusNames and GetClassificationItemParents"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5022,14 +4902,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1504,
-     "title": "[1/6] Add ConvertUnitValues, GetPrinterAndPlotterInfo, GetRenovationStatusNames and GetClassificationItemParents"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5048,14 +4923,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1504,
-     "title": "[1/6] Add ConvertUnitValues, GetPrinterAndPlotterInfo, GetRenovationStatusNames and GetClassificationItemParents"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5098,10 +4968,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1504,
-     "title": "[1/6] Add ConvertUnitValues, GetPrinterAndPlotterInfo, GetRenovationStatusNames and GetClassificationItemParents"
-    },
     {
      "number": 1052,
      "title": "Graphic override criterion: library part element types, new fields and operators (on top of #994)"
@@ -5260,14 +5126,9 @@
    "olderNames": [
     "APIEnv_GetConvertedUnitValueID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1504,
-     "title": "[1/6] Add ConvertUnitValues, GetPrinterAndPlotterInfo, GetRenovationStatusNames and GetClassificationItemParents"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5413,14 +5274,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1505,
-     "title": "[3/6] Add GetCutPolygonsOfElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5617,20 +5473,8 @@
      "title": "[2/5] Add grid, 3D filter and cut, dimension standard search and place settings commands"
     },
     {
-     "number": 1514,
-     "title": "[5/6] Add GetStoryControlPrimitives"
-    },
-    {
-     "number": 1511,
-     "title": "[3/6] Add CreateAddOnViewpoints and ChangeAddOnViewpoints"
-    },
-    {
      "number": 1509,
      "title": "[4/6] Add GetDrawingPrimitivesOfElements"
-    },
-    {
-     "number": 1507,
-     "title": "[2/6] Add SetMasterLayoutContext and commands reading add-on viewpoints"
     },
     {
      "number": 1489,
@@ -6617,18 +6461,6 @@
      "title": "Zones: read and set the contour line and the cover fill"
     },
     {
-     "number": 1505,
-     "title": "[3/6] Add GetCutPolygonsOfElements"
-    },
-    {
-     "number": 1500,
-     "title": "[2/6] Add GetBodyMaterialsOfElements"
-    },
-    {
-     "number": 1496,
-     "title": "[1/6] Add GetElementConnections"
-    },
-    {
      "number": 1383,
      "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
     },
@@ -6908,14 +6740,9 @@
    "olderNames": [
     "APIDb_DrawStoryControlID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1514,
-     "title": "[5/6] Add GetStoryControlPrimitives"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6958,10 +6785,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1514,
-     "title": "[5/6] Add GetStoryControlPrimitives"
-    },
     {
      "number": 1509,
      "title": "[4/6] Add GetDrawingPrimitivesOfElements"
@@ -7150,14 +6973,9 @@
    "olderNames": [
     "APIEnv_GetNumberingGridLinesID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1499,
-     "title": "[1/6] Add GetDrawingNumberingGridLines command"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9049,24 +8867,8 @@
      "title": "[4/6] Add GetSurfaceTypesOfElements"
     },
     {
-     "number": 1514,
-     "title": "[5/6] Add GetStoryControlPrimitives"
-    },
-    {
      "number": 1509,
      "title": "[4/6] Add GetDrawingPrimitivesOfElements"
-    },
-    {
-     "number": 1505,
-     "title": "[3/6] Add GetCutPolygonsOfElements"
-    },
-    {
-     "number": 1500,
-     "title": "[2/6] Add GetBodyMaterialsOfElements"
-    },
-    {
-     "number": 1496,
-     "title": "[1/6] Add GetElementConnections"
     },
     {
      "number": 1462,
@@ -11361,10 +11163,6 @@
      "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
     },
     {
-     "number": 1515,
-     "title": "[4/6] Add analytical load group, load case and load combination commands"
-    },
-    {
      "number": 1503,
      "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
     },
@@ -12238,12 +12036,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1516,
-     "title": "[5/6] User data of attributes and groups as key/value pairs"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12260,14 +12053,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1516,
-     "title": "[5/6] User data of attributes and groups as key/value pairs"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1268,
@@ -15505,24 +15293,12 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 1533,
      "title": "[4/6] Add GetSurfaceTypesOfElements"
-    },
-    {
-     "number": 1505,
-     "title": "[3/6] Add GetCutPolygonsOfElements"
-    },
-    {
-     "number": 1500,
-     "title": "[2/6] Add GetBodyMaterialsOfElements"
-    },
-    {
-     "number": 1496,
-     "title": "[1/6] Add GetElementConnections"
     }
    ],
    "issues": [
@@ -15582,18 +15358,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1505,
-     "title": "[3/6] Add GetCutPolygonsOfElements"
-    },
-    {
-     "number": 1500,
-     "title": "[2/6] Add GetBodyMaterialsOfElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1256,
@@ -15651,22 +15418,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1505,
-     "title": "[3/6] Add GetCutPolygonsOfElements"
-    },
-    {
-     "number": 1500,
-     "title": "[2/6] Add GetBodyMaterialsOfElements"
-    },
-    {
-     "number": 1496,
-     "title": "[1/6] Add GetElementConnections"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1093,
@@ -15688,14 +15442,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1513,
-     "title": "[4/6] Add Get3DModelCounts"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -15942,14 +15691,9 @@
    "olderNames": [
     "APINavigator_ChangeNavigatorVPItemID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1511,
-     "title": "[3/6] Add CreateAddOnViewpoints and ChangeAddOnViewpoints"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16109,14 +15853,9 @@
    "olderNames": [
     "APINavigator_CreateNavigatorVPItemID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1511,
-     "title": "[3/6] Add CreateAddOnViewpoints and ChangeAddOnViewpoints"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16535,18 +16274,9 @@
    "olderNames": [
     "APINavigator_GetNavigatorVPItemID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1511,
-     "title": "[3/6] Add CreateAddOnViewpoints and ChangeAddOnViewpoints"
-    },
-    {
-     "number": 1507,
-     "title": "[2/6] Add SetMasterLayoutContext and commands reading add-on viewpoints"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16567,18 +16297,9 @@
    "olderNames": [
     "APINavigator_GetNavigatorVPItemChildrenID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1511,
-     "title": "[3/6] Add CreateAddOnViewpoints and ChangeAddOnViewpoints"
-    },
-    {
-     "number": 1507,
-     "title": "[2/6] Add SetMasterLayoutContext and commands reading add-on viewpoints"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16599,18 +16320,9 @@
    "olderNames": [
     "APINavigator_GetNavigatorVPRootGroupsID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1511,
-     "title": "[3/6] Add CreateAddOnViewpoints and ChangeAddOnViewpoints"
-    },
-    {
-     "number": 1507,
-     "title": "[2/6] Add SetMasterLayoutContext and commands reading add-on viewpoints"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16759,12 +16471,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1512,
-     "title": "[5/6] Add FindModelViewOption"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16783,12 +16490,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1512,
-     "title": "[5/6] Add FindModelViewOption"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16805,14 +16507,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1512,
-     "title": "[5/6] Add FindModelViewOption"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 781,
@@ -16912,18 +16609,9 @@
    "olderNames": [
     "APIAny_SetMasterLayoutOnLayoutID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1511,
-     "title": "[3/6] Add CreateAddOnViewpoints and ChangeAddOnViewpoints"
-    },
-    {
-     "number": 1507,
-     "title": "[2/6] Add SetMasterLayoutContext and commands reading add-on viewpoints"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18312,14 +18000,9 @@
    "olderNames": [
     "APIEnv_GetMiscPlotterInfoID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1504,
-     "title": "[1/6] Add ConvertUnitValues, GetPrinterAndPlotterInfo, GetRenovationStatusNames and GetClassificationItemParents"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18340,14 +18023,9 @@
    "olderNames": [
     "APIEnv_GetMiscPrinterInfoID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1504,
-     "title": "[1/6] Add ConvertUnitValues, GetPrinterAndPlotterInfo, GetRenovationStatusNames and GetClassificationItemParents"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -19778,14 +19456,9 @@
    "olderNames": [
     "APIAny_GetRenovationStatusNameID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1504,
-     "title": "[1/6] Add ConvertUnitValues, GetPrinterAndPlotterInfo, GetRenovationStatusNames and GetClassificationItemParents"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20401,24 +20074,12 @@
    "olderNames": [
     "ACAPI_3D_CreateSight"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 1533,
      "title": "[4/6] Add GetSurfaceTypesOfElements"
-    },
-    {
-     "number": 1505,
-     "title": "[3/6] Add GetCutPolygonsOfElements"
-    },
-    {
-     "number": 1500,
-     "title": "[2/6] Add GetBodyMaterialsOfElements"
-    },
-    {
-     "number": 1496,
-     "title": "[1/6] Add GetElementConnections"
     }
    ],
    "issues": []
@@ -20441,24 +20102,12 @@
    "olderNames": [
     "ACAPI_3D_DeleteSight"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 1533,
      "title": "[4/6] Add GetSurfaceTypesOfElements"
-    },
-    {
-     "number": 1505,
-     "title": "[3/6] Add GetCutPolygonsOfElements"
-    },
-    {
-     "number": 1500,
-     "title": "[2/6] Add GetBodyMaterialsOfElements"
-    },
-    {
-     "number": 1496,
-     "title": "[1/6] Add GetElementConnections"
     }
    ],
    "issues": []
@@ -20499,20 +20148,12 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 1533,
      "title": "[4/6] Add GetSurfaceTypesOfElements"
-    },
-    {
-     "number": 1505,
-     "title": "[3/6] Add GetCutPolygonsOfElements"
-    },
-    {
-     "number": 1500,
-     "title": "[2/6] Add GetBodyMaterialsOfElements"
     }
    ],
    "issues": []
@@ -20535,24 +20176,12 @@
    "olderNames": [
     "ACAPI_3D_SelectSight"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 1533,
      "title": "[4/6] Add GetSurfaceTypesOfElements"
-    },
-    {
-     "number": 1505,
-     "title": "[3/6] Add GetCutPolygonsOfElements"
-    },
-    {
-     "number": 1500,
-     "title": "[2/6] Add GetBodyMaterialsOfElements"
-    },
-    {
-     "number": 1496,
-     "title": "[1/6] Add GetElementConnections"
     }
    ],
    "issues": []
@@ -21470,14 +21099,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1516,
-     "title": "[5/6] User data of attributes and groups as key/value pairs"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1268,
@@ -21499,14 +21123,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1516,
-     "title": "[5/6] User data of attributes and groups as key/value pairs"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1268,
@@ -23318,18 +22937,6 @@
      "title": "[6/6] Add CloseWindows, RebuildCurrentDatabase and CreateSolidOperations"
     },
     {
-     "number": 1514,
-     "title": "[5/6] Add GetStoryControlPrimitives"
-    },
-    {
-     "number": 1511,
-     "title": "[3/6] Add CreateAddOnViewpoints and ChangeAddOnViewpoints"
-    },
-    {
-     "number": 1507,
-     "title": "[2/6] Add SetMasterLayoutContext and commands reading add-on viewpoints"
-    },
-    {
      "number": 1489,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
     },
@@ -23726,14 +23333,9 @@
     26
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1516,
-     "title": "[5/6] User data of attributes and groups as key/value pairs"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -23748,14 +23350,9 @@
     26
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1516,
-     "title": "[5/6] User data of attributes and groups as key/value pairs"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -23883,10 +23480,6 @@
     {
      "number": 1571,
      "title": "Fix the GetElementsInDrawOrder crash: walk between DrawOrderInit and DrawOrderTerm"
-    },
-    {
-     "number": 1514,
-     "title": "[5/6] Add GetStoryControlPrimitives"
     },
     {
      "number": 1454,
@@ -24072,14 +23665,9 @@
     26
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1516,
-     "title": "[5/6] User data of attributes and groups as key/value pairs"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24483,14 +24071,6 @@
     {
      "number": 1508,
      "title": "[4/6] Add GetViewOptions and SetViewOptions"
-    },
-    {
-     "number": 1504,
-     "title": "[1/6] Add ConvertUnitValues, GetPrinterAndPlotterInfo, GetRenovationStatusNames and GetClassificationItemParents"
-    },
-    {
-     "number": 1499,
-     "title": "[1/6] Add GetDrawingNumberingGridLines command"
     },
     {
      "number": 1449,
@@ -29518,10 +29098,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1620,
-     "title": "Hatch fill orientation in Get/SetDetailsOfElements; make a fill origin writable (#662)"
-    },
-    {
      "number": 1618,
      "title": "SetDetailsOfElements: say why Archicad refused the element (hidden or locked layer)"
     },
@@ -31261,10 +30837,6 @@
     {
      "number": 1533,
      "title": "[4/6] Add GetSurfaceTypesOfElements"
-    },
-    {
-     "number": 1513,
-     "title": "[4/6] Add Get3DModelCounts"
     },
     {
      "number": 1336,
@@ -35089,10 +34661,6 @@
      "title": "[2/6] SetLibraryPartParameters"
     },
     {
-     "number": 1516,
-     "title": "[5/6] User data of attributes and groups as key/value pairs"
-    },
-    {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     },
@@ -36929,7 +36497,7 @@
    "pullRequests": [
     {
      "number": 1620,
-     "title": "Hatch fill orientation in Get/SetDetailsOfElements; make a fill origin writable (#662)"
+     "title": "Hatch fill orientation in Get/SetDetailsOfElements"
     },
     {
      "number": 1611,
@@ -37002,10 +36570,6 @@
     {
      "number": 1518,
      "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
-    },
-    {
-     "number": 1513,
-     "title": "[4/6] Add Get3DModelCounts"
     },
     {
      "number": 1506,
@@ -46389,7 +45953,7 @@
     },
     {
      "number": 1620,
-     "title": "Hatch fill orientation in Get/SetDetailsOfElements; make a fill origin writable (#662)"
+     "title": "Hatch fill orientation in Get/SetDetailsOfElements"
     },
     {
      "number": 1619,
@@ -46486,26 +46050,6 @@
     {
      "number": 1519,
      "title": "[6/6] Add DeleteElementSets command (ACAPI_ElementSet_Delete)"
-    },
-    {
-     "number": 1516,
-     "title": "[5/6] User data of attributes and groups as key/value pairs"
-    },
-    {
-     "number": 1505,
-     "title": "[3/6] Add GetCutPolygonsOfElements"
-    },
-    {
-     "number": 1504,
-     "title": "[1/6] Add ConvertUnitValues, GetPrinterAndPlotterInfo, GetRenovationStatusNames and GetClassificationItemParents"
-    },
-    {
-     "number": 1501,
-     "title": "[2/6] Add GetCategoryValuesOfDefaults: element category values of tool defaults"
-    },
-    {
-     "number": 1500,
-     "title": "[2/6] Add GetBodyMaterialsOfElements"
     },
     {
      "number": 1462,
@@ -56167,7 +55711,7 @@
    "pullRequests": [
     {
      "number": 1620,
-     "title": "Hatch fill orientation in Get/SetDetailsOfElements; make a fill origin writable (#662)"
+     "title": "Hatch fill orientation in Get/SetDetailsOfElements"
     },
     {
      "number": 1611,
@@ -56240,10 +55784,6 @@
     {
      "number": 1518,
      "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
-    },
-    {
-     "number": 1513,
-     "title": "[4/6] Add Get3DModelCounts"
     },
     {
      "number": 1506,
@@ -60992,7 +60532,7 @@
    "pullRequests": [
     {
      "number": 1620,
-     "title": "Hatch fill orientation in Get/SetDetailsOfElements; make a fill origin writable (#662)"
+     "title": "Hatch fill orientation in Get/SetDetailsOfElements"
     },
     {
      "number": 1611,
@@ -61065,10 +60605,6 @@
     {
      "number": 1518,
      "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
-    },
-    {
-     "number": 1513,
-     "title": "[4/6] Add Get3DModelCounts"
     },
     {
      "number": 1506,
@@ -68389,16 +67925,8 @@
      "title": "[3/5] Classifications and properties of tool defaults"
     },
     {
-     "number": 1516,
-     "title": "[5/6] User data of attributes and groups as key/value pairs"
-    },
-    {
      "number": 1508,
      "title": "[4/6] Add GetViewOptions and SetViewOptions"
-    },
-    {
-     "number": 1504,
-     "title": "[1/6] Add ConvertUnitValues, GetPrinterAndPlotterInfo, GetRenovationStatusNames and GetClassificationItemParents"
     },
     {
      "number": 1503,
@@ -68705,10 +68233,6 @@
     {
      "number": 1534,
      "title": "[3/5] Classifications and properties of tool defaults"
-    },
-    {
-     "number": 1504,
-     "title": "[1/6] Add ConvertUnitValues, GetPrinterAndPlotterInfo, GetRenovationStatusNames and GetClassificationItemParents"
     },
     {
      "number": 1363,
