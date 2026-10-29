@@ -593,6 +593,172 @@ GS::ObjectState GetModelViewOptionsCommand::Execute (const GS::ObjectState& /*pa
     return response;
 }
 
+FindModelViewOptionCommand::FindModelViewOptionCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String FindModelViewOptionCommand::GetName () const
+{
+    return "FindModelViewOption";
+}
+
+GS::Optional<GS::UniString> FindModelViewOptionCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "description": "The model view option combination to find, given by id or by name.",
+        "properties": {
+            "modelViewOptionId": {
+                "type": "object",
+                "description": "The identifier of the model view option combination.",
+                "properties": {
+                    "guid": {
+                        "$ref": "#/Guid"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "guid"
+                ]
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the model view option combination, as shown in Document > Model View > Model View Options."
+            }
+        },
+        "additionalProperties": false,
+        "oneOf": [
+            {
+                "required": [
+                    "modelViewOptionId"
+                ]
+            },
+            {
+                "required": [
+                    "name"
+                ]
+            }
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> FindModelViewOptionCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "description": "The model view option combination found.",
+        "properties": {
+            "index": {
+                "type": "integer",
+                "description": "The index of the model view option combination."
+            },
+            "modelViewOptionId": {
+                "type": "object",
+                "description": "The identifier of the model view option combination.",
+                "properties": {
+                    "guid": {
+                        "$ref": "#/Guid"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "guid"
+                ]
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the model view option combination."
+            },
+            "flags": {
+                "type": "integer",
+                "description": "The flags of the model view option combination, as Archicad returns them."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "index",
+            "modelViewOptionId",
+            "name",
+            "flags"
+        ]
+    })";
+}
+
+GS::ObjectState FindModelViewOptionCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    API_ModelViewOptions_Head searchHead = {};
+    API_Guid guidToSearch = APINULLGuid;
+    GS::UniString nameToSearch;
+
+    const GS::ObjectState* modelViewOptionIdOS = parameters.Get ("modelViewOptionId");
+    if (modelViewOptionIdOS != nullptr) {
+        guidToSearch = GetGuidFromObjectState (*modelViewOptionIdOS);
+        if (guidToSearch == APINULLGuid) {
+            return CreateErrorResponse (APIERR_BADPARS, "modelViewOptionId is corrupt or missing.");
+        }
+        searchHead.guid = guidToSearch;
+    } else if (parameters.Get ("name", nameToSearch)) {
+        searchHead.uniStringNamePtr = &nameToSearch;
+    } else {
+        return CreateErrorResponse (APIERR_BADPARS, "Either modelViewOptionId or name is required.");
+    }
+
+    GSErrCode err = ACAPI_Navigator_ModelViewOptions_Search (&searchHead);
+
+    // The search is documented with the name only; when it does not find the guid, the
+    // combinations are walked through the way GetModelViewOptions reads them.
+    if (guidToSearch != APINULLGuid && (err != NoError || searchHead.guid != guidToSearch)) {
+        err = APIERR_BADID;
+
+        UInt32 count = 0;
+        ACAPI_Navigator_ModelViewOptions_GetNum (count);
+
+        for (UInt32 i = 1; i <= count; ++i) {
+            API_ModelViewOptionsType modelViewOption = {};
+            modelViewOption.head.index = i;
+
+            if (ACAPI_Navigator_ModelViewOptions_Get (&modelViewOption) == NoError && modelViewOption.head.guid == guidToSearch) {
+                searchHead.index = modelViewOption.head.index;
+                err = NoError;
+                break;
+            }
+        }
+    }
+
+    if (err != NoError) {
+        if (modelViewOptionIdOS != nullptr) {
+            return CreateErrorResponse (err, "No model view option combination has the given modelViewOptionId.");
+        }
+        return CreateErrorResponse (err, "No model view option combination is named '" + nameToSearch + "'.");
+    }
+
+    // The combination is read back by its index, so the name is returned as Archicad carries it.
+    GS::UniString name;
+    API_ModelViewOptionsType modelViewOption = {};
+    modelViewOption.head.index = searchHead.index;
+    modelViewOption.head.uniStringNamePtr = &name;
+
+    err = ACAPI_Navigator_ModelViewOptions_Get (&modelViewOption);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to read the model view option combination found.");
+    }
+    if (guidToSearch != APINULLGuid && modelViewOption.head.guid != guidToSearch) {
+        return CreateErrorResponse (APIERR_BADID, "No model view option combination has the given modelViewOptionId.");
+    }
+
+    GS::ObjectState response;
+    response.Add ("index", static_cast<Int32> (modelViewOption.head.index));
+    response.Add ("modelViewOptionId", CreateGuidObjectState (modelViewOption.head.guid));
+    response.Add ("name", name);
+    response.Add ("flags", static_cast<Int32> (modelViewOption.head.flags));
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Available from Archicad 27.");
+#endif
+}
+
 GetViewSettingsCommand::GetViewSettingsCommand () :
     CommandBase (CommonSchema::Used)
 {}
