@@ -1104,17 +1104,16 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
         targetLevels.Push (level);
     }
 
-    // Levels are set in two steps, because Archicad anchors the story ladder on the active
-    // story: that one never moves, and every other story is positioned relative to it.
-    // Measured on a live AC29: APIStory_SetElevation moves only the story it names, and
-    // APIStory_SetHeight moves whichever side of the boundary is further from the anchor.
-    // Measured on a live AC28 (#747): APIStory_SetHeight moves the story above the
-    // boundary even when that one is the active story, so a story below the active one
-    // cannot be moved through the height of the boundary between them - the active story
-    // moves instead. The two agree on every boundary above the active story, so the active
-    // story is moved down to the lowest story whose level changes for the duration of the
-    // level pass; then no boundary below the anchor has to change at all. The previously
-    // active story is restored afterwards.
+    // Every story that is not on its requested level is made the active story and given
+    // its elevation directly. APIStory_SetElevation moves the story it names and nothing
+    // else, while which side of a boundary APIStory_SetHeight moves differs between
+    // Archicad versions (on Archicad 27 it moves the active story below the boundary, on
+    // Archicad 28 the story above it), so heights are not used here at all.
+    //
+    // A story never crosses a neighbour: the stories that go down are moved first, from
+    // the bottom up, so the one below has already reached its lower level or is still
+    // below its own higher one; then the stories that go up are moved from the top down,
+    // with the same argument mirrored. The previously active story is restored afterwards.
     const short originalActStory = storyInfo.actStory;
     bool actStoryMoved = false;
     const GS::OnExit restoreActStory ([&] () {
@@ -1126,99 +1125,37 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
         }
     });
 
-    bool hasChangingStory = false;
-    GS::UIndex lowestChangingStory = 0;
+    GS::Array<GS::UIndex> moveOrder;
     for (GS::UIndex i = 0; i < storyCount; ++i) {
-        if (std::abs (currentStories[i].level - targetLevels[i]) >= StoryLevelTolerance) {
-            hasChangingStory = true;
-            lowestChangingStory = i;
-            break;
+        if (targetLevels[i] <= currentStories[i].level - StoryLevelTolerance) {
+            moveOrder.Push (i);
+        }
+    }
+    for (GS::UIndex i = storyCount; i > 0; --i) {
+        if (targetLevels[i - 1] >= currentStories[i - 1].level + StoryLevelTolerance) {
+            moveOrder.Push (i - 1);
         }
     }
 
-    const bool actStoryIsValid = storyInfo.actStory >= storyInfo.firstStory && storyInfo.actStory <= storyInfo.lastStory;
-
-    if (hasChangingStory && actStoryIsValid && storyInfo.actStory > currentStories[lowestChangingStory].index) {
-        API_StoryCmdType storyCmd = {};
-        storyCmd.action = APIStory_GoTo;
-        storyCmd.index  = currentStories[lowestChangingStory].index;
-
-        // Where the active story cannot be switched (#748) this falls back to anchoring on
-        // the story which is active, and the final check reports the levels it could not
-        // set, exactly as before.
-        if (ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd) == NoError) {
-            err = RefreshStoryInfo (storyInfo);
-            if (err != NoError) {
-                BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-                return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
-            }
-            if (static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1) != storyCount) {
-                BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-                return CreateFailedExecutionResult (APIERR_GENERAL, "The story structure changed unexpectedly.");
-            }
-            TakeStorySnapshot (storyInfo, currentStories);
-            actStoryMoved = storyInfo.actStory != originalActStory;
+    for (const GS::UIndex i : moveOrder) {
+        API_StoryCmdType goToCmd = {};
+        goToCmd.action = APIStory_GoTo;
+        goToCmd.index  = currentStories[i].index;
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&goToCmd);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to make the story active to set its level.");
         }
-    }
+        actStoryMoved = currentStories[i].index != originalActStory;
 
-    // Step one puts the anchor on its requested level. It has to come first - moving the
-    // anchor afterwards would change the gap to its neighbour and undo a distance already
-    // set. The anchor is the active story, the only one SetElevation is known to move.
-    const GS::UIndex anchor =
-        (storyInfo.actStory >= storyInfo.firstStory && storyInfo.actStory <= storyInfo.lastStory)
-            ? static_cast<GS::UIndex> (storyInfo.actStory - storyInfo.firstStory)
-            : 0;
-
-    if (std::abs (currentStories[anchor].level - targetLevels[anchor]) >= StoryLevelTolerance) {
-        API_StoryCmdType storyCmd = {};
-        storyCmd.action    = APIStory_SetElevation;
-        storyCmd.index     = currentStories[anchor].index;
-        storyCmd.elevation = targetLevels[anchor];
-
-        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        API_StoryCmdType elevationCmd = {};
+        elevationCmd.action    = APIStory_SetElevation;
+        elevationCmd.index     = currentStories[i].index;
+        elevationCmd.elevation = targetLevels[i];
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&elevationCmd);
         if (err != NoError) {
             BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
             return CreateFailedExecutionResult (err, "Failed to change story elevation.");
-        }
-
-        err = RefreshStoryInfo (storyInfo);
-        if (err != NoError) {
-            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-            return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
-        }
-        if (static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1) != storyCount) {
-            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-            return CreateFailedExecutionResult (APIERR_GENERAL, "The story structure changed unexpectedly.");
-        }
-        TakeStorySnapshot (storyInfo, currentStories);
-    }
-
-    // Step two sets the distances, working outwards from the anchor in both directions so
-    // that every height is set against a story which is already on its requested level and
-    // positions exactly one story that is not.
-    for (GS::UIndex i = anchor; i + 1 < storyCount; ++i) {
-        API_StoryCmdType storyCmd = {};
-        storyCmd.action = APIStory_SetHeight;
-        storyCmd.index  = currentStories[i].index;
-        storyCmd.height = targetLevels[i + 1] - targetLevels[i];
-
-        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
-        if (err != NoError) {
-            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-            return CreateFailedExecutionResult (err, "Failed to change story height.");
-        }
-    }
-
-    for (GS::UIndex i = anchor; i > 0; --i) {
-        API_StoryCmdType storyCmd = {};
-        storyCmd.action = APIStory_SetHeight;
-        storyCmd.index  = currentStories[i - 1].index;
-        storyCmd.height = targetLevels[i] - targetLevels[i - 1];
-
-        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
-        if (err != NoError) {
-            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-            return CreateFailedExecutionResult (err, "Failed to change story height.");
         }
     }
 
@@ -1235,7 +1172,7 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
 
     // A structure which silently ended up somewhere else than requested is worse than an
     // error, so report the first level which could not be set, naming both levels so the
-    // message says what actually happened, and the story the ladder was anchored on.
+    // message says what actually happened, and the story that is active.
     for (GS::UIndex i = 0; i < storyCount; ++i) {
         if (std::abs (currentStories[i].level - targetLevels[i]) >= StoryLevelTolerance) {
             const GS::UniString message = GS::UniString::Printf (
