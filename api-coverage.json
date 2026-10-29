@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-29 11:58 UTC",
+ "generatedAt": "2026-10-29 13:20 UTC",
  "versions": [
   25,
   26,
@@ -12,9 +12,9 @@
   "not applicable": 620,
   "done": 1099,
   "claimed": 52,
-  "merged": 574,
+  "merged": 606,
   "open": 96,
-  "in progress": 438
+  "in progress": 406
  },
  "items": [
   {
@@ -4405,10 +4405,6 @@
      "title": "Set3DProjectionSettings: set an axonometry as well as a perspective"
     },
     {
-     "number": 1544,
-     "title": "[6/6] Add CloseWindows, RebuildCurrentDatabase and CreateSolidOperations"
-    },
-    {
      "number": 1543,
      "title": "[5/6] Add UpdateLibraryPartSections and GetLibraryPart2DPrimitives"
     },
@@ -5894,14 +5890,9 @@
    "olderNames": [
     "APIDb_RebuildCurrentDatabaseID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1544,
-     "title": "[6/6] Add CloseWindows, RebuildCurrentDatabase and CreateSolidOperations"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -8395,14 +8386,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1534,
-     "title": "[3/5] Classifications and properties of tool defaults"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9108,14 +9094,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1534,
-     "title": "[3/5] Classifications and properties of tool defaults"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9176,14 +9157,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1534,
-     "title": "[3/5] Classifications and properties of tool defaults"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10325,14 +10301,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1544,
-     "title": "[6/6] Add CloseWindows, RebuildCurrentDatabase and CreateSolidOperations"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -22854,14 +22825,9 @@
    "olderNames": [
     "APIDb_CloseWindowID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1544,
-     "title": "[6/6] Add CloseWindows, RebuildCurrentDatabase and CreateSolidOperations"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -22943,10 +22909,6 @@
     {
      "number": 1569,
      "title": "RemoveSolidElementLinks: no false failure when the 3D window is active"
-    },
-    {
-     "number": 1544,
-     "title": "[6/6] Add CloseWindows, RebuildCurrentDatabase and CreateSolidOperations"
     },
     {
      "number": 1489,
@@ -30609,10 +30571,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     },
@@ -34011,12 +33969,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36130,10 +36083,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -36236,10 +36185,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
     },
     {
      "number": 1462,
@@ -36356,14 +36301,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -36412,10 +36352,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -36552,10 +36488,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
@@ -36570,10 +36502,6 @@
     {
      "number": 1528,
      "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
     },
     {
      "number": 1523,
@@ -36720,12 +36648,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36767,10 +36690,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
     },
     {
      "number": 1462,
@@ -36890,14 +36809,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
     },
     {
      "number": 1523,
@@ -37170,14 +37081,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
@@ -37372,16 +37275,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37407,14 +37301,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
     },
     {
      "number": 1523,
@@ -37451,10 +37337,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
@@ -37523,14 +37405,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
@@ -37565,10 +37439,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -37623,10 +37493,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
     }
@@ -37671,12 +37537,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37694,12 +37555,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37717,12 +37573,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37792,12 +37643,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37823,14 +37669,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
     },
     {
      "number": 1523,
@@ -38691,14 +38529,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -38900,16 +38733,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38935,14 +38759,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
     },
     {
      "number": 1523,
@@ -38978,10 +38794,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -39023,10 +38835,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -39047,10 +38855,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -39074,10 +38878,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -39119,10 +38919,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -39143,10 +38939,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -39188,10 +38980,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -39212,10 +39000,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -39240,10 +39024,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
     }
@@ -39266,10 +39046,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -39290,10 +39066,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -39335,10 +39107,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -39359,10 +39127,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -39404,10 +39168,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -39428,10 +39188,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -39456,10 +39212,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -39482,14 +39234,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -39525,10 +39269,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -39601,10 +39341,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -39625,10 +39361,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -39652,10 +39384,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -39697,10 +39425,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -39721,10 +39445,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -39766,10 +39486,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -39790,10 +39506,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -39835,10 +39547,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -39859,10 +39567,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -39904,10 +39608,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -39928,10 +39628,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -39954,12 +39650,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39977,10 +39668,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -40002,10 +39689,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -40052,10 +39735,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -40076,10 +39755,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -40121,10 +39796,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -40145,10 +39816,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -40199,14 +39866,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
@@ -40236,16 +39895,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40271,14 +39921,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
     },
     {
      "number": 1523,
@@ -40316,10 +39958,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
     }
@@ -40342,10 +39980,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -40366,10 +40000,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -40420,10 +40050,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -40444,10 +40070,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -40516,14 +40138,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
@@ -40559,10 +40173,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -40585,10 +40195,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -40675,12 +40281,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40696,12 +40297,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40761,10 +40357,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -40785,10 +40377,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -40828,12 +40416,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40850,10 +40433,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -40876,12 +40455,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40899,10 +40473,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -40924,10 +40494,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -40969,10 +40535,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -40993,10 +40555,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -41088,12 +40646,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41109,12 +40662,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41140,14 +40688,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
     },
     {
      "number": 1523,
@@ -41179,16 +40719,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41214,14 +40745,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
     },
     {
      "number": 1523,
@@ -41258,10 +40781,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
@@ -41293,10 +40812,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
     }
@@ -41319,10 +40834,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -41343,10 +40854,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -41397,10 +40904,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -41421,10 +40924,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -41448,14 +40947,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -41509,10 +41000,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -41533,10 +41020,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -41561,10 +41044,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -41587,10 +41066,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -41663,10 +41138,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -41687,10 +41158,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -41713,10 +41180,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -41757,10 +41220,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -41798,10 +41257,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -41823,12 +41278,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41846,10 +41296,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -41871,10 +41317,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -41916,10 +41358,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -41940,10 +41378,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -42003,10 +41437,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -42027,10 +41457,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -42063,14 +41489,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
@@ -42100,16 +41518,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -42135,14 +41544,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
     },
     {
      "number": 1523,
@@ -42179,10 +41580,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
@@ -42251,14 +41648,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
@@ -42293,10 +41682,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -42351,10 +41736,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
     }
@@ -42399,12 +41780,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -42422,12 +41798,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -42445,12 +41816,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -42520,12 +41886,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -42551,14 +41912,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
     },
     {
      "number": 1523,
@@ -42589,16 +41942,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -42623,14 +41967,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
     },
     {
      "number": 1523,
@@ -42667,10 +42003,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
@@ -42699,12 +42031,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -42738,12 +42065,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -42779,10 +42101,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
     }
@@ -42804,10 +42122,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -42846,12 +42160,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -42887,14 +42196,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
@@ -42928,10 +42229,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -43002,10 +42299,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -43027,10 +42320,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -43071,10 +42360,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -43112,12 +42397,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43151,12 +42431,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43173,12 +42448,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43196,10 +42466,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -43238,12 +42504,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43285,14 +42546,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
     },
     {
      "number": 1523,
@@ -43339,14 +42592,6 @@
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
     },
     {
      "number": 1523,
@@ -43907,10 +43152,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -44380,10 +43621,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -44415,10 +43652,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
     },
     {
      "number": 1462,
@@ -44627,10 +43860,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -44760,10 +43989,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
     },
     {
      "number": 1462,
@@ -45132,10 +44357,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -45286,10 +44507,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
     },
     {
      "number": 1462,
@@ -45572,10 +44789,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -45684,10 +44897,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
@@ -45698,10 +44907,6 @@
     {
      "number": 1535,
      "title": "[6/6] Add DeleteUserDataOfElements"
-    },
-    {
-     "number": 1534,
-     "title": "[3/5] Classifications and properties of tool defaults"
     },
     {
      "number": 1533,
@@ -45932,14 +45137,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -46110,14 +45310,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -46724,10 +45919,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -46800,10 +45991,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -46874,10 +46061,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
     },
     {
      "number": 1462,
@@ -47008,10 +46191,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -47114,10 +46293,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
     },
     {
      "number": 1462,
@@ -47246,10 +46421,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
     },
     {
      "number": 1462,
@@ -47554,10 +46725,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -47796,14 +46963,9 @@
     27
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47893,14 +47055,9 @@
     27
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47984,14 +47141,9 @@
     28
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -48080,14 +47232,9 @@
     27
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48823,10 +47970,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -48905,10 +48048,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -48938,10 +48077,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -49088,10 +48223,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -49117,16 +48248,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49152,14 +48274,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
     },
     {
      "number": 1523,
@@ -49195,10 +48309,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -49240,10 +48350,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -49264,10 +48370,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -49291,10 +48393,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -49336,10 +48434,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -49360,10 +48454,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -49405,10 +48495,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -49429,10 +48515,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -49457,10 +48539,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
     }
@@ -49483,10 +48561,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -49507,10 +48581,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -49552,10 +48622,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -49576,10 +48642,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -49621,10 +48683,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -49645,10 +48703,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -49673,10 +48727,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -49699,14 +48749,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -49742,10 +48784,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -49818,10 +48856,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -49842,10 +48876,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -49869,10 +48899,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -49914,10 +48940,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -49938,10 +48960,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -49983,10 +49001,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -50007,10 +49021,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -50052,10 +49062,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -50076,10 +49082,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -50121,10 +49123,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -50145,10 +49143,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -50171,12 +49165,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50194,10 +49183,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -50219,10 +49204,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -50269,10 +49250,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -50293,10 +49270,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -50338,10 +49311,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -50362,10 +49331,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -50416,14 +49381,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
@@ -50453,16 +49410,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50488,14 +49436,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
     },
     {
      "number": 1523,
@@ -50532,10 +49472,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
@@ -50567,10 +49503,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
     }
@@ -50593,10 +49525,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -50617,10 +49545,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -50671,10 +49595,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -50695,10 +49615,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -50722,14 +49638,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -50783,10 +49691,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -50807,10 +49711,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -50835,10 +49735,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -50861,10 +49757,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -50937,10 +49829,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -50961,10 +49849,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -50987,10 +49871,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -51031,10 +49911,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -51072,10 +49948,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -51097,12 +49969,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51120,10 +49987,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -51145,10 +50008,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -51190,10 +50049,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -51214,10 +50069,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -51277,10 +50128,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -51301,10 +50148,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -51337,14 +50180,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
@@ -51374,16 +50209,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51409,14 +50235,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
     },
     {
      "number": 1523,
@@ -51454,10 +50272,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
     }
@@ -51480,10 +50294,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -51504,10 +50314,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -51558,10 +50364,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -51582,10 +50384,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -51654,14 +50452,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
@@ -51697,10 +50487,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -51723,10 +50509,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -51813,12 +50595,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51834,12 +50611,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51899,10 +50671,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -51923,10 +50691,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -51966,12 +50730,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51988,10 +50747,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -52014,12 +50769,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52037,10 +50787,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -52062,10 +50808,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -52107,10 +50849,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -52131,10 +50869,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -52226,12 +50960,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52247,12 +50976,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52278,14 +51002,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
     },
     {
      "number": 1523,
@@ -52316,16 +51032,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52350,14 +51057,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
     },
     {
      "number": 1523,
@@ -52409,12 +51108,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52450,10 +51144,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
     }
@@ -52475,10 +51165,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -52517,12 +51203,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52575,10 +51256,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -52600,14 +51277,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -52642,10 +51311,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -52716,10 +51381,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -52741,10 +51402,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -52785,10 +51442,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -52826,12 +51479,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52848,12 +51496,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52871,10 +51514,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -52913,12 +51552,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52958,10 +51592,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -53010,14 +51640,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
@@ -53056,10 +51678,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
     },
     {
      "number": 1462,
@@ -53358,10 +51976,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -53610,10 +52224,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -53642,14 +52252,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -53819,14 +52424,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -53879,10 +52479,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -54003,14 +52599,9 @@
     27
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -54052,14 +52643,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -54229,10 +52815,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
     },
     {
      "number": 1462,
@@ -54536,14 +53118,9 @@
     27
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -54557,12 +53134,12 @@
     27
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
    ],
    "issues": []
@@ -54578,14 +53155,9 @@
     27
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -54599,12 +53171,12 @@
     27
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
    ],
    "issues": []
@@ -54620,12 +53192,12 @@
     27
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
    ],
    "issues": []
@@ -54641,14 +53213,9 @@
     27
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -54664,12 +53231,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -54685,12 +53247,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -54706,12 +53263,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -54743,12 +53295,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -54762,12 +53309,12 @@
     27
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
    ],
    "issues": []
@@ -54786,14 +53333,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -54810,14 +53352,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -54836,12 +53373,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -54860,12 +53392,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -54882,12 +53409,12 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
    ],
    "issues": []
@@ -54905,14 +53432,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -54936,10 +53458,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -55098,10 +53616,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
@@ -55116,10 +53630,6 @@
     {
      "number": 1528,
      "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
     },
     {
      "number": 1523,
@@ -55267,12 +53777,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -55316,10 +53821,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
     },
     {
      "number": 1462,
@@ -55373,10 +53874,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
     },
     {
      "number": 1462,
@@ -55720,10 +54217,6 @@
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
     },
     {
      "number": 1462,
@@ -56147,14 +54640,9 @@
     27
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -56443,10 +54931,6 @@
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
     },
     {
      "number": 1462,
@@ -56957,10 +55441,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -57063,10 +55543,6 @@
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
     },
     {
      "number": 1462,
@@ -57319,14 +55795,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -57580,10 +56051,6 @@
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
     },
     {
      "number": 1462,
@@ -58024,10 +56491,6 @@
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
     },
     {
      "number": 1462,
@@ -58507,14 +56970,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -58882,10 +57340,6 @@
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
     },
     {
      "number": 1462,
@@ -59643,10 +58097,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -59768,10 +58218,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -59801,10 +58247,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -59915,10 +58357,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
@@ -59933,10 +58371,6 @@
     {
      "number": 1528,
      "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
     },
     {
      "number": 1523,
@@ -60127,10 +58561,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -60164,10 +58594,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
     },
     {
      "number": 1462,
@@ -60312,10 +58738,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -60438,10 +58860,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -60544,10 +58962,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
     },
     {
      "number": 1462,
@@ -60682,14 +59096,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
@@ -60728,10 +59134,6 @@
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
     },
     {
      "number": 1523,
@@ -61036,14 +59438,6 @@
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
     },
     {
      "number": 1523,
@@ -61366,10 +59760,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -61562,10 +59952,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1539,
-     "title": "[1/6] MEP ports, connections and element reads"
     },
     {
      "number": 1462,
@@ -66793,10 +65179,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1525,
-     "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -67261,10 +65643,6 @@
      "title": "[4/5] Pens, attribute classification and built-in properties, element info strings"
     },
     {
-     "number": 1534,
-     "title": "[3/5] Classifications and properties of tool defaults"
-    },
-    {
      "number": 1508,
      "title": "[4/6] Add GetViewOptions and SetViewOptions"
     },
@@ -67569,10 +65947,6 @@
     {
      "number": 1536,
      "title": "[4/5] Pens, attribute classification and built-in properties, element info strings"
-    },
-    {
-     "number": 1534,
-     "title": "[3/5] Classifications and properties of tool defaults"
     },
     {
      "number": 1363,
@@ -68725,10 +67099,6 @@
     {
      "number": 1536,
      "title": "[4/5] Pens, attribute classification and built-in properties, element info strings"
-    },
-    {
-     "number": 1534,
-     "title": "[3/5] Classifications and properties of tool defaults"
     },
     {
      "number": 1531,
