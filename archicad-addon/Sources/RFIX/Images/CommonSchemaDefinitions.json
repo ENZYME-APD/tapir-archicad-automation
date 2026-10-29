@@ -4466,6 +4466,18 @@
             "nodeId": {
                 "type": "number",
                 "description": "Polygon vertex id of the base element, from its memo's vertexIDs, for elements with a polygon."
+            },
+            "textHeight": {
+                "type": "number",
+                "description": "Character height of the dimension text in mm, as the creation commands take it."
+            },
+            "textPen": {
+                "type": "integer",
+                "description": "Pen index of the dimension text."
+            },
+            "textFrame": {
+                "type": "boolean",
+                "description": "Whether the dimension text has a frame."
             }
         }
     },

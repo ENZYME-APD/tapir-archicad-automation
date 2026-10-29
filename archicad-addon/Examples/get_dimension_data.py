@@ -48,9 +48,10 @@ def PrintDimensionData (dimensionId):
         # baseElementId is missing when the witness point is not attached to any element.
         baseElementId = p.get ('baseElementId')
         baseElement = next ((i for i, wallId in enumerate (wallIds) if baseElementId is not None and wallId['guid'] == baseElementId['guid']), None)
-        print ('  wall {} at {} value={} line={} inIndex={} special={} nodeType={} nodeStatus={} nodeId={}'.format (
+        print ('  wall {} at {} value={} line={} inIndex={} special={} nodeType={} nodeStatus={} nodeId={} text={}mm pen {} frame={}'.format (
             baseElement, Rounded (p['coordinate']), round (p['dimensionValue'], 6),
-            p['line'], p['inIndex'], p['special'], p['nodeType'], p['nodeStatus'], p['nodeId']))
+            p['line'], p['inIndex'], p['special'], p['nodeType'], p['nodeStatus'], p['nodeId'],
+            round (p['textHeight'], 6), p['textPen'], p['textFrame']))
     return data
 
 data = PrintDimensionData (dimensions[0])
@@ -63,6 +64,10 @@ if all ('baseElementId' in p for p in data['witnessPoints']):
             {
                 'referencePoint': {'x': 0.0, 'y': -57.0},
                 'direction': data['direction'],
+                # The text settings read back are taken over as well, here with a frame added.
+                'textHeight': data['witnessPoints'][0]['textHeight'],
+                'textPen': data['witnessPoints'][0]['textPen'],
+                'textFrame': True,
                 'witnessPoints': [
                     {
                         'elementId': p['baseElementId'],
@@ -81,6 +86,7 @@ if all ('baseElementId' in p for p in data['witnessPoints']):
     rebuiltData = PrintDimensionData (rebuilt[0])
     print ('rebuilt dimension measures the same: {}'.format (
         [Rounded (p['coordinate']) for p in rebuiltData['witnessPoints']] == [Rounded (p['coordinate']) for p in data['witnessPoints']]))
+    print ('rebuilt dimension texts are framed: {}'.format (all (p['textFrame'] for p in rebuiltData['witnessPoints'])))
 else:
     print ('not every witness point is attached to a wall, nothing to rebuild')
 
