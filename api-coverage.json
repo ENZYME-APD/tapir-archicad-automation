@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-29 14:39 UTC",
+ "generatedAt": "2026-10-29 15:17 UTC",
  "versions": [
   25,
   26,
@@ -2870,7 +2870,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    }
+   ],
    "issues": [
     {
      "number": 781,
@@ -2966,7 +2971,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    }
+   ],
    "issues": []
   },
   {
@@ -3049,6 +3059,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    },
+    {
      "number": 1619,
      "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
     },
@@ -3108,6 +3122,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    },
     {
      "number": 975,
      "title": "Add ModifyPens: change single pens of the active pen table"
@@ -3274,7 +3292,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    }
+   ],
    "issues": []
   },
   {
@@ -3345,6 +3368,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    },
+    {
      "number": 1625,
      "title": "MoveAttributesAndFolders: already in the target folder counts as moved; requested paths in folder messages"
     },
@@ -3377,6 +3404,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    },
     {
      "number": 1625,
      "title": "MoveAttributesAndFolders: already in the target folder counts as moved; requested paths in folder messages"
@@ -3661,7 +3692,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    }
+   ],
    "issues": []
   },
   {
@@ -3755,6 +3791,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    },
     {
      "number": 1625,
      "title": "MoveAttributesAndFolders: already in the target folder counts as moved; requested paths in folder messages"
@@ -4396,6 +4436,10 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    },
     {
      "number": 1584,
      "title": "[3/4] DeleteGhostRecords, HighlightElements on Archicad 25, GetDetailsOfElements for elements of other databases"
@@ -5320,6 +5364,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    },
+    {
      "number": 1634,
      "title": "IFCFileOperation: storyIndex for merge, so the IFC's storeys no longer follow the active story (#1616)"
     },
@@ -5465,6 +5513,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    },
+    {
      "number": 1569,
      "title": "RemoveSolidElementLinks: no false failure when the 3D window is active"
     },
@@ -5582,7 +5634,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    }
+   ],
    "issues": []
   },
   {
@@ -5605,7 +5662,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    }
+   ],
    "issues": []
   },
   {
@@ -5628,7 +5690,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    }
+   ],
    "issues": []
   },
   {
@@ -5674,7 +5741,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    }
+   ],
    "issues": []
   },
   {
@@ -5697,7 +5769,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    }
+   ],
    "issues": []
   },
   {
@@ -5753,7 +5830,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    }
+   ],
    "issues": [
     {
      "number": 1423,
@@ -5781,7 +5863,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    }
+   ],
    "issues": []
   },
   {
@@ -5804,7 +5891,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    }
+   ],
    "issues": []
   },
   {
@@ -6345,7 +6437,12 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "memory management",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    }
+   ],
    "issues": []
   },
   {
@@ -7510,6 +7607,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    },
+    {
      "number": 1629,
      "title": "ModifySlabs: report a floor fill origin or matrix that Archicad ignored (#662)"
     },
@@ -7614,7 +7715,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    }
+   ],
    "issues": [
     {
      "number": 652,
@@ -8194,6 +8300,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    },
+    {
      "number": 1629,
      "title": "ModifySlabs: report a floor fill origin or matrix that Archicad ignored (#662)"
     },
@@ -8509,7 +8619,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    }
+   ],
    "issues": [
     {
      "number": 652,
@@ -8624,6 +8739,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -8848,6 +8967,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    },
     {
      "number": 1581,
      "title": "[1/4] Add GetTextureCoordinates and convex polygons on TriangulatePolygonsOfElements"
@@ -22924,6 +23047,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    },
+    {
      "number": 1634,
      "title": "IFCFileOperation: storyIndex for merge, so the IFC's storeys no longer follow the active story (#1616)"
     },
@@ -34627,6 +34754,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    },
+    {
      "number": 1619,
      "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
     },
@@ -44841,6 +44972,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    },
     {
      "number": 1634,
      "title": "IFCFileOperation: storyIndex for merge, so the IFC's storeys no longer follow the active story (#1616)"
@@ -65655,6 +65790,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1635,
+     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
+    },
     {
      "number": 1619,
      "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
