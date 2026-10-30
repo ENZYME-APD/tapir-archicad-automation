@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 57 % | 82 | 39 | 8 | 13 | 3 | 19 |  | 57 |
 | C++ API (ACAPI::, IFCAPI::) | 80 % | 1436 | 679 | 476 | 248 | 32 | 1 |  | 391 |
 
-Archicad 25–30 DevKits; updated 2026-10-30 12:17 UTC.
+Archicad 25–30 DevKits; updated 2026-10-30 12:29 UTC.
 
 | | Status |
 |---|---|
@@ -227,7 +227,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_SolidLink_GetOperators` – Retrieves the operator elements linked to a target element.
 - ✅ `ACAPI_Element_SolidLink_GetTargets` – Retrieves the target elements linked to an operator element.
 - 🚧 `ACAPI_Element_SolidLink_GetTime` – Retrieves the creation time of a Solid Operation Link. — [#1358](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1358 "[2/4] GetSolidElementLinks: report when each solid link was made (linkTime)")
-- ✅ `ACAPI_Element_SolidLink_Remove` – Discontinues a Solid Operation Link.
+- ✅ `ACAPI_Element_SolidLink_Remove` – Discontinues a Solid Operation Link. — [#1658](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1658 "CreateLayout: document that a custom layout number still counts in the numbering")
 - 🔀 `ACAPI_Element_SolidOperation_Create` – Creates a new Solid Operation. — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
 - ✅ `ACAPI_Element_Trim_Elements` – Trim elements given in the array with Roof(s) and/or Shell(s) are contained in the array.
 - ✅ `ACAPI_Element_Trim_ElementsWith` – Trim elements given in the array with the given Roof or Shell with the type of trim.

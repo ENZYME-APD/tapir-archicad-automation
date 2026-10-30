@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-30 12:17 UTC",
+ "generatedAt": "2026-10-30 12:29 UTC",
  "versions": [
   25,
   26,
@@ -10442,7 +10442,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1658,
+     "title": "CreateLayout: document that a custom layout number still counts in the numbering"
+    }
+   ],
    "issues": []
   },
   {
