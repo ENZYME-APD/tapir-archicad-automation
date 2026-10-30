@@ -8924,6 +8924,45 @@
             "zCoordinate"
         ]
     },
+    "RailingDetails": {
+        "type": "object",
+        "properties": {
+            "referenceLine": {
+                "type": "array",
+                "description": "The 2D coordinates of the reference line of the railing, one per node.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "bottomOffset": {
+                "type": "number",
+                "description": "The base height of the railing relative to the floor level."
+            },
+            "zCoordinate": {
+                "type": "number",
+                "description": "The absolute elevation of the base of the railing."
+            },
+            "height": {
+                "type": "number",
+                "description": "The segment height new segments of the railing are made with (the default segment)."
+            },
+            "segmentHeights": {
+                "type": "array",
+                "description": "The height of each segment of the railing, in the order of the reference line.",
+                "items": {
+                    "type": "number"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "referenceLine",
+            "bottomOffset",
+            "zCoordinate",
+            "height",
+            "segmentHeights"
+        ]
+    },
     "CurtainWallDetails": {
         "type": "object",
         "properties": {
@@ -9972,6 +10011,9 @@
             },
             {
                 "$ref": "#/ZoneDetails"
+            },
+            {
+                "$ref": "#/RailingDetails"
             },
             {
                 "$ref": "#/CurtainWallDetails"
