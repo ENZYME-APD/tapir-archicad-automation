@@ -40,6 +40,85 @@ static void AddPivotPolygonFromMemo (const API_Guid& guid, GS::ObjectState& os)
     ACAPI_DisposeElemMemoHdls (&memo);
 }
 
+// The surfaces of a Roof or Shell are in its API_ShellBaseType, in the same
+// API_OverriddenAttribute shape as the Wall's and the Slab's (#1672).
+static void AddShellBaseSurfaces (const API_ShellBaseType& base, GS::ObjectState& os)
+{
+    os.Add ("topMaterial", CreateOverriddenMaterialObjectState (base.topMat));
+    os.Add ("sideMaterial", CreateOverriddenMaterialObjectState (base.sidMat));
+    os.Add ("bottomMaterial", CreateOverriddenMaterialObjectState (base.botMat));
+    os.Add ("materialsChained", base.materialsChained);
+}
+
+// The custom side surfaces of a Roof's polygon edges (APIMemoMask_SideMaterials), one per
+// edge in the order of polygonOutline and then of each hole: sideMaterials[i] belongs to the
+// edge from coords[i] to coords[i + 1], so index 0 and the closing vertex of each sub-polygon
+// (the pends) carry no edge, the way AddPolyToMemo (ElementCreationCommands.cpp) fills them (#1672).
+static void AddEdgeSideMaterialsFromMemo (const API_Guid& guid, GS::ObjectState& os)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_Polygon | APIMemoMask_SideMaterials) != NoError || memo.coords == nullptr || memo.sideMaterials == nullptr) {
+        return;
+    }
+    const GSSize nCoords = BMhGetSize (reinterpret_cast<GSHandle> (memo.coords)) / sizeof (API_Coord);
+    const GSSize nSideMaterials = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.sideMaterials)) / sizeof (API_OverriddenAttribute);
+    const GSSize nPends = memo.pends == nullptr ? 0 : BMhGetSize (reinterpret_cast<GSHandle> (memo.pends)) / sizeof (Int32);
+
+    const auto& edgeSideMaterials = os.AddList<GS::ObjectState> ("edgeSideMaterials");
+    GSIndex iPend = 1;
+    for (GSIndex i = 1; i < nCoords - 1 && i < nSideMaterials; ++i) {
+        if (iPend < nPends && (*memo.pends)[iPend] == i) {
+            ++iPend;
+            continue;
+        }
+        edgeSideMaterials (CreateOverriddenMaterialObjectState (memo.sideMaterials[i]));
+    }
+}
+
+// The surfaces of a Beam or Column are kept on each of its segments (#1672).
+static void AddBeamSegmentSurfacesFromMemo (const API_Guid& guid, GS::ObjectState& os)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_BeamSegment) != NoError || memo.beamSegments == nullptr) {
+        return;
+    }
+    const GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.beamSegments)) / sizeof (API_BeamSegmentType);
+    const auto& segments = os.AddList<GS::ObjectState> ("segments");
+    for (GSIndex i = 0; i < nSegments; ++i) {
+        const API_BeamSegmentType& segment = memo.beamSegments[i];
+        GS::ObjectState segmentOs;
+        segmentOs.Add ("leftMaterial", CreateOverriddenMaterialObjectState (segment.leftMaterial));
+        segmentOs.Add ("topMaterial", CreateOverriddenMaterialObjectState (segment.topMaterial));
+        segmentOs.Add ("rightMaterial", CreateOverriddenMaterialObjectState (segment.rightMaterial));
+        segmentOs.Add ("bottomMaterial", CreateOverriddenMaterialObjectState (segment.bottomMaterial));
+        segmentOs.Add ("endsMaterial", CreateOverriddenMaterialObjectState (segment.endsMaterial));
+        segmentOs.Add ("extrusionMaterial", CreateOverriddenMaterialObjectState (segment.extrusionMaterial));
+        segmentOs.Add ("materialsChained", segment.materialsChained);
+        segments (segmentOs);
+    }
+}
+
+static void AddColumnSegmentSurfacesFromMemo (const API_Guid& guid, GS::ObjectState& os)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_ColumnSegment) != NoError || memo.columnSegments == nullptr) {
+        return;
+    }
+    const GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.columnSegments)) / sizeof (API_ColumnSegmentType);
+    const auto& segments = os.AddList<GS::ObjectState> ("segments");
+    for (GSIndex i = 0; i < nSegments; ++i) {
+        const API_ColumnSegmentType& segment = memo.columnSegments[i];
+        GS::ObjectState segmentOs;
+        segmentOs.Add ("extrusionSurfaceMaterial", CreateOverriddenMaterialObjectState (segment.extrusionSurfaceMaterial));
+        segmentOs.Add ("endsMaterial", CreateOverriddenMaterialObjectState (segment.endsMaterial));
+        segmentOs.Add ("materialsChained", segment.materialsChained);
+        segments (segmentOs);
+    }
+}
+
 // The baseline of a Stair is a polyline, not a polygon: it lives in the memo's stairBaseLine
 // (the very handle CreateStairsCommand::SetTypeSpecificParameters fills in to place one),
 // 1-based like the other memo polygons, with no closing vertex. Read with APIMemoMask_All,
@@ -1403,6 +1482,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     elem.beam.coverFillTransformationType, elem.beam.coverFillTransformation));
                 AddBeamHolesFromMemo (elem.header.guid, typeSpecificDetails, "holes");
                 AddBeamSectionFromMemo (elem.header.guid, typeSpecificDetails);
+                AddBeamSegmentSurfacesFromMemo (elem.header.guid, typeSpecificDetails);
             } break;
 
             case API_BeamSegmentID: {
@@ -1500,6 +1580,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     elem.column.coverFillType, elem.column.coverFillForegroundPen, elem.column.coverFillBackgroundPen,
                     elem.column.coverFillTransformationType, elem.column.coverFillTransformation));
                 AddColumnSectionFromMemo (elem.header.guid, typeSpecificDetails);
+                AddColumnSegmentSurfacesFromMemo (elem.header.guid, typeSpecificDetails);
                 break;
 
             case API_ColumnSegmentID: {
@@ -1942,6 +2023,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 } else {
                     typeSpecificDetails.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, base.buildingMaterial)));
                 }
+                AddShellBaseSurfaces (base, typeSpecificDetails);
                 if (elem.roof.roofClass == API_PlaneRoofID) {
                     typeSpecificDetails.Add ("angle", elem.roof.u.planeRoof.angle);
                     GS::ObjectState pivotLine;
@@ -1961,6 +2043,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
                 // the roof's own polygon: the plane roof's outline, the multi-plane roof's contour
                 AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
+                AddEdgeSideMaterialsFromMemo (elem.header.guid, typeSpecificDetails);
             } break;
 
             case API_HotlinkID: {

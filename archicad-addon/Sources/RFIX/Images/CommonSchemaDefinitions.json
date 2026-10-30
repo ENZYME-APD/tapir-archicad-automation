@@ -8009,6 +8009,13 @@
             "profileId": {
                 "$ref": "#/AttributeId",
                 "description": "Present when the cross section uses a custom extruded profile rather than a building material."
+            },
+            "segments": {
+                "type": "array",
+                "description": "The surfaces of each segment of the beam.",
+                "items": {
+                    "$ref": "#/BeamSegmentSurfaces"
+                }
             }
         },
         "additionalProperties": false,
@@ -8048,6 +8055,19 @@
             },
             "compositeId": {
                 "$ref": "#/AttributeId"
+            },
+            "topMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "sideMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "bottomMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "materialsChained": {
+                "type": "boolean",
+                "description": "Whether the surface materials are chained."
             },
             "angle": {
                 "type": "number",
@@ -8090,6 +8110,13 @@
             },
             "holes": {
                 "$ref": "#/Holes2D"
+            },
+            "edgeSideMaterials": {
+                "type": "array",
+                "description": "The custom side surface of each edge of the roof's polygon: the edges of polygonOutline first, then those of each hole in order, the item i of a polygon belonging to its edge from vertex i to vertex i + 1.",
+                "items": {
+                    "$ref": "#/OverriddenMaterial"
+                }
             }
         },
         "additionalProperties": false,
@@ -8256,6 +8283,13 @@
             "profileId": {
                 "$ref": "#/AttributeId",
                 "description": "Present when the cross section uses a custom extruded profile rather than a building material."
+            },
+            "segments": {
+                "type": "array",
+                "description": "The surfaces of each segment of the column.",
+                "items": {
+                    "$ref": "#/ColumnSegmentSurfaces"
+                }
             }
         },
         "additionalProperties": false,
@@ -8264,6 +8298,66 @@
             "zCoordinate",
             "height",
             "bottomOffset"
+        ]
+    },
+    "BeamSegmentSurfaces": {
+        "type": "object",
+        "description": "The surfaces of a beam segment.",
+        "properties": {
+            "leftMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "topMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "rightMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "bottomMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "endsMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "extrusionMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "materialsChained": {
+                "type": "boolean",
+                "description": "Whether the surface materials are chained."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "leftMaterial",
+            "topMaterial",
+            "rightMaterial",
+            "bottomMaterial",
+            "endsMaterial",
+            "extrusionMaterial",
+            "materialsChained"
+        ]
+    },
+    "ColumnSegmentSurfaces": {
+        "type": "object",
+        "description": "The surfaces of a column segment.",
+        "properties": {
+            "extrusionSurfaceMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "endsMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "materialsChained": {
+                "type": "boolean",
+                "description": "Whether the surface materials are chained."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "extrusionSurfaceMaterial",
+            "endsMaterial",
+            "materialsChained"
         ]
     },
     "ColumnSegmentDetails": {
