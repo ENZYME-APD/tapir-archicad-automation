@@ -9,6 +9,10 @@
 #endif
 
 #ifdef ServerMainVers_2900
+#include "ACAPI/DesignOptionsManipulationRightsChecker.hpp"
+#endif
+
+#ifdef ServerMainVers_2900
 using namespace ACAPI::DesignOptions;
 #elif defined (ServerMainVers_2800)
 using DesignOptionManager = ACAPI::DesignOptions::v1::DesignOptionManager;
@@ -30,6 +34,18 @@ static auto FindDesignOptionItemByGuid (ContainerT& items, const GS::Guid& guid)
         }
     }
     return nullptr;
+}
+
+// Returns the error response with Archicad's own text when the user may not
+// create design options, sets or combinations (e.g. a Teamwork project
+// without the right); no value when creating them is allowed.
+static GS::Optional<GS::ObjectState> CheckDesignOptionCreationRights ()
+{
+    const auto error =DesignOptionsManipulationRightsChecker::CheckCreationRights ();
+    if (error.has_value ()) {
+        return CreateErrorResponse (error->kind, GS::UniString (error->text.c_str ()));
+    }
+    return GS::NoValue;
 }
 #endif
 
@@ -136,6 +152,10 @@ GS::Optional<GS::UniString> GetDesignOptionSetsCommand::GetRawResponseSchema () 
                         "designOptions"
                     ]
                 }
+            },
+            "teamworkId": {
+                "$ref": "#/GuidId",
+                "description": "The Teamwork identifier of the project's design options. Present only in Teamwork projects."
             }
         },
         "additionalProperties": false,
@@ -173,6 +193,14 @@ GS::ObjectState GetDesignOptionSetsCommand::Execute (const GS::ObjectState& /*pa
             }
         }
         designOptionSets (designOptionSet);
+    }
+
+    API_ProjectInfo projectInfo = {};
+    if (ACAPI_ProjectOperation_Project (&projectInfo) == NoError && projectInfo.teamwork) {
+        const auto teamworkId = manager->GetTWID ();
+        if (teamworkId.IsOk () && teamworkId.Unwrap () != APINULLGuid) {
+            response.Add ("teamworkId", CreateGuidObjectState (teamworkId.Unwrap ()));
+        }
     }
 
     return response;
@@ -535,6 +563,11 @@ GS::ObjectState CreateDesignOptionSetsCommand::Execute (const GS::ObjectState& p
         return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to create design option sets.");
     }
 
+    const GS::Optional<GS::ObjectState> rightsError = CheckDesignOptionCreationRights ();
+    if (rightsError.HasValue ()) {
+        return *rightsError;
+    }
+
     GS::Array<GS::UniString> designOptionSets;
     if (!parameters.Get ("designOptionSets", designOptionSets)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'designOptionSets' parameter.");
@@ -609,6 +642,11 @@ GS::ObjectState CreateDesignOptionsCommand::Execute (const GS::ObjectState& para
     ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
     if (manager.IsErr ()) {
         return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to create design options.");
+    }
+
+    const GS::Optional<GS::ObjectState> rightsError = CheckDesignOptionCreationRights ();
+    if (rightsError.HasValue ()) {
+        return *rightsError;
     }
 
     GS::Array<GS::ObjectState> designOptions;
@@ -718,6 +756,11 @@ GS::ObjectState CreateDesignOptionCombinationsCommand::Execute (const GS::Object
         return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to create design option combinations.");
     }
 
+    const GS::Optional<GS::ObjectState> rightsError = CheckDesignOptionCreationRights ();
+    if (rightsError.HasValue ()) {
+        return *rightsError;
+    }
+
     GS::Array<GS::ObjectState> designOptionCombinations;
     if (!parameters.Get ("designOptionCombinations", designOptionCombinations)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'designOptionCombinations' parameter.");
@@ -771,6 +814,153 @@ GS::ObjectState CreateDesignOptionCombinationsCommand::Execute (const GS::Object
             }
             auto result = manager->SetActiveOptionsInCombination (*creationResult, designOptions);
             designOptionCombinationIdsOrErrors (CreateIdObjectState ("designOptionCombinationId", GSGuid2APIGuid (creationResult->GetGuid ())));
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
+DeactivateDesignOptionsInCombinationsCommand::DeactivateDesignOptionsInCombinationsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeactivateDesignOptionsInCombinationsCommand::GetName () const
+{
+    return "DeactivateDesignOptionsInCombinations";
+}
+
+GS::Optional<GS::UniString> DeactivateDesignOptionsInCombinationsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "deactivatedDesignOptionsInCombinations": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "designOptionCombinationId": {
+                            "$ref": "#/DesignOptionCombinationId"
+                        },
+                        "designOptions": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/DesignOptionIdArrayItem"
+                            },
+                            "description": "The design options to turn off in the combination. The other options of the combination are left as they are."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "designOptionCombinationId",
+                        "designOptions"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "deactivatedDesignOptionsInCombinations"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeactivateDesignOptionsInCombinationsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeactivateDesignOptionsInCombinationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
+    if (manager.IsErr ()) {
+        return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to modify design option combinations.");
+    }
+
+    GS::Array<GS::ObjectState> deactivatedDesignOptionsInCombinations;
+    if (!parameters.Get ("deactivatedDesignOptionsInCombinations", deactivatedDesignOptionsInCombinations)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'deactivatedDesignOptionsInCombinations' parameter.");
+    }
+
+    auto allDesignOptionCombinations = manager->GetDesignOptionCombinations ();
+    if (allDesignOptionCombinations.IsErr ()) {
+        return CreateErrorResponse (allDesignOptionCombinations.UnwrapErr ().kind, "Unable to list design option combinations.");
+    }
+
+    auto allDesignOptions = manager->GetAllDesignOptions ();
+    if (allDesignOptions.IsErr ()) {
+        return CreateErrorResponse (allDesignOptions.UnwrapErr ().kind, "Unable to list design options.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("Deactivate Design Options In Combinations", [&]() -> GSErrCode {
+        for (auto&& deactivatedDesignOptionsInCombination : deactivatedDesignOptionsInCombinations) {
+            GS::Guid combinationGuid = APIGuid2GSGuid (GetGuidFromArrayItem ("designOptionCombinationId", deactivatedDesignOptionsInCombination));
+            if (combinationGuid.IsNull ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'designOptionCombinationId' parameter"));
+                continue;
+            }
+            DesignOptionCombination* combinationPtr = FindDesignOptionItemByGuid (*allDesignOptionCombinations, combinationGuid);
+            if (combinationPtr == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Not found design option combination with the given 'designOptionCombinationId' parameter"));
+                continue;
+            }
+            GS::Array<GS::ObjectState> designOptionsToDeactivate;
+            if (!deactivatedDesignOptionsInCombination.Get ("designOptions", designOptionsToDeactivate)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'designOptions' parameter"));
+                continue;
+            }
+
+            // Every option is looked up before any is turned off, so an unknown id changes nothing in the combination.
+            std::vector<DesignOption*> optionPtrs;
+            GS::Optional<GS::ObjectState> lookupError;
+            for (const GS::ObjectState& designOptionToDeactivate : designOptionsToDeactivate) {
+                GS::Guid optionGuid = APIGuid2GSGuid (GetGuidFromArrayItem ("designOptionId", designOptionToDeactivate));
+                if (optionGuid.IsNull ()) {
+                    lookupError = CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'designOptionId' parameter");
+                    break;
+                }
+                DesignOption* optionPtr = FindDesignOptionItemByGuid (*allDesignOptions, optionGuid);
+                if (optionPtr == nullptr) {
+                    lookupError = CreateFailedExecutionResult (APIERR_BADID, "Not found design option with the given 'designOptionId' " + optionGuid.ToUniString ());
+                    break;
+                }
+                optionPtrs.push_back (optionPtr);
+            }
+            if (lookupError.HasValue ()) {
+                executionResults (lookupError.Get ());
+                continue;
+            }
+
+            GS::Optional<GS::ObjectState> deactivationError;
+            for (DesignOption* optionPtr : optionPtrs) {
+                auto result = manager->DeactivateDesignOptionInCombination (*combinationPtr, *optionPtr);
+                if (result.IsErr ()) {
+                    deactivationError = CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to deactivate design option " + optionPtr->GetGuid ().ToUniString () + " in the combination.");
+                    break;
+                }
+            }
+            executionResults (deactivationError.HasValue () ? deactivationError.Get () : CreateSuccessfulExecutionResult ());
         }
         return NoError;
     });
@@ -917,6 +1107,219 @@ GS::ObjectState SetActiveDesignOptionsInCombinationsCommand::Execute (const GS::
             }
             auto result = manager->SetActiveOptionsInCombination (*combinationPtr, designOptions);
             executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
+ActivateDesignOptionsInCombinationsCommand::ActivateDesignOptionsInCombinationsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ActivateDesignOptionsInCombinationsCommand::GetName () const
+{
+    return "ActivateDesignOptionsInCombinations";
+}
+
+GS::Optional<GS::UniString> ActivateDesignOptionsInCombinationsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "designOptionsToActivate": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "designOptionCombinationId": {
+                            "$ref": "#/DesignOptionCombinationId"
+                        },
+                        "designOptionId": {
+                            "$ref": "#/DesignOptionId"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "designOptionCombinationId",
+                        "designOptionId"
+                    ]
+                },
+                "description": "The design options to activate, each in the given combination."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionsToActivate"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ActivateDesignOptionsInCombinationsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ActivateDesignOptionsInCombinationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
+    if (manager.IsErr ()) {
+        return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to activate design options.");
+    }
+
+    GS::Array<GS::ObjectState> designOptionsToActivate;
+    if (!parameters.Get ("designOptionsToActivate", designOptionsToActivate)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'designOptionsToActivate' parameter.");
+    }
+
+    auto allDesignOptionCombinations = manager->GetDesignOptionCombinations ();
+    if (allDesignOptionCombinations.IsErr ()) {
+        return CreateErrorResponse (allDesignOptionCombinations.UnwrapErr ().kind, "Unable to list design option combinations.");
+    }
+
+    auto allDesignOptions = manager->GetAllDesignOptions ();
+    if (allDesignOptions.IsErr ()) {
+        return CreateErrorResponse (allDesignOptions.UnwrapErr ().kind, "Unable to list design options.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("Activate Design Options In Combinations", [&]() -> GSErrCode {
+        for (auto&& designOptionToActivate : designOptionsToActivate) {
+            GS::Guid combinationGuid = APIGuid2GSGuid (GetGuidFromArrayItem ("designOptionCombinationId", designOptionToActivate));
+            if (combinationGuid.IsNull ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'designOptionCombinationId' parameter"));
+                continue;
+            }
+            DesignOptionCombination* combinationPtr = FindDesignOptionItemByGuid (*allDesignOptionCombinations, combinationGuid);
+            if (combinationPtr == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Not found design option combination with the given 'designOptionCombinationId' parameter"));
+                continue;
+            }
+            GS::Guid designOptionGuid = APIGuid2GSGuid (GetGuidFromArrayItem ("designOptionId", designOptionToActivate));
+            if (designOptionGuid.IsNull ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'designOptionId' parameter"));
+                continue;
+            }
+            DesignOption* optionPtr = FindDesignOptionItemByGuid (*allDesignOptions, designOptionGuid);
+            if (optionPtr == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Not found design option with the given 'designOptionId' parameter"));
+                continue;
+            }
+            auto result = manager->ActivateDesignOptionInCombination (*combinationPtr, *optionPtr);
+            executionResults (result.IsOk () ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to activate design option in combination."));
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
+DuplicateDesignOptionCombinationsCommand::DuplicateDesignOptionCombinationsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DuplicateDesignOptionCombinationsCommand::GetName () const
+{
+    return "DuplicateDesignOptionCombinations";
+}
+
+GS::Optional<GS::UniString> DuplicateDesignOptionCombinationsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "designOptionCombinations": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/DesignOptionCombinationIdArrayItem"
+                },
+                "description": "The design option combinations to duplicate."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionCombinations"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DuplicateDesignOptionCombinationsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "designOptionCombinationIdsOrErrors": {
+                "$ref": "#/DesignOptionCombinationIdsOrErrors",
+                "description": "The identifiers of the new combinations, in the order of the input, or an error for each combination that could not be duplicated."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionCombinationIdsOrErrors"
+        ]
+    })";
+}
+
+GS::ObjectState DuplicateDesignOptionCombinationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
+    if (manager.IsErr ()) {
+        return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to duplicate design option combinations.");
+    }
+
+    GS::Array<GS::ObjectState> designOptionCombinations;
+    if (!parameters.Get ("designOptionCombinations", designOptionCombinations)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'designOptionCombinations' parameter.");
+    }
+
+    auto allDesignOptionCombinations = manager->GetDesignOptionCombinations ();
+    if (allDesignOptionCombinations.IsErr ()) {
+        return CreateErrorResponse (allDesignOptionCombinations.UnwrapErr ().kind, "Unable to duplicate design option combinations.");
+    }
+
+    GS::ObjectState response;
+    const auto& designOptionCombinationIdsOrErrors = response.AddList<GS::ObjectState> ("designOptionCombinationIdsOrErrors");
+
+    ACAPI_CallUndoableCommand ("Duplicate Design Option Combinations", [&]() -> GSErrCode {
+        for (auto&& designOptionCombination : designOptionCombinations) {
+            GS::Guid combinationGuid = APIGuid2GSGuid (GetGuidFromArrayItem ("designOptionCombinationId", designOptionCombination));
+            if (combinationGuid.IsNull ()) {
+                designOptionCombinationIdsOrErrors (CreateErrorResponse (APIERR_BADPARS, "Missing or invalid 'designOptionCombinationId' parameter"));
+                continue;
+            }
+            DesignOptionCombination* combinationPtr = FindDesignOptionItemByGuid (*allDesignOptionCombinations, combinationGuid);
+            if (combinationPtr == nullptr) {
+                designOptionCombinationIdsOrErrors (CreateErrorResponse (APIERR_BADID, "Not found design option combination with the given 'designOptionCombinationId' parameter"));
+                continue;
+            }
+            auto result = manager->DuplicateDesignOptionCombination (*combinationPtr);
+            designOptionCombinationIdsOrErrors (result.IsOk () ? CreateIdObjectState ("designOptionCombinationId", GSGuid2APIGuid (result->GetGuid ())) : CreateErrorResponse (result.UnwrapErr ().kind, "Failed to duplicate design option combination."));
         }
         return NoError;
     });
@@ -2092,6 +2495,322 @@ GS::ObjectState SetDesignOptionCombinationOfViewsCommand::Execute (const GS::Obj
 
             auto result = (combinationPtr == nullptr) ? settings->SetMainModelOnly () : settings->SetStandardCombination (*combinationPtr);
             executionResults (result.IsOk () ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to set the design option combination of the view."));
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
+SetDefaultDesignOptionCommand::SetDefaultDesignOptionCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetDefaultDesignOptionCommand::GetName () const
+{
+    return "SetDefaultDesignOption";
+}
+
+GS::Optional<GS::UniString> SetDefaultDesignOptionCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "designOptionId": {
+                "$ref": "#/DesignOptionId",
+                "description": "The design option to set as the default. When it is not given, the Main Model becomes the default."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> SetDefaultDesignOptionCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetDefaultDesignOptionCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
+    if (manager.IsErr ()) {
+        return CreateFailedExecutionResult (manager.UnwrapErr ().kind, "Unable to modify design options.");
+    }
+
+    // An omitted designOptionId selects the Main Model (std::nullopt).
+    std::optional<DesignOption> defaultDesignOption;
+    if (parameters.Contains ("designOptionId")) {
+        GS::Guid designOptionGuid = APIGuid2GSGuid (GetGuidFromArrayItem ("designOptionId", parameters));
+        if (designOptionGuid.IsNull ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid 'designOptionId' parameter");
+        }
+        auto allDesignOptions = manager->GetAllDesignOptions ();
+        if (allDesignOptions.IsErr ()) {
+            return CreateFailedExecutionResult (allDesignOptions.UnwrapErr ().kind, "Unable to modify design options.");
+        }
+        DesignOption* optionPtr = FindDesignOptionItemByGuid (*allDesignOptions, designOptionGuid);
+        if (optionPtr == nullptr) {
+            return CreateFailedExecutionResult (APIERR_BADID, "Not found design option with the given 'designOptionId' parameter");
+        }
+        defaultDesignOption = *optionPtr;
+    }
+
+    GSErrCode err = NoError;
+    ACAPI_CallUndoableCommand ("Set Default Design Option", [&]() -> GSErrCode {
+        auto result = manager->SetDesignOptionAsDefault (defaultDesignOption);
+        if (result.IsErr ()) {
+            err = result.UnwrapErr ().kind;
+        }
+        return err;
+    });
+
+    return err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to set the default design option.");
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
+ReorderDesignOptionSetsCommand::ReorderDesignOptionSetsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ReorderDesignOptionSetsCommand::GetName () const
+{
+    return "ReorderDesignOptionSets";
+}
+
+GS::Optional<GS::UniString> ReorderDesignOptionSetsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "designOptionSets": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "designOptionSetId": {
+                            "$ref": "#/DesignOptionSetId",
+                            "description": "The design option set to move."
+                        },
+                        "beforeDesignOptionSetId": {
+                            "$ref": "#/DesignOptionSetId",
+                            "description": "The design option set to move it before. When it is not given, the set is moved to the end."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "designOptionSetId"
+                    ]
+                },
+                "description": "The design option sets to move, in the order the moves are done."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionSets"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ReorderDesignOptionSetsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ReorderDesignOptionSetsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
+    if (manager.IsErr ()) {
+        return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to reorder design option sets.");
+    }
+
+    GS::Array<GS::ObjectState> designOptionSets;
+    if (!parameters.Get ("designOptionSets", designOptionSets)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'designOptionSets' parameter.");
+    }
+
+    auto sets = manager->GetDesignOptionSets ();
+    if (sets.IsErr ()) {
+        return CreateErrorResponse (sets.UnwrapErr ().kind, "Unable to reorder design option sets.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("Reorder Design Option Sets", [&]() -> GSErrCode {
+        for (auto&& designOptionSet : designOptionSets) {
+            GS::Guid setGuid = APIGuid2GSGuid (GetGuidFromArrayItem ("designOptionSetId", designOptionSet));
+            if (setGuid.IsNull ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'designOptionSetId' parameter"));
+                continue;
+            }
+            DesignOptionSet* setPtr = FindDesignOptionItemByGuid (*sets, setGuid);
+            if (setPtr == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Not found design option set with the given 'designOptionSetId' parameter"));
+                continue;
+            }
+            // An omitted beforeDesignOptionSetId moves the set to the end (std::nullopt).
+            std::optional<DesignOptionSet> nextSet;
+            if (designOptionSet.Contains ("beforeDesignOptionSetId")) {
+                GS::Guid nextSetGuid = APIGuid2GSGuid (GetGuidFromArrayItem ("beforeDesignOptionSetId", designOptionSet));
+                if (nextSetGuid.IsNull ()) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Invalid 'beforeDesignOptionSetId' parameter"));
+                    continue;
+                }
+                DesignOptionSet* nextSetPtr = FindDesignOptionItemByGuid (*sets, nextSetGuid);
+                if (nextSetPtr == nullptr) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADID, "Not found design option set with the given 'beforeDesignOptionSetId' parameter"));
+                    continue;
+                }
+                nextSet = *nextSetPtr;
+            }
+            auto result = manager->MoveDesignOptionSet (*setPtr, nextSet);
+            executionResults (result.IsOk () ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to move design option set."));
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
+ReorderDesignOptionsInSetCommand::ReorderDesignOptionsInSetCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ReorderDesignOptionsInSetCommand::GetName () const
+{
+    return "ReorderDesignOptionsInSet";
+}
+
+GS::Optional<GS::UniString> ReorderDesignOptionsInSetCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "designOptions": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "designOptionId": {
+                            "$ref": "#/DesignOptionId",
+                            "description": "The design option to move within its set."
+                        },
+                        "beforeDesignOptionId": {
+                            "$ref": "#/DesignOptionId",
+                            "description": "The design option of the same set to move it before. When it is not given, the design option is moved to the end of its set."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "designOptionId"
+                    ]
+                },
+                "description": "The design options to move, in the order the moves are done."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptions"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ReorderDesignOptionsInSetCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ReorderDesignOptionsInSetCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
+    if (manager.IsErr ()) {
+        return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to reorder design options.");
+    }
+
+    GS::Array<GS::ObjectState> designOptions;
+    if (!parameters.Get ("designOptions", designOptions)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'designOptions' parameter.");
+    }
+
+    auto allDesignOptions = manager->GetAllDesignOptions ();
+    if (allDesignOptions.IsErr ()) {
+        return CreateErrorResponse (allDesignOptions.UnwrapErr ().kind, "Unable to reorder design options.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("Reorder Design Options", [&]() -> GSErrCode {
+        for (auto&& designOption : designOptions) {
+            GS::Guid designOptionGuid = APIGuid2GSGuid (GetGuidFromArrayItem ("designOptionId", designOption));
+            if (designOptionGuid.IsNull ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'designOptionId' parameter"));
+                continue;
+            }
+            DesignOption* optionPtr = FindDesignOptionItemByGuid (*allDesignOptions, designOptionGuid);
+            if (optionPtr == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Not found design option with the given 'designOptionId' parameter"));
+                continue;
+            }
+            // An omitted beforeDesignOptionId moves the option to the end of its set (std::nullopt).
+            std::optional<DesignOption> nextOption;
+            if (designOption.Contains ("beforeDesignOptionId")) {
+                GS::Guid nextOptionGuid = APIGuid2GSGuid (GetGuidFromArrayItem ("beforeDesignOptionId", designOption));
+                if (nextOptionGuid.IsNull ()) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Invalid 'beforeDesignOptionId' parameter"));
+                    continue;
+                }
+                DesignOption* nextOptionPtr = FindDesignOptionItemByGuid (*allDesignOptions, nextOptionGuid);
+                if (nextOptionPtr == nullptr) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADID, "Not found design option with the given 'beforeDesignOptionId' parameter"));
+                    continue;
+                }
+                nextOption = *nextOptionPtr;
+            }
+            auto result = manager->MoveDesignOptionWithinSet (*optionPtr, nextOption);
+            executionResults (result.IsOk () ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to move design option within its set."));
         }
         return NoError;
     });
