@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-30 12:47 UTC",
+ "generatedAt": "2026-10-30 13:02 UTC",
  "versions": [
   25,
   26,
@@ -29343,6 +29343,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1668,
+     "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands"
+    },
+    {
      "number": 1664,
      "title": "Shell structure in GetDetailsOfElements and a ModifyShells command"
     },
@@ -36743,6 +36747,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1668,
+     "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands"
+    },
     {
      "number": 1664,
      "title": "Shell structure in GetDetailsOfElements and a ModifyShells command"
@@ -45116,6 +45124,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1668,
+     "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands"
+    },
     {
      "number": 1664,
      "title": "Shell structure in GetDetailsOfElements and a ModifyShells command"
@@ -53900,6 +53912,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1668,
+     "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands"
+    },
+    {
      "number": 1664,
      "title": "Shell structure in GetDetailsOfElements and a ModifyShells command"
     },
@@ -58644,6 +58660,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1668,
+     "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands"
+    },
     {
      "number": 1664,
      "title": "Shell structure in GetDetailsOfElements and a ModifyShells command"
