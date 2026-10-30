@@ -193,6 +193,9 @@
   <data name="SetClassifications" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SetClassifications.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="SetDocumentFrom3DDefaults" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetDocumentFrom3DDefaults.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="SetPropertyValues" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SetPropertyValues.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -216,6 +219,9 @@
   </data>
   <data name="BranchColorGenerator" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\BranchColorGenerator.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Change3DStyles" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Change3DStyles.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="GroupToTree" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GroupToTree.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -249,6 +255,9 @@
   </data>
   <data name="ConnectedElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ConnectedElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Create3DStyles" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Create3DStyles.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="CreateIssue" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateIssue.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -312,6 +321,9 @@
   </data>
   <data name="FitInWindow" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\FitInWindow.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Get3DCutPlanes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Get3DCutPlanes.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="GetStories" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetStories.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -703,8 +715,17 @@
   <data name="Get3DProjectionSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Get3DProjectionSettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Get3DStyleDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Get3DStyleDetails.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Get3DWindowSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Get3DWindowSettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Set3DProjectionSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Set3DProjectionSettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Set3DWindowSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Set3DWindowSettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="GetLayoutSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetLayoutSettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -729,6 +750,9 @@
   </data>
   <data name="GetDimensionData" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetDimensionData.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetDocumentFrom3DDefaults" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetDocumentFrom3DDefaults.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="GetLayers" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetLayers.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
