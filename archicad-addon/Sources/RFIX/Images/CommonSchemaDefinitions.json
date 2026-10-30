@@ -8911,6 +8911,12 @@
             },
             "zCoordinate": {
                 "type": "number"
+            },
+            "contourLine": {
+                "$ref": "#/ZoneContourLine"
+            },
+            "coverFill": {
+                "$ref": "#/ZoneCoverFill"
             }
         },
         "additionalProperties": false,
@@ -8921,7 +8927,9 @@
             "stampPosition",
             "isManual",
             "polygonOutline",
-            "zCoordinate"
+            "zCoordinate",
+            "contourLine",
+            "coverFill"
         ]
     },
     "RailingDetails": {
@@ -11122,6 +11130,62 @@
             "referencePosition": {
                 "$ref": "#/Coordinate2D",
                 "description": "Moves the reference point of an automatic zone; the zone is found around the new point when zones are next updated. Ignored for a manual zone (isManual true)."
+            },
+            "contourLine": {
+                "$ref": "#/ZoneContourLine"
+            },
+            "coverFill": {
+                "$ref": "#/ZoneCoverFill"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "ZoneContourLine": {
+        "type": "object",
+        "description": "The contour line of a zone on the floor plan. GetDetailsOfElements returns every field; when setting, only the given fields are changed.",
+        "properties": {
+            "use": {
+                "type": "boolean",
+                "description": "Whether the contour line is drawn."
+            },
+            "pen": {
+                "type": "integer",
+                "description": "The pen index of the contour line.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type attribute of the contour line."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "ZoneCoverFill": {
+        "type": "object",
+        "description": "The cover fill of a zone on the floor plan. GetDetailsOfElements returns every field; when setting, only the given fields are changed.",
+        "properties": {
+            "use": {
+                "type": "boolean",
+                "description": "Whether the cover fill is drawn."
+            },
+            "fillId": {
+                "$ref": "#/AttributeId",
+                "description": "The fill attribute of the cover fill."
+            },
+            "foregroundPen": {
+                "type": "integer",
+                "description": "The pen index of the fill pattern.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "backgroundPen": {
+                "type": "integer",
+                "description": "The pen index of the fill background. 0 is a transparent background; -1 also occurs in projects and is accepted, so a value read with GetDetailsOfElements can always be written back.",
+                "minimum": -1,
+                "maximum": 255
             }
         },
         "additionalProperties": false,
