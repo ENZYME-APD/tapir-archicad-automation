@@ -185,7 +185,8 @@ static GS::ObjectState CreateRoutingNodeParametersObjectState (const RoutingNode
 }
 
 // Changes the given keys of a routing segment default; the same setters as CreateMEPRoutingElements.
-static void ApplyRoutingSegmentParameters (RoutingSegmentDefault& segmentDefault, const GS::ObjectState& parameters)
+// Returns false when a value is not valid or a setter failed.
+static bool ApplyRoutingSegmentParameters (RoutingSegmentDefault& segmentDefault, const GS::ObjectState& parameters)
 {
     double width = 0.0;
     double height = 0.0;
@@ -198,30 +199,39 @@ static void ApplyRoutingSegmentParameters (RoutingSegmentDefault& segmentDefault
     const bool hasReferenceId = parameters.Get ("crossSectionReferenceId", referenceId);
     const bool hasPreferenceTableId = parameters.Get ("preferenceTableId", preferenceTableIdStr);
     if (!hasWidth && !hasHeight && !hasShape && !hasReferenceId && !hasPreferenceTableId) {
-        return;
+        return true;
     }
-    segmentDefault.Modify ([&](RoutingSegmentDefault::Modifier& modifier) {
+    std::optional<ConnectorShape> shape;
+    if (hasShape) {
+        shape = RoutingParameterEnumFromName (RoutingParameterShapeNames, shapeStr);
+        if (!shape.has_value ()) {
+            return false;
+        }
+    }
+    if (hasReferenceId && referenceId < 0) {
+        return false;
+    }
+    bool settersSucceeded = true;
+    ACAPI::Result<void> result = segmentDefault.Modify ([&](RoutingSegmentDefault::Modifier& modifier) {
         // The preference table is set before the reference id, because the reference id is resolved
         // against the table the segment uses.
         if (hasPreferenceTableId) {
-            modifier.SetPreferenceTableId (RoutingParameterTableIdFromString (preferenceTableIdStr));
+            settersSucceeded &= modifier.SetPreferenceTableId (RoutingParameterTableIdFromString (preferenceTableIdStr)).IsOk ();
         }
         if (hasShape) {
-            const std::optional<ConnectorShape> shape = RoutingParameterEnumFromName (RoutingParameterShapeNames, shapeStr);
-            if (shape.has_value ()) {
-                modifier.SetCrossSectionShape (shape.value ());
-            }
+            settersSucceeded &= modifier.SetCrossSectionShape (shape.value ()).IsOk ();
         }
         if (hasWidth) {
-            modifier.SetCrossSectionWidth (width);
+            settersSucceeded &= modifier.SetCrossSectionWidth (width).IsOk ();
         }
         if (hasHeight) {
-            modifier.SetCrossSectionHeight (height);
+            settersSucceeded &= modifier.SetCrossSectionHeight (height).IsOk ();
         }
-        if (hasReferenceId && referenceId >= 0) {
-            modifier.SetCrossSectionReferenceId (static_cast<uint32_t> (referenceId));
+        if (hasReferenceId) {
+            settersSucceeded &= modifier.SetCrossSectionReferenceId (static_cast<uint32_t> (referenceId)).IsOk ();
         }
     });
+    return result.IsOk () && settersSucceeded;
 }
 
 #ifdef ServerMainVers_2900
@@ -276,8 +286,8 @@ static GS::ObjectState SetRoutingParametersOfRoutingElement (const ACAPI::MEP::U
 
     bool settersSucceeded = true;
     RoutingSegmentDefault segmentDefault = routingElement->GetRoutingSegmentDefaultParameters ();
-    if (segmentParameters != nullptr) {
-        ApplyRoutingSegmentParameters (segmentDefault, *segmentParameters);
+    if (segmentParameters != nullptr && !ApplyRoutingSegmentParameters (segmentDefault, *segmentParameters)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "A value of routingSegmentParameters could not be set; nothing was changed.");
     }
     RoutingNodeDefault nodeDefault = routingElement->GetRoutingNodeDefaultParameters ();
 #ifdef ServerMainVers_2900
