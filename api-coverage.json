@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-30 12:39 UTC",
+ "generatedAt": "2026-10-30 12:47 UTC",
  "versions": [
   25,
   26,
@@ -4452,6 +4452,10 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1666,
+     "title": "Fix PlaceOpenings crash in Archicad 30: run Place inside an undoable command"
+    },
     {
      "number": 1649,
      "title": "SolveStairBaseline: run the stair solver inside an undoable command"
@@ -10455,6 +10459,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1664,
+     "title": "Shell structure in GetDetailsOfElements and a ModifyShells command"
+    },
     {
      "number": 1658,
      "title": "CreateLayout: document that a custom layout number still counts in the numbering"
@@ -29849,7 +29857,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1666,
+     "title": "Fix PlaceOpenings crash in Archicad 30: run Place inside an undoable command"
+    }
+   ],
    "issues": []
   },
   {
