@@ -189,6 +189,17 @@ namespace TapirGrasshopperPlugin.Properties
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap ChangeAddOnViewpoints
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ChangeAddOnViewpoints", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap ChangeSelection
         {
             get {
@@ -259,6 +270,17 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("Create3DStyles", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap CreateAddOnViewpoints
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateAddOnViewpoints", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -1938,6 +1960,39 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("Get3DWindowSettings", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap GetAddOnViewpointChildren
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAddOnViewpointChildren", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap GetAddOnViewpointRoots
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAddOnViewpointRoots", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap GetAddOnViewpoints
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAddOnViewpoints", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
