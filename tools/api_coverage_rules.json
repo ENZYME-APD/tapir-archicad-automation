@@ -43,7 +43,14 @@
             "ACAPI_LibraryManagement_NewLibDial": "user interface",
             "ACAPI_Attribute_CreateAttributeFolderPicker": "user interface",
             "ACAPI_Navigator_RegisterCallbackInterface": "event handlers, not commands",
-            "ACAPI_ActivatePropertyObjectHandler": "event handlers, not commands"
+            "ACAPI_ActivatePropertyObjectHandler": "event handlers, not commands",
+            "ACAPI_DrawOrder_DrawOrderInit": "starts an internal draw order loop, only useful inside the command that walks it (#1074)",
+            "ACAPI_DrawOrder_DrawOrderTerm": "ends an internal draw order loop, only useful inside the command that walks it (#1073)",
+            "ACAPI_DrawOrder_InitCreationOrderTable": "builds an internal table, only useful inside the command that reads it (#1072)",
+            "ACAPI_DrawOrder_DisposeCreationOrderTable": "memory management (#1159)",
+            "ACAPI_GraphicalOverride_EnableRenovationOverride": "flag for the add-on's own drawing primitive calls, no effect a JSON caller can see (#1163)",
+            "ACAPI_GraphicalOverride_EnableVisualOverride": "flag for the add-on's own drawing primitive calls, no effect a JSON caller can see (#1164)",
+            "ACAPI::CreatePropertyOperationManager": "factory taking the add-on's token, its methods are the commands (#1177)"
         },
         "patterns": {
             "^ACAPI_(Dispose|Free)": "memory management",
@@ -68,7 +75,10 @@
     },
     "skip": {
         "groups": {},
-        "items": {},
+        "items": {
+            "ACAPI_Override_GetOverrideRule": "Archicad 25/26 name of ACAPI_GraphicalOverride_GetOverrideRuleById; the graphic override commands start at Archicad 27 on purpose (#873, #1059)",
+            "ACAPI_3D_GetNum": "Archicad 25/26 only, with no counterpart in Archicad 27-30, and a bare count without element context (#1067)"
+        },
         "patterns": {}
     }
 }
