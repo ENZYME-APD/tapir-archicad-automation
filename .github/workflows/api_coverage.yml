@@ -1,15 +1,21 @@
 # Keeps the Archicad API coverage checklist live.
 #
 # tools/generate_api_coverage.py lists every item of the Archicad API in the
-# AC25-AC30 DevKits (C functions with their older names and AC25/26 command
-# ids, and the C++ API) and marks what archicad-addon/Sources uses, what an
-# open pull request adds and what an open issue claims. This workflow reruns
-# it within minutes of any change to those:
+# DevKits of every supported version (C functions with their older names and
+# AC25/26 command ids, and the C++ API) and marks what archicad-addon/Sources
+# uses, what an open pull request adds and what an open issue claims. This
+# workflow reruns it within minutes of any change to those:
 #   - a push to main, a published release,
 #   - a pull request opened, updated, closed or reopened,
 #   - an issue opened, edited, closed, reopened or deleted,
 #   - hourly, in case an event was missed, and by hand.
 # A newer run cancels an older one, so a burst of events costs one run.
+#
+# The same run also writes the Grasshopper coverage of the Tapir commands
+# (tools/generate_gh_coverage.py): which Add-On commands a Grasshopper
+# component calls, and whether the components cover their parameters. It is
+# published next to the API checklist as gh-coverage.* (read by
+# docs/gh-coverage/index.html).
 #
 # It publishes without touching main:
 #   - api-coverage.json, api-coverage.md and api-coverage-summary.md as one
@@ -55,9 +61,6 @@ jobs:
     if: vars.API_COVERAGE != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    env:
-      DEVKITS: >-
-        25:25.3002 26:26.3000 27:27.3001 28:28.3001 29:29.3000 30:30.3000
     steps:
       - name: Check out main
         uses: actions/checkout@v4
@@ -66,26 +69,12 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Cache the DevKits
-        id: devkits
-        uses: actions/cache@v4
+      # The headers of every version in archicad-addon/devkits.json, cached.
+      - name: Download the DevKits
+        uses: ./.github/actions/download-devkits
         with:
           path: devkits
-          key: archicad-devkit-headers-${{ env.DEVKITS }}
-
-      - name: Download the DevKits
-        if: steps.devkits.outputs.cache-hit != 'true'
-        run: |
-          set -eu
-          # The same releases the build checks use. Only the headers are read, so
-          # only they are kept: the cache is about 15 MB instead of 150 MB.
-          for entry in $DEVKITS; do
-            major=${entry%%:*}; version=${entry#*:}
-            mkdir -p "devkits/AC$major"
-            curl -sSfL -o devkit.zip "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/$version/API.Development.Kit.WIN.$version.zip"
-            unzip -qq devkit.zip 'Support/Inc/*.h' 'Support/Modules/*.h' 'Support/Modules/*.hpp' -d "devkits/AC$major"
-            rm devkit.zip
-          done
+          examples: 'false'
 
       - name: Get the sources of the latest release
         run: |
@@ -93,9 +82,10 @@ jobs:
           tag=$(gh release view --json tagName --jq .tagName 2>/dev/null || true)
           mkdir -p release
           if [ -n "$tag" ]; then
-            git archive "$tag" archicad-addon/Sources | tar -x -C release
+            git archive "$tag" archicad-addon/Sources grasshopper-plugin/TapirGrasshopperPlugin | tar -x -C release
           fi
           echo "RELEASE_SOURCES=$([ -n "$tag" ] && echo release/archicad-addon/Sources || true)" >> "$GITHUB_ENV"
+          echo "RELEASE_PLUGIN=$([ -n "$tag" ] && echo release/grasshopper-plugin/TapirGrasshopperPlugin || true)" >> "$GITHUB_ENV"
         env:
           GH_TOKEN: ${{ github.token }}
 
@@ -108,9 +98,8 @@ jobs:
         run: |
           set -eu
           args=""
-          for entry in $DEVKITS; do
-            major=${entry%%:*}
-            args="$args --devkit $major=devkits/AC$major/Support"
+          for dir in devkits/AC*; do
+            args="$args --devkit ${dir#devkits/AC}=$dir/Support"
           done
           release_arg=""
           [ -n "$RELEASE_SOURCES" ] && release_arg="--release-sources $RELEASE_SOURCES"
@@ -120,10 +109,22 @@ jobs:
             --rules tools/api_coverage_rules.json \
             --out-dir out
 
+      - name: Generate the Grasshopper coverage
+        run: |
+          set -eu
+          release_arg=""
+          [ -n "$RELEASE_PLUGIN" ] && release_arg="--release-sources $RELEASE_PLUGIN"
+          python3 tools/generate_gh_coverage.py \
+            --sources grasshopper-plugin/TapirGrasshopperPlugin $release_arg \
+            --github-data github.json \
+            --rules tools/gh_coverage_rules.json \
+            --out-dir out
+
       - name: Publish to the api-coverage branch
         run: |
           set -eu
-          files="api-coverage.json api-coverage.md api-coverage-summary.md api-coverage-badge.json api-coverage.svg api-coverage-dark.svg"
+          files="api-coverage.json api-coverage.md api-coverage-summary.md api-coverage-badge.json api-coverage.svg api-coverage-dark.svg
+                 gh-coverage.json gh-coverage.md gh-coverage-summary.md gh-coverage-badge.json gh-coverage.svg gh-coverage-dark.svg"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           if git fetch -q origin api-coverage; then
@@ -142,7 +143,7 @@ jobs:
             exit 0
           fi
           base=$(git rev-parse -q --verify HEAD || true)
-          git commit -q -m "Update the Archicad API coverage checklist"
+          git commit -q -m "Update the Archicad API and Grasshopper coverage checklists"
           if git push -q origin HEAD:api-coverage; then
             exit 0
           fi

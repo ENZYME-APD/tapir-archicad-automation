@@ -1,0 +1,94 @@
+{
+  "tool": "Spline",
+  "elementType": "Spline",
+  "archicadVersion": 29,
+  "commands": {
+    "get": "GetDetailsOfElements",
+    "getSchema": "SplineDetails",
+    "create": "CreateSplinesCommand"
+  },
+  "plainKeys": [
+    "favoriteName",
+    "layerIndex"
+  ],
+  "sources": {
+    "help": [
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-39.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-32.htm"
+    ],
+    "devkit": "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/tag/29.3000"
+  },
+  "fields": [
+    {
+      "get": "coordinates",
+      "set": "coordinates",
+      "apiMember": "API_ElementMemo::coords",
+      "apiDescription": "Coordinate array (used for polygons, spline coordinates, etc.).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "closed",
+      "set": "closed",
+      "apiMember": "API_SplineType::closed",
+      "apiDescription": "Is this a closed curve?",
+      "label": null,
+      "labelSource": null,
+      "group": "General Settings",
+      "subgroup": null
+    },
+    {
+      "get": "zCoordinate",
+      "set": null,
+      "apiMember": null,
+      "apiDescription": "Absolute Z of the spline (the level of its story, derived from the floor index).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "floorIndex",
+      "set": "floorInd",
+      "getFrom": "element",
+      "apiMember": "API_Elem_Head::floorInd",
+      "apiDescription": "The element belongs to this floor.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "lineTypeId",
+      "set": "lineTypeId",
+      "apiMember": "API_SplineType::ltypeInd",
+      "apiDescription": "Line type attribute index.",
+      "label": "Line Type",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-32.htm (heading \"Line General Settings Panel\", which the Spline page 150_UserInterfaceToolSettings-39.htm refers to; text \"Select a Line type from the pop-up selection palette\")",
+      "group": "General Settings",
+      "subgroup": null
+    },
+    {
+      "get": "linePenIndex",
+      "set": "linePenIndex",
+      "apiMember": "API_SplineType::linePen",
+      "apiDescription": "(Overridden) pen attribute index.",
+      "label": "Pen",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-32.htm (heading \"Line General Settings Panel\"; text \"Type a Pen number (1-255) for the Line/Arc/Polyline/Spline\")",
+      "group": "General Settings",
+      "subgroup": null
+    },
+    {
+      "get": "roomSeparator",
+      "set": "roomSeparator",
+      "apiMember": "API_SplineType::roomSeparator",
+      "apiDescription": "Is this spline a zone boundary?",
+      "label": "Zone Boundary",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-32.htm (text \"Check the Zone Boundary box to allow lines to delimit automatically placed Zones\"; screenshot ArrowheadSettings.png \"Zone Boundary\")",
+      "group": "General Settings",
+      "subgroup": null
+    }
+  ]
+}

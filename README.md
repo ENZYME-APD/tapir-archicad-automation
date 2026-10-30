@@ -5,6 +5,7 @@
 [![Grasshopper Plugin Build Check](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/grasshopper_plugin_build_check.yml/badge.svg)](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/grasshopper_plugin_build_check.yml)
 [![Tapir Installer Build Check](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/installer_build_check.yml/badge.svg)](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/installer_build_check.yml)
 [![Archicad API coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FENZYME-APD%2Ftapir-archicad-automation%2Fapi-coverage%2Fapi-coverage-badge.json)](https://enzyme-apd.github.io/tapir-archicad-automation/api-coverage/)
+[![Grasshopper coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FENZYME-APD%2Ftapir-archicad-automation%2Fapi-coverage%2Fgh-coverage-badge.json)](https://enzyme-apd.github.io/tapir-archicad-automation/gh-coverage/)
 
 This repository contains the Tapir Archicad automation package. It consists of several components:
 - [Tapir Archicad Add-On](archicad-addon): An Add-On that registers several new JSON commands on top of the official commands provided by Graphisoft. You can see the list of new commands [here](https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon). This is ready to use, see the installation instructions below.
@@ -18,6 +19,17 @@ How much of the Archicad API the Tapir Add-On already uses. The image is updated
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/api-coverage/api-coverage-dark.svg">
     <img alt="Archicad API coverage of Tapir" src="https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/api-coverage/api-coverage.svg">
+  </picture>
+</a>
+
+## Grasshopper coverage
+
+How many of the Tapir Add-On's commands the Grasshopper plugin's components call, and whether they cover each command's parameters, updated the same way; the [full checklist](https://enzyme-apd.github.io/tapir-archicad-automation/gh-coverage/) lists every command with its components and the parameters they miss.
+
+<a href="https://enzyme-apd.github.io/tapir-archicad-automation/gh-coverage/">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/api-coverage/gh-coverage-dark.svg">
+    <img alt="Grasshopper coverage of the Tapir commands" src="https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/api-coverage/gh-coverage.svg">
   </picture>
 </a>
 
@@ -51,6 +63,7 @@ Notes:
 
 Download the latest version here:
 
+<!-- archicad-versions:start (written by tools/devkits.py update) -->
 | Archicad version | Windows | macOS |
 | --- | --- | --- |
 | Archicad 25 | [Download](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirAddOn_AC25_Win.apx) | [Download](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirAddOn_AC25_Mac.zip) |
@@ -58,6 +71,8 @@ Download the latest version here:
 | Archicad 27 | [Download](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirAddOn_AC27_Win.apx) | [Download](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirAddOn_AC27_Mac.zip) |
 | Archicad 28 | [Download](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirAddOn_AC28_Win.apx) | [Download](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirAddOn_AC28_Mac.zip) |
 | Archicad 29 | [Download](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirAddOn_AC29_Win.apx) | [Download](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirAddOn_AC29_Mac.zip) |
+| Archicad 30 | [Download](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirAddOn_AC30_Win.apx) | [Download](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirAddOn_AC30_Mac.zip) |
+<!-- archicad-versions:end -->
 
 Once you downloaded the Add-On files you have to install it in Archicad. Follow these steps to install the Add-On.
 
