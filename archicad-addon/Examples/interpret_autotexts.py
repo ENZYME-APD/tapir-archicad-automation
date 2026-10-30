@@ -18,9 +18,10 @@ projectInfoFields = aclib.RunTapirCommand ('GetProjectInfoFields', {}, debug = F
 projectNameField = next (f for f in projectInfoFields if f['projectInfoId'] == 'PROJECTNAME')
 
 # Without an element context.
-values = aclib.RunTapirCommand ('InterpretAutoTexts', {'autoTexts': ['<PROJECTNAME>']}, debug = False)['values']
-check ('one result per autotext', len (values) == 1)
+values = aclib.RunTapirCommand ('InterpretAutoTexts', {'autoTexts': ['<PROJECTNAME>', 'PROJECTNAME']}, debug = False)['values']
+check ('one result per autotext', len (values) == 2)
 check ('<PROJECTNAME> resolves to the project name', values[0].get ('value') == projectNameField['projectInfoValue'])
+check ('the bare key PROJECTNAME resolves to the project name', values[1].get ('value') == projectNameField['projectInfoValue'])
 
 # In the context of an element: a Text placed on the floor plan.
 elements = aclib.RunTapirCommand ('CreateTexts', {

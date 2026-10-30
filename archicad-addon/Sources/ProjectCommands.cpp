@@ -512,7 +512,7 @@ GS::Optional<GS::UniString> InterpretAutoTextsCommand::GetInputParametersSchema 
         "properties": {
             "autoTexts": {
                 "type": "array",
-                "description": "The autotexts to resolve, as they are written in the content of a Text or Label element, e.g. '<LAYOUTID>' or '<PROPERTY-69A58F6F-DD3B-478D-B5EF-09A16BD0C548>'.",
+                "description": "The autotexts to resolve, either as they are written in the content of a Text or Label element, e.g. '<LAYOUTID>' or '<PROPERTY-69A58F6F-DD3B-478D-B5EF-09A16BD0C548>', or as bare keys without the surrounding '<' and '>', e.g. 'LAYOUTID'.",
                 "items": {
                     "type": "string",
                     "minLength": 1
@@ -585,8 +585,14 @@ GS::ObjectState InterpretAutoTextsCommand::Execute (const GS::ObjectState& param
     GS::ObjectState response;
     const auto& listAdder = response.AddList<GS::ObjectState> ("values");
     for (const GS::UniString& autoText : autoTexts) {
+        // Archicad takes the key without the surrounding '<' and '>' (ACAPI_AutoText_InterpretAutoText),
+        // so the form written in a Text is unwrapped; a bare key is passed on as it is.
+        GS::UniString key = autoText;
+        if (key.GetLength () >= 2 && key.BeginsWith (GS::UniChar ('<')) && key.EndsWith (GS::UniChar ('>'))) {
+            key = GS::UniString (key.GetSubstring (1, key.GetLength () - 2));
+        }
         GS::UniString value;
-        const GSErrCode err = ACAPI_AutoText_InterpretAutoText (&autoText, &guid, &value);
+        const GSErrCode err = ACAPI_AutoText_InterpretAutoText (&key, &guid, &value);
         if (err != NoError) {
             listAdder (CreateErrorResponse (err, "Failed to interpret the autotext."));
         } else {
