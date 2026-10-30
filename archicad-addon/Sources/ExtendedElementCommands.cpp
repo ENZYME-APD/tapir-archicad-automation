@@ -1713,6 +1713,12 @@ GS::Optional<GS::UniString> ApplyWallStructure (
             if (element.wall.type == APIWtyp_Poly) {
                 element.wall.type = APIWtyp_Normal;
             }
+            // A complex-profile favorite or tool default leaves the cross section on APISect_Poly, and with
+            // it the wall stays a profile wall without a profile (#531): structureType Profile, a null
+            // profileId. Slanted and Trapez cross sections are kept, as they are valid for this structure.
+            if (element.wall.profileType == APISect_Poly) {
+                element.wall.profileType = APISect_Normal;
+            }
             break;
         case StructureSelectionKind::Composite:
             element.wall.modelElemStructureType = API_CompositeStructure;
@@ -1723,9 +1729,13 @@ GS::Optional<GS::UniString> ApplyWallStructure (
             if (element.wall.type == APIWtyp_Poly) {
                 element.wall.type = APIWtyp_Normal;
             }
+            if (element.wall.profileType == APISect_Poly) {
+                element.wall.profileType = APISect_Normal;
+            }
             break;
         case StructureSelectionKind::Profile:
             element.wall.modelElemStructureType = API_ProfileStructure;
+            element.wall.profileType = APISect_Poly;
             if (selection.profile != APIInvalidAttributeIndex) {
                 element.wall.profileAttr = selection.profile;
             }
@@ -1746,6 +1756,7 @@ GS::Optional<GS::UniString> ApplyWallStructure (
         ACAPI_ELEMENT_MASK_SET ((*mask), API_WallType, composite);
         ACAPI_ELEMENT_MASK_SET ((*mask), API_WallType, profileAttr);
         ACAPI_ELEMENT_MASK_SET ((*mask), API_WallType, type);
+        ACAPI_ELEMENT_MASK_SET ((*mask), API_WallType, profileType);
     }
     changed = true;
     return {};
