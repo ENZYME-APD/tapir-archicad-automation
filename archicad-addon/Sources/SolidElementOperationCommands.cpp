@@ -36,9 +36,9 @@ static GSFlags FlagsFromObjectState (const GS::ObjectState& os)
 
 // ACAPI_Element_SolidLink_Remove answers APIERR_BADDATABASE (-2130313110) when the current
 // database is not the floor plan (e.g. the 3D window is active), even though the link is
-// gone afterwards (#1566). SwitchCurrentDatabaseToFloorPlan (declared in CommandBase.hpp,
-// defined in ExtendedElementCommands.cpp) only changes the CURRENT DATABASE, not the visible
-// window, and `switched` says whether the caller has to put the previous one back.
+// gone afterwards (#1566). SwitchCurrentDatabaseToFloorPlan (CommandBase.hpp, defined in
+// ExtendedElementCommands.cpp) changes only the CURRENT DATABASE, not the visible window,
+// and `switched` says whether the caller has to put the previous one back.
 
 static bool SolidLinkExists (const API_Guid& targetGuid, const API_Guid& operatorGuid)
 {
