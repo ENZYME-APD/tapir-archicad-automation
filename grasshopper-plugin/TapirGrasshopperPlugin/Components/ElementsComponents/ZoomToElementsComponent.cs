@@ -1,4 +1,5 @@
 ﻿using Grasshopper.Kernel;
+using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Element;
@@ -13,12 +14,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         // the whole drawing as before.
         public override string CommandName => "ZoomToElements";
 
-        private const string FitInWindowCommandName = "FitInWindow";
-
         public ZoomToElementsComponent()
             : base(
                 "ZoomToElements",
-                "Zoom the current window, 2D or 3D, to the given elements; the selection stays as it was. If no element is given, it works as 'fit in window', zooms to all elements in the project.",
+                "Zooms the current window, 2D or 3D, to the given elements: selects them, zooms to the selection " +
+                "and restores the previous selection unless KeepSelection is false. Fails when none of the elements " +
+                "could be selected, e.g. all of them are on another story or on a hidden layer. If no element is " +
+                "given, it works as 'fit in window', zooms to all elements in the project.",
                 GroupNames.Elements)
         {
         }
@@ -28,6 +30,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             InGenerics(
                 "ElementGuids",
                 "Element ids to zoom to.");
+
+            // Appended: saved definitions find the inputs by position.
+            inManager.AddBooleanParameter(
+                "KeepSelection",
+                "KeepSelection",
+                ("Restore the selection the window had before the command (default). With false the given " +
+                 "elements stay selected. Optional.").WithTypeName("booleanItem"),
+                GH_ParamAccess.item);
+
+            SetOptionality(1);
         }
 
         protected override void Solve(
@@ -40,17 +52,36 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            string commandName =
-                input.Elements != null && input.Elements.Count > 0
-                    ? CommandName
-                    : FitInWindowCommandName;
+            ExecutionResult response;
 
-            if (!TryGetConvertedCadValues(
-                    commandName,
-                    input,
-                    ToAddOn,
-                    ExecutionResult.Deserialize,
-                    out ExecutionResult response))
+            if (input.Elements != null && input.Elements.Count > 0)
+            {
+                var parameters = JObject.FromObject(input);
+
+                var keepSelection = true;
+                if (da.GetData(
+                        1,
+                        ref keepSelection))
+                {
+                    parameters["keepSelection"] = keepSelection;
+                }
+
+                if (!TryGetConvertedCadValues(
+                        CommandName,
+                        parameters,
+                        ToAddOn,
+                        ExecutionResult.Deserialize,
+                        out response))
+                {
+                    return;
+                }
+            }
+            else if (!TryGetConvertedCadValues(
+                         "FitInWindow",
+                         new JObject(),
+                         ToAddOn,
+                         ExecutionResult.Deserialize,
+                         out response))
             {
                 return;
             }

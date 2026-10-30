@@ -604,6 +604,17 @@ namespace TapirGrasshopperPlugin.Properties
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap SetZoom
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetZoom", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap TextDetails
         {
             get {
@@ -820,6 +831,17 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("FindNavigatorItem", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap FitInWindow
+        {
+            get {
+                object obj = ResourceManager.GetObject ("FitInWindow", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -1116,6 +1138,17 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("ReserveLockableObjectSet", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap ResetZoom
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ResetZoom", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
