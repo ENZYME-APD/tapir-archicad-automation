@@ -2387,7 +2387,7 @@ GS::Optional<GS::UniString> CreateViewsInViewMapCommand::GetInputParametersSchem
                     "properties": {
                         "navigatorItemId": {
                             "$ref": "#/NavigatorItemId",
-                            "description": "Source navigator item whose database and settings are copied."
+                            "description": "Source navigator item whose database and settings are copied: a Project Map item, or a View Map view (e.g. a story view). A View Map view is created from its Project Map source (sourceNavigatorItemId in GetNavigatorItemTree), then gets the view's own view settings, name and ID."
                         },
                         "parentNavigatorItemId": {
                             "$ref": "#/NavigatorItemId",
@@ -2462,12 +2462,25 @@ GS::ObjectState CreateViewsInViewMapCommand::Execute (const GS::ObjectState& par
             continue;
         }
 
+        // A View Map view cannot be cloned to the View Map (#1656): clone the
+        // Project Map item behind it instead, and copy the view's own settings
+        // onto the new view afterwards. Project Map items have no source.
+        API_NavigatorItem sourceView = {};
+        bool sourceIsView = false;
+        if (ACAPI_Navigator_GetNavigatorItem (&sourceGuid, &sourceView) == NoError &&
+            sourceView.sourceGuid != APINULLGuid) {
+            sourceIsView = true;
+            sourceGuid   = sourceView.sourceGuid;
+        }
+
         // Step 1: clone from Project Map (only reliable way to create a
         // floor-plan View Map item)
         API_Guid createdGuid = APINULLGuid;
         GSErrCode err = ACAPI_Navigator_CloneProjectMapItemToViewMap (&sourceGuid, &parentGuid, &createdGuid);
         if (err != NoError) {
-            navigatorItems (CreateErrorResponse (err, "Failed to clone navigator item to view map."));
+            navigatorItems (CreateErrorResponse (err, sourceIsView
+                ? "Failed to clone the Project Map item behind the source view to view map."
+                : "Failed to clone navigator item to view map."));
             continue;
         }
 
@@ -2484,6 +2497,15 @@ GS::ObjectState CreateViewsInViewMapCommand::Execute (const GS::ObjectState& par
         createdItem.mapId         = API_PublicViewMap;
         createdItem.isIndependent = true;
 
+        // A source view's name and ID default to the view's, not to those of
+        // the Project Map item it was created from.
+        if (sourceIsView) {
+            GS::ucscpy (createdItem.uName, sourceView.uName);
+            createdItem.customName = sourceView.customName;
+            CHTruncate (sourceView.uiId, createdItem.uiId, GS::ArraySize (createdItem.uiId));
+            createdItem.customUiId = sourceView.customUiId;
+        }
+
         GS::UniString newName;
         if (item.Get ("name", newName) && !newName.IsEmpty ()) {
             GS::ucscpy (createdItem.uName, newName.ToUStr ());
@@ -2491,6 +2513,26 @@ GS::ObjectState CreateViewsInViewMapCommand::Execute (const GS::ObjectState& par
         }
 
         ACAPI_Navigator_ChangeNavigatorItem (&createdItem);
+
+        // Step 4: give a view copied from a View Map view that view's settings
+        // (layer combination, scale, model view options, zoom, ...) instead of
+        // the Project Map item's defaults.
+        if (sourceIsView) {
+            sourceView.mapId = API_PublicViewMap;
+            API_NavigatorView sourceViewSettings = {};
+            err = ACAPI_Navigator_GetNavigatorView (&sourceView, &sourceViewSettings);
+            if (err == NoError) {
+                err = ACAPI_Navigator_ChangeNavigatorView (&createdItem, &sourceViewSettings);
+            }
+            if (err != NoError) {
+                // Do not leave a view with the wrong settings behind that the
+                // caller never gets the id of.
+                bool silentMode = true;
+                ACAPI_Navigator_DeleteNavigatorView (&createdGuid, &silentMode);
+                navigatorItems (CreateErrorResponse (err, "Failed to copy the view settings of the source view onto the new view."));
+                continue;
+            }
+        }
 
         navigatorItems (CreateIdObjectState ("navigatorItemId", createdGuid));
     }
