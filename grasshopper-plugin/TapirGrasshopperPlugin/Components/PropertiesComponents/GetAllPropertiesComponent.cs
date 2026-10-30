@@ -1,11 +1,13 @@
 ﻿using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Element;
+using TapirGrasshopperPlugin.Types.GuidObjects;
 using TapirGrasshopperPlugin.Types.Properties;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
@@ -17,9 +19,37 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         public GetAllPropertiesComponent()
             : base(
                 "AllProperties",
-                "Get all properties.",
+                "Get all properties. Optionally only the given properties or property types, " +
+                "and without the availability lists.",
                 GroupNames.Properties)
         {
+        }
+
+        protected override void AddInputs()
+        {
+            InGenerics(
+                "PropertyGuids",
+                "Returns only the definitions of these properties; identifiers not found in the project " +
+                "are left out. All properties are returned when nothing is connected.");
+
+            InTexts(
+                "PropertyTypes",
+                "Returns only the properties of these types: StaticBuiltIn, DynamicBuiltIn or Custom. " +
+                "All types are returned when nothing is connected.");
+
+            InBoolean(
+                "IncludeAvailability",
+                "Adds the availability list (the classification items a custom property is available for) " +
+                "to each custom property. Default is true.",
+                true);
+
+            SetOptionality(
+                new[]
+                {
+                    0,
+                    1,
+                    2
+                });
         }
 
         protected override void AddOutputs()
@@ -84,14 +114,75 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             OutTextTree(
                 "Expressions",
                 "Expression strings of each expression-based property (one branch per property).");
+
+            OutTexts(
+                "PropertyTypes",
+                "Type of each property: StaticBuiltIn, DynamicBuiltIn or Custom.");
+
+            OutTexts(
+                "CollectionTypes",
+                "Collection type of each property: Undefined, Single, List, SingleChoiceEnumeration or " +
+                "MultipleChoiceEnumeration.");
+
+            OutTexts(
+                "ValueTypes",
+                "Value type of each property: Undefined, Integer, Real, String, Boolean or Guid.");
+
+            OutTexts(
+                "MeasureTypes",
+                "Measure type of each property: Undefined, Default, Length, Area, Volume or Angle.");
+
+            OutBooleans(
+                "IsEditable",
+                "True for each property whose value can be edited.");
         }
 
         protected override void Solve(
             IGH_DataAccess da)
         {
+            var parameters = new JObject();
+
+            if (da.TryGetList(
+                    0,
+                    out List<GH_ObjectWrapper> propertyWrappers) &&
+                propertyWrappers.Count > 0)
+            {
+                var properties = new JArray();
+                foreach (var wrapper in propertyWrappers)
+                {
+                    var id = GuidObject<PropertyGuidObject>.CreateFromWrapper(wrapper);
+                    if (id == null)
+                    {
+                        this.AddError("Invalid property identifier in the PropertyGuids input.");
+                        return;
+                    }
+                    properties.Add(
+                        new JObject
+                        {
+                            ["propertyId"] = new JObject { ["guid"] = id.Guid }
+                        });
+                }
+                parameters["properties"] = properties;
+            }
+
+            if (da.TryGetList(
+                    1,
+                    out List<string> propertyTypes) &&
+                propertyTypes.Count > 0)
+            {
+                parameters["propertyTypes"] = JArray.FromObject(propertyTypes);
+            }
+
+            if (da.TryGet(
+                    2,
+                    out bool includeAvailability))
+            {
+                parameters["includeAvailability"] = includeAvailability;
+            }
+
             if (!TryGetConvertedCadValues(
                     CommandName,
-                    null,
+                    parameters,
                     ToAddOn,
                     JHelp.Deserialize<AllProperties>,
                     out AllProperties response))
@@ -221,6 +312,26 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             da.SetDataTree(
                 16,
                 expressionTree);
+
+            da.SetDataList(
+                17,
+                response.Properties.Select(x => x.PropertyType));
+
+            da.SetDataList(
+                18,
+                response.Properties.Select(x => x.PropertyCollectionType));
+
+            da.SetDataList(
+                19,
+                response.Properties.Select(x => x.PropertyValueType));
+
+            da.SetDataList(
+                20,
+                response.Properties.Select(x => x.PropertyMeasureType));
+
+            da.SetDataList(
+                21,
+                response.Properties.Select(x => x.PropertyIsEditable));
         }
 
         protected override System.Drawing.Bitmap Icon =>

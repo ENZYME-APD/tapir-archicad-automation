@@ -364,6 +364,12 @@
   <data name="LockElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\LockElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="MakePropertyAvailableForElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\MakePropertyAvailableForElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="MakePropertyUnavailableForElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\MakePropertyUnavailableForElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="UnlockElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\UnlockElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -546,6 +552,12 @@
   </data>
   <data name="GetProfiles" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetProfiles.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetPropertiesOfToolDefaults" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetPropertiesOfToolDefaults.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetPropertyDefinitionsOfAttributes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetPropertyDefinitionsOfAttributes.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="GetComposites" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetComposites.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -952,6 +964,9 @@
   <data name="ModifyObjects" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ModifyObjects.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="ModifyPropertyValueOfElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ModifyPropertyValueOfElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="ModifyLamps" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ModifyLamps.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -1012,11 +1027,17 @@
   <data name="AddLibraries" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\AddLibraries.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="AddPropertyToAttributes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\AddPropertyToAttributes.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="TrimElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\TrimElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="RemoveElementTrims" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\RemoveElementTrims.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="RemovePropertyFromAttributes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\RemovePropertyFromAttributes.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="GetElementTrims" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetElementTrims.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>

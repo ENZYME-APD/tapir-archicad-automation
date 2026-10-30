@@ -794,6 +794,22 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap MakePropertyAvailableForElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("MakePropertyAvailableForElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap MakePropertyUnavailableForElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("MakePropertyUnavailableForElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap UnlockElements
         {
             get {
@@ -1420,6 +1436,22 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("GetProfiles", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetPropertiesOfToolDefaults
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetPropertiesOfToolDefaults", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetPropertyDefinitionsOfAttributes
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetPropertyDefinitionsOfAttributes", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -2505,6 +2537,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap ModifyPropertyValueOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyPropertyValueOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap ModifyLamps
         {
             get {
@@ -2681,6 +2721,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap AddPropertyToAttributes
+        {
+            get {
+                object obj = ResourceManager.GetObject ("AddPropertyToAttributes", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap TrimElements
         {
             get {
@@ -2693,6 +2741,14 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("RemoveElementTrims", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap RemovePropertyFromAttributes
+        {
+            get {
+                object obj = ResourceManager.GetObject ("RemovePropertyFromAttributes", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
