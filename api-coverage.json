@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-29 22:24 UTC",
+ "generatedAt": "2026-10-30 00:20 UTC",
  "versions": [
   25,
   26,
@@ -5408,10 +5408,6 @@
      "title": "IFCFileOperation: storyIndex for merge, so the IFC's storeys no longer follow the active story (#1616)"
     },
     {
-     "number": 1569,
-     "title": "RemoveSolidElementLinks: no false failure when the 3D window is active"
-    },
-    {
      "number": 1489,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
     },
@@ -5555,10 +5551,6 @@
     {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    },
-    {
-     "number": 1569,
-     "title": "RemoveSolidElementLinks: no false failure when the 3D window is active"
     },
     {
      "number": 1532,
@@ -7679,10 +7671,6 @@
      "title": "Keep Label/Text widthFactor and charSpaceFactor on create and content changes"
     },
     {
-     "number": 1568,
-     "title": "ApplyFavoritesToElements: keep the target's home story"
-    },
-    {
      "number": 1489,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
     },
@@ -7969,10 +7957,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1568,
-     "title": "ApplyFavoritesToElements: keep the target's home story"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -8370,10 +8354,6 @@
     {
      "number": 1588,
      "title": "Keep Label/Text widthFactor and charSpaceFactor on create and content changes"
-    },
-    {
-     "number": 1568,
-     "title": "ApplyFavoritesToElements: keep the target's home story"
     },
     {
      "number": 1533,
@@ -10390,12 +10370,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1569,
-     "title": "RemoveSolidElementLinks: no false failure when the 3D window is active"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10463,12 +10438,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1569,
-     "title": "RemoveSolidElementLinks: no false failure when the 3D window is active"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -23146,10 +23116,6 @@
     {
      "number": 1584,
      "title": "[3/4] DeleteGhostRecords, HighlightElements on Archicad 25, GetDetailsOfElements for elements of other databases"
-    },
-    {
-     "number": 1569,
-     "title": "RemoveSolidElementLinks: no false failure when the 3D window is active"
     },
     {
      "number": 1489,
