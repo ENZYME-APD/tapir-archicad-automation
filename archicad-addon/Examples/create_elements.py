@@ -297,6 +297,21 @@ aclib.RunTapirCommand ('CreateAssociativeDimensions', {
     ]
 })
 
+# A witness point can also be static: given by its coordinate, it is not attached
+# to any element, like a point added by hand on empty space.
+aclib.RunTapirCommand ('CreateAssociativeDimensions', {
+    'dimensionsData': [
+        {
+            'referencePoint': { 'x': 0.0, 'y': -3.0 },
+            'direction': { 'x': 1.0, 'y': 0.0 },
+            'witnessPoints': [
+                { 'elementId': wallId, 'nodeId': 1 },
+                { 'coordinate': { 'x': 2.5, 'y': 0.0 } }
+            ]
+        }
+    ]
+})
+
 aclib.RunTapirCommand ('CreateWallThicknessDimensions', {
     'dimensionsData': [
         {

@@ -1,0 +1,182 @@
+{
+  "tool": "Drawing",
+  "elementType": "Drawing",
+  "archicadVersion": 29,
+  "commands": {
+    "get": "GetDetailsOfElements",
+    "getSchema": "DrawingDetails",
+    "create": "CreateDrawingsCommand"
+  },
+  "plainKeys": [
+    "layoutDatabaseId"
+  ],
+  "sources": {
+    "help": [
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-30.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-90.htm"
+    ],
+    "devkit": "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/tag/29.3000"
+  },
+  "fields": [
+    {
+      "get": "navigatorItemId",
+      "set": "navigatorItemId",
+      "apiMember": "API_DrawingType::drawingGuid",
+      "apiDescription": "GUID of the drawing for identification by autotext.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "pos",
+      "set": "position",
+      "apiMember": "API_DrawingType::pos",
+      "apiDescription": "Coordinate of the placed drawing's origin on the layout.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "bounds",
+      "set": null,
+      "apiMember": "API_DrawingType::bounds",
+      "apiDescription": "Boundary box.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "modelOffset",
+      "set": "modelOffset",
+      "apiMember": "API_DrawingType::modelOffset",
+      "apiDescription": "If isCutWithFrame is true than it is the offset of the model. It will modify also the pos of the drawing.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "clipPolygon",
+      "set": "clipPolygon",
+      "apiMember": "API_DrawingType::poly",
+      "apiDescription": "Polygon on the layout: the clip polygon if isCutWithFrame is true else the bounding box in polygon format",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "numberingType",
+      "set": null,
+      "apiMember": "API_DrawingType::numberingType",
+      "apiDescription": "Numbering options (see API_NumberingTypeValues).",
+      "label": "Drawing ID",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-30.htm (heading \"Drawing ID\": By Layout / By View ID / Custom; screenshot ViewPath.png \"Drawing ID:\")",
+      "group": "Identification",
+      "subgroup": null
+    },
+    {
+      "get": "customNumber",
+      "set": null,
+      "apiMember": "API_DrawingType::customNumber",
+      "apiDescription": "Custom drawing number if numberingType is set to APINumbering_CustomNum.",
+      "label": null,
+      "labelSource": null,
+      "group": "Identification",
+      "subgroup": null
+    },
+    {
+      "get": "isInNumbering",
+      "set": null,
+      "apiMember": "API_DrawingType::isInNumbering",
+      "apiDescription": "The drawing is included in the numbering sequence.",
+      "label": "Include Drawing in ID sequence",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-30.htm (text \"Include Drawing in ID sequence: Check this box to include your drawing in the ID sequence\"; screenshot ViewPath.png \"Include Drawing in ID sequence\")",
+      "group": "Identification",
+      "subgroup": null
+    },
+    {
+      "get": "nameType",
+      "set": "nameType",
+      "apiMember": "API_DrawingType::nameType",
+      "apiDescription": "Type of the drawing name (see API_NameTypeValues).",
+      "label": "Drawing Name",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-30.htm (heading \"Drawing Name\"; screenshot ViewPath.png \"Drawing Name:\")",
+      "group": "Identification",
+      "subgroup": null
+    },
+    {
+      "get": "customName",
+      "set": "name",
+      "apiMember": "API_DrawingType::name",
+      "apiDescription": "Custom drawing name if nameType is set to APIName_CustomName.",
+      "label": null,
+      "labelSource": null,
+      "group": "Identification",
+      "subgroup": null
+    },
+    {
+      "get": "ratio",
+      "set": "scale",
+      "apiMember": "API_DrawingType::ratio",
+      "apiDescription": "Ratio of drawing size and original size.",
+      "label": "Magnification",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-30.htm (text \"as a percent of its original size (the Magnification)\"; screenshot AutoFit.png \"Magnification:\")",
+      "group": "Size and Appearance",
+      "subgroup": null
+    },
+    {
+      "get": "drawingScale",
+      "set": "drawingScale",
+      "apiMember": "API_DrawingType::drawingScale",
+      "apiDescription": "Scale of the view (e.g. 0.002 for 1:500) - output only.",
+      "label": null,
+      "labelSource": null,
+      "group": "Size and Appearance",
+      "subgroup": null
+    },
+    {
+      "get": "angle",
+      "set": "angle",
+      "apiMember": "API_DrawingType::angle",
+      "apiDescription": "Angle of the placed drawing in radian.",
+      "label": "Angle",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-30.htm (text \"Angle: Enter a rotation angle in degrees for the Drawing position\"; screenshot AngleDrawing.png \"Angle:\")",
+      "group": "Size and Appearance",
+      "subgroup": null
+    },
+    {
+      "get": "isCutWithFrame",
+      "set": null,
+      "apiMember": "API_DrawingType::isCutWithFrame",
+      "apiDescription": "Drawing is clipped with frame polygon.",
+      "label": null,
+      "labelSource": null,
+      "group": "Frame",
+      "subgroup": null
+    },
+    {
+      "get": "titleLibraryPartIndex",
+      "set": null,
+      "apiMember": "API_DrawingTitle::libInd",
+      "apiDescription": "Library part index of the title.",
+      "label": "Title Type",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-30.htm (heading \"Title Panel\"; text \"Choose a predefined drawing title type from the pop-up list. Note: You can also create a custom Title Type.\")",
+      "group": "Title",
+      "subgroup": null
+    },
+    {
+      "get": "titleElementId",
+      "set": null,
+      "apiMember": "API_DrawingTitle::guid",
+      "apiDescription": "Guid of title element (the placed object).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    }
+  ]
+}
