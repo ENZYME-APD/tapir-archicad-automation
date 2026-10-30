@@ -176,13 +176,18 @@ void ScriptUIPalette::Hide ()
 
 void ScriptUIPalette::ShowWithHTML (const GS::UniString& htmlContent, const ScriptUIOptions& options)
 {
+    SetGrowType (options.resizable ? DG::Dialog::HVGrow : DG::Dialog::NoGrow);
+    // The GDLG size (600x450) is only meant as the starting size, but DG also keeps it as the
+    // minimum client size: without this, a smaller width/height and autoHeight on a short page are
+    // silently clamped to 600x450. Setting the minimum in the constructor (before
+    // BeginEventProcessing) had no effect, so it is set here on every show.
+    SetMinClientSize (160, 60);
     if (options.width > 0 && options.height > 0) {
         SetClientSize (options.width, options.height);
     }
     if (!options.title.IsEmpty ()) {
         SetTitle (options.title);
     }
-    SetGrowType (options.resizable ? DG::Dialog::HVGrow : DG::Dialog::NoGrow);
 
     TAPIR_Browser_SetZoomEnabled (browser, options.zoomEnabled);
     if (options.hasZoomLevel) {
@@ -298,6 +303,12 @@ GSErrCode ScriptUIPalette::PaletteControlCallBack (Int32, API_PaletteMessageID m
 {
     switch (messageID) {
         case APIPalMsg_OpenPalette:
+            // Archicad restores the palette when it was open at the last quit, but the page and the
+            // script that showed it are gone by then: only reopen a page shown in this session, so
+            // Archicad does not start with an empty palette. The instance only exists once
+            // ShowWithHTML ran.
+            if (!HasInstance ())
+                break;
             Instance ().Show ();
             break;
 
