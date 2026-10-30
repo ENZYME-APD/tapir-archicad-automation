@@ -1179,7 +1179,7 @@ GSErrCode Initialize (void)
         CommandGroup propertyCommands ("Property Commands");
         err |= RegisterCommand<GetAllPropertiesCommand> (
             propertyCommands, "1.1.3",
-            "Returns all user defined and built-in properties."
+            "Returns all user defined and built-in properties. Optionally only the given properties or property types, and without the availability lists."
         );
         err |= RegisterCommand<GetPropertyValuesOfElementsCommand> (
             propertyCommands, "1.0.6",
