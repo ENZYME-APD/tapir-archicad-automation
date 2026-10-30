@@ -8320,7 +8320,8 @@
                 "$ref": "#/OverriddenMaterial"
             },
             "extrusionMaterial": {
-                "$ref": "#/OverriddenMaterial"
+                "$ref": "#/OverriddenMaterial",
+                "description": "Available from Archicad 29."
             },
             "materialsChained": {
                 "type": "boolean",
@@ -8334,7 +8335,6 @@
             "rightMaterial",
             "bottomMaterial",
             "endsMaterial",
-            "extrusionMaterial",
             "materialsChained"
         ]
     },

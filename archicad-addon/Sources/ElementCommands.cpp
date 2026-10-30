@@ -94,7 +94,10 @@ static void AddBeamSegmentSurfacesFromMemo (const API_Guid& guid, GS::ObjectStat
         segmentOs.Add ("rightMaterial", CreateOverriddenMaterialObjectState (segment.rightMaterial));
         segmentOs.Add ("bottomMaterial", CreateOverriddenMaterialObjectState (segment.bottomMaterial));
         segmentOs.Add ("endsMaterial", CreateOverriddenMaterialObjectState (segment.endsMaterial));
+#ifdef ServerMainVers_2900
+        // not a member of API_BeamSegmentType before Archicad 29
         segmentOs.Add ("extrusionMaterial", CreateOverriddenMaterialObjectState (segment.extrusionMaterial));
+#endif
         segmentOs.Add ("materialsChained", segment.materialsChained);
         segments (segmentOs);
     }
