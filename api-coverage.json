@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-30 09:47 UTC",
+ "generatedAt": "2026-10-30 11:53 UTC",
  "versions": [
   25,
   26,
@@ -4076,6 +4076,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1659,
+     "title": "GetAutoTextKeys: also list the Project Info, layout and other autotexts"
+    },
     {
      "number": 1638,
      "title": "SetProjectNotes: no longer duplicates architect and draftsmen (#1559)"
@@ -15860,7 +15864,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1660,
+     "title": "CreateViewsInViewMap: accept a View Map view as the source"
+    }
+   ],
    "issues": [
     {
      "number": 1047,
@@ -16079,6 +16088,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1660,
+     "title": "CreateViewsInViewMap: accept a View Map view as the source"
+    },
     {
      "number": 1643,
      "title": "DeleteNavigatorItems: say why an item was not deleted (replaces #1419)"
@@ -16312,6 +16325,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1660,
+     "title": "CreateViewsInViewMap: accept a View Map view as the source"
+    },
+    {
      "number": 1517,
      "title": "[6/6] Add Get3DDocumentSettings and Set3DDocumentSettings"
     },
@@ -16498,7 +16515,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1660,
+     "title": "CreateViewsInViewMap: accept a View Map view as the source"
+    }
+   ],
    "issues": [
     {
      "number": 876,
