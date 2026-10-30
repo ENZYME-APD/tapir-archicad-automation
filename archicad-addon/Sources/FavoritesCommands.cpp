@@ -3207,4 +3207,5 @@ GS::ObjectState DeleteFavoritesWithManagerCommand::Execute (const GS::ObjectStat
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
-#endif}
+#endif
+}
