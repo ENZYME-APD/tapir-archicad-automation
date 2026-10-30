@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-30 13:02 UTC",
+ "generatedAt": "2026-10-30 13:20 UTC",
  "versions": [
   25,
   26,
@@ -45124,6 +45124,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1669,
+     "title": "FilterElements: fromHotlink and hotlinkIds criteria"
+    },
     {
      "number": 1668,
      "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands"
