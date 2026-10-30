@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-30 07:26 UTC",
+ "generatedAt": "2026-10-30 08:44 UTC",
  "versions": [
   25,
   26,
@@ -29287,6 +29287,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1648,
+     "title": "CreateStairs: landings and winders per baseline edge and point"
+    },
+    {
      "number": 1639,
      "title": "Dimensions: textFrame on the creation commands, text settings in GetDimensionData (replaces #1593)"
     },
@@ -45043,6 +45047,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1648,
+     "title": "CreateStairs: landings and winders per baseline edge and point"
+    },
     {
      "number": 1642,
      "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
