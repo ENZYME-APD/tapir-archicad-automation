@@ -5521,7 +5521,7 @@ GS::ObjectState CreatePenTablesCommand::Execute (const GS::ObjectState& paramete
             penTable.header.guid = GetGuidFromAttributesArrayItem (penTableData);
 
             Int32 index = -1;
-            if (penTableData.Get ("index", index) && index >= 0) {
+            if (GetIndexToOverwrite (penTableData, index)) {
                 penTable.header.index = ACAPI_CreateAttributeIndex (index);
             }
         }
@@ -5653,7 +5653,7 @@ GS::ObjectState CreatePenTablesCommand::Execute (const GS::ObjectState& paramete
             penTable.header.guid = GetGuidFromAttributesArrayItem (penTableData);
 
             Int32 index = -1;
-            if (penTableData.Get ("index", index) && index >= 0) {
+            if (GetIndexToOverwrite (penTableData, index)) {
                 penTable.header.index = ACAPI_CreateAttributeIndex (index);
             }
         }
@@ -5934,7 +5934,7 @@ GS::ObjectState CreateProfilesCommand::Execute (const GS::ObjectState& parameter
             profile.header.guid = GetGuidFromAttributesArrayItem (profileData);
 
             Int32 index = -1;
-            if (profileData.Get ("index", index) && index >= 0) {
+            if (GetIndexToOverwrite (profileData, index)) {
                 profile.header.index = ACAPI_CreateAttributeIndex (index);
             }
         }
@@ -6257,7 +6257,7 @@ GS::ObjectState CreateCompositesCommand::Execute (const GS::ObjectState& paramet
             composite.header.guid = GetGuidFromAttributesArrayItem (compositeData);
 
             Int32 index = -1;
-            if (compositeData.Get ("index", index) && index >= 0) {
+            if (GetIndexToOverwrite (compositeData, index)) {
                 composite.header.index = ACAPI_CreateAttributeIndex (index);
             }
         }
