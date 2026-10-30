@@ -356,7 +356,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetAutoTextKeysCommand> (
             projectCommands, "1.5.9",
-            "Retrieves the available autotext keys (name and embeddable key), optionally for a specific element. Embed a key in a Text or Label content by surrounding it with '<' and '>'."
+            "Retrieves the available autotext keys (name and embeddable key): the Project Info, layout, drawing, date and other autotexts Archicad lists, and the property based ones, optionally for a specific element. Embed a key in a Text or Label content by surrounding it with '<' and '>'."
         );
         err |= RegisterCommand<GetAutoTextNameCommand> (
             projectCommands, "1.5.9",

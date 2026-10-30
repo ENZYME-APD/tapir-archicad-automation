@@ -19,6 +19,9 @@ check ('generic keys found', len (genericKeys) > 0)
 propertyKeys = [k for k in genericKeys if k['key'].startswith ('PROPERTY-')]
 check ('property-based keys found', len (propertyKeys) > 0)
 check ('names are not keys', all (not k['name'].startswith ('PROPERTY-') for k in genericKeys))
+# The other autotexts (Project Info, layout, date, ...) are listed too, each key only once.
+check ('project info key found', any (k['key'] == 'PROJECTNAME' for k in genericKeys))
+check ('keys are unique', len (set (k['key'] for k in genericKeys)) == len (genericKeys))
 
 # With an element: its own type's keys come on top of the generic ones.
 walls = aclib.RunCommand ('API.GetElementsByType', {'elementType': 'Wall'})['elements']
