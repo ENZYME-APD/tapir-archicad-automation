@@ -9892,6 +9892,52 @@
                 "items": {
                     "$ref": "#/PolyArc"
                 }
+            },
+            "baseLineEdges": {
+                "type": "array",
+                "description": "The segment type of each baseline edge, one item per edge (edge i runs from baseLinePoints[i] to baseLinePoints[i + 1]), as CreateStairs takes them.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "segmentType": {
+                            "type": "string",
+                            "enum": ["Flight", "Landing", "DividedLanding", "Unknown"]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["segmentType"]
+                }
+            },
+            "baseLineVertices": {
+                "type": "array",
+                "description": "The turn at each baseline point, one item per point, as CreateStairs takes them. A stair whose turns Archicad decided itself reports Landing at every point, also at the first and last.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "turnType": {
+                            "type": "string",
+                            "enum": ["None", "Landing", "Winder", "DividedLanding", "Unknown"]
+                        },
+                        "landingStartEdgeOffset": {
+                            "type": "number",
+                            "description": "The lead edge offset of the landing as Archicad calculated it."
+                        },
+                        "landingEndEdgeOffset": {
+                            "type": "number",
+                            "description": "The trail edge offset of the landing as Archicad calculated it."
+                        },
+                        "minLandingStartEdgeOffset": {
+                            "type": "number",
+                            "description": "The minimal lead edge offset."
+                        },
+                        "minLandingEndEdgeOffset": {
+                            "type": "number",
+                            "description": "The minimal trail edge offset."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["turnType", "landingStartEdgeOffset", "landingEndEdgeOffset", "minLandingStartEdgeOffset", "minLandingEndEdgeOffset"]
+                }
             }
         },
         "additionalProperties": false,
