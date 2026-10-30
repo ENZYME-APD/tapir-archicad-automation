@@ -802,6 +802,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap UpdateAnalyticalModel
+        {
+            get {
+                object obj = ResourceManager.GetObject ("UpdateAnalyticalModel", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -1288,6 +1296,22 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap SetAnalyticalGenerationSettingsToNoRule
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetAnalyticalGenerationSettingsToNoRule", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetAnalyticalVisibilitySettings
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetAnalyticalVisibilitySettings", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap MoveElementsToDesignOptions
         {
             get {
@@ -1428,6 +1452,14 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("GetComposites", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetCurrentAnalyticalModel
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetCurrentAnalyticalModel", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -1744,6 +1776,70 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap GetAnalyticalLoadCases
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAnalyticalLoadCases", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetAnalyticalLoadCombinations
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAnalyticalLoadCombinations", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetAnalyticalLoadGroups
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAnalyticalLoadGroups", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetAnalyticalMemberTypesOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAnalyticalMemberTypesOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetAnalyticalModel
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAnalyticalModel", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetAnalyticalModelCheckTypeId
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAnalyticalModelCheckTypeId", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetAnalyticalModelVariation
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAnalyticalModelVariation", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetAnalyticalVisibilitySettings
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAnalyticalVisibilitySettings", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap Set3DProjectionSettings
         {
             get {
@@ -2036,6 +2132,30 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("CreateZones", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap DeleteAnalyticalLoadCases
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteAnalyticalLoadCases", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap DeleteAnalyticalLoadCombinations
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteAnalyticalLoadCombinations", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap DeleteAnalyticalLoadGroups
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteAnalyticalLoadGroups", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -2681,6 +2801,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap AddLoadCasesToLoadCombination
+        {
+            get {
+                object obj = ResourceManager.GetObject ("AddLoadCasesToLoadCombination", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap TrimElements
         {
             get {
@@ -2917,6 +3045,30 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("ConnectToElectricalCircuits", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateAnalyticalLoadCases
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateAnalyticalLoadCases", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateAnalyticalLoadCombinations
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateAnalyticalLoadCombinations", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateAnalyticalLoadGroups
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateAnalyticalLoadGroups", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }

@@ -2,6 +2,7 @@
 {
     public static class GroupNames
     {
+        public static string Analytical => nameof(Analytical);
         public static string Attributes => nameof(Attributes);
         public static string Classifications => nameof(Classifications);
         public static string DesignOptions => nameof(DesignOptions);
