@@ -117,6 +117,49 @@ var gSchemaDefinitions = {
             "preferenceTableId": {
                 "$ref": "#/Guid",
                 "description": "The guid of the segment preference table used by the segment (see GetMEPPreferenceTables)."
+            },
+            "beginNodeId": {
+                "$ref": "#/ElementId",
+                "description": "The routing node at the beginning of the segment."
+            },
+            "endNodeId": {
+                "$ref": "#/ElementId",
+                "description": "The routing node at the end of the segment."
+            },
+            "anchor": {
+                "type": "string",
+                "description": "The anchor point of the cross section, on a 3x3 grid.",
+                "enum": [
+                    "TopLeft",
+                    "TopCenter",
+                    "TopRight",
+                    "MiddleLeft",
+                    "Center",
+                    "MiddleRight",
+                    "BottomLeft",
+                    "BottomCenter",
+                    "BottomRight"
+                ]
+            },
+            "referenceLineOffsetX": {
+                "type": "number",
+                "description": "The horizontal offset of the reference line from the anchor point."
+            },
+            "referenceLineOffsetY": {
+                "type": "number",
+                "description": "The vertical offset of the reference line from the anchor point."
+            },
+            "wallThickness": {
+                "type": "number",
+                "description": "The wall thickness of the segment."
+            },
+            "flangeSize": {
+                "type": "number",
+                "description": "The flange size of the segment. Only present when the segment has flanges."
+            },
+            "rigidSegments": {
+                "$ref": "#/Elements",
+                "description": "The rigid segments (the straight duct, pipe or cable carrier pieces) of the routing segment."
             }
         },
         "additionalProperties": false,
@@ -136,6 +179,22 @@ var gSchemaDefinitions = {
             },
             "position": {
                 "$ref": "#/Coordinate3D"
+            },
+            "incomingSegmentId": {
+                "$ref": "#/ElementId",
+                "description": "The routing segment ending at this node. Not present at the beginning of the route."
+            },
+            "outgoingSegmentId": {
+                "$ref": "#/ElementId",
+                "description": "The routing segment starting at this node. Not present at the end of the route."
+            },
+            "elbows": {
+                "$ref": "#/Elements",
+                "description": "The elbows (bends in Archicad 28) at this node."
+            },
+            "transitions": {
+                "$ref": "#/Elements",
+                "description": "The transitions at this node."
             }
         },
         "additionalProperties": false,
@@ -153,6 +212,22 @@ var gSchemaDefinitions = {
             },
             "mepSystemId": {
                 "$ref": "#/AttributeId"
+            },
+            "offsetFromHomeStory": {
+                "type": "number",
+                "description": "The offset of the routing element from its home story."
+            },
+            "branchPreferenceTableId": {
+                "$ref": "#/Guid",
+                "description": "The guid of the branch preference table used by the routing element (see GetMEPPreferenceTables). Not present when the routing element has none."
+            },
+            "logicallyConnectedPortIdAtRouteBegin": {
+                "$ref": "#/Guid",
+                "description": "The port logically connected to the beginning of the route (see GetMEPPorts). Not present when nothing is connected there."
+            },
+            "logicallyConnectedPortIdAtRouteEnd": {
+                "$ref": "#/Guid",
+                "description": "The port logically connected to the end of the route (see GetMEPPorts). Not present when nothing is connected there."
             },
             "polyline": {
                 "type": "array",
@@ -390,6 +465,34 @@ var gSchemaDefinitions = {
         "required": [
             "attributeId"
         ]
+    },
+    "AttributeFolder": {
+        "type": "object",
+        "description": "An attribute folder, identified by the type of the attributes it holds and its path from the root folder of that type. Attribute folders exist from Archicad 26.",
+        "properties": {
+            "attributeType": {
+                "$ref": "#/AttributeType"
+            },
+            "path": {
+                "type": "array",
+                "description": "The names of the folders from the root folder down to this folder, the root folder itself not included. An empty array is the root folder.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeType",
+            "path"
+        ]
+    },
+    "AttributeFolders": {
+        "type": "array",
+        "description": "A list of attribute folders.",
+        "items": {
+            "$ref": "#/AttributeFolder"
+        }
     },
     "DatabaseIdOrError": {
         "type": "object",
@@ -1836,6 +1939,10 @@ var gSchemaDefinitions = {
             "type": {
                 "$ref": "#/HotlinkType"
             },
+            "instances": {
+                "$ref": "#/Elements",
+                "description": "The hotlink instance elements placed from the node, in the order Archicad returns them - the input of ChangeHotlinkInstances and DeleteElements. Omitted when the node's instances cannot be read."
+            },
             "children": {
                 "$ref": "#/Hotlinks",
                 "description": "The children of the hotlink node if it has any."
@@ -2124,7 +2231,7 @@ var gSchemaDefinitions = {
                 "description": "Optional 1-based second index for changing a single item of a two-dimensional array parameter. Only valid together with index1. Defaults to 1."
             },
             "value": {
-                "description": "The new value of the parameter. For array parameters provide a list of values for one-dimensional arrays (e.g. [1, 2, 3]) or a list of lists for two-dimensional arrays (e.g. [[11, 12], [21, 22]]); the list must contain exactly as many values as the parameter has items, resizing an array parameter is not supported. Alternatively provide index1 (and optionally index2) together with a single value to change one item of the array. Within one command call whole-array (list) values are applied after all single-value changes."
+                "description": "The new value of the parameter, in the unit GetGDLParametersOfElements reports it in (Angle parameters in radians). For array parameters provide a list of values for one-dimensional arrays (e.g. [1, 2, 3]) or a list of lists for two-dimensional arrays (e.g. [[11, 12], [21, 22]]); the list must contain exactly as many values as the parameter has items, resizing an array parameter is not supported. Alternatively provide index1 (and optionally index2) together with a single value to change one item of the array. Within one command call whole-array (list) values are applied after all single-value changes."
             }
         },
         "additionalProperties": false,
@@ -2150,7 +2257,7 @@ var gSchemaDefinitions = {
                 "description": "Optional 1-based second index for changing a single item of a two-dimensional array parameter. Only valid together with index1. Defaults to 1."
             },
             "value": {
-                "description": "The new value of the parameter. For array parameters provide a list of values for one-dimensional arrays (e.g. [1, 2, 3]) or a list of lists for two-dimensional arrays (e.g. [[11, 12], [21, 22]]); the list must contain exactly as many values as the parameter has items, resizing an array parameter is not supported. Alternatively provide index1 (and optionally index2) together with a single value to change one item of the array. Within one command call whole-array (list) values are applied after all single-value changes."
+                "description": "The new value of the parameter, in the unit GetGDLParametersOfElements reports it in (Angle parameters in radians). For array parameters provide a list of values for one-dimensional arrays (e.g. [1, 2, 3]) or a list of lists for two-dimensional arrays (e.g. [[11, 12], [21, 22]]); the list must contain exactly as many values as the parameter has items, resizing an array parameter is not supported. Alternatively provide index1 (and optionally index2) together with a single value to change one item of the array. Within one command call whole-array (list) values are applied after all single-value changes."
             }
         },
         "additionalProperties": false,
@@ -2911,6 +3018,43 @@ var gSchemaDefinitions = {
             "$ref": "#/ExecutionResult"
         }
     },
+    "ElementCategoryType": {
+        "type": "string",
+        "description": "The type of an element category. The names of the categories and of their values are localized, so scripts should select a category by this type and a value by its categoryValueId, never by name. BRI is available only in the German localized version of Archicad.",
+        "enum": [
+            "StructuralFunction",
+            "Position",
+            "RenovationStatus",
+            "RenovationFilter",
+            "BRI"
+        ]
+    },
+    "ElementCategoryValueId": {
+        "type": "object",
+        "description": "The identifier of a value of an element category.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "ElementCategoryId": {
+        "type": "object",
+        "description": "The identifier of an element category.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
     "ElementType": {
         "type": "string",
         "description": "The type of an element.",
@@ -3037,7 +3181,7 @@ var gSchemaDefinitions = {
         ]
     },
     "NavigatorItemIdOrDatabaseIdAndWindowType": {
-        "description": "Identifies the window to change to. Either a navigatorItemId on its own (the navigator item's saved view settings are applied), or a windowType optionally narrowed to a specific databaseId.",
+        "description": "Identifies the window to change to. Either a navigatorItemId on its own (the navigator item's saved view settings are applied), or a windowType optionally narrowed to a specific databaseId, or a databaseId on its own (its window type is resolved automatically).",
         "oneOf": [
             {
                 "$ref": "#/NavigatorItemIdArrayItem"
@@ -3756,9 +3900,14 @@ var gSchemaDefinitions = {
     },
     "AssociativeWitnessPoint": {
         "type": "object",
+        "description": "A witness point of a dimension. Give elementId (with line, inIndex, special, nodeType, nodeStatus and nodeId as needed) for a point associated with an element, or only coordinate for a static point that is not associated with any element, like a point added by hand on empty space. A witness point takes either elementId or coordinate, not both.",
         "properties": {
             "elementId": {
                 "$ref": "#/ElementId"
+            },
+            "coordinate": {
+                "$ref": "#/Coordinate2D",
+                "description": "The position of a static (non-associative) witness point. Use it instead of elementId; the other fields are ignored for a static point."
             },
             "line": {
                 "type": "boolean"
@@ -3780,10 +3929,7 @@ var gSchemaDefinitions = {
                 "minimum": 0.0
             }
         },
-        "additionalProperties": false,
-        "required": [
-            "elementId"
-        ]
+        "additionalProperties": false
     },
     "IFCExportTranslator": {
         "type": "object",
@@ -4008,6 +4154,88 @@ var gSchemaDefinitions = {
             "targetId",
             "operatorId",
             "operation"
+        ]
+    },
+    "ElementLinkReference": {
+        "type": "object",
+        "description": "A directional link from one element to another.",
+        "properties": {
+            "fromElementId": {
+                "$ref": "#/ElementId",
+                "description": "The element the link starts from."
+            },
+            "toElementId": {
+                "$ref": "#/ElementId",
+                "description": "The element the link points to."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "fromElementId",
+            "toElementId"
+        ]
+    },
+    "ElementLinkData": {
+        "type": "object",
+        "description": "A directional link from one element to another, with the flags stored on it.",
+        "properties": {
+            "fromElementId": {
+                "$ref": "#/ElementId",
+                "description": "The element the link starts from."
+            },
+            "toElementId": {
+                "$ref": "#/ElementId",
+                "description": "The element the link points to."
+            },
+            "flags": {
+                "type": "integer",
+                "description": "A 32-bit integer stored on the link, free for the script's own use (for example to tell apart the kinds of links it creates). Default is 0."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "fromElementId",
+            "toElementId"
+        ]
+    },
+    "ElementLinksOrError": {
+        "type": "object",
+        "description": "The links starting from an element, or an error.",
+        "oneOf": [
+            {
+                "type": "object",
+                "properties": {
+                    "links": {
+                        "type": "array",
+                        "description": "The links starting from the element.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "elementId": {
+                                    "$ref": "#/ElementId",
+                                    "description": "The element the link points to."
+                                },
+                                "flags": {
+                                    "type": "integer",
+                                    "description": "The flags stored on the link by LinkElements."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementId",
+                                "flags"
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "links"
+                ]
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
         ]
     },
     "InteriorElevationData": {
@@ -4643,10 +4871,29 @@ var gSchemaDefinitions = {
         "properties": {
             "propertyValue": {
                 "$ref": "#/PropertyValue"
+            },
+            "isAvailable": {
+                "type": "boolean",
+                "description": "Whether the property is available for the element. Only returned when includeAvailability is true."
             }
         },
         "additionalProperties": false,
         "required": [ "propertyValue" ]
+    },
+    "PropertyValueErrorItem": {
+        "type": "object",
+        "description": "An error in place of a property value.",
+        "properties": {
+            "error": {
+                "$ref": "#/Error"
+            },
+            "isAvailable": {
+                "type": "boolean",
+                "description": "Whether the property is available for the element. Only returned when includeAvailability is true."
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "error" ]
     },
     "PropertyValueOrErrorItem": {
         "type": "object",
@@ -4656,7 +4903,7 @@ var gSchemaDefinitions = {
                 "$ref": "#/PropertyValueArrayItem"
             },
             {
-                "$ref": "#/ErrorItem"
+                "$ref": "#/PropertyValueErrorItem"
             }
         ]
     },
@@ -5685,7 +5932,31 @@ var gSchemaDefinitions = {
                 "type": "string"
             },
             "value": {
-                "type": "string"
+                "type": "string",
+                "description": "The value of the property as a string. List and enumerated values are separated by semicolons."
+            },
+            "valueType": {
+                "type": "string",
+                "description": "The IFC type of the value, for example IfcLabel or IfcLengthMeasure. For a table value it is the type of its defined values. Left out when the property has no value to take the type from."
+            },
+            "propertyType": {
+                "type": "string",
+                "description": "The kind of the IFC property.",
+                "enum": [
+                    "SingleValue",
+                    "ListValue",
+                    "BoundedValue",
+                    "EnumeratedValue",
+                    "TableValue"
+                ]
+            },
+            "source": {
+                "type": "string",
+                "description": "Where the property comes from: preview for the properties mapped by the preview IFC export translator, local for the IFC properties stored in the element. Available from Archicad 28.",
+                "enum": [
+                    "preview",
+                    "local"
+                ]
             }
         },
         "additionalProperties": false,
@@ -5714,6 +5985,68 @@ var gSchemaDefinitions = {
             "elementId",
             "ifcProperties"
         ]
+    },
+    "ElementIFCAttribute": {
+        "type": "object",
+        "description": "An IFC attribute of an element, for example Name, Description, ObjectType, Tag, PredefinedType or LongName.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the IFC attribute."
+            },
+            "valueType": {
+                "type": "string",
+                "description": "The IFC type of the value, for example IfcLabel, IfcText or IfcIdentifier."
+            },
+            "value": {
+                "type": "string",
+                "description": "The value of the IFC attribute. Missing when the attribute has no value."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "valueType"
+        ]
+    },
+    "ElementIFCAttributes": {
+        "type": "object",
+        "description": "The IFC attributes of an element.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "ifcAttributes": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ElementIFCAttribute"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "ifcAttributes"
+        ]
+    },
+    "ElementIFCAttributesOrError": {
+        "type": "object",
+        "description": "Element IFC attributes or error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElementIFCAttributes"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ElementIFCAttributesOrErrors": {
+        "type": "array",
+        "description": "A list of the IFC attributes of elements or errors.",
+        "items": {
+            "$ref": "#/ElementIFCAttributesOrError"
+        }
     },
     "ElementIFCType": {
         "type": "object",
@@ -6027,6 +6360,75 @@ var gSchemaDefinitions = {
             "ownUnID"
         ]
     },
+    "StoredGDLParameter": {
+        "type": "object",
+        "description": "A GDL parameter as it is stored with a marker or a Favorite, read without a parameter interface (so without isLocked and possibleValues).",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the parameter."
+            },
+            "displayName": {
+                "type": "string",
+                "description": "The display name of the parameter."
+            },
+            "index": {
+                "type": "integer",
+                "description": "The index of the parameter."
+            },
+            "type": {
+                "type": "string",
+                "description": "The type of the parameter."
+            },
+            "dimension1": {
+                "type": "integer",
+                "description": "The 1st dimension of array (in case of array value)."
+            },
+            "dimension2": {
+                "type": "integer",
+                "description": "The 2nd dimension of array (in case of array value)."
+            },
+            "value": {
+                "description": "The value of the parameter."
+            },
+            "valueDescription": {
+                "type": "string",
+                "description": "The value description for numeric parameter."
+            },
+            "itemDescriptions": {
+                "type": "array",
+                "description": "Per-item text labels for an array-type parameter, one per array element in dim1xdim2 order. Only present when the library part defines them.",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "flags": {
+                "type": "array",
+                "description": "The flags of the parameter.",
+                "items": {
+                    "type": "string",
+                    "enum": [
+                        "Hidden",
+                        "HiddenFromScript",
+                        "Disabled",
+                        "Child",
+                        "Unique",
+                        "Fixed",
+                        "BoldName",
+                        "Open"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "displayName",
+            "index",
+            "type",
+            "flags"
+        ]
+    },
     "MEPPreferenceRow": {
         "type": "object",
         "properties": {
@@ -6113,7 +6515,8 @@ var gSchemaDefinitions = {
                 "$ref": "#/WindowType"
             },
             "databaseId": {
-                "$ref": "#/DatabaseId"
+                "$ref": "#/DatabaseId",
+                "description": "The database to activate. When windowType is omitted, the window type is taken from the database; when both are given, they must match."
             },
             "storyIndex": {
                 "type": "integer",
@@ -6121,8 +6524,17 @@ var gSchemaDefinitions = {
             }
         },
         "additionalProperties": false,
-        "required": [
-            "windowType"
+        "anyOf": [
+            {
+                "required": [
+                    "windowType"
+                ]
+            },
+            {
+                "required": [
+                    "databaseId"
+                ]
+            }
         ]
     },
     "WallRelations": {
@@ -6302,6 +6714,10 @@ var gSchemaDefinitions = {
             "sourceNavigatorItemId": {
                 "$ref": "#/NavigatorItemId",
                 "description": "The identifier of the navigator item this one was created from: the Project Map item behind a view, or the source view behind a placed Drawing's Layout Book entry. Missing when the item has no such source; Project Map items never do."
+            },
+            "childCount": {
+                "type": "integer",
+                "description": "The number of direct children Archicad reports for the item. Only present when GetNavigatorItemTree is called with includeChildCount true."
             },
             "children": {
                 "type": "array",
@@ -6652,7 +7068,8 @@ var gSchemaDefinitions = {
                 "$ref": "#/WallZoneRelation"
             },
             "visibility": {
-                "$ref": "#/StoryVisibility"
+                "$ref": "#/StoryVisibility",
+                "description": "On Archicad 29 a wall knows only 'Home story only' and 'All relevant stories' (Wall Settings offers no Custom option), so a wall can read back a combination the dialog cannot show - a wall fresh from the Wall tool defaults may report showOnHome false with showRelAbove 1, which Wall Settings shows as an empty Show on Stories field (#852). See ModifyWalls for which combinations can be written."
             },
             "isAutoOnStoryVisibility": {
                 "type": "boolean",
@@ -7114,6 +7531,96 @@ var gSchemaDefinitions = {
             "bottomOffset"
         ]
     },
+    "ColumnSegmentDetails": {
+        "type": "object",
+        "description": "Details of a ColumnSegment subelement of a Column.",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/ElementId",
+                "description": "The Column element the segment belongs to."
+            },
+            "structureType": {
+                "type": "string",
+                "enum": [ "Basic", "Profile" ]
+            },
+            "width": {
+                "type": "number",
+                "description": "Cross section width of the segment."
+            },
+            "depth": {
+                "type": "number",
+                "description": "Cross section depth (height) of the segment."
+            },
+            "isWidthAndHeightLinked": {
+                "type": "boolean"
+            },
+            "circleBased": {
+                "type": "boolean",
+                "description": "True for a round cross section, false for rectangular."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "Present when the cross section uses a building material rather than a custom profile."
+            },
+            "profileId": {
+                "$ref": "#/AttributeId",
+                "description": "Present when the cross section uses a custom extruded profile rather than a building material."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "structureType",
+            "width",
+            "depth",
+            "isWidthAndHeightLinked",
+            "circleBased"
+        ]
+    },
+    "BeamSegmentDetails": {
+        "type": "object",
+        "description": "Details of a BeamSegment subelement of a Beam.",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/ElementId",
+                "description": "The Beam element the segment belongs to."
+            },
+            "structureType": {
+                "type": "string",
+                "enum": [ "Basic", "Profile" ]
+            },
+            "width": {
+                "type": "number",
+                "description": "Cross section width of the segment."
+            },
+            "height": {
+                "type": "number",
+                "description": "Cross section height of the segment."
+            },
+            "isWidthAndHeightLinked": {
+                "type": "boolean"
+            },
+            "circleBased": {
+                "type": "boolean",
+                "description": "True for a round cross section, false for rectangular."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "Present when the cross section uses a building material rather than a custom profile."
+            },
+            "profileId": {
+                "$ref": "#/AttributeId",
+                "description": "Present when the cross section uses a custom extruded profile rather than a building material."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "structureType",
+            "width",
+            "height",
+            "isWidthAndHeightLinked",
+            "circleBased"
+        ]
+    },
     "DetailWorksheetDetails": {
         "type": "object",
         "properties": {
@@ -7346,6 +7853,14 @@ var gSchemaDefinitions = {
             },
             "oSide": {
                 "type": "boolean"
+            },
+            "reveal": {
+                "type": "boolean",
+                "description": "Whether the reveal is turned on. The same value ModifyWindows and ModifyDoors take."
+            },
+            "revealDepthOffset": {
+                "type": "number",
+                "description": "Distance the frame plane is moved across the wall thickness, along the wall normal. The same value ModifyWindows and ModifyDoors take."
             }
         },
         "additionalProperties": false,
@@ -7357,7 +7872,9 @@ var gSchemaDefinitions = {
             "centerOffset",
             "reflected",
             "refSide",
-            "oSide"
+            "oSide",
+            "reveal",
+            "revealDepthOffset"
         ]
     },
     "PolylineDetails": {
@@ -7627,6 +8144,10 @@ var gSchemaDefinitions = {
                 "type": "boolean",
                 "description": "Is the coordinates of the zone manually placed?"
             },
+            "referencePosition": {
+                "$ref": "#/Coordinate2D",
+                "description": "The reference point an automatic zone was placed from (the referencePosition of CreateZones); the zone is found around it when zones are updated. Only present when isManual is false."
+            },
             "polygonOutline": {
                 "type": "array",
                 "description": "The 2D coordinates of the edge of the zone.",
@@ -7664,7 +8185,12 @@ var gSchemaDefinitions = {
         "type": "object",
         "properties": {
             "height": {
-                "type": "number"
+                "type": "number",
+                "description": "The height setting stored on the curtain wall element."
+            },
+            "actualHeight": {
+                "type": "number",
+                "description": "The height of the curtain wall as calculated by Archicad (ACAPI_CurtainWall_GetCWHeight). Omitted when Archicad cannot calculate it."
             },
             "flipped": {
                 "type": "boolean"
@@ -7676,7 +8202,9 @@ var gSchemaDefinitions = {
         },
         "additionalProperties": false,
         "required": [
-            "begCoordinate"
+            "height",
+            "flipped",
+            "angle"
         ]
     },
     "CurtainWallSegmentDetails": {
@@ -7729,6 +8257,10 @@ var gSchemaDefinitions = {
             "isHidden": {
                 "type": "boolean",
                 "description": "Indicates if the panel is hidden (deleted panels remain in the database)."
+            },
+            "isDegenerate": {
+                "type": "boolean",
+                "description": "Indicates if the panel is degenerate. Omitted when Archicad cannot tell."
             },
             "segmentIndex": {
                 "type": "number",
@@ -7897,7 +8429,7 @@ var gSchemaDefinitions = {
             },
             "polygonCoordinates": {
                 "type": "array",
-                "description": "The 3D coordinates of the outline polygon of the mesh. Replaces the existing boundary entirely.",
+                "description": "The 3D coordinates of the outline polygon of the mesh. Replaces the existing boundary entirely; the existing outline arcs are removed unless polygonArcs is also given, and the existing holes are kept unless holes is also given.",
                 "items": {
                     "$ref": "#/Coordinate3D"
                 },
@@ -7905,13 +8437,17 @@ var gSchemaDefinitions = {
             },
             "polygonArcs": {
                 "type": "array",
-                "description": "Polygon outline arcs of the mesh.",
+                "description": "Polygon outline arcs of the mesh. Replaces the existing outline arcs; when given without polygonCoordinates, they apply to the existing outline.",
                 "items": {
                     "$ref": "#/PolyArc"
                 }
             },
             "holes": {
-                "$ref": "#/Holes3D"
+                "type": "array",
+                "description": "The 3D holes of the mesh. Replaces all existing holes; an empty array removes them. When given without polygonCoordinates, the existing outline is kept.",
+                "items": {
+                    "$ref": "#/Hole3D"
+                }
             },
             "sublines": {
                 "type": "array",
@@ -8321,6 +8857,22 @@ var gSchemaDefinitions = {
                 "type": "boolean",
                 "description": "Whether the drawing is included in the automatic drawing numbering sequence."
             },
+            "hasBorderLine": {
+                "type": "boolean",
+                "description": "Whether the drawing shows a printable border (Drawing Settings > Frame > Add Printable Border)."
+            },
+            "borderLineTypeIndex": {
+                "type": "integer",
+                "description": "Attribute index of the line type of the drawing's border."
+            },
+            "borderPenIndex": {
+                "type": "integer",
+                "description": "Pen index of the drawing's border."
+            },
+            "borderSize": {
+                "type": "number",
+                "description": "Border size of the drawing (API_DrawingType::borderSize), in meters."
+            },
             "titleLibraryPartIndex": {
                 "type": "number",
                 "description": "Library part index of the drawing title (API_DrawingTitle::libInd). A negative/invalid index means no title object is instantiated; setting it to a valid index (e.g. copied from another drawing) makes Archicad create the title's own placed element."
@@ -8343,6 +8895,10 @@ var gSchemaDefinitions = {
             "nameType",
             "numberingType",
             "isInNumbering",
+            "hasBorderLine",
+            "borderLineTypeIndex",
+            "borderPenIndex",
+            "borderSize",
             "titleLibraryPartIndex"
         ]
     },
@@ -8544,6 +9100,70 @@ var gSchemaDefinitions = {
             "paragraphCount"
         ]
     },
+    "StairDetails": {
+        "type": "object",
+        "description": "The settings of a Stair element, the ones CreateStairs takes. The finishes and the structure are modeled by the Stair's subelements (risers, treads and structures), which GetSubelementsOfHierarchicalElements lists.",
+        "properties": {
+            "stepNum": {
+                "type": "integer",
+                "description": "Number of risers (steps)."
+            },
+            "riserHeight": {
+                "type": "number",
+                "description": "Height of each riser."
+            },
+            "treadDepth": {
+                "type": "number",
+                "description": "Depth (going) of each tread."
+            },
+            "flightWidth": {
+                "type": "number",
+                "description": "Width of the stair flight."
+            },
+            "totalHeight": {
+                "type": "number",
+                "description": "Total height of the stair."
+            },
+            "level": {
+                "type": "number",
+                "description": "Height of the stair base above the home story level."
+            },
+            "zCoordinate": {
+                "type": "number",
+                "description": "Absolute elevation of the stair base."
+            },
+            "finishVisible": {
+                "type": "boolean",
+                "description": "Whether the tread/riser finishes are modeled. If false only the stair structure (e.g. a monolith) is."
+            },
+            "baseLinePoints": {
+                "type": "array",
+                "description": "The baseline polyline the stair is placed along, as given to CreateStairs.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "baseLineArcs": {
+                "type": "array",
+                "description": "The curved segments of the baseline, present only when it has any.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "stepNum",
+            "riserHeight",
+            "treadDepth",
+            "flightWidth",
+            "totalHeight",
+            "level",
+            "zCoordinate",
+            "finishVisible",
+            "baseLinePoints"
+        ]
+    },
     "NotYetSupportedElementTypeDetails": {
         "type": "object",
         "properties": {
@@ -8577,6 +9197,12 @@ var gSchemaDefinitions = {
             },
             {
                 "$ref": "#/ColumnDetails"
+            },
+            {
+                "$ref": "#/ColumnSegmentDetails"
+            },
+            {
+                "$ref": "#/BeamSegmentDetails"
             },
             {
                 "$ref": "#/DetailWorksheetDetails"
@@ -8625,6 +9251,9 @@ var gSchemaDefinitions = {
             },
             {
                 "$ref": "#/LevelDimensionDetails"
+            },
+            {
+                "$ref": "#/StairDetails"
             },
             {
                 "$ref": "#/NotYetSupportedElementTypeDetails"
@@ -9206,6 +9835,14 @@ var gSchemaDefinitions = {
             },
             "geoReferencingParameters": {
                 "$ref": "#/GeoReferencingParameters"
+            },
+            "isVisible": {
+                "type": "boolean",
+                "description": "Whether the survey point is shown in the project."
+            },
+            "isLocked": {
+                "type": "boolean",
+                "description": "Whether the survey point is locked, so it cannot be moved. Available from Archicad 26; left out on older versions."
             }
         },
         "additionalProperties": false,
@@ -9250,6 +9887,14 @@ var gSchemaDefinitions = {
             },
             "geoReferencingParameters": {
                 "$ref": "#/GeoReferencingParametersUpdate"
+            },
+            "isVisible": {
+                "type": "boolean",
+                "description": "Shows (true) or hides (false) the survey point. Omitted means unchanged."
+            },
+            "isLocked": {
+                "type": "boolean",
+                "description": "Locks (true) or unlocks (false) the survey point, so it cannot or can be moved. Omitted means unchanged. Available from Archicad 26; the command fails on older versions when it is given."
             }
         },
         "additionalProperties": false,
@@ -9569,6 +10214,10 @@ var gSchemaDefinitions = {
             "fixedStampAngle": {
                 "type": "boolean",
                 "description": "If true, the zone stamp angle remains fixed when the element is rotated."
+            },
+            "referencePosition": {
+                "$ref": "#/Coordinate2D",
+                "description": "Moves the reference point of an automatic zone; the zone is found around the new point when zones are next updated. Ignored for a manual zone (isManual true)."
             }
         },
         "additionalProperties": false,
@@ -9808,6 +10457,25 @@ var gSchemaDefinitions = {
                 "type": "boolean",
                 "description": "Whether the drawing is included in the automatic drawing numbering sequence."
             },
+            "hasBorderLine": {
+                "type": "boolean",
+                "description": "Whether the drawing shows a printable border (Drawing Settings > Frame > Add Printable Border)."
+            },
+            "borderLineTypeIndex": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Attribute index of the line type of the drawing's border."
+            },
+            "borderPenIndex": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255,
+                "description": "Pen index of the drawing's border."
+            },
+            "borderSize": {
+                "type": "number",
+                "description": "Border size of the drawing (API_DrawingType::borderSize), in meters."
+            },
             "titleLibraryPartIndex": {
                 "type": "number",
                 "description": "Library part index of the drawing title (API_DrawingTitle::libInd). A negative/invalid index means no title object is instantiated; setting it to a valid index (e.g. copied from another drawing) makes Archicad create the title's own placed element."
@@ -9940,7 +10608,8 @@ var gSchemaDefinitions = {
         "type": "boolean"
             },
             "defaultValue": {
-        "$ref": "#/PropertyDefaultValue"
+        "$ref": "#/PropertyDefaultValue",
+        "description": "The default value of the new property. Optional; when omitted, the default value is Undefined."
             },
             "possibleEnumValues": {
         "$ref": "#/PossibleEnumValues"
@@ -10363,6 +11032,9 @@ var gSchemaDefinitions = {
                 "modificationTime": {
                     "type": "integer",
                     "description": "The last modification time of the attribute, in seconds since 1970-01-01 00:00:00 UTC (a GSTime), the same stamp the Attribute Manager writes as ModiTime into its XML export."
+                },
+                "creationInfo": {
+                    "$ref": "#/AttributeCreationInfo"
                 }
             },
             "additionalProperties": false,
@@ -10374,6 +11046,54 @@ var gSchemaDefinitions = {
             ]
 
         }
+    },
+    "AttributeCreationInfo": {
+        "type": "object",
+        "description": "How, from where, by whom and when the attribute was created. Available from Archicad 30, and only for an attribute Archicad keeps a creation record of: legacy or imported attributes may have none, and then the field is left out. Any of the texts may be empty.",
+        "properties": {
+            "method": {
+                "type": "string",
+                "description": "The creation method or workflow: AddOn (created by an Add-On), Merge (merging files), Paste (pasting from another file), New (created by the user through the UI), Import (an attribute file, IFC, DWG/DXF or another supported format), Explode (exploding a PDF or DWG), Duplicate (duplicating an attribute), Hotlink (a hotlinked file), XRef (a file attached in the Xref manager), Library (a library part), LibraryMaster (generated from GDL) or Unspecified.",
+                "enum": [
+                    "AddOn",
+                    "Merge",
+                    "Paste",
+                    "New",
+                    "Import",
+                    "Explode",
+                    "Duplicate",
+                    "Hotlink",
+                    "XRef",
+                    "Library",
+                    "LibraryMaster",
+                    "Unspecified"
+                ]
+            },
+            "methodDescription": {
+                "type": "string",
+                "description": "Human-readable description of the creation method."
+            },
+            "source": {
+                "type": "string",
+                "description": "Human-readable origin, for example the name of the file or Add-On the attribute came from."
+            },
+            "creatorUserName": {
+                "type": "string",
+                "description": "The Teamwork user name, or the OS login name in a solo project, at the time of creation."
+            },
+            "creationTime": {
+                "type": "integer",
+                "description": "The creation time of the attribute, in seconds since 1970-01-01 00:00:00 UTC (a GSTime), the same scale as modificationTime."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "method",
+            "methodDescription",
+            "source",
+            "creatorUserName",
+            "creationTime"
+        ]
     },
     "AttributeHeadersWrapper": {
         "type": "object",
@@ -10911,7 +11631,7 @@ var gSchemaDefinitions = {
     },
     "FloorFill": {
         "type": "object",
-        "description": "Floor plan cover fill settings of a Slab.",
+        "description": "Floor plan cover fill settings of a Slab. When modifying an element, omitted properties keep their current values.",
         "properties": {
             "use": {
                 "type": "boolean",
@@ -10934,15 +11654,7 @@ var gSchemaDefinitions = {
                 "$ref": "#/HatchOrientation"
             }
         },
-        "additionalProperties": false,
-        "required": [
-            "use",
-            "foregroundPen",
-            "backgroundPen",
-            "fillId",
-            "use3DHatching",
-            "orientation"
-        ]
+        "additionalProperties": false
     },
     "HatchOrientationType": {
         "type": "string",
@@ -10955,7 +11667,7 @@ var gSchemaDefinitions = {
     },
     "HatchOrientation": {
         "type": "object",
-        "description": "Orientation and distortion parameters of a fill.",
+        "description": "Orientation and distortion parameters of a fill. When modifying an element, omitted properties keep their current values.",
         "properties": {
             "type": {
                 "$ref": "#/HatchOrientationType"
@@ -10985,16 +11697,7 @@ var gSchemaDefinitions = {
                 "description": "Radius for circular fill distortion, used when type is Centered."
             }
         },
-        "additionalProperties": false,
-        "required": [
-            "type",
-            "origin",
-            "matrix00",
-            "matrix10",
-            "matrix01",
-            "matrix11",
-            "innerRadius"
-        ]
+        "additionalProperties": false
     },
     "OverriddenMaterial": {
         "type": "object",
@@ -12603,6 +13306,10 @@ var gSchemaDefinitions = {
             "name": {
                 "type": "string"
             },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Whether the physical system can be modified. Missing when Archicad could not tell."
+            },
             "rootElementId": {
                 "$ref": "#/ElementId",
                 "description": "The element the system starts from. Missing when not set, or when Archicad cleared it because the element is not part of an MEP network."
@@ -12637,6 +13344,10 @@ var gSchemaDefinitions = {
             },
             "name": {
                 "type": "string"
+            },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Whether the system group can be modified. Missing when Archicad could not tell."
             },
             "physicalSystems": {
                 "type": "array",
@@ -13789,6 +14500,48 @@ var gSchemaDefinitions = {
             }
         },
         "additionalProperties": false
+    },
+    "GraphicOverrideRule": {
+        "type": "object",
+        "description": "A graphic override rule with its rule group, criterion and style.",
+        "properties": {
+            "graphicOverrideRuleId": {
+                "$ref": "#/GraphicOverrideRuleId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "ruleGroupName": {
+                "type": "string",
+                "description": "The name of the rule group the rule belongs to."
+            },
+            "criterionXML": {
+                "type": "string",
+                "description": "The criterion of the rule, in the XML format Archicad saves override rules in. Change its values and pass it to CreateGraphicOverrideRules or ModifyGraphicOverrideRules to make similar rules."
+            },
+            "style": {
+                "$ref": "#/GraphicOverrideStyle"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "graphicOverrideRuleId",
+            "name",
+            "criterionXML",
+            "style"
+        ]
+    },
+    "GraphicOverrideRuleOrError": {
+        "type": "object",
+        "description": "A graphic override rule or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/GraphicOverrideRule"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
     }
 }
 ;

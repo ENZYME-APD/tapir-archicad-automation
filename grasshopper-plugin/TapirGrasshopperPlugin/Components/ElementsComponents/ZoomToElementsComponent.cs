@@ -8,12 +8,17 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class ZoomToElementsComponent : ArchicadExecutorComponent
     {
-        public override string CommandName => "FitInWindow";
+        // ZoomToElements zooms to the elements in the 3D window too, which FitInWindow's
+        // element list does not; it needs elements, so with none given FitInWindow fits
+        // the whole drawing as before.
+        public override string CommandName => "ZoomToElements";
+
+        private const string FitInWindowCommandName = "FitInWindow";
 
         public ZoomToElementsComponent()
             : base(
                 "ZoomToElements",
-                "Zoom to the given elements. If no element is given, it works as 'fit in window', zooms to all elements in the project.",
+                "Zoom the current window, 2D or 3D, to the given elements; the selection stays as it was. If no element is given, it works as 'fit in window', zooms to all elements in the project.",
                 GroupNames.Elements)
         {
         }
@@ -35,8 +40,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
+            string commandName =
+                input.Elements != null && input.Elements.Count > 0
+                    ? CommandName
+                    : FitInWindowCommandName;
+
             if (!TryGetConvertedCadValues(
-                    CommandName,
+                    commandName,
                     input,
                     ToAddOn,
                     ExecutionResult.Deserialize,
