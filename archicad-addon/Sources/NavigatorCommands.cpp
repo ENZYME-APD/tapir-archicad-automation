@@ -918,10 +918,13 @@ void VisitViewOptions (Visitor& v, API_ViewOptions& viewOptions)
     });
 }
 
-// The GDL model view options handle filled by ACAPI_Navigator_GetViewOptions belongs to the caller.
+// The GDL model view options pointer filled by ACAPI_Navigator_GetViewOptions belongs to the caller.
 void DisposeViewOptions (API_ViewOptions& viewOptions)
 {
-    BMKillHandle (reinterpret_cast<GSHandle*> (&viewOptions.modelViewOpt.gdlOptions));
+    if (viewOptions.modelViewOpt.gdlOptions != nullptr) {
+        ACAPI_FreeGDLModelViewOptionsPtr (&viewOptions.modelViewOpt.gdlOptions);
+        viewOptions.modelViewOpt.gdlOptions = nullptr;
+    }
 }
 
 }
