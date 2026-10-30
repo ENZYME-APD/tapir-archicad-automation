@@ -34,6 +34,19 @@ GS::ObjectState CreateNavigatorItemsResponse (const GS::Array<GS::ObjectState>& 
     return response;
 }
 
+// The id of a new worksheet or detail database, with the navigatorItemId of its Project Map item,
+// so that the new item can be opened with ChangeWindow or placed with CreateDrawings without
+// reading the whole Project Map (#1602). Without the item only the databaseId is returned.
+GS::ObjectState CreateNewWorksheetOrDetailObjectState (const API_DatabaseInfo& dbInfo)
+{
+    GS::ObjectState result = CreateDatabaseIdObjectState (DatabaseIdResolver::Instance ().GetIdOfDatabase (dbInfo));
+    const GS::Optional<API_Guid> navigatorItemId = FindProjectMapItemOfWorksheetOrDetail (dbInfo);
+    if (navigatorItemId.HasValue ()) {
+        result.Add ("navigatorItemId", CreateGuidObjectState (navigatorItemId.Get ()));
+    }
+    return result;
+}
+
 bool GetItems (const GS::ObjectState& parameters, const char* fieldName, GS::Array<GS::ObjectState>& outItems, GS::ObjectState& errorResponse)
 {
     if (!parameters.Get (fieldName, outItems)) {
@@ -406,7 +419,34 @@ GS::Optional<GS::UniString> CreateDetailsCommand::GetInputParametersSchema () co
 
 GS::Optional<GS::UniString> CreateDetailsCommand::GetRawResponseSchema () const
 {
-    return R"({"type":"object","properties":{"databases":{"$ref":"#/DatabaseIdsOrErrors"}},"additionalProperties":false,"required":["databases"]})";
+    return R"({
+        "type": "object",
+        "properties": {
+            "databases": {
+                "type": "array",
+                "description": "One item per input item, in the same order.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "databaseId": { "$ref": "#/DatabaseId" },
+                                "navigatorItemId": {
+                                    "$ref": "#/NavigatorItemId",
+                                    "description": "The Project Map item of the new database, for ChangeWindow or CreateDrawings. Missing when the item could not be found."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["databaseId"]
+                        },
+                        { "$ref": "#/ErrorItem" }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["databases"]
+    })";
 }
 
 GS::ObjectState CreateDetailsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -430,7 +470,7 @@ GS::ObjectState CreateDetailsCommand::Execute (const GS::ObjectState& parameters
             continue;
         }
 
-        databases.Push (CreateDatabaseIdObjectState (DatabaseIdResolver::Instance ().GetIdOfDatabase (dbInfo)));
+        databases.Push (CreateNewWorksheetOrDetailObjectState (dbInfo));
     }
     return CreateDatabasesResponse (databases);
 }
@@ -494,7 +534,7 @@ GS::ObjectState CreateWorksheetsCommand::Execute (const GS::ObjectState& paramet
             continue;
         }
 
-        databases.Push (CreateDatabaseIdObjectState (DatabaseIdResolver::Instance ().GetIdOfDatabase (dbInfo)));
+        databases.Push (CreateNewWorksheetOrDetailObjectState (dbInfo));
     }
     return CreateDatabasesResponse (databases);
 }
@@ -563,7 +603,7 @@ GS::Optional<GS::UniString> CreateLayoutCommand::GetInputParametersSchema () con
 
 GS::Optional<GS::UniString> CreateLayoutCommand::GetRawResponseSchema () const
 {
-    return CreateDetailsCommand ().GetRawResponseSchema ();
+    return R"({"type":"object","properties":{"databases":{"$ref":"#/DatabaseIdsOrErrors"}},"additionalProperties":false,"required":["databases"]})";
 }
 
 GS::ObjectState CreateLayoutCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
