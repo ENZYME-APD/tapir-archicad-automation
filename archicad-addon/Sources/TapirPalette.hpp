@@ -8,7 +8,10 @@
 #include "Config.hpp"
 #include "UvManager.hpp"
 
+#include <atomic>
+#include <mutex>
 #include <utility>
+#include <vector>
 
 class TapirPalette final : public DG::Palette,
     public DG::PanelObserver,
@@ -40,6 +43,10 @@ public:
 
     static GSErrCode RegisterPaletteControlCallBack ();
 
+    // Called from FreeData: kills a script that is still running and waits for its output reader thread, so that
+    // the thread does not outlive the add-on (Archicad crashed on quit while a palette script was running).
+    static void StopRunningScriptOnQuit ();
+
 private:
     struct PopUpItemData : public GS::Object
     {
@@ -65,6 +72,8 @@ private:
     DG::IconButton manageShortcutsButton;
 
     GS::Process process;
+    GS::UniString runningCommand;   // the command process was started with, to find the process among the child processes of Archicad
+    GS::Array<GS::UInt64> childProcessIdsBeforeStart;   // the child processes of Archicad that ran before process was started, so are not it
     GS::ThreadedExecutor executor;
     bool hasCustomScript = false;
     bool hasAddedScript = false;
@@ -74,6 +83,7 @@ private:
 
     void SetMenuItemCheckedState (bool);
     void ExecuteScript (const PopUpItemData& popUpItemData);
+    void KillRunningProcess ();   // ends the running process together with the processes it started
     bool AddScriptToPopUp (GS::Ref<PopUpItemData> popUpData, short index = DG::PopUp::TopItem);
     void AddScriptsFromRepositories ();
     void AddScriptsFromLocalFolders ();
@@ -107,6 +117,16 @@ private:
 
     static const GS::Guid        paletteGuid;
     static GS::Ref<TapirPalette> instance;
+    static std::atomic<bool>     quitting;   // set by StopRunningScriptOnQuit; the output reader then stops at once
+
+    // The output reader's tasks posted to the message loop. A task still queued when the add-on is unloaded must
+    // not be destroyed afterwards (its destructor is in this add-on), so the palette keeps a reference to each one
+    // until it has run (StopRunningScriptOnQuit).
+    static std::mutex                    postedTasksMutex;
+    static std::vector<GS::RunnableTask> postedTasks;    // posted, not run yet
+    static std::vector<GS::RunnableTask> finishedTasks;  // run; released on the next post, not inside their own Run
+    static void KeepPostedTask (const GS::RunnableTask& task);
+    static void ForgetPostedTask (const GS::Runnable* task);
 
     TapirPalette ();
 };
