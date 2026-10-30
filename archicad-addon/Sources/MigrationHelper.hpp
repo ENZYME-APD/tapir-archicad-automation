@@ -45,6 +45,7 @@
 #define ACAPI_Teamwork_GetTWOwner(par1, par2) ACAPI_Database (APIDb_GetTWOwnerID, par1, par2)
 #define ACAPI_Teamwork_ReserveHotlinkCacheManagement ACAPI_TeamworkControl_ReserveHotlinkCacheManagement
 #define ACAPI_Teamwork_ReleaseHotlinkCacheManagement ACAPI_TeamworkControl_ReleaseHotlinkCacheManagement
+#define ACAPI_Teamwork_GetTeamworkProjectDetails ACAPI_TeamworkControl_GetTeamworkProjectDetails
 #define ACAPI_Teamwork_GetHotlinkCacheManagementOwner ACAPI_TeamworkControl_GetHotlinkCacheManagementOwner
 #define ACAPI_Teamwork_HasConnection ACAPI_TeamworkControl_HasConnection
 #define ACAPI_Teamwork_ProjectSharing(par1) ACAPI_Environment (APIEnv_ProjectSharingID, par1)
@@ -62,6 +63,12 @@
 
 #define ACAPI_GeoLocation_GetGeoLocation(par1) ACAPI_Environment (APIEnv_GetGeoLocationID, par1)
 #define ACAPI_GeoLocation_SetGeoLocation(par1) ACAPI_Environment (APIEnv_SetGeoLocationID, par1)
+// The place settings (API_PlaceInfo: date, time, location and the sun angles) and the
+// sun light settings (API_SunInfo) of the project; the sun position is calculated from
+// the date, time and location of an API_PlaceInfo by APIAny_CalcSunOnPlaceID.
+#define ACAPI_GeoLocation_GetPlaceSets(par1) ACAPI_Environment (APIEnv_GetPlaceSetsID, par1)
+#define ACAPI_GeoLocation_GetSunSets(par1) ACAPI_Environment (APIEnv_GetSunSetsID, par1)
+#define ACAPI_GeoLocation_CalcSunOnPlace(par1) ACAPI_Goodies (APIAny_CalcSunOnPlaceID, par1)
 #define ACAPI_SurveyPoint_IsSurveyPointVisible(par1) ACAPI_Environment (APIEnv_IsSurveyPointVisibleID, par1)
 #define ACAPI_SurveyPoint_SetSurveyPointVisibility(par1) ACAPI_Environment (APIEnv_SetSurveyPointVisibilityID, par1)
 #ifdef ServerMainVers_2600
@@ -75,7 +82,10 @@
 
 #define ACAPI_Element_CalcBounds(par1,par2) ACAPI_Database (APIDb_CalcBoundsID, par1, par2)
 #define ACAPI_View_GetZoom(par1, par2) ACAPI_Database (APIDb_GetZoomID, par1, par2)
+#define ACAPI_Element_RefreshElement(par1, par2) ACAPI_Database (APIDb_RefreshElementID, par1, par2)
 #define ACAPI_Element_RoomReductions(par1, par2) ACAPI_Database (APIDb_RoomReductionsID, (void*) par1, (void*) par2)
+// APIDb_DrawStoryControlID: par1 API_DatabaseUnId*, par2 ShapePrimsProc*.
+#define ACAPI_DrawingPrimitive_DrawStoryControl(par1, par2) ACAPI_Database (APIDb_DrawStoryControlID, (void*) par1, (void*) par2)
 
 #define ACAPI_Revision_GetRVMIssues(par1) ACAPI_Database (APIDb_GetRVMIssuesID, par1)
 #define ACAPI_Revision_GetRVMChanges(par1) ACAPI_Database (APIDb_GetRVMChangesID, par1)
@@ -92,10 +102,15 @@
 #define ACAPI_LibraryPart_GetNum(par1) ACAPI_LibPart_GetNum(par1)
 #define ACAPI_LibraryPart_GetParams ACAPI_LibPart_GetParams
 #define ACAPI_LibraryPart_GetParamValues(par1) ACAPI_Goodies(APIAny_GetParamValuesID,par1)
+#define ACAPI_LibraryPart_Create(par1) ACAPI_LibPart_Create(par1)
+#define ACAPI_LibraryPart_AddSection ACAPI_LibPart_AddSection
+#define ACAPI_LibraryPart_GetSect_ParamDef ACAPI_LibPart_GetSect_ParamDef
+#define ACAPI_LibraryPart_Save(par1) ACAPI_LibPart_Save(par1)
 
 #define ACAPI_AutoText_GetAutoTextFlag(par1) ACAPI_Goodies(APIAny_GetAutoTextFlagID,par1)
 #define ACAPI_AutoText_ChangeAutoTextFlag(par1) ACAPI_Goodies(APIAny_ChangeAutoTextFlagID,par1)
 #define ACAPI_Element_GetRoomImage(par1) ACAPI_Goodies(APIAny_GetRoomImageID,par1)
+#define ACAPI_Element_ChangeContent(par1) ACAPI_Goodies(APIAny_ChangeContentID,par1)
 #define ACAPI_Element_SearchElementByCoord(par1, par2) ACAPI_Goodies (APIAny_SearchElementByCoordID, (void*) par1, par2)
 
 inline GSErrCode ACAPI_HierarchicalEditing_GetHierarchicalElementOwner (const API_Guid* elemApiGuid, const API_HierarchicalOwnerType* hierarchicalOwnerType, API_HierarchicalElemType* hierarchicalElemType, API_Guid* ownerElemApiGuid)
@@ -118,6 +133,8 @@ inline GSErrCode ACAPI_HierarchicalEditing_GetHierarchicalElementOwner (const AP
 #define ACAPI_View_Change3DCuttingPlanes(par1) ACAPI_Environment (APIEnv_Change3DCuttingPlanesID, par1)
 #define ACAPI_View_Get3DProjectionSets(par1) ACAPI_Environment (APIEnv_Get3DProjectionSetsID, par1)
 #define ACAPI_View_Change3DProjectionSets(par1, par2) ACAPI_Environment (APIEnv_Change3DProjectionSetsID, (void*) par1, (void*) par2)
+#define ACAPI_View_GetDocumentFrom3DDefaults(par1) ACAPI_Environment (APIEnv_GetDocumentFrom3DDefaultsID, par1)
+#define ACAPI_View_ChangeDocumentFrom3DDefaults(par1) ACAPI_Environment (APIEnv_ChangeDocumentFrom3DDefaultsID, par1)
 #define ACAPI_View_Get3DWindowSets(par1) ACAPI_Environment (APIEnv_Get3DWindowSetsID, par1)
 #define ACAPI_View_Change3DWindowSets(par1) ACAPI_Environment (APIEnv_Change3DWindowSetsID, par1)
 #define ACAPI_Window_GetCurrentWindow(par1) ACAPI_Database (APIDb_GetCurrentWindowID, par1)
@@ -135,6 +152,7 @@ inline GSErrCode ACAPI_HierarchicalEditing_GetHierarchicalElementOwner (const AP
 #define ACAPI_Database_GetDocumentFrom3DDatabases(par1, par2) ACAPI_Database (APIDb_GetDocumentFrom3DDatabasesID, par1, par2)
 #define ACAPI_Navigator_GetLayoutSets(par1, par2) ACAPI_Environment (APIEnv_GetLayoutSetsID, par1, par2)
 #define ACAPI_Navigator_GetCurrLayerComb(par1) ACAPI_Environment (APIEnv_GetCurrLayerCombID, par1)
+#define ACAPI_Drawing_GetNumberingGridLines(par1) ACAPI_Environment (APIEnv_GetNumberingGridLinesID, reinterpret_cast<void*> (par1))
 #define ACAPI_Database_NewDatabase(par1) ACAPI_Database (APIDb_NewDatabaseID, par1)
 #define ACAPI_Database_ModifyDatabase(par1) ACAPI_Database (APIDb_ModifyDatabaseID, par1)
 
@@ -153,12 +171,17 @@ inline GSErrCode ACAPI_Navigator_ChangeLayoutSets (const API_LayoutInfo* layoutI
 #define ACAPI_Navigator_GetSubSet(par1, par2) ACAPI_Database (APIDb_GetSubSetID, (void*)par1, par2)
 
 #define ACAPI_View_IsSuspendGroupOn(par1)   ACAPI_Environment (APIEnv_IsSuspendGroupOnID, par1)
+#define ACAPI_View_IsAutoIntersectOn(par1)  ACAPI_Environment (APIEnv_IsAutoIntersectOnID, par1)
+#define ACAPI_View_ChangeAutoIntersect(par1) ACAPI_Environment (APIEnv_ChangeAutoIntersectID, par1)
 #define ACAPI_Grouping_CreateGroup          ACAPI_ElementGroup_Create
 #define ACAPI_Grouping_GetGroup             ACAPI_ElementGroup_GetGroup
 #define ACAPI_Grouping_GetRootGroup         ACAPI_ElementGroup_GetRootGroup
 #define ACAPI_Grouping_GetGroupedElems      ACAPI_ElementGroup_GetGroupedElems
 #define ACAPI_Grouping_GetAllGroupedElems   ACAPI_ElementGroup_GetAllGroupedElems
 #define ACAPI_Grouping_GetUserData          ACAPI_ElementGroup_GetUserData
+#define ACAPI_Grouping_SetUserData          ACAPI_ElementGroup_SetUserData
+#define ACAPI_UserData_GetUserData          ACAPI_Attribute_GetUserData
+#define ACAPI_UserData_SetUserData          ACAPI_Attribute_SetUserData
 #define ACAPI_Grouping_Tool                 ACAPI_Element_Tool
 
 #define ACAPI_ProjectSetting_GetPreferences(par1, par2) ACAPI_Environment (APIEnv_GetPreferencesID, par1, (void*)par2)
@@ -259,6 +282,16 @@ inline GSErrCode ACAPI_ProjectOperation_GetMiscAppInfo (API_MiscAppInfo* miscApp
     return ACAPI_Environment (APIEnv_GetMiscAppInfoID, miscAppInfo);
 }
 
+inline GSErrCode ACAPI_ProjectOperation_GetMiscPrinterInfo (API_MiscPrinterInfo* miscPrinterInfo)
+{
+    return ACAPI_Environment (APIEnv_GetMiscPrinterInfoID, miscPrinterInfo);
+}
+
+inline GSErrCode ACAPI_ProjectOperation_GetMiscPlotterInfo (API_MiscPlotterInfo* miscPlotterInfo)
+{
+    return ACAPI_Environment (APIEnv_GetMiscPlotterInfoID, miscPlotterInfo);
+}
+
 inline GSErrCode ACAPI_View_Zoom ()
 {
     return ACAPI_Automate (APIDo_ZoomID);
@@ -267,6 +300,12 @@ inline GSErrCode ACAPI_View_Zoom ()
 inline GSErrCode ACAPI_View_ZoomToElements (const GS::Array<API_Guid>* elemIds)
 {
     return ACAPI_Automate (APIDo_ZoomToElementsID, (void*) elemIds);
+}
+
+// APIDo_ZoomToSelectedID takes no parameters (APIdefs_Automate.h: "par1: --- par2: ---").
+inline GSErrCode ACAPI_View_ZoomToSelected ()
+{
+    return ACAPI_Automate (APIDo_ZoomToSelectedID);
 }
 
 inline GSErrCode ACAPI_View_SetZoom (API_Box* zoomBox = nullptr, API_Tranmat* tranmat = nullptr)
@@ -439,6 +478,11 @@ inline GSErrCode ACAPI_Element_Elem2UIPriority (GS::Int32* elemPriority, GS::Int
     return ACAPI_Goodies (APIAny_Elem2UIPriorityID, elemPriority, uiPriority);
 }
 
+inline GSErrCode ACAPI_Element_ElemHasVisibleSkin (const API_Guid* elemGuid, const API_StructureDisplay* structure, bool* result)
+{
+    return ACAPI_Goodies (APIAny_ElemHasVisibleSkinID, (void*) elemGuid, (void*) structure, result);
+}
+
 inline GSErrCode ACAPI_CurtainWall_GetCWHeight (const API_Guid* guid, double* height)
 {
     return ACAPI_Goodies (APIAny_GetCWHeightID, (void*) guid, height);
@@ -474,9 +518,29 @@ inline GSErrCode ACAPI_ProjectOperation_SaveAsModuleFile (const IO::Location* lo
     return ACAPI_Automate (APIDo_SaveAsModuleFileID, (void*) location);
 }
 
+// The AC25/26 forms of the AC27 ACAPI_UserInput_* input functions (APIdefs_Interface.h):
+// APIIo_GetPointID       par1: API_GetPointType*   par2: [RubberLineInfoProc*]   par3: [Get3DComponentProc*]
+// APIIo_GetLineID        par1: API_GetLineType*    par2: [RubberLineInfoProc*]
+// APIIo_GetPolyID        par1: API_GetPolyType*    par2: [API_RubberPolyCallbacks*]
+// APIIo_DrawRubberLineID par1: API_RubberLineType*
 inline GSErrCode ACAPI_UserInput_GetPoint (API_GetPointType* pointInfo, RubberLineInfoProc* rubberLineInfoProc = nullptr, Get3DComponentProc* get3DComponentProc = nullptr)
 {
     return ACAPI_Interface (APIIo_GetPointID, pointInfo, (void*) rubberLineInfoProc, (void*) get3DComponentProc);
+}
+
+inline GSErrCode ACAPI_UserInput_GetLine (API_GetLineType* lineInfo, RubberLineInfoProc* rubberLineInfoProc = nullptr)
+{
+    return ACAPI_Interface (APIIo_GetLineID, lineInfo, (void*) rubberLineInfoProc);
+}
+
+inline GSErrCode ACAPI_UserInput_GetPoly (API_GetPolyType* polyInfo, API_RubberPolyCallbacks* rubberPolyCallbacks = nullptr)
+{
+    return ACAPI_Interface (APIIo_GetPolyID, polyInfo, (void*) rubberPolyCallbacks);
+}
+
+inline GSErrCode ACAPI_UserInput_DrawRubberLine (API_RubberLineType* rubberLine)
+{
+    return ACAPI_Interface (APIIo_DrawRubberLineID, rubberLine);
 }
 
 inline GSErrCode ACAPI_Selection_GetSelectedElement (const API_Neig* apiNeig, API_Guid* apiGuid)
@@ -565,6 +629,11 @@ inline GSErrCode ACAPI_LibraryPart_OpenParameters (API_ParamOwnerType* paramOwne
 inline GSErrCode ACAPI_LibraryPart_GetActParameters (API_GetParamsType* theParams)
 {
     return ACAPI_Goodies (APIAny_GetActParametersID, theParams);
+}
+
+inline GSErrCode ACAPI_LibraryManagement_UsableGDLString (const char* str)
+{
+    return ACAPI_Goodies (APIAny_UsableGDLStringID, (void*) str);
 }
 
 inline GSErrCode ACAPI_LibraryPart_ChangeAParameter (API_ChangeParamType* changeParamType)
@@ -658,6 +727,29 @@ inline GSErrCode ACAPI_Element_GetExtent (API_Box* extent, API_DatabaseUnId* dat
 inline GSErrCode ACAPI_Navigator_GetLayoutBook (API_LayoutBook* book)
 {
     return ACAPI_Database (APIDb_GetLayoutBookID, book);
+}
+
+// The ghost story settings of the floor plan (APIEnv_GetGhostStorySettingsID) and the
+// ghost record of a database: before AC27 all four are ACAPI_Environment functions
+// (APIEnv_GetGhostRecordID and its change/create pair).
+inline GSErrCode ACAPI_View_GetGhostStorySettings (API_GhostStoryType* ghostStorySettings)
+{
+    return ACAPI_Environment (APIEnv_GetGhostStorySettingsID, ghostStorySettings);
+}
+
+inline GSErrCode ACAPI_View_GetGhostRecord (const API_DatabaseUnId* databaseUnId, API_GhostRecord* ghostRecord)
+{
+    return ACAPI_Environment (APIEnv_GetGhostRecordID, (void*) databaseUnId, ghostRecord);
+}
+
+inline GSErrCode ACAPI_View_ChangeGhostRecord (const API_GhostRecord* ghostRecord)
+{
+    return ACAPI_Environment (APIEnv_ChangeGhostRecordID, (void*) ghostRecord);
+}
+
+inline GSErrCode ACAPI_View_CreateGhostRecord (const API_GhostRecord* ghostRecord)
+{
+    return ACAPI_Environment (APIEnv_CreateGhostRecordID, (void*) ghostRecord);
 }
 
 inline GSErrCode ACAPI_CurtainWall_IsCWPanelDegenerate (const API_Guid* guid, bool* isDegenerate)
@@ -792,6 +884,15 @@ inline GSErrCode TAPIR_Element_AddClassificationItemDefault (const API_Elem_Head
 #endif
 }
 
+inline bool TAPIR_Element_IsClassificationItemVisibleDefault (const API_Elem_Head& elemHead, const API_Guid& itemGuid)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_IsClassificationItemVisibleDefault (elemHead.type, itemGuid);
+#else
+    return ACAPI_Element_IsClassificationItemVisibleDefault (elemHead.typeID, elemHead.variationID, itemGuid);
+#endif
+}
+
 // The classification of the tool defaults of a plain element type (generic variation):
 // since AC26 the API takes an API_ElemType, which an API_ElemTypeID converts to; before
 // that the typeID and the variationID are separate arguments.
@@ -822,6 +923,35 @@ inline GSErrCode TAPIR_Element_RemoveClassificationItemDefault (API_ElemTypeID t
 #endif
 }
 
+// Every classification of the tool defaults of a plain element type, as (system, item) pairs.
+inline GSErrCode TAPIR_Element_GetClassificationItemsDefault (API_ElemTypeID typeID, GS::Array<GS::Pair<API_Guid, API_Guid>>& systemItemPairs)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_GetClassificationItemsDefault (typeID, systemItemPairs);
+#else
+    return ACAPI_Element_GetClassificationItemsDefault (typeID, APIVarId_Generic, systemItemPairs);
+#endif
+}
+
+// The property definitions and values of the tool defaults of a plain element type.
+inline GSErrCode TAPIR_Element_GetPropertyDefinitionsOfDefaultElem (API_ElemTypeID typeID, API_PropertyDefinitionFilter filter, GS::Array<API_PropertyDefinition>& definitions)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_GetPropertyDefinitionsOfDefaultElem (typeID, filter, definitions);
+#else
+    return ACAPI_Element_GetPropertyDefinitionsOfDefaultElem (typeID, APIVarId_Generic, filter, definitions);
+#endif
+}
+
+inline GSErrCode TAPIR_Element_GetPropertyValueOfDefaultElem (API_ElemTypeID typeID, const API_Guid& propertyDefinitionGuid, API_Property& property)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_GetPropertyValueOfDefaultElem (typeID, propertyDefinitionGuid, property);
+#else
+    return ACAPI_Element_GetPropertyValueOfDefaultElem (typeID, APIVarId_Generic, propertyDefinitionGuid, property);
+#endif
+}
+
 inline GSErrCode TAPIR_Element_SetCategoryValueDefault (const API_Elem_Head& elemHead, const API_ElemCategoryValue& categoryValue)
 {
 #ifdef ServerMainVers_2700
@@ -831,6 +961,20 @@ inline GSErrCode TAPIR_Element_SetCategoryValueDefault (const API_Elem_Head& ele
     return ACAPI_Element_SetCategoryValueDefault (elemHead.type, categoryValue.category, categoryValue);
 #else
     return ACAPI_Element_SetCategoryValueDefault (elemHead.typeID, elemHead.variationID, categoryValue.category, categoryValue);
+#endif
+#endif
+}
+
+// The value of one element category in the tool defaults of an element type.
+inline GSErrCode TAPIR_Element_GetCategoryValueDefault (API_ElemTypeID typeID, const API_ElemCategory& category, API_ElemCategoryValue& categoryValue)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Category_GetCategoryValueDefault (typeID, category, &categoryValue);
+#else
+#if defined ServerMainVers_2600
+    return ACAPI_Element_GetCategoryValueDefault (typeID, category, &categoryValue);
+#else
+    return ACAPI_Element_GetCategoryValueDefault (typeID, APIVarId_Generic, category, &categoryValue);
 #endif
 #endif
 }
@@ -938,9 +1082,71 @@ inline GSErrCode ACAPI_Element_SolidLink_GetFlags (API_Guid /*guid_Target*/, API
 }
 #endif
 
+// AC30 deprecates ACAPI_GeoLocation_CalcSunOnPlace (API_PlaceInfo*) for an overload that
+// takes a reference, and the deprecation warning is an error on Windows (C4996). AC27-29
+// have the pointer form only, and before 27 the macro above maps it onto
+// APIAny_CalcSunOnPlaceID, which takes the pointer too.
+inline GSErrCode TAPIR_GeoLocation_CalcSunOnPlace (API_PlaceInfo& placeInfo)
+{
+#ifdef ServerMainVers_3000
+    return ACAPI_GeoLocation_CalcSunOnPlace (placeInfo);
+#else
+    return ACAPI_GeoLocation_CalcSunOnPlace (&placeInfo);
+#endif
+}
+
 inline void DisposeAttribute (API_Attribute& attr)
 {
     if (attr.header.typeID == API_MaterialID) {
         delete attr.material.texture.fileLoc;
     }
+}
+
+// Reads the property objects linked to an element, or to the defaults of its type when
+// head.guid is APINULLGuid. ACAPI_Element_GetLinkedPropertyObjects before Archicad 27; from
+// Archicad 30 the pointer overload is deprecated, so the std::vector overload is used there.
+inline GSErrCode TAPIR_ElementLink_GetLinkedPropertyObjects (const API_Elem_Head& head, bool& criteria, Int32& individuallyLibInd, GS::Array<Int32>& critLibInds)
+{
+    criteria = false;
+    individuallyLibInd = 0;
+    critLibInds.Clear ();
+#ifdef ServerMainVers_3000
+    std::vector<Int32> critLibIndVector;
+    const GSErrCode err = ACAPI_ElementLink_GetLinkedPropertyObjects (head, criteria, individuallyLibInd, critLibIndVector);
+    if (err == NoError) {
+        for (Int32 critLibInd : critLibIndVector) {
+            critLibInds.Push (critLibInd);
+        }
+    }
+    return err;
+#else
+    API_Elem_Head headCopy = head;
+    Int32* critLibIndPtr = nullptr;
+    Int32 nCrits = 0;
+#ifdef ServerMainVers_2700
+    const GSErrCode err = ACAPI_ElementLink_GetLinkedPropertyObjects (&headCopy, &criteria, &individuallyLibInd, &critLibIndPtr, &nCrits);
+#else
+    const GSErrCode err = ACAPI_Element_GetLinkedPropertyObjects (&headCopy, &criteria, &individuallyLibInd, &critLibIndPtr, &nCrits);
+#endif
+    if (err == NoError && critLibIndPtr != nullptr) {
+        for (Int32 i = 0; i < nCrits; ++i) {
+            critLibInds.Push (critLibIndPtr[i]);
+        }
+    }
+    if (critLibIndPtr != nullptr) {
+        BMKillPtr (reinterpret_cast<GSPtr*> (&critLibIndPtr));
+    }
+    return err;
+#endif
+}
+
+// Links property objects to an element, or to the defaults of head's type when head.guid is
+// APINULLGuid. ACAPI_Element_SetLinkedPropertyObjects before Archicad 27.
+inline GSErrCode TAPIR_ElementLink_SetLinkedPropertyObjects (API_Elem_Head& head, bool criteria, Int32 individuallyLibInd)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_ElementLink_SetLinkedPropertyObjects (&head, criteria, individuallyLibInd);
+#else
+    return ACAPI_Element_SetLinkedPropertyObjects (&head, criteria, individuallyLibInd);
+#endif
 }
