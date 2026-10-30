@@ -20,8 +20,18 @@ It consists of two main components:
 
 The Add-On uses the **Archicad API (DevKit)**. The API interface headers live under
 [archicad-addon/Build/DevKits/](archicad-addon/Build/DevKits/) — e.g.
-`archicad-addon/Build/DevKits/AC29/Support` for Archicad 29, with corresponding
-folders (`AC25`–`AC28`) for older versions.
+`archicad-addon/Build/DevKits/AC29/Support` for Archicad 29, with one folder per
+supported version.
+
+**Supported Archicad versions:** [archicad-addon/devkits.json](archicad-addon/devkits.json)
+is the one list of them, each with its DevKit release. The build checks, the release,
+the weekly release's asset count, the API coverage, the bots' DevKit download,
+`build_all_win.bat` and the docs generator all read it through
+[tools/devkits.py](tools/devkits.py). A new Archicad version needs no person:
+`.github/workflows/archicad_devkit_update.yml` adds it there when Graphisoft publishes
+its DevKit, and the bot pipeline builds, fixes and merges it (see CI). Never change a
+listed version's release on a whim: add-ons built with a later DevKit build may need a
+later Archicad update.
 
 The Add-On code is based on Tibor Lorantfy's original
 [archicad-additional-json-commands](https://github.com/tlorantfy/archicad-additional-json-commands).
@@ -36,6 +46,7 @@ workflow, so it is not repeated here.
 
 ```
 archicad-addon/          C++ Archicad Add-On
+  devkits.json           The supported Archicad versions and their DevKit releases
   Sources/               Command implementations (*.cpp/*.hpp), one file per command group
   Build/                 CMake build output + DevKits/ (downloaded Archicad API SDKs)
   Tools/                 Build/packaging scripts (CMake helpers, resource compiler, signing),
@@ -59,7 +70,8 @@ tools/                   Version bump scripts (update_version.py), package_info.
                          API coverage generator (generate_api_coverage.py,
                          fetch_api_coverage_github_data.py, api_coverage_rules.json),
                          Grasshopper coverage generator (generate_gh_coverage.py,
-                         gh_coverage_rules.json)
+                         gh_coverage_rules.json),
+                         Archicad version list reader and updater (devkits.py)
   discord-issue-bot/     Discord -> GitHub issue bot (run by .github/workflows/discord_issue_bot.yml)
 sandbox/                 Experiments / scratch
 .github/workflows/       CI: build checks + release pipelines for both components
@@ -141,7 +153,7 @@ Requires **CMake ≥ 3.17**, **Python** (for DevKit download + resource compilat
 and Visual Studio (Windows) / Xcode (macOS). The Archicad API DevKits are downloaded
 automatically by the build scripts.
 
-Windows, all supported versions (downloads DevKits, then builds AC25–AC30):
+Windows, all supported versions (downloads DevKits, then builds every version in `devkits.json`):
 
 ```bat
 cd archicad-addon\Tools
@@ -160,7 +172,7 @@ cmake --build Build/AC29 --config RelWithDebInfo
 Notes:
 - `AC_VERSION` selects the target Archicad major version; `AC_API_DEVKIT_DIR` must
   point at the matching DevKit's `Support` folder.
-- Toolset: `v142` for AC25–AC28, `v143` for AC29 and AC30 (see `build_all_win.bat`).
+- Toolset: `v142` before AC29, `v143` from AC29 (see `build_all_win.bat`).
 - Build config produces `TapirAddOn_AC<version>_<Win|Mac>` (`.apx` on Windows,
   `.bundle`/`.zip` on macOS).
 
@@ -289,8 +301,9 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   auto-update script.
 - `archicad_addon.yml`, `grasshopper_plugin.yml` — release/publish pipelines.
   `archicad_addon.yml` also builds the Tapir Installer executables
-  (`TapirInstaller_Win.exe`, `TapirInstaller_Mac.zip`); the release asset count
-  is mirrored in `EXPECTED_ASSETS` in `weekly_release.yml`. The Mac installer is
+  (`TapirInstaller_Win.exe`, `TapirInstaller_Mac.zip`); `weekly_release.yml`
+  expects two assets per version in `devkits.json` plus the two installers
+  (`EXPECTED_ASSETS`). The Mac installer is
   universal2 (Intel and Apple silicon): both workflows build it with the
   python.org Python pinned in their `env` (keep the two the same) and check it
   with `lipo`. The Windows installer is code signed by SignPath (certificate by
@@ -324,6 +337,26 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   opened once the change or the discussion settles them. On the issue bot's PRs it
   also records its verdict as the `claude-review` commit status (set by a job
   without a model, from a nonce-tagged marker in the review).
+- The Claude jobs of `claude_issue_triage.yml` (`fix`, `reply`),
+  `claude_bot_pr_steward.yml` (`fix`) and `claude_pr_review.yml` get the DevKit
+  headers of every version in `devkits.json`, and the C/C++ sources of the newest
+  DevKit's Examples, in `archicad-addon/Build/DevKits/` before Claude starts, from
+  the cached [.github/actions/download-devkits](.github/actions/download-devkits/action.yml)
+  (which `api_coverage.yml` uses too).
+  The steward and the review load that action from a checkout of the workflow's own
+  commit, never from a pull request's branch; they read the pull request's
+  `devkits.json` (data only), so a PR adding a version has its headers.
+- `archicad_devkit_update.yml` — daily: when Graphisoft has published the DevKit of
+  an Archicad version newer than the newest in `devkits.json` (its first public
+  build, x.3000 or later, with Windows and macOS zips), `tools/devkits.py update` adds
+  it there and to the README's download table, and this opens a bot PR on a
+  `claude/devkit-<version>-<release>` branch and starts the steward. The steward
+  builds it and fixes what the new DevKit breaks, and `claude_auto_merge.yml`
+  merges it like any bot PR. `devkits.json` is a release critical path, so
+  auto-merge lets a bot PR through with it only when the file is `main`'s with new
+  versions appended (ascending, each `NN.NNNN` of its own version, nothing else
+  changed) and the branch is named after the newest one. `DEVKIT_UPDATE=false`
+  turns it off.
 - `claude_bot_pr_steward.yml` — drives the issue bot's PRs to mergeable without a
   maintainer (their `GITHUB_TOKEN` pushes start no runs): an hourly sweep, also
   started by the issue bot and the review, dispatches the build checks and the
@@ -387,7 +420,7 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   [tools/discord-issue-bot/README.md](tools/discord-issue-bot/README.md)).
 - `api_coverage.yml` — keeps the Archicad API coverage checklist live: on a push
   to `main`, a release, pull request and issue events, hourly and by hand, it runs
-  `tools/generate_api_coverage.py` over the AC25–AC30 DevKits (C functions with
+  `tools/generate_api_coverage.py` over the DevKits in `devkits.json` (C functions with
   their older names and AC25/26 command ids, and the C++ `ACAPI::`/`IFCAPI::` API)
   and marks each item used on `main`, merged but not released, in an open PR,
   claimed by an open issue (the "Archicad API request" issue form), open, skipped
