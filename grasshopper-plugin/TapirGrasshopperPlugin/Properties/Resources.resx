@@ -187,8 +187,17 @@
   <data name="SelectedElems" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SelectedElems.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Set3DCutawayStatus" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Set3DCutawayStatus.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="SetClassifications" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SetClassifications.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SetCurrentWindowDrawingScale" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetCurrentWindowDrawingScale.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SetDialogAutoClose" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetDialogAutoClose.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="SetPropertyValues" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SetPropertyValues.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -228,6 +237,9 @@
   </data>
   <data name="ParallelListFilter" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ParallelListFilter.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ActivateDesignOptionsInCombinations" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ActivateDesignOptionsInCombinations.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="AddCommentToAnIssue" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\AddCommentToAnIssue.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -304,6 +316,9 @@
   <data name="FindNavigatorItem" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\FindNavigatorItem.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Get3DCutawayStatus" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Get3DCutawayStatus.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="GetStories" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetStories.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -339,6 +354,9 @@
   </data>
   <data name="QuitArchicad" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\QuitArchicad.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="RebuildCurrentDatabase" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\RebuildCurrentDatabase.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="GetCurrentWindowType" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetCurrentWindowType.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -411,6 +429,9 @@
   </data>
   <data name="SetElementGDLs" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SetElementGDLs.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SetElementUserData" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetElementUserData.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="GetMarkerParametersOfElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetMarkerParametersOfElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -523,6 +544,9 @@
   <data name="CloseProject" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CloseProject.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="CloseWindows" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CloseWindows.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="DeleteAttributes" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\DeleteAttributes.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -550,6 +574,9 @@
   <data name="GetComposites" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetComposites.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="GetContainingDatabases" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetContainingDatabases.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="GetSurfaces" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetSurfaces.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -576,6 +603,9 @@
   </data>
   <data name="GetLibraries" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetLibraries.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetLineFromUser" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetLineFromUser.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="ReloadLibraries" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ReloadLibraries.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -643,8 +673,14 @@
   <data name="GetDocumentRevisions" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetDocumentRevisions.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="GetEditModeState" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetEditModeState.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="GetCurrentRevisionChangesOfLayouts" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetCurrentRevisionChangesOfLayouts.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetCurrentWindowDrawingScale" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetCurrentWindowDrawingScale.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="GetRevisionChangesOfElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetRevisionChangesOfElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -666,6 +702,9 @@
   </data>
   <data name="Get3DProjectionSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Get3DProjectionSettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetArchicadReleaseInfo" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetArchicadReleaseInfo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Set3DProjectionSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Set3DProjectionSettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -699,6 +738,9 @@
   </data>
   <data name="GetRoomImage" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetRoomImage.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetScriptUIResult" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetScriptUIResult.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="GetFavoritePreviewImage" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetFavoritePreviewImage.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -777,6 +819,9 @@
   </data>
   <data name="CreateZones" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateZones.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="DeactivateDesignOptionsInCombinations" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DeactivateDesignOptionsInCombinations.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="CreatePolylines" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreatePolylines.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -904,6 +949,9 @@
   <data name="GetRelationsOfElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetRelationsOfElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="GetRevisionChangeCustomScheme" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetRevisionChangeCustomScheme.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="GetSpecialFolders" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetSpecialFolders.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -949,6 +997,9 @@
   <data name="ShowAlert" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ShowAlert.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="ShowScriptUI" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ShowScriptUI.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="ModifyObjects" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ModifyObjects.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -982,6 +1033,9 @@
   <data name="DimensioningPresetValueList" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\DimensioningPresetValueList.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="DuplicateDesignOptionCombinations" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DuplicateDesignOptionCombinations.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="MEPDomainValueList" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\MEPDomainValueList.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -993,6 +1047,18 @@
   </data>
   <data name="GetPointFromUser" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetPointFromUser.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetPolygonFromUser" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetPolygonFromUser.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetPrinterAndPlotterInfo" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetPrinterAndPlotterInfo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetPrinterInfo" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetPrinterInfo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetProductVersionInfo" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetProductVersionInfo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="CreateHotlinkNodes" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateHotlinkNodes.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -1020,6 +1086,9 @@
   </data>
   <data name="GetElementTrims" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetElementTrims.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetElementUserData" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetElementUserData.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="ModifyTexts" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ModifyTexts.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -1083,6 +1152,9 @@
   </data>
   <data name="GetElectricalProjectSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetElectricalProjectSettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetElementFromUser" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetElementFromUser.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="CreateElectricalPanels" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateElectricalPanels.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
