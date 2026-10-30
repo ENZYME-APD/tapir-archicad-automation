@@ -103,7 +103,8 @@ private:
     bool hiddenByForcedHideBegin = false;
 
     // Used only by PaletteControlCallBack, e.g. when Archicad restores a saved window layout that
-    // had this palette open - just redisplays whatever HTML was last loaded (or a blank palette).
+    // had this palette open - just redisplays whatever HTML was last loaded in this session (a
+    // restore before any ShowWithHTML call is ignored, so the palette never opens blank).
     void Show ();
 
     void RegisterACAPIJavaScriptObject ();
