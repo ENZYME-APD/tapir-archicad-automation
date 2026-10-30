@@ -213,6 +213,10 @@ GSErrCode ExecuteActionForEachDatabase (
     const std::function<void ()>& actionSuccess,
     const std::function<void (GSErrCode, const GS::UniString&)>& actionFailure);
 
+// The Project Map item of an independent worksheet or detail database, found by its database;
+// NoValue for any other database type or when the Project Map has no such item.
+GS::Optional<API_Guid> FindProjectMapItemOfWorksheetOrDetail (const API_DatabaseInfo& database);
+
 template<std::size_t N>
 bool SetCharProperty (const GS::ObjectState* os, const char* propertyKey, char (&targetProperty)[N])
 {

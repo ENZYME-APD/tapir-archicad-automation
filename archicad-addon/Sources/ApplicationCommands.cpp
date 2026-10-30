@@ -817,6 +817,20 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
 
         err = ACAPI_Database_ChangeCurrentDatabase (&targetDatabase);
         if (err != NoError) {
+#if defined (ServerMainVers_2700)
+            // A worksheet or detail whose window was never opened, e.g. one just made by
+            // CreateWorksheets or CreateDetails, cannot be made the current database
+            // (APIERR_BADDATABASE), while activating its Project Map item works (#1602). So that
+            // item is opened instead, the same way as with navigatorItemId.
+            const GS::Optional<API_Guid> projectMapItem = FindProjectMapItemOfWorksheetOrDetail (targetDatabase);
+            if (projectMapItem.HasValue ()) {
+                const GS::UniString guidStr = APIGuidToString (projectMapItem.Get ());
+                const GSErrCode goToViewErr = ACAPI_View_GoToView (guidStr.ToCStr ().Get ());
+                return goToViewErr == NoError
+                    ? CreateSuccessfulExecutionResult ()
+                    : CreateErrorResponse (goToViewErr, "Failed to change current database, and failed to open the database's Project Map item.");
+            }
+#endif
             return CreateErrorResponse (err, "Failed to change current database.");
         }
 
