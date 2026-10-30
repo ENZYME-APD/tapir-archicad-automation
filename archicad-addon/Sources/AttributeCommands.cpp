@@ -13,6 +13,8 @@
 #ifdef ServerMainVers_3000
 #include <optional>
 #endif
+#include <cstdlib>
+#include <limits>
 
 // Before AC27, API_AttributeIndex is a plain integer typedef with no IsPositive() method; AC27+ replaced it with
 // a class. Kept local (rather than in the shared MigrationHelper shim) since it is only used in this file.
@@ -3639,6 +3641,24 @@ GS::Optional<GS::UniString> CreateAttributesCommandBase::GetRawResponseSchema ()
     })";
 }
 
+// The "index" of an attribute to overwrite. The input schemas of the Create<Attribute> commands
+// declare it as a string, which never read into an Int32, so the index used to be ignored.
+static bool GetIndexToOverwrite (const GS::ObjectState& data, Int32& index)
+{
+    GS::UniString indexStr;
+    if (!data.Get ("index", indexStr)) {
+        return false;
+    }
+    const auto indexCStr = indexStr.ToCStr ();
+    char* end = nullptr;
+    const long value = std::strtol (indexCStr.Get (), &end, 10);
+    if (end == indexCStr.Get () || *end != '\0' || value < 0 || value > std::numeric_limits<Int32>::max ()) {
+        return false;
+    }
+    index = static_cast<Int32> (value);
+    return true;
+}
+
 GS::ObjectState CreateAttributesCommandBase::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> dataArray;
@@ -3664,7 +3684,7 @@ GS::ObjectState CreateAttributesCommandBase::Execute (const GS::ObjectState& par
             attr.header.guid = GetGuidFromAttributesArrayItem (data);
 
             Int32 index = -1;
-            if (data.Get ("index", index) && index >= 0) {
+            if (GetIndexToOverwrite (data, index)) {
                 attr.header.index = ACAPI_CreateAttributeIndex (index);
             }
         }
@@ -4563,7 +4583,7 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
             fill.header.guid = GetGuidFromAttributesArrayItem (data);
 
             Int32 index = -1;
-            if (data.Get ("index", index) && index >= 0) {
+            if (GetIndexToOverwrite (data, index)) {
                 fill.header.index = ACAPI_CreateAttributeIndex (index);
             }
         }
