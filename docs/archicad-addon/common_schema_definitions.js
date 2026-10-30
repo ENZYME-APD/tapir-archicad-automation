@@ -94,12 +94,40 @@ var gSchemaDefinitions = {
             }
         ]
     },
+    "MergedElements": {
+        "type": "object",
+        "description": "The elements merged with one element.",
+        "properties": {
+            "mergedElements": {
+                "$ref": "#/Elements",
+                "description": "The elements merged with the queried element. Empty when it is not merged with any."
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "mergedElements" ]
+    },
+    "MergedElementsOrError": {
+        "type": "object",
+        "description": "The elements merged with one element, or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/MergedElements"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
     "MEPRoutingSegmentDetails": {
         "type": "object",
         "description": "The details of an MEP routing segment.",
         "properties": {
             "elementId": {
                 "$ref": "#/ElementId"
+            },
+            "routingElementId": {
+                "$ref": "#/ElementId",
+                "description": "The routing element the segment belongs to."
             },
             "crossSectionWidth": {
                 "type": "number"
@@ -157,6 +185,9 @@ var gSchemaDefinitions = {
                 "type": "number",
                 "description": "The flange size of the segment. Only present when the segment has flanges."
             },
+            "connectionStyle": {
+                "$ref": "#/MEPConnectionStyle"
+            },
             "rigidSegments": {
                 "$ref": "#/Elements",
                 "description": "The rigid segments (the straight duct, pipe or cable carrier pieces) of the routing segment."
@@ -177,6 +208,10 @@ var gSchemaDefinitions = {
             "elementId": {
                 "$ref": "#/ElementId"
             },
+            "routingElementId": {
+                "$ref": "#/ElementId",
+                "description": "The routing element the node belongs to."
+            },
             "position": {
                 "$ref": "#/Coordinate3D"
             },
@@ -187,6 +222,9 @@ var gSchemaDefinitions = {
             "outgoingSegmentId": {
                 "$ref": "#/ElementId",
                 "description": "The routing segment starting at this node. Not present at the end of the route."
+            },
+            "preferredTransitionPlacement": {
+                "$ref": "#/MEPPreferredTransitionPlacement"
             },
             "elbows": {
                 "$ref": "#/Elements",
@@ -228,6 +266,18 @@ var gSchemaDefinitions = {
             "logicallyConnectedPortIdAtRouteEnd": {
                 "$ref": "#/Guid",
                 "description": "The port logically connected to the end of the route (see GetMEPPorts). Not present when nothing is connected there."
+            },
+            "cutPlanePosition": {
+                "$ref": "#/MEPCutPlanePosition"
+            },
+            "floorPlanDisplayOption": {
+                "$ref": "#/MEPFloorPlanDisplayOption"
+            },
+            "showProjection": {
+                "$ref": "#/MEPShowProjection"
+            },
+            "onStoryVisibility": {
+                "$ref": "#/MEPOnStoryVisibility"
             },
             "polyline": {
                 "type": "array",
@@ -283,6 +333,10 @@ var gSchemaDefinitions = {
             "portId": {
                 "$ref": "#/Guid"
             },
+            "mepElementId": {
+                "$ref": "#/ElementId",
+                "description": "The MEP element the port belongs to."
+            },
             "name": {
                 "type": "string"
             },
@@ -309,6 +363,18 @@ var gSchemaDefinitions = {
             },
             "isPhysicallyConnected": {
                 "type": "boolean"
+            },
+            "connectionStyle": {
+                "$ref": "#/MEPConnectionStyle",
+                "description": "The connection style of the port. Available from Archicad 30."
+            },
+            "flowDirection": {
+                "$ref": "#/MEPFlowDirection",
+                "description": "The flow direction of a piping or ventilation port."
+            },
+            "nominalSize": {
+                "type": "string",
+                "description": "The nominal size of a piping port. Available from Archicad 30."
             },
             "connectedPortId": {
                 "$ref": "#/Guid"
@@ -368,7 +434,7 @@ var gSchemaDefinitions = {
     },
     "MEPConnectionResult": {
         "type": "object",
-        "description": "The result of connecting an MEP routing element: the routing element deleted by merging, the routing element created by splitting and the branch element created by the connection.",
+        "description": "The result of connecting an MEP routing element: the routing element deleted by merging, the routing element created by splitting and the branch element created by the connection. Empty in Archicad 27, which does not report them.",
         "properties": {
             "deletedRoutingElementId": {
                 "$ref": "#/ElementId"
@@ -413,6 +479,24 @@ var gSchemaDefinitions = {
         "additionalProperties": false,
         "required": [
             "guid"
+        ]
+    },
+    "EditModeStateItem": {
+        "type": "object",
+        "description": "The state of one hierarchical editing mode.",
+        "properties": {
+            "inEditMode": {
+                "type": "boolean",
+                "description": "True when Archicad is in this editing mode."
+            },
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "The element being edited. Only returned when inEditMode is true and Archicad reports the edited element."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "inEditMode"
         ]
     },
     "SurfaceType": {
@@ -796,6 +880,43 @@ var gSchemaDefinitions = {
             "items"
         ]
     },
+    "FavoriteFolderDetails": {
+        "type": "object",
+        "description": "A folder of the Favorites palette with its Favorites and subfolders recursively.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the folder. Empty for the root folder."
+            },
+            "path": {
+                "type": "array",
+                "description": "The names of the folders leading from the root to this folder, this folder's name last. Empty for the root folder.",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "favorites": {
+                "type": "array",
+                "description": "The names of the Favorites directly in this folder.",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "subFolders": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/FavoriteFolderDetails"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "path",
+            "favorites",
+            "subFolders"
+        ]
+    },
     "DesignOptionId": {
         "type": "object",
         "description": "The identifier of a design option.",
@@ -856,6 +977,56 @@ var gSchemaDefinitions = {
         "additionalProperties": false,
         "required": [
             "designOptionSetId"
+        ]
+    },
+    "ProjectInfoGroupId": {
+        "type": "object",
+        "description": "The identifier of a Project Info group. Available from Archicad 30.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "ProjectInfoGroupIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "projectInfoGroupId": {
+                "$ref": "#/ProjectInfoGroupId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoGroupId"
+        ]
+    },
+    "ProjectInfoFieldId": {
+        "type": "object",
+        "description": "The identifier of a field of a Project Info group. It is not the autotext key that GetProjectInfoFields returns as projectInfoId. Available from Archicad 30.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "ProjectInfoFieldIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "projectInfoFieldId": {
+                "$ref": "#/ProjectInfoFieldId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoFieldId"
         ]
     },
     "LayersOfLayerCombination": {
@@ -2061,6 +2232,38 @@ var gSchemaDefinitions = {
             }
         ]
     },
+    "HotlinkOwnersOfElement": {
+        "type": "object",
+        "description": "The hotlink an element comes from. Both ids are omitted when the element is not part of a hotlinked module.",
+        "properties": {
+            "isInHotlink": {
+                "type": "boolean",
+                "description": "True when Archicad reports a hotlink for the element, that is, when at least one of the ids below is returned."
+            },
+            "hotlinkElementId": {
+                "$ref": "#/ElementId",
+                "description": "The hotlink element which contains the element (ACAPI_Hotlink_GetContainingHotlinkGuid)."
+            },
+            "hotlinkInstanceId": {
+                "$ref": "#/ElementId",
+                "description": "The hotlink instance the element belongs to (ACAPI_Hotlink_GetHotLinkOwner)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "isInHotlink" ]
+    },
+    "HotlinkOwnersOfElementOrError": {
+        "type": "object",
+        "description": "The hotlink an element comes from, or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/HotlinkOwnersOfElement"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
     "SetGDLParameterArray": {
         "type": "array",
         "description": "The list of GDL parameters.",
@@ -2967,6 +3170,33 @@ var gSchemaDefinitions = {
         "additionalProperties": false,
         "required": [ "error" ]
     },
+    "OverriddenValue": {
+        "type": "object",
+        "description": "A value the active graphic override combination may replace. 'overridden' tells whether it does; only then the value is given: 'attributeId' for line types, fills and surfaces, 'penIndex' for pens, 'color' for background pens and surfaces set to a color.",
+        "properties": {
+            "overridden": {
+                "type": "boolean"
+            },
+            "attributeId": {
+                "$ref": "#/AttributeId"
+            },
+            "penIndex": {
+                "type": "integer"
+            },
+            "color": {
+                "type": "object",
+                "properties": {
+                    "red": { "type": "number" },
+                    "green": { "type": "number" },
+                    "blue": { "type": "number" }
+                },
+                "additionalProperties": false,
+                "required": [ "red", "green", "blue" ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "overridden" ]
+    },
     "SuccessfulExecutionResult": {
         "type": "object",
         "description": "The result of a successful execution.",
@@ -3454,6 +3684,21 @@ var gSchemaDefinitions = {
             "FromTopLeftToBottomRight"
         ]
     },
+    "DrawingAnchorPoint": {
+        "type": "string",
+        "description": "The node of a Drawing's box, on a 3x3 grid, that is placed at its pos on the layout when useOwnOrigoAsAnchor is false (API_DrawingType::anchorPoint).",
+        "enum": [
+            "TopLeft",
+            "TopCenter",
+            "TopRight",
+            "MiddleLeft",
+            "Center",
+            "MiddleRight",
+            "BottomLeft",
+            "BottomCenter",
+            "BottomRight"
+        ]
+    },
     "BeamAnchorPoint": {
         "type": "string",
         "description": "Anchor point of the beam cross section on a 3x3 grid.",
@@ -3652,9 +3897,18 @@ var gSchemaDefinitions = {
         ],
         "description": "How the drawing's title ID is assigned (Identification tabpage of the Drawing Settings dialog)."
     },
+    "DrawingPenTableUsageMode": {
+        "type": "string",
+        "enum": [
+            "UseOwnPenTable",
+            "UseModelPenTable",
+            "UsePenTableIndex"
+        ],
+        "description": "Which pen table a Drawing uses (API_PenTableUsageModeValues): UseOwnPenTable keeps the colors stored in the drawing data itself (the pen table of its source view/model at the time it was created or last updated); UseModelPenTable always follows the current pen table of the model space; UsePenTableIndex forces the pen table given by penTableIndex."
+    },
     "MEPCrossSectionShape": {
         "type": "string",
-        "description": "Shape of an MEP routing segment's cross section.",
+        "description": "Shape of an MEP routing segment's cross section or of an MEP port.",
         "enum": [
             "Rectangular",
             "Circular",
@@ -3662,12 +3916,245 @@ var gSchemaDefinitions = {
             "UShape"
         ]
     },
+    "MEPConnectionStyle": {
+        "type": "string",
+        "description": "How the pieces of an MEP routing segment, or an MEP port, are connected.",
+        "enum": [
+            "SimpleBody",
+            "Flanged",
+            "Welded"
+        ]
+    },
+    "MEPFlowDirection": {
+        "type": "string",
+        "description": "The flow direction of a piping or ventilation port.",
+        "enum": [
+            "FlowNotDefined",
+            "FlowIn",
+            "FlowOut"
+        ]
+    },
+    "MEPPreferredTransitionPlacement": {
+        "type": "string",
+        "description": "Where an MEP routing node places its transitions.",
+        "enum": [
+            "SmallToLarge",
+            "LargeToSmall"
+        ]
+    },
+    "MEPCutPlanePosition": {
+        "type": "string",
+        "description": "Where the floor plan cut plane of an MEP routing element is. Available from Archicad 29.",
+        "enum": [
+            "AtUpperDisplayLimit",
+            "ByViewSettings"
+        ]
+    },
+    "MEPFloorPlanDisplayOption": {
+        "type": "string",
+        "description": "How an MEP routing element is shown on the floor plan. Available from Archicad 29.",
+        "enum": [
+            "Projected",
+            "ProjectedWithOverhead",
+            "Symbolic",
+            "ByMVO"
+        ]
+    },
+    "MEPShowProjection": {
+        "type": "string",
+        "description": "How much of an MEP routing element's projection is shown on the floor plan. Available from Archicad 29.",
+        "enum": [
+            "ToFloorPlanRange",
+            "ToAbsoluteDisplayLimit",
+            "EntireElement"
+        ]
+    },
+    "MEPOnStoryVisibility": {
+        "type": "string",
+        "description": "On which stories an MEP routing element is shown. Available from Archicad 29.",
+        "enum": [
+            "AllRelevantStories",
+            "HomeStoryOnly"
+        ]
+    },
     "MEPPreferenceTableDomain": {
         "type": "string",
         "description": "The MEP domain of the segment preference tables.",
         "enum": [
             "Piping",
-            "Ventilation"
+            "Ventilation",
+            "CableCarrier"
+        ]
+    },
+    "MEPPreferenceRowIndex": {
+        "type": "integer",
+        "description": "The position of the row in its preference table, as ModifyMEPPreferenceTables expects it. Rows that cannot be read are left out of GetMEPPreferenceTables, so this is not always the position in the rows list.",
+        "minimum": 0
+    },
+    "MEPPreferenceTableType": {
+        "type": "string",
+        "description": "The kind of preference table container: the segment tables (circular and rectangular ducts share one container), or the elbow, branch or transition tables. CableCarrier has only segment tables, transition tables are available from Archicad 29.",
+        "enum": [
+            "Segment",
+            "Elbow",
+            "Branch",
+            "Transition"
+        ]
+    },
+    "MEPPreferenceRowChange": {
+        "type": "object",
+        "description": "Changes one row of a preference table, in the shape GetMEPPreferenceTables returns. Only the given values are changed. A value that does not belong to the kind of table is an error; the read-only values (reference ids, branchAxisAngle, isValid, and angle of an elbow table) are ignored.",
+        "properties": {
+            "index": {
+                "$ref": "#/MEPPreferenceRowIndex"
+            },
+            "delete": {
+                "type": "boolean",
+                "description": "Deletes the row. The circular segment tables, and the elbow tables in Archicad 28, have a fixed row for each reference id; there the row is emptied instead. Cannot be combined with new values."
+            },
+            "diameter": {
+                "type": "number",
+                "description": "Circular segment and elbow tables."
+            },
+            "wallThickness": {
+                "type": "number",
+                "description": "Circular segment tables."
+            },
+            "value": {
+                "type": "number",
+                "description": "Rectangular duct and cable carrier segment tables. These tables keep their rows ordered by value, so a changed value can move the row; the indices of the other rows given in the same call are followed."
+            },
+            "radius": {
+                "type": "number",
+                "description": "Elbow tables."
+            },
+            "mainAxisDiameter": {
+                "type": "number",
+                "description": "Branch tables."
+            },
+            "branchAxisDiameter": {
+                "type": "number",
+                "description": "Branch tables."
+            },
+            "length": {
+                "type": "number",
+                "description": "Branch tables and piping transition tables."
+            },
+            "branchOffset": {
+                "type": "number",
+                "description": "Branch tables."
+            },
+            "connectionLength": {
+                "type": "number",
+                "description": "Branch tables."
+            },
+            "beginDiameter": {
+                "type": "number",
+                "description": "Transition tables."
+            },
+            "endDiameter": {
+                "type": "number",
+                "description": "Transition tables."
+            },
+            "angle": {
+                "type": "number",
+                "description": "Ventilation transition tables, in the unit GetMEPPreferenceTables returns it. Read-only (ignored) in elbow tables."
+            },
+            "description": {
+                "type": "string"
+            },
+            "referenceId": {
+                "type": "integer",
+                "description": "Read-only, ignored."
+            },
+            "mainAxisReferenceId": {
+                "type": "integer",
+                "description": "Read-only, ignored."
+            },
+            "branchAxisReferenceId": {
+                "type": "integer",
+                "description": "Read-only, ignored."
+            },
+            "beginReferenceId": {
+                "type": "integer",
+                "description": "Read-only, ignored."
+            },
+            "endReferenceId": {
+                "type": "integer",
+                "description": "Read-only, ignored."
+            },
+            "branchAxisAngle": {
+                "type": "number",
+                "description": "Read-only, ignored."
+            },
+            "isValid": {
+                "type": "boolean",
+                "description": "Read-only, ignored."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "index"
+        ]
+    },
+    "MEPPreferenceTableChange": {
+        "type": "object",
+        "description": "Changes one preference table, in the shape GetMEPPreferenceTables returns. Only the given values and rows are changed.",
+        "properties": {
+            "guid": {
+                "type": "string",
+                "description": "The guid of the table, as returned by GetMEPPreferenceTables."
+            },
+            "name": {
+                "type": "string",
+                "description": "The new name of the table."
+            },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Read-only, ignored."
+            },
+            "useIndividualSegmentLengths": {
+                "type": "boolean",
+                "description": "Segment tables only. Available from Archicad 29."
+            },
+            "minimumSegmentationLength": {
+                "type": "number",
+                "description": "Segment tables only; the maximum is kept when not given. Available from Archicad 29."
+            },
+            "maximumSegmentationLength": {
+                "type": "number",
+                "description": "Segment tables only; the minimum is kept when not given. Available from Archicad 29."
+            },
+            "rows": {
+                "type": "array",
+                "description": "The rows to change or delete, each at most once. All indices refer to the table before this call.",
+                "items": {
+                    "$ref": "#/MEPPreferenceRowChange"
+                }
+            },
+            "newRows": {
+                "type": "array",
+                "description": "Rows to add to a rectangular duct or cable carrier segment table, after the other changes. Adding rows to the other tables is not supported yet.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "value": {
+                            "type": "number"
+                        },
+                        "description": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "value"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
         ]
     },
     "MEPComponentType": {
@@ -4407,6 +4894,9 @@ var gSchemaDefinitions = {
             "urlWebLibrary": {
                 "type": "string",
                 "description": "URL of the downloaded Internet library."
+            },
+            "package": {
+                "$ref": "#/LibraryPackage"
             }
         },
         "additionalProperties": false,
@@ -4415,6 +4905,61 @@ var gSchemaDefinitions = {
             "type",
             "path"
         ]
+    },
+    "LibraryPackage": {
+        "type": "object",
+        "description": "Package information of a library that is a library package. Only given for packages, from Archicad 28. A value Archicad cannot read is left out.",
+        "properties": {
+            "packageId": {
+                "type": "string",
+                "description": "The GUID of the package."
+            },
+            "mainVersion": {
+                "type": "integer",
+                "description": "The main version of the package."
+            },
+            "subVersion": {
+                "type": "integer",
+                "description": "The sub version of the package."
+            },
+            "minArchicadVersion": {
+                "type": "integer",
+                "description": "The minimum Archicad version the package needs."
+            },
+            "minArchicadBuildNumber": {
+                "type": "integer",
+                "description": "The minimum Archicad build number the package needs."
+            },
+            "dependencies": {
+                "type": "array",
+                "description": "The packages this package depends on.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the package."
+                        },
+                        "packageId": {
+                            "type": "string",
+                            "description": "The GUID of the package."
+                        },
+                        "version": {
+                            "type": "integer",
+                            "description": "The version of the package that is needed."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "packageId",
+                        "version"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": []
     },
     "LibraryLocation": {
         "type": "object",
@@ -5892,6 +6437,25 @@ var gSchemaDefinitions = {
             "$ref": "#/DesignOptionCombinationIdOrError"
         }
     },
+    "ProjectInfoGroupIdOrError": {
+        "type": "object",
+        "description": "A Project Info group identifier or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ProjectInfoGroupIdArrayItem"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ProjectInfoGroupIdsOrErrors": {
+        "type": "array",
+        "description": "A list of Project Info group identifiers or errors.",
+        "items": {
+            "$ref": "#/ProjectInfoGroupIdOrError"
+        }
+    },
     "ElementClassificationItemArray": {
         "description": "A wrapper containing a list of element classification identifiers or errors.",
         "properties": {
@@ -6145,6 +6709,113 @@ var gSchemaDefinitions = {
         "description": "A list of the IFC identifiers of elements or errors.",
         "items": {
             "$ref": "#/ElementIFCIdsOrError"
+        }
+    },
+    "ElementIFCClassificationReference": {
+        "type": "object",
+        "description": "An IFC classification reference (IfcClassificationReference) of an element. The text fields are missing when the reference has no value for them.",
+        "properties": {
+            "identification": {
+                "type": "string",
+                "description": "The identification of the classification reference, for example a classification code."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the classification reference."
+            },
+            "location": {
+                "type": "string",
+                "description": "The location of the classification reference, for example a URL."
+            },
+            "description": {
+                "type": "string",
+                "description": "The description of the classification reference. Given from Archicad 29."
+            },
+            "referencedSource": {
+                "type": "object",
+                "description": "The classification (IfcClassification) the reference belongs to.",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the classification."
+                    },
+                    "source": {
+                        "type": "string",
+                        "description": "The source of the classification. Missing when it has no value."
+                    },
+                    "edition": {
+                        "type": "string",
+                        "description": "The edition of the classification. Missing when it has no value."
+                    },
+                    "editionDate": {
+                        "type": "string",
+                        "description": "The edition date of the classification. Given only in Archicad 25, 26 and 27, missing when it has no value."
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "The description of the classification. Given only in Archicad 25, 26 and 27, missing when it has no value."
+                    },
+                    "location": {
+                        "type": "string",
+                        "description": "The location of the classification, for example a URL. Given only in Archicad 25, 26 and 27, missing when it has no value."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name"
+                ]
+            },
+            "source": {
+                "type": "string",
+                "description": "Where the reference comes from: preview (mapped by the preview IFC export translator) or local (stored on the element). Missing in Archicad 25, 26 and 27, where the storedOnly input chooses between the stored references and all of them.",
+                "enum": [
+                    "preview",
+                    "local"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "referencedSource"
+        ]
+    },
+    "ElementIFCClassificationReferences": {
+        "type": "object",
+        "description": "The IFC classification references of an element.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "ifcClassificationReferences": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ElementIFCClassificationReference"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "ifcClassificationReferences"
+        ]
+    },
+    "ElementIFCClassificationReferencesOrError": {
+        "type": "object",
+        "description": "Element IFC classification references or error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElementIFCClassificationReferences"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ElementIFCClassificationReferencesOrErrors": {
+        "type": "array",
+        "description": "A list of the IFC classification references of elements or errors.",
+        "items": {
+            "$ref": "#/ElementIFCClassificationReferencesOrError"
         }
     },
     "ElementsByIFCIds": {
@@ -6432,14 +7103,24 @@ var gSchemaDefinitions = {
     "MEPPreferenceRow": {
         "type": "object",
         "properties": {
+            "index": {
+                "$ref": "#/MEPPreferenceRowIndex"
+            },
             "referenceId": {
                 "type": "integer"
             },
             "diameter": {
                 "type": "number"
             },
+            "wallThickness": {
+                "type": "number"
+            },
             "description": {
                 "type": "string"
+            },
+            "isValid": {
+                "type": "boolean",
+                "description": "Whether the row is valid."
             }
         },
         "required": [
@@ -6461,6 +7142,10 @@ var gSchemaDefinitions = {
             "domain": {
                 "type": "string",
                 "description": "The MEP domain of the element. Empty for domain-independent elements (e.g. Equipment)."
+            },
+            "localizedTypeName": {
+                "type": "string",
+                "description": "The type name of the element in the language of Archicad. Only returned by Archicad 28."
             }
         },
         "additionalProperties": false,
@@ -6495,10 +7180,84 @@ var gSchemaDefinitions = {
             "guid": {
                 "type": "string"
             },
+            "name": {
+                "type": "string"
+            },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Whether the table can be edited."
+            },
+            "useIndividualSegmentLengths": {
+                "type": "boolean",
+                "description": "Whether the table uses individual segmentation lengths. Available from Archicad 29."
+            },
+            "minimumSegmentationLength": {
+                "type": "number",
+                "description": "Available from Archicad 29."
+            },
+            "maximumSegmentationLength": {
+                "type": "number",
+                "description": "Available from Archicad 29."
+            },
             "rows": {
                 "type": "array",
                 "items": {
                     "$ref": "#/MEPPreferenceRow"
+                }
+            }
+        },
+        "required": [
+            "guid",
+            "rows"
+        ],
+        "additionalProperties": false
+    },
+    "MEPValuePreferenceTable": {
+        "type": "object",
+        "description": "A rectangular duct or cable carrier segment preference table: a list of sizes.",
+        "properties": {
+            "guid": {
+                "type": "string"
+            },
+            "name": {
+                "type": "string"
+            },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Whether the table can be edited."
+            },
+            "useIndividualSegmentLengths": {
+                "type": "boolean",
+                "description": "Whether the table uses individual segmentation lengths. Available from Archicad 29."
+            },
+            "minimumSegmentationLength": {
+                "type": "number",
+                "description": "Available from Archicad 29."
+            },
+            "maximumSegmentationLength": {
+                "type": "number",
+                "description": "Available from Archicad 29."
+            },
+            "rows": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "index": {
+                            "$ref": "#/MEPPreferenceRowIndex"
+                        },
+                        "value": {
+                            "type": "number",
+                            "description": "The size of the row."
+                        },
+                        "description": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "value"
+                    ]
                 }
             }
         },
@@ -8801,7 +9560,19 @@ var gSchemaDefinitions = {
         "properties": {
             "pos": {
                 "$ref": "#/Coordinate2D",
-                "description": "Position of the drawing's reference point on the layout."
+                "description": "Position of the drawing's reference point on the layout: its own origin when useOwnOrigoAsAnchor is true, otherwise the anchorPoint node of its box."
+            },
+            "useOwnOrigoAsAnchor": {
+                "type": "boolean",
+                "description": "Whether the drawing is placed by its own origin instead of a node of its box (Drawing Settings > Anchor Point > Drawing Origin)."
+            },
+            "anchorPoint": {
+                "$ref": "#/DrawingAnchorPoint",
+                "description": "The node of the drawing's box placed at pos when useOwnOrigoAsAnchor is false."
+            },
+            "offset": {
+                "$ref": "#/Coordinate2D",
+                "description": "API_DrawingType::offset, read-only: equal to pos when the drawing is clipped, otherwise pos minus the coordinate of the anchor."
             },
             "angle": {
                 "type": "number",
@@ -8829,7 +9600,7 @@ var gSchemaDefinitions = {
             },
             "clipPolygon": {
                 "type": "array",
-                "description": "Polygon (in model coordinates) used to clip the drawing view. Present only when isCutWithFrame is true.",
+                "description": "Polygon used to clip the drawing view, in layout coordinates (meters on the layout, the same coordinate system as pos and bounds - not the coordinates of the source view's model). Archicad stores it as is; pos, angle, ratio and modelOffset are not applied to it. Present only when isCutWithFrame is true.",
                 "items": {
                     "$ref": "#/Coordinate2D"
                 },
@@ -8837,7 +9608,7 @@ var gSchemaDefinitions = {
             },
             "navigatorItemId": {
                 "$ref": "#/NavigatorItemId",
-                "description": "The identifier of the navigator item (view/layout) this Drawing was created from. Read-only: Archicad only lets this be set at creation time (see CreateDrawings) - it cannot be changed afterwards to relink the Drawing to a different source."
+                "description": "Archicad's internal identifier of this Drawing's link (API_DrawingType::drawingGuid as Archicad reports it). This is NOT the navigator item id of the source view: CreateDrawings passes the source view in this field, but once the Drawing is created Archicad reports its own identifier, which is different for every Drawing (even two Drawings of the same view), is neither the source view nor the Drawing's item in the Layout Book, and is not accepted by navigator commands such as GetViewSettings. To find the source view of a placed Drawing, use the sourceNavigatorItemId of its DrawingItem in the Layout Book tree (GetNavigatorItemTree). Read-only: Archicad has no API to relink a Drawing to a different source (see ChangeDrawingLink)."
             },
             "nameType": {
                 "$ref": "#/DrawingNameType"
@@ -8885,6 +9656,9 @@ var gSchemaDefinitions = {
         "additionalProperties": false,
         "required": [
             "pos",
+            "useOwnOrigoAsAnchor",
+            "anchorPoint",
+            "offset",
             "angle",
             "ratio",
             "drawingScale",
@@ -8943,6 +9717,10 @@ var gSchemaDefinitions = {
           "text": {
             "type": "string",
             "description": "Present only when labelClass is 'Text'."
+          },
+          "rawText": {
+            "type": "string",
+            "description": "Present only when labelClass is 'Text' and Archicad's autotext flag could be switched for the read: the text content read with that flag turned off, so an autotext shows its key (e.g. '<PROJECTNUMBER>') instead of its value."
           },
           "paragraphCount": {
             "type": "integer",
@@ -9049,6 +9827,10 @@ var gSchemaDefinitions = {
                 "type": "string",
                 "description": "The text content. Newlines separate the lines."
             },
+            "rawText": {
+                "type": "string",
+                "description": "The text content as read with Archicad's autotext flag turned off, so an autotext shows its key (e.g. '<PROJECTNUMBER>') instead of its value. Present only when the flag could be switched for the read."
+            },
             "position": {
                 "$ref": "#/Coordinate2D",
                 "description": "The placement position of the text."
@@ -9114,7 +9896,7 @@ var gSchemaDefinitions = {
             },
             "treadDepth": {
                 "type": "number",
-                "description": "Depth (going) of each tread."
+                "description": "The tread depth (going) stored in the Stair's settings. Archicad does not keep it in step with the modeled treads: a placed stair can read 0 or 1 here, so take the modeled going from the geometry of its treads or risers (Get3DGeometryOfElements) instead."
             },
             "flightWidth": {
                 "type": "number",
@@ -9138,7 +9920,7 @@ var gSchemaDefinitions = {
             },
             "baseLinePoints": {
                 "type": "array",
-                "description": "The baseline polyline the stair is placed along, as given to CreateStairs.",
+                "description": "The baseline polyline the stair is placed along, in model coordinates, as given to CreateStairs.",
                 "items": {
                     "$ref": "#/Coordinate2D"
                 }
@@ -9900,6 +10682,113 @@ var gSchemaDefinitions = {
         "additionalProperties": false,
         "required": []
     },
+    "SunDateTime": {
+        "type": "object",
+        "description": "The project's date and time (Options > Project Preferences > Location Settings), which Archicad calculates the sun position from.",
+        "properties": {
+            "year": {
+                "type": "integer"
+            },
+            "month": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 12
+            },
+            "day": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 31
+            },
+            "hour": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 23
+            },
+            "minute": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 59
+            },
+            "second": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 59
+            },
+            "daylightSaving": {
+                "type": "boolean",
+                "description": "True when the time is daylight saving (summer) time."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "year",
+            "month",
+            "day",
+            "hour",
+            "minute",
+            "second",
+            "daylightSaving"
+        ]
+    },
+    "SunDateTimeUpdate": {
+        "type": "object",
+        "description": "The fields of the date and time to use instead of the project's; the fields left out keep the project's values.",
+        "properties": {
+            "year": {
+                "type": "integer"
+            },
+            "month": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 12
+            },
+            "day": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 31
+            },
+            "hour": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 23
+            },
+            "minute": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 59
+            },
+            "second": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 59
+            },
+            "daylightSaving": {
+                "type": "boolean",
+                "description": "True when the time is daylight saving (summer) time."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "SunPosition": {
+        "type": "object",
+        "description": "The position of the sun as Archicad calculates it from a date, time and location, in degrees.",
+        "properties": {
+            "azimuth": {
+                "type": "number",
+                "description": "The sun azimuth in degrees: the direction of the sun in the project's XY plane, as the 3D Projection Settings show it."
+            },
+            "altitude": {
+                "type": "number",
+                "description": "The sun altitude in degrees: the elevation of the sun above the horizon, as the 3D Projection Settings show it."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "azimuth",
+            "altitude"
+        ]
+    },
     "LayoutInfo": {
         "type": "object",
         "properties": {
@@ -10409,7 +11298,15 @@ var gSchemaDefinitions = {
         "properties": {
             "pos": {
                 "$ref": "#/Coordinate2D",
-                "description": "Position of the drawing's reference point on the layout."
+                "description": "Position of the drawing's reference point on the layout: its own origin when useOwnOrigoAsAnchor is true, otherwise the anchorPoint node of its box."
+            },
+            "useOwnOrigoAsAnchor": {
+                "type": "boolean",
+                "description": "Place the drawing by its own origin instead of a node of its box."
+            },
+            "anchorPoint": {
+                "$ref": "#/DrawingAnchorPoint",
+                "description": "The node of the drawing's box placed at pos when useOwnOrigoAsAnchor is false."
             },
             "angle": {
                 "type": "number",
@@ -10421,7 +11318,7 @@ var gSchemaDefinitions = {
             },
             "drawingScale": {
                 "type": "number",
-                "description": "The nominal scale of the drawing."
+                "description": "The nominal scale of the drawing. Archicad may keep the existing value of a placed Drawing; the element's execution result is then a failure that names the value kept, although the other settings given were applied."
             },
             "modelOffset": {
                 "$ref": "#/Coordinate2D",
@@ -10433,7 +11330,7 @@ var gSchemaDefinitions = {
             },
             "clipPolygon": {
                 "type": "array",
-                "description": "Polygon (in model coordinates) used to clip the drawing view. At least 3 points. Setting this also enables polygon clipping (isCutWithFrame becomes true); to remove clipping, set isCutWithFrame to false instead.",
+                "description": "Polygon used to clip the drawing view, in layout coordinates (meters on the layout, the same coordinate system as pos and bounds - not the coordinates of the source view's model). It is stored as given: pos, angle, ratio and modelOffset are not applied to it, so a polygon taken from the model must be transformed to the layout first. At least 3 points. Setting this also enables polygon clipping (isCutWithFrame becomes true); to remove clipping, set isCutWithFrame to false instead.",
                 "items": {
                     "$ref": "#/Coordinate2D"
                 },
@@ -10479,6 +11376,15 @@ var gSchemaDefinitions = {
             "titleLibraryPartIndex": {
                 "type": "number",
                 "description": "Library part index of the drawing title (API_DrawingTitle::libInd). A negative/invalid index means no title object is instantiated; setting it to a valid index (e.g. copied from another drawing) makes Archicad create the title's own placed element."
+            },
+            "penTableUsageMode": {
+                "$ref": "#/DrawingPenTableUsageMode",
+                "description": "Which pen table (jeu de stylos) the drawing uses to display its content (Drawing Settings > Pens and Colors)."
+            },
+            "penTableIndex": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Attribute index of the pen table to use. Only consulted (on read and write) when penTableUsageMode is UsePenTableIndex; setting it implicitly requires penTableUsageMode to also be set to UsePenTableIndex in the same call for it to take effect."
             }
         },
         "additionalProperties": false
@@ -10843,6 +11749,64 @@ var gSchemaDefinitions = {
             "projectInfoValue"
         ]
     },
+    "ProjectInfoGroups": {
+        "type": "array",
+        "description": "The Project Info groups in their order in the Project Info dialog. Available from Archicad 30.",
+        "items": {
+            "$ref": "#/ProjectInfoGroup"
+        }
+    },
+    "ProjectInfoGroup": {
+        "type": "object",
+        "properties": {
+            "projectInfoGroupId": {
+                "$ref": "#/ProjectInfoGroupId"
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the group."
+            },
+            "fields": {
+                "type": "array",
+                "description": "The fields of the group in their order, including the subfields of calculated fields (e.g. the address components of a full address field).",
+                "items": {
+                    "$ref": "#/ProjectInfoGroupField"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoGroupId",
+            "name",
+            "fields"
+        ]
+    },
+    "ProjectInfoGroupField": {
+        "type": "object",
+        "properties": {
+            "projectInfoFieldId": {
+                "$ref": "#/ProjectInfoFieldId"
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the field visible on UI."
+            },
+            "value": {
+                "type": "string",
+                "description": "The value of the field. The value of a field with subfields is calculated from the subfields."
+            },
+            "projectInfoId": {
+                "type": "string",
+                "description": "The autotext key of the field, as GetProjectInfoFields returns it and SetProjectInfoField takes it. Given when exactly one project info autotext has the name of the field, omitted otherwise."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoFieldId",
+            "name",
+            "value"
+        ]
+    },
     "LibraryFileAdditions": {
         "type": "array",
         "description": "A list of library file additions to the embedded library",
@@ -11145,6 +12109,41 @@ var gSchemaDefinitions = {
         "required": [
             "groupId"
         ]
+    },
+    "UserDataPair": {
+        "type": "object",
+        "description": "A string value stored under a key in user data.",
+        "properties": {
+            "key": {
+                "type": "string",
+                "description": "The key of the value. Scripts should prefix their keys (for example 'myscript.databaseId') so that different scripts do not overwrite each other's data.",
+                "minLength": 1
+            },
+            "value": {
+                "type": "string",
+                "description": "The stored value: any text, for example an id, a timestamp or a JSON document the script encodes itself."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "key",
+            "value"
+        ]
+    },
+    "UserDataPairs": {
+        "type": "array",
+        "description": "Key-value pairs stored in user data.",
+        "items": {
+            "$ref": "#/UserDataPair"
+        }
+    },
+    "UserDataKeysToDelete": {
+        "type": "array",
+        "description": "The keys to remove from the user data. A key that is not stored is ignored. Applied after pairs.",
+        "items": {
+            "type": "string",
+            "minLength": 1
+        }
     },
     "ElementsWrapper": {
         "type": "object",
@@ -13073,10 +14072,34 @@ var gSchemaDefinitions = {
             "name": {
                 "type": "string"
             },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Whether the set can be edited."
+            },
             "referenceIds": {
                 "type": "array",
                 "items": {
                     "type": "integer"
+                }
+            },
+            "referenceIdDetails": {
+                "type": "array",
+                "description": "The reference ids of the set in the same order as referenceIds, each with whether it is defined.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "referenceId": {
+                            "type": "integer"
+                        },
+                        "isDefined": {
+                            "type": "boolean",
+                            "description": "Whether the reference id is defined in the set."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "referenceId"
+                    ]
                 }
             }
         },
@@ -13093,10 +14116,34 @@ var gSchemaDefinitions = {
             "name": {
                 "type": "string"
             },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Whether the set can be edited."
+            },
             "angles": {
                 "type": "array",
                 "items": {
                     "type": "number"
+                }
+            },
+            "angleDetails": {
+                "type": "array",
+                "description": "The angles of the set in the same order as angles, each with whether it is defined.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "angle": {
+                            "type": "number"
+                        },
+                        "isDefined": {
+                            "type": "boolean",
+                            "description": "Whether the angle is defined in the set."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "angle"
+                    ]
                 }
             }
         },
@@ -13115,11 +14162,18 @@ var gSchemaDefinitions = {
             "name": {
                 "type": "string"
             },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Whether the table can be edited."
+            },
             "rows": {
                 "type": "array",
                 "items": {
                     "type": "object",
                     "properties": {
+                        "index": {
+                            "$ref": "#/MEPPreferenceRowIndex"
+                        },
                         "referenceId": {
                             "type": "integer"
                         },
@@ -13135,6 +14189,10 @@ var gSchemaDefinitions = {
                         },
                         "description": {
                             "type": "string"
+                        },
+                        "isValid": {
+                            "type": "boolean",
+                            "description": "Whether the row is valid."
                         }
                     },
                     "additionalProperties": false,
@@ -13162,11 +14220,18 @@ var gSchemaDefinitions = {
             "name": {
                 "type": "string"
             },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Whether the table can be edited."
+            },
             "rows": {
                 "type": "array",
                 "items": {
                     "type": "object",
                     "properties": {
+                        "index": {
+                            "$ref": "#/MEPPreferenceRowIndex"
+                        },
                         "mainAxisReferenceId": {
                             "type": "integer"
                         },
@@ -13194,6 +14259,10 @@ var gSchemaDefinitions = {
                         },
                         "description": {
                             "type": "string"
+                        },
+                        "isValid": {
+                            "type": "boolean",
+                            "description": "Whether the row is valid."
                         }
                     },
                     "additionalProperties": false,
@@ -13225,11 +14294,18 @@ var gSchemaDefinitions = {
             "name": {
                 "type": "string"
             },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Whether the table can be edited."
+            },
             "rows": {
                 "type": "array",
                 "items": {
                     "type": "object",
                     "properties": {
+                        "index": {
+                            "$ref": "#/MEPPreferenceRowIndex"
+                        },
                         "beginReferenceId": {
                             "type": "integer"
                         },
@@ -13252,6 +14328,10 @@ var gSchemaDefinitions = {
                         },
                         "description": {
                             "type": "string"
+                        },
+                        "isValid": {
+                            "type": "boolean",
+                            "description": "Whether the row is valid."
                         }
                     },
                     "additionalProperties": false,
@@ -14541,6 +15621,333 @@ var gSchemaDefinitions = {
             {
                 "$ref": "#/ErrorItem"
             }
+        ]
+    },
+    "AnalyticalModelVariation": {
+        "type": "object",
+        "description": "The variation a Structural Analytical Model is generated for. Its fields depend on the Archicad version: amVariationGuid from Archicad 27, renovationFilterGuid and layerConnectionClassIds before.",
+        "properties": {
+            "amVariationGuid": {
+                "$ref": "#/GuidId",
+                "description": "The identifier of the analytical model variation. Archicad 27 and newer."
+            },
+            "renovationFilterGuid": {
+                "$ref": "#/GuidId",
+                "description": "The identifier of the renovation filter of the variation. Archicad 25 and 26."
+            },
+            "layerConnectionClassIds": {
+                "type": "array",
+                "description": "The connection classes of the layers. Archicad 25: a list of integers. Archicad 26: one object per layer, with the layer's attribute index and its connection class.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "layerIndex": {
+                                    "type": "integer",
+                                    "description": "The attribute index of the layer."
+                                },
+                                "connectionClassId": {
+                                    "type": "integer",
+                                    "description": "The connection class of the layer."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "layerIndex",
+                                "connectionClassId"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false
+    },
+    "AnalyticalMemberType": {
+        "type": "string",
+        "description": "The analytical member type of an element.",
+        "enum": [
+            "Unknown",
+            "Beam",
+            "Column",
+            "Roof",
+            "Slab",
+            "Wall"
+        ]
+    },
+    "AnalyticalVisibilitySettings": {
+        "type": "object",
+        "description": "The visibility settings of the Structural Analytical Model. Archicad 26 and newer.",
+        "properties": {
+            "visibilityMode": {
+                "type": "string",
+                "description": "Whether only the analytical model is shown or the analytical model within the entire model.",
+                "enum": [
+                    "AnalyticalModelOnly",
+                    "AnalyticalModelWithinEntireModel"
+                ]
+            },
+            "isAnalyticalModelVisible": {
+                "type": "boolean"
+            },
+            "areMembersTransparent": {
+                "type": "boolean"
+            },
+            "areSymbolsTransparent": {
+                "type": "boolean"
+            },
+            "areNodesVisible": {
+                "type": "boolean"
+            },
+            "areReleasesVisible": {
+                "type": "boolean"
+            },
+            "areCrossSectionsVisible": {
+                "type": "boolean"
+            },
+            "areCoordinationProfilesVisible": {
+                "type": "boolean"
+            },
+            "areLocalCoordSystemsVisible": {
+                "type": "boolean"
+            },
+            "loadVisibilityMode": {
+                "type": "string",
+                "description": "Which loads are shown: filtered by the active settings, none or all.",
+                "enum": [
+                    "FilterByActive",
+                    "HideAll",
+                    "ShowAll"
+                ]
+            }
+        },
+        "additionalProperties": false
+    },
+    "AnalyticalLoadGroupType": {
+        "type": "string",
+        "description": "The type of a structural analysis load group.",
+        "enum": [
+            "PermanentLoad",
+            "VariableLoad",
+            "AccidentalLoad",
+            "SeismicLoad",
+            "MovingLoad",
+            "TensioningLoad",
+            "FireLoad"
+        ]
+    },
+    "AnalyticalLoadGroupRelation": {
+        "type": "string",
+        "description": "How the load cases of a structural analysis load group are combined.",
+        "enum": [
+            "ExclusiveRelation",
+            "StandardRelation",
+            "TogetherRelation"
+        ]
+    },
+    "AnalyticalLoadCaseActionType": {
+        "type": "string",
+        "description": "The action type of a structural analysis load case.",
+        "enum": [
+            "PermanentAction",
+            "VariableAction",
+            "AccidentalAction"
+        ]
+    },
+    "AnalyticalLoadCaseLoadType": {
+        "type": "string",
+        "description": "The load type of a structural analysis load case.",
+        "enum": [
+            "SelfWeightLoad",
+            "PrestressLoad",
+            "DynamicLoad",
+            "StaticLoad",
+            "TemperatureLoad",
+            "WindLoad",
+            "SnowLoad",
+            "MaintenanceLoad",
+            "FireLoad",
+            "MovingLoad",
+            "SeismicLoad",
+            "StandardLoad",
+            "OthersLoad"
+        ]
+    },
+    "AnalyticalLoadCaseDuration": {
+        "type": "string",
+        "description": "The duration of a structural analysis load case.",
+        "enum": [
+            "LongDuration",
+            "MediumDuration",
+            "ShortDuration",
+            "InstantaneousDuration"
+        ]
+    },
+    "AnalyticalLoadCombinationCategory": {
+        "type": "string",
+        "description": "The category of a structural analysis load combination.",
+        "enum": [
+            "ULS",
+            "SLS",
+            "ALS",
+            "ANS",
+            "NotDefined"
+        ]
+    },
+    "AnalyticalLoadCombinationNationalStandard": {
+        "type": "string",
+        "description": "The national standard of a structural analysis load combination.",
+        "enum": [
+            "ENULSSTRGEOSetB",
+            "ENULSSTRGEOSetC",
+            "ENAccidental1",
+            "ENAccidental2",
+            "ENSeismic",
+            "ENSLSCharacteristic",
+            "ENSLSFrequent",
+            "ENSLSQuasipermanent",
+            "IBCLRFDultimate",
+            "IBCASDultimate",
+            "IBCASDserviceability",
+            "IBCASDseismic",
+            "IBCLRFDseismic"
+        ]
+    },
+    "AnalyticalLoadCombinationType": {
+        "type": "string",
+        "description": "The type of a structural analysis load combination. Archicad 27 and newer.",
+        "enum": [
+            "Envelope",
+            "Linear",
+            "Nonlinear"
+        ]
+    },
+    "AnalyticalLoadFactor": {
+        "type": "object",
+        "description": "A load case of a structural analysis load combination with its factors.",
+        "properties": {
+            "loadCaseId": {
+                "$ref": "#/GuidId",
+                "description": "The identifier of the load case."
+            },
+            "factor": {
+                "type": "number",
+                "description": "The factor of the load case. Left out when it is not set."
+            },
+            "multiplier": {
+                "type": "number",
+                "description": "The multiplier of the load case."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "loadCaseId",
+            "multiplier"
+        ]
+    },
+    "AnalyticalLoadGroup": {
+        "type": "object",
+        "description": "A structural analysis load group.",
+        "properties": {
+            "loadGroupId": {
+                "$ref": "#/GuidId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "groupType": {
+                "$ref": "#/AnalyticalLoadGroupType"
+            },
+            "relation": {
+                "$ref": "#/AnalyticalLoadGroupRelation"
+            },
+            "loadType": {
+                "type": "string",
+                "description": "The load type of the group as free text."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "loadGroupId",
+            "name"
+        ]
+    },
+    "AnalyticalLoadCase": {
+        "type": "object",
+        "description": "A structural analysis load case.",
+        "properties": {
+            "loadCaseId": {
+                "$ref": "#/GuidId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            },
+            "actionType": {
+                "$ref": "#/AnalyticalLoadCaseActionType"
+            },
+            "loadGroupId": {
+                "$ref": "#/GuidId",
+                "description": "The identifier of the load group the load case belongs to."
+            },
+            "loadType": {
+                "$ref": "#/AnalyticalLoadCaseLoadType"
+            },
+            "duration": {
+                "$ref": "#/AnalyticalLoadCaseDuration",
+                "description": "Left out when it is not set."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "loadCaseId",
+            "name",
+            "loadGroupId"
+        ]
+    },
+    "AnalyticalLoadCombination": {
+        "type": "object",
+        "description": "A structural analysis load combination.",
+        "properties": {
+            "loadCombinationId": {
+                "$ref": "#/GuidId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            },
+            "category": {
+                "$ref": "#/AnalyticalLoadCombinationCategory"
+            },
+            "nationalStandard": {
+                "$ref": "#/AnalyticalLoadCombinationNationalStandard",
+                "description": "Left out when it is not set."
+            },
+            "type": {
+                "$ref": "#/AnalyticalLoadCombinationType",
+                "description": "Left out when it is not set. Archicad 27 and newer."
+            },
+            "loadFactors": {
+                "type": "array",
+                "description": "The load cases of the combination with their factors.",
+                "items": {
+                    "$ref": "#/AnalyticalLoadFactor"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "loadCombinationId",
+            "name",
+            "loadFactors"
         ]
     }
 }

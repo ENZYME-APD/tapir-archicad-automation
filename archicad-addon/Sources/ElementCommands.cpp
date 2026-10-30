@@ -185,6 +185,25 @@ static API_NumberingTypeValues DrawingNumberingTypeFromString (const GS::UniStri
     return APINumbering_ByLayout;
 }
 
+static GS::UniString DrawingPenTableUsageModeToString (API_PenTableUsageModeValues mode)
+{
+    switch (mode) {
+        case APIPenTableUsageMode_UseModelPenTable: return "UseModelPenTable";
+        case APIPenTableUsageMode_UsePenTableIndex: return "UsePenTableIndex";
+        default:
+        case APIPenTableUsageMode_UseOwnPenTable:   return "UseOwnPenTable";
+    }
+}
+
+static API_PenTableUsageModeValues DrawingPenTableUsageModeFromString (const GS::UniString& str)
+{
+    if (str == "UseModelPenTable")
+        return APIPenTableUsageMode_UseModelPenTable;
+    if (str == "UsePenTableIndex")
+        return APIPenTableUsageMode_UsePenTableIndex;
+    return APIPenTableUsageMode_UseOwnPenTable;
+}
+
 static GS::UniString StructureTypeToString (API_ModelElemStructureType structureType)
 {
     switch (structureType) {
@@ -1917,6 +1936,10 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("borderLineTypeIndex", GetAttributeIndex (elem.drawing.borderLineType));
                 typeSpecificDetails.Add ("borderPenIndex",      (Int32)elem.drawing.borderPen);
                 typeSpecificDetails.Add ("borderSize",          elem.drawing.borderSize);
+                typeSpecificDetails.Add ("penTableUsageMode", DrawingPenTableUsageModeToString (elem.drawing.penTableUsageMode));
+                if (elem.drawing.penTableUsageMode == APIPenTableUsageMode_UsePenTableIndex) {
+                    typeSpecificDetails.Add ("penTableIndex", GetAttributeIndex (elem.drawing.penTableIndex));
+                }
                 // Library part index of the title (API_DrawingTitle::libInd) - a negative/invalid
                 // index here means no title object is instantiated at all (nothing to show); setting
                 // it to a valid index (e.g. copied from another drawing) is what makes Archicad
@@ -2594,6 +2617,16 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         }
                         if (typeSpecificDetails->Get ("titleLibraryPartIndex", elem.drawing.title.libInd)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, title.libInd);
+                        }
+                        GS::UniString penTableUsageModeStr;
+                        if (typeSpecificDetails->Get ("penTableUsageMode", penTableUsageModeStr)) {
+                            elem.drawing.penTableUsageMode = DrawingPenTableUsageModeFromString (penTableUsageModeStr);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, penTableUsageMode);
+                        }
+                        Int32 penTableIndex = 0;
+                        if (typeSpecificDetails->Get ("penTableIndex", penTableIndex) && penTableIndex > 0) {
+                            elem.drawing.penTableIndex = ACAPI_CreateAttributeIndex (penTableIndex);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, penTableIndex);
                         }
                     } break;
                     case API_TextID: {

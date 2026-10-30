@@ -3897,6 +3897,15 @@
         ],
         "description": "How the drawing's title ID is assigned (Identification tabpage of the Drawing Settings dialog)."
     },
+    "DrawingPenTableUsageMode": {
+        "type": "string",
+        "enum": [
+            "UseOwnPenTable",
+            "UseModelPenTable",
+            "UsePenTableIndex"
+        ],
+        "description": "Which pen table a Drawing uses (API_PenTableUsageModeValues): UseOwnPenTable keeps the colors stored in the drawing data itself (the pen table of its source view/model at the time it was created or last updated); UseModelPenTable always follows the current pen table of the model space; UsePenTableIndex forces the pen table given by penTableIndex."
+    },
     "MEPCrossSectionShape": {
         "type": "string",
         "description": "Shape of an MEP routing segment's cross section or of an MEP port.",
@@ -11367,6 +11376,15 @@
             "titleLibraryPartIndex": {
                 "type": "number",
                 "description": "Library part index of the drawing title (API_DrawingTitle::libInd). A negative/invalid index means no title object is instantiated; setting it to a valid index (e.g. copied from another drawing) makes Archicad create the title's own placed element."
+            },
+            "penTableUsageMode": {
+                "$ref": "#/DrawingPenTableUsageMode",
+                "description": "Which pen table (jeu de stylos) the drawing uses to display its content (Drawing Settings > Pens and Colors)."
+            },
+            "penTableIndex": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Attribute index of the pen table to use. Only consulted (on read and write) when penTableUsageMode is UsePenTableIndex; setting it implicitly requires penTableUsageMode to also be set to UsePenTableIndex in the same call for it to take effect."
             }
         },
         "additionalProperties": false
