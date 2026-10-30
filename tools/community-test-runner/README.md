@@ -48,7 +48,8 @@ For each pull request and each Archicad version:
 3. loads that build instead of your Tapir, starts Archicad with the template, runs the checks,
    asks Archicad to quit, and puts your Tapir back;
 4. posts one comment whose first line can be read by a workflow:
-   `tapir-test: AC28 PASS 12/12 build 1a2b3c4 tapir 1.7.1`, followed by a table.
+   `tapir-test: AC28 GER PASS 12/12 build 1a2b3c4 tapir 1.7.1` (Archicad version and language),
+   followed by a table.
 
 **How your Tapir is left alone.** Archicad keeps the list of add-ons from *Add-On Manager* in the
 registry (`HKCU\Software\GRAPHISOFT\Archicad\Archicad <version> …\Add-On Manager\Include` and
@@ -59,10 +60,19 @@ first, so after a crash or a power cut the next run, or `restore`, puts them bac
 with an `addonFile` (written by hand for the first version of the runner) still swap that file
 instead.
 
+**Archicad 25-28 with Tapir in the `Add-Ons` folder** (where the Tapir Installer puts it): these
+versions do not load an add-on from the list while the same add-on is switched off at its usual
+place; they say some add-ons could not be loaded and load neither (#1150). `setup` then sets
+`addonFile` for that Archicad, and the runner swaps that file, which needs administrator rights
+(run it as administrator). The add-on list worked this way on Archicad 30 (#1088); Archicad 29 is
+not tested yet. A Tapir that is only in the add-on list is no problem on any version.
+
 Ports follow the order in which Archicads start, so the runner asks each connection for its
 Archicad version and finds the right port itself. It never kills Archicad. If Archicad does not
 quit (a dialog, for instance), the runner stops and leaves the test build loaded; close Archicad
-and use **Put my add-on back** (or `restore`).
+and use **Put my add-on back** (or `restore`). A dialog during the start (project recovery,
+licence, add-ons that could not be loaded) stops it within seconds, naming the dialog, instead of
+waiting out `startTimeout`.
 
 ## Command line
 
@@ -130,8 +140,12 @@ A pull request adds a JSON file to `archicad-addon/Test/checks/`. Example:
   `approx` (+ `tol`), `lt`, `gt`, `len`, `contains`, `exists`; `name` labels the row.
 - Every element a step creates is deleted at the end; set `"creates": false` on steps that
   don't create anything. `teardown` steps run last.
-- `minTapir` skips the file on older add-ons. `requiresEmpty` changes the element types that
-  must be absent.
+- Checks run on every language version of Archicad, each with its own template and defaults (stair
+  rules, pens, layers, units). Send every value the result depends on, and prefer differences
+  (one more riser adds the going) over absolute values (the run is 4.15 m), which a template can shift.
+- `minTapir` skips the file on older add-ons, `minArchicad` (e.g. `"27"`) on older Archicad
+  versions, for commands that need a newer Archicad API. `requiresEmpty` changes the element
+  types that must be absent.
 
 `checks/` holds examples taken from the October 2026 verification of #747-#753.
 
