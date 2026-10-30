@@ -2747,13 +2747,8 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     }
                 }
             } else if (typeSpecificDetails != nullptr && GetElemTypeId (elem.header) == API_HatchID) {
-                // Hatch is a CLOSED polygon (unlike PolyLine): coords[0] dummy is (0,0) not
-                // (-1,0), and every contour (the main outline, plus each hole) needs its own
-                // explicit closing vertex duplicating that contour's first point, whose vertexID
-                // also duplicates that first point's ID. Vertex IDs restart at 1 for EACH contour
-                // (not continued sequentially across contours) - confirmed live: global numbering
-                // across contours reproducibly failed with APIERR_BADPOLY for a hatch with holes,
-                // per-contour numbering works.
+                // The memo layout of a Hatch (closing vertices, per-contour vertex IDs) is
+                // described at BuildHatchPolygonMemo, shared with CreateHatches.
                 GS::Array<GS::ObjectState> coordinates;
                 if (typeSpecificDetails->Get ("coordinates", coordinates) && coordinates.GetSize () >= 3) {
                     GS::Array<GS::ObjectState> arcs;
@@ -2766,69 +2761,7 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         continue;
                     }
 
-                    // Each contour: N unique coords -> N+1 stored coords (with closing duplicate).
-                    Int32 totalUnique = (Int32) coordinates.GetSize ();
-                    Int32 totalCoords = totalUnique + 1;
-                    Int32 totalArcs = (Int32) arcs.GetSize ();
-                    GS::Array<GS::Array<GS::ObjectState>> holeCoordsList;
-                    GS::Array<GS::Array<GS::ObjectState>> holeArcsList;
-                    for (const GS::ObjectState& hole : holes) {
-                        GS::Array<GS::ObjectState> holeCoords, holeArcs;
-                        if (GetHoleGeometry (hole, holeCoords, holeArcs) && holeCoords.GetSize () >= 3) {
-                            totalUnique += (Int32) holeCoords.GetSize ();
-                            totalCoords += (Int32) holeCoords.GetSize () + 1;
-                            totalArcs += (Int32) holeArcs.GetSize ();
-                            holeCoordsList.Push (holeCoords);
-                            holeArcsList.Push (holeArcs);
-                        }
-                    }
-                    const Int32 nSubPolys = 1 + (Int32) holeCoordsList.GetSize ();
-
-                    clipMemo.coords    = reinterpret_cast<API_Coord**>   (BMAllocateHandle ((totalCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
-                    clipMemo.pends     = reinterpret_cast<Int32**>       (BMAllocateHandle ((nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0));
-                    clipMemo.parcs     = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (totalArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
-                    clipMemo.vertexIDs = reinterpret_cast<UInt32**>      (BMAllocateHandle ((totalCoords + 1) * sizeof (UInt32), ALLOCATE_CLEAR, 0));
-                    if (clipMemo.coords != nullptr && clipMemo.pends != nullptr && clipMemo.vertexIDs != nullptr) {
-                        Int32 maxContourUnique = (Int32) coordinates.GetSize ();
-                        for (const auto& hc : holeCoordsList) {
-                            maxContourUnique = GS::Max (maxContourUnique, (Int32) hc.GetSize ());
-                        }
-                        (*clipMemo.coords)[0] = { 0.0, 0.0 };
-                        (*clipMemo.vertexIDs)[0] = (UInt32) maxContourUnique;
-                        (*clipMemo.pends)[0] = 0;
-
-                        Int32 iCoord = 0;
-                        Int32 iArc = 0;
-                        Int32 subPolyIndex = 1;
-
-                        auto writeContour = [&] (const GS::Array<GS::ObjectState>& contourCoords, const GS::Array<GS::ObjectState>& contourArcs) {
-                            const Int32 firstIndex = iCoord + 1;
-                            const Int32 nUniqueLocal = (Int32) contourCoords.GetSize ();
-                            for (Int32 i = 0; i < nUniqueLocal; ++i) {
-                                ++iCoord;
-                                (*clipMemo.coords)[iCoord] = Get2DCoordinateFromObjectState (contourCoords[i]);
-                                (*clipMemo.vertexIDs)[iCoord] = (UInt32) (i + 1); // per-contour, restarts at 1
-                            }
-                            ++iCoord;
-                            (*clipMemo.coords)[iCoord] = (*clipMemo.coords)[firstIndex]; // closing duplicate
-                            (*clipMemo.vertexIDs)[iCoord] = (*clipMemo.vertexIDs)[firstIndex];
-                            (*clipMemo.pends)[subPolyIndex++] = iCoord;
-
-                            if (clipMemo.parcs != nullptr) {
-                                const GS::Array<API_PolyArc> localArcs = GetPolyArcs (contourArcs, firstIndex);
-                                for (const API_PolyArc& a : localArcs)
-                                    (*clipMemo.parcs)[iArc++] = a;
-                            }
-                        };
-
-                        writeContour (coordinates, arcs);
-                        for (Int32 i = 0; i < (Int32) holeCoordsList.GetSize (); ++i) {
-                            writeContour (holeCoordsList[i], holeArcsList[i]);
-                        }
-
-                        elem.hatch.poly.nCoords   = totalCoords;
-                        elem.hatch.poly.nSubPolys = nSubPolys;
-                        elem.hatch.poly.nArcs     = totalArcs;
+                    if (BuildHatchPolygonMemo (coordinates, arcs, holes, elem.hatch.poly, clipMemo)) {
                         ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, poly);
                         memoMask = APIMemoMask_Polygon;
                         hasMemoChanges = true;

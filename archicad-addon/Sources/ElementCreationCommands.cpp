@@ -1419,7 +1419,7 @@ GS::Optional<GS::UniString> CreateHatchesCommand::GetInputParametersSchema () co
                     },
                     "coordinates": {
                         "type": "array",
-                        "description": "The 2D coordinates of the hatch outline (single contour, no holes). Do not repeat the first point at the end.",
+                        "description": "The 2D coordinates of the hatch outline. Do not repeat the first point at the end.",
                         "items": {
                             "$ref": "#/Coordinate2D"
                         },
@@ -1431,6 +1431,10 @@ GS::Optional<GS::UniString> CreateHatchesCommand::GetInputParametersSchema () co
                         "items": {
                             "$ref": "#/PolyArc"
                         }
+                    },
+                    "holes": {
+                        "$ref": "#/Holes2D",
+                        "description": "Optional holes of the hatch, each with its polygonOutline and optional polygonArcs (arc indices are relative to the hole's own outline). The same format SetDetailsOfElements accepts and GetDetailsOfElements returns for hatches."
                     },
                     "contourPenIndex": {
                         "type": "integer",
@@ -1491,35 +1495,18 @@ GS::Optional<GS::ObjectState> CreateHatchesCommand::SetTypeSpecificParameters (A
 
     GS::Array<GS::ObjectState> coordinates;
     GS::Array<GS::ObjectState> arcs;
+    GS::Array<GS::ObjectState> holes;
     parameters.Get ("coordinates", coordinates);
     parameters.Get ("arcs", arcs);
-    const GS::Array<API_PolyArc> polyArcs = GetPolyArcs (arcs, 1);
+    parameters.Get ("holes", holes);
+    auto holesError = ValidateHoles (holes);
+    if (holesError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, holesError.Get ());
+    }
 
-    const Int32 nUnique = (Int32) coordinates.GetSize ();
-    const Int32 nCoords = nUnique + 1; // + closing duplicate vertex (Hatch is a closed polygon)
-
-    memo.coords    = reinterpret_cast<API_Coord**>   (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
-    memo.pends     = reinterpret_cast<Int32**>       (BMAllocateHandle (2 * sizeof (Int32), ALLOCATE_CLEAR, 0));
-    memo.parcs     = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (polyArcs.GetSize () * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
-    memo.vertexIDs = reinterpret_cast<UInt32**>      (BMAllocateHandle ((nCoords + 1) * sizeof (UInt32), ALLOCATE_CLEAR, 0));
-    if (memo.coords != nullptr && memo.pends != nullptr && memo.vertexIDs != nullptr) {
-        (*memo.coords)[0] = { 0.0, 0.0 };
-        (*memo.vertexIDs)[0] = (UInt32) nUnique;
-        for (Int32 i = 0; i < nUnique; ++i) {
-            (*memo.coords)[i + 1] = Get2DCoordinateFromObjectState (coordinates[i]);
-            (*memo.vertexIDs)[i + 1] = (UInt32) (i + 1);
-        }
-        (*memo.coords)[nCoords] = (*memo.coords)[1];
-        (*memo.vertexIDs)[nCoords] = (*memo.vertexIDs)[1];
-        (*memo.pends)[0] = 0;
-        (*memo.pends)[1] = nCoords;
-        Int32 iArc = 0;
-        for (const API_PolyArc& a : polyArcs)
-            (*memo.parcs)[iArc++] = a;
-
-        element.hatch.poly.nCoords   = nCoords;
-        element.hatch.poly.nSubPolys = 1;
-        element.hatch.poly.nArcs     = (Int32) polyArcs.GetSize ();
+    // The same memo layout SetDetailsOfElements writes for a hatch with holes.
+    if (!BuildHatchPolygonMemo (coordinates, arcs, holes, element.hatch.poly, memo)) {
+        return CreateErrorResponse (APIERR_MEMFULL, "Failed to allocate the polygon of the hatch.");
     }
 
     short contourPenIndex = 0;
