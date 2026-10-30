@@ -1104,6 +1104,22 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap SetIFCAttributesOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetIFCAttributesOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetIFCClassificationReferencesOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetIFCClassificationReferencesOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap GetMarkerParametersOfElements
         {
             get {
@@ -2432,6 +2448,22 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap GetIFCAttributesOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetIFCAttributesOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetIFCClassificationReferencesOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetIFCClassificationReferencesOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap GetRelationsOfElements
         {
             get {
@@ -2773,6 +2805,22 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("RemoveElementTrims", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap RemoveIFCClassificationReferencesOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("RemoveIFCClassificationReferencesOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap RemoveIFCPropertiesOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("RemoveIFCPropertiesOfElements", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }

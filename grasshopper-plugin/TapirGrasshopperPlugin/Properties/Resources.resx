@@ -427,6 +427,12 @@
   <data name="SetElementGDLs" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SetElementGDLs.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="SetIFCAttributesOfElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetIFCAttributesOfElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SetIFCClassificationReferencesOfElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetIFCClassificationReferencesOfElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="GetMarkerParametersOfElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetMarkerParametersOfElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -925,6 +931,12 @@
   <data name="GetGroupsOfElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetGroupsOfElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="GetIFCAttributesOfElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetIFCAttributesOfElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetIFCClassificationReferencesOfElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetIFCClassificationReferencesOfElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="GetRelationsOfElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetRelationsOfElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -1047,6 +1059,12 @@
   </data>
   <data name="RemoveElementTrims" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\RemoveElementTrims.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="RemoveIFCClassificationReferencesOfElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\RemoveIFCClassificationReferencesOfElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="RemoveIFCPropertiesOfElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\RemoveIFCPropertiesOfElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="RemovePropertyFromAttributes" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\RemovePropertyFromAttributes.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
