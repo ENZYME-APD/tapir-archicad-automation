@@ -286,6 +286,9 @@
   <data name="SetTextDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SetTextDetails.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="SetUserDataOfGroups" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetUserDataOfGroups.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="TextDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\TextDetails.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -649,6 +652,12 @@
   <data name="GetElementsByIFCIds" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetElementsByIFCIds.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="GetElementSetData" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetElementSetData.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetElementSetsOfElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetElementSetsOfElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="GetIFCIdsOfElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetIFCIdsOfElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -952,6 +961,9 @@
   <data name="GetSuspendGroupsMode" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetSuspendGroupsMode.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="GetUserDataOfGroups" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetUserDataOfGroups.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="SetSuspendGroupsMode" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SetSuspendGroupsMode.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -1137,6 +1149,9 @@
   </data>
   <data name="CreateElectricalPanels" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateElectricalPanels.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateElementSets" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateElementSets.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="CreateElectricalDevices" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateElectricalDevices.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>

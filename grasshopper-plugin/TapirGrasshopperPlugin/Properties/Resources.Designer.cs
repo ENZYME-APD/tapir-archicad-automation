@@ -598,6 +598,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap SetUserDataOfGroups
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetUserDataOfGroups", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -1696,6 +1704,22 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap GetElementSetData
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetElementSetData", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetElementSetsOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetElementSetsOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap GetIFCIdsOfElements
         {
             get {
@@ -2504,6 +2528,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap GetUserDataOfGroups
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetUserDataOfGroups", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap SetSuspendGroupsMode
         {
             get {
@@ -2997,6 +3029,14 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("CreateElectricalPanels", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateElementSets
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateElementSets", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
