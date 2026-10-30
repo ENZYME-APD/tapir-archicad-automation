@@ -20459,11 +20459,7 @@ var gCommands = [{
                         },
                         "useOwnOrigoAsAnchor": {
                             "type": "boolean",
-                            "description": "Place the Drawing by its own origin instead of a node of its box. Defaults to the Drawing tool's current default."
-                        },
-                        "anchorPoint": {
-                            "$ref": "#/DrawingAnchorPoint",
-                            "description": "The node of the Drawing's box placed at position when useOwnOrigoAsAnchor is false. Defaults to Center."
+                            "description": "Place the Drawing by its own origin instead of a node of its box. Defaults to the Drawing tool's current default. anchorPoint is not settable here: Archicad resets it to BottomLeft regardless of the value given, so the Drawing is always created with the Center anchor it has always used, unless useOwnOrigoAsAnchor is given."
                         },
                         "scale": {
                             "type": "number",

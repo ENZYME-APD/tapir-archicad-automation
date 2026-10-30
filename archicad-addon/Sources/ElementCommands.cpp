@@ -185,6 +185,9 @@ static API_NumberingTypeValues DrawingNumberingTypeFromString (const GS::UniStri
     return APINumbering_ByLayout;
 }
 
+// API_PenTableUsageModeValues and API_DrawingType::penTableUsageMode/penTableIndex only
+// exist from Archicad 27 on.
+#ifdef ServerMainVers_2700
 static GS::UniString DrawingPenTableUsageModeToString (API_PenTableUsageModeValues mode)
 {
     switch (mode) {
@@ -203,6 +206,7 @@ static API_PenTableUsageModeValues DrawingPenTableUsageModeFromString (const GS:
         return APIPenTableUsageMode_UsePenTableIndex;
     return APIPenTableUsageMode_UseOwnPenTable;
 }
+#endif
 
 static GS::UniString StructureTypeToString (API_ModelElemStructureType structureType)
 {
@@ -1936,10 +1940,12 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("borderLineTypeIndex", GetAttributeIndex (elem.drawing.borderLineType));
                 typeSpecificDetails.Add ("borderPenIndex",      (Int32)elem.drawing.borderPen);
                 typeSpecificDetails.Add ("borderSize",          elem.drawing.borderSize);
+#ifdef ServerMainVers_2700
                 typeSpecificDetails.Add ("penTableUsageMode", DrawingPenTableUsageModeToString (elem.drawing.penTableUsageMode));
                 if (elem.drawing.penTableUsageMode == APIPenTableUsageMode_UsePenTableIndex) {
                     typeSpecificDetails.Add ("penTableIndex", GetAttributeIndex (elem.drawing.penTableIndex));
                 }
+#endif
                 // Library part index of the title (API_DrawingTitle::libInd) - a negative/invalid
                 // index here means no title object is instantiated at all (nothing to show); setting
                 // it to a valid index (e.g. copied from another drawing) is what makes Archicad
@@ -2567,11 +2573,10 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         if (typeSpecificDetails->Get ("useOwnOrigoAsAnchor", elem.drawing.useOwnOrigoAsAnchor)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, useOwnOrigoAsAnchor);
                         }
-                        GS::UniString anchorPointStr;
-                        if (typeSpecificDetails->Get ("anchorPoint", anchorPointStr)) {
-                            elem.drawing.anchorPoint = AnchorIdFromString (anchorPointStr, elem.drawing.anchorPoint);
-                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, anchorPoint);
-                        }
+                        // anchorPoint is read-only here: confirmed live that ACAPI_Element_Change
+                        // resets it to BottomLeft regardless of the value given, so accepting a
+                        // write would silently do nothing while reporting success. Move the
+                        // Drawing's reference point with useOwnOrigoAsAnchor + pos instead.
                         const GS::ObjectState* modelOffsetState = typeSpecificDetails->Get ("modelOffset");
                         if (modelOffsetState != nullptr) {
                             elem.drawing.modelOffset = Get2DCoordinateFromObjectState (*modelOffsetState);
@@ -2618,6 +2623,7 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         if (typeSpecificDetails->Get ("titleLibraryPartIndex", elem.drawing.title.libInd)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, title.libInd);
                         }
+#ifdef ServerMainVers_2700
                         GS::UniString penTableUsageModeStr;
                         if (typeSpecificDetails->Get ("penTableUsageMode", penTableUsageModeStr)) {
                             elem.drawing.penTableUsageMode = DrawingPenTableUsageModeFromString (penTableUsageModeStr);
@@ -2628,6 +2634,7 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             elem.drawing.penTableIndex = ACAPI_CreateAttributeIndex (penTableIndex);
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, penTableIndex);
                         }
+#endif
                     } break;
                     case API_TextID: {
                         const GS::ObjectState* position = typeSpecificDetails->Get ("position");

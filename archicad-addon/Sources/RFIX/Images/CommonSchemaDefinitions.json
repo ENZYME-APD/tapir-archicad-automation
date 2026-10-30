@@ -9568,7 +9568,7 @@
             },
             "anchorPoint": {
                 "$ref": "#/DrawingAnchorPoint",
-                "description": "The node of the drawing's box placed at pos when useOwnOrigoAsAnchor is false."
+                "description": "Read-only: the node of the drawing's box placed at pos when useOwnOrigoAsAnchor is false. Not settable through this API - confirmed live that Archicad resets it to BottomLeft regardless of the value given, on both Create and Change; use useOwnOrigoAsAnchor to control the reference point reliably."
             },
             "offset": {
                 "$ref": "#/Coordinate2D",
@@ -11302,11 +11302,7 @@
             },
             "useOwnOrigoAsAnchor": {
                 "type": "boolean",
-                "description": "Place the drawing by its own origin instead of a node of its box."
-            },
-            "anchorPoint": {
-                "$ref": "#/DrawingAnchorPoint",
-                "description": "The node of the drawing's box placed at pos when useOwnOrigoAsAnchor is false."
+                "description": "Place the drawing by its own origin instead of a node of its box. anchorPoint is not settable here: Archicad resets it to BottomLeft regardless of the value given, so this is the only reliable way to control the drawing's reference point."
             },
             "angle": {
                 "type": "number",

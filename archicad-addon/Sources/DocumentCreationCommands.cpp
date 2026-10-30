@@ -1036,11 +1036,7 @@ GS::Optional<GS::UniString> CreateDrawingsCommand::GetInputParametersSchema () c
                         },
                         "useOwnOrigoAsAnchor": {
                             "type": "boolean",
-                            "description": "Place the Drawing by its own origin instead of a node of its box. Defaults to the Drawing tool's current default."
-                        },
-                        "anchorPoint": {
-                            "$ref": "#/DrawingAnchorPoint",
-                            "description": "The node of the Drawing's box placed at position when useOwnOrigoAsAnchor is false. Defaults to Center."
+                            "description": "Place the Drawing by its own origin instead of a node of its box. Defaults to the Drawing tool's current default. anchorPoint is not settable here: Archicad resets it to BottomLeft regardless of the value given, so the Drawing is always created with the Center anchor it has always used, unless useOwnOrigoAsAnchor is given."
                         },
                         "scale": {
                             "type": "number",
@@ -1158,10 +1154,11 @@ static GS::ObjectState CreateOneDrawing (const GS::ObjectState& item)
     } else if (hasName) {
         element.drawing.nameType = APIName_CustomName;
     }
-    // Without an explicit anchorPoint the historic Center is kept; useOwnOrigoAsAnchor otherwise
-    // comes from the Drawing tool defaults, so callers who need a known reference point give it.
-    GS::UniString anchorPointStr;
-    element.drawing.anchorPoint = item.Get ("anchorPoint", anchorPointStr) ? AnchorIdFromString (anchorPointStr, APIAnc_MM) : APIAnc_MM;
+    // anchorPoint is not exposed as an input: confirmed live that Archicad resets it to
+    // BottomLeft regardless of the value given, at creation just as on Change, so accepting
+    // it here would silently do nothing. useOwnOrigoAsAnchor (confirmed to apply reliably)
+    // is the only way to control the Drawing's reference point via this API.
+    element.drawing.anchorPoint = APIAnc_MM;
     item.Get ("useOwnOrigoAsAnchor", element.drawing.useOwnOrigoAsAnchor);
     element.drawing.pos = Get2DCoordinateFromObjectState (*item.Get ("position"));
     if (!item.Get ("scale", element.drawing.ratio)) {
@@ -1499,7 +1496,8 @@ GS::ObjectState ChangeDrawingLinkCommand::Execute (const GS::ObjectState& parame
             newDrawingItem.Add ("nameType", DrawingNameTypeToString (oldElement.drawing.nameType));
             newDrawingItem.Add ("position", Create2DCoordinateObjectState (oldElement.drawing.pos));
             newDrawingItem.Add ("useOwnOrigoAsAnchor", oldElement.drawing.useOwnOrigoAsAnchor);
-            newDrawingItem.Add ("anchorPoint", AnchorIdToString (oldElement.drawing.anchorPoint));
+            // anchorPoint is not passed: CreateOneDrawing doesn't accept it (Archicad resets it
+            // to BottomLeft regardless of the value given), so there is nothing to preserve here.
             newDrawingItem.Add ("scale", oldElement.drawing.ratio);
             newDrawingItem.Add ("angle", oldElement.drawing.angle);
             newDrawingItem.Add ("drawingScale", oldElement.drawing.drawingScale);
