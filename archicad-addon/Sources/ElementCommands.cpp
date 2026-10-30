@@ -46,7 +46,10 @@ static void AddPivotPolygonFromMemo (const API_Guid& guid, GS::ObjectState& os)
 // the way CalculateStairBounds and GetSubelementsOfHierarchicalElements already read the
 // Stair's memo in this file. The arcs come back with the same 0-based indices as the
 // polygon arcs of the other element types.
-static void AddStairBaseLineFromMemo (const API_Guid& guid, GS::ObjectState& os)
+// On a placed stair the coords are relative to the stair's basePlane.basePoint (a stair
+// created at (110, 0) reads its baseline from (0, 0), #1561), so they are moved by origin
+// to report them in the same coordinates as CreateStairs takes them.
+static void AddStairBaseLineFromMemo (const API_Guid& guid, const API_Coord& origin, GS::ObjectState& os)
 {
     const auto& coords = os.AddList<GS::ObjectState> ("baseLinePoints");
 
@@ -63,7 +66,8 @@ static void AddStairBaseLineFromMemo (const API_Guid& guid, GS::ObjectState& os)
         last = (*baseLine.pends)[1];
     }
     for (GSIndex i = 1; i <= last && i < nCoords; ++i) {
-        coords (Create2DCoordinateObjectState ((*baseLine.coords)[i]));
+        const API_Coord& coord = (*baseLine.coords)[i];
+        coords (Create2DCoordinateObjectState ({ coord.x + origin.x, coord.y + origin.y }));
     }
 
     if (baseLine.parcs == nullptr) {
@@ -1981,17 +1985,21 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 // The fields CreateStairs writes, read back (#823). The finishes and the
                 // structure are modeled by the Stair's subelements (risers, treads and
                 // structures, see GetSubelementsOfHierarchicalElements), not by the Stair
-                // element itself. basePlane.basePoint.z is the base's offset from the home
-                // story, the way CreateStairs sets it from the resolved floor index.
+                // element itself. On a placed stair basePlane.basePoint is in model
+                // coordinates: its z is the absolute elevation of the base, not the offset
+                // from the home story CreateStairs writes (a stair created on the 6.4 story
+                // reads 6.4, and read 12.8 as zCoordinate when the story level was added
+                // again, #1561), and its x and y are the origin of the baseline's coords.
+                const API_Coord3D& basePoint = elem.stair.basePlane.basePoint;
                 typeSpecificDetails.Add ("stepNum", static_cast<Int32> (elem.stair.stepNum));
                 typeSpecificDetails.Add ("riserHeight", elem.stair.riserHeight);
                 typeSpecificDetails.Add ("treadDepth", elem.stair.treadDepth);
                 typeSpecificDetails.Add ("flightWidth", elem.stair.flightWidth);
                 typeSpecificDetails.Add ("totalHeight", elem.stair.totalHeight);
-                typeSpecificDetails.Add ("level", elem.stair.basePlane.basePoint.z);
-                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.stair.basePlane.basePoint.z, stories));
+                typeSpecificDetails.Add ("level", basePoint.z - GetZPos (elem.header.floorInd, 0.0, stories));
+                typeSpecificDetails.Add ("zCoordinate", basePoint.z);
                 typeSpecificDetails.Add ("finishVisible", elem.stair.finishVisible);
-                AddStairBaseLineFromMemo (elem.header.guid, typeSpecificDetails);
+                AddStairBaseLineFromMemo (elem.header.guid, { basePoint.x, basePoint.y }, typeSpecificDetails);
             } break;
 
             default:
@@ -5911,6 +5919,11 @@ static void InitializeEmptyBounds (API_Box3D& bounds)
     bounds.xMax = bounds.yMax = bounds.zMax = -1e30;
 }
 
+static bool IsEmptyBounds (const API_Box3D& bounds)
+{
+    return bounds.xMin > bounds.xMax || bounds.yMin > bounds.yMax || bounds.zMin > bounds.zMax;
+}
+
 // Extends bounds with the solid 3D bodies of the element. foundSolidBody is only ever set to
 // true here, so the same accumulator can be run over several elements in a row.
 static GSErrCode AccumulateSolidBodyBounds (const API_Elem_Head& elemHead, API_Box3D& bounds, bool& foundSolidBody)
@@ -6099,6 +6112,13 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
         }
         if (err != NoError) {
             boundingBoxes3D (CreateErrorResponse (err, "Failed to get the 3D bounding box"));
+            continue;
+        }
+        if (IsEmptyBounds (box3D)) {
+            // ACAPI_Element_CalcBounds succeeds with an empty, inverted box (min 1e35, max -1e35)
+            // for an element that has no 3D geometry of its own, e.g. a Stair tread whose 3D model
+            // cannot be read (#1567). That is no bounding box, so it is reported as an error.
+            boundingBoxes3D (CreateErrorResponse (APIERR_GENERAL, "The element has no 3D geometry to get the bounding box of"));
             continue;
         }
 

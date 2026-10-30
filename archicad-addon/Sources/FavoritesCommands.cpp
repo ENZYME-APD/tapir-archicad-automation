@@ -1490,6 +1490,28 @@ static GSErrCode RestoreKeptFields (const API_Element& elementBefore, API_Elemen
     return NoError;
 }
 
+// Puts the target back on the story it was on before the Favorite was applied, should
+// ACAPI_Element_ChangeParameters have moved it despite the target's own story being passed in
+// with the Favorite (#1565). Done with the same call SetDetailsOfElements changes floorIndex with.
+static GSErrCode RestoreHomeStory (const API_Element& elementBefore)
+{
+    API_Element element = {};
+    element.header.guid = elementBefore.header.guid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+    if (element.header.floorInd == elementBefore.header.floorInd) {
+        return NoError;
+    }
+
+    element.header.floorInd = elementBefore.header.floorInd;
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+    return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+}
+
 ApplyFavoritesToElementsCommand::ApplyFavoritesToElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -1527,7 +1549,7 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
             },
             "applySettings": {
                 "type": "boolean",
-                "description": "Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc. - never geometry). For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. A Dimension's text size, text pen and text frame are not changed (tested in Archicad 28): the dimension creation commands take textHeight, textPen and textFrame for them. Default is true."
+                "description": "Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc. - never geometry; the element stays on its own home story). For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. A Dimension's text size, text pen and text frame are not changed (tested in Archicad 28): the dimension creation commands take textHeight, textPen and textFrame for them. Default is true."
             },
             "applyClassifications": {
                 "type": "boolean",
@@ -1679,7 +1701,16 @@ GS::ObjectState ApplyFavoritesToElementsCommand::Execute (const GS::ObjectState&
                     ? nullptr
                     : favorite.memo.GetPtr ();
 
+                // The home story is part of the header the full mask covers, and the Favorite
+                // carries the story of the element it was captured from: applied as is, it moved
+                // a Wall from story 2 down to story 0 (#1565). The target keeps its own story.
+                favorite.element.header.floorInd = targetElement.header.floorInd;
+                mask.header.floorInd = 0;
+
                 err = ACAPI_Element_ChangeParameters (targetGuids, &favorite.element, memoToApply, &mask);
+                if (err == NoError) {
+                    err = RestoreHomeStory (targetElement);
+                }
             }
             ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
             if (err != NoError) {
