@@ -8,6 +8,8 @@
 #include "ACAPI/MEPEnums.hpp"
 #include "ACAPI/MEPElement.hpp"
 #include "ACAPI/MEPPort.hpp"
+#include "ACAPI/MEPPipingPort.hpp"
+#include "ACAPI/MEPVentilationPort.hpp"
 #include "ACAPI/MEPRoutingElement.hpp"
 #include "ACAPI/MEPRoutingElementDefault.hpp"
 #include "ACAPI/MEPRoutingSegment.hpp"
@@ -23,6 +25,9 @@
 #include "ACAPI/MEPPipeSegmentPreferenceTableContainer.hpp"
 #include "ACAPI/MEPDuctCircularSegmentPreferenceTable.hpp"
 #include "ACAPI/MEPDuctSegmentPreferenceTableContainer.hpp"
+#include "ACAPI/MEPDuctRectangularSegmentPreferenceTable.hpp"
+#include "ACAPI/MEPCableCarrierSegmentPreferenceTable.hpp"
+#include "ACAPI/MEPCableCarrierSegmentPreferenceTableContainer.hpp"
 #include "ACAPI/MEPPipeElbowPreferenceTable.hpp"
 #include "ACAPI/MEPPipeElbowPreferenceTableContainer.hpp"
 #include "ACAPI/MEPPipeBranchPreferenceTable.hpp"
@@ -33,7 +38,12 @@
 #include "ACAPI/MEPDuctBranchPreferenceTableContainer.hpp"
 #include "ACAPI/MEPPipeReferenceSet.hpp"
 #include "ACAPI/MEPDuctReferenceSet.hpp"
+#include "ACAPI/MEPRigidSegment.hpp"
+#include "ACAPI/MEPFlexibleSegment.hpp"
+#include "ACAPI/MEPBranch.hpp"
+#include "ACAPI/MEPTransition.hpp"
 #ifdef ServerMainVers_2900
+#include "ACAPI/MEPElbow.hpp"
 #include "ACAPI/MEPPipeTransitionPreferenceTable.hpp"
 #include "ACAPI/MEPPipeTransitionPreferenceTableContainer.hpp"
 #include "ACAPI/MEPDuctTransitionPreferenceTable.hpp"
@@ -43,6 +53,19 @@
 #include "ACAPI/MEPSystemGroup.hpp"
 #include "ACAPI/MEPPhysicalSystem.hpp"
 #endif
+
+#include <optional>
+#include <utility>
+#include <type_traits>
+#include <utility>
+
+using namespace ACAPI::MEP;
+#elif defined (ServerMainVers_2700)
+// Archicad 27 only runs ConnectMEPElements and CheckMEPPortConnectability.
+#include "ACAPI/Result.hpp"
+#include "ACAPI/MEPAdapter.hpp"
+#include "ACAPI/MEPPort.hpp"
+#include "ACAPI/MEPRoutingElement.hpp"
 
 #include <optional>
 
@@ -171,6 +194,22 @@ static std::optional<Domain> DomainFromString (const GS::UniString& domain)
     return std::nullopt;
 }
 
+// Calls a modifier function that returns either nothing or an ACAPI::Result, and gives back its error code, if any.
+template <typename CallT>
+static std::optional<GSErrCode> GetErrorOfCall (CallT&& call)
+{
+    if constexpr (std::is_void_v<decltype (call ())>) {
+        call ();
+        return std::nullopt;
+    } else {
+        auto result = call ();
+        if (result.IsErr ()) {
+            return result.UnwrapErr ().kind;
+        }
+        return std::nullopt;
+    }
+}
+
 static GS::UniString ConnectorShapeToString (ConnectorShape shape)
 {
     switch (shape) {
@@ -198,6 +237,79 @@ static std::optional<ConnectorShape> ConnectorShapeFromString (const GS::UniStri
     }
     return std::nullopt;
 }
+
+// The MEP enums below go over JSON as the names of their values (MEPEnums.hpp, from Archicad 29
+// MEPTypes.hpp).
+template <typename EnumT>
+struct MEPEnumName {
+    EnumT       value;
+    const char* name;
+};
+
+// Adds the name of the value; a value without a name is left out of the response.
+template <typename EnumT, size_t N>
+static void AddMEPEnumName (GS::ObjectState& os, const char* fieldName, const MEPEnumName<EnumT> (&names)[N], EnumT value)
+{
+    for (const MEPEnumName<EnumT>& entry : names) {
+        if (entry.value == value) {
+            os.Add (fieldName, GS::UniString (entry.name));
+            return;
+        }
+    }
+}
+
+template <typename EnumT, size_t N>
+static std::optional<EnumT> MEPEnumFromString (const MEPEnumName<EnumT> (&names)[N], const GS::UniString& name)
+{
+    for (const MEPEnumName<EnumT>& entry : names) {
+        if (name == entry.name) {
+            return entry.value;
+        }
+    }
+    return std::nullopt;
+}
+
+static const MEPEnumName<ConnectionStyle> ConnectionStyleNames[] = {
+    { ConnectionStyle::SimpleBody, "SimpleBody" },
+    { ConnectionStyle::Flanged,    "Flanged" },
+    { ConnectionStyle::Welded,     "Welded" }
+};
+
+static const MEPEnumName<PreferredTransitionPlacement> PreferredTransitionPlacementNames[] = {
+    { PreferredTransitionPlacement::SmallToLarge, "SmallToLarge" },
+    { PreferredTransitionPlacement::LargeToSmall, "LargeToSmall" }
+};
+
+static const MEPEnumName<FlowDirection> FlowDirectionNames[] = {
+    { FlowDirection::FlowNotDefined, "FlowNotDefined" },
+    { FlowDirection::FlowIn,         "FlowIn" },
+    { FlowDirection::FlowOut,        "FlowOut" }
+};
+
+#ifdef ServerMainVers_2900
+static const MEPEnumName<CutPlanePosition> CutPlanePositionNames[] = {
+    { CutPlanePosition::AtUpperDisplayLimit, "AtUpperDisplayLimit" },
+    { CutPlanePosition::ByViewSettings,      "ByViewSettings" }
+};
+
+static const MEPEnumName<FloorPlanDisplayOption> FloorPlanDisplayOptionNames[] = {
+    { FloorPlanDisplayOption::Projected,             "Projected" },
+    { FloorPlanDisplayOption::ProjectedWithOverhead, "ProjectedWithOverhead" },
+    { FloorPlanDisplayOption::Symbolic,              "Symbolic" },
+    { FloorPlanDisplayOption::ByMVO,                 "ByMVO" }
+};
+
+static const MEPEnumName<ShowProjection> ShowProjectionNames[] = {
+    { ShowProjection::ToFloorPlanRange,       "ToFloorPlanRange" },
+    { ShowProjection::ToAbsoluteDisplayLimit, "ToAbsoluteDisplayLimit" },
+    { ShowProjection::EntireElement,          "EntireElement" }
+};
+
+static const MEPEnumName<OnStoryVisibility> OnStoryVisibilityNames[] = {
+    { OnStoryVisibility::AllRelevantStories, "AllRelevantStories" },
+    { OnStoryVisibility::HomeStoryOnly,      "HomeStoryOnly" }
+};
+#endif
 
 // Classifies an MEP element based on its classID; empty for non-MEP classIDs.
 static GS::UniString GetMEPElementTypeName (const API_Guid& classId)
@@ -269,6 +381,66 @@ static GS::UniString GetMEPElementDomainName (const API_Guid& classId)
 static GS::ObjectState CreateMEPSystemIdObjectState (const API_AttributeIndex& attributeIndex)
 {
     return CreateIdObjectState ("attributeId", GetAttributeGuidFromIndex (API_MEPSystemID, attributeIndex));
+}
+
+// The getters of the MEP element parts used by GetMEPElementDetails could not be checked against the
+// DevKit when they were added, so these helpers accept a plain value, an ACAPI::Result or a
+// std::optional of it. A value that cannot be read is left out of the response.
+template <typename T>
+static std::optional<T> ToOptional (const T& value)
+{
+    return value;
+}
+
+template <typename T>
+static std::optional<T> ToOptional (const std::optional<T>& value)
+{
+    return value;
+}
+
+template <typename T>
+static std::optional<T> ToOptional (ACAPI::Result<T>&& result)
+{
+    if (result.IsErr ()) {
+        return std::nullopt;
+    }
+    return result.Unwrap ();
+}
+
+template <typename Value>
+static void AddNumberIfAvailable (GS::ObjectState& os, const char* name, Value&& value)
+{
+    const auto number = ToOptional (std::forward<Value> (value));
+    if (number.has_value ()) {
+        os.Add (name, static_cast<double> (number.value ()));
+    }
+}
+
+template <typename Value>
+static void AddBoolIfAvailable (GS::ObjectState& os, const char* name, Value&& value)
+{
+    const auto boolValue = ToOptional (std::forward<Value> (value));
+    if (boolValue.has_value ()) {
+        os.Add (name, static_cast<bool> (boolValue.value ()));
+    }
+}
+
+template <typename Value>
+static void AddElementIdIfAvailable (GS::ObjectState& os, const char* name, Value&& value)
+{
+    const auto id = ToOptional (std::forward<Value> (value));
+    if (id.has_value ()) {
+        os.Add (name, CreateGuidObjectState (MEPUniqueIDToAPIGuid (id.value ())));
+    }
+}
+
+template <typename Value>
+static void AddGuidIfAvailable (GS::ObjectState& os, const char* name, Value&& value)
+{
+    const auto id = ToOptional (std::forward<Value> (value));
+    if (id.has_value ()) {
+        os.Add (name, APIGuidToString (MEPUniqueIDToAPIGuid (id.value ())));
+    }
 }
 
 #endif
@@ -378,6 +550,10 @@ GS::ObjectState GetMEPElementsCommand::Execute (const GS::ObjectState& parameter
         element.Add ("elementId", CreateGuidObjectState (elemGuid));
         element.Add ("type", typeName);
         element.Add ("domain", domainName);
+#ifndef ServerMainVers_2900
+        // Archicad 29 removed GetLocalizedElemTypeName.
+        element.Add ("localizedTypeName", GetLocalizedElemTypeName (header.type.classID));
+#endif
         elements (element);
     }
 
@@ -453,6 +629,25 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
         GS::ObjectState routingElementOs;
         routingElementOs.Add ("domain", DomainToString (routingElement->GetDomain ()));
         routingElementOs.Add ("mepSystemId", CreateMEPSystemIdObjectState (routingElement->GetMEPSystem ()));
+        routingElementOs.Add ("offsetFromHomeStory", routingElement->GetOffsetFromHomeStory ());
+        ACAPI::Result<ACAPI::MEP::UniqueID> branchPreferenceTableId = routingElement->GetBranchPreferenceTableId ();
+        if (branchPreferenceTableId.IsOk ()) {
+            routingElementOs.Add ("branchPreferenceTableId", branchPreferenceTableId.Unwrap ().GetGuid ().ToUniString ());
+        }
+        const std::optional<ACAPI::MEP::UniqueID> portIdAtRouteBegin = routingElement->GetLogicallyConnectedPortIdAtRouteBegin ();
+        if (portIdAtRouteBegin.has_value ()) {
+            routingElementOs.Add ("logicallyConnectedPortIdAtRouteBegin", APIGuidToString (MEPUniqueIDToAPIGuid (portIdAtRouteBegin.value ())));
+        }
+        const std::optional<ACAPI::MEP::UniqueID> portIdAtRouteEnd = routingElement->GetLogicallyConnectedPortIdAtRouteEnd ();
+        if (portIdAtRouteEnd.has_value ()) {
+            routingElementOs.Add ("logicallyConnectedPortIdAtRouteEnd", APIGuidToString (MEPUniqueIDToAPIGuid (portIdAtRouteEnd.value ())));
+        }
+#ifdef ServerMainVers_2900
+        AddMEPEnumName (routingElementOs, "cutPlanePosition", CutPlanePositionNames, routingElement->GetCutPlanePosition ());
+        AddMEPEnumName (routingElementOs, "floorPlanDisplayOption", FloorPlanDisplayOptionNames, routingElement->GetFloorPlanDisplayOption ());
+        AddMEPEnumName (routingElementOs, "showProjection", ShowProjectionNames, routingElement->GetShowProjection ());
+        AddMEPEnumName (routingElementOs, "onStoryVisibility", OnStoryVisibilityNames, routingElement->GetOnStoryVisibility ());
+#endif
 
         const auto& polyline = routingElementOs.AddList<GS::ObjectState> ("polyline");
         for (const API_Coord3D& coordinate : routingElement->GetPolyLine ()) {
@@ -467,6 +662,7 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
             }
             GS::ObjectState segmentOs;
             segmentOs.Add ("elementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (segmentId)));
+            segmentOs.Add ("routingElementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (segment->GetRoutingElementId ())));
             segmentOs.Add ("crossSectionWidth", segment->GetCrossSectionWidth ());
             segmentOs.Add ("crossSectionHeight", segment->GetCrossSectionHeight ());
             segmentOs.Add ("crossSectionShape", ConnectorShapeToString (segment->GetCrossSectionShape ()));
@@ -475,6 +671,21 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
                 segmentOs.Add ("crossSectionReferenceId", static_cast<Int32> (referenceId.Unwrap ()));
             }
             segmentOs.Add ("preferenceTableId", segment->GetPreferenceTableId ().GetGuid ().ToUniString ());
+            segmentOs.Add ("beginNodeId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (segment->GetBeginNodeId ())));
+            segmentOs.Add ("endNodeId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (segment->GetEndNodeId ())));
+            segmentOs.Add ("anchor", AnchorIdToString (segment->GetAnchor ()));
+            segmentOs.Add ("referenceLineOffsetX", segment->GetReferenceLineOffsetX ());
+            segmentOs.Add ("referenceLineOffsetY", segment->GetReferenceLineOffsetY ());
+            segmentOs.Add ("wallThickness", segment->GetWallThickness ());
+            const std::optional<double> flangeSize = segment->GetFlangeSize ();
+            if (flangeSize.has_value ()) {
+                segmentOs.Add ("flangeSize", flangeSize.value ());
+            }
+            AddMEPEnumName (segmentOs, "connectionStyle", ConnectionStyleNames, segment->GetConnectionStyle ());
+            const auto& rigidSegments = segmentOs.AddList<GS::ObjectState> ("rigidSegments");
+            for (const ACAPI::MEP::UniqueID& rigidSegmentId : segment->GetRigidSegmentIds ()) {
+                rigidSegments (CreateIdObjectState ("elementId", MEPUniqueIDToAPIGuid (rigidSegmentId)));
+            }
             segments (segmentOs);
         }
 
@@ -486,7 +697,30 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
             }
             GS::ObjectState nodeOs;
             nodeOs.Add ("elementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (nodeId)));
+            nodeOs.Add ("routingElementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (node->GetRoutingElementId ())));
             nodeOs.Add ("position", Create3DCoordinateObjectState (node->GetPosition ()));
+            const std::optional<ACAPI::MEP::UniqueID> incomingSegmentId = node->GetIncomingSegmentId ();
+            if (incomingSegmentId.has_value ()) {
+                nodeOs.Add ("incomingSegmentId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (incomingSegmentId.value ())));
+            }
+            const std::optional<ACAPI::MEP::UniqueID> outgoingSegmentId = node->GetOutgoingSegmentId ();
+            if (outgoingSegmentId.has_value ()) {
+                nodeOs.Add ("outgoingSegmentId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (outgoingSegmentId.value ())));
+            }
+            AddMEPEnumName (nodeOs, "preferredTransitionPlacement", PreferredTransitionPlacementNames, node->GetPreferredTransitionPlacement ());
+            const auto& elbows = nodeOs.AddList<GS::ObjectState> ("elbows");
+#ifdef ServerMainVers_2900
+            for (const ACAPI::MEP::UniqueID& elbowId : node->GetElbowIds ()) {
+#else
+            // Archicad 28 calls the elbows bends (RoutingNode::GetBendIds).
+            for (const ACAPI::MEP::UniqueID& elbowId : node->GetBendIds ()) {
+#endif
+                elbows (CreateIdObjectState ("elementId", MEPUniqueIDToAPIGuid (elbowId)));
+            }
+            const auto& transitions = nodeOs.AddList<GS::ObjectState> ("transitions");
+            for (const ACAPI::MEP::UniqueID& transitionId : node->GetTransitionIds ()) {
+                transitions (CreateIdObjectState ("elementId", MEPUniqueIDToAPIGuid (transitionId)));
+            }
             nodes (nodeOs);
         }
 
@@ -561,18 +795,23 @@ GS::ObjectState GetMEPPortsCommand::Execute (const GS::ObjectState& parameters, 
             elementPorts (CreateErrorResponse (mepElement.UnwrapErr ().kind, "Failed to get the MEP element."));
             continue;
         }
+        if (!mepElement->Exists ()) {
+            elementPorts (CreateErrorResponse (APIERR_BADID, "The MEP element was not found."));
+            continue;
+        }
 
         GS::ObjectState elementPortsOs;
         const auto& ports = elementPortsOs.AddList<GS::ObjectState> ("ports");
 
         for (const ACAPI::MEP::UniqueID& portId : mepElement->GetPortIDs ()) {
             ACAPI::Result<Port> port = Port::Get (portId);
-            if (port.IsErr ()) {
+            if (port.IsErr () || !port->Exists ()) {
                 continue;
             }
 
             GS::ObjectState portOs;
             portOs.Add ("portId", APIGuidToString (MEPUniqueIDToAPIGuid (portId)));
+            portOs.Add ("mepElementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (port->GetMEPElementId ())));
             portOs.Add ("name", port->GetName ());
             portOs.Add ("position", Create3DCoordinateObjectState (port->GetPosition ()));
             const Orientation orientation = port->GetOrientation ();
@@ -580,9 +819,29 @@ GS::ObjectState GetMEPPortsCommand::Execute (const GS::ObjectState& parameters, 
             portOs.Add ("shape", ConnectorShapeToString (port->GetShape ()));
             portOs.Add ("width", port->GetWidth ());
             portOs.Add ("height", port->GetHeight ());
-            portOs.Add ("domain", DomainToString (port->GetDomain ()));
+            const Domain portDomain = port->GetDomain ();
+            portOs.Add ("domain", DomainToString (portDomain));
             portOs.Add ("mepSystemId", CreateMEPSystemIdObjectState (port->GetMEPSystem ()));
             portOs.Add ("isPhysicallyConnected", port->IsPhysicallyConnected ());
+#ifdef ServerMainVers_3000
+            AddMEPEnumName (portOs, "connectionStyle", ConnectionStyleNames, port->GetConnectionStyle ());
+#endif
+
+            // The settings of the domain specific port classes. Cable carrier ports have none.
+            if (portDomain == Domain::Piping) {
+                ACAPI::Result<PipingPort> pipingPort = PipingPort::Get (portId);
+                if (pipingPort.IsOk ()) {
+                    AddMEPEnumName (portOs, "flowDirection", FlowDirectionNames, pipingPort->GetFlowDirection ());
+#ifdef ServerMainVers_3000
+                    portOs.Add ("nominalSize", pipingPort->GetNominalSize ());
+#endif
+                }
+            } else if (portDomain == Domain::Ventilation) {
+                ACAPI::Result<VentilationPort> ventilationPort = VentilationPort::Get (portId);
+                if (ventilationPort.IsOk ()) {
+                    AddMEPEnumName (portOs, "flowDirection", FlowDirectionNames, ventilationPort->GetFlowDirection ());
+                }
+            }
 
             const std::optional<ACAPI::MEP::UniqueID> connectedPortId = port->GetConnectedPortId ();
             if (connectedPortId.has_value ()) {
@@ -597,6 +856,241 @@ GS::ObjectState GetMEPPortsCommand::Execute (const GS::ObjectState& parameters, 
         }
 
         elementPorts (elementPortsOs);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
+}
+
+GetMEPElementDetailsCommand::GetMEPElementDetailsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetMEPElementDetailsCommand::GetName () const
+{
+    return "GetMEPElementDetails";
+}
+
+GS::Optional<GS::UniString> GetMEPElementDetailsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetMEPElementDetailsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementDetails": {
+                "type": "array",
+                "description": "The details of the given MEP elements, in the order of the input, or an error for an element that is not an MEP element, and in Archicad 28 for an elbow. A value that cannot be read is left out.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementId": {
+                                    "$ref": "#/ElementId"
+                                },
+                                "type": {
+                                    "$ref": "#/MEPElementType"
+                                },
+                                "domain": {
+                                    "type": "string",
+                                    "description": "The MEP domain (Ventilation, Piping or CableCarrier), empty if the element has none."
+                                },
+                                "insulationThickness": {
+                                    "type": "number",
+                                    "description": "The insulation thickness. RigidSegment, Elbow, Branch and Transition."
+                                },
+                                "routingSegmentId": {
+                                    "$ref": "#/ElementId",
+                                    "description": "The routing segment the rigid segment belongs to (see GetMEPRoutingElements). RigidSegment."
+                                },
+                                "routingNodeId": {
+                                    "$ref": "#/ElementId",
+                                    "description": "The routing node the elbow or transition belongs to (see GetMEPRoutingElements). Elbow and Transition."
+                                },
+                                "controlPoints": {
+                                    "type": "array",
+                                    "description": "The control points of the flexible segment. FlexibleSegment.",
+                                    "items": {
+                                        "$ref": "#/Coordinate3D"
+                                    }
+                                },
+                                "factorRadius": {
+                                    "type": "number",
+                                    "description": "The radius factor of the elbow (Elbow::GetFactorRadius). Elbow, from Archicad 29."
+                                },
+                                "preferenceTableId": {
+                                    "$ref": "#/Guid",
+                                    "description": "The guid of the elbow or transition preference table (see GetMEPPreferenceTables). Elbow and Transition, from Archicad 29."
+                                },
+                                "branchAngle": {
+                                    "type": "number",
+                                    "description": "The angle of the branch, as returned by Branch::GetBranchAngle. Branch."
+                                },
+                                "branchLength": {
+                                    "type": "number",
+                                    "description": "The length of the branch. Branch."
+                                },
+                                "offsetY": {
+                                    "type": "number",
+                                    "description": "The Y offset of the transition (Transition::GetOffsetY). Transition."
+                                },
+                                "offsetZ": {
+                                    "type": "number",
+                                    "description": "The Z offset of the transition (Transition::GetOffsetZ). Transition."
+                                },
+                                "widerPortId": {
+                                    "$ref": "#/Guid",
+                                    "description": "The port at the wider end of the transition (see GetMEPPorts). Transition."
+                                },
+                                "narrowerPortId": {
+                                    "$ref": "#/Guid",
+                                    "description": "The port at the narrower end of the transition (see GetMEPPorts). Transition."
+                                },
+                                "isControlledByPreference": {
+                                    "type": "boolean",
+                                    "description": "Whether the transition is controlled by its preference table. Transition, from Archicad 29."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementId",
+                                "type",
+                                "domain"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementDetails"
+        ]
+    })";
+}
+
+GS::ObjectState GetMEPElementDetailsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::Array<GS::ObjectState> elements;
+    if (!parameters.Get ("elements", elements)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'elements' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& elementDetails = response.AddList<GS::ObjectState> ("elementDetails");
+
+    for (const GS::ObjectState& element : elements) {
+        const API_Guid elemGuid = GetGuidFromElementsArrayItem (element);
+
+        API_Elem_Head header = {};
+        header.guid = elemGuid;
+        if (ACAPI_Element_GetHeader (&header) != NoError) {
+            elementDetails (CreateErrorResponse (APIERR_BADID, "Failed to get the element."));
+            continue;
+        }
+        const GS::UniString typeName = GetMEPElementTypeName (header.type.classID);
+        if (typeName.IsEmpty ()) {
+            elementDetails (CreateErrorResponse (APIERR_BADPARS, "The element is not an MEP element."));
+            continue;
+        }
+
+        const ACAPI::MEP::UniqueID elemId = Adapter::UniqueID (elemGuid);
+        GS::ObjectState detailsOs;
+        detailsOs.Add ("elementId", CreateGuidObjectState (elemGuid));
+        detailsOs.Add ("type", typeName);
+        detailsOs.Add ("domain", GetMEPElementDomainName (header.type.classID));
+
+        // Only these types have data of their own in the MEP API; the routing element is covered by
+        // GetMEPRoutingElements and the ports of every type by GetMEPPorts.
+        if (typeName == "RigidSegment") {
+            ACAPI::Result<ACAPI::MEP::RigidSegment> rigidSegment = ACAPI::MEP::RigidSegment::Get (elemId);
+            if (rigidSegment.IsErr ()) {
+                elementDetails (CreateErrorResponse (rigidSegment.UnwrapErr ().kind, "Failed to get the rigid segment."));
+                continue;
+            }
+            AddNumberIfAvailable (detailsOs, "insulationThickness", rigidSegment->GetInsulationThickness ());
+            AddElementIdIfAvailable (detailsOs, "routingSegmentId", rigidSegment->GetRoutingSegmentId ());
+        } else if (typeName == "FlexibleSegment") {
+            ACAPI::Result<ACAPI::MEP::FlexibleSegment> flexibleSegment = ACAPI::MEP::FlexibleSegment::Get (elemId);
+            if (flexibleSegment.IsErr ()) {
+                elementDetails (CreateErrorResponse (flexibleSegment.UnwrapErr ().kind, "Failed to get the flexible segment."));
+                continue;
+            }
+            const auto controlPoints = ToOptional (flexibleSegment->GetControlPoints ());
+            if (controlPoints.has_value ()) {
+                const auto& controlPointList = detailsOs.AddList<GS::ObjectState> ("controlPoints");
+                for (const auto& point : controlPoints.value ()) {
+                    controlPointList (Create3DCoordinateObjectState (API_Coord3D { point.x, point.y, point.z }));
+                }
+            }
+        } else if (typeName == "Elbow") {
+#ifdef ServerMainVers_2900
+            ACAPI::Result<ACAPI::MEP::Elbow> elbow = ACAPI::MEP::Elbow::Get (elemId);
+            if (elbow.IsErr ()) {
+                elementDetails (CreateErrorResponse (elbow.UnwrapErr ().kind, "Failed to get the elbow."));
+                continue;
+            }
+            AddNumberIfAvailable (detailsOs, "factorRadius", elbow->GetFactorRadius ());
+            AddNumberIfAvailable (detailsOs, "insulationThickness", elbow->GetInsulationThickness ());
+            AddGuidIfAvailable (detailsOs, "preferenceTableId", elbow->GetPreferenceTable ());
+            AddElementIdIfAvailable (detailsOs, "routingNodeId", elbow->GetRoutingNodeId ());
+#else
+            // Archicad 28 has no Elbow class; its elbows are bends (see GetMEPElementTypeName).
+            elementDetails (CreateErrorResponse (APIERR_NOTSUPPORTED, "The details of elbows are available from Archicad 29."));
+            continue;
+#endif
+        } else if (typeName == "Branch") {
+            ACAPI::Result<ACAPI::MEP::Branch> branch = ACAPI::MEP::Branch::Get (elemId);
+            if (branch.IsErr ()) {
+                elementDetails (CreateErrorResponse (branch.UnwrapErr ().kind, "Failed to get the branch."));
+                continue;
+            }
+            AddNumberIfAvailable (detailsOs, "branchAngle", branch->GetBranchAngle ());
+            AddNumberIfAvailable (detailsOs, "branchLength", branch->GetBranchLength ());
+            AddNumberIfAvailable (detailsOs, "insulationThickness", branch->GetInsulationThickness ());
+        } else if (typeName == "Transition") {
+            ACAPI::Result<ACAPI::MEP::Transition> transition = ACAPI::MEP::Transition::Get (elemId);
+            if (transition.IsErr ()) {
+                elementDetails (CreateErrorResponse (transition.UnwrapErr ().kind, "Failed to get the transition."));
+                continue;
+            }
+            AddNumberIfAvailable (detailsOs, "insulationThickness", transition->GetInsulationThickness ());
+            AddNumberIfAvailable (detailsOs, "offsetY", transition->GetOffsetY ());
+            AddNumberIfAvailable (detailsOs, "offsetZ", transition->GetOffsetZ ());
+            AddGuidIfAvailable (detailsOs, "widerPortId", transition->GetWiderPortID ());
+            AddGuidIfAvailable (detailsOs, "narrowerPortId", transition->GetNarrowerPortID ());
+            AddElementIdIfAvailable (detailsOs, "routingNodeId", transition->GetRoutingNodeId ());
+#ifdef ServerMainVers_2900
+            AddGuidIfAvailable (detailsOs, "preferenceTableId", transition->GetPreferenceTable ());
+            AddBoolIfAvailable (detailsOs, "isControlledByPreference", transition->IsControlledByPreference ());
+#endif
+        }
+
+        elementDetails (detailsOs);
     }
 
     return response;
@@ -626,6 +1120,13 @@ GS::Optional<GS::UniString> GetMEPDistributionSystemsCommand::GetRawResponseSche
                 "description": "The distribution systems of the project.",
                 "items": {
                     "$ref": "#/MEPDistributionSystem"
+                }
+            },
+            "ports": {
+                "type": "array",
+                "description": "The ports in the distribution systems graph (see GetMEPPorts).",
+                "items": {
+                    "$ref": "#/Guid"
                 }
             }
         },
@@ -667,6 +1168,11 @@ GS::ObjectState GetMEPDistributionSystemsCommand::Execute (const GS::ObjectState
         }
 
         distributionSystems (systemOs);
+    }
+
+    const auto& ports = response.AddList<GS::UniString> ("ports");
+    for (const ACAPI::MEP::UniqueID& portId : graph->GetPorts ()) {
+        ports (APIGuidToString (MEPUniqueIDToAPIGuid (portId)));
     }
 
     return response;
@@ -1102,6 +1608,65 @@ GS::Optional<GS::UniString> ModifyMEPRoutingElementsCommand::GetInputParametersS
                             "$ref": "#/Guid",
                             "description": "New segment preference table (guid as returned by GetMEPPreferenceTables) applied to all segments. Not applicable to the CableCarrier domain."
                         },
+                        "branchPreferenceTableId": {
+                            "$ref": "#/Guid",
+                            "description": "New branch preference table (guid as returned by GetMEPPreferenceTables) of the routing element."
+                        },
+                        "anchor": {
+                            "type": "string",
+                            "description": "New anchor point of the cross section, on a 3x3 grid, applied to all segments.",
+                            "enum": [
+                                "TopLeft",
+                                "TopCenter",
+                                "TopRight",
+                                "MiddleLeft",
+                                "Center",
+                                "MiddleRight",
+                                "BottomLeft",
+                                "BottomCenter",
+                                "BottomRight"
+                            ]
+                        },
+                        "referenceLineOffsetX": {
+                            "type": "number",
+                            "description": "New horizontal offset of the reference line from the anchor point, applied to all segments."
+                        },
+                        "referenceLineOffsetY": {
+                            "type": "number",
+                            "description": "New vertical offset of the reference line from the anchor point, applied to all segments."
+                        },
+                        "wallThickness": {
+                            "type": "number",
+                            "description": "New wall thickness applied to all segments."
+                        },
+                        "flangeSize": {
+                            "type": "number",
+                            "description": "New flange size applied to all segments."
+                        },
+                        "connectionStyle": {
+                            "$ref": "#/MEPConnectionStyle",
+                            "description": "New connection style applied to all segments."
+                        },
+                        "preferredTransitionPlacement": {
+                            "$ref": "#/MEPPreferredTransitionPlacement",
+                            "description": "New preferred transition placement applied to all nodes."
+                        },
+                        "cutPlanePosition": {
+                            "$ref": "#/MEPCutPlanePosition",
+                            "description": "New cut plane position of the routing element. Available from Archicad 29."
+                        },
+                        "floorPlanDisplayOption": {
+                            "$ref": "#/MEPFloorPlanDisplayOption",
+                            "description": "New floor plan display option of the routing element. Available from Archicad 29."
+                        },
+                        "showProjection": {
+                            "$ref": "#/MEPShowProjection",
+                            "description": "New show projection setting of the routing element. Available from Archicad 29."
+                        },
+                        "onStoryVisibility": {
+                            "$ref": "#/MEPOnStoryVisibility",
+                            "description": "New on-story visibility of the routing element. Available from Archicad 29."
+                        },
                         "nodePositions": {
                             "type": "array",
                             "description": "New positions of the routing nodes. The size must match the number of nodes of the route.",
@@ -1164,6 +1729,46 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
             continue;
         }
 
+        // The enum values are checked before anything is changed.
+        GS::UniString connectionStyleStr;
+        GS::UniString preferredTransitionPlacementStr;
+        const bool hasConnectionStyle = routingElementData.Get ("connectionStyle", connectionStyleStr);
+        const bool hasPreferredTransitionPlacement = routingElementData.Get ("preferredTransitionPlacement", preferredTransitionPlacementStr);
+        const std::optional<ConnectionStyle> connectionStyle = MEPEnumFromString (ConnectionStyleNames, connectionStyleStr);
+        const std::optional<PreferredTransitionPlacement> preferredTransitionPlacement = MEPEnumFromString (PreferredTransitionPlacementNames, preferredTransitionPlacementStr);
+        if ((hasConnectionStyle && !connectionStyle.has_value ()) || (hasPreferredTransitionPlacement && !preferredTransitionPlacement.has_value ())) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Invalid 'connectionStyle' or 'preferredTransitionPlacement' value."));
+            continue;
+        }
+
+        GS::UniString cutPlanePositionStr;
+        GS::UniString floorPlanDisplayOptionStr;
+        GS::UniString showProjectionStr;
+        GS::UniString onStoryVisibilityStr;
+        const bool hasCutPlanePosition = routingElementData.Get ("cutPlanePosition", cutPlanePositionStr);
+        const bool hasFloorPlanDisplayOption = routingElementData.Get ("floorPlanDisplayOption", floorPlanDisplayOptionStr);
+        const bool hasShowProjection = routingElementData.Get ("showProjection", showProjectionStr);
+        const bool hasOnStoryVisibility = routingElementData.Get ("onStoryVisibility", onStoryVisibilityStr);
+        const bool hasFloorPlanDisplay = hasCutPlanePosition || hasFloorPlanDisplayOption || hasShowProjection || hasOnStoryVisibility;
+#ifdef ServerMainVers_2900
+        const std::optional<CutPlanePosition> cutPlanePosition = MEPEnumFromString (CutPlanePositionNames, cutPlanePositionStr);
+        const std::optional<FloorPlanDisplayOption> floorPlanDisplayOption = MEPEnumFromString (FloorPlanDisplayOptionNames, floorPlanDisplayOptionStr);
+        const std::optional<ShowProjection> showProjection = MEPEnumFromString (ShowProjectionNames, showProjectionStr);
+        const std::optional<OnStoryVisibility> onStoryVisibility = MEPEnumFromString (OnStoryVisibilityNames, onStoryVisibilityStr);
+        if ((hasCutPlanePosition && !cutPlanePosition.has_value ()) ||
+            (hasFloorPlanDisplayOption && !floorPlanDisplayOption.has_value ()) ||
+            (hasShowProjection && !showProjection.has_value ()) ||
+            (hasOnStoryVisibility && !onStoryVisibility.has_value ())) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Invalid 'cutPlanePosition', 'floorPlanDisplayOption', 'showProjection' or 'onStoryVisibility' value."));
+            continue;
+        }
+#else
+        if (hasFloorPlanDisplay) {
+            executionResults (CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "'cutPlanePosition', 'floorPlanDisplayOption', 'showProjection' and 'onStoryVisibility' require Archicad 29 or newer."));
+            continue;
+        }
+#endif
+
         bool success = true;
 
         const GS::ObjectState* mepSystemId = routingElementData.Get ("mepSystemId");
@@ -1172,6 +1777,37 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
                 modifier.SetMEPSystem (GetAttributeIndexFromGuid (API_MEPSystemID, GetGuidFromObjectState (*mepSystemId)));
             }, "Modify MEP System of Routing Element");
             success &= result.IsOk ();
+        }
+
+#ifdef ServerMainVers_2900
+        if (hasFloorPlanDisplay) {
+            bool settersSucceeded = true;
+            ACAPI::Result<void> result = routingElement->Modify ([&](RoutingElement::Modifier& modifier) {
+                // The floor plan display option first, the projection setting may depend on it.
+                if (floorPlanDisplayOption.has_value ()) {
+                    settersSucceeded &= modifier.SetFloorPlanDisplayOption (floorPlanDisplayOption.value ()).IsOk ();
+                }
+                if (cutPlanePosition.has_value ()) {
+                    modifier.SetCutPlanePosition (cutPlanePosition.value ());
+                }
+                if (showProjection.has_value ()) {
+                    settersSucceeded &= modifier.SetShowProjection (showProjection.value ()).IsOk ();
+                }
+                if (onStoryVisibility.has_value ()) {
+                    modifier.SetOnStoryVisibility (onStoryVisibility.value ());
+                }
+            }, "Modify Floor Plan Display of Routing Element");
+            success &= result.IsOk () && settersSucceeded;
+        }
+#endif
+
+        GS::UniString branchPreferenceTableIdStr;
+        if (routingElementData.Get ("branchPreferenceTableId", branchPreferenceTableIdStr)) {
+            bool setterSucceeded = true;
+            ACAPI::Result<void> result = routingElement->Modify ([&](RoutingElement::Modifier& modifier) {
+                setterSucceeded = modifier.SetBranchPreferenceTableId (Adapter::UniqueID (APIGuidFromString (branchPreferenceTableIdStr.ToCStr ()))).IsOk ();
+            }, "Modify Branch Preference Table of Routing Element");
+            success &= result.IsOk () && setterSucceeded;
         }
 
         double width = 0.0;
@@ -1184,13 +1820,25 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
         const bool hasShape = routingElementData.Get ("crossSectionShape", shapeStr);
         const bool hasReferenceId = routingElementData.Get ("crossSectionReferenceId", referenceId);
         const bool hasPreferenceTableId = routingElementData.Get ("preferenceTableId", preferenceTableIdStr);
-        if (hasWidth || hasHeight || hasShape || hasReferenceId || hasPreferenceTableId) {
+        GS::UniString anchorStr;
+        double referenceLineOffsetX = 0.0;
+        double referenceLineOffsetY = 0.0;
+        double wallThickness = 0.0;
+        double flangeSize = 0.0;
+        const bool hasAnchor = routingElementData.Get ("anchor", anchorStr);
+        const bool hasReferenceLineOffsetX = routingElementData.Get ("referenceLineOffsetX", referenceLineOffsetX);
+        const bool hasReferenceLineOffsetY = routingElementData.Get ("referenceLineOffsetY", referenceLineOffsetY);
+        const bool hasWallThickness = routingElementData.Get ("wallThickness", wallThickness);
+        const bool hasFlangeSize = routingElementData.Get ("flangeSize", flangeSize);
+        if (hasWidth || hasHeight || hasShape || hasReferenceId || hasPreferenceTableId ||
+            hasAnchor || hasReferenceLineOffsetX || hasReferenceLineOffsetY || hasWallThickness || hasFlangeSize || hasConnectionStyle) {
             for (const ACAPI::MEP::UniqueID& segmentId : routingElement->GetRoutingSegmentIds ()) {
                 ACAPI::Result<RoutingSegment> segment = RoutingSegment::Get (segmentId);
                 if (segment.IsErr ()) {
                     success = false;
                     continue;
                 }
+                bool settersSucceeded = true;
                 ACAPI::Result<void> result = segment->Modify ([&](RoutingSegment::Modifier& modifier) {
                     // Same order as in CreateMEPRoutingElements: table first, then the reference id
                     // that is resolved against it.
@@ -1212,7 +1860,39 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
                     if (hasReferenceId && referenceId >= 0) {
                         modifier.SetCrossSectionReferenceId (static_cast<uint32_t> (referenceId));
                     }
-                }, "Modify Cross Section of Routing Segment");
+                    if (hasAnchor) {
+                        modifier.SetAnchor (AnchorIdFromString (anchorStr));
+                    }
+                    if (hasReferenceLineOffsetX) {
+                        modifier.SetReferenceLineOffsetX (referenceLineOffsetX);
+                    }
+                    if (hasReferenceLineOffsetY) {
+                        modifier.SetReferenceLineOffsetY (referenceLineOffsetY);
+                    }
+                    if (hasWallThickness) {
+                        settersSucceeded &= modifier.SetWallThickness (wallThickness).IsOk ();
+                    }
+                    if (hasFlangeSize) {
+                        settersSucceeded &= modifier.SetFlangeSize (flangeSize).IsOk ();
+                    }
+                    if (connectionStyle.has_value ()) {
+                        settersSucceeded &= modifier.SetConnectionStyle (connectionStyle.value ()).IsOk ();
+                    }
+                }, "Modify Routing Segment");
+                success &= result.IsOk () && settersSucceeded;
+            }
+        }
+
+        if (preferredTransitionPlacement.has_value ()) {
+            for (const ACAPI::MEP::UniqueID& nodeId : routingElement->GetRoutingNodeIds ()) {
+                ACAPI::Result<RoutingNode> node = RoutingNode::Get (nodeId);
+                if (node.IsErr ()) {
+                    success = false;
+                    continue;
+                }
+                ACAPI::Result<void> result = node->Modify ([&](RoutingNode::Modifier& modifier) {
+                    modifier.SetPreferredTransitionPlacement (preferredTransitionPlacement.value ());
+                }, "Modify Preferred Transition Placement of Routing Node");
                 success &= result.IsOk ();
             }
         }
@@ -1241,6 +1921,218 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
         executionResults (success
             ? CreateSuccessfulExecutionResult ()
             : CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify the routing element."));
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
+}
+
+ModifyMEPPortsCommand::ModifyMEPPortsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyMEPPortsCommand::GetName () const
+{
+    return "ModifyMEPPorts";
+}
+
+GS::Optional<GS::UniString> ModifyMEPPortsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "portsData": {
+                "type": "array",
+                "description": "Array of data to modify MEP ports. Only provided fields are changed.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "portId": {
+                            "$ref": "#/Guid",
+                            "description": "The port to modify, as returned by GetMEPPorts."
+                        },
+                        "shape": {
+                            "$ref": "#/MEPCrossSectionShape",
+                            "description": "New shape of the port."
+                        },
+                        "connectionStyle": {
+                            "$ref": "#/MEPConnectionStyle",
+                            "description": "New connection style of the port. Available from Archicad 30."
+                        },
+                        "flowDirection": {
+                            "$ref": "#/MEPFlowDirection",
+                            "description": "New flow direction of a piping or ventilation port."
+                        },
+                        "outerDiameter": {
+                            "type": "number",
+                            "description": "New outer diameter of a piping port."
+                        },
+                        "nominalSize": {
+                            "type": "string",
+                            "description": "New nominal size of a piping port. Available from Archicad 30."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "portId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "portsData"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyMEPPortsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ModifyMEPPortsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::Array<GS::ObjectState> portsData;
+    if (!parameters.Get ("portsData", portsData)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'portsData' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& portData : portsData) {
+        GS::UniString portIdStr;
+        if (!portData.Get ("portId", portIdStr)) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'portId' parameter."));
+            continue;
+        }
+
+        const ACAPI::MEP::UniqueID portId = Adapter::UniqueID (APIGuidFromString (portIdStr.ToCStr ()));
+        ACAPI::Result<Port> port = Port::Get (portId);
+        if (port.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (port.UnwrapErr ().kind, "Failed to get the MEP port."));
+            continue;
+        }
+
+        // The values are checked before anything is changed.
+        GS::UniString shapeStr;
+        GS::UniString connectionStyleStr;
+        GS::UniString flowDirectionStr;
+        GS::UniString nominalSize;
+        double outerDiameter = 0.0;
+        const bool hasShape = portData.Get ("shape", shapeStr);
+        const bool hasConnectionStyle = portData.Get ("connectionStyle", connectionStyleStr);
+        const bool hasFlowDirection = portData.Get ("flowDirection", flowDirectionStr);
+        const bool hasNominalSize = portData.Get ("nominalSize", nominalSize);
+        const bool hasOuterDiameter = portData.Get ("outerDiameter", outerDiameter);
+        const std::optional<ConnectorShape> shape = ConnectorShapeFromString (shapeStr);
+        const std::optional<ConnectionStyle> connectionStyle = MEPEnumFromString (ConnectionStyleNames, connectionStyleStr);
+        const std::optional<FlowDirection> flowDirection = MEPEnumFromString (FlowDirectionNames, flowDirectionStr);
+        if ((hasShape && !shape.has_value ()) ||
+            (hasConnectionStyle && !connectionStyle.has_value ()) ||
+            (hasFlowDirection && !flowDirection.has_value ())) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Invalid 'shape', 'connectionStyle' or 'flowDirection' value."));
+            continue;
+        }
+#ifndef ServerMainVers_3000
+        if (hasConnectionStyle || hasNominalSize) {
+            executionResults (CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "'connectionStyle' and 'nominalSize' require Archicad 30 or newer."));
+            continue;
+        }
+#endif
+
+        // Flow direction, outer diameter and nominal size live on the domain specific port classes.
+        const Domain domain = port->GetDomain ();
+        if ((hasFlowDirection && domain == Domain::CableCarrier) ||
+            ((hasOuterDiameter || hasNominalSize) && domain != Domain::Piping)) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "'flowDirection' needs a piping or ventilation port, 'outerDiameter' and 'nominalSize' need a piping port."));
+            continue;
+        }
+
+        bool success = true;
+
+        if (hasShape || hasConnectionStyle) {
+            bool settersSucceeded = true;
+            ACAPI::Result<void> result = port->Modify ([&](PortBase::Modifier& modifier) {
+                if (shape.has_value ()) {
+                    settersSucceeded &= modifier.SetShape (shape.value ()).IsOk ();
+                }
+#ifdef ServerMainVers_3000
+                if (connectionStyle.has_value ()) {
+                    settersSucceeded &= modifier.SetConnectionStyle (connectionStyle.value ()).IsOk ();
+                }
+#endif
+            }, "Modify MEP Port");
+            success &= result.IsOk () && settersSucceeded;
+        }
+
+        if (hasFlowDirection || hasOuterDiameter || hasNominalSize) {
+            bool settersSucceeded = true;
+            if (domain == Domain::Piping) {
+                ACAPI::Result<PipingPort> pipingPort = PipingPort::Get (portId);
+                if (pipingPort.IsErr ()) {
+                    success = false;
+                } else {
+                    ACAPI::Result<void> result = pipingPort->Modify ([&](PipingPort::Modifier& modifier) {
+                        if (flowDirection.has_value ()) {
+#ifdef ServerMainVers_2900
+                            settersSucceeded &= modifier.SetFlowDirection (flowDirection.value ()).IsOk ();
+#else
+                            // Returns void in Archicad 28.
+                            modifier.SetFlowDirection (flowDirection.value ());
+#endif
+                        }
+                        if (hasOuterDiameter) {
+                            settersSucceeded &= modifier.SetOuterDiameter (outerDiameter).IsOk ();
+                        }
+#ifdef ServerMainVers_3000
+                        if (hasNominalSize) {
+                            settersSucceeded &= modifier.SetNominalSize (nominalSize).IsOk ();
+                        }
+#endif
+                    }, "Modify MEP Piping Port");
+                    success &= result.IsOk () && settersSucceeded;
+                }
+            } else {
+                ACAPI::Result<VentilationPort> ventilationPort = VentilationPort::Get (portId);
+                if (ventilationPort.IsErr ()) {
+                    success = false;
+                } else {
+                    ACAPI::Result<void> result = ventilationPort->Modify ([&](VentilationPort::Modifier& modifier) {
+                        if (flowDirection.has_value ()) {
+#ifdef ServerMainVers_2900
+                            settersSucceeded &= modifier.SetFlowDirection (flowDirection.value ()).IsOk ();
+#else
+                            // Returns void in Archicad 28.
+                            modifier.SetFlowDirection (flowDirection.value ());
+#endif
+                        }
+                    }, "Modify MEP Ventilation Port");
+                    success &= result.IsOk () && settersSucceeded;
+                }
+            }
+        }
+
+        executionResults (success
+            ? CreateSuccessfulExecutionResult ()
+            : CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify the MEP port."));
     }
 
     return response;
@@ -1370,9 +2262,184 @@ GS::ObjectState ConnectMEPElementsCommand::Execute (const GS::ObjectState& param
     }
 
     return response;
+#elif defined (ServerMainVers_2700)
+    GS::Array<GS::ObjectState> connectionsData;
+    if (!parameters.Get ("connectionsData", connectionsData)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'connectionsData' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& connectionResults = response.AddList<GS::ObjectState> ("connectionResults");
+
+    for (const GS::ObjectState& connectionData : connectionsData) {
+        const GS::ObjectState* routingElementId = connectionData.Get ("routingElementId");
+        const GS::ObjectState* connectToId = connectionData.Get ("connectToId");
+        if (routingElementId == nullptr || connectToId == nullptr) {
+            connectionResults (CreateErrorResponse (APIERR_BADPARS, "Missing 'routingElementId' or 'connectToId' parameter."));
+            continue;
+        }
+
+        ACAPI::Result<RoutingElement> routingElement = RoutingElement::Get (Adapter::UniqueID (GetGuidFromObjectState (*routingElementId)));
+        if (routingElement.IsErr ()) {
+            connectionResults (CreateErrorResponse (routingElement.UnwrapErr ().kind, "Failed to get the routing element."));
+            continue;
+        }
+
+        // Archicad 27 connects through RoutingElement::Modifier::Connect, which reports no result.
+        std::optional<ACAPI::Error> connectionError;
+        ACAPI::Result<void> modifyResult = routingElement->Modify ([&](RoutingElement::Modifier& modifier) {
+            ACAPI::Result<void> result = modifier.Connect (Adapter::UniqueID (GetGuidFromObjectState (*connectToId)));
+            if (result.IsErr ()) {
+                connectionError = result.UnwrapErr ();
+            }
+        }, "Connect MEP Elements");
+
+        if (connectionError.has_value ()) {
+            connectionResults (CreateErrorResponse (connectionError->kind, "Failed to connect the elements."));
+            continue;
+        }
+        if (modifyResult.IsErr ()) {
+            connectionResults (CreateErrorResponse (modifyResult.UnwrapErr ().kind, "Failed to connect the elements."));
+            continue;
+        }
+
+        connectionResults (GS::ObjectState ());
+    }
+
+    return response;
 #else
     UNUSED_PARAMETER (parameters);
-    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
+CheckMEPPortConnectabilityCommand::CheckMEPPortConnectabilityCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CheckMEPPortConnectabilityCommand::GetName () const
+{
+    return "CheckMEPPortConnectability";
+}
+
+GS::Optional<GS::UniString> CheckMEPPortConnectabilityCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "portPairs": {
+                "type": "array",
+                "description": "The pairs of ports to check.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "portId": {
+                            "$ref": "#/Guid",
+                            "description": "The port to check, as returned by GetMEPPorts."
+                        },
+                        "otherPortId": {
+                            "$ref": "#/Guid",
+                            "description": "The port to connect it to, as returned by GetMEPPorts."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "portId",
+                        "otherPortId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "portPairs"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CheckMEPPortConnectabilityCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "results": {
+                "type": "array",
+                "description": "The result for each pair of ports, in the order of the input.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "isConnectable": {
+                                    "type": "boolean",
+                                    "description": "Whether the port can be connected to the other port."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "isConnectable"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "results"
+        ]
+    })";
+}
+
+GS::ObjectState CheckMEPPortConnectabilityCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> portPairs;
+    if (!parameters.Get ("portPairs", portPairs)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'portPairs' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("results");
+
+    for (const GS::ObjectState& portPair : portPairs) {
+        GS::UniString portIdStr;
+        GS::UniString otherPortIdStr;
+        if (!portPair.Get ("portId", portIdStr) || !portPair.Get ("otherPortId", otherPortIdStr)) {
+            results (CreateErrorResponse (APIERR_BADPARS, "Missing 'portId' or 'otherPortId' parameter."));
+            continue;
+        }
+
+        const ACAPI::MEP::UniqueID otherPortId = Adapter::UniqueID (APIGuidFromString (otherPortIdStr.ToCStr ()));
+        ACAPI::Result<Port> port = Port::Get (Adapter::UniqueID (APIGuidFromString (portIdStr.ToCStr ())));
+        ACAPI::Result<Port> otherPort = Port::Get (otherPortId);
+        if (port.IsErr () || !port->Exists () || otherPort.IsErr () || !otherPort->Exists ()) {
+            results (CreateErrorResponse (APIERR_BADID, "The port given in 'portId' or 'otherPortId' was not found."));
+            continue;
+        }
+
+#ifdef ServerMainVers_2800
+        ACAPI::Result<bool> isConnectable = port->IsPhysicallyConnectable (otherPortId);
+#else
+        ACAPI::Result<bool> isConnectable = port->IsConnectable (otherPortId);
+#endif
+        if (isConnectable.IsErr ()) {
+            results (CreateErrorResponse (isConnectable.UnwrapErr ().kind, "Failed to check whether the ports can be connected."));
+            continue;
+        }
+
+        results (GS::ObjectState ("isConnectable", isConnectable.Unwrap ()));
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
 #endif
 }
 
@@ -1396,7 +2463,7 @@ GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetInputParametersSch
             },
             "includeFittingTables": {
                 "type": "boolean",
-                "description": "Also return the elbow, branch and transition preference tables. Defaults to false."
+                "description": "Also return the elbow, branch and transition preference tables. Defaults to false. Ignored for the CableCarrier domain."
             }
         },
         "additionalProperties": false,
@@ -1411,13 +2478,28 @@ GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetRawResponseSchema 
         "properties": {
             "tables": {
                 "type": "array",
-                "description": "The circular segment preference tables of the domain.",
+                "description": "The circular segment preference tables of the domain. Empty for the CableCarrier domain.",
                 "items": {
                     "$ref": "#/MEPPreferenceTable"
                 }
             },
+            "rectangularTables": {
+                "type": "array",
+                "description": "The rectangular segment preference tables of the Ventilation domain.",
+                "items": {
+                    "$ref": "#/MEPValuePreferenceTable"
+                }
+            },
+            "cableCarrierTables": {
+                "type": "array",
+                "description": "The segment preference tables of the CableCarrier domain.",
+                "items": {
+                    "$ref": "#/MEPValuePreferenceTable"
+                }
+            },
             "referenceSet": {
-                "$ref": "#/MEPReferenceSet"
+                "$ref": "#/MEPReferenceSet",
+                "description": "The reference set of the Piping or Ventilation domain. Not returned for the CableCarrier domain."
             },
             "angleSet": {
                 "$ref": "#/MEPAngleSet",
@@ -1446,16 +2528,92 @@ GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetRawResponseSchema 
             }
         },
         "additionalProperties": false,
-        "required": ["tables", "referenceSet"]
+        "required": ["tables"]
     })";
 }
 
 #ifdef ServerMainVers_2800
+// The preference table getters return either a plain value, a std::optional or an ACAPI::Result.
+// PreferenceTableValueToOptional turns all of them into a std::optional, so a value that cannot
+// be read is left out of the response instead of failing the whole table.
+// IsEditable returns an ACAPI::Result<void> that is Ok when the table is editable; PreferenceTableIsEditable
+// also handles a Result<bool> or a bool, so a read-only table is never reported as editable.
+template <typename T, typename = void>
+struct IsPreferenceTableResult : std::false_type {};
+
+template <typename T>
+struct IsPreferenceTableResult<T, std::void_t<decltype (std::declval<T&> ().IsOk ())>> : std::true_type {};
+
+template <typename T>
+struct IsPreferenceTableOptional : std::false_type {};
+
+template <typename T>
+struct IsPreferenceTableOptional<std::optional<T>> : std::true_type {};
+
+template <typename T>
+static auto PreferenceTableValueToOptional (T&& value)
+{
+    using ValueT = std::decay_t<T>;
+    if constexpr (IsPreferenceTableResult<ValueT>::value) {
+        using ResultValueT = std::decay_t<decltype (*value)>;
+        return value.IsOk () ? std::optional<ResultValueT> (*value) : std::optional<ResultValueT> ();
+    } else if constexpr (IsPreferenceTableOptional<ValueT>::value) {
+        return ValueT (std::forward<T> (value));
+    } else {
+        return std::optional<ValueT> (std::forward<T> (value));
+    }
+}
+
+template <typename T, typename = void>
+struct HasPreferenceTableResultValue : std::false_type {};
+
+template <typename T>
+struct HasPreferenceTableResultValue<T, std::enable_if_t<!std::is_void_v<decltype (*std::declval<T&> ())>>> : std::true_type {};
+
+template <typename T>
+static bool PreferenceTableIsEditable (T&& isEditable)
+{
+    using ValueT = std::decay_t<T>;
+    if constexpr (std::is_same_v<ValueT, bool>) {
+        return isEditable;
+    } else if constexpr (HasPreferenceTableResultValue<ValueT>::value) {
+        return isEditable.IsOk () && static_cast<bool> (*isEditable);
+    } else {
+        return isEditable.IsOk ();
+    }
+}
+
+template <typename T>
+static void AddPreferenceTableValue (GS::ObjectState& os, const char* name, T&& value)
+{
+    const auto optionalValue = PreferenceTableValueToOptional (std::forward<T> (value));
+    if (optionalValue.has_value ()) {
+        os.Add (name, *optionalValue);
+    }
+}
+
+// The segmentation lengths of a segment preference table, available from Archicad 29.
+template <typename TableT>
+static void AddSegmentationLengths (GS::ObjectState& tableOS, const TableT& table)
+{
+#ifdef ServerMainVers_2900
+    AddPreferenceTableValue (tableOS, "useIndividualSegmentLengths", table.GetUseIndividualSegmentLengths ());
+    AddPreferenceTableValue (tableOS, "minimumSegmentationLength", table.GetMinimumSegmentationLength ());
+    AddPreferenceTableValue (tableOS, "maximumSegmentationLength", table.GetMaximumSegmentationLength ());
+#else
+    UNUSED_PARAMETER (tableOS);
+    UNUSED_PARAMETER (table);
+#endif
+}
+
 template <typename TableT>
 static GS::ObjectState DumpPreferenceTable (const TableT& table, const GS::Guid& tableGuid)
 {
     GS::ObjectState tableOS;
     tableOS.Add ("guid", tableGuid.ToUniString ());
+    AddPreferenceTableValue (tableOS, "name", table.GetName ());
+    tableOS.Add ("isEditable", PreferenceTableIsEditable (table.IsEditable ()));
+    AddSegmentationLengths (tableOS, table);
     const auto& rows = tableOS.AddList<GS::ObjectState> ("rows");
     const uint32_t size = table.GetSize ();
     for (uint32_t i = 0; i < size; ++i) {
@@ -1464,13 +2622,39 @@ static GS::ObjectState DumpPreferenceTable (const TableT& table, const GS::Guid&
         if (rowDiameter.IsErr () || rowReferenceId.IsErr ()) {
             continue;
         }
-        GS::ObjectState rowOS;
+        GS::ObjectState rowOS ("index", static_cast<Int32> (i));
         rowOS.Add ("referenceId", static_cast<Int32> (*rowReferenceId));
         rowOS.Add ("diameter", *rowDiameter);
+        AddPreferenceTableValue (rowOS, "wallThickness", table.GetWallThickness (i));
         auto rowDescription = table.GetDescription (i);
         if (rowDescription.IsOk ()) {
             rowOS.Add ("description", *rowDescription);
         }
+        AddPreferenceTableValue (rowOS, "isValid", table.IsRowValid (i));
+        rows (rowOS);
+    }
+    return tableOS;
+}
+
+// Rectangular duct and cable carrier segment preference tables are a list of sizes (values) with a description.
+template <typename TableT>
+static GS::ObjectState DumpValuePreferenceTable (const TableT& table, const GS::Guid& tableGuid)
+{
+    GS::ObjectState tableOS;
+    tableOS.Add ("guid", tableGuid.ToUniString ());
+    AddPreferenceTableValue (tableOS, "name", table.GetName ());
+    tableOS.Add ("isEditable", PreferenceTableIsEditable (table.IsEditable ()));
+    AddSegmentationLengths (tableOS, table);
+    const auto& rows = tableOS.AddList<GS::ObjectState> ("rows");
+    const uint32_t size = static_cast<uint32_t> (PreferenceTableValueToOptional (table.GetSize ()).value_or (0));
+    for (uint32_t i = 0; i < size; ++i) {
+        const auto value = PreferenceTableValueToOptional (table.GetValue (i));
+        if (!value.has_value ()) {
+            continue;
+        }
+        GS::ObjectState rowOS ("index", static_cast<Int32> (i));
+        rowOS.Add ("value", *value);
+        AddPreferenceTableValue (rowOS, "description", table.GetDescription (i));
         rows (rowOS);
     }
     return tableOS;
@@ -1489,6 +2673,7 @@ static GS::ObjectState DumpElbowPreferenceTable (const TableT& table, const GS::
     GS::ObjectState tableOS;
     tableOS.Add ("guid", tableGuid.ToUniString ());
     tableOS.Add ("name", table.GetName ());
+    tableOS.Add ("isEditable", PreferenceTableIsEditable (table.IsEditable ()));
     const auto& rows = tableOS.AddList<GS::ObjectState> ("rows");
     for (uint32_t i = 0; i < table.GetSize (); ++i) {
         auto referenceId = table.GetReferenceId (i);
@@ -1497,7 +2682,7 @@ static GS::ObjectState DumpElbowPreferenceTable (const TableT& table, const GS::
         if (referenceId.IsErr () || diameter.IsErr () || radius.IsErr ()) {
             continue;
         }
-        GS::ObjectState rowOS;
+        GS::ObjectState rowOS ("index", static_cast<Int32> (i));
         rowOS.Add ("referenceId", static_cast<Int32> (*referenceId));
 #ifdef ServerMainVers_2900
         auto angle = table.GetAngle (i);
@@ -1508,6 +2693,7 @@ static GS::ObjectState DumpElbowPreferenceTable (const TableT& table, const GS::
         rowOS.Add ("diameter", *diameter);
         rowOS.Add ("radius", *radius);
         AddRowDescription (rowOS, table.GetDescription (i));
+        AddPreferenceTableValue (rowOS, "isValid", table.IsRowValid (i));
         rows (rowOS);
     }
     return tableOS;
@@ -1519,6 +2705,7 @@ static GS::ObjectState DumpBranchPreferenceTable (const TableT& table, const GS:
     GS::ObjectState tableOS;
     tableOS.Add ("guid", tableGuid.ToUniString ());
     tableOS.Add ("name", table.GetName ());
+    tableOS.Add ("isEditable", PreferenceTableIsEditable (table.IsEditable ()));
     const auto& rows = tableOS.AddList<GS::ObjectState> ("rows");
     for (uint32_t i = 0; i < table.GetSize (); ++i) {
         auto mainAxisReferenceId = table.GetMainAxisReferenceId (i);
@@ -1532,7 +2719,7 @@ static GS::ObjectState DumpBranchPreferenceTable (const TableT& table, const GS:
             length.IsErr () || branchOffset.IsErr () || connectionLength.IsErr ()) {
             continue;
         }
-        GS::ObjectState rowOS;
+        GS::ObjectState rowOS ("index", static_cast<Int32> (i));
         rowOS.Add ("mainAxisReferenceId", static_cast<Int32> (*mainAxisReferenceId));
         rowOS.Add ("branchAxisReferenceId", static_cast<Int32> (*branchAxisReferenceId));
 #ifdef ServerMainVers_2900
@@ -1547,6 +2734,7 @@ static GS::ObjectState DumpBranchPreferenceTable (const TableT& table, const GS:
         rowOS.Add ("branchOffset", *branchOffset);
         rowOS.Add ("connectionLength", *connectionLength);
         AddRowDescription (rowOS, table.GetDescription (i));
+        AddPreferenceTableValue (rowOS, "isValid", table.IsRowValid (i));
         rows (rowOS);
     }
     return tableOS;
@@ -1559,6 +2747,7 @@ static GS::ObjectState DumpTransitionPreferenceTable (const TableT& table, const
     GS::ObjectState tableOS;
     tableOS.Add ("guid", tableGuid.ToUniString ());
     tableOS.Add ("name", table.GetName ());
+    tableOS.Add ("isEditable", PreferenceTableIsEditable (table.IsEditable ()));
     const auto& rows = tableOS.AddList<GS::ObjectState> ("rows");
     for (uint32_t i = 0; i < table.GetSize (); ++i) {
         auto beginReferenceId = table.GetBeginReferenceId (i);
@@ -1568,7 +2757,7 @@ static GS::ObjectState DumpTransitionPreferenceTable (const TableT& table, const
         if (beginReferenceId.IsErr () || endReferenceId.IsErr () || beginDiameter.IsErr () || endDiameter.IsErr ()) {
             continue;
         }
-        GS::ObjectState rowOS;
+        GS::ObjectState rowOS ("index", static_cast<Int32> (i));
         rowOS.Add ("beginReferenceId", static_cast<Int32> (*beginReferenceId));
         rowOS.Add ("endReferenceId", static_cast<Int32> (*endReferenceId));
         rowOS.Add ("beginDiameter", *beginDiameter);
@@ -1586,6 +2775,7 @@ static GS::ObjectState DumpTransitionPreferenceTable (const TableT& table, const
             }
         }
         AddRowDescription (rowOS, table.GetDescription (i));
+        AddPreferenceTableValue (rowOS, "isValid", table.IsRowValid (i));
         rows (rowOS);
     }
     return tableOS;
@@ -1595,11 +2785,16 @@ static GS::ObjectState DumpAngleSet (const AngleSetBase& angleSet)
 {
     GS::ObjectState angleSetOS;
     angleSetOS.Add ("name", angleSet.GetName ());
+    angleSetOS.Add ("isEditable", PreferenceTableIsEditable (angleSet.IsEditable ()));
     const auto& angles = angleSetOS.AddList<double> ("angles");
+    const auto& angleDetails = angleSetOS.AddList<GS::ObjectState> ("angleDetails");
     for (uint32_t i = 0; i < angleSet.GetSize (); ++i) {
         auto angle = angleSet.GetAngle (i);
         if (angle.IsOk ()) {
             angles (*angle);
+            GS::ObjectState angleOS ("angle", *angle);
+            AddPreferenceTableValue (angleOS, "isDefined", angleSet.IsAngleDefined (i));
+            angleDetails (angleOS);
         }
     }
     return angleSetOS;
@@ -1610,11 +2805,16 @@ static GS::ObjectState DumpReferenceSet (const ReferenceSetBase& referenceSet)
 {
     GS::ObjectState referenceSetOS;
     referenceSetOS.Add ("name", referenceSet.GetName ());
+    referenceSetOS.Add ("isEditable", PreferenceTableIsEditable (referenceSet.IsEditable ()));
     const auto& referenceIds = referenceSetOS.AddList<Int32> ("referenceIds");
+    const auto& referenceIdDetails = referenceSetOS.AddList<GS::ObjectState> ("referenceIdDetails");
     for (uint32_t i = 0; i < referenceSet.GetSize (); ++i) {
         auto referenceId = referenceSet.GetReferenceId (i);
         if (referenceId.IsOk ()) {
             referenceIds (static_cast<Int32> (*referenceId));
+            GS::ObjectState referenceIdOS ("referenceId", static_cast<Int32> (*referenceId));
+            AddPreferenceTableValue (referenceIdOS, "isDefined", referenceSet.IsReferenceIdDefined (i));
+            referenceIdDetails (referenceIdOS);
         }
     }
     return referenceSetOS;
@@ -1641,7 +2841,7 @@ GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& p
     GS::UniString domainStr;
     parameters.Get ("domain", domainStr);
     const std::optional<Domain> domain = DomainFromString (domainStr);
-    if (!domain.has_value () || *domain == Domain::CableCarrier) {
+    if (!domain.has_value ()) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid MEP domain: " + domainStr);
     }
     bool includeFittingTables = false;
@@ -1649,6 +2849,17 @@ GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& p
 
     GS::ObjectState response;
     const auto& tables = response.AddList<GS::ObjectState> ("tables");
+    const auto dumpValueTable = [] (const auto& table, const GS::Guid& guid) { return DumpValuePreferenceTable (table, guid); };
+
+    // Cable carriers have no circular tables, reference set or fitting tables, only their own segment tables.
+    if (*domain == Domain::CableCarrier) {
+        auto container = GetCableCarrierSegmentPreferenceTableContainer ();
+        if (container.IsErr ()) {
+            return CreateErrorResponse (APIERR_GENERAL, GS::UniString ("Failed to get the cable carrier segment preference table container: ") + container.UnwrapErr ().text.c_str ());
+        }
+        AddPreferenceTables<CableCarrierSegmentPreferenceTable> (response, "cableCarrierTables", container, dumpValueTable);
+        return response;
+    }
 
     const auto dumpElbow = [] (const auto& table, const GS::Guid& guid) { return DumpElbowPreferenceTable (table, guid); };
     const auto dumpBranch = [] (const auto& table, const GS::Guid& guid) { return DumpBranchPreferenceTable (table, guid); };
@@ -1669,10 +2880,10 @@ GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& p
         }
 
         auto referenceSet = GetPipeReferenceSet ();
-        response.Add ("referenceSet", referenceSet.IsOk () ? DumpReferenceSet (*referenceSet) : GS::ObjectState ("name", GS::UniString (), "referenceIds", GS::Array<Int32> ()));
+        response.Add ("referenceSet", referenceSet.IsOk () && referenceSet->Exists () ? DumpReferenceSet (*referenceSet) : GS::ObjectState ("name", GS::UniString (), "referenceIds", GS::Array<Int32> ()));
 #ifdef ServerMainVers_2900
         auto angleSet = GetPipeAngleSet ();
-        if (angleSet.IsOk ()) {
+        if (angleSet.IsOk () && angleSet->Exists ()) {
             response.Add ("angleSet", DumpAngleSet (*angleSet));
         }
 #endif
@@ -1694,12 +2905,14 @@ GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& p
                 tables (DumpPreferenceTable (*table, id.GetGuid ()));
             }
         }
+        // The rectangular tables are in the same container; DuctRectangularSegmentPreferenceTable::Get picks them.
+        AddPreferenceTables<DuctRectangularSegmentPreferenceTable> (response, "rectangularTables", container, dumpValueTable);
 
         auto referenceSet = GetDuctReferenceSet ();
-        response.Add ("referenceSet", referenceSet.IsOk () ? DumpReferenceSet (*referenceSet) : GS::ObjectState ("name", GS::UniString (), "referenceIds", GS::Array<Int32> ()));
+        response.Add ("referenceSet", referenceSet.IsOk () && referenceSet->Exists () ? DumpReferenceSet (*referenceSet) : GS::ObjectState ("name", GS::UniString (), "referenceIds", GS::Array<Int32> ()));
 #ifdef ServerMainVers_2900
         auto angleSet = GetDuctAngleSet ();
-        if (angleSet.IsOk ()) {
+        if (angleSet.IsOk () && angleSet->Exists ()) {
             response.Add ("angleSet", DumpAngleSet (*angleSet));
         }
 #endif
@@ -1716,6 +2929,792 @@ GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& p
 }
 #else
 GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+}
+#endif
+
+ModifyMEPPreferenceTablesCommand::ModifyMEPPreferenceTablesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyMEPPreferenceTablesCommand::GetName () const
+{
+    return "ModifyMEPPreferenceTables";
+}
+
+GS::Optional<GS::UniString> ModifyMEPPreferenceTablesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "domain": {
+                "$ref": "#/MEPPreferenceTableDomain"
+            },
+            "tablesToAdd": {
+                "type": "array",
+                "description": "New tables to add to the domain, before the other changes.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "$ref": "#/MEPPreferenceTableType"
+                        },
+                        "name": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["type", "name"]
+                }
+            },
+            "tables": {
+                "type": "array",
+                "description": "The tables of the domain to change, in the shape GetMEPPreferenceTables returns them. Each table is changed in one undoable step.",
+                "items": {
+                    "$ref": "#/MEPPreferenceTableChange"
+                }
+            },
+            "tablesToDelete": {
+                "type": "array",
+                "description": "The guids of the tables of the domain to delete, after the other table changes.",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "referenceIdsToDelete": {
+                "type": "array",
+                "description": "Reference ids to delete from the reference set of the Piping or Ventilation domain.",
+                "items": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            },
+            "anglesToDelete": {
+                "type": "array",
+                "description": "Angles to delete from the angle set of the Piping or Ventilation domain, as GetMEPPreferenceTables returns them. Available from Archicad 29.",
+                "items": {
+                    "type": "number"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["domain"]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyMEPPreferenceTablesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "addedTables": {
+                "type": "array",
+                "description": "One item for each item of tablesToAdd: the guid of the new table, or the error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "guid": {
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["guid"]
+                        },
+                        {
+                            "$ref": "#/FailedExecutionResult"
+                        }
+                    ]
+                }
+            },
+            "tables": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result for each item of tables."
+            },
+            "deletedTables": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result for each item of tablesToDelete."
+            },
+            "referenceSet": {
+                "$ref": "#/ExecutionResult",
+                "description": "Only when referenceIdsToDelete is given."
+            },
+            "angleSet": {
+                "$ref": "#/ExecutionResult",
+                "description": "Only when anglesToDelete is given."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["addedTables", "tables", "deletedTables"]
+    })";
+}
+
+#ifdef ServerMainVers_2800
+template <typename TableT>
+constexpr bool IsCircularSegmentPreferenceTable = std::is_same_v<TableT, PipeSegmentPreferenceTable> || std::is_same_v<TableT, DuctCircularSegmentPreferenceTable>;
+
+template <typename TableT>
+constexpr bool IsValuePreferenceTable = std::is_same_v<TableT, DuctRectangularSegmentPreferenceTable> || std::is_same_v<TableT, CableCarrierSegmentPreferenceTable>;
+
+template <typename TableT>
+constexpr bool IsElbowPreferenceTable = std::is_same_v<TableT, PipeElbowPreferenceTable> || std::is_same_v<TableT, DuctElbowPreferenceTable>;
+
+template <typename TableT>
+constexpr bool IsBranchPreferenceTable = std::is_same_v<TableT, PipeBranchPreferenceTable> || std::is_same_v<TableT, DuctBranchPreferenceTable>;
+
+// The row values ModifyMEPPreferenceTables can set; which of them belong to a table depends on its kind.
+static const char* const PreferenceRowValueKeys[] = {
+    "diameter", "wallThickness", "value", "radius", "mainAxisDiameter", "branchAxisDiameter", "length",
+    "branchOffset", "connectionLength", "beginDiameter", "endDiameter", "angle", "description"
+};
+
+template <typename TableT>
+static bool IsPreferenceRowValueOfTable (const GS::UniString& key)
+{
+    if (key == "description") {
+        return true;
+    }
+    if constexpr (IsCircularSegmentPreferenceTable<TableT>) {
+        return key == "diameter" || key == "wallThickness";
+    } else if constexpr (IsValuePreferenceTable<TableT>) {
+        return key == "value";
+    } else if constexpr (IsElbowPreferenceTable<TableT>) {
+        return key == "diameter" || key == "radius";
+    } else if constexpr (IsBranchPreferenceTable<TableT>) {
+        return key == "mainAxisDiameter" || key == "branchAxisDiameter" || key == "length" || key == "branchOffset" || key == "connectionLength";
+    } else {
+#ifdef ServerMainVers_2900
+        // Pipe transitions are defined by their length, duct transitions by their angle.
+        if constexpr (std::is_same_v<TableT, PipeTransitionPreferenceTable>) {
+            return key == "beginDiameter" || key == "endDiameter" || key == "length";
+        } else {
+            return key == "beginDiameter" || key == "endDiameter" || key == "angle";
+        }
+#else
+        return false;
+#endif
+    }
+}
+
+// Follows where the rows of a preference table move while it is modified, so that every row index given
+// refers to the table before the call: deleting a row moves the rows after it up, and setting the value of
+// a rectangular duct or cable carrier row can move it, since these tables keep their rows ordered by value.
+class PreferenceTableRowIndices
+{
+public:
+    explicit PreferenceTableRowIndices (uint32_t size)
+    {
+        for (uint32_t i = 0; i < size; ++i) {
+            indices.push_back (i);
+        }
+    }
+
+    uint32_t Current (uint32_t originalIndex) const
+    {
+        return indices[originalIndex];
+    }
+
+    void Moved (uint32_t from, uint32_t to)
+    {
+        for (uint32_t& index : indices) {
+            if (index == from) {
+                index = to;
+            } else if (from < to && index > from && index <= to) {
+                --index;
+            } else if (to < from && index >= to && index < from) {
+                ++index;
+            }
+        }
+    }
+
+    void Deleted (uint32_t deletedIndex)
+    {
+        for (uint32_t& index : indices) {
+            if (index > deletedIndex) {
+                --index;
+            }
+        }
+    }
+
+private:
+    std::vector<uint32_t> indices;
+};
+
+struct PreferenceTableModifyError {
+    GSErrCode code;
+    GS::UniString message;
+};
+
+static GS::UniString PreferenceRowText (Int32 index)
+{
+    return " of row " + GS::ValueToUniString (index);
+}
+
+// Sets the value of a rectangular duct or cable carrier row unless an earlier change failed. The row can
+// move, since these tables keep their rows ordered by value; gives its new index.
+template <typename ModifierT>
+static std::optional<uint32_t> SetPreferenceRowValue (ModifierT& modifier, uint32_t index, double value, const GS::UniString& what, std::optional<PreferenceTableModifyError>& error)
+{
+    if (error.has_value ()) {
+        return std::nullopt;
+    }
+    ACAPI::Result<uint32_t> newIndex = modifier.SetValue (index, value);
+    if (newIndex.IsErr ()) {
+        error = PreferenceTableModifyError { newIndex.UnwrapErr ().kind, "Failed to " + what + "." };
+        return std::nullopt;
+    }
+    return *newIndex;
+}
+
+// Changes one preference table: its name, segmentation lengths, the values of its rows, deletes rows and,
+// in rectangular duct and cable carrier tables, adds rows. Everything is checked before the table is
+// changed, in one undoable step.
+template <typename TableT>
+static GS::ObjectState ModifyPreferenceTable (TableT& table, const GS::ObjectState& tableData)
+{
+    if (!PreferenceTableIsEditable (table.IsEditable ())) {
+        return CreateFailedExecutionResult (APIERR_NOACCESSRIGHT, "The preference table is not editable.");
+    }
+
+    const uint32_t size = static_cast<uint32_t> (PreferenceTableValueToOptional (table.GetSize ()).value_or (0));
+    GS::Array<GS::ObjectState> rowsData;
+    tableData.Get ("rows", rowsData);
+    std::vector<bool> isRowGiven (size, false);
+    // The wall thickness of a circular segment row is set by its reference id.
+    std::vector<uint32_t> referenceIds (size, 0);
+    for (const GS::ObjectState& rowData : rowsData) {
+        Int32 index = -1;
+        rowData.Get ("index", index);
+        if (index < 0 || static_cast<uint32_t> (index) >= size) {
+            return CreateFailedExecutionResult (APIERR_BADINDEX, "The table has no row " + GS::ValueToUniString (index) + ".");
+        }
+        if (isRowGiven[index]) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "Row " + GS::ValueToUniString (index) + " is given more than once.");
+        }
+        isRowGiven[index] = true;
+        bool deleteRow = false;
+        rowData.Get ("delete", deleteRow);
+        for (const char* key : PreferenceRowValueKeys) {
+            if (!rowData.Contains (key)) {
+                continue;
+            }
+            if (!IsPreferenceRowValueOfTable<TableT> (key)) {
+                // The elbow tables return the angle of their rows, but it cannot be set.
+                if constexpr (IsElbowPreferenceTable<TableT>) {
+                    if (GS::UniString (key) == "angle") {
+                        continue;
+                    }
+                }
+                return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString ("The row value '") + key + "' does not belong to this kind of preference table.");
+            }
+            if (deleteRow) {
+                return CreateFailedExecutionResult (APIERR_BADPARS, "Row " + GS::ValueToUniString (index) + " is deleted, so it cannot get new values.");
+            }
+        }
+        if constexpr (IsCircularSegmentPreferenceTable<TableT>) {
+            if (rowData.Contains ("wallThickness")) {
+                auto referenceId = table.GetReferenceId (static_cast<uint32_t> (index));
+                if (referenceId.IsErr ()) {
+                    return CreateFailedExecutionResult (referenceId.UnwrapErr ().kind, "Failed to get the reference id" + PreferenceRowText (index) + ".");
+                }
+                referenceIds[index] = *referenceId;
+            }
+        }
+    }
+
+    double minimumSegmentationLength = 0.0;
+    double maximumSegmentationLength = 0.0;
+    const bool hasMinimumSegmentationLength = tableData.Get ("minimumSegmentationLength", minimumSegmentationLength);
+    const bool hasMaximumSegmentationLength = tableData.Get ("maximumSegmentationLength", maximumSegmentationLength);
+    const bool hasSegmentationLengths = hasMinimumSegmentationLength || hasMaximumSegmentationLength || tableData.Contains ("useIndividualSegmentLengths");
+    if (hasSegmentationLengths) {
+        if constexpr (IsCircularSegmentPreferenceTable<TableT> || IsValuePreferenceTable<TableT>) {
+#ifdef ServerMainVers_2900
+            // Both lengths are set together, so a missing one keeps its current value.
+            if (hasMinimumSegmentationLength != hasMaximumSegmentationLength) {
+                const auto currentLength = hasMinimumSegmentationLength
+                    ? PreferenceTableValueToOptional (table.GetMaximumSegmentationLength ())
+                    : PreferenceTableValueToOptional (table.GetMinimumSegmentationLength ());
+                if (!currentLength.has_value ()) {
+                    return CreateFailedExecutionResult (APIERR_GENERAL, "Failed to get the current segmentation lengths; give both the minimum and the maximum.");
+                }
+                (hasMinimumSegmentationLength ? maximumSegmentationLength : minimumSegmentationLength) = *currentLength;
+            }
+#else
+            return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "The segmentation lengths are available from Archicad 29.");
+#endif
+        } else {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "Only segment preference tables have segmentation lengths.");
+        }
+    }
+
+    GS::Array<GS::ObjectState> newRowsData;
+    tableData.Get ("newRows", newRowsData);
+    if constexpr (!IsValuePreferenceTable<TableT>) {
+        if (!newRowsData.IsEmpty ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "Rows can only be added to rectangular duct and cable carrier segment tables.");
+        }
+    }
+
+    std::optional<PreferenceTableModifyError> error;
+    // Calls a setter unless an earlier one failed, and keeps the first error.
+    const auto call = [&] (const GS::UniString& what, const auto& setter) {
+        if (!error.has_value ()) {
+            const std::optional<GSErrCode> callError = GetErrorOfCall (setter);
+            if (callError.has_value ()) {
+                error = PreferenceTableModifyError { *callError, "Failed to " + what + "." };
+            }
+        }
+    };
+    PreferenceTableRowIndices rowIndices (size);
+    ACAPI::Result<void> modifyResult = table.Modify ([&] (typename TableT::Modifier& modifier) {
+        GS::UniString name;
+        if (tableData.Get ("name", name)) {
+            call ("set the name of the table", [&] () { return modifier.SetName (name); });
+        }
+        if constexpr (IsCircularSegmentPreferenceTable<TableT> || IsValuePreferenceTable<TableT>) {
+#ifdef ServerMainVers_2900
+            bool useIndividualSegmentLengths = false;
+            if (tableData.Get ("useIndividualSegmentLengths", useIndividualSegmentLengths)) {
+                call ("set whether the table uses individual segment lengths", [&] () { return modifier.SetUseIndividualSegmentLengths (useIndividualSegmentLengths); });
+            }
+            if (hasMinimumSegmentationLength || hasMaximumSegmentationLength) {
+                call ("set the segmentation lengths", [&] () { return modifier.SetSegmentationLengths (minimumSegmentationLength, maximumSegmentationLength); });
+            }
+#endif
+        }
+
+        // New values first, then the deletions, so that the indices of the deleted rows can be followed.
+        for (const GS::ObjectState& rowData : rowsData) {
+            Int32 originalIndex = 0;
+            rowData.Get ("index", originalIndex);
+            bool deleteRow = false;
+            rowData.Get ("delete", deleteRow);
+            if (deleteRow) {
+                continue;
+            }
+            const GS::UniString rowText = PreferenceRowText (originalIndex);
+            uint32_t index = rowIndices.Current (static_cast<uint32_t> (originalIndex));
+            double number = 0.0;
+            if constexpr (IsCircularSegmentPreferenceTable<TableT>) {
+                if (rowData.Get ("diameter", number)) {
+                    call ("set the diameter" + rowText, [&] () { return modifier.SetDiameter (index, number); });
+                }
+                if (rowData.Get ("wallThickness", number)) {
+                    const uint32_t referenceId = referenceIds[originalIndex];
+#ifdef ServerMainVers_2900
+                    call ("set the wall thickness" + rowText, [&] () { return modifier.SetWallThicknessByKey (referenceId, number); });
+#else
+                    call ("set the wall thickness" + rowText, [&] () { return modifier.SetWallThicknessByReferenceId (referenceId, number); });
+#endif
+                }
+            } else if constexpr (IsValuePreferenceTable<TableT>) {
+                if (rowData.Get ("value", number)) {
+                    const std::optional<uint32_t> newIndex = SetPreferenceRowValue (modifier, index, number, "set the value" + rowText, error);
+                    if (newIndex.has_value ()) {
+                        rowIndices.Moved (index, *newIndex);
+                        index = *newIndex;
+                    }
+                }
+            } else if constexpr (IsElbowPreferenceTable<TableT>) {
+                if (rowData.Get ("diameter", number)) {
+                    call ("set the diameter" + rowText, [&] () { return modifier.SetDiameter (index, number); });
+                }
+                if (rowData.Get ("radius", number)) {
+                    call ("set the radius" + rowText, [&] () { return modifier.SetRadius (index, number); });
+                }
+            } else if constexpr (IsBranchPreferenceTable<TableT>) {
+                if (rowData.Get ("mainAxisDiameter", number)) {
+                    call ("set the main axis diameter" + rowText, [&] () { return modifier.SetMainAxisDiameter (index, number); });
+                }
+                if (rowData.Get ("branchAxisDiameter", number)) {
+                    call ("set the branch axis diameter" + rowText, [&] () { return modifier.SetBranchAxisDiameter (index, number); });
+                }
+                if (rowData.Get ("length", number)) {
+                    call ("set the length" + rowText, [&] () { return modifier.SetLength (index, number); });
+                }
+                if (rowData.Get ("branchOffset", number)) {
+                    call ("set the branch offset" + rowText, [&] () { return modifier.SetBranchOffset (index, number); });
+                }
+                if (rowData.Get ("connectionLength", number)) {
+                    call ("set the connection length" + rowText, [&] () { return modifier.SetConnectionLength (index, number); });
+                }
+            } else {
+#ifdef ServerMainVers_2900
+                if (rowData.Get ("beginDiameter", number)) {
+                    call ("set the begin diameter" + rowText, [&] () { return modifier.SetBeginDiameter (index, number); });
+                }
+                if (rowData.Get ("endDiameter", number)) {
+                    call ("set the end diameter" + rowText, [&] () { return modifier.SetEndDiameter (index, number); });
+                }
+                if constexpr (std::is_same_v<TableT, PipeTransitionPreferenceTable>) {
+                    if (rowData.Get ("length", number)) {
+                        call ("set the length" + rowText, [&] () { return modifier.SetLength (index, number); });
+                    }
+                } else {
+                    if (rowData.Get ("angle", number)) {
+                        call ("set the angle" + rowText, [&] () { return modifier.SetAngle (index, number); });
+                    }
+                }
+#endif
+            }
+            GS::UniString description;
+            if (rowData.Get ("description", description)) {
+                call ("set the description" + rowText, [&] () { return modifier.SetDescription (index, description); });
+            }
+        }
+
+        for (const GS::ObjectState& rowData : rowsData) {
+            bool deleteRow = false;
+            rowData.Get ("delete", deleteRow);
+            if (!deleteRow || error.has_value ()) {
+                continue;
+            }
+            Int32 originalIndex = 0;
+            rowData.Get ("index", originalIndex);
+            const GS::UniString what = "delete row " + GS::ValueToUniString (originalIndex);
+            const uint32_t index = rowIndices.Current (static_cast<uint32_t> (originalIndex));
+            // The circular segment tables, and the elbow tables of Archicad 28, have a fixed row for each
+            // reference id, which can only be emptied; the rows of the other tables are removed.
+            bool rowsMoved = true;
+            if constexpr (IsCircularSegmentPreferenceTable<TableT>) {
+                call (what, [&] () { return modifier.EmptyRow (index); });
+                rowsMoved = false;
+            } else if constexpr (IsValuePreferenceTable<TableT>) {
+                call (what, [&] () { return modifier.Delete (index); });
+            } else if constexpr (IsElbowPreferenceTable<TableT>) {
+#ifdef ServerMainVers_2900
+                call (what, [&] () { return modifier.DeleteRow (index); });
+#else
+                call (what, [&] () { return modifier.EmptyRow (index); });
+                rowsMoved = false;
+#endif
+            } else {
+                call (what, [&] () { return modifier.DeleteRow (index); });
+            }
+            if (rowsMoved && !error.has_value ()) {
+                rowIndices.Deleted (index);
+            }
+        }
+
+        if constexpr (IsValuePreferenceTable<TableT>) {
+            for (UIndex i = 0; i < newRowsData.GetSize () && !error.has_value (); ++i) {
+                const GS::UniString rowText = " of new row " + GS::ValueToUniString (i);
+                ACAPI::Result<uint32_t> addedIndex = modifier.AddNewPreference ();
+                if (addedIndex.IsErr ()) {
+                    error = PreferenceTableModifyError { addedIndex.UnwrapErr ().kind, "Failed to add new row " + GS::ValueToUniString (i) + "." };
+                    break;
+                }
+                double value = 0.0;
+                newRowsData[i].Get ("value", value);
+                const std::optional<uint32_t> index = SetPreferenceRowValue (modifier, *addedIndex, value, "set the value" + rowText, error);
+                GS::UniString description;
+                if (index.has_value () && newRowsData[i].Get ("description", description)) {
+                    call ("set the description" + rowText, [&] () { return modifier.SetDescription (*index, description); });
+                }
+            }
+        }
+    }, "Modify MEP Preference Table");
+
+    if (error.has_value ()) {
+        return CreateFailedExecutionResult (error->code, error->message + " The changes before it may have been made.");
+    }
+    if (modifyResult.IsErr ()) {
+        return CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, GS::UniString ("Failed to modify the preference table: ") + modifyResult.UnwrapErr ().text.c_str ());
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
+// Changes the table if the id is a table of type TableT; gives nothing otherwise.
+template <typename TableT>
+static std::optional<GS::ObjectState> TryModifyPreferenceTable (const ACAPI::MEP::UniqueID& id, const GS::ObjectState& tableData)
+{
+    auto table = TableT::Get (id);
+    if (table.IsErr ()) {
+        return std::nullopt;
+    }
+    return ModifyPreferenceTable (*table, tableData);
+}
+
+static GS::ObjectState ModifyPreferenceTableOfDomain (Domain domain, const GS::ObjectState& tableData)
+{
+    GS::UniString guidStr;
+    tableData.Get ("guid", guidStr);
+    const auto id = Adapter::UniqueID (APIGuidFromString (guidStr.ToCStr ()));
+
+    std::optional<GS::ObjectState> result;
+    if (domain == Domain::CableCarrier) {
+        result = TryModifyPreferenceTable<CableCarrierSegmentPreferenceTable> (id, tableData);
+    } else if (domain == Domain::Piping) {
+        result = TryModifyPreferenceTable<PipeSegmentPreferenceTable> (id, tableData);
+        if (!result.has_value ()) {
+            result = TryModifyPreferenceTable<PipeElbowPreferenceTable> (id, tableData);
+        }
+        if (!result.has_value ()) {
+            result = TryModifyPreferenceTable<PipeBranchPreferenceTable> (id, tableData);
+        }
+#ifdef ServerMainVers_2900
+        if (!result.has_value ()) {
+            result = TryModifyPreferenceTable<PipeTransitionPreferenceTable> (id, tableData);
+        }
+#endif
+    } else {
+        result = TryModifyPreferenceTable<DuctCircularSegmentPreferenceTable> (id, tableData);
+        if (!result.has_value ()) {
+            result = TryModifyPreferenceTable<DuctRectangularSegmentPreferenceTable> (id, tableData);
+        }
+        if (!result.has_value ()) {
+            result = TryModifyPreferenceTable<DuctElbowPreferenceTable> (id, tableData);
+        }
+        if (!result.has_value ()) {
+            result = TryModifyPreferenceTable<DuctBranchPreferenceTable> (id, tableData);
+        }
+#ifdef ServerMainVers_2900
+        if (!result.has_value ()) {
+            result = TryModifyPreferenceTable<DuctTransitionPreferenceTable> (id, tableData);
+        }
+#endif
+    }
+    if (!result.has_value ()) {
+        return CreateFailedExecutionResult (APIERR_BADID, "'" + guidStr + "' is not a preference table of the domain.");
+    }
+    return *result;
+}
+
+static std::vector<GS::UniString> GetPreferenceTableTypes (Domain domain)
+{
+    if (domain == Domain::CableCarrier) {
+        return { "Segment" };
+    }
+#ifdef ServerMainVers_2900
+    return { "Segment", "Elbow", "Branch", "Transition" };
+#else
+    return { "Segment", "Elbow", "Branch" };
+#endif
+}
+
+// Calls func with the preference table container of the domain and type, and gives back its result.
+template <typename FuncT>
+static GS::ObjectState WithPreferenceTableContainer (Domain domain, const GS::UniString& type, const FuncT& func)
+{
+    const auto callWith = [&] (auto container) -> GS::ObjectState {
+        if (container.IsErr ()) {
+            return CreateFailedExecutionResult (container.UnwrapErr ().kind, "Failed to get the " + type + " preference table container.");
+        }
+        return func (*container);
+    };
+    const bool isPiping = domain == Domain::Piping;
+    if (domain == Domain::CableCarrier) {
+        if (type == "Segment") {
+            return callWith (GetCableCarrierSegmentPreferenceTableContainer ());
+        }
+        return CreateFailedExecutionResult (APIERR_BADPARS, "The CableCarrier domain has only segment preference tables.");
+    }
+    if (type == "Segment") {
+        return isPiping ? callWith (GetPipeSegmentPreferenceTableContainer ()) : callWith (GetDuctSegmentPreferenceTableContainer ());
+    }
+    if (type == "Elbow") {
+        return isPiping ? callWith (GetPipeElbowPreferenceTableContainer ()) : callWith (GetDuctElbowPreferenceTableContainer ());
+    }
+    if (type == "Branch") {
+        return isPiping ? callWith (GetPipeBranchPreferenceTableContainer ()) : callWith (GetDuctBranchPreferenceTableContainer ());
+    }
+    if (type == "Transition") {
+#ifdef ServerMainVers_2900
+        return isPiping ? callWith (GetPipeTransitionPreferenceTableContainer ()) : callWith (GetDuctTransitionPreferenceTableContainer ());
+#else
+        return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "The transition preference tables are available from Archicad 29.");
+#endif
+    }
+    return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid preference table type: " + type);
+}
+
+static GS::ObjectState AddPreferenceTable (Domain domain, const GS::UniString& type, const GS::UniString& name)
+{
+    return WithPreferenceTableContainer (domain, type, [&] (auto& container) -> GS::ObjectState {
+        std::optional<ACAPI::Result<ACAPI::MEP::UniqueID>> addResult;
+        ACAPI::Result<void> modifyResult = container.Modify ([&] (auto& modifier) {
+            addResult.emplace (modifier.AddNewTable (name));
+        }, "Add MEP Preference Table");
+        if (addResult.has_value () && addResult->IsErr ()) {
+            return CreateFailedExecutionResult (addResult->UnwrapErr ().kind, "Failed to add the preference table '" + name + "'.");
+        }
+        if (modifyResult.IsErr () || !addResult.has_value ()) {
+            return CreateFailedExecutionResult (modifyResult.IsErr () ? modifyResult.UnwrapErr ().kind : APIERR_GENERAL, "Failed to add the preference table '" + name + "'.");
+        }
+        return GS::ObjectState ("guid", (*addResult)->GetGuid ().ToUniString ());
+    });
+}
+
+static GS::ObjectState DeletePreferenceTable (Domain domain, const GS::UniString& guidStr)
+{
+    const GS::Guid guid = APIGuid2GSGuid (APIGuidFromString (guidStr.ToCStr ()));
+    for (const GS::UniString& type : GetPreferenceTableTypes (domain)) {
+        bool found = false;
+        GS::ObjectState result = WithPreferenceTableContainer (domain, type, [&] (auto& container) -> GS::ObjectState {
+            for (const auto& id : container.GetPreferenceTables ()) {
+                if (id.GetGuid () != guid) {
+                    continue;
+                }
+                found = true;
+                std::optional<GSErrCode> deleteError;
+                ACAPI::Result<void> modifyResult = container.Modify ([&] (auto& modifier) {
+                    deleteError = GetErrorOfCall ([&] () { return modifier.Delete (id); });
+                }, "Delete MEP Preference Table");
+                if (deleteError.has_value () || modifyResult.IsErr ()) {
+                    return CreateFailedExecutionResult (deleteError.has_value () ? *deleteError : modifyResult.UnwrapErr ().kind, "Failed to delete the preference table '" + guidStr + "'.");
+                }
+                return CreateSuccessfulExecutionResult ();
+            }
+            return CreateSuccessfulExecutionResult ();
+        });
+        if (found) {
+            return result;
+        }
+    }
+    return CreateFailedExecutionResult (APIERR_BADID, "'" + guidStr + "' is not a preference table of the domain.");
+}
+
+template <typename ReferenceSetResultT>
+static GS::ObjectState DeleteReferenceIds (ReferenceSetResultT referenceSet, const GS::Array<Int32>& referenceIdsToDelete)
+{
+    if (referenceSet.IsErr ()) {
+        return CreateFailedExecutionResult (referenceSet.UnwrapErr ().kind, "Failed to get the reference set.");
+    }
+    GS::Array<Int32> referenceIds;
+    for (uint32_t i = 0; i < referenceSet->GetSize (); ++i) {
+        auto referenceId = referenceSet->GetReferenceId (i);
+        if (referenceId.IsOk ()) {
+            referenceIds.Push (static_cast<Int32> (*referenceId));
+        }
+    }
+    for (Int32 referenceId : referenceIdsToDelete) {
+        if (!referenceIds.Contains (referenceId)) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "The reference id " + GS::ValueToUniString (referenceId) + " is not in the reference set.");
+        }
+    }
+    std::optional<GSErrCode> deleteError;
+    // The modifier type is named, a generic lambda here crashes MSVC 14.44 (C1001).
+    ACAPI::Result<void> modifyResult = referenceSet->Modify ([&] (ReferenceSetBase::Modifier& modifier) {
+        for (Int32 referenceId : referenceIdsToDelete) {
+            if (!deleteError.has_value ()) {
+                deleteError = GetErrorOfCall ([&] () { return modifier.Delete (static_cast<uint32_t> (referenceId)); });
+            }
+        }
+    }, "Modify MEP Reference Set");
+    if (deleteError.has_value () || modifyResult.IsErr ()) {
+        return CreateFailedExecutionResult (deleteError.has_value () ? *deleteError : modifyResult.UnwrapErr ().kind, "Failed to delete the reference ids.");
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
+#ifdef ServerMainVers_2900
+template <typename AngleSetResultT>
+static GS::ObjectState DeleteAngles (AngleSetResultT angleSet, const GS::Array<double>& anglesToDelete)
+{
+    if (angleSet.IsErr ()) {
+        return CreateFailedExecutionResult (angleSet.UnwrapErr ().kind, "Failed to get the angle set.");
+    }
+    // The angles are deleted with the exact value of the set, so a value rounded by JSON still matches.
+    std::vector<double> angles;
+    for (double angleToDelete : anglesToDelete) {
+        std::optional<double> found;
+        for (uint32_t i = 0; i < angleSet->GetSize () && !found.has_value (); ++i) {
+            auto angle = angleSet->GetAngle (i);
+            if (angle.IsOk () && std::abs (*angle - angleToDelete) < 1e-9) {
+                found = *angle;
+            }
+        }
+        if (!found.has_value ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "The angle " + GS::ValueToUniString (angleToDelete) + " is not in the angle set.");
+        }
+        angles.push_back (*found);
+    }
+    std::optional<GSErrCode> deleteError;
+    // Like the reference set, the modifier is the base class's: PipeAngleSet::Modifier and DuctAngleSet::Modifier are incomplete types.
+    ACAPI::Result<void> modifyResult = angleSet->Modify ([&] (AngleSetBase::Modifier& modifier) {
+        for (double angle : angles) {
+            if (!deleteError.has_value ()) {
+                deleteError = GetErrorOfCall ([&] () { return modifier.Delete (angle); });
+            }
+        }
+    }, "Modify MEP Angle Set");
+    if (deleteError.has_value () || modifyResult.IsErr ()) {
+        return CreateFailedExecutionResult (deleteError.has_value () ? *deleteError : modifyResult.UnwrapErr ().kind, "Failed to delete the angles.");
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+#endif
+
+GS::ObjectState ModifyMEPPreferenceTablesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString domainStr;
+    parameters.Get ("domain", domainStr);
+    const std::optional<Domain> domain = DomainFromString (domainStr);
+    if (!domain.has_value ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid MEP domain: " + domainStr);
+    }
+
+    GS::Array<GS::ObjectState> tablesToAdd;
+    parameters.Get ("tablesToAdd", tablesToAdd);
+    GS::Array<GS::ObjectState> tablesData;
+    parameters.Get ("tables", tablesData);
+    GS::Array<GS::UniString> tablesToDelete;
+    parameters.Get ("tablesToDelete", tablesToDelete);
+    GS::Array<Int32> referenceIdsToDelete;
+    const bool hasReferenceIdsToDelete = parameters.Get ("referenceIdsToDelete", referenceIdsToDelete);
+    GS::Array<double> anglesToDelete;
+    const bool hasAnglesToDelete = parameters.Get ("anglesToDelete", anglesToDelete);
+    if (*domain == Domain::CableCarrier && (hasReferenceIdsToDelete || hasAnglesToDelete)) {
+        return CreateErrorResponse (APIERR_BADPARS, "The CableCarrier domain has no reference set or angle set.");
+    }
+#ifndef ServerMainVers_2900
+    if (hasAnglesToDelete) {
+        return CreateErrorResponse (APIERR_NOTSUPPORTED, "The angle set is available from Archicad 29.");
+    }
+#endif
+
+    GS::ObjectState response;
+    const auto& addedTables = response.AddList<GS::ObjectState> ("addedTables");
+    for (const GS::ObjectState& tableToAdd : tablesToAdd) {
+        GS::UniString type;
+        GS::UniString name;
+        tableToAdd.Get ("type", type);
+        tableToAdd.Get ("name", name);
+        addedTables (AddPreferenceTable (*domain, type, name));
+    }
+
+    const auto& tables = response.AddList<GS::ObjectState> ("tables");
+    for (const GS::ObjectState& tableData : tablesData) {
+        tables (ModifyPreferenceTableOfDomain (*domain, tableData));
+    }
+
+    const auto& deletedTables = response.AddList<GS::ObjectState> ("deletedTables");
+    for (const GS::UniString& guidStr : tablesToDelete) {
+        deletedTables (DeletePreferenceTable (*domain, guidStr));
+    }
+
+    if (hasReferenceIdsToDelete) {
+        response.Add ("referenceSet", *domain == Domain::Piping
+            ? DeleteReferenceIds (GetPipeReferenceSet (), referenceIdsToDelete)
+            : DeleteReferenceIds (GetDuctReferenceSet (), referenceIdsToDelete));
+    }
+#ifdef ServerMainVers_2900
+    if (hasAnglesToDelete) {
+        response.Add ("angleSet", *domain == Domain::Piping
+            ? DeleteAngles (GetPipeAngleSet (), anglesToDelete)
+            : DeleteAngles (GetDuctAngleSet (), anglesToDelete));
+    }
+#endif
+
+    return response;
+}
+#else
+GS::ObjectState ModifyMEPPreferenceTablesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
@@ -3716,6 +5715,19 @@ static GS::ObjectState CreateMEPIdObjectState (const char* idFieldName, const AC
     return CreateIdObjectState (idFieldName, MEPUniqueIDToAPIGuid (id));
 }
 
+// IsEditable returns an ACAPI::Result<void>: it succeeds when the system or group can be modified and fails otherwise.
+static std::optional<bool> ToOptionalBool (ACAPI::Result<void> value)
+{
+    return value.IsOk ();
+}
+
+static void AddIsEditable (GS::ObjectState& os, const std::optional<bool>& isEditable)
+{
+    if (isEditable.has_value ()) {
+        os.Add ("isEditable", isEditable.value ());
+    }
+}
+
 static GS::ObjectState CreatePhysicalSystemDetails (const ACAPI::MEP::UniqueID& systemId)
 {
     ACAPI::Result<PhysicalSystem> system = PhysicalSystem::Get (systemId);
@@ -3725,6 +5737,7 @@ static GS::ObjectState CreatePhysicalSystemDetails (const ACAPI::MEP::UniqueID& 
     GS::ObjectState systemOs;
     systemOs.Add ("physicalSystemId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (systemId)));
     systemOs.Add ("name", system->GetName ());
+    AddIsEditable (systemOs, ToOptionalBool (system->IsEditable ()));
     const std::optional<ACAPI::MEP::UniqueID> rootElementId = system->GetRootElementId ();
     if (rootElementId.has_value ()) {
         systemOs.Add ("rootElementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (rootElementId.value ())));
@@ -3744,6 +5757,27 @@ static bool ContainsMEPId (const std::vector<ACAPI::MEP::UniqueID>& ids, const A
         }
     }
     return false;
+}
+
+// A physical system does not tell its group, so the group is the one that lists the system.
+static std::optional<ACAPI::MEP::UniqueID> FindSystemGroupOfPhysicalSystem (const ACAPI::MEP::UniqueID& systemId)
+{
+    ACAPI::Result<std::vector<ACAPI::MEP::UniqueID>> groupIds = GetSystemGroupIDs ();
+    if (groupIds.IsErr ()) {
+        return std::nullopt;
+    }
+    for (const ACAPI::MEP::UniqueID& groupId : groupIds.Unwrap ()) {
+        ACAPI::Result<SystemGroup> group = SystemGroup::Get (groupId);
+        if (group.IsErr ()) {
+            continue;
+        }
+        for (const ACAPI::MEP::UniqueID& groupSystemId : group->GetSystemIDs ()) {
+            if (groupSystemId.GetGuid () == systemId.GetGuid ()) {
+                return groupId;
+            }
+        }
+    }
+    return std::nullopt;
 }
 
 #else
@@ -3802,6 +5836,7 @@ GS::ObjectState GetMEPSystemGroupsCommand::Execute (const GS::ObjectState& /*par
         GS::ObjectState groupOs;
         groupOs.Add ("systemGroupId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (groupId)));
         groupOs.Add ("name", group->GetName ());
+        AddIsEditable (groupOs, ToOptionalBool (group->IsEditable ()));
         const auto& physicalSystems = groupOs.AddList<GS::ObjectState> ("physicalSystems");
         for (const ACAPI::MEP::UniqueID& systemId : group->GetSystemIDs ()) {
             physicalSystems (CreatePhysicalSystemDetails (systemId));
@@ -4072,6 +6107,349 @@ GS::ObjectState CreateMEPPhysicalSystemsCommand::Execute (const GS::ObjectState&
         }
     }
 
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, MEPSystemsRequireArchicad29);
+#endif
+}
+
+ModifyMEPSystemGroupsCommand::ModifyMEPSystemGroupsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyMEPSystemGroupsCommand::GetName () const
+{
+    return "ModifyMEPSystemGroups";
+}
+
+GS::Optional<GS::UniString> ModifyMEPSystemGroupsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "systemGroupsData": {
+                "type": "array",
+                "description": "Array of data to modify system groups.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "systemGroupId": {
+                            "$ref": "#/MEPSystemGroupId"
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The new name of the system group."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "systemGroupId",
+                        "name"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "systemGroupsData"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyMEPSystemGroupsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ModifyMEPSystemGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::ObjectState> systemGroupsData;
+    if (!parameters.Get ("systemGroupsData", systemGroupsData)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'systemGroupsData' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    for (const GS::ObjectState& groupData : systemGroupsData) {
+        const GS::ObjectState* groupId = groupData.Get ("systemGroupId");
+        if (groupId == nullptr) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'systemGroupId' parameter."));
+            continue;
+        }
+        GS::UniString name;
+        if (!groupData.Get ("name", name) || name.IsEmpty ()) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The 'name' parameter is missing or empty."));
+            continue;
+        }
+        ACAPI::Result<SystemGroup> group = SystemGroup::Get (Adapter::UniqueID (GetGuidFromObjectState (*groupId)));
+        if (group.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "The 'systemGroupId' is not a system group."));
+            continue;
+        }
+
+        std::optional<GSErrCode> setError;
+        ACAPI::Result<void> modifyResult = group->Modify ([&](SystemGroup::Modifier& modifier) {
+            setError = GetErrorOfCall ([&] () { return modifier.SetName (name); });
+        }, "Modify MEP System Group");
+        if (setError.has_value () || modifyResult.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (setError.has_value () ? setError.value () : modifyResult.UnwrapErr ().kind,
+                "Failed to rename the system group."));
+            continue;
+        }
+        executionResults (CreateSuccessfulExecutionResult ());
+    }
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, MEPSystemsRequireArchicad29);
+#endif
+}
+
+ModifyMEPPhysicalSystemsCommand::ModifyMEPPhysicalSystemsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyMEPPhysicalSystemsCommand::GetName () const
+{
+    return "ModifyMEPPhysicalSystems";
+}
+
+GS::Optional<GS::UniString> ModifyMEPPhysicalSystemsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "physicalSystemsData": {
+                "type": "array",
+                "description": "Array of data to modify physical systems. Only the given fields are changed.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "physicalSystemId": {
+                            "$ref": "#/MEPPhysicalSystemId"
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The new name of the physical system."
+                        },
+                        "rootElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The MEP element the system starts from. Archicad keeps it only while it is part of an MEP network: the root of a stand-alone element is cleared when the MEP networks are recalculated."
+                        },
+                        "mepSystemId": {
+                            "$ref": "#/AttributeId",
+                            "description": "The MEP system attribute used as the category of the physical system."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "physicalSystemId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "physicalSystemsData"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyMEPPhysicalSystemsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ModifyMEPPhysicalSystemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::ObjectState> physicalSystemsData;
+    if (!parameters.Get ("physicalSystemsData", physicalSystemsData)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'physicalSystemsData' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    for (const GS::ObjectState& systemData : physicalSystemsData) {
+        const GS::ObjectState* systemId = systemData.Get ("physicalSystemId");
+        if (systemId == nullptr) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'physicalSystemId' parameter."));
+            continue;
+        }
+
+        GS::UniString name;
+        const bool hasName = systemData.Get ("name", name);
+        if (hasName && name.IsEmpty ()) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The 'name' parameter must not be empty."));
+            continue;
+        }
+
+        const GS::ObjectState* mepSystemId = systemData.Get ("mepSystemId");
+        const API_AttributeIndex systemCategory = mepSystemId != nullptr ? GetAttributeIndexFromGuid (API_MEPSystemID, GetGuidFromObjectState (*mepSystemId)) : ACAPI_CreateAttributeIndex (-1);
+        if (mepSystemId != nullptr && systemCategory == ACAPI_CreateAttributeIndex (-1)) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "The 'mepSystemId' is not an MEP system attribute."));
+            continue;
+        }
+
+        ACAPI::Result<PhysicalSystem> system = PhysicalSystem::Get (Adapter::UniqueID (GetGuidFromObjectState (*systemId)));
+        if (system.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "The 'physicalSystemId' is not a physical system."));
+            continue;
+        }
+
+        const GS::ObjectState* rootElementId = systemData.Get ("rootElementId");
+        std::optional<GSErrCode> setError;
+        ACAPI::Result<void> modifyResult = system->Modify ([&](PhysicalSystem::Modifier& modifier) {
+            if (hasName) {
+                setError = GetErrorOfCall ([&] () { return modifier.SetName (name); });
+            }
+            if (rootElementId != nullptr && !setError.has_value ()) {
+                ACAPI::Result<void> result = modifier.SetRootElement (Adapter::UniqueID (GetGuidFromObjectState (*rootElementId)));
+                if (result.IsErr ()) {
+                    setError = result.UnwrapErr ().kind;
+                }
+            }
+            if (mepSystemId != nullptr && !setError.has_value ()) {
+                ACAPI::Result<void> result = modifier.SetSystemCategory (systemCategory);
+                if (result.IsErr ()) {
+                    setError = result.UnwrapErr ().kind;
+                }
+            }
+        }, "Modify MEP Physical System");
+        if (setError.has_value () || modifyResult.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (setError.has_value () ? setError.value () : modifyResult.UnwrapErr ().kind,
+                "Failed to modify the physical system."));
+            continue;
+        }
+        executionResults (CreateSuccessfulExecutionResult ());
+    }
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, MEPSystemsRequireArchicad29);
+#endif
+}
+
+DeleteMEPPhysicalSystemsCommand::DeleteMEPPhysicalSystemsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeleteMEPPhysicalSystemsCommand::GetName () const
+{
+    return "DeleteMEPPhysicalSystems";
+}
+
+GS::Optional<GS::UniString> DeleteMEPPhysicalSystemsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "physicalSystems": {
+                "type": "array",
+                "description": "The physical systems to remove from their system groups. Their member elements are not deleted.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "physicalSystemId": {
+                            "$ref": "#/MEPPhysicalSystemId"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "physicalSystemId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "physicalSystems"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteMEPPhysicalSystemsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteMEPPhysicalSystemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::ObjectState> physicalSystems;
+    if (!parameters.Get ("physicalSystems", physicalSystems)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'physicalSystems' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    for (const GS::ObjectState& systemItem : physicalSystems) {
+        const GS::ObjectState* systemIdOs = systemItem.Get ("physicalSystemId");
+        if (systemIdOs == nullptr) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'physicalSystemId' parameter."));
+            continue;
+        }
+        const ACAPI::MEP::UniqueID systemId = Adapter::UniqueID (GetGuidFromObjectState (*systemIdOs));
+        const std::optional<ACAPI::MEP::UniqueID> groupId = FindSystemGroupOfPhysicalSystem (systemId);
+        if (!groupId.has_value ()) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "The 'physicalSystemId' is not a physical system of any system group."));
+            continue;
+        }
+        ACAPI::Result<SystemGroup> group = SystemGroup::Get (groupId.value ());
+        if (group.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (group.UnwrapErr ().kind, "Failed to get the system group of the physical system."));
+            continue;
+        }
+
+        std::optional<GSErrCode> removeError;
+        ACAPI::Result<void> modifyResult = group->Modify ([&](SystemGroup::Modifier& modifier) {
+            removeError = GetErrorOfCall ([&] () { return modifier.Remove (systemId); });
+        }, "Delete MEP Physical System");
+        if (removeError.has_value () || modifyResult.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (removeError.has_value () ? removeError.value () : modifyResult.UnwrapErr ().kind,
+                "Failed to remove the physical system from its system group."));
+            continue;
+        }
+        executionResults (CreateSuccessfulExecutionResult ());
+    }
     return response;
 #else
     UNUSED_PARAMETER (parameters);

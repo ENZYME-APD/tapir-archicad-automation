@@ -30,6 +30,9 @@ def GetExampleScripts ():
             if 'quit_archicad' in exampleFileName:
                 quitExampleScriptFullPath = scriptFullPath
                 continue
+            # Starts another Archicad, so it is not run against the test project.
+            if 'start_archicad' in exampleFileName:
+                continue
             result.append (scriptFullPath)
     result.append (quitExampleScriptFullPath)
     return result

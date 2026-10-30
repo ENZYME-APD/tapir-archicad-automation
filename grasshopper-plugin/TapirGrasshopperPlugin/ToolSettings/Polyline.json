@@ -1,0 +1,107 @@
+{
+  "tool": "Polyline",
+  "elementType": "Polyline",
+  "archicadVersion": 29,
+  "commands": {
+    "get": "GetDetailsOfElements",
+    "getSchema": "PolylineDetails",
+    "create": "CreatePolylinesCommand"
+  },
+  "plainKeys": [
+    "favoriteName",
+    "layerIndex"
+  ],
+  "sources": {
+    "help": [
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-32.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-11.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-12.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-23.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-24.htm"
+    ],
+    "devkit": "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/tag/29.3000"
+  },
+  "fields": [
+    {
+      "get": "coordinates",
+      "set": "coordinates",
+      "apiMember": "API_PolyLineType::poly",
+      "apiDescription": "The polygon of the polyline.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "arcs",
+      "set": "arcs",
+      "apiMember": "API_PolyLineType::poly",
+      "apiDescription": "The polygon of the polyline.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "floorIndex",
+      "set": "floorInd",
+      "getFrom": "element",
+      "apiMember": "API_Elem_Head::floorInd",
+      "apiDescription": "The element belongs to this floor.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "zCoordinate",
+      "set": null,
+      "apiMember": null,
+      "apiDescription": "Absolute Z of the polyline (the level of its home story; output only).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "lineTypeId",
+      "set": "lineTypeIndex",
+      "apiMember": "API_PolyLineType::ltypeInd",
+      "apiDescription": "Line type index.",
+      "label": "Line Type",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-32.htm (text \"Select a Line type from the pop-up selection palette.\")",
+      "group": "General Settings",
+      "subgroup": null
+    },
+    {
+      "get": "linePenIndex",
+      "set": "linePenIndex",
+      "apiMember": "API_PolyLineType::linePen",
+      "apiDescription": "(Overridden) pen color attribute index.",
+      "label": "Pen",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-32.htm (text \"Type a Pen number (1-255) for the Line/Arc/Polyline/Spline.\")",
+      "group": "General Settings",
+      "subgroup": null
+    },
+    {
+      "get": "roomSeparator",
+      "set": "roomSeparator",
+      "apiMember": "API_PolyLineType::roomSeparator",
+      "apiDescription": "Room separator line.",
+      "label": "Zone Boundary",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-32.htm (text \"Check the Zone Boundary box to allow lines to delimit automatically placed Zones.\"; screenshots ArrowheadSettings.png and LineCategories.png \"Zone Boundary\")",
+      "group": "General Settings",
+      "subgroup": null
+    },
+    {
+      "get": null,
+      "set": "penWeightMm",
+      "apiMember": "API_PolyLineType::penWeight",
+      "apiDescription": "Pen weight for the line (can override the weight in linePen, otherwise set it to API_DefPenWeigth : use default weight of the pen).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    }
+  ]
+}
