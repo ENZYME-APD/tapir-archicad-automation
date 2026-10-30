@@ -361,15 +361,15 @@ GSErrCode Initialize (void)
             "Adds/removes a number of elements to/from the current selection."
         );
         err |= RegisterCommand<DeselectAllCommand> (
-            elementCommands, "1.7.3",
+            elementCommands, "1.7.4",
             "Clears the selection in the current window."
         );
         err |= RegisterCommand<GetMarqueeCommand> (
-            elementCommands, "1.7.3",
+            elementCommands, "1.7.4",
             "Gets the marquee of the current window: its shape (rectangle, rotated rectangle or polygon), whether it is multi-story, and its outline as a polygon. Returns the type 'none' when there is no marquee."
         );
         err |= RegisterCommand<SetMarqueeCommand> (
-            elementCommands, "1.7.3",
+            elementCommands, "1.7.4",
             "Draws a marquee in the current window from a polygon or a box (optionally rotated), single- or multi-story. Called without polygon and box it removes the marquee."
         );
         err |= RegisterCommand<FilterElementsCommand> (
