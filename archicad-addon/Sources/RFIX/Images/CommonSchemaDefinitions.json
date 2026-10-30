@@ -6913,6 +6913,38 @@
             "$ref": "#/BoundingBox3DOrError"
         }
     },
+    "BoundingBox2DArrayItem": {
+        "type": "object",
+        "description": "A wrapper containing a 2D bounding box.",
+        "properties": {
+            "boundingBox2D": {
+                "$ref": "#/BoundingBox2D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "boundingBox2D"
+        ]
+    },
+    "BoundingBox2DOrError": {
+        "type": "object",
+        "description": "A 2D bounding box or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/BoundingBox2DArrayItem"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "BoundingBoxes2D": {
+        "type": "array",
+        "description": "A list of 2D bounding boxes.",
+        "items": {
+            "$ref": "#/BoundingBox2DOrError"
+        }
+    },
     "Body3D": {
         "type": "object",
         "description": "One solid body of an element's 3D model: a flat vertex list in world coordinates and the planar faces referencing it. The faces are not triangulated: a face is a closed loop of vertex indices (counterclockwise seen from outside the body) plus the loops of its holes.",

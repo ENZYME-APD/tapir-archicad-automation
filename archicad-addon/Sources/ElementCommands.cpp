@@ -6134,6 +6134,139 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
     return response;
 }
 
+Get2DBoundingBoxesCommand::Get2DBoundingBoxesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String Get2DBoundingBoxesCommand::GetName () const
+{
+    return "Get2DBoundingBoxes";
+}
+
+GS::Optional<GS::UniString> Get2DBoundingBoxesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> Get2DBoundingBoxesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+            "properties": {
+            "boundingBoxes2D": {
+                "$ref": "#/BoundingBoxes2D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "boundingBoxes2D"
+        ]
+    })";
+}
+
+// ACAPI_Element_CalcBounds only finds elements of the current database, so the current database
+// is switched to the one that contains the element (a layout, a master layout, a worksheet, a
+// section ...) and the starting database is put back after the last element.
+static GSErrCode ChangeToContainingDatabase (const API_Guid& elemGuid, API_DatabaseInfo& currentDatabase)
+{
+    API_DatabaseInfo elemDatabase = {};
+    GSErrCode err = ACAPI_Database_GetContainingDatabase (&elemGuid, &elemDatabase);
+    if (err != NoError) {
+        return err;
+    }
+
+    const DatabaseIdResolver& resolver = DatabaseIdResolver::Instance ();
+    if (resolver.GetIdOfDatabase (elemDatabase) == resolver.GetIdOfDatabase (currentDatabase)) {
+        return NoError;
+    }
+
+    err = ACAPI_Window_GetDatabaseInfo (&elemDatabase);
+    if (err != NoError) {
+        return err;
+    }
+    err = ACAPI_Database_ChangeCurrentDatabase (&elemDatabase);
+    if (err != NoError) {
+        return err;
+    }
+    currentDatabase = elemDatabase;
+    return NoError;
+}
+
+GS::ObjectState Get2DBoundingBoxesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    API_DatabaseInfo startingDatabase = {};
+    GSErrCode err = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the current database.");
+    }
+    API_DatabaseInfo currentDatabase = startingDatabase;
+    const GS::OnExit restoreDatabase ([&] () { ACAPI_Database_ChangeCurrentDatabase (&startingDatabase); });
+
+    GS::ObjectState response;
+    const auto& boundingBoxes2D = response.AddList<GS::ObjectState> ("boundingBoxes2D");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            boundingBoxes2D (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        err = ChangeToContainingDatabase (elemHead.guid, currentDatabase);
+        if (err != NoError) {
+            boundingBoxes2D (CreateErrorResponse (err, err == APIERR_BADID ? "Failed to find element in Archicad" : "Failed to switch to the database of the element"));
+            continue;
+        }
+        err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            boundingBoxes2D (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+
+        API_Box3D box3D = {};
+        if (GetElemTypeId (elemHead) == API_SlabID) {
+            // ACAPI_Element_CalcBounds crashes Archicad for a Slab that is not drawn in the current
+            // window (#686, see Get3DBoundingBoxes), so its box is the plan view of its 3D body.
+            err = CalculateSolidBodyBounds (elemHead, box3D);
+        } else {
+            err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
+        }
+        if (err != NoError) {
+            boundingBoxes2D (CreateErrorResponse (err, "Failed to get the 2D bounding box"));
+            continue;
+        }
+        if (IsEmptyBounds (box3D)) {
+            boundingBoxes2D (CreateErrorResponse (APIERR_GENERAL, "The element has no geometry to get the bounding box of"));
+            continue;
+        }
+
+        GS::ObjectState boundingBox2D ("xMin", box3D.xMin,
+                                       "yMin", box3D.yMin,
+                                       "xMax", box3D.xMax,
+                                       "yMax", box3D.yMax);
+        boundingBoxes2D (GS::ObjectState ("boundingBox2D", boundingBox2D));
+    }
+
+    return response;
+}
+
 GetLibPartTransformationsCommand::GetLibPartTransformationsCommand () :
     CommandBase (CommonSchema::Used)
 {
