@@ -1,6 +1,7 @@
 #include "ElementGroupingCommands.hpp"
 #include "MigrationHelper.hpp"
 #include "Base64Converter.hpp"
+#include "UserDataPairs.hpp"
 
 #ifdef ServerMainVers_2600
 static GS::UniString GetGroupCreationErrorMessage(const GS::Array<API_Guid>& elemGuids, GSErrCode /*originalErr*/)
@@ -415,6 +416,168 @@ GS::ObjectState GetElementsOfGroupsCommand::Execute(const GS::ObjectState& param
     return response;
 }
 
+GetElementSetDataCommand::GetElementSetDataCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String GetElementSetDataCommand::GetName() const
+{
+    return "GetElementSetData";
+}
+
+GS::Optional<GS::UniString> GetElementSetDataCommand::GetInputParametersSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementSets": {
+                "type": "array",
+                "description": "The element sets to get the data of.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementSetId": {
+                            "type": "object",
+                            "description": "The identifier of an element set.",
+                            "properties": {
+                                "guid": {
+                                    "$ref": "#/Guid"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "guid"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementSetId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementSets"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetElementSetDataCommand::GetRawResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementSets": {
+                "type": "array",
+                "description": "The data of each given element set, or an error.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elements": {
+                                    "$ref": "#/Elements",
+                                    "description": "The elements of the element set."
+                                },
+                                "userData": {
+                                    "type": "object",
+                                    "description": "The custom data stored with the element set by the add-on that created it.",
+                                    "properties": {
+                                        "dataVersion": {
+                                            "type": "integer",
+                                            "description": "The version of the data, as set by the add-on that created the element set."
+                                        },
+                                        "platformSign": {
+                                            "type": "integer",
+                                            "description": "The platform sign of the data, telling the byte order it was written with."
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "description": "The raw bytes of the data, Base64 encoded. Empty when the element set has no data."
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "dataVersion",
+                                        "platformSign",
+                                        "data"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elements",
+                                "userData"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementSets"
+        ]
+    })";
+}
+
+GS::ObjectState GetElementSetDataCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementSets;
+    if (!parameters.Get("elementSets", elementSets)) {
+        return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'elementSets' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& elementSetsData = response.AddList<GS::ObjectState>("elementSets");
+
+    for (const GS::ObjectState& elementSet : elementSets) {
+        const GS::ObjectState* elementSetId = elementSet.Get("elementSetId");
+        if (elementSetId == nullptr) {
+            elementSetsData(CreateErrorResponse(APIERR_BADPARS, "elementSetId is missing"));
+            continue;
+        }
+
+        GS::Array<API_Guid> elemGuids;
+        API_UserData userData = {};
+        const GSErrCode err = ACAPI_ElementSet_GetData(GetGuidFromObjectState(*elementSetId), &elemGuids, &userData);
+        if (err != NoError) {
+            BMKillHandle(&userData.dataHdl);
+            elementSetsData(CreateErrorResponse(err, "Failed to get the data of the element set."));
+            continue;
+        }
+
+        GS::UniString data;
+        const GSSize dataSize = BMGetHandleSize(userData.dataHdl);
+        if (dataSize > 0) {
+            data = Base64Converter::Encode(*userData.dataHdl, dataSize);
+            data.DeleteAll(GS::UniChar(char('\n')));
+        }
+        BMKillHandle(&userData.dataHdl);
+
+        GS::ObjectState elementSetData;
+        const auto& elements = elementSetData.AddList<GS::ObjectState>("elements");
+        for (const API_Guid& elemGuid : elemGuids) {
+            elements(CreateElementIdObjectState(elemGuid));
+        }
+        GS::ObjectState userDataObj;
+        userDataObj.Add("dataVersion", static_cast<Int32>(userData.dataVersion));
+        userDataObj.Add("platformSign", static_cast<Int32>(userData.platformSign));
+        userDataObj.Add("data", data);
+        elementSetData.Add("userData", userDataObj);
+        elementSetsData(elementSetData);
+    }
+
+    return response;
+}
+
 GetUserDataOfGroupsCommand::GetUserDataOfGroupsCommand() :
     CommandBase(CommonSchema::Used)
 {
@@ -478,6 +641,10 @@ GS::Optional<GS::UniString> GetUserDataOfGroupsCommand::GetRawResponseSchema() c
                                         "data": {
                                             "type": "string",
                                             "description": "The bytes of the user data, base64 encoded. Empty when the user data has no bytes."
+                                        },
+                                        "pairs": {
+                                            "$ref": "#/UserDataPairs",
+                                            "description": "The key-value pairs of the user data, decoded from data. Only present when dataVersion is 1, the layout SetUserDataOfGroups writes."
                                         }
                                     },
                                     "additionalProperties": false,
@@ -541,6 +708,7 @@ GS::ObjectState GetUserDataOfGroupsCommand::Execute(const GS::ObjectState& param
             data = Base64Converter::Encode(*userData.dataHdl, BMGetHandleSize(userData.dataHdl));
             data.DeleteAll(GS::UniChar(char('\n')));
         }
+        const UserDataPairs pairs = ParseUserDataPairs(userData.dataHdl);
         BMKillHandle(&userData.dataHdl);
 
         GS::ObjectState userDataItem;
@@ -548,10 +716,166 @@ GS::ObjectState GetUserDataOfGroupsCommand::Execute(const GS::ObjectState& param
         userDataItem.Add("platformSign", static_cast<Int32>(userData.platformSign));
         userDataItem.Add("flags", static_cast<Int32>(userData.flags));
         userDataItem.Add("data", data);
+        if (userData.dataVersion == UserDataPairsLayoutVersion) {
+            AddUserDataPairsList(userDataItem, "pairs", pairs);
+        }
 
         GS::ObjectState item;
         item.Add("userData", userDataItem);
         userDataOfGroups(item);
+    }
+
+    return response;
+}
+
+SetUserDataOfGroupsCommand::SetUserDataOfGroupsCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String SetUserDataOfGroupsCommand::GetName() const
+{
+    return "SetUserDataOfGroups";
+}
+
+GS::Optional<GS::UniString> SetUserDataOfGroupsCommand::GetInputParametersSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "groups": {
+                "type": "array",
+                "description": "The groups to store the pairs on.",
+                "items": {
+                    "$ref": "#/GroupIdArrayItem"
+                },
+                "minItems": 1
+            },
+            "pairs": {
+                "$ref": "#/UserDataPairs",
+                "description": "The key-value pairs to store on each group. A key the group already holds gets the new value; other keys are left as they are."
+            },
+            "keysToDelete": {
+                "$ref": "#/UserDataKeysToDelete"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "groups"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetUserDataOfGroupsCommand::GetRawResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result per group, in the input order."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetUserDataOfGroupsCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> groups;
+    if (!parameters.Get("groups", groups)) {
+        return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'groups' parameter.");
+    }
+
+    UserDataPairs pairsToSet;
+    GS::Array<GS::UniString> keysToDelete;
+    GS::UniString errorMessage;
+    if (!GetUserDataPairChanges(parameters, pairsToSet, keysToDelete, errorMessage)) {
+        return CreateErrorResponse(APIERR_BADPARS, errorMessage);
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState>("executionResults");
+
+    // ACAPI_Grouping_SetUserData needs an undo scope (APIERR_NEEDSUNDOSCOPE). One undo step for the
+    // whole call; the lambda reports success when any group was changed, so a failed group does not
+    // roll back the others, and each group carries its own result.
+    bool executed = false;
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand("SetUserDataOfGroups", [&]() -> GSErrCode {
+        executed = true;
+        GSErrCode firstErr = NoError;
+        bool anyStored = false;
+
+        const auto fail = [&](GSErrCode err, const GS::UniString& message) {
+            executionResults(CreateFailedExecutionResult(err, message));
+            if (firstErr == NoError) {
+                firstErr = err;
+            }
+        };
+
+        for (const GS::ObjectState& group : groups) {
+            const GS::ObjectState* groupId = group.Get("groupId");
+            if (groupId == nullptr) {
+                fail(APIERR_BADPARS, "groupId is missing");
+                continue;
+            }
+            const API_Guid groupGuid = GetGuidFromObjectState(*groupId);
+
+            UserDataPairs pairs;
+            API_UserData storedData = {};
+            GSErrCode err = ACAPI_Grouping_GetUserData(groupGuid, &storedData);
+            if (err == APIERR_NOUSERDATA) {
+                err = NoError;
+            } else if (err == NoError && storedData.dataHdl != nullptr) {
+                // Data in a layout this command does not write may belong to another add-on or a newer
+                // Tapir, so it is reported rather than overwritten.
+                if (storedData.dataVersion != UserDataPairsLayoutVersion) {
+                    BMKillHandle(&storedData.dataHdl);
+                    fail(APIERR_BADPARS, GS::UniString::Printf("The group holds user data in another layout (version %d); it is left unchanged.",
+                                                               static_cast<int>(storedData.dataVersion)));
+                    continue;
+                }
+                pairs = ParseUserDataPairs(storedData.dataHdl);
+            }
+            BMKillHandle(&storedData.dataHdl);
+            if (err != NoError) {
+                fail(err, "Failed to get the user data of the group.");
+                continue;
+            }
+
+            ApplyUserDataPairChanges(pairs, pairsToSet, keysToDelete);
+
+            API_UserData userData = {};
+            userData.dataVersion = UserDataPairsLayoutVersion;
+            userData.platformSign = GS::Act_Platform_Sign;
+            // Not FillWith or Pickup: the pairs are script state, not a setting of the group.
+            userData.flags = 0;
+            userData.dataHdl = SerializeUserDataPairs(pairs);
+            if (userData.dataHdl == nullptr) {
+                fail(APIERR_MEMFULL, "Failed to store the user data of the group.");
+                continue;
+            }
+
+            // The API copies the data, the handle stays ours to free.
+            err = ACAPI_Grouping_SetUserData(groupGuid, &userData);
+            BMKillHandle(&userData.dataHdl);
+            if (err != NoError) {
+                fail(err, "Failed to store the user data of the group.");
+                continue;
+            }
+
+            anyStored = true;
+            executionResults(CreateSuccessfulExecutionResult());
+        }
+
+        return anyStored ? NoError : firstErr;
+    });
+
+    if (!executed) {
+        return CreateErrorResponse(undoErr != NoError ? undoErr : APIERR_GENERAL, "Failed to start the undoable operation that stores the user data.");
     }
 
     return response;
