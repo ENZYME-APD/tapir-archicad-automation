@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-30 08:44 UTC",
+ "generatedAt": "2026-10-30 09:14 UTC",
  "versions": [
   25,
   26,
@@ -4448,6 +4448,10 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1649,
+     "title": "SolveStairBaseline: run the stair solver inside an undoable command"
+    },
     {
      "number": 1642,
      "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
@@ -12425,7 +12429,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1649,
+     "title": "SolveStairBaseline: run the stair solver inside an undoable command"
+    }
+   ],
    "issues": []
   },
   {
