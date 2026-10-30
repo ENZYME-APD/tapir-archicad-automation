@@ -5,7 +5,7 @@ import aclib
 originalPreferences = aclib.RunTapirCommand ('GetProjectPreferences')
 
 aclib.RunTapirCommand ('GetProjectPreferences', {
-    'preferenceTypes': ['WorkingUnits', 'Dimensions']
+    'preferenceTypes': ['WorkingUnits', 'Dimensions', 'Zones']
 })
 
 # A page changes only in the fields given; the rest keeps its value.
@@ -44,12 +44,24 @@ aclib.RunTapirCommand ('SetProjectPreferences', {
             'accuracy': 'ShowSmall5',
             'decimals': 3
         }
+    },
+    # Zones: count the area under a ceiling lower than 1.5 m not at all and the
+    # area between 1.5 m and 2 m at half; the third height limit keeps its
+    # values and stays unused.
+    'zones': {
+        'lowCeilingAreaReduction': {
+            'activeHeightLimits': 2,
+            'heightLimits': [
+                { 'height': 1.5, 'reductionPercent': 100 },
+                { 'height': 2.0, 'reductionPercent': 50 }
+            ]
+        }
     }
 })
 
 aclib.RunTapirCommand ('GetProjectPreferences')
 
-# A wrong unit name fails that page only, the other pages still change.
+# A wrong value fails that page only, the other pages still change.
 aclib.RunTapirCommand ('SetProjectPreferences', {
     'workingUnits': {
         'length': {
@@ -64,6 +76,11 @@ aclib.RunTapirCommand ('SetProjectPreferences', {
     'calculationUnits': {
         'volume': {
             'decimals': 2
+        }
+    },
+    'zones': {
+        'lowCeilingAreaReduction': {
+            'reductionPercentAboveHeightLimits': 0
         }
     }
 })
