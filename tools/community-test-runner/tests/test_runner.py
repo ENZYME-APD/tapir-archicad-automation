@@ -8,7 +8,9 @@ is ignored).
 from __future__ import annotations
 
 import itertools
+import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -20,8 +22,8 @@ CHECKS = sorted((HERE.parent / "checks").glob("*.json"))
 
 
 class FakeArchicad:
-    def __init__(self, fixed=True, version="1.7.0", untitled=True):
-        self.fixed, self.version, self.untitled = fixed, version, untitled
+    def __init__(self, fixed=True, version="1.7.0", untitled=True, archicad=28):
+        self.fixed, self.version, self.untitled, self.archicad = fixed, version, untitled, archicad
         self.ids = (f"G-{i:04d}" for i in itertools.count())
         self.elements: dict[str, dict] = {}
         self.stories = [{"index": 0, "name": "S0", "level": 0.0}]
@@ -39,7 +41,7 @@ class FakeArchicad:
         if command == "GetAddOnVersion":
             return {"version": self.version}
         if command == "API.GetProductInfo":
-            return {"version": 28, "buildNumber": 7006, "languageCode": "GER"}
+            return {"version": self.archicad, "buildNumber": 7006, "languageCode": "GER"}
         if command == "GetProjectInfo":
             return {"isUntitled": self.untitled}
         if command == "GetElementsByType":
@@ -151,6 +153,15 @@ class EngineTest(unittest.TestCase):
     def test_skips_checks_for_newer_tapir(self):
         rows, _ = r.run_checks(FakeArchicad(version="1.5.9"), [c for c in CHECKS if "story_index" in c.name])
         self.assertEqual([row["ok"] for row in rows], [None])
+
+    def test_skips_checks_for_older_archicad(self):
+        spec = Path(tempfile.mkdtemp()) / "needs_27.json"
+        spec.write_text(json.dumps({"title": "t", "minArchicad": "27", "steps": []}), encoding="utf-8")
+        rows, _ = r.run_checks(FakeArchicad(archicad=26), [spec])
+        self.assertEqual([row["ok"] for row in rows], [None])
+        self.assertIn("needs Archicad 27, running 26", rows[0]["detail"])
+        rows, _ = r.run_checks(FakeArchicad(archicad=27), [spec])
+        self.assertNotIn("minArchicad", [row["what"] for row in rows])
 
     def test_report_first_line_is_machine_readable(self):
         rows = [{"check": "c", "step": "s", "what": "w", "ok": True, "detail": "d"},

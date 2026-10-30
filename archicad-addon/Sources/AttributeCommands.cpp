@@ -1,10 +1,12 @@
 #include "AttributeCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "ObjectStateJSONConversion.hpp"
 #include "GSUnID.hpp"
 #include "ProfileVectorImage.hpp"
 #include "ProfileAdditionalInfo.hpp"
 #include "VectorImageIterator.hpp"
 #include "FileSystem.hpp"
+#include "UserDataPairs.hpp"
 #ifdef ServerMainVers_2700
 #include "ADBAttributeIndex.hpp"
 #endif
@@ -262,7 +264,7 @@ GS::Optional<GS::UniString> GetAttributesFromProjectCommand::GetInputParametersS
             },
             "attributeTypes": {
                 "type": "array",
-                "description": "The attribute types to read.",
+                "description": "The attribute types to read. Layer, Surface, BuildingMaterial and MEPSystem cannot be read from a file that is not open; they get an error item.",
                 "items": {
                     "$ref": "#/AttributeType"
                 },
@@ -326,6 +328,20 @@ GS::Optional<GS::UniString> GetAttributesFromProjectCommand::GetRawResponseSchem
     })";
 }
 
+#ifdef ServerMainVers_2700
+// ACAPI_Attribute_GetAttributesFromProject returns NoError and an empty list for these types
+// (tested on Archicad 29 with .pln and .tpl files that contain them, see #1582), so an empty list of
+// one of them means "not read", not "the file has none". A non-empty list is still passed through,
+// in case an Archicad version reads them.
+static bool IsNotReadFromProjectFileWhenEmpty (API_AttrTypeID typeID)
+{
+    return typeID == API_LayerID ||
+        typeID == API_MaterialID ||
+        typeID == API_BuildingMaterialID ||
+        typeID == API_MEPSystemID;
+}
+#endif
+
 GS::ObjectState GetAttributesFromProjectCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2700
@@ -379,6 +395,9 @@ GS::ObjectState GetAttributesFromProjectCommand::Execute (const GS::ObjectState&
         if (err != NoError) {
             attributesByType (CreateErrorResponse (err,
                 GS::UniString::Printf ("Failed to read the %T attributes of the project file.", typeStr.ToPrintf ())));
+        } else if (loaded.IsEmpty () && IsNotReadFromProjectFileWhenEmpty (typeID)) {
+            attributesByType (CreateErrorResponse (APIERR_NOTSUPPORTED,
+                GS::UniString::Printf ("Archicad returned no %T attributes from the project file. It does not read this type from a file that is not open; open the file and use GetAttributesByType instead.", typeStr.ToPrintf ())));
         } else {
             attributesByType (typeResult);
         }
@@ -937,6 +956,15 @@ GS::ObjectState GetFillsCommand::Execute (const GS::ObjectState& parameters, GS:
         }
         if (wantsField.Wants ("gradientEnd") && isGradient) {
             fill.Add ("gradientEnd", Create2DCoordinateObjectState (attr.filltype.c2));
+        }
+        // For Symbol fills c1/c2 are the offset vectors of the repeating motif (X1/Y1 and X2/Y2 in the Fill Types
+        // dialog); without them a copied symbol fill draws every motif on top of the other.
+        bool isSymbol = (attr.filltype.subType == APIFill_Symbol);
+        if (wantsField.Wants ("symbolOffset1") && isSymbol) {
+            fill.Add ("symbolOffset1", Create2DCoordinateObjectState (attr.filltype.c1));
+        }
+        if (wantsField.Wants ("symbolOffset2") && isSymbol) {
+            fill.Add ("symbolOffset2", Create2DCoordinateObjectState (attr.filltype.c2));
         }
         if (wantsField.Wants ("percent")) {
             fill.Add ("percent", attr.filltype.percent);
@@ -3301,25 +3329,14 @@ GS::ObjectState CreateAttributeFoldersCommand::Execute (const GS::ObjectState& p
             continue;
         }
 
-        // Created level by level from the root, so a missing parent folder is created too and an existing one,
-        // including the requested folder itself, is kept as it is.
-        GSErrCode err = NoError;
-        API_AttributeFolder current;
-        current.typeID = folder.typeID;
-        current.guid = GS::Guid ();
-        for (const GS::UniString& folderName : folder.path) {
-            current.path.Push (folderName);
-            if (FindAttributeFolder (current)) {
-                continue;
-            }
-            err = ACAPI_Attribute_CreateFolder (current);
-            if (err != NoError) {
-                break;
-            }
-        }
+        // ACAPI_Attribute_CreateFolder creates every missing folder along the full path and keeps the existing
+        // ones (returning NoError when the whole path already exists), so one call per item is enough. It is
+        // an in/out parameter that rewrites path and guid, so it is given a copy.
+        API_AttributeFolder toCreate = folder;
+        const GSErrCode err = ACAPI_Attribute_CreateFolder (toCreate);
         if (err != NoError) {
             executionResults (CreateFailedExecutionResult (err,
-                GS::UniString::Printf ("Failed to create attribute folder '%T'.", GetAttributeFolderPathString (current.path).ToPrintf ())));
+                GS::UniString::Printf ("Failed to create attribute folder '%T'.", GetAttributeFolderPathString (folder.path).ToPrintf ())));
             continue;
         }
 
@@ -4114,13 +4131,13 @@ GS::Optional<GS::UniString> CreateLayerCombinationsCommand::GetInputParametersSc
                             "description": "Name. If overwriteExisting is true, then the existing Layer Combination with the given name will be overwritten."
                         },
                         "layers": {
-                            "$ref": "#/LayersOfLayerCombination"
+                            "$ref": "#/LayersOfLayerCombination",
+                            "description": "Layer states to set. Layers not listed keep their current state when overwriting an existing Layer Combination (or get the default visible/unlocked state for a new one), so this can be omitted to e.g. only rename an existing Layer Combination."
                         }
                     },
                     "additionalProperties": false,
                     "required" : [
-                        "name",
-                        "layers"
+                        "name"
                     ]
                 }
             },
@@ -4530,6 +4547,14 @@ GS::Optional<GS::UniString> CreateFillsCommand::GetInputParametersSchema () cons
                             "description": "Gradient end point (LinearGradient/RadialGradient fills only).",
                             "$ref": "#/Coordinate2D"
                         },
+                        "symbolOffset1": {
+                            "description": "First offset vector of the repeating symbol motif, X1/Y1 in the Fill Types dialog (Symbol fills only).",
+                            "$ref": "#/Coordinate2D"
+                        },
+                        "symbolOffset2": {
+                            "description": "Second offset vector of the repeating symbol motif, X2/Y2 in the Fill Types dialog (Symbol fills only).",
+                            "$ref": "#/Coordinate2D"
+                        },
                         "percent": {
                             "type": "number",
                             "description": "Translucency percentage [0..1] (gradient and some Solid fills)."
@@ -4740,6 +4765,13 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
         }
         if (const GS::ObjectState* gradientEnd = data.Get ("gradientEnd")) {
             fill.filltype.c2 = Get2DCoordinateFromObjectState (*gradientEnd);
+        }
+        // Same c1/c2 fields, under the names GetFills returns them for Symbol fills.
+        if (const GS::ObjectState* symbolOffset1 = data.Get ("symbolOffset1")) {
+            fill.filltype.c1 = Get2DCoordinateFromObjectState (*symbolOffset1);
+        }
+        if (const GS::ObjectState* symbolOffset2 = data.Get ("symbolOffset2")) {
+            fill.filltype.c2 = Get2DCoordinateFromObjectState (*symbolOffset2);
         }
 
         GS::ObjectState textureObj;
@@ -6187,7 +6219,7 @@ GS::Optional<GS::UniString> CreateCompositesCommand::GetInputParametersSchema ()
                         },
                         "useWith": {
                             "type": "array",
-                            "description" : "Array of types the composite can used with.",
+                            "description" : "Array of types the composite can used with. If omitted when overwriting an existing Composite, its current setting is kept.",
                             "items": {
                                 "type": "string",
                                 "description": "Element type (Wall, Slab, Roof, or Shell)"
@@ -6195,7 +6227,7 @@ GS::Optional<GS::UniString> CreateCompositesCommand::GetInputParametersSchema ()
                         },
                         "skins": {
                             "type": "array",
-                            "description" : "Array of skin data.",
+                            "description" : "Array of skin data. Required when creating a new Composite. If omitted when overwriting an existing Composite, its current skins are kept.",
                             "items" : {
                                 "type": "object",
                                 "description" : "Data to represent a skin.",
@@ -6227,7 +6259,7 @@ GS::Optional<GS::UniString> CreateCompositesCommand::GetInputParametersSchema ()
                         },
                         "separators": {
                             "type": "array",
-                            "description" : "Array of skin separator data. The number of items must be the number of skins plus one.",
+                            "description" : "Array of skin separator data. The number of items must be the number of skins plus one. Required when creating a new Composite. If omitted when overwriting an existing Composite, its current separators are kept (only possible if the number of skins does not change).",
                             "items" : {
                                 "type": "object",
                                 "description" : "Data to represent a skin separator.",
@@ -6250,9 +6282,7 @@ GS::Optional<GS::UniString> CreateCompositesCommand::GetInputParametersSchema ()
                     },
                     "additionalProperties": false,
                     "required" : [
-                        "name",
-                        "skins",
-                        "separators"
+                        "name"
                     ]
                 }
             },
@@ -6327,82 +6357,122 @@ GS::ObjectState CreateCompositesCommand::Execute (const GS::ObjectState& paramet
             composite.header.uniStringNamePtr = &name;
         }
 
+        // useWith is only applied when given: a modify that omits it (e.g. a pure rename) keeps the
+        // Composite's current Wall/Slab/Roof/Shell flags, already loaded by ACAPI_Attribute_Get above,
+        // instead of clearing all of them.
         GS::Array<GS::UniString> useWith;
-        compositeData.Get ("useWith", useWith);
-        composite.header.flags &= ~APICWall_ForWall;
-        composite.header.flags &= ~APICWall_ForSlab;
-        composite.header.flags &= ~APICWall_ForRoof;
-        composite.header.flags &= ~APICWall_ForShell;
-        for (const GS::UniString& useWithStr : useWith) {
-            if (useWithStr == "Wall") {
-                composite.header.flags |= APICWall_ForWall;
-            } else if (useWithStr == "Slab") {
-                composite.header.flags |= APICWall_ForSlab;
-            } else if (useWithStr == "Roof") {
-                composite.header.flags |= APICWall_ForRoof;
-            } else if (useWithStr == "Shell") {
-                composite.header.flags |= APICWall_ForShell;
+        if (compositeData.Get ("useWith", useWith)) {
+            composite.header.flags &= ~APICWall_ForWall;
+            composite.header.flags &= ~APICWall_ForSlab;
+            composite.header.flags &= ~APICWall_ForRoof;
+            composite.header.flags &= ~APICWall_ForShell;
+            for (const GS::UniString& useWithStr : useWith) {
+                if (useWithStr == "Wall") {
+                    composite.header.flags |= APICWall_ForWall;
+                } else if (useWithStr == "Slab") {
+                    composite.header.flags |= APICWall_ForSlab;
+                } else if (useWithStr == "Roof") {
+                    composite.header.flags |= APICWall_ForRoof;
+                } else if (useWithStr == "Shell") {
+                    composite.header.flags |= APICWall_ForShell;
+                }
             }
         }
 
         GS::Array<GS::ObjectState> skins;
-        compositeData.Get ("skins", skins);
+        bool hasSkins = compositeData.Get ("skins", skins);
 
         GS::Array<GS::ObjectState> separators;
-        compositeData.Get ("separators", separators);
+        bool hasSeparators = compositeData.Get ("separators", separators);
 
-        if (skins.IsEmpty ()) {
+        // skins/separators are only required for a brand new Composite. When overwriting an existing
+        // one, whichever of the two is omitted is taken from its current definition, so a rename or a
+        // useWith-only change does not have to resend the whole skin structure. nComps/totalThick are
+        // already the existing values here (filled by ACAPI_Attribute_Get above).
+        if (!doesExist && (!hasSkins || !hasSeparators)) {
+            attributeIds (CreateErrorResponse (APIERR_BADPARS, "skins and separators are required when creating a new Composite."));
+            continue;
+        }
+
+        UInt32 componentCount = hasSkins ? skins.GetSize () : (UInt32) composite.compWall.nComps;
+        if (componentCount == 0) {
             attributeIds (CreateErrorResponse (Error, "Skin array is empty."));
             continue;
         }
-        if (separators.GetSize () != skins.GetSize () + 1) {
+        if (hasSeparators && separators.GetSize () != componentCount + 1) {
             attributeIds (CreateErrorResponse (Error, "Invalid separator count."));
             continue;
         }
-
-        UInt32 componentCount = skins.GetSize ();
-        double totalThickness = 0.0;
-        compositeDefs.cwall_compItems = (API_CWallComponent**) BMAllocateHandle (componentCount * sizeof (API_CWallComponent), ALLOCATE_CLEAR, 0);
-        for (UInt32 i = 0; i < componentCount; i++) {
-            const GS::ObjectState& skinData = skins[i];
-            API_CWallComponent& compData = (*compositeDefs.cwall_compItems)[i];
-
-            GS::UniString type;
-            skinData.Get ("type", type);
-            if (type == "Core") {
-                compData.flagBits |= APICWallComp_Core;
-            } else if (type == "Finish") {
-                compData.flagBits |= APICWallComp_Finish;
-            }
-
-            GS::ObjectState buildingMaterialId;
-            skinData.Get ("buildingMaterialId", buildingMaterialId);
-            API_AttributeIndex buildingMaterialIndex;
-            if (GetAttributeIndexFromAttributeId (buildingMaterialId, API_BuildingMaterialID, buildingMaterialIndex)) {
-                compData.buildingMaterial = buildingMaterialIndex;
-            }
-
-            skinData.Get ("framePen", compData.framePen);
-            skinData.Get ("thickness", compData.fillThick);
-            totalThickness += compData.fillThick;
+        if (!hasSeparators && componentCount != (UInt32) composite.compWall.nComps) {
+            attributeIds (CreateErrorResponse (APIERR_BADPARS, "separators are required when the number of skins changes."));
+            continue;
         }
 
-        composite.compWall.nComps = (short) componentCount;
-        composite.compWall.totalThick = totalThickness;
+        if (!hasSkins || !hasSeparators) {
+            API_AttributeDefExt existingDefs = {};
+            if (ACAPI_Attribute_GetDefExt (API_CompWallID, composite.header.index, &existingDefs) != NoError) {
+                attributeIds (CreateErrorResponse (Error, "Failed to read the existing Composite's skins."));
+                continue;
+            }
+            // Take ownership of the kept handles (nulled in existingDefs so they are not disposed twice),
+            // compositeDefs is disposed as a whole once the Composite has been modified.
+            if (!hasSkins) {
+                compositeDefs.cwall_compItems = existingDefs.cwall_compItems;
+                existingDefs.cwall_compItems = nullptr;
+            }
+            if (!hasSeparators) {
+                compositeDefs.cwall_compLItems = existingDefs.cwall_compLItems;
+                existingDefs.cwall_compLItems = nullptr;
+            }
+            ACAPI_DisposeAttrDefsHdlsExt (&existingDefs);
+        }
 
-        compositeDefs.cwall_compLItems = (API_CWallLineComponent**) BMAllocateHandle ((componentCount + 1) * sizeof (API_CWallLineComponent), ALLOCATE_CLEAR, 0);
-        for (UInt32 i = 0; i < componentCount + 1; i++) {
-            const GS::ObjectState& separatorData = separators[i];
-            API_CWallLineComponent& lineData = (*compositeDefs.cwall_compLItems)[i];
+        if (hasSkins) {
+            double totalThickness = 0.0;
+            compositeDefs.cwall_compItems = (API_CWallComponent**) BMAllocateHandle (componentCount * sizeof (API_CWallComponent), ALLOCATE_CLEAR, 0);
+            for (UInt32 i = 0; i < componentCount; i++) {
+                const GS::ObjectState& skinData = skins[i];
+                API_CWallComponent& compData = (*compositeDefs.cwall_compItems)[i];
 
-            GS::ObjectState lineTypeId;
-            separatorData.Get ("lineTypeId", lineTypeId);
-            API_AttributeIndex lineTypeIndex;
-            if (GetAttributeIndexFromAttributeId (lineTypeId, API_LinetypeID, lineTypeIndex)) {
-                lineData.ltypeInd = lineTypeIndex;
+                GS::UniString type;
+                skinData.Get ("type", type);
+                if (type == "Core") {
+                    compData.flagBits |= APICWallComp_Core;
+                } else if (type == "Finish") {
+                    compData.flagBits |= APICWallComp_Finish;
+                }
+
+                GS::ObjectState buildingMaterialId;
+                skinData.Get ("buildingMaterialId", buildingMaterialId);
+                API_AttributeIndex buildingMaterialIndex;
+                if (GetAttributeIndexFromAttributeId (buildingMaterialId, API_BuildingMaterialID, buildingMaterialIndex)) {
+                    compData.buildingMaterial = buildingMaterialIndex;
+                }
+
+                skinData.Get ("framePen", compData.framePen);
+                skinData.Get ("thickness", compData.fillThick);
+                totalThickness += compData.fillThick;
             }
 
-            separatorData.Get ("linePen", lineData.linePen);
+            composite.compWall.nComps = (short) componentCount;
+            composite.compWall.totalThick = totalThickness;
+        }
+
+        if (hasSeparators) {
+            compositeDefs.cwall_compLItems = (API_CWallLineComponent**) BMAllocateHandle ((componentCount + 1) * sizeof (API_CWallLineComponent), ALLOCATE_CLEAR, 0);
+            for (UInt32 i = 0; i < componentCount + 1; i++) {
+                const GS::ObjectState& separatorData = separators[i];
+                API_CWallLineComponent& lineData = (*compositeDefs.cwall_compLItems)[i];
+
+                GS::ObjectState lineTypeId;
+                separatorData.Get ("lineTypeId", lineTypeId);
+                API_AttributeIndex lineTypeIndex;
+                if (GetAttributeIndexFromAttributeId (lineTypeId, API_LinetypeID, lineTypeIndex)) {
+                    lineData.ltypeInd = lineTypeIndex;
+                }
+
+                separatorData.Get ("linePen", lineData.linePen);
+            }
         }
 
         if (doesExist) {
@@ -6426,6 +6496,129 @@ GS::ObjectState CreateCompositesCommand::Execute (const GS::ObjectState& paramet
     }
 
     return response;
+}
+
+// ACAPI_Database_JsonQuery answers a query string with a string. The queries used here: "lineConsolidation"
+// and "fillNormalization" run the Line Consolidation and Fill Consolidation menu commands, "usedAttributes"
+// reports the attributes in use. AC25 and AC26 declare APIDb_JsonQueryID with other parameter types, so
+// these commands are Archicad 27+ only.
+#ifdef ServerMainVers_2700
+static GSErrCode RunJsonQuery (const GS::UniString& query, GS::UniString& result)
+{
+    return ACAPI_Database_JsonQuery (&query, &result);
+}
+#endif
+
+ConsolidationCommandBase::ConsolidationCommandBase (const GS::String& commandNameIn, const GS::UniString& queryIn, const GS::UniString& menuCommandNameIn)
+    : CommandBase (CommonSchema::Used)
+    , commandName (commandNameIn)
+    , query (queryIn)
+    , menuCommandName (menuCommandNameIn)
+{
+}
+
+GS::String ConsolidationCommandBase::GetName () const
+{
+    return commandName;
+}
+
+GS::Optional<GS::UniString> ConsolidationCommandBase::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResult": {
+                "$ref": "#/ExecutionResult"
+            },
+            "result": {
+                "type": "string",
+                "description": "What Archicad answered for the JSON query, as it came. Present when the query ran. The Archicad API does not document its content; it may report a failure of the menu command even though the query itself ran."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResult"
+        ]
+    })";
+}
+
+GS::ObjectState ConsolidationCommandBase::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::UniString result;
+    const GSErrCode err = RunJsonQuery (query, result);
+    if (err != NoError) {
+        return GS::ObjectState ("executionResult", CreateFailedExecutionResult (err, GS::UniString::Printf ("Failed to run the %T menu command.", menuCommandName.ToPrintf ())));
+    }
+
+    // The answer is undocumented and may say that the menu command failed although the query ran,
+    // so it is passed on for the caller to see.
+    GS::ObjectState response ("executionResult", CreateSuccessfulExecutionResult ());
+    response.Add ("result", result);
+    return response;
+#else
+    return GS::ObjectState ("executionResult", CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer."));
+#endif
+}
+
+ConsolidateLinesCommand::ConsolidateLinesCommand ()
+    : ConsolidationCommandBase ("ConsolidateLines", "lineConsolidation", "Line Consolidation")
+{
+}
+
+ConsolidateFillsCommand::ConsolidateFillsCommand ()
+    : ConsolidationCommandBase ("ConsolidateFills", "fillNormalization", "Fill Consolidation")
+{
+}
+
+GetUsedAttributesCommand::GetUsedAttributesCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetUsedAttributesCommand::GetName () const
+{
+    return "GetUsedAttributes";
+}
+
+GS::Optional<GS::UniString> GetUsedAttributesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "description": "The attributes in use, as Archicad reports them for the usedAttributes JSON query. The Archicad API does not document the layout of the report, so it is passed on as it comes: parsed into usedAttributes when it is a JSON object, otherwise as text in raw.",
+        "properties": {
+            "usedAttributes": {
+                "type": "object",
+                "description": "The report parsed as a JSON object."
+            },
+            "raw": {
+                "type": "string",
+                "description": "The report as text, when it is not a JSON object."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::ObjectState GetUsedAttributesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::UniString result;
+    const GSErrCode err = RunJsonQuery ("usedAttributes", result);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the used attributes.");
+    }
+
+    // The layout of the report is undocumented; an ObjectState only holds a JSON object, so anything
+    // else (an array, plain text) goes back as it came.
+    GS::ObjectState usedAttributes;
+    if (JSON::ConvertToObjectState (result, usedAttributes) == NoError) {
+        return GS::ObjectState ("usedAttributes", usedAttributes);
+    }
+    return GS::ObjectState ("raw", result);
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
 }
 
 GetFontsByNameCommand::GetFontsByNameCommand () :
@@ -6541,6 +6734,318 @@ GS::ObjectState GetFontsByNameCommand::Execute (const GS::ObjectState& parameter
         fontOS.Add ("fontIndex", fontIndex);
         fontOS.Add ("fontName", foundName.HasValue () ? *foundName : fontName);
         fonts (fontOS);
+    }
+
+    return response;
+}
+
+// The user data of an attribute: ACAPI_UserData_GetUserData / SetUserData from AC27, ACAPI_Attribute_GetUserData /
+// SetUserData before (see MigrationHelper.hpp). Only dataVersion, platformSign and dataHdl are used, the fields the
+// AC25-AC30 API_AttributeUserData share. Setting is a non-undoable modifier, so it runs outside an undo scope.
+
+static bool FindAttributeForUserData (const GS::ObjectState& attributeIdItem, API_Attr_Head& attrHead)
+{
+    const GS::ObjectState* attributeId = attributeIdItem.Get ("attributeId");
+    if (attributeId == nullptr) {
+        return false;
+    }
+    attrHead = GetAttributeHeadFromGuid (GetGuidFromObjectState (*attributeId));
+    return attrHead.typeID != API_ZombieAttrID;
+}
+
+// Reads the pairs stored on the attribute: none when it has no user data. A failure fills errorMessage.
+static GSErrCode ReadAttributeUserDataPairs (API_Attr_Head& attrHead, UserDataPairs& pairs, GS::UniString& errorMessage)
+{
+    pairs.clear ();
+
+    API_AttributeUserData userData = {};
+    GSErrCode err = ACAPI_UserData_GetUserData (&attrHead, &userData);
+    if (err == APIERR_NOUSERDATA) {
+        BMKillHandle (&userData.dataHdl);
+        return NoError;
+    }
+    if (err != NoError) {
+        BMKillHandle (&userData.dataHdl);
+        errorMessage = "Failed to get the user data of the attribute.";
+        return err;
+    }
+    if (userData.dataHdl == nullptr) {
+        return NoError;
+    }
+
+    // Data in a layout these commands do not write is reported, never overwritten.
+    if (userData.dataVersion != UserDataPairsLayoutVersion) {
+        errorMessage = GS::UniString::Printf ("The attribute holds user data in another layout (version %d).", static_cast<int> (userData.dataVersion));
+        err = APIERR_BADPARS;
+    } else {
+        pairs = ParseUserDataPairs (userData.dataHdl);
+    }
+
+    BMKillHandle (&userData.dataHdl);
+    return err;
+}
+
+GetUserDataOfAttributesCommand::GetUserDataOfAttributesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetUserDataOfAttributesCommand::GetName () const
+{
+    return "GetUserDataOfAttributes";
+}
+
+GS::Optional<GS::UniString> GetUserDataOfAttributesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeIds": {
+                "$ref": "#/AttributeIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetUserDataOfAttributesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "userDataOfAttributes": {
+                "type": "array",
+                "description": "One item per attribute, in the input order: the pairs stored on the attribute (none when it holds no user data), or an error when the attribute was not found or holds user data in another layout.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "pairs": {
+                                    "$ref": "#/UserDataPairs"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "pairs"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "userDataOfAttributes"
+        ]
+    })";
+}
+
+GS::ObjectState GetUserDataOfAttributesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> attributeIds;
+    parameters.Get ("attributeIds", attributeIds);
+
+    GS::ObjectState response;
+    const auto& userDataOfAttributes = response.AddList<GS::ObjectState> ("userDataOfAttributes");
+
+    for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        API_Attr_Head attrHead = {};
+        if (!FindAttributeForUserData (attributeIdItem, attrHead)) {
+            userDataOfAttributes (CreateErrorResponse (APIERR_BADID, "Attribute not found."));
+            continue;
+        }
+
+        UserDataPairs pairs;
+        GS::UniString errorMessage;
+        const GSErrCode err = ReadAttributeUserDataPairs (attrHead, pairs, errorMessage);
+        if (err != NoError) {
+            userDataOfAttributes (CreateErrorResponse (err, errorMessage));
+            continue;
+        }
+
+        GS::ObjectState item;
+        AddUserDataPairsList (item, "pairs", pairs);
+        userDataOfAttributes (item);
+    }
+
+    return response;
+}
+
+SetUserDataOfAttributesCommand::SetUserDataOfAttributesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetUserDataOfAttributesCommand::GetName () const
+{
+    return "SetUserDataOfAttributes";
+}
+
+GS::Optional<GS::UniString> SetUserDataOfAttributesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeIds": {
+                "$ref": "#/AttributeIds"
+            },
+            "pairs": {
+                "$ref": "#/UserDataPairs",
+                "description": "The key-value pairs to store on each attribute. A key the attribute already holds gets the new value; other keys are left as they are."
+            },
+            "keysToDelete": {
+                "$ref": "#/UserDataKeysToDelete"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetUserDataOfAttributesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result per attribute, in the input order."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetUserDataOfAttributesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> attributeIds;
+    parameters.Get ("attributeIds", attributeIds);
+
+    UserDataPairs pairsToSet;
+    GS::Array<GS::UniString> keysToDelete;
+    GS::UniString errorMessage;
+    if (!GetUserDataPairChanges (parameters, pairsToSet, keysToDelete, errorMessage)) {
+        return CreateErrorResponse (APIERR_BADPARS, errorMessage);
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        API_Attr_Head attrHead = {};
+        if (!FindAttributeForUserData (attributeIdItem, attrHead)) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "Attribute not found."));
+            continue;
+        }
+
+        UserDataPairs pairs;
+        GSErrCode err = ReadAttributeUserDataPairs (attrHead, pairs, errorMessage);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, errorMessage));
+            continue;
+        }
+
+        ApplyUserDataPairChanges (pairs, pairsToSet, keysToDelete);
+
+        API_AttributeUserData userData = {};
+        userData.dataVersion = UserDataPairsLayoutVersion;
+        userData.platformSign = GS::Act_Platform_Sign;
+        userData.dataHdl = SerializeUserDataPairs (pairs);
+        if (userData.dataHdl == nullptr) {
+            executionResults (CreateFailedExecutionResult (APIERR_MEMFULL, "Failed to store the user data of the attribute."));
+            continue;
+        }
+
+        // The API copies the data, the handle stays ours to free.
+        err = ACAPI_UserData_SetUserData (&attrHead, &userData);
+        BMKillHandle (&userData.dataHdl);
+        executionResults (err == NoError
+            ? CreateSuccessfulExecutionResult ()
+            : CreateFailedExecutionResult (err, "Failed to store the user data of the attribute."));
+    }
+
+    return response;
+}
+
+DeleteUserDataOfAttributesCommand::DeleteUserDataOfAttributesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeleteUserDataOfAttributesCommand::GetName () const
+{
+    return "DeleteUserDataOfAttributes";
+}
+
+GS::Optional<GS::UniString> DeleteUserDataOfAttributesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeIds": {
+                "$ref": "#/AttributeIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteUserDataOfAttributesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result per attribute, in the input order."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteUserDataOfAttributesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> attributeIds;
+    parameters.Get ("attributeIds", attributeIds);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        API_Attr_Head attrHead = {};
+        if (!FindAttributeForUserData (attributeIdItem, attrHead)) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "Attribute not found."));
+            continue;
+        }
+
+        // A null dataHdl deletes the user data; the struct pointer itself must not be null (APIERR_BADPARS).
+        API_AttributeUserData userData = {};
+        userData.platformSign = GS::Act_Platform_Sign;
+        userData.dataHdl = nullptr;
+        const GSErrCode err = ACAPI_UserData_SetUserData (&attrHead, &userData);
+        executionResults (err == NoError
+            ? CreateSuccessfulExecutionResult ()
+            : CreateFailedExecutionResult (err, "Failed to delete the user data of the attribute."));
     }
 
     return response;

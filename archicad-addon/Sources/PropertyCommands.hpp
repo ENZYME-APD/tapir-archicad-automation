@@ -2,11 +2,16 @@
 
 #include "CommandBase.hpp"
 
+// The display string of a property value, as GetPropertyValuesOfElements returns it.
+// Only meaningful for a value whose status is API_Property_HasValue.
+GSErrCode GetPropertyValueString (const API_Property& propertyValue, GS::UniString& resultString);
+
 class GetAllPropertiesCommand : public CommandBase
 {
 public:
     GetAllPropertiesCommand ();
     virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
@@ -65,6 +70,16 @@ class GetPropertyDefinitionsOfAttributesCommand : public CommandBase
 {
 public:
     GetPropertyDefinitionsOfAttributesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetPropertiesOfToolDefaultsCommand : public CommandBase
+{
+public:
+    GetPropertiesOfToolDefaultsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
@@ -155,6 +170,16 @@ class ImportPropertiesXmlCommand : public CommandBase
 {
 public:
     ImportPropertiesXmlCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class ModifyPropertyValueOfElementsCommand : public CommandBase
+{
+public:
+    ModifyPropertyValueOfElementsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
