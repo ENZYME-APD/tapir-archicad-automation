@@ -1713,6 +1713,12 @@ GS::Optional<GS::UniString> ApplyWallStructure (
             if (element.wall.type == APIWtyp_Poly) {
                 element.wall.type = APIWtyp_Normal;
             }
+            // A complex-profile favorite or tool default leaves the cross section on APISect_Poly, and with
+            // it the wall stays a profile wall without a profile (#531): structureType Profile, a null
+            // profileId. Slanted and Trapez cross sections are kept, as they are valid for this structure.
+            if (element.wall.profileType == APISect_Poly) {
+                element.wall.profileType = APISect_Normal;
+            }
             break;
         case StructureSelectionKind::Composite:
             element.wall.modelElemStructureType = API_CompositeStructure;
@@ -1723,9 +1729,13 @@ GS::Optional<GS::UniString> ApplyWallStructure (
             if (element.wall.type == APIWtyp_Poly) {
                 element.wall.type = APIWtyp_Normal;
             }
+            if (element.wall.profileType == APISect_Poly) {
+                element.wall.profileType = APISect_Normal;
+            }
             break;
         case StructureSelectionKind::Profile:
             element.wall.modelElemStructureType = API_ProfileStructure;
+            element.wall.profileType = APISect_Poly;
             if (selection.profile != APIInvalidAttributeIndex) {
                 element.wall.profileAttr = selection.profile;
             }
@@ -1746,6 +1756,7 @@ GS::Optional<GS::UniString> ApplyWallStructure (
         ACAPI_ELEMENT_MASK_SET ((*mask), API_WallType, composite);
         ACAPI_ELEMENT_MASK_SET ((*mask), API_WallType, profileAttr);
         ACAPI_ELEMENT_MASK_SET ((*mask), API_WallType, type);
+        ACAPI_ELEMENT_MASK_SET ((*mask), API_WallType, profileType);
     }
     changed = true;
     return {};
@@ -1914,6 +1925,14 @@ bool ApplyWallDetails (API_Element& element, API_Element& mask, const GS::Object
     if (details.Get ("referenceLineLocation", referenceLineLocationStr)) {
         element.wall.referenceLineLocation = WallReferenceLineLocationFromString (referenceLineLocationStr);
         ACAPI_ELEMENT_MASK_SET (mask, API_WallType, referenceLineLocation);
+        changed = true;
+    }
+    // Mirrors the wall to its reference line (#1598): without it a new wall takes the
+    // Wall tool default's side, which mirrors a Profile wall's whole cross section.
+    bool flipped = false;
+    if (details.Get ("flipped", flipped)) {
+        element.wall.flipped = flipped;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, flipped);
         changed = true;
     }
     GS::UniString profileTypeStr;
@@ -3741,6 +3760,11 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                             "type": "string",
                             "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
                         },
+                        "layerIndex": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults."
+                        },
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
                         "floorIndex": { "type": "integer", "description": "Story index (as returned by GetStories). When provided, zCoordinate is interpreted as bottomOffset relative to the floor. Takes priority over zCoordinate for floor assignment." },
@@ -3756,6 +3780,10 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                         "referenceLineLocation": {
                             "$ref": "#/WallReferenceLineLocation",
                             "description": "Optional. When omitted, the favorite's or the Wall tool default's reference line location is kept. The Core* values only have an effect on a Composite or Profile wall."
+                        },
+                        "flipped": {
+                            "type": "boolean",
+                            "description": "Optional. True mirrors the wall to its reference line (the side GetDetailsOfElements reports as flipped). When omitted, the favorite's or the Wall tool default's side is kept, which for a Profile wall mirrors its whole cross section."
                         },
                         "structureType": {
                             "$ref": "#/WallStructureType",
@@ -3839,6 +3867,11 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
 
 GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo&, const Stories& stories, const GS::ObjectState& parameters) const
 {
+    const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (parameters, element);
+    if (layerError.HasValue ()) {
+        return layerError;
+    }
+
     if (parameters.Get ("begCoordinate") == nullptr) {
         return CreateErrorResponse (APIERR_BADPARS, "Missing required 'begCoordinate' parameter.");
     }
@@ -3954,6 +3987,11 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                             "type": "string",
                             "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
                         },
+                        "layerIndex": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults."
+                        },
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
                         "floorIndex": { "type": "integer", "description": "Optional floor index. If omitted, derived from zCoordinate." },
@@ -4015,6 +4053,11 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
 
 GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
 {
+    const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (parameters, element);
+    if (layerError.HasValue ()) {
+        return layerError;
+    }
+
     if (parameters.Get ("begCoordinate") == nullptr) {
         return CreateErrorResponse (APIERR_BADPARS, "Missing required 'begCoordinate' parameter.");
     }
@@ -5419,6 +5462,69 @@ static GS::ObjectState CreateOpeningExtrusionParametersObjectState (const ACAPI:
     return extrusionOs;
 }
 
+// OpeningGeometry::GetVectorX, GetVectorY and GetExtrusionDirection return the axes moved by the origin
+// of the host element's coordinate system, as if they were points: host origin + axis (#1562). The three
+// axes are orthonormal and the extrusion direction is -(x × y) (checked live on Archicad 29 with walls in
+// both directions, a diagonal wall on an upper story and a slab), so that origin is the centroid of the
+// three returned points plus a third of (Y - X) × (E - X), and subtracting it gives the direction vectors.
+// When the API returns plain direction vectors, the same formula gives a zero origin and keeps them.
+struct OpeningAxes {
+    API_Vector3D xAxis;
+    API_Vector3D yAxis;
+    API_Vector3D extrusionDirection;
+};
+
+static OpeningAxes GetOpeningAxes (const ACAPI::Element::OpeningGeometry& geometry)
+{
+    const API_Vector3D x = geometry.GetVectorX ();
+    const API_Vector3D y = geometry.GetVectorY ();
+    const API_Vector3D e = geometry.GetExtrusionDirection ();
+
+    const API_Vector3D yx = { y.x - x.x, y.y - x.y, y.z - x.z };
+    const API_Vector3D ex = { e.x - x.x, e.y - x.y, e.z - x.z };
+    const API_Vector3D n = {
+        yx.y * ex.z - yx.z * ex.y,
+        yx.z * ex.x - yx.x * ex.z,
+        yx.x * ex.y - yx.y * ex.x
+    };
+    const API_Vector3D origin = {
+        (x.x + y.x + e.x + n.x) / 3.0,
+        (x.y + y.y + e.y + n.y) / 3.0,
+        (x.z + y.z + e.z + n.z) / 3.0
+    };
+
+    OpeningAxes axes;
+    axes.xAxis = { x.x - origin.x, x.y - origin.y, x.z - origin.z };
+    axes.yAxis = { y.x - origin.x, y.y - origin.y, y.z - origin.z };
+    axes.extrusionDirection = { e.x - origin.x, e.y - origin.y, e.z - origin.z };
+    return axes;
+}
+
+// The placement of an Opening element as a local-to-global matrix: origin at the anchor point, the X and Y
+// axes of the opening, and Z = X × Y (right-handed, so Z points against the extrusion direction).
+static GSErrCode GetOpeningElementLocalToGlobal (const API_Guid& openingGuid, API_Tranmat& localToGlobal)
+{
+    using ACAPI::Element::Opening;
+
+    const ACAPI::UniqueID openingId (APIGuid2GSGuid (openingGuid), ACAPI_GetToken ());
+    ACAPI::Result<Opening> opening = Opening::Get (openingId);
+    if (opening.IsErr ()) {
+        return opening.UnwrapErr ().kind;
+    }
+    const auto geometry = opening->GetOpeningGeometry ();
+    const API_Coord3D anchor = geometry.GetAnchorPoint ();
+    const OpeningAxes axes = GetOpeningAxes (geometry);
+    const API_Vector3D& x = axes.xAxis;
+    const API_Vector3D& y = axes.yAxis;
+    const API_Vector3D z = { x.y * y.z - x.z * y.y, x.z * y.x - x.x * y.z, x.x * y.y - x.y * y.x };
+
+    double* t = localToGlobal.tmx;
+    t[0] = x.x; t[1] = y.x; t[2]  = z.x; t[3]  = anchor.x;
+    t[4] = x.y; t[5] = y.y; t[6]  = z.y; t[7]  = anchor.y;
+    t[8] = x.z; t[9] = y.z; t[10] = z.z; t[11] = anchor.z;
+    return NoError;
+}
+
 static GS::ObjectState GetOpeningDetails (const API_Guid& openingGuid)
 {
     using ACAPI::Element::Opening;
@@ -5454,9 +5560,10 @@ static GS::ObjectState GetOpeningDetails (const API_Guid& openingGuid)
     const auto geometry = opening->GetOpeningGeometry ();
     GS::ObjectState geometryOs;
     geometryOs.Add ("anchorPoint", Create3DCoordinateObjectState (geometry.GetAnchorPoint ()));
-    geometryOs.Add ("extrusionDirection", CreateVector3DObjectState (geometry.GetExtrusionDirection ()));
-    geometryOs.Add ("xAxis", CreateVector3DObjectState (geometry.GetVectorX ()));
-    geometryOs.Add ("yAxis", CreateVector3DObjectState (geometry.GetVectorY ()));
+    const OpeningAxes axes = GetOpeningAxes (geometry);
+    geometryOs.Add ("extrusionDirection", CreateVector3DObjectState (axes.extrusionDirection));
+    geometryOs.Add ("xAxis", CreateVector3DObjectState (axes.xAxis));
+    geometryOs.Add ("yAxis", CreateVector3DObjectState (axes.yAxis));
     const std::optional<Geometry::Polygon2D> polygon = geometry.GetPolygon ();
     if (polygon.has_value ()) {
         const auto& vertices = geometryOs.AddList<GS::ObjectState> ("polygon");
@@ -6867,6 +6974,7 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                         "referenceLineLocation": {
                             "$ref": "#/WallReferenceLineLocation"
                         },
+                        "flipped": { "type": "boolean", "description": "True mirrors the wall to its reference line (the side GetDetailsOfElements reports as flipped)." },
                         "profileType": { "$ref": "#/WallModificationProfileType", "description": "slantAlpha/slantBeta only have an effect once this is set to Slanted." },
                         "slantAlpha": { "type": "number", "description": "Only has an effect once profileType is set to Slanted or Trapez." },
                         "slantBeta": { "type": "number", "description": "Only has an effect once profileType is set to Slanted or Trapez." },
@@ -7670,37 +7778,37 @@ GS::Optional<GS::UniString> GetOpeningTransformationsCommand::GetRawResponseSche
                                 },
                                 "globalToLocal": {
                                     "type": "array",
-                                    "description": "The matrix as Archicad returns it (API_Tranmat, global to local): the 12 values of a 3x4 matrix, row by row, so x' = m[0]*x + m[1]*y + m[2]*z + m[3], y' = m[4]*x + ... + m[7], z' = m[8]*x + ... + m[11].",
+                                    "description": "The global-to-local matrix (API_Tranmat), the inverse of localToGlobal: the 12 values of a 3x4 matrix, row by row, so x' = m[0]*x + m[1]*y + m[2]*z + m[3], y' = m[4]*x + ... + m[7], z' = m[8]*x + ... + m[11].",
                                     "items": { "type": "number" },
                                     "minItems": 12,
                                     "maxItems": 12
                                 },
                                 "localToGlobal": {
                                     "type": "array",
-                                    "description": "The inverse of globalToLocal, in the same layout. Missing when globalToLocal cannot be inverted.",
+                                    "description": "The local-to-global matrix, in the same layout: the matrix ACAPI_Element_GetOpeningTransformation returns for a Window, Door or Skylight, or the one built from the geometry of an Opening element.",
                                     "items": { "type": "number" },
                                     "minItems": 12,
                                     "maxItems": 12
                                 },
                                 "origin": {
                                     "$ref": "#/Coordinate3D",
-                                    "description": "The origin of the opening's local coordinate system in world coordinates, from localToGlobal. Missing when globalToLocal cannot be inverted."
+                                    "description": "The origin of the opening's local coordinate system in world coordinates, from localToGlobal. For an Opening element this is its anchor point."
                                 },
                                 "xAxis": {
                                     "$ref": "#/Coordinate3D",
-                                    "description": "The local X axis in world coordinates, from localToGlobal. Missing when globalToLocal cannot be inverted."
+                                    "description": "The local X axis in world coordinates, from localToGlobal."
                                 },
                                 "yAxis": {
                                     "$ref": "#/Coordinate3D",
-                                    "description": "The local Y axis in world coordinates, from localToGlobal. Missing when globalToLocal cannot be inverted."
+                                    "description": "The local Y axis in world coordinates, from localToGlobal."
                                 },
                                 "zAxis": {
                                     "$ref": "#/Coordinate3D",
-                                    "description": "The local Z axis in world coordinates, from localToGlobal. Missing when globalToLocal cannot be inverted."
+                                    "description": "The local Z axis in world coordinates, from localToGlobal. For an Opening element it is X × Y, which points against its extrusion direction."
                                 },
                                 "determinant": {
                                     "type": "number",
-                                    "description": "The determinant of the 3x3 part of globalToLocal. Zero (or nearly) when it cannot be inverted."
+                                    "description": "The determinant of the 3x3 part of localToGlobal: 1, or -1 for a mirrored Window, Door or Skylight."
                                 },
                                 "isMirrored": {
                                     "type": "boolean",
@@ -7708,7 +7816,7 @@ GS::Optional<GS::UniString> GetOpeningTransformationsCommand::GetRawResponseSche
                                 }
                             },
                             "additionalProperties": false,
-                            "required": ["elementId", "globalToLocal", "determinant", "isMirrored"]
+                            "required": ["elementId", "globalToLocal", "localToGlobal", "origin", "xAxis", "yAxis", "zAxis", "determinant", "isMirrored"]
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -7786,33 +7894,55 @@ GS::ObjectState GetOpeningTransformationsCommand::Execute (const GS::ObjectState
             openingTransformations (CreateErrorResponse (APIERR_BADID, "Element not found"));
             continue;
         }
-        if (GetElemTypeId (header) != API_OpeningID) {
-            openingTransformations (CreateErrorResponse (APIERR_BADID, "Element is not an Opening"));
+        // ACAPI_Element_GetOpeningTransformation is for the openings of the classic API - windows, doors and
+        // skylights, as in the DevKit's Element_Test - and answers APIERR_BADID for an Opening element (#1563).
+        // The placement of an Opening element is built from its geometry instead (Archicad 29 and later).
+        //
+        // The DevKit documents the returned matrix as global-to-local, but it maps the local origin to the
+        // position of the window (live: its translation is the window's center at sill height) and the
+        // DevKit's Element_Test uses it that way, so it is taken as local-to-global and inverted.
+        const API_ElemTypeID typeId = GetElemTypeId (header);
+        API_Tranmat localToGlobal = {};
+        if (typeId == API_WindowID || typeId == API_DoorID || typeId == API_SkylightID) {
+            const GSErrCode err = ACAPI_Element_GetOpeningTransformation (&elemGuid, &localToGlobal);
+            if (err != NoError) {
+                openingTransformations (CreateErrorResponse (err, "Failed to get the transformation of the opening"));
+                continue;
+            }
+        } else if (typeId == API_OpeningID) {
+#ifdef ServerMainVers_2900
+            const GSErrCode err = GetOpeningElementLocalToGlobal (elemGuid, localToGlobal);
+            if (err != NoError) {
+                openingTransformations (CreateErrorResponse (err, "Failed to read the geometry of the opening"));
+                continue;
+            }
+#else
+            openingTransformations (CreateErrorResponse (APIERR_NOTSUPPORTED,
+                "The placement of an Opening element is read from its geometry, which needs Archicad 29 or later; windows, doors and skylights work from Archicad 27."));
+            continue;
+#endif
+        } else {
+            openingTransformations (CreateErrorResponse (APIERR_BADID, "Element is not an Opening, Window, Door or Skylight"));
             continue;
         }
 
-        API_Tranmat globalToLocal = {};
-        const GSErrCode err = ACAPI_Element_GetOpeningTransformation (&elemGuid, &globalToLocal);
-        if (err != NoError) {
-            openingTransformations (CreateErrorResponse (err, "Failed to get the transformation of the opening"));
+        const double det = GetTranmatDeterminant (localToGlobal);
+        if (std::abs (det) <= 1e-12) {
+            openingTransformations (CreateErrorResponse (APIERR_GENERAL, "The transformation of the opening cannot be inverted"));
             continue;
         }
-
-        const double det = GetTranmatDeterminant (globalToLocal);
+        const API_Tranmat globalToLocal = InvertTranmat (localToGlobal, det);
 
         GS::ObjectState transformation;
         transformation.Add ("elementId", CreateGuidObjectState (elemGuid));
         AddTranmat (transformation, "globalToLocal", globalToLocal);
-        if (std::abs (det) > 1e-12) {
-            const API_Tranmat localToGlobal = InvertTranmat (globalToLocal, det);
-            const double* l = localToGlobal.tmx;
-            AddTranmat (transformation, "localToGlobal", localToGlobal);
-            // The images of the local origin and of the local unit axes: the translation and the columns of the 3x3 part.
-            transformation.Add ("origin", Create3DCoordinateObjectState ({l[3], l[7], l[11]}));
-            transformation.Add ("xAxis", Create3DCoordinateObjectState ({l[0], l[4], l[8]}));
-            transformation.Add ("yAxis", Create3DCoordinateObjectState ({l[1], l[5], l[9]}));
-            transformation.Add ("zAxis", Create3DCoordinateObjectState ({l[2], l[6], l[10]}));
-        }
+        AddTranmat (transformation, "localToGlobal", localToGlobal);
+        // The images of the local origin and of the local unit axes: the translation and the columns of the 3x3 part.
+        const double* l = localToGlobal.tmx;
+        transformation.Add ("origin", Create3DCoordinateObjectState ({l[3], l[7], l[11]}));
+        transformation.Add ("xAxis", Create3DCoordinateObjectState ({l[0], l[4], l[8]}));
+        transformation.Add ("yAxis", Create3DCoordinateObjectState ({l[1], l[5], l[9]}));
+        transformation.Add ("zAxis", Create3DCoordinateObjectState ({l[2], l[6], l[10]}));
         transformation.Add ("determinant", det);
         transformation.Add ("isMirrored", det < 0.0);
 
@@ -8348,7 +8478,7 @@ GS::Optional<GS::UniString> CreateSectionsCommand::GetInputParametersSchema () c
                     "properties": {
                         "startCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
-                        "depth": { "type": "number" },
+                        "depth": { "type": "number", "description": "The distance of the depth line from the section line, on the left of the start to end direction, which is the direction the section looks in. Default is 1." },
                         "name": { "type": "string" },
                         "floorIndex": { "type": "integer" }
                     },

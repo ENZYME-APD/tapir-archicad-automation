@@ -129,7 +129,7 @@ ul.items li { padding: 3px 0; overflow-wrap: anywhere; }
 <nav class="sidebar" id="sidebar" aria-label="Sections"></nav>
 <main>
 <h1>Archicad API coverage</h1>
-<p class="muted">Which parts of the Archicad API (Archicad 25–30: C functions with their older names and command ids, and the C++ API) the <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> uses, updated within minutes of every pull request, issue and push. See also the <a href="../archicad-addon/">command reference</a>.</p>
+<p class="muted">Which parts of the Archicad API (<span id="archicad-range">every supported Archicad version</span>: C functions with their older names and command ids, and the C++ API) the <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> uses, updated within minutes of every issue and push to main, and within the hour of every pull request. See also the <a href="../archicad-addon/">command reference</a>.</p>
 
 <section aria-label="Overview" id="overview">
     <div class="hero">
@@ -490,6 +490,9 @@ async function main () {
         document.getElementById ('hero-caption').textContent = 'The checklist could not be loaded. Reload the page in a minute.';
         return;
     }
+    // The versions come from the DevKits the checklist was generated from.
+    const v = data.versions;
+    if (v.length) document.getElementById ('archicad-range').textContent = 'Archicad ' + v[0] + (v.length > 1 ? '–' + v[v.length - 1] : '');
     document.getElementById ('search').addEventListener ('input', render);
     for (const button of document.querySelectorAll ('#group-sort .option')) {
         button.addEventListener ('click', () => {
