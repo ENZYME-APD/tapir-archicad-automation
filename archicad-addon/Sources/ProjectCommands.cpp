@@ -1,6 +1,9 @@
 #include "ProjectCommands.hpp"
 #include "MigrationHelper.hpp"
 #include "Location.hpp"
+#include "NativeImage.hpp"
+#include "MemoryOChannel32.hpp"
+#include "Base64Converter.hpp"
 
 #ifdef ServerMainVers_2800
 #include "ACAPI/IFCObjectAccessor.hpp"
@@ -8,6 +11,8 @@
 #endif
 
 #include <cmath>
+#include <optional>
+#include <initializer_list>
 
 GetProjectInfoCommand::GetProjectInfoCommand () :
     CommandBase (CommonSchema::NotUsed)
@@ -108,6 +113,22 @@ GS::Optional<GS::UniString> GetProjectInfoFieldsCommand::GetRawResponseSchema ()
     })";
 }
 
+// The autotexts of the project info fields among all autotexts: the built-in ones by their
+// fixed keys, the custom ones by the 'autotext-' prefix of the key.
+static bool IsProjectInfoAutoTextId (const GS::UniString& autoTextId)
+{
+    static const GS::Array<GS::UniString> validPrefixes = {
+        "PROJECT", "KEYWORD", "NOTES", "SITE", "BUILDING", "CONTACT", "CAD_TECHNICIAN", "CLIENT"
+    };
+
+    for (const GS::UniString& validPrefix : validPrefixes) {
+        if (autoTextId.BeginsWith (validPrefix) || autoTextId.BeginsWith ("autotext-" + validPrefix)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 GS::ObjectState GetProjectInfoFieldsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ArrayFB<GS::UniString, 3>> autoTexts;
@@ -118,10 +139,6 @@ GS::ObjectState GetProjectInfoFieldsCommand::Execute (const GS::ObjectState& /*p
         return CreateErrorResponse (err, "Failed to retrieve project information fields.");
     }
 
-    static const GS::Array<GS::UniString> validPrefixes = {
-        "PROJECT", "KEYWORD", "NOTES", "SITE", "BUILDING", "CONTACT", "CAD_TECHNICIAN", "CLIENT"
-    };
-
     GS::ObjectState response;
     const auto& listAdder = response.AddList<GS::ObjectState> ("fields");
 
@@ -130,14 +147,7 @@ GS::ObjectState GetProjectInfoFieldsCommand::Execute (const GS::ObjectState& /*p
         const GS::UniString& autoTextId = autoText[1];
         const GS::UniString& autoTextValue = autoText[2];
 
-        bool isValidPrefix = false;
-        for (const GS::UniString& validPrefix : validPrefixes) {
-            if (autoTextId.BeginsWith (validPrefix) || autoTextId.BeginsWith ("autotext-" + validPrefix)) {
-                isValidPrefix = true;
-                break;
-            }
-        }
-        if (!isValidPrefix) {
+        if (!IsProjectInfoAutoTextId (autoTextId)) {
             continue;
         }
 
@@ -413,6 +423,110 @@ GS::ObjectState GetAutoTextNameCommand::Execute (const GS::ObjectState& paramete
     return response;
 }
 
+GetNoteAutoTextKeywordsCommand::GetNoteAutoTextKeywordsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetNoteAutoTextKeywordsCommand::GetName () const
+{
+    return "GetNoteAutoTextKeywords";
+}
+
+GS::Optional<GS::UniString> GetNoteAutoTextKeywordsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "autoTextIds": {
+                "type": "array",
+                "description": "Numeric values of the API_NoteAutotextID enumeration of the Archicad API (the autotexts of dimension, label and other element notes).",
+                "items": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "autoTextIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetNoteAutoTextKeywordsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "keywords": {
+                "type": "array",
+                "description": "One result per input id, in the same order.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "keyword": {
+                                    "type": "string",
+                                    "description": "The keyword of the note autotext."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "keyword"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "keywords"
+        ]
+    })";
+}
+
+GS::ObjectState GetNoteAutoTextKeywordsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2600
+    GS::Array<Int32> autoTextIds;
+    if (!parameters.Get ("autoTextIds", autoTextIds) || autoTextIds.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing 'autoTextIds' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& listAdder = response.AddList<GS::ObjectState> ("keywords");
+    for (Int32 autoTextId : autoTextIds) {
+        if (autoTextId < 0) {
+            listAdder (CreateErrorResponse (APIERR_BADPARS, "Invalid autotext id."));
+            continue;
+        }
+
+        // The id is passed through as it is; an id the enumeration does not have is
+        // expected to be refused by Archicad with an error code.
+        GS::UniString keyword;
+        GSErrCode err = ACAPI_AutoText_GetNoteKeywordForAutotextID (static_cast<API_NoteAutotextID> (autoTextId), keyword);
+        if (err != NoError) {
+            listAdder (CreateErrorResponse (err, "Failed to get the keyword of this note autotext id."));
+        } else {
+            listAdder (GS::ObjectState ("keyword", keyword));
+        }
+    }
+
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetNoteAutoTextKeywords requires Archicad 26 or later.");
+#endif
+}
+
 CreateProjectInfoFieldsCommand::CreateProjectInfoFieldsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -598,6 +712,533 @@ GS::ObjectState DeleteProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
     return response;
 }
 
+#ifdef ServerMainVers_3000
+
+// Plain wording for the errors the ACAPI_ProjectInfo_* calls return (ACAPinc.h, "ProjectInfo
+// Group and Field Management", Archicad 30), so a caller sees why a change was refused without
+// an error table. APIERR_REFUSEDPAR means something else for every call, so its wording is the
+// caller's.
+static GS::ObjectState CreateProjectInfoErrorResponse (GSErrCode err, const GS::UniString& failedAction, const GS::UniString& refusedParReason = GS::UniString ())
+{
+    GS::UniString reason;
+    switch (err) {
+        case APIERR_BADID:           reason = "no Project Info group or field has the given id"; break;
+        case APIERR_NAMEALREADYUSED: reason = "the name is already used"; break;
+        case APIERR_NOACCESSRIGHT:   reason = "no access right: in Teamwork this needs the permission to modify Project Info"; break;
+        case APIERR_REFUSEDPAR:      reason = refusedParReason; break;
+        default:                     break;
+    }
+    return CreateErrorResponse (err, reason.IsEmpty () ? failedAction + "." : failedAction + ": " + reason + ".");
+}
+
+// The autotext key of a project info field with the given name, the key GetProjectInfoFields
+// returns and SetProjectInfoField takes. The Project Info API identifies a field by a guid and
+// the autotext API by a key, and nothing in the DevKit maps one to the other, so the two are
+// matched by the name the field shows on the UI - only when exactly one project info autotext
+// has it, as a wrong key would change another field.
+static GS::Optional<GS::UniString> FindProjectInfoAutoTextKey (const GS::Array<GS::ArrayFB<GS::UniString, 3>>& autoTexts, const GS::UniString& fieldName)
+{
+    GS::Optional<GS::UniString> foundKey;
+    for (const auto& autoText : autoTexts) {
+        if (autoText[0] != fieldName || !IsProjectInfoAutoTextId (autoText[1])) {
+            continue;
+        }
+        if (foundKey.HasValue ()) {
+            return GS::NoValue;
+        }
+        foundKey = autoText[1];
+    }
+    return foundKey;
+}
+
+#endif
+
+GetProjectInfoGroupsCommand::GetProjectInfoGroupsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetProjectInfoGroupsCommand::GetName () const
+{
+    return "GetProjectInfoGroups";
+}
+
+GS::Optional<GS::UniString> GetProjectInfoGroupsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "projectInfoGroups": {
+                "$ref": "#/ProjectInfoGroups"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoGroups"
+        ]
+    })";
+}
+
+GS::ObjectState GetProjectInfoGroupsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    std::vector<API_Guid> groupGuids;
+    GSErrCode err = ACAPI_ProjectInfo_GetGroups (groupGuids);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve the Project Info groups.");
+    }
+
+    // For the autotext keys of the fields (see FindProjectInfoAutoTextKey); without the list no
+    // field gets one, the groups are still returned.
+    GS::Array<GS::ArrayFB<GS::UniString, 3>> autoTexts;
+    if (ACAPI_AutoText_GetAutoTexts (&autoTexts, APIAutoText_All) != NoError) {
+        autoTexts.Clear ();
+    }
+
+    GS::ObjectState response;
+    const auto& projectInfoGroups = response.AddList<GS::ObjectState> ("projectInfoGroups");
+
+    for (const API_Guid& groupGuid : groupGuids) {
+        GS::UniString groupName;
+        err = ACAPI_ProjectInfo_GetGroupName (groupGuid, groupName);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to retrieve the name of a Project Info group.");
+        }
+
+        std::vector<API_Guid> fieldGuids;
+        err = ACAPI_ProjectInfo_GetFields (groupGuid, fieldGuids);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to retrieve the fields of a Project Info group.");
+        }
+
+        GS::ObjectState projectInfoGroup;
+        projectInfoGroup.Add ("projectInfoGroupId", CreateGuidObjectState (groupGuid));
+        projectInfoGroup.Add ("name", groupName);
+        const auto& fields = projectInfoGroup.AddList<GS::ObjectState> ("fields");
+
+        for (const API_Guid& fieldGuid : fieldGuids) {
+            GS::UniString fieldName;
+            GS::UniString fieldValue;
+            err = ACAPI_ProjectInfo_GetField (fieldGuid, fieldName, fieldValue);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to retrieve a field of a Project Info group.");
+            }
+
+            GS::ObjectState field;
+            field.Add ("projectInfoFieldId", CreateGuidObjectState (fieldGuid));
+            field.Add ("name", fieldName);
+            field.Add ("value", fieldValue);
+            const GS::Optional<GS::UniString> autoTextKey = FindProjectInfoAutoTextKey (autoTexts, fieldName);
+            if (autoTextKey.HasValue ()) {
+                field.Add ("projectInfoId", autoTextKey.Get ());
+            }
+            fields (field);
+        }
+
+        projectInfoGroups (projectInfoGroup);
+    }
+
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 30 or newer.");
+#endif
+}
+
+CreateProjectInfoGroupsCommand::CreateProjectInfoGroupsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateProjectInfoGroupsCommand::GetName () const
+{
+    return "CreateProjectInfoGroups";
+}
+
+GS::Optional<GS::UniString> CreateProjectInfoGroupsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "projectInfoGroups": {
+                "type": "array",
+                "description": "The Project Info groups to create, in order. Each is added to the end of the group list.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the new group. It must not be used by another group.",
+                            "minLength": 1
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name"
+                    ]
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoGroups"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateProjectInfoGroupsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "projectInfoGroupIdsOrErrors": {
+                "$ref": "#/ProjectInfoGroupIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoGroupIdsOrErrors"
+        ]
+    })";
+}
+
+GS::ObjectState CreateProjectInfoGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    GS::Array<GS::ObjectState> projectInfoGroups;
+    if (!parameters.Get ("projectInfoGroups", projectInfoGroups) || projectInfoGroups.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "projectInfoGroups is missing or empty.");
+    }
+
+    GS::ObjectState response;
+    const auto& projectInfoGroupIdsOrErrors = response.AddList<GS::ObjectState> ("projectInfoGroupIdsOrErrors");
+
+    ACAPI_CallUndoableCommand ("CreateProjectInfoGroups", [&]() -> GSErrCode {
+        for (const GS::ObjectState& projectInfoGroup : projectInfoGroups) {
+            GS::UniString name;
+            if (!projectInfoGroup.Get ("name", name) || name.IsEmpty ()) {
+                projectInfoGroupIdsOrErrors (CreateErrorResponse (APIERR_BADPARS, "name is missing or empty."));
+                continue;
+            }
+
+            API_Guid groupGuid = APINULLGuid;
+            const GSErrCode err = ACAPI_ProjectInfo_CreateGroup (name, groupGuid);
+            if (err != NoError) {
+                projectInfoGroupIdsOrErrors (CreateProjectInfoErrorResponse (err, "Failed to create the Project Info group"));
+                continue;
+            }
+
+            projectInfoGroupIdsOrErrors (CreateIdObjectState ("projectInfoGroupId", groupGuid));
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 30 or newer.");
+#endif
+}
+
+RenameProjectInfoGroupsCommand::RenameProjectInfoGroupsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RenameProjectInfoGroupsCommand::GetName () const
+{
+    return "RenameProjectInfoGroups";
+}
+
+GS::Optional<GS::UniString> RenameProjectInfoGroupsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "projectInfoGroups": {
+                "type": "array",
+                "description": "The Project Info groups to rename, each with its new name.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "projectInfoGroupId": {
+                            "$ref": "#/ProjectInfoGroupId"
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The new name of the group. It must not be used by another group.",
+                            "minLength": 1
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "projectInfoGroupId",
+                        "name"
+                    ]
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoGroups"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> RenameProjectInfoGroupsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState RenameProjectInfoGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    GS::Array<GS::ObjectState> projectInfoGroups;
+    if (!parameters.Get ("projectInfoGroups", projectInfoGroups) || projectInfoGroups.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "projectInfoGroups is missing or empty.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("RenameProjectInfoGroups", [&]() -> GSErrCode {
+        for (const GS::ObjectState& projectInfoGroup : projectInfoGroups) {
+            const API_Guid groupGuid = GetGuidFromArrayItem ("projectInfoGroupId", projectInfoGroup);
+            if (groupGuid == APINULLGuid) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'projectInfoGroupId' parameter."));
+                continue;
+            }
+
+            GS::UniString name;
+            if (!projectInfoGroup.Get ("name", name) || name.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "name is missing or empty."));
+                continue;
+            }
+
+            const GSErrCode err = ACAPI_ProjectInfo_RenameGroup (groupGuid, name);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to rename the Project Info group")));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 30 or newer.");
+#endif
+}
+
+DeleteProjectInfoGroupsCommand::DeleteProjectInfoGroupsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeleteProjectInfoGroupsCommand::GetName () const
+{
+    return "DeleteProjectInfoGroups";
+}
+
+GS::Optional<GS::UniString> DeleteProjectInfoGroupsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "projectInfoGroups": {
+                "type": "array",
+                "description": "The Project Info groups to delete. A group that contains fixed (built-in) fields cannot be deleted.",
+                "items": {
+                    "$ref": "#/ProjectInfoGroupIdArrayItem"
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoGroups"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteProjectInfoGroupsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteProjectInfoGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    GS::Array<GS::ObjectState> projectInfoGroups;
+    if (!parameters.Get ("projectInfoGroups", projectInfoGroups) || projectInfoGroups.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "projectInfoGroups is missing or empty.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("DeleteProjectInfoGroups", [&]() -> GSErrCode {
+        for (const GS::ObjectState& projectInfoGroup : projectInfoGroups) {
+            const API_Guid groupGuid = GetGuidFromArrayItem ("projectInfoGroupId", projectInfoGroup);
+            if (groupGuid == APINULLGuid) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'projectInfoGroupId' parameter."));
+                continue;
+            }
+
+            const GSErrCode err = ACAPI_ProjectInfo_DeleteGroup (groupGuid);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to delete the Project Info group",
+                    "the group contains fixed (built-in) fields and cannot be deleted")));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 30 or newer.");
+#endif
+}
+
+MoveProjectInfoGroupsCommand::MoveProjectInfoGroupsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String MoveProjectInfoGroupsCommand::GetName () const
+{
+    return "MoveProjectInfoGroups";
+}
+
+GS::Optional<GS::UniString> MoveProjectInfoGroupsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "projectInfoGroups": {
+                "type": "array",
+                "description": "The Project Info groups to move, in the order the moves are made.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "projectInfoGroupId": {
+                            "$ref": "#/ProjectInfoGroupId"
+                        },
+                        "beforeProjectInfoGroupId": {
+                            "$ref": "#/ProjectInfoGroupId",
+                            "description": "The group to move the group before. When omitted, the group is moved to the end of the group list."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "projectInfoGroupId"
+                    ]
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoGroups"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> MoveProjectInfoGroupsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState MoveProjectInfoGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    GS::Array<GS::ObjectState> projectInfoGroups;
+    if (!parameters.Get ("projectInfoGroups", projectInfoGroups) || projectInfoGroups.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "projectInfoGroups is missing or empty.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("MoveProjectInfoGroups", [&]() -> GSErrCode {
+        for (const GS::ObjectState& projectInfoGroup : projectInfoGroups) {
+            const API_Guid groupGuid = GetGuidFromArrayItem ("projectInfoGroupId", projectInfoGroup);
+            if (groupGuid == APINULLGuid) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'projectInfoGroupId' parameter."));
+                continue;
+            }
+
+            // No 'beforeProjectInfoGroupId' is "to the end", which the API takes as std::nullopt;
+            // a given but invalid one is an error, not a silent move to the end.
+            std::optional<API_Guid> beforeGroupGuid;
+            if (projectInfoGroup.Contains ("beforeProjectInfoGroupId")) {
+                const API_Guid beforeGuid = GetGuidFromArrayItem ("beforeProjectInfoGroupId", projectInfoGroup);
+                if (beforeGuid == APINULLGuid) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Invalid 'beforeProjectInfoGroupId' parameter."));
+                    continue;
+                }
+                beforeGroupGuid = beforeGuid;
+            }
+
+            const GSErrCode err = ACAPI_ProjectInfo_MoveGroup (groupGuid, beforeGroupGuid);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to move the Project Info group")));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 30 or newer.");
+#endif
+}
+
 GetHotlinksCommand::GetHotlinksCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -655,6 +1296,18 @@ static GS::ObjectState DumpHotlinkWithChildren (const API_Guid& hotlinkGuid,
     if (ACAPI_Hotlink_GetHotlinkNode (&hotlinkNode) == NoError) {
         hotlinkNodeOS.Add ("name", GS::UniString (hotlinkNode.name));
         hotlinkNodeOS.Add ("type", hotlinkNode.type == APIHotlink_XRef ? "XRef" : "Module");
+    }
+
+    // The instances are the API_HotlinkType elements placed from the node - what
+    // ChangeHotlinkInstances and DeleteElements take; the node itself is not an
+    // element. Listed in the order Archicad returns them, and left out when the
+    // node's instances cannot be read, so an empty list means none are placed.
+    GS::Array<API_Guid> instanceGuids;
+    if (ACAPI_Hotlink_GetHotlinkInstances (&hotlinkGuid, &instanceGuids) == NoError) {
+        const auto& instanceAdder = hotlinkNodeOS.AddList<GS::ObjectState> ("instances");
+        for (const API_Guid& instanceGuid : instanceGuids) {
+            instanceAdder (CreateElementIdObjectState (instanceGuid));
+        }
     }
 
     const auto& children = hotlinkTree.Retrieve (hotlinkGuid);
@@ -1324,6 +1977,59 @@ GS::ObjectState OpenProjectCommand::Execute (const GS::ObjectState& parameters, 
     return CreateSuccessfulExecutionResult ();
 }
 
+NewProjectCommand::NewProjectCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String NewProjectCommand::GetName () const
+{
+    return "NewProject";
+}
+
+GS::Optional<GS::UniString> NewProjectCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "newAndReset": {
+                "type": "boolean",
+                "description": "Optional. Also reset the working environment to the template's, as File > New > New and Reset All does, instead of keeping the current one as File > New does. Defaults to false."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> NewProjectCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+// Like OpenProject, this runs outside an undoable command: the new project replaces the
+// open one, whose unsaved changes are discarded without a save alert. The API takes no
+// template: the new project uses the template set in Archicad's New Project settings.
+GS::ObjectState NewProjectCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    bool newAndReset = false;
+    parameters.Get ("newAndReset", newAndReset);
+
+    API_NewProjectPars newProjectPars = {};
+    newProjectPars.newAndReset = newAndReset;
+#ifndef ServerMainVers_2900
+    newProjectPars.enableSaveAlert = false;
+#endif
+
+    const GSErrCode err = ACAPI_ProjectOperation_NewProject (&newProjectPars);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to start a new project. Archicad might have refused the command, for example while a dialog is open or in a Teamwork project.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
 CloseProjectCommand::CloseProjectCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
@@ -1778,6 +2484,11 @@ GS::ObjectState SaveCurrentWindowAsImageCommand::Execute (const GS::ObjectState&
     if (windowErr != NoError) {
         return CreateErrorResponse (windowErr, "Failed to get the current window.");
     }
+    // In a master layout window the picture save writes the floor plan instead,
+    // and ACAPI_View_GetZoom reports the floor plan's zoom (issue #1478).
+    if (currentWindow.typeID == APIWind_MasterLayoutID) {
+        return CreateErrorResponse (APIERR_BADDATABASE, "The current window is a master layout, which cannot be saved as an image: Archicad would write another window instead. Activate a layout that uses this master layout and save that one (see ChangeWindow).");
+    }
     const bool view2D = currentWindow.typeID != APIWind_3DModelID;
 
     API_FileSavePars fileSavePars = {};
@@ -1812,6 +2523,122 @@ GS::ObjectState SaveCurrentWindowAsImageCommand::Execute (const GS::ObjectState&
         }
     }
     return response;
+}
+
+GetCurrentViewImageCommand::GetCurrentViewImageCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetCurrentViewImageCommand::GetName () const
+{
+    return "GetCurrentViewImage";
+}
+
+GS::Optional<GS::UniString> GetCurrentViewImageCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "source": {
+                "type": "string",
+                "description": "Optional, 3DWindow by default. The window whose image is returned: the 3D window, or the PhotoRendering window.",
+                "enum": ["3DWindow", "RenderingWindow"]
+            },
+            "format": {
+                "type": "string",
+                "description": "Optional, png by default. The image format.",
+                "enum": ["png", "jpg"]
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetCurrentViewImageCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "image": {
+                "type": "string",
+                "description": "The base64 encoded image, in the requested format."
+            },
+            "width": {
+                "type": "integer",
+                "description": "The width of the image in pixels."
+            },
+            "height": {
+                "type": "integer",
+                "description": "The height of the image in pixels."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "image",
+            "width",
+            "height"
+        ]
+    })";
+}
+
+GS::ObjectState GetCurrentViewImageCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    // ACAPI_View_GetCurrentImage is new in the Archicad 30 API: it gets the image of the
+    // 3D window or of the PhotoRendering window, whichever API_ImageSource selects.
+    API_ImageSource imageSource = API_ImageSource::From3DWindow;
+    GS::UniString windowName = "3D";
+    GS::UniString sourceStr;
+    if (parameters.Get ("source", sourceStr)) {
+        if (sourceStr == "3DWindow") {
+            imageSource = API_ImageSource::From3DWindow;
+            windowName = "3D";
+        } else if (sourceStr == "RenderingWindow") {
+            imageSource = API_ImageSource::FromRenderingWindow;
+            windowName = "PhotoRendering";
+        } else {
+            return CreateErrorResponse (APIERR_BADPARS, "source must be 3DWindow or RenderingWindow.");
+        }
+    }
+
+    NewDisplay::NativeImage::Encoding encoding = NewDisplay::NativeImage::Encoding::PNG;
+    GS::UniString formatStr;
+    if (parameters.Get ("format", formatStr)) {
+        if (formatStr == "png") {
+            encoding = NewDisplay::NativeImage::Encoding::PNG;
+        } else if (formatStr == "jpg") {
+            encoding = NewDisplay::NativeImage::Encoding::JPEG;
+        } else {
+            return CreateErrorResponse (APIERR_BADPARS, "format must be png or jpg.");
+        }
+    }
+
+    NewDisplay::NativeImage nativeImage;
+    const GSErrCode err = ACAPI_View_GetCurrentImage (nativeImage, imageSource);
+    if (err != NoError) {
+        return CreateErrorResponse (err, GS::UniString ("Failed to get the image of the ") + windowName + " window: the window is not open, or it has no image yet.");
+    }
+    if (nativeImage.GetWidth () == 0 || nativeImage.GetHeight () == 0) {
+        return CreateErrorResponse (APIERR_GENERAL, GS::UniString ("The ") + windowName + " window has no image: the window is not open, or it has not been rendered yet.");
+    }
+
+    GS::MemoryOChannel32 memChannel (GS::MemoryOChannel32::BMAllocation);
+    if (!nativeImage.Encode (memChannel, encoding)) {
+        return CreateErrorResponse (APIERR_GENERAL, GS::UniString ("Failed to encode the image of the ") + windowName + " window.");
+    }
+
+    auto str = Base64Converter::Encode (memChannel.GetDestination (), memChannel.GetDataSize ());
+    str.DeleteAll (GS::UniChar (char ('\n')));
+    return GS::ObjectState (
+        "image", str,
+        "width", static_cast<Int32> (nativeImage.GetWidth ()),
+        "height", static_cast<Int32> (nativeImage.GetHeight ()));
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Available from Archicad 30.");
+#endif
 }
 
 GetGeoLocationCommand::GetGeoLocationCommand () :
@@ -1849,28 +2676,142 @@ GS::ObjectState GetGeoLocationCommand::Execute (const GS::ObjectState& /*paramet
     API_GeoLocation apiGeoLocation = {};
     ACAPI_GeoLocation_GetGeoLocation (&apiGeoLocation);
 
+    GS::ObjectState surveyPoint (
+        "position", GS::ObjectState (
+            "eastings", apiGeoLocation.geoReferenceData.eastings,
+            "northings", apiGeoLocation.geoReferenceData.northings,
+            "elevation", apiGeoLocation.geoReferenceData.orthogonalHeight),
+        "positionInProject", Create3DCoordinateObjectState (apiGeoLocation.surveyPointPosition),
+        "geoReferencingParameters", GS::ObjectState (
+            "crsName", apiGeoLocation.geoReferenceData.name,
+            "description", apiGeoLocation.geoReferenceData.description,
+            "geodeticDatum", apiGeoLocation.geoReferenceData.geodeticDatum,
+            "verticalDatum", apiGeoLocation.geoReferenceData.verticalDatum,
+            "mapProjection", apiGeoLocation.geoReferenceData.mapProjection,
+            "mapZone", apiGeoLocation.geoReferenceData.mapZone,
+            "xAxisAbscissa", apiGeoLocation.geoReferenceData.xAxisAbscissa,
+            "xAxisOrdinate", apiGeoLocation.geoReferenceData.xAxisOrdinate,
+            "scale", apiGeoLocation.geoReferenceData.scale));
+
+    bool isVisible = false;
+    if (ACAPI_SurveyPoint_IsSurveyPointVisible (&isVisible) == NoError) {
+        surveyPoint.Add ("isVisible", isVisible);
+    }
+#ifdef ServerMainVers_2600
+    // The survey point lock exists from Archicad 26; older versions leave isLocked out.
+    bool isLocked = false;
+    if (ACAPI_SurveyPoint_IsSurveyPointLocked (&isLocked) == NoError) {
+        surveyPoint.Add ("isLocked", isLocked);
+    }
+#endif
+
     return GS::ObjectState (
         "projectLocation", GS::ObjectState (
             "longitude", apiGeoLocation.placeInfo.longitude,
             "latitude", apiGeoLocation.placeInfo.latitude,
             "altitude", apiGeoLocation.placeInfo.altitude,
             "north", apiGeoLocation.placeInfo.north),
-        "surveyPoint", GS::ObjectState (
-            "position", GS::ObjectState (
-                "eastings", apiGeoLocation.geoReferenceData.eastings,
-                "northings", apiGeoLocation.geoReferenceData.northings,
-                "elevation", apiGeoLocation.geoReferenceData.orthogonalHeight),
-            "positionInProject", Create3DCoordinateObjectState (apiGeoLocation.surveyPointPosition),
-            "geoReferencingParameters", GS::ObjectState (
-                "crsName", apiGeoLocation.geoReferenceData.name,
-                "description", apiGeoLocation.geoReferenceData.description,
-                "geodeticDatum", apiGeoLocation.geoReferenceData.geodeticDatum,
-                "verticalDatum", apiGeoLocation.geoReferenceData.verticalDatum,
-                "mapProjection", apiGeoLocation.geoReferenceData.mapProjection,
-                "mapZone", apiGeoLocation.geoReferenceData.mapZone,
-                "xAxisAbscissa", apiGeoLocation.geoReferenceData.xAxisAbscissa,
-                "xAxisOrdinate", apiGeoLocation.geoReferenceData.xAxisOrdinate,
-                "scale", apiGeoLocation.geoReferenceData.scale)));
+        "surveyPoint", surveyPoint);
+}
+
+GetSurveyPointTransformationCommand::GetSurveyPointTransformationCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetSurveyPointTransformationCommand::GetName () const
+{
+    return "GetSurveyPointTransformation";
+}
+
+GS::Optional<GS::UniString> GetSurveyPointTransformationCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "projectToSurvey": {
+                "type": "array",
+                "description": "The 3x4 matrix that transforms a point given in the Project Origin coordinate system into the Survey Point coordinate system, row by row (12 numbers): x' = m[0]*x + m[1]*y + m[2]*z + m[3], y' = m[4]*x + m[5]*y + m[6]*z + m[7], z' = m[8]*x + m[9]*y + m[10]*z + m[11].",
+                "items": {
+                    "type": "number"
+                },
+                "minItems": 12,
+                "maxItems": 12
+            },
+            "surveyToProject": {
+                "type": "array",
+                "description": "The inverse of projectToSurvey in the same row by row layout: it transforms a point given in the Survey Point coordinate system into the Project Origin coordinate system. Missing when projectToSurvey is not invertible.",
+                "items": {
+                    "type": "number"
+                },
+                "minItems": 12,
+                "maxItems": 12
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectToSurvey"
+        ]
+    })";
+}
+
+#ifdef ServerMainVers_2700
+// Inverts the affine transformation of a 3x4 API_Tranmat (rotation/scale part plus translation).
+static bool InvertTranmat (const API_Tranmat& tranmat, API_Tranmat& inverse)
+{
+    const double* m = tranmat.tmx;
+    const double c00 = m[5] * m[10] - m[6] * m[9];
+    const double c01 = m[6] * m[8] - m[4] * m[10];
+    const double c02 = m[4] * m[9] - m[5] * m[8];
+    const double det = m[0] * c00 + m[1] * c01 + m[2] * c02;
+    if (std::fabs (det) < 1e-12) {
+        return false;
+    }
+
+    double* r = inverse.tmx;
+    r[0]  = c00 / det;
+    r[1]  = (m[2] * m[9] - m[1] * m[10]) / det;
+    r[2]  = (m[1] * m[6] - m[2] * m[5]) / det;
+    r[4]  = c01 / det;
+    r[5]  = (m[0] * m[10] - m[2] * m[8]) / det;
+    r[6]  = (m[2] * m[4] - m[0] * m[6]) / det;
+    r[8]  = c02 / det;
+    r[9]  = (m[1] * m[8] - m[0] * m[9]) / det;
+    r[10] = (m[0] * m[5] - m[1] * m[4]) / det;
+
+    r[3]  = -(r[0] * m[3] + r[1] * m[7] + r[2] * m[11]);
+    r[7]  = -(r[4] * m[3] + r[5] * m[7] + r[6] * m[11]);
+    r[11] = -(r[8] * m[3] + r[9] * m[7] + r[10] * m[11]);
+    return true;
+}
+#endif
+
+GS::ObjectState GetSurveyPointTransformationCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    API_Tranmat projectToSurvey = {};
+    const GSErrCode err = ACAPI_SurveyPoint_GetSurveyPointTransformation (&projectToSurvey);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the survey point transformation.");
+    }
+
+    GS::ObjectState response;
+    const auto& projectToSurveyList = response.AddList<double> ("projectToSurvey");
+    for (double value : projectToSurvey.tmx) {
+        projectToSurveyList (value);
+    }
+
+    API_Tranmat surveyToProject = {};
+    if (InvertTranmat (projectToSurvey, surveyToProject)) {
+        const auto& surveyToProjectList = response.AddList<double> ("surveyToProject");
+        for (double value : surveyToProject.tmx) {
+            surveyToProjectList (value);
+        }
+    }
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
 }
 
 SetGeoLocationCommand::SetGeoLocationCommand () :
@@ -1913,51 +2854,99 @@ GS::ObjectState SetGeoLocationCommand::Execute (const GS::ObjectState& parameter
     API_GeoLocation apiGeoLocation = {};
     ACAPI_GeoLocation_GetGeoLocation (&apiGeoLocation);
 
-    bool hasAnyInput = false;
+    bool hasGeoLocationInput = false;
+    bool isVisible = false;
+    bool setVisibility = false;
+    bool isLocked = false;
+    bool setLocked = false;
 
     GS::ObjectState projectLocation;
     if (parameters.Get ("projectLocation", projectLocation)) {
-        hasAnyInput |= projectLocation.Get ("longitude", apiGeoLocation.placeInfo.longitude);
-        hasAnyInput |= projectLocation.Get ("latitude", apiGeoLocation.placeInfo.latitude);
-        hasAnyInput |= projectLocation.Get ("altitude", apiGeoLocation.placeInfo.altitude);
-        hasAnyInput |= projectLocation.Get ("north", apiGeoLocation.placeInfo.north);
+        hasGeoLocationInput |= projectLocation.Get ("longitude", apiGeoLocation.placeInfo.longitude);
+        hasGeoLocationInput |= projectLocation.Get ("latitude", apiGeoLocation.placeInfo.latitude);
+        hasGeoLocationInput |= projectLocation.Get ("altitude", apiGeoLocation.placeInfo.altitude);
+        hasGeoLocationInput |= projectLocation.Get ("north", apiGeoLocation.placeInfo.north);
     }
     GS::ObjectState surveyPoint;
     if (parameters.Get ("surveyPoint", surveyPoint)) {
         GS::ObjectState position;
         if (surveyPoint.Get ("position", position)) {
-            hasAnyInput |= position.Get ("eastings", apiGeoLocation.geoReferenceData.eastings);
-            hasAnyInput |= position.Get ("northings", apiGeoLocation.geoReferenceData.northings);
-            hasAnyInput |= position.Get ("elevation", apiGeoLocation.geoReferenceData.orthogonalHeight);
+            hasGeoLocationInput |= position.Get ("eastings", apiGeoLocation.geoReferenceData.eastings);
+            hasGeoLocationInput |= position.Get ("northings", apiGeoLocation.geoReferenceData.northings);
+            hasGeoLocationInput |= position.Get ("elevation", apiGeoLocation.geoReferenceData.orthogonalHeight);
         }
         GS::ObjectState positionInProject;
         if (surveyPoint.Get ("positionInProject", positionInProject)) {
             apiGeoLocation.surveyPointPosition = Get3DCoordinateFromObjectState (positionInProject);
-            hasAnyInput = true;
+            hasGeoLocationInput = true;
         }
         GS::ObjectState geoReferencingParameters;
         if (surveyPoint.Get ("geoReferencingParameters", geoReferencingParameters)) {
-            hasAnyInput |= geoReferencingParameters.Get ("crsName", apiGeoLocation.geoReferenceData.name);
-            hasAnyInput |= geoReferencingParameters.Get ("description", apiGeoLocation.geoReferenceData.description);
-            hasAnyInput |= geoReferencingParameters.Get ("geodeticDatum", apiGeoLocation.geoReferenceData.geodeticDatum);
-            hasAnyInput |= geoReferencingParameters.Get ("verticalDatum", apiGeoLocation.geoReferenceData.verticalDatum);
-            hasAnyInput |= geoReferencingParameters.Get ("mapProjection", apiGeoLocation.geoReferenceData.mapProjection);
-            hasAnyInput |= geoReferencingParameters.Get ("mapZone", apiGeoLocation.geoReferenceData.mapZone);
-            hasAnyInput |= geoReferencingParameters.Get ("xAxisAbscissa", apiGeoLocation.geoReferenceData.xAxisAbscissa);
-            hasAnyInput |= geoReferencingParameters.Get ("xAxisOrdinate", apiGeoLocation.geoReferenceData.xAxisOrdinate);
-            hasAnyInput |= geoReferencingParameters.Get ("scale", apiGeoLocation.geoReferenceData.scale);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("crsName", apiGeoLocation.geoReferenceData.name);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("description", apiGeoLocation.geoReferenceData.description);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("geodeticDatum", apiGeoLocation.geoReferenceData.geodeticDatum);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("verticalDatum", apiGeoLocation.geoReferenceData.verticalDatum);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("mapProjection", apiGeoLocation.geoReferenceData.mapProjection);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("mapZone", apiGeoLocation.geoReferenceData.mapZone);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("xAxisAbscissa", apiGeoLocation.geoReferenceData.xAxisAbscissa);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("xAxisOrdinate", apiGeoLocation.geoReferenceData.xAxisOrdinate);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("scale", apiGeoLocation.geoReferenceData.scale);
         }
+        setVisibility = surveyPoint.Get ("isVisible", isVisible);
+        setLocked = surveyPoint.Get ("isLocked", isLocked);
     }
 
-    if (!hasAnyInput) {
+#ifndef ServerMainVers_2600
+    if (setLocked) {
+        return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "The survey point lock (surveyPoint.isLocked) needs Archicad 26 or later.");
+    }
+#endif
+
+    if (!hasGeoLocationInput && !setVisibility && !setLocked) {
         return CreateFailedExecutionResult (APIERR_BADPARS, "No valid input parameters provided to update geolocation.");
     }
 
-	GSErrCode err = ACAPI_CallUndoableCommand ("Change GeoLocation", [&] () -> GSErrCode {
-        return ACAPI_GeoLocation_SetGeoLocation (&apiGeoLocation);
+    GS::UniString errorMessage;
+    GSErrCode err = ACAPI_CallUndoableCommand ("Change GeoLocation", [&] () -> GSErrCode {
+        GSErrCode stepErr = NoError;
+#ifdef ServerMainVers_2600
+        // Unlock before the position changes and lock after them, so one call can both
+        // move a locked survey point and lock a moved one.
+        if (setLocked && !isLocked) {
+            stepErr = ACAPI_SurveyPoint_SetSurveyPointLocked (&isLocked);
+            if (stepErr != NoError) {
+                errorMessage = "Failed to unlock the survey point.";
+                return stepErr;
+            }
+        }
+#endif
+        if (hasGeoLocationInput) {
+            stepErr = ACAPI_GeoLocation_SetGeoLocation (&apiGeoLocation);
+            if (stepErr != NoError) {
+                errorMessage = "Failed to set geolocation.";
+                return stepErr;
+            }
+        }
+        if (setVisibility) {
+            stepErr = ACAPI_SurveyPoint_SetSurveyPointVisibility (&isVisible);
+            if (stepErr != NoError) {
+                errorMessage = "Failed to set the survey point visibility.";
+                return stepErr;
+            }
+        }
+#ifdef ServerMainVers_2600
+        if (setLocked && isLocked) {
+            stepErr = ACAPI_SurveyPoint_SetSurveyPointLocked (&isLocked);
+            if (stepErr != NoError) {
+                errorMessage = "Failed to lock the survey point.";
+                return stepErr;
+            }
+        }
+#endif
+        return NoError;
     });
     if (err != NoError) {
-        return CreateFailedExecutionResult (err, "Failed to set geolocation.");
+        return CreateFailedExecutionResult (err, errorMessage.IsEmpty () ? GS::UniString ("Failed to set geolocation.") : errorMessage);
     }
 
     return CreateSuccessfulExecutionResult ();
@@ -2013,6 +3002,402 @@ GS::ObjectState GetCoordinateOriginsCommand::Execute (const GS::ObjectState& /*p
     }
 
     return response;
+}
+
+// The fields of File > Info > Project Notes, in the order of API_ProjectNoteInfo.
+static const char* ProjectNotesPropertiesSchema = R"(
+            "client": {
+                "type": "string",
+                "description": "Client."
+            },
+            "projectName": {
+                "type": "string",
+                "description": "Project name."
+            },
+            "company": {
+                "type": "string",
+                "description": "Company."
+            },
+            "street": {
+                "type": "string",
+                "description": "Street."
+            },
+            "city": {
+                "type": "string",
+                "description": "City."
+            },
+            "country": {
+                "type": "string",
+                "description": "Country."
+            },
+            "postalCode": {
+                "type": "string",
+                "description": "Postal code."
+            },
+            "architect": {
+                "type": "string",
+                "description": "Architect."
+            },
+            "draftsmen": {
+                "type": "string",
+                "description": "Draftsmen."
+            },
+            "projectStatus": {
+                "type": "string",
+                "description": "Project status."
+            },
+            "dateOfIssue": {
+                "type": "string",
+                "description": "Date of issue (free text, as typed in Project Notes)."
+            },
+            "keywords": {
+                "type": "string",
+                "description": "Keywords."
+            },
+            "notes": {
+                "type": "string",
+                "description": "Notes."
+            })";
+
+GetProjectNotesCommand::GetProjectNotesCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetProjectNotesCommand::GetName () const
+{
+    return "GetProjectNotes";
+}
+
+GS::Optional<GS::UniString> GetProjectNotesCommand::GetRawResponseSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {)") + ProjectNotesPropertiesSchema + R"(
+        },
+        "additionalProperties": false,
+        "required": [
+            "client",
+            "projectName",
+            "company",
+            "street",
+            "city",
+            "country",
+            "postalCode",
+            "architect",
+            "draftsmen",
+            "projectStatus",
+            "dateOfIssue",
+            "keywords",
+            "notes"
+        ]
+    })";
+}
+
+GS::ObjectState GetProjectNotesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_ProjectNoteInfo projectNotes = {};
+    GSErrCode err = ACAPI_ProjectSetting_GetProjectNotes (&projectNotes);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the project notes.");
+    }
+
+    return GS::ObjectState (
+        "client", GS::UniString (projectNotes.client),
+        "projectName", GS::UniString (projectNotes.projectName),
+        "company", GS::UniString (projectNotes.company),
+        "street", GS::UniString (projectNotes.street),
+        "city", GS::UniString (projectNotes.city),
+        "country", GS::UniString (projectNotes.country),
+        "postalCode", GS::UniString (projectNotes.code),
+        "architect", GS::UniString (projectNotes.architect),
+        "draftsmen", GS::UniString (projectNotes.draftsmen),
+        "projectStatus", GS::UniString (projectNotes.projectStatus),
+        "dateOfIssue", GS::UniString (projectNotes.dateOfIssue),
+        "keywords", GS::UniString (projectNotes.keywords),
+        "notes", GS::UniString (projectNotes.notes));
+}
+
+SetProjectNotesCommand::SetProjectNotesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetProjectNotesCommand::GetName () const
+{
+    return "SetProjectNotes";
+}
+
+GS::Optional<GS::UniString> SetProjectNotesCommand::GetInputParametersSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {)") + ProjectNotesPropertiesSchema + R"(
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetProjectNotesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetProjectNotesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    API_ProjectNoteInfo projectNotes = {};
+    GSErrCode err = ACAPI_ProjectSetting_GetProjectNotes (&projectNotes);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get the project notes.");
+    }
+
+    // Fields that are not given keep their current value. Longer texts are truncated to the field's length.
+    bool hasAnyInput = false;
+    hasAnyInput |= SetCharProperty (&parameters, "client", projectNotes.client);
+    hasAnyInput |= SetCharProperty (&parameters, "projectName", projectNotes.projectName);
+    hasAnyInput |= SetCharProperty (&parameters, "company", projectNotes.company);
+    hasAnyInput |= SetCharProperty (&parameters, "street", projectNotes.street);
+    hasAnyInput |= SetCharProperty (&parameters, "city", projectNotes.city);
+    hasAnyInput |= SetCharProperty (&parameters, "country", projectNotes.country);
+    hasAnyInput |= SetCharProperty (&parameters, "postalCode", projectNotes.code);
+    hasAnyInput |= SetCharProperty (&parameters, "architect", projectNotes.architect);
+    hasAnyInput |= SetCharProperty (&parameters, "draftsmen", projectNotes.draftsmen);
+    hasAnyInput |= SetCharProperty (&parameters, "projectStatus", projectNotes.projectStatus);
+    hasAnyInput |= SetCharProperty (&parameters, "dateOfIssue", projectNotes.dateOfIssue);
+    hasAnyInput |= SetCharProperty (&parameters, "keywords", projectNotes.keywords);
+    hasAnyInput |= SetCharProperty (&parameters, "notes", projectNotes.notes);
+
+    if (!hasAnyInput) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "No project notes field was given to change.");
+    }
+
+    err = ACAPI_CallUndoableCommand ("Change Project Notes", [&] () -> GSErrCode {
+        return ACAPI_ProjectSetting_ChangeProjectNotes (&projectNotes);
+    });
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to change the project notes.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+// The sun commands work on API_PlaceInfo, the project's date, time and location
+// (Options > Project Preferences > Location Settings), from which Archicad
+// calculates the sun angles sunAngXY (azimuth) and sunAngZ (altitude), in radians.
+
+// Overwrites the date and time fields of placeInfo that dateTime carries (a
+// SunDateTimeUpdate); returns whether it carried any.
+static bool GetSunDateTimeFromObjectState (const GS::ObjectState& dateTime, API_PlaceInfo& placeInfo)
+{
+    bool hasAnyField = false;
+    // The date and time fields of API_PlaceInfo are unsigned short.
+    const auto getUShortField = [&] (const char* fieldName, unsigned short& target) {
+        Int32 value = 0;
+        if (dateTime.Get (fieldName, value)) {
+            target = static_cast<unsigned short> (value);
+            hasAnyField = true;
+        }
+    };
+    getUShortField ("year", placeInfo.year);
+    getUShortField ("month", placeInfo.month);
+    getUShortField ("day", placeInfo.day);
+    getUShortField ("hour", placeInfo.hour);
+    getUShortField ("minute", placeInfo.minute);
+    getUShortField ("second", placeInfo.second);
+    hasAnyField |= dateTime.Get ("daylightSaving", placeInfo.sumTime);
+    return hasAnyField;
+}
+
+static GS::ObjectState CreateSunDateTimeObjectState (const API_PlaceInfo& placeInfo)
+{
+    return GS::ObjectState (
+        "year", static_cast<Int32> (placeInfo.year),
+        "month", static_cast<Int32> (placeInfo.month),
+        "day", static_cast<Int32> (placeInfo.day),
+        "hour", static_cast<Int32> (placeInfo.hour),
+        "minute", static_cast<Int32> (placeInfo.minute),
+        "second", static_cast<Int32> (placeInfo.second),
+        "daylightSaving", placeInfo.sumTime);
+}
+
+static GS::ObjectState CreateSunPositionObjectState (const API_PlaceInfo& placeInfo)
+{
+    const double radiansToDegrees = 180.0 / std::acos (-1.0);
+    return GS::ObjectState (
+        "azimuth", placeInfo.sunAngXY * radiansToDegrees,
+        "altitude", placeInfo.sunAngZ * radiansToDegrees);
+}
+
+GetSunSettingsCommand::GetSunSettingsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetSunSettingsCommand::GetName () const
+{
+    return "GetSunSettings";
+}
+
+GS::Optional<GS::UniString> GetSunSettingsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "dateTime": {
+                "$ref": "#/SunDateTime"
+            },
+            "timeZoneInMinutes": {
+                "type": "integer",
+                "description": "The time zone of the project location in minutes, as Archicad stores it."
+            },
+            "timeZoneOffset": {
+                "type": "integer",
+                "description": "The time zone offset of the project location in minutes, as Archicad stores it."
+            },
+            "sunPosition": {
+                "$ref": "#/SunPosition",
+                "description": "The sun position for the project's date, time and location."
+            },
+            "sunLight": {
+                "type": "object",
+                "description": "The sun and ambient light settings of the project. Missing when Archicad cannot report them.",
+                "properties": {
+                    "sunColor": {
+                        "$ref": "#/ColorRGB"
+                    },
+                    "sunIntensity": {
+                        "type": "integer",
+                        "description": "The intensity of the sun light in percent."
+                    },
+                    "ambientColor": {
+                        "$ref": "#/ColorRGB"
+                    },
+                    "ambientIntensity": {
+                        "type": "integer",
+                        "description": "The intensity of the ambient light in percent."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "sunColor",
+                    "sunIntensity",
+                    "ambientColor",
+                    "ambientIntensity"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "dateTime",
+            "timeZoneInMinutes",
+            "timeZoneOffset",
+            "sunPosition"
+        ]
+    })";
+}
+
+GS::ObjectState GetSunSettingsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_PlaceInfo placeInfo = {};
+    GSErrCode err = ACAPI_GeoLocation_GetPlaceSets (&placeInfo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the project's date, time and location.");
+    }
+
+    // Report the sun position of the date, time and location just read rather than
+    // the angles stored with them, so the response is consistent with itself.
+    API_PlaceInfo calculatedPlaceInfo = placeInfo;
+    if (TAPIR_GeoLocation_CalcSunOnPlace (calculatedPlaceInfo) == NoError) {
+        placeInfo.sunAngXY = calculatedPlaceInfo.sunAngXY;
+        placeInfo.sunAngZ = calculatedPlaceInfo.sunAngZ;
+    }
+
+    GS::ObjectState response (
+        "dateTime", CreateSunDateTimeObjectState (placeInfo),
+        "timeZoneInMinutes", placeInfo.timeZoneInMinutes,
+        "timeZoneOffset", placeInfo.timeZoneOffset,
+        "sunPosition", CreateSunPositionObjectState (placeInfo));
+
+    API_SunInfo sunInfo = {};
+    if (ACAPI_GeoLocation_GetSunSets (&sunInfo) == NoError) {
+        response.Add ("sunLight", GS::ObjectState (
+            "sunColor", GS::ObjectState ("red", sunInfo.sunRGB.f_red, "green", sunInfo.sunRGB.f_green, "blue", sunInfo.sunRGB.f_blue),
+            "sunIntensity", static_cast<Int32> (sunInfo.sunIntensity),
+            "ambientColor", GS::ObjectState ("red", sunInfo.ambientRGB.f_red, "green", sunInfo.ambientRGB.f_green, "blue", sunInfo.ambientRGB.f_blue),
+            "ambientIntensity", static_cast<Int32> (sunInfo.ambientIntensity)));
+    }
+
+    return response;
+}
+
+CalculateSunPositionCommand::CalculateSunPositionCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CalculateSunPositionCommand::GetName () const
+{
+    return "CalculateSunPosition";
+}
+
+GS::Optional<GS::UniString> CalculateSunPositionCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "dateTime": {
+                "$ref": "#/SunDateTimeUpdate",
+                "description": "The date and time to calculate the sun position for; the fields left out keep the project's date and time."
+            },
+            "location": {
+                "$ref": "#/ProjectLocationUpdate",
+                "description": "The location to calculate the sun position at; the fields left out keep the project location."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> CalculateSunPositionCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/SunPosition"
+    })";
+}
+
+GS::ObjectState CalculateSunPositionCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    // Start from the project's settings so every field the caller leaves out keeps
+    // its value; the project itself is not changed.
+    API_PlaceInfo placeInfo = {};
+    GSErrCode err = ACAPI_GeoLocation_GetPlaceSets (&placeInfo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the project's date, time and location.");
+    }
+
+    GS::ObjectState dateTime;
+    if (parameters.Get ("dateTime", dateTime)) {
+        GetSunDateTimeFromObjectState (dateTime, placeInfo);
+    }
+    GS::ObjectState location;
+    if (parameters.Get ("location", location)) {
+        location.Get ("longitude", placeInfo.longitude);
+        location.Get ("latitude", placeInfo.latitude);
+        location.Get ("altitude", placeInfo.altitude);
+        location.Get ("north", placeInfo.north);
+    }
+
+    err = TAPIR_GeoLocation_CalcSunOnPlace (placeInfo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to calculate the sun position.");
+    }
+
+    return CreateSunPositionObjectState (placeInfo);
 }
 
 GetCalculationUnitsCommand::GetCalculationUnitsCommand () :
@@ -2198,11 +3583,8 @@ static GS::UniString ConvertAPIExtraAccuracyType (API_ExtraAccuracyID apiExtraAc
     }
 }
 
-GS::ObjectState GetCalculationUnitsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+static GS::ObjectState CreateCalculationUnitsObjectState (const API_CalcUnitPrefs& unitPrefs)
 {
-    API_CalcUnitPrefs unitPrefs;
-    ACAPI_ProjectSetting_GetPreferences (&unitPrefs, APIPrefs_CalcUnitsID);
-
     return GS::ObjectState (
         "length", GS::ObjectState (
             "unit", ConvertAPILengthType (unitPrefs.length.unit),
@@ -2220,6 +3602,1364 @@ GS::ObjectState GetCalculationUnitsCommand::Execute (const GS::ObjectState& /*pa
             "unit", ConvertAPIAngleType (unitPrefs.angle.unit),
             "decimals", unitPrefs.angle.decimals,
             "accuracy", unitPrefs.angle.accuracy));
+}
+
+GetDimensionStandardsCommand::GetDimensionStandardsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetDimensionStandardsCommand::GetName () const
+{
+    return "GetDimensionStandards";
+}
+
+GS::Optional<GS::UniString> GetDimensionStandardsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "Only the dimension standard with this name is returned (case-sensitive). The list is empty when no standard has this name."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetDimensionStandardsCommand::GetRawResponseSchema () const
+{
+    const GS::UniString lengthDimFormatSchema = R"({
+        "type": "object",
+        "properties": {
+            "unit": {
+                "$ref": "#/LengthType"
+            },
+            "decimals": {
+                "type": "integer",
+                "description": "Number of decimals displayed."
+            },
+            "showSmall5": {
+                "type": "integer",
+                "description": "The extra accuracy (small 5) setting of the displayed values, 0 when off, as Archicad stores it."
+            },
+            "roundInch": {
+                "type": "integer",
+                "description": "Rounding of fractional inches."
+            },
+            "showZeroWhole": {
+                "type": "boolean",
+                "description": "Whether a zero whole part is displayed."
+            },
+            "showZeroInch": {
+                "type": "integer",
+                "description": "Whether zero inches are displayed, as Archicad stores it."
+            },
+            "hideZeroDecimals": {
+                "type": "boolean",
+                "description": "Whether trailing zero decimals are hidden."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "unit",
+            "decimals",
+            "showSmall5",
+            "roundInch",
+            "showZeroWhole",
+            "showZeroInch",
+            "hideZeroDecimals"
+        ]
+    })";
+
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {
+            "dimensionStandards": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "description": "A dimension standard of the project, as listed in Options > Project Preferences > Dimensions.",
+                    "properties": {
+                        "index": {
+                            "type": "integer",
+                            "description": "The 1-based index of the dimension standard."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the dimension standard, as the dimensionStyle of GetViewSettings and SetViewSettings."
+                        },
+                        "settings": {
+                            "type": "object",
+                            "properties": {
+                                "linear": )") + lengthDimFormatSchema + R"(,
+                                "angle": {
+                                    "type": "object",
+                                    "properties": {
+                                        "unit": {
+                                            "$ref": "#/AngleType"
+                                        },
+                                        "decimals": {
+                                            "type": "integer",
+                                            "description": "Number of decimals displayed."
+                                        },
+                                        "accuracy": {
+                                            "type": "integer",
+                                            "description": "Accuracy of the angle values."
+                                        },
+                                        "hideZeroDecimals": {
+                                            "type": "boolean",
+                                            "description": "Whether trailing zero decimals are hidden."
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "unit",
+                                        "decimals",
+                                        "accuracy",
+                                        "hideZeroDecimals"
+                                    ]
+                                },
+                                "radial": )" + lengthDimFormatSchema + R"(,
+                                "level": )" + lengthDimFormatSchema + R"(,
+                                "elevation": )" + lengthDimFormatSchema + R"(,
+                                "doorWindow": )" + lengthDimFormatSchema + R"(,
+                                "parapet": )" + lengthDimFormatSchema + R"(,
+                                "area": {
+                                    "type": "object",
+                                    "properties": {
+                                        "unit": {
+                                            "$ref": "#/AreaType"
+                                        },
+                                        "decimals": {
+                                            "type": "integer",
+                                            "description": "Number of decimals displayed."
+                                        },
+                                        "hideZeroDecimals": {
+                                            "type": "boolean",
+                                            "description": "Whether trailing zero decimals are hidden."
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "unit",
+                                        "decimals",
+                                        "hideZeroDecimals"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "linear",
+                                "angle",
+                                "radial",
+                                "level",
+                                "elevation",
+                                "doorWindow",
+                                "parapet",
+                                "area"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "index",
+                        "name",
+                        "settings"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "dimensionStandards"
+        ]
+    })";
+}
+
+#ifdef ServerMainVers_2700
+static GS::ObjectState ConvertAPILengthDimFormat (const API_LengthDimFormat& format)
+{
+    return GS::ObjectState (
+        "unit", ConvertAPILengthType (format.unit),
+        "decimals", format.lenDecimals,
+        "showSmall5", static_cast<Int32> (format.showSmall5),
+        "roundInch", format.roundInch,
+        "showZeroWhole", static_cast<bool> (format.show0Whole),
+        "showZeroInch", static_cast<Int32> (format.show0Inch),
+        "hideZeroDecimals", static_cast<bool> (format.hide0Dec));
+}
+#endif
+
+GS::ObjectState GetDimensionStandardsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::UniString nameFilter;
+    const bool hasNameFilter = parameters.Get ("name", nameFilter);
+
+    UInt32 count = 0;
+    GSErrCode err = ACAPI_Navigator_DimStand_GetNum (count);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the number of dimension standards.");
+    }
+
+    GS::ObjectState response;
+    const auto& dimensionStandards = response.AddList<GS::ObjectState> ("dimensionStandards");
+
+    for (UInt32 i = 1; i <= count; ++i) {
+        GS::UniString name;
+        API_DimensionStandardsType dimStand = {};
+        dimStand.head.index = i;
+        dimStand.head.uniStringNamePtr = &name;
+
+        if (ACAPI_Navigator_DimStand_Get (dimStand) != NoError) {
+            continue;
+        }
+        if (hasNameFilter && name != nameFilter) {
+            continue;
+        }
+
+        const API_DimensionPrefs& dim = dimStand.dim;
+        dimensionStandards (GS::ObjectState (
+            "index", static_cast<Int32> (i),
+            "name", name,
+            "settings", GS::ObjectState (
+                "linear", ConvertAPILengthDimFormat (dim.linear),
+                "angle", GS::ObjectState (
+                    "unit", ConvertAPIAngleType (dim.angle.unit),
+                    "decimals", dim.angle.angleDecimals,
+                    "accuracy", dim.angle.angleAccuracy,
+                    "hideZeroDecimals", static_cast<bool> (dim.angle.hide0Dec)),
+                "radial", ConvertAPILengthDimFormat (dim.radial),
+                "level", ConvertAPILengthDimFormat (dim.level),
+                "elevation", ConvertAPILengthDimFormat (dim.elevation),
+                "doorWindow", ConvertAPILengthDimFormat (dim.doorwindow),
+                "parapet", ConvertAPILengthDimFormat (dim.parapet),
+                "area", GS::ObjectState (
+                    "unit", ConvertAPIAreaType (dim.area.unit),
+                    "decimals", dim.area.lenDecimals,
+                    "hideZeroDecimals", static_cast<bool> (dim.area.hide0Dec)))));
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
+GS::ObjectState GetCalculationUnitsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_CalcUnitPrefs unitPrefs = {};
+    ACAPI_ProjectSetting_GetPreferences (&unitPrefs, APIPrefs_CalcUnitsID);
+
+    return CreateCalculationUnitsObjectState (unitPrefs);
+}
+
+// Project preferences (Options > Project Preferences)
+//
+// Every page is one DevKit struct, read whole with ACAPI_ProjectSetting_GetPreferences
+// and written back whole with ACAPI_ProjectSetting_SetPreferences. So SetProjectPreferences
+// reads the page first, changes only the fields it was given and keeps the rest as it is.
+// The names of the units are the ones GetCalculationUnits answers with, parsed back here.
+// Writing a page back needs ACAPI_ProjectSetting_SetPreferences, which Archicad 27
+// introduced (ACAPI_Environment has no set-preferences function before it), so
+// SetProjectPreferences is available from Archicad 27.
+
+static GS::ObjectState CreateWorkingUnitsObjectState (const API_WorkingUnitPrefs& prefs)
+{
+    return GS::ObjectState (
+        "length", GS::ObjectState (
+            "unit", ConvertAPILengthType (prefs.lengthUnit),
+            "decimals", prefs.lenDecimals,
+            "roundInch", prefs.roundInch),
+        "area", GS::ObjectState (
+            "unit", ConvertAPIAreaType (prefs.areaUnit),
+            "decimals", prefs.areaDecimals),
+        "volume", GS::ObjectState (
+            "unit", ConvertAPIVolumeType (prefs.volumeUnit),
+            "decimals", prefs.volumeDecimals),
+        "angle", GS::ObjectState (
+            "unit", ConvertAPIAngleType (prefs.angleUnit),
+            "decimals", prefs.angleDecimals,
+            "accuracy", prefs.angleAccuracy));
+}
+
+// The flag fields of the dimension formats are bool or char in the DevKit, answered as booleans.
+static GS::ObjectState CreateLengthDimFormatObjectState (const API_LengthDimFormat& format)
+{
+    return GS::ObjectState (
+        "unit", ConvertAPILengthType (format.unit),
+        "decimals", format.lenDecimals,
+        "roundInch", format.roundInch,
+        "accuracy", ConvertAPIExtraAccuracyType (static_cast<API_ExtraAccuracyID> (format.showSmall5)),
+        "showZeroWhole", format.show0Whole != 0,
+        "showZeroInch", format.show0Inch != 0,
+        "hideZeroDecimals", format.hide0Dec != 0);
+}
+
+static GS::ObjectState CreateAngleDimFormatObjectState (const API_AngleDimFormat& format)
+{
+    return GS::ObjectState (
+        "unit", ConvertAPIAngleType (format.unit),
+        "decimals", format.angleDecimals,
+        "hideZeroDecimals", format.hide0Dec != 0);
+}
+
+static GS::ObjectState CreateAreaDimFormatObjectState (const API_AreaDimFormat& format)
+{
+    return GS::ObjectState (
+        "unit", ConvertAPIAreaType (format.unit),
+        "decimals", format.lenDecimals,
+        "hideZeroDecimals", format.hide0Dec != 0);
+}
+
+static GS::ObjectState CreateDimensionsObjectState (const API_DimensionPrefs& prefs)
+{
+    return GS::ObjectState (
+        "dimensionStandardIndex", prefs.index,
+        "linear", CreateLengthDimFormatObjectState (prefs.linear),
+        "angle", CreateAngleDimFormatObjectState (prefs.angle),
+        "radial", CreateLengthDimFormatObjectState (prefs.radial),
+        "level", CreateLengthDimFormatObjectState (prefs.level),
+        "elevation", CreateLengthDimFormatObjectState (prefs.elevation),
+        "doorWindow", CreateLengthDimFormatObjectState (prefs.doorwindow),
+        "parapet", CreateLengthDimFormatObjectState (prefs.parapet),
+        "area", CreateAreaDimFormatObjectState (prefs.area));
+}
+
+// The Zones page (API_ZonePrefs). Up to ZoneHeightLimitCount ceiling height limits
+// (roomHeightLimits, nLowAreas of them in use) split a zone into height ranges, each
+// reduced in the calculated area by its own percent (roomRedPercents: one per limit and
+// a last one for the area above the highest limit). The wall inset (niche) sizes of the
+// dialog are not in the struct, so the page has only the low ceiling area reduction.
+static const UIndex ZoneHeightLimitCount = 3;
+
+static GS::ObjectState CreateZonesObjectState (const API_ZonePrefs& prefs)
+{
+    GS::ObjectState lowCeilingAreaReduction;
+    lowCeilingAreaReduction.Add ("activeHeightLimits", static_cast<Int32> (prefs.nLowAreas));
+    const auto& heightLimitAdder = lowCeilingAreaReduction.AddList<GS::ObjectState> ("heightLimits");
+    for (UIndex i = 0; i < ZoneHeightLimitCount; ++i) {
+        heightLimitAdder (GS::ObjectState (
+            "height", prefs.roomHeightLimits[i],
+            "reductionPercent", prefs.roomRedPercents[i]));
+    }
+    lowCeilingAreaReduction.Add ("reductionPercentAboveHeightLimits", prefs.roomRedPercents[ZoneHeightLimitCount]);
+
+    return GS::ObjectState ("lowCeilingAreaReduction", lowCeilingAreaReduction);
+}
+
+#ifdef ServerMainVers_2700
+
+template <typename EnumType>
+static bool ParseEnumByName (const GS::UniString& str, std::initializer_list<EnumType> values, GS::UniString (*toString) (EnumType), EnumType& result)
+{
+    for (EnumType value : values) {
+        if (toString (value) == str) {
+            result = value;
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool ParseAPILengthType (const GS::UniString& str, API_LengthTypeID& result)
+{
+    return ParseEnumByName (str, {
+        API_LengthTypeID::Meter,
+        API_LengthTypeID::Decimeter,
+        API_LengthTypeID::Centimeter,
+        API_LengthTypeID::Millimeter,
+        API_LengthTypeID::FootFracInch,
+        API_LengthTypeID::FootDecInch,
+        API_LengthTypeID::DecFoot,
+        API_LengthTypeID::FracInch,
+        API_LengthTypeID::DecInch
+    }, ConvertAPILengthType, result);
+}
+
+static bool ParseAPIAreaType (const GS::UniString& str, API_AreaTypeID& result)
+{
+    return ParseEnumByName (str, {
+        API_AreaTypeID::SquareMeter,
+        API_AreaTypeID::SquareCentimeter,
+        API_AreaTypeID::SquareMillimeter,
+        API_AreaTypeID::SquareFoot,
+        API_AreaTypeID::SquareInch
+    }, ConvertAPIAreaType, result);
+}
+
+static bool ParseAPIVolumeType (const GS::UniString& str, API_VolumeTypeID& result)
+{
+    return ParseEnumByName (str, {
+        API_VolumeTypeID::CubicMeter,
+        API_VolumeTypeID::Liter,
+        API_VolumeTypeID::CubicCentimeter,
+        API_VolumeTypeID::CubicMillimeter,
+        API_VolumeTypeID::CubicFoot,
+        API_VolumeTypeID::CubicInch,
+        API_VolumeTypeID::CubicYard,
+        API_VolumeTypeID::Gallon
+    }, ConvertAPIVolumeType, result);
+}
+
+static bool ParseAPIAngleType (const GS::UniString& str, API_AngleTypeID& result)
+{
+    return ParseEnumByName (str, {
+        API_AngleTypeID::DecimalDegree,
+        API_AngleTypeID::DegreeMinSec,
+        API_AngleTypeID::Grad,
+        API_AngleTypeID::Radian,
+        API_AngleTypeID::Surveyors
+    }, ConvertAPIAngleType, result);
+}
+
+static bool ParseAPIExtraAccuracyType (const GS::UniString& str, API_ExtraAccuracyID& result)
+{
+    return ParseEnumByName (str, {
+        API_ExtraAccuracyID::APIExtAc_Off,
+        API_ExtraAccuracyID::APIExtAc_Small5,
+        API_ExtraAccuracyID::APIExtAc_Small25,
+        API_ExtraAccuracyID::APIExtAc_Small1,
+        API_ExtraAccuracyID::APIExtAc_Small01,
+        API_ExtraAccuracyID::APIExtAc_Fractions
+    }, ConvertAPIExtraAccuracyType, result);
+}
+
+// Reads an integer field of the preferences from `os`, into the (mostly short) struct field.
+template <typename IntType>
+static bool GetPreferenceIntegerField (const GS::ObjectState& os, const char* key, IntType& target)
+{
+    Int32 value = 0;
+    if (!os.Get (key, value)) {
+        return false;
+    }
+    target = static_cast<IntType> (value);
+    return true;
+}
+
+// Reads a boolean field of the preferences from `os`, into the bool or char struct field.
+template <typename FlagType>
+static bool GetPreferenceFlagField (const GS::ObjectState& os, const char* key, FlagType& target)
+{
+    bool value = false;
+    if (!os.Get (key, value)) {
+        return false;
+    }
+    target = static_cast<FlagType> (value ? 1 : 0);
+    return true;
+}
+
+// Reads the "unit" field of a unit object into `target`, with the parser of its unit type.
+// Returns the error message for a name no unit has, NoValue otherwise.
+template <typename UnitType>
+static GS::Optional<GS::UniString> GetPreferenceUnitField (const GS::ObjectState& os, const char* quantity, bool (*parse) (const GS::UniString&, UnitType&), UnitType& target, bool& changed)
+{
+    GS::UniString unitStr;
+    if (!os.Get ("unit", unitStr)) {
+        return GS::NoValue;
+    }
+    if (!parse (unitStr, target)) {
+        return GS::UniString ("Unknown ") + quantity + " unit: " + unitStr;
+    }
+    changed = true;
+    return GS::NoValue;
+}
+
+static GS::Optional<GS::UniString> GetPreferenceAccuracyField (const GS::ObjectState& os, const char* quantity, API_ExtraAccuracyID& target, bool& changed)
+{
+    GS::UniString accuracyStr;
+    if (!os.Get ("accuracy", accuracyStr)) {
+        return GS::NoValue;
+    }
+    if (!ParseAPIExtraAccuracyType (accuracyStr, target)) {
+        return GS::UniString ("Unknown ") + quantity + " accuracy: " + accuracyStr;
+    }
+    changed = true;
+    return GS::NoValue;
+}
+
+// --- Working Units page
+
+// The Apply functions change the fields of `prefs` that `os` gives and set `changed`
+// when there was one. They return the error message for a value that cannot be
+// applied, NoValue otherwise.
+static GS::Optional<GS::UniString> ApplyWorkingUnits (const GS::ObjectState& os, API_WorkingUnitPrefs& prefs, bool& changed)
+{
+    GS::Optional<GS::UniString> error;
+
+    GS::ObjectState length;
+    if (os.Get ("length", length)) {
+        error = GetPreferenceUnitField (length, "length", ParseAPILengthType, prefs.lengthUnit, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        changed |= GetPreferenceIntegerField (length, "decimals", prefs.lenDecimals);
+        changed |= GetPreferenceIntegerField (length, "roundInch", prefs.roundInch);
+    }
+
+    GS::ObjectState area;
+    if (os.Get ("area", area)) {
+        error = GetPreferenceUnitField (area, "area", ParseAPIAreaType, prefs.areaUnit, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        changed |= GetPreferenceIntegerField (area, "decimals", prefs.areaDecimals);
+    }
+
+    GS::ObjectState volume;
+    if (os.Get ("volume", volume)) {
+        error = GetPreferenceUnitField (volume, "volume", ParseAPIVolumeType, prefs.volumeUnit, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        changed |= GetPreferenceIntegerField (volume, "decimals", prefs.volumeDecimals);
+    }
+
+    GS::ObjectState angle;
+    if (os.Get ("angle", angle)) {
+        error = GetPreferenceUnitField (angle, "angle", ParseAPIAngleType, prefs.angleUnit, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        changed |= GetPreferenceIntegerField (angle, "decimals", prefs.angleDecimals);
+        changed |= GetPreferenceIntegerField (angle, "accuracy", prefs.angleAccuracy);
+    }
+
+    return GS::NoValue;
+}
+
+// --- Calculation Units page
+
+static GS::Optional<GS::UniString> ApplyCalculationUnits (const GS::ObjectState& os, API_CalcUnitPrefs& prefs, bool& changed)
+{
+    GS::Optional<GS::UniString> error;
+
+    GS::ObjectState length;
+    if (os.Get ("length", length)) {
+        error = GetPreferenceUnitField (length, "length", ParseAPILengthType, prefs.length.unit, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        error = GetPreferenceAccuracyField (length, "length", prefs.length.accuracy, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        changed |= GetPreferenceIntegerField (length, "decimals", prefs.length.decimals);
+    }
+
+    GS::ObjectState area;
+    if (os.Get ("area", area)) {
+        error = GetPreferenceUnitField (area, "area", ParseAPIAreaType, prefs.area.unit, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        error = GetPreferenceAccuracyField (area, "area", prefs.area.accuracy, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        changed |= GetPreferenceIntegerField (area, "decimals", prefs.area.decimals);
+    }
+
+    GS::ObjectState volume;
+    if (os.Get ("volume", volume)) {
+        error = GetPreferenceUnitField (volume, "volume", ParseAPIVolumeType, prefs.volume.unit, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        error = GetPreferenceAccuracyField (volume, "volume", prefs.volume.accuracy, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        changed |= GetPreferenceIntegerField (volume, "decimals", prefs.volume.decimals);
+    }
+
+    GS::ObjectState angle;
+    if (os.Get ("angle", angle)) {
+        error = GetPreferenceUnitField (angle, "angle", ParseAPIAngleType, prefs.angle.unit, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        changed |= GetPreferenceIntegerField (angle, "decimals", prefs.angle.decimals);
+        changed |= GetPreferenceIntegerField (angle, "accuracy", prefs.angle.accuracy);
+    }
+
+    return GS::NoValue;
+}
+
+// --- Dimensions page
+
+static GS::Optional<GS::UniString> ApplyLengthDimFormat (const GS::ObjectState& os, const char* name, API_LengthDimFormat& format, bool& changed)
+{
+    GS::Optional<GS::UniString> error = GetPreferenceUnitField (os, name, ParseAPILengthType, format.unit, changed);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    API_ExtraAccuracyID accuracy = static_cast<API_ExtraAccuracyID> (format.showSmall5);
+    error = GetPreferenceAccuracyField (os, name, accuracy, changed);
+    if (error.HasValue ()) {
+        return error;
+    }
+    format.showSmall5 = static_cast<decltype (format.showSmall5)> (accuracy);
+
+    changed |= GetPreferenceIntegerField (os, "decimals", format.lenDecimals);
+    changed |= GetPreferenceIntegerField (os, "roundInch", format.roundInch);
+    changed |= GetPreferenceFlagField (os, "showZeroWhole", format.show0Whole);
+    changed |= GetPreferenceFlagField (os, "showZeroInch", format.show0Inch);
+    changed |= GetPreferenceFlagField (os, "hideZeroDecimals", format.hide0Dec);
+
+    return GS::NoValue;
+}
+
+static GS::Optional<GS::UniString> ApplyAngleDimFormat (const GS::ObjectState& os, API_AngleDimFormat& format, bool& changed)
+{
+    const GS::Optional<GS::UniString> error = GetPreferenceUnitField (os, "angle dimension", ParseAPIAngleType, format.unit, changed);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    changed |= GetPreferenceIntegerField (os, "decimals", format.angleDecimals);
+    changed |= GetPreferenceFlagField (os, "hideZeroDecimals", format.hide0Dec);
+
+    return GS::NoValue;
+}
+
+static GS::Optional<GS::UniString> ApplyAreaDimFormat (const GS::ObjectState& os, API_AreaDimFormat& format, bool& changed)
+{
+    const GS::Optional<GS::UniString> error = GetPreferenceUnitField (os, "area dimension", ParseAPIAreaType, format.unit, changed);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    changed |= GetPreferenceIntegerField (os, "decimals", format.lenDecimals);
+    changed |= GetPreferenceFlagField (os, "hideZeroDecimals", format.hide0Dec);
+
+    return GS::NoValue;
+}
+
+static GS::Optional<GS::UniString> ApplyDimensions (const GS::ObjectState& os, API_DimensionPrefs& prefs, bool& changed)
+{
+    changed |= GetPreferenceIntegerField (os, "dimensionStandardIndex", prefs.index);
+
+    struct LengthDimFormatField {
+        const char* key;
+        const char* name;
+        API_LengthDimFormat API_DimensionPrefs::* format;
+    };
+    static const LengthDimFormatField lengthDimFormatFields[] = {
+        { "linear", "linear dimension", &API_DimensionPrefs::linear },
+        { "radial", "radial dimension", &API_DimensionPrefs::radial },
+        { "level", "level dimension", &API_DimensionPrefs::level },
+        { "elevation", "elevation dimension", &API_DimensionPrefs::elevation },
+        { "doorWindow", "door/window dimension", &API_DimensionPrefs::doorwindow },
+        { "parapet", "sill height dimension", &API_DimensionPrefs::parapet }
+    };
+
+    GS::Optional<GS::UniString> error;
+    for (const LengthDimFormatField& field : lengthDimFormatFields) {
+        GS::ObjectState format;
+        if (os.Get (field.key, format)) {
+            error = ApplyLengthDimFormat (format, field.name, prefs.*(field.format), changed);
+            if (error.HasValue ()) {
+                return error;
+            }
+        }
+    }
+
+    GS::ObjectState angle;
+    if (os.Get ("angle", angle)) {
+        error = ApplyAngleDimFormat (angle, prefs.angle, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+
+    GS::ObjectState area;
+    if (os.Get ("area", area)) {
+        error = ApplyAreaDimFormat (area, prefs.area, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+
+    return GS::NoValue;
+}
+
+// --- Zones page
+
+static GS::Optional<GS::UniString> ApplyZones (const GS::ObjectState& os, API_ZonePrefs& prefs, bool& changed)
+{
+    GS::ObjectState lowCeilingAreaReduction;
+    if (os.Get ("lowCeilingAreaReduction", lowCeilingAreaReduction)) {
+        Int32 activeHeightLimits = 0;
+        if (lowCeilingAreaReduction.Get ("activeHeightLimits", activeHeightLimits)) {
+            if (activeHeightLimits < 0 || activeHeightLimits > static_cast<Int32> (ZoneHeightLimitCount)) {
+                return GS::UniString ("activeHeightLimits has to be between 0 and 3.");
+            }
+            prefs.nLowAreas = static_cast<decltype (prefs.nLowAreas)> (activeHeightLimits);
+            changed = true;
+        }
+
+        // The given items change the limits of the same index; the rest keep their values.
+        GS::Array<GS::ObjectState> heightLimits;
+        if (lowCeilingAreaReduction.Get ("heightLimits", heightLimits)) {
+            if (heightLimits.IsEmpty () || heightLimits.GetSize () > ZoneHeightLimitCount) {
+                return GS::UniString ("heightLimits has to have 1 to 3 items.");
+            }
+            for (UIndex i = 0; i < heightLimits.GetSize (); ++i) {
+                changed |= heightLimits[i].Get ("height", prefs.roomHeightLimits[i]);
+                changed |= heightLimits[i].Get ("reductionPercent", prefs.roomRedPercents[i]);
+            }
+        }
+
+        changed |= lowCeilingAreaReduction.Get ("reductionPercentAboveHeightLimits", prefs.roomRedPercents[ZoneHeightLimitCount]);
+    }
+
+    return GS::NoValue;
+}
+
+// --- The commands
+
+// Reads the page `prefsType`, applies the fields of `pageFields` to it with `apply`
+// (one of the Apply functions above) and writes it back. Answers an ExecutionResult.
+template <typename PrefsType, typename ApplyFunction>
+static GS::ObjectState SetProjectPreferencesPage (const char* pageName, API_PrefsTypeID prefsType, const GS::ObjectState& pageFields, ApplyFunction apply)
+{
+    PrefsType prefs = {};
+    GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, prefsType);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, GS::UniString ("Failed to read the ") + pageName + " preferences.");
+    }
+
+    bool changed = false;
+    const GS::Optional<GS::UniString> error = apply (pageFields, prefs, changed);
+    if (error.HasValue ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, error.Get ());
+    }
+    if (!changed) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString ("No field of the ") + pageName + " preferences given.");
+    }
+
+    err = ACAPI_CallUndoableCommand ("Set Project Preferences", [&] () -> GSErrCode {
+        return ACAPI_ProjectSetting_SetPreferences (&prefs, prefsType);
+    });
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, GS::UniString ("Failed to set the ") + pageName + " preferences. In Teamwork the PreferencesDialog lockable object set has to be reserved first.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+#endif
+
+// The "required" list of a preferences object: every field in the response of
+// GetProjectPreferences, none in the input of SetProjectPreferences, where a
+// missing field keeps its value.
+static GS::UniString GetProjectPreferencesRequiredFields (bool allFieldsRequired, const GS::UniString& fields)
+{
+    if (allFieldsRequired) {
+        return GS::UniString ("\"required\": [") + fields + "]";
+    }
+    return "\"required\": []";
+}
+
+static GS::UniString GetWorkingUnitsSchema (bool allFieldsRequired)
+{
+    GS::UniString schema = R"({
+        "type": "object",
+        "description": "The Working Units page: the units and the number of decimals the model's lengths, areas, volumes and angles are shown with.",
+        "properties": {
+            "length": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/LengthType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for length values."
+                    },
+                    "roundInch": {
+                        "type": "integer",
+                        "description": "Rounding of the fractional inch units, as the denominator of the smallest fraction shown: 1, 2, 4, 8, 16, 32 or 64."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "roundInch")");
+    schema += R"(
+            },
+            "area": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/AreaType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for area values."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals")");
+    schema += R"(
+            },
+            "volume": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/VolumeType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for volume values."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals")");
+    schema += R"(
+            },
+            "angle": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/AngleType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for angle values."
+                    },
+                    "accuracy": {
+                        "type": "integer",
+                        "description": "Accuracy for angle values."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "accuracy")");
+    schema += R"(
+            }
+        },
+        "additionalProperties": false,
+        )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("length", "area", "volume", "angle")");
+    schema += R"(
+    })";
+    return schema;
+}
+
+static GS::UniString GetLengthDimFormatSchema (bool allFieldsRequired, const GS::UniString& description)
+{
+    GS::UniString schema = GS::UniString (R"({
+                "type": "object",
+                "description": ")") + description + R"(",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/LengthType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display."
+                    },
+                    "roundInch": {
+                        "type": "integer",
+                        "description": "Rounding of the fractional inch units, as the denominator of the smallest fraction shown: 1, 2, 4, 8, 16, 32 or 64."
+                    },
+                    "accuracy": {
+                        "$ref": "#/AccuracyType"
+                    },
+                    "showZeroWhole": {
+                        "type": "boolean",
+                        "description": "Show the zero before the decimal point of values below one."
+                    },
+                    "showZeroInch": {
+                        "type": "boolean",
+                        "description": "Show zero inches in feet and inches values."
+                    },
+                    "hideZeroDecimals": {
+                        "type": "boolean",
+                        "description": "Hide the zero decimals at the end of the values."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "roundInch", "accuracy", "showZeroWhole", "showZeroInch", "hideZeroDecimals")");
+    schema += R"(
+            })";
+    return schema;
+}
+
+static GS::UniString GetAngleDimFormatSchema (bool allFieldsRequired)
+{
+    GS::UniString schema = R"({
+                "type": "object",
+                "description": "The format of the angle dimensions.",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/AngleType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display."
+                    },
+                    "hideZeroDecimals": {
+                        "type": "boolean",
+                        "description": "Hide the zero decimals at the end of the values."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "hideZeroDecimals")");
+    schema += R"(
+            })";
+    return schema;
+}
+
+static GS::UniString GetAreaDimFormatSchema (bool allFieldsRequired)
+{
+    GS::UniString schema = R"({
+                "type": "object",
+                "description": "The format of the area values the dimensions show (area calculations).",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/AreaType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display."
+                    },
+                    "hideZeroDecimals": {
+                        "type": "boolean",
+                        "description": "Hide the zero decimals at the end of the values."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "hideZeroDecimals")");
+    schema += R"(
+            })";
+    return schema;
+}
+
+static GS::UniString GetDimensionsSchema (bool allFieldsRequired)
+{
+    GS::UniString schema = R"({
+        "type": "object",
+        "description": "The Dimensions page: the dimension standard and the format (unit, decimals, extra accuracy and zero handling) of each dimension type.",
+        "properties": {
+            "dimensionStandardIndex": {
+                "type": "integer",
+                "description": "The index of the dimension standard the page follows."
+            },
+            "linear": )";
+    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the linear dimensions.");
+    schema += R"(,
+            "angle": )";
+    schema += GetAngleDimFormatSchema (allFieldsRequired);
+    schema += R"(,
+            "radial": )";
+    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the radial dimensions.");
+    schema += R"(,
+            "level": )";
+    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the level dimensions.");
+    schema += R"(,
+            "elevation": )";
+    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the elevation dimensions.");
+    schema += R"(,
+            "doorWindow": )";
+    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the door, window and skylight dimensions.");
+    schema += R"(,
+            "parapet": )";
+    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the sill height (parapet) dimensions.");
+    schema += R"(,
+            "area": )";
+    schema += GetAreaDimFormatSchema (allFieldsRequired);
+    schema += R"(
+        },
+        "additionalProperties": false,
+        )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("dimensionStandardIndex", "linear", "angle", "radial", "level", "elevation", "doorWindow", "parapet", "area")");
+    schema += R"(
+    })";
+    return schema;
+}
+
+static GS::UniString GetCalculationUnitsPageSchema (bool allFieldsRequired)
+{
+    GS::UniString schema = R"({
+        "type": "object",
+        "description": "The Calculation Units page: the units, the number of decimals and the extra accuracy of the values in element lists and schedules. GetCalculationUnits answers the same page.",
+        "properties": {
+            "length": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/LengthType"
+                    },
+                    "accuracy": {
+                        "$ref": "#/AccuracyType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for length values."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "accuracy", "decimals")");
+    schema += R"(
+            },
+            "area": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/AreaType"
+                    },
+                    "accuracy": {
+                        "$ref": "#/AccuracyType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for area values."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "accuracy", "decimals")");
+    schema += R"(
+            },
+            "volume": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/VolumeType"
+                    },
+                    "accuracy": {
+                        "$ref": "#/AccuracyType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for volume values."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "accuracy", "decimals")");
+    schema += R"(
+            },
+            "angle": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/AngleType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for angle values."
+                    },
+                    "accuracy": {
+                        "type": "integer",
+                        "description": "Accuracy for angle values."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "accuracy")");
+    schema += R"(
+            }
+        },
+        "additionalProperties": false,
+        )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("length", "area", "volume", "angle")");
+    schema += R"(
+    })";
+    return schema;
+}
+
+// The item count of the height limits list: all three in the response of
+// GetProjectPreferences, one to three in the input of SetProjectPreferences,
+// where the given items change the limits of the same index.
+static GS::UniString GetProjectPreferencesHeightLimitsItemCount (bool allFieldsRequired)
+{
+    if (allFieldsRequired) {
+        return "\"minItems\": 3, \"maxItems\": 3";
+    }
+    return "\"minItems\": 1, \"maxItems\": 3";
+}
+
+static GS::UniString GetZonesSchema (bool allFieldsRequired)
+{
+    GS::UniString schema = R"({
+        "type": "object",
+        "description": "The Zones page: the reduction of the calculated zone area under a low ceiling. The wall inset (niche) sizes of the page are not available through the API.",
+        "properties": {
+            "lowCeilingAreaReduction": {
+                "type": "object",
+                "description": "Up to three ceiling height limits split a zone into height ranges; the area of each range is reduced by its own percent in the calculated area of the zone.",
+                "properties": {
+                    "activeHeightLimits": {
+                        "type": "integer",
+                        "description": "How many of the three height limits are in use: 0 (no reduction) to 3."
+                    },
+                    "heightLimits": {
+                        "type": "array",
+                        "description": "The three height limits, each with the reduction of the area under it (and above the previous limit); the first activeHeightLimits of them are in use. In SetProjectPreferences the given items change the limits of the same index.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "height": {
+                                    "type": "number",
+                                    "description": "The ceiling height limit in meters."
+                                },
+                                "reductionPercent": {
+                                    "type": "number",
+                                    "description": "The reduction of the area under this limit, in percent."
+                                }
+                            },
+                            "additionalProperties": false,
+                            )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("height", "reductionPercent")");
+    schema += R"(
+                        },
+                        )";
+    schema += GetProjectPreferencesHeightLimitsItemCount (allFieldsRequired);
+    schema += R"(
+                    },
+                    "reductionPercentAboveHeightLimits": {
+                        "type": "number",
+                        "description": "The reduction of the area above the highest height limit, in percent."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("activeHeightLimits", "heightLimits", "reductionPercentAboveHeightLimits")");
+    schema += R"(
+            }
+        },
+        "additionalProperties": false,
+        )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("lowCeilingAreaReduction")");
+    schema += R"(
+    })";
+    return schema;
+}
+
+GetProjectPreferencesCommand::GetProjectPreferencesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetProjectPreferencesCommand::GetName () const
+{
+    return "GetProjectPreferences";
+}
+
+GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "preferenceTypes": {
+                "type": "array",
+                "description": "The preference pages to get. Every page when missing.",
+                "items": {
+                    "type": "string",
+                    "enum": [
+                        "WorkingUnits",
+                        "Dimensions",
+                        "CalculationUnits",
+                        "Zones"
+                    ]
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetRawResponseSchema () const
+{
+    GS::UniString schema = R"({
+        "type": "object",
+        "description": "The pages asked for, by name.",
+        "properties": {
+            "workingUnits": )";
+    schema += GetWorkingUnitsSchema (true);
+    schema += R"(,
+            "dimensions": )";
+    schema += GetDimensionsSchema (true);
+    schema += R"(,
+            "calculationUnits": )";
+    schema += GetCalculationUnitsPageSchema (true);
+    schema += R"(,
+            "zones": )";
+    schema += GetZonesSchema (true);
+    schema += R"(
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    })";
+    return schema;
+}
+
+GS::ObjectState GetProjectPreferencesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> preferenceTypes;
+    if (!parameters.Get ("preferenceTypes", preferenceTypes)) {
+        preferenceTypes.Push ("WorkingUnits");
+        preferenceTypes.Push ("Dimensions");
+        preferenceTypes.Push ("CalculationUnits");
+        preferenceTypes.Push ("Zones");
+    }
+
+    GS::ObjectState response;
+    for (const GS::UniString& preferenceType : preferenceTypes) {
+        if (preferenceType == "WorkingUnits") {
+            API_WorkingUnitPrefs prefs = {};
+            const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_WorkingUnitsID);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the working units preferences.");
+            }
+            response.Add ("workingUnits", CreateWorkingUnitsObjectState (prefs));
+        } else if (preferenceType == "Dimensions") {
+            API_DimensionPrefs prefs = {};
+            const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_DimensionsID);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the dimensions preferences.");
+            }
+            response.Add ("dimensions", CreateDimensionsObjectState (prefs));
+        } else if (preferenceType == "CalculationUnits") {
+            API_CalcUnitPrefs prefs = {};
+            const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_CalcUnitsID);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the calculation units preferences.");
+            }
+            response.Add ("calculationUnits", CreateCalculationUnitsObjectState (prefs));
+        } else if (preferenceType == "Zones") {
+            API_ZonePrefs prefs = {};
+            const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_ZonesID);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the zones preferences.");
+            }
+            response.Add ("zones", CreateZonesObjectState (prefs));
+        } else {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Unknown preference type: ") + preferenceType);
+        }
+    }
+
+    return response;
+}
+
+SetProjectPreferencesCommand::SetProjectPreferencesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetProjectPreferencesCommand::GetName () const
+{
+    return "SetProjectPreferences";
+}
+
+GS::Optional<GS::UniString> SetProjectPreferencesCommand::GetInputParametersSchema () const
+{
+    GS::UniString schema = R"({
+        "type": "object",
+        "description": "The pages to change, by name. Only the given fields of a page change, the rest keeps its value. In Teamwork the PreferencesDialog lockable object set has to be reserved first (ReserveLockableObjectSet).",
+        "properties": {
+            "workingUnits": )";
+    schema += GetWorkingUnitsSchema (false);
+    schema += R"(,
+            "dimensions": )";
+    schema += GetDimensionsSchema (false);
+    schema += R"(,
+            "calculationUnits": )";
+    schema += GetCalculationUnitsPageSchema (false);
+    schema += R"(,
+            "zones": )";
+    schema += GetZonesSchema (false);
+    schema += R"(
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    })";
+    return schema;
+}
+
+GS::Optional<GS::UniString> SetProjectPreferencesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "description": "One execution result per page given in the input, by name.",
+        "properties": {
+            "workingUnits": {
+                "$ref": "#/ExecutionResult"
+            },
+            "dimensions": {
+                "$ref": "#/ExecutionResult"
+            },
+            "calculationUnits": {
+                "$ref": "#/ExecutionResult"
+            },
+            "zones": {
+                "$ref": "#/ExecutionResult"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    })";
+}
+
+GS::ObjectState SetProjectPreferencesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::ObjectState response;
+    bool anyPage = false;
+
+    GS::ObjectState workingUnits;
+    if (parameters.Get ("workingUnits", workingUnits)) {
+        anyPage = true;
+        response.Add ("workingUnits", SetProjectPreferencesPage<API_WorkingUnitPrefs> ("working units", APIPrefs_WorkingUnitsID, workingUnits, ApplyWorkingUnits));
+    }
+
+    GS::ObjectState dimensions;
+    if (parameters.Get ("dimensions", dimensions)) {
+        anyPage = true;
+        response.Add ("dimensions", SetProjectPreferencesPage<API_DimensionPrefs> ("dimensions", APIPrefs_DimensionsID, dimensions, ApplyDimensions));
+    }
+
+    GS::ObjectState calculationUnits;
+    if (parameters.Get ("calculationUnits", calculationUnits)) {
+        anyPage = true;
+        response.Add ("calculationUnits", SetProjectPreferencesPage<API_CalcUnitPrefs> ("calculation units", APIPrefs_CalcUnitsID, calculationUnits, ApplyCalculationUnits));
+    }
+
+    GS::ObjectState zones;
+    if (parameters.Get ("zones", zones)) {
+        anyPage = true;
+        response.Add ("zones", SetProjectPreferencesPage<API_ZonePrefs> ("zones", APIPrefs_ZonesID, zones, ApplyZones));
+    }
+
+    if (!anyPage) {
+        return CreateErrorResponse (APIERR_BADPARS, "No preference page given. Give workingUnits, dimensions, calculationUnits or zones.");
+    }
+
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "SetProjectPreferences requires Archicad 27 or newer.");
+#endif
 }
 
 static bool ParseElementsToIfcExport (const GS::UniString& str, API_ElementsToIfcExportID& result)
@@ -2560,6 +5300,116 @@ GS::ObjectState RebuildViewCommand::Execute (const GS::ObjectState& parameters, 
 
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to rebuild the view.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+
+// ---------------------------------------------------------------------------
+// Auto-Intersection (Options > Auto-Intersection).
+//
+// It is a setting of the running Archicad, not of the project, and it changes
+// what the wall and beam creation commands produce: with it on, the new
+// elements are cleaned up and joined at their intersections. A script that
+// needs a known result reads the state, sets the one it needs and restores
+// the previous one afterwards.
+// ---------------------------------------------------------------------------
+
+GetAutoIntersectCommand::GetAutoIntersectCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetAutoIntersectCommand::GetName () const
+{
+    return "GetAutoIntersect";
+}
+
+GS::Optional<GS::UniString> GetAutoIntersectCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "isOn": {
+                "type": "boolean",
+                "description": "True if Auto-Intersection is currently on."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "isOn"
+        ]
+    })";
+}
+
+GS::ObjectState GetAutoIntersectCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    bool isOn = false;
+    GSErrCode err = ACAPI_View_IsAutoIntersectOn (&isOn);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the Auto-Intersection state.");
+    }
+
+    return GS::ObjectState ("isOn", isOn);
+}
+
+SetAutoIntersectCommand::SetAutoIntersectCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetAutoIntersectCommand::GetName () const
+{
+    return "SetAutoIntersect";
+}
+
+GS::Optional<GS::UniString> SetAutoIntersectCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "isOn": {
+                "type": "boolean",
+                "description": "Turn Auto-Intersection on or off."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "isOn"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetAutoIntersectCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetAutoIntersectCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    bool isOn = false;
+    if (!parameters.Get ("isOn", isOn)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: isOn.");
+    }
+
+    // The state is changed only when it differs from the requested one and is
+    // read back afterwards, so the result is right even if the API toggles.
+    bool currentState = false;
+    GSErrCode err = ACAPI_View_IsAutoIntersectOn (&currentState);
+    if (err == NoError && currentState != isOn) {
+        err = ACAPI_View_ChangeAutoIntersect (&isOn);
+        if (err == NoError) {
+            err = ACAPI_View_IsAutoIntersectOn (&currentState);
+        }
+    }
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to set the Auto-Intersection state.");
+    }
+    if (currentState != isOn) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, "The Auto-Intersection state did not change.");
     }
 
     return CreateSuccessfulExecutionResult ();
@@ -3254,4 +6104,527 @@ GS::ObjectState ChangeHotlinkNodesCommand::Execute (const GS::ObjectState& param
     }
 
     return response;
+}
+
+GetHotlinkOwnersOfElementsCommand::GetHotlinkOwnersOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetHotlinkOwnersOfElementsCommand::GetName () const
+{
+    return "GetHotlinkOwnersOfElements";
+}
+
+GS::Optional<GS::UniString> GetHotlinkOwnersOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetHotlinkOwnersOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkOwners": {
+                "type": "array",
+                "description": "The hotlink each element comes from, aligned with the input.",
+                "items": {
+                    "$ref": "#/HotlinkOwnersOfElementOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkOwners"
+        ]
+    })";
+}
+
+GS::ObjectState GetHotlinkOwnersOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& hotlinkOwners = response.AddList<GS::ObjectState> ("hotlinkOwners");
+
+    for (const GS::ObjectState& elementOS : elements) {
+        const GS::ObjectState* elementId = elementOS.Get ("elementId");
+        if (elementId == nullptr) {
+            hotlinkOwners (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        // Reading the header first tells a wrong id apart from an element
+        // that is simply not in a hotlink.
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        if (ACAPI_Element_GetHeader (&elemHead) != NoError) {
+            hotlinkOwners (CreateErrorResponse (APIERR_BADID, "Failed to find the element."));
+            continue;
+        }
+
+        // An element outside every hotlink gets no guid back (or an error),
+        // so either case leaves the id out.
+        GS::ObjectState ownersOS;
+        API_Guid hotlinkElemGuid = APINULLGuid;
+        const bool hasHotlinkElement = ACAPI_Hotlink_GetContainingHotlinkGuid (&elemHead.guid, &hotlinkElemGuid) == NoError && hotlinkElemGuid != APINULLGuid;
+        if (hasHotlinkElement) {
+            ownersOS.Add ("hotlinkElementId", CreateGuidObjectState (hotlinkElemGuid));
+        }
+        API_Guid hotlinkInstanceGuid = APINULLGuid;
+        const bool hasHotlinkInstance = ACAPI_Hotlink_GetHotLinkOwner (&elemHead.guid, &hotlinkInstanceGuid) == NoError && hotlinkInstanceGuid != APINULLGuid;
+        if (hasHotlinkInstance) {
+            ownersOS.Add ("hotlinkInstanceId", CreateGuidObjectState (hotlinkInstanceGuid));
+        }
+        ownersOS.Add ("isInHotlink", hasHotlinkElement || hasHotlinkInstance);
+        hotlinkOwners (ownersOS);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetHotlinkOwnersOfElements requires Archicad 27 or newer.");
+#endif
+}
+
+// The elements inside a placed instance are proxies: copies made in this
+// project with guids of their own. Archicad keeps, per instance, which element
+// of the source file each proxy was made from.
+
+GetHotlinkProxyElementTableCommand::GetHotlinkProxyElementTableCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetHotlinkProxyElementTableCommand::GetName () const
+{
+    return "GetHotlinkProxyElementTable";
+}
+
+GS::Optional<GS::UniString> GetHotlinkProxyElementTableCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkInstances": {
+                "type": "array",
+                "description": "The placed hotlink instances: elements of type Hotlink, for example the hotlinkId of an element inside one. Not the nodes GetHotlinks returns.",
+                "items": {
+                    "$ref": "#/ElementIdArrayItem"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkInstances"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetHotlinkProxyElementTableCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "proxyElementTables": {
+                "type": "array",
+                "description": "One item per requested instance, in order: its proxy elements with the source elements they were made from, or an error.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "proxyElements": {
+                                    "type": "array",
+                                    "description": "The proxy elements of the instance, in no particular order.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "proxyElementId": {
+                                                "$ref": "#/ElementId",
+                                                "description": "The proxy element in the current project."
+                                            },
+                                            "sourceElementId": {
+                                                "$ref": "#/ElementId",
+                                                "description": "The element in the hotlink's source file the proxy was made from."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "proxyElementId",
+                                            "sourceElementId"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "proxyElements"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "proxyElementTables"
+        ]
+    })";
+}
+
+GS::ObjectState GetHotlinkProxyElementTableCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> hotlinkInstances;
+    parameters.Get ("hotlinkInstances", hotlinkInstances);
+
+    GS::ObjectState response;
+    const auto& proxyElementTables = response.AddList<GS::ObjectState> ("proxyElementTables");
+
+    for (const GS::ObjectState& instanceData : hotlinkInstances) {
+        const GS::ObjectState* elementId = instanceData.Get ("elementId");
+        if (elementId == nullptr) {
+            proxyElementTables (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        // Checked here so a node id or another element gets a clear message
+        // rather than a bare error code from the table call.
+        API_Elem_Head header = {};
+        header.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&header);
+        if (err != NoError) {
+            proxyElementTables (CreateErrorResponse (err, "Failed to get the element"));
+            continue;
+        }
+        if (GetElemTypeId (header) != API_HotlinkID) {
+            proxyElementTables (CreateErrorResponse (APIERR_BADELEMENTTYPE, "The element is not a hotlink instance"));
+            continue;
+        }
+
+        GS::HashTable<API_Guid, API_Guid> proxyElementTable;
+        err = ACAPI_Hotlink_GetHotlinkProxyElementTable (&header.guid, &proxyElementTable);
+        if (err != NoError) {
+            proxyElementTables (CreateErrorResponse (err, "Failed to get the proxy element table of the hotlink instance"));
+            continue;
+        }
+
+        GS::ObjectState item;
+        const auto& proxyElements = item.AddList<GS::ObjectState> ("proxyElements");
+        for (const auto& kv : proxyElementTable) {
+            GS::ObjectState proxyElement;
+#ifdef ServerMainVers_2800
+            proxyElement.Add ("proxyElementId", CreateGuidObjectState (kv.key));
+            proxyElement.Add ("sourceElementId", CreateGuidObjectState (kv.value));
+#else
+            proxyElement.Add ("proxyElementId", CreateGuidObjectState (*kv.key));
+            proxyElement.Add ("sourceElementId", CreateGuidObjectState (*kv.value));
+#endif
+            proxyElements (proxyElement);
+        }
+        proxyElementTables (item);
+    }
+
+    return response;
+}
+
+#ifdef ServerMainVers_2700
+// The API_UnitConversionPrefID enumerators by their names without the APIUnitConv_ prefix.
+struct UnitConversionPreferenceName {
+    const char*                 name;
+    API_UnitConversionPrefID    preference;
+};
+
+static const UnitConversionPreferenceName UnitConversionPreferences[] = {
+    { "WorkModel",       APIUnitConv_WorkModel },
+    { "WorkLayout",      APIUnitConv_WorkLayout },
+    { "WorkAngle",       APIUnitConv_WorkAngle },
+    { "DimLinear",       APIUnitConv_DimLinear },
+    { "DimAngle",        APIUnitConv_DimAngle },
+    { "DimRadial",       APIUnitConv_DimRadial },
+    { "DimLevel",        APIUnitConv_DimLevel },
+    { "DimElevation",    APIUnitConv_DimElevation },
+    { "DimDoorWindow",   APIUnitConv_DimDoorWindow },
+    { "DimParapet",      APIUnitConv_DimParapet },
+    { "DimArea",         APIUnitConv_DimArea },
+    { "CalcLength",      APIUnitConv_CalcLength },
+    { "CalcArea",        APIUnitConv_CalcArea },
+    { "CalcVolume",      APIUnitConv_CalcVolume },
+    { "CalcAngle",       APIUnitConv_CalcAngle }
+};
+
+static bool ParseUnitConversionPreference (const GS::UniString& name, API_UnitConversionPrefID& preference)
+{
+    for (const auto& entry : UnitConversionPreferences) {
+        if (name == entry.name) {
+            preference = entry.preference;
+            return true;
+        }
+    }
+    return false;
+}
+#endif
+
+ConvertUnitValuesCommand::ConvertUnitValuesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ConvertUnitValuesCommand::GetName () const
+{
+    return "ConvertUnitValues";
+}
+
+GS::Optional<GS::UniString> ConvertUnitValuesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "values": {
+                "type": "array",
+                "description": "The values to convert.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "value": {
+                            "type": "number",
+                            "description": "The value to convert, in meters, square meters, cubic meters or radians, matching the kind of the preference."
+                        },
+                        "preference": {
+                            "type": "string",
+                            "description": "The Project Preference whose unit and rounding are applied: WorkModel, WorkLayout and WorkAngle are the Working Units; the Dim ones are the Dimensions (DimDoorWindow the door, window and skylight dimensions, DimParapet the sill height, DimArea the area calculations); the Calc ones are the Calculation Units & Rules.",
+                            "enum": [
+                                "WorkModel",
+                                "WorkLayout",
+                                "WorkAngle",
+                                "DimLinear",
+                                "DimAngle",
+                                "DimRadial",
+                                "DimLevel",
+                                "DimElevation",
+                                "DimDoorWindow",
+                                "DimParapet",
+                                "DimArea",
+                                "CalcLength",
+                                "CalcArea",
+                                "CalcVolume",
+                                "CalcAngle"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "value",
+                        "preference"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "values"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ConvertUnitValuesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "convertedValues": {
+                "type": "array",
+                "description": "The converted values, in the order of the input. A value that cannot be converted is an error item.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "convertedValue": {
+                                    "type": "string",
+                                    "description": "The value as Archicad shows it in the unit of the preference, without the extra accuracy decimals. It may contain the unit."
+                                },
+                                "extraAccuracy": {
+                                    "type": "string",
+                                    "description": "The extra accuracy decimals, if any (at most two). Empty when there are none."
+                                },
+                                "unit": {
+                                    "type": "string",
+                                    "description": "The unit of the preference. It may be empty."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "convertedValue",
+                                "extraAccuracy",
+                                "unit"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "convertedValues"
+        ]
+    })";
+}
+
+GS::ObjectState ConvertUnitValuesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> values;
+    parameters.Get ("values", values);
+
+    GS::ObjectState response;
+    const auto& convertedValues = response.AddList<GS::ObjectState> ("convertedValues");
+
+    for (const GS::ObjectState& value : values) {
+        API_UnitConversionData unitConversionData = {};
+        if (!value.Get ("value", unitConversionData.value)) {
+            convertedValues (CreateErrorResponse (APIERR_BADPARS, "value is missing"));
+            continue;
+        }
+
+        GS::UniString preference;
+        value.Get ("preference", preference);
+        if (!ParseUnitConversionPreference (preference, unitConversionData.unitConvPref)) {
+            convertedValues (CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("Invalid preference '%T'.", preference.ToPrintf ())));
+            continue;
+        }
+
+        const GSErrCode err = ACAPI_Conversion_GetConvertedUnitValue (&unitConversionData);
+        if (err != NoError) {
+            convertedValues (CreateErrorResponse (err, "Failed to convert the value."));
+            continue;
+        }
+
+        convertedValues (GS::ObjectState (
+            "convertedValue", GS::UniString (unitConversionData.convertedValue),
+            "extraAccuracy", GS::UniString (unitConversionData.extraAccuracy),
+            "unit", GS::UniString (unitConversionData.unit)));
+    }
+
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
+GetRenovationStatusNamesCommand::GetRenovationStatusNamesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetRenovationStatusNamesCommand::GetName () const
+{
+    return "GetRenovationStatusNames";
+}
+
+GS::Optional<GS::UniString> GetRenovationStatusNamesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "renovationStatuses": {
+                "type": "array",
+                "description": "The renovation statuses an element can have, in the order Existing, New, Demolished.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string",
+                                    "description": "The renovation status.",
+                                    "enum": [
+                                        "Existing",
+                                        "New",
+                                        "Demolished"
+                                    ]
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "description": "The name of the status as the running Archicad shows it (localized)."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "status",
+                                "name"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "renovationStatuses"
+        ]
+    })";
+}
+
+GS::ObjectState GetRenovationStatusNamesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    // API_UndefinedStatus and API_DefaultStatus (input only) are not statuses an element has.
+    struct RenovationStatusName {
+        const char*                 name;
+        API_RenovationStatusType    status;
+    };
+    static const RenovationStatusName Statuses[] = {
+        { "Existing",   API_ExistingStatus },
+        { "New",        API_NewStatus },
+        { "Demolished", API_DemolishedStatus }
+    };
+
+    GS::ObjectState response;
+    const auto& renovationStatuses = response.AddList<GS::ObjectState> ("renovationStatuses");
+
+    for (const auto& status : Statuses) {
+        GS::UniString name;
+        const GSErrCode err = ACAPI_Renovation_GetRenovationStatusName (status.status, &name);
+        if (err != NoError) {
+            renovationStatuses (CreateErrorResponse (err, GS::UniString ("Failed to get the name of the renovation status '") + status.name + "'."));
+            continue;
+        }
+
+        renovationStatuses (GS::ObjectState (
+            "status", GS::UniString (status.name),
+            "name", name));
+    }
+
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
 }

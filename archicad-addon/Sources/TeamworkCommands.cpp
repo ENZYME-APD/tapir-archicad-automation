@@ -1,6 +1,7 @@
 #include "TeamworkCommands.hpp"
 #include "MigrationHelper.hpp"
 
+#include <limits>
 #include <map>
 
 TeamworkSendCommand::TeamworkSendCommand () :
@@ -53,6 +54,93 @@ GS::ObjectState TeamworkReceiveCommand::Execute (const GS::ObjectState& /*parame
     return err == NoError
         ? CreateSuccessfulExecutionResult ()
         : CreateFailedExecutionResult (err, "Failed to receive changes.");
+}
+
+GetTeamworkProjectInfoCommand::GetTeamworkProjectInfoCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetTeamworkProjectInfoCommand::GetName () const
+{
+    return "GetTeamworkProjectInfo";
+}
+
+GS::Optional<GS::UniString> GetTeamworkProjectInfoCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "isTeamwork": {
+                "type": "boolean",
+                "description": "True, if the opened project is a Teamwork (BIMcloud) project. When false, every other Teamwork field is left out."
+            },
+            "isOnline": {
+                "type": "boolean",
+                "description": "True, if the Teamwork project is connected to its BIMcloud server. False in a solo project or when the Teamwork project works offline."
+            },
+            "userId": {
+                "type": "number",
+                "description": "The Teamwork user identifier of the current user, as the Teamwork commands report users."
+            },
+            "userName": {
+                "type": "string",
+                "description": "The name of the current Teamwork user."
+            },
+            "serverUrl": {
+                "type": "string",
+                "description": "The address of the BIMcloud server of the Teamwork project."
+            },
+            "projectName": {
+                "type": "string",
+                "description": "The name of the Teamwork project on the server."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "isTeamwork",
+            "isOnline"
+        ]
+    })";
+}
+
+GS::ObjectState GetTeamworkProjectInfoCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_ProjectInfo projectInfo = {};
+    const GSErrCode err = ACAPI_ProjectOperation_Project (&projectInfo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve project information. Check the opened project!");
+    }
+
+    GS::ObjectState response;
+    response.Add ("isTeamwork", projectInfo.teamwork);
+    if (!projectInfo.teamwork) {
+        response.Add ("isOnline", false);
+        return response;
+    }
+
+    response.Add ("isOnline", ACAPI_Teamwork_HasConnection ());
+    response.Add ("userId", projectInfo.userId);
+
+    GS::UniString serverUrl;
+    GS::UniString projectName;
+    GS::UniString userName;
+    const bool hasDetails = projectInfo.location_team != nullptr &&
+        ACAPI_Teamwork_GetTeamworkProjectDetails (*projectInfo.location_team, &serverUrl, &projectName, &userName) == NoError;
+    if (!hasDetails || userName.IsEmpty ()) {
+        // The user is known from the user id even when the server details are not.
+        ACAPI_Teamwork_GetUsernameFromId (projectInfo.userId, &userName);
+    }
+
+    if (!userName.IsEmpty ()) {
+        response.Add ("userName", userName);
+    }
+    if (hasDetails) {
+        response.Add ("serverUrl", serverUrl);
+        response.Add ("projectName", projectName);
+    }
+
+    return response;
 }
 
 ReserveElementsCommand::ReserveElementsCommand () :
@@ -211,6 +299,232 @@ GS::ObjectState ReleaseElementsCommand::Execute (const GS::ObjectState& paramete
         : CreateFailedExecutionResult (err, "Failed to release elements.");
 }
 
+static GS::UniString GetTeamworkUserName (short userId)
+{
+    GS::UniString userName;
+    ACAPI_Teamwork_GetUsernameFromId (userId, &userName);
+    return userName;
+}
+
+// The element reservation is in the element header: userId is the member who owns the element
+// and lockId is the member who has it reserved (0 when nobody has). ACAPI_Teamwork_GetLockableStatus
+// is for lockable object sets only, not for elements.
+
+GetReservationStatusOfElementsCommand::GetReservationStatusOfElementsCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetReservationStatusOfElementsCommand::GetName () const
+{
+    return "GetReservationStatusOfElements";
+}
+
+GS::Optional<GS::UniString> GetReservationStatusOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetReservationStatusOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "reservationStatuses": {
+                "type": "array",
+                "description": "One item per input element, in the same order.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string",
+                                    "description": "Free: nobody has reserved the element. Editable: the current user has reserved it. Locked: another user has reserved it (see reservedBy).",
+                                    "enum": ["Free", "Editable", "Locked"]
+                                },
+                                "reservedBy": {
+                                    "type": "object",
+                                    "description": "The user who has reserved the element. Left out when the element is free.",
+                                    "properties": {
+                                        "userId": {
+                                            "type": "number"
+                                        },
+                                        "userName": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "userId",
+                                        "userName"
+                                    ]
+                                },
+                                "owner": {
+                                    "type": "object",
+                                    "description": "The user who owns the element in Teamwork, usually the one who created it. Left out when the element has no owner.",
+                                    "properties": {
+                                        "userId": {
+                                            "type": "number"
+                                        },
+                                        "userName": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "userId",
+                                        "userName"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "status"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "reservationStatuses"
+        ]
+    })";
+}
+
+GS::ObjectState GetReservationStatusOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    API_ProjectInfo projectInfo = {};
+    const GSErrCode projectErr = ACAPI_ProjectOperation_Project (&projectInfo);
+    if (projectErr != NoError) {
+        return CreateErrorResponse (projectErr, "Failed to retrieve project information. Check the opened project!");
+    }
+    if (!projectInfo.teamwork) {
+        return CreateErrorResponse (APIERR_NOTEAMWORKPROJECT, "The opened project is not a Teamwork project, so its elements have no reservation status.");
+    }
+    const short currentUserId = projectInfo.userId;
+
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& reservationStatuses = response.AddList<GS::ObjectState> ("reservationStatuses");
+
+    std::map<short, GS::UniString> userIdToNameMap;
+    const auto createUserObjectState = [&] (short userId) -> GS::ObjectState {
+        if (userIdToNameMap.find (userId) == userIdToNameMap.end ()) {
+            userIdToNameMap[userId] = GetTeamworkUserName (userId);
+        }
+        return GS::ObjectState ("userId", userId, "userName", userIdToNameMap[userId]);
+    };
+
+    for (const GS::ObjectState& element : elements) {
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromElementsArrayItem (element);
+        const GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            reservationStatuses (CreateErrorResponse (err, "Failed to find the element."));
+            continue;
+        }
+
+        const short lockerId = elemHead.lockId;
+        const short ownerId = elemHead.userId;
+
+        GS::ObjectState reservationStatus ("status",
+            lockerId == 0 ? "Free" : (lockerId == currentUserId ? "Editable" : "Locked"));
+        if (lockerId != 0) {
+            reservationStatus.Add ("reservedBy", createUserObjectState (lockerId));
+        }
+        if (ownerId != 0) {
+            reservationStatus.Add ("owner", createUserObjectState (ownerId));
+        }
+        reservationStatuses (reservationStatus);
+    }
+
+    return response;
+}
+
+GrantElementsCommand::GrantElementsCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GrantElementsCommand::GetName () const
+{
+    return "GrantElements";
+}
+
+GS::Optional<GS::UniString> GrantElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "userId": {
+                "type": "number",
+                "description": "The Teamwork user id of the user to hand the elements over to, as GetTeamworkProjectInfo, GetReservationStatusOfElements and the conflicts of ReserveElements report users."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "userId"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GrantElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState GrantElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+// ACAPI_Teamwork_GrantElements is new in the Archicad 27 API; the AC25 and AC26 DevKits have no
+// ACAPI_TeamworkControl_GrantElements to map it to.
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    Int32 userId = 0;
+    parameters.Get ("userId", userId);
+    if (userId <= 0 || userId > std::numeric_limits<short>::max ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "The userId must be a positive Teamwork user id.");
+    }
+
+    const GS::Array<API_Guid> elemIds = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
+
+    const GSErrCode err = ACAPI_Teamwork_GrantElements (elemIds, static_cast<short> (userId));
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, GS::UniString::Printf ("Failed to grant the elements to user %d.", (int) userId));
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "GrantElements requires Archicad 27 or newer.");
+#endif
+}
+
 // Lockable object sets: the non-element things Teamwork can reserve (attributes, favorites,
 // project info, project preferences, ...), addressed by the names the DevKit documents for
 // ACAPI_Teamwork_FindLockableObjectSet.
@@ -234,9 +548,7 @@ static GS::UniString BuildLockableObjectSetInputParametersSchema ()
 
 static GS::ObjectState CreateTeamworkUserObjectState (short userId)
 {
-    GS::UniString userName;
-    ACAPI_Teamwork_GetUsernameFromId (userId, &userName);
-    return GS::ObjectState ("userId", userId, "userName", userName);
+    return GS::ObjectState ("userId", userId, "userName", GetTeamworkUserName (userId));
 }
 
 static void AddConflictingUsers (GS::ObjectState& response, const GS::PagedArray<short>& conflicts)
@@ -501,4 +813,271 @@ GS::ObjectState ReleaseHotlinkCacheManagementCommand::Execute (const GS::ObjectS
     return err == NoError
         ? CreateSuccessfulExecutionResult ()
         : CreateFailedExecutionResult (err, "Failed to release the Hotlink and XRef management.");
+}
+
+GetTeamworkStatusCommand::GetTeamworkStatusCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetTeamworkStatusCommand::GetName () const
+{
+    return "GetTeamworkStatus";
+}
+
+GS::Optional<GS::UniString> GetTeamworkStatusCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "isShared": {
+                "type": "boolean",
+                "description": "Whether the opened project is a Teamwork (BIMcloud) project."
+            },
+            "isOnline": {
+                "type": "boolean",
+                "description": "Whether there is a live connection to the Teamwork server. Always false for a project that is not shared."
+            },
+            "users": {
+                "type": "array",
+                "description": "The members of the shared project. Only present when the project is shared.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "userId": {
+                            "type": "number"
+                        },
+                        "userName": {
+                            "type": "string",
+                            "description": "The login name of the user."
+                        },
+                        "fullName": {
+                            "type": "string"
+                        },
+                        "isConnected": {
+                            "type": "boolean",
+                            "description": "Whether the user has joined the project."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "userId",
+                        "userName",
+                        "fullName",
+                        "isConnected"
+                    ]
+                }
+            },
+            "hotlinkCacheManagementOwner": {
+                "$ref": "#/User",
+                "description": "The user who has reserved the Hotlink and XRef management. Only present when somebody has reserved it."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "isShared",
+            "isOnline"
+        ]
+    })";
+}
+
+GS::ObjectState GetTeamworkStatusCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_ProjectInfo projectInfo = {};
+    const GSErrCode err = ACAPI_ProjectOperation_Project (&projectInfo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve project information. Check the opened project!");
+    }
+
+    const bool isShared = projectInfo.teamwork;
+    GS::ObjectState response ("isShared", isShared,
+                              "isOnline", isShared && ACAPI_Teamwork_HasConnection ());
+    if (!isShared) {
+        return response;
+    }
+
+    API_SharingInfo sharingInfo = {};
+    if (ACAPI_Teamwork_ProjectSharing (&sharingInfo) == NoError) {
+        const auto& usersOutput = response.AddList<GS::ObjectState> ("users");
+        for (Int32 i = 0; i < sharingInfo.nUsers; ++i) {
+            const API_UserInfo& userInfo = (*sharingInfo.users)[i];
+            usersOutput (GS::ObjectState ("userId", userInfo.userId,
+                                          "userName", GS::UniString (userInfo.loginName),
+                                          "fullName", GS::UniString (userInfo.fullName),
+                                          "isConnected", userInfo.connected));
+        }
+        BMKillHandle (reinterpret_cast<GSHandle*> (&sharingInfo.users));
+    }
+
+    short hotlinkCacheManagementOwner = 0;
+    if (ACAPI_Teamwork_GetHotlinkCacheManagementOwner (&hotlinkCacheManagementOwner) == NoError && hotlinkCacheManagementOwner != 0) {
+        response.Add ("hotlinkCacheManagementOwner", CreateTeamworkUserObjectState (hotlinkCacheManagementOwner));
+    }
+
+    return response;
+}
+
+static GS::UniString BuildBIMcloudLibrariesInputParametersSchema (const char* librariesKey, const char* librariesDescription)
+{
+    return GS::UniString::Printf (R"({
+        "type": "object",
+        "properties": {
+            "%s": {
+                "type": "array",
+                "description": "%s",
+                "items": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "minItems": 1
+            },
+            "serverUrl": {
+                "type": "string",
+                "description": "The URL of the BIMcloud or Teamwork server, e.g. 'https://bimcloud.example.com:22000'.",
+                "minLength": 1
+            },
+            "parentPath": {
+                "type": "string",
+                "description": "The path of the folder on the server that holds the libraries, as shown in BIMcloud Manager."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "%s",
+            "serverUrl",
+            "parentPath"
+        ]
+    })", librariesKey, librariesDescription, librariesKey);
+}
+
+static GS::UniString BuildBIMcloudLibrariesResponseSchema ()
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result per library, in the order of the input."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+#ifdef ServerMainVers_2900
+
+static bool GetBIMcloudLibrariesParameters (const GS::ObjectState& parameters, const char* librariesKey, GS::Array<GS::UniString>& libraries, GS::UniString& serverUrl, GS::UniString& parentPath)
+{
+    return parameters.Get (librariesKey, libraries) && !libraries.IsEmpty () &&
+           parameters.Get ("serverUrl", serverUrl) && !serverUrl.IsEmpty () &&
+           parameters.Get ("parentPath", parentPath);
+}
+
+static GS::ObjectState CreateBIMcloudLibrariesResponse (GSErrCode err, const GS::Array<GSErrCode>& errorCodes, const GS::Array<GS::UniString>& libraries, const GS::UniString& action)
+{
+    // Without a code for every library the call failed as a whole.
+    if (err != NoError && errorCodes.GetSize () != libraries.GetSize ()) {
+        return CreateErrorResponse (err, "Failed to " + action + " the libraries. Check the server URL, the parent path and the connection to the server!");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    for (UIndex i = 0; i < libraries.GetSize (); ++i) {
+        const GSErrCode libraryErr = (i < errorCodes.GetSize () && errorCodes[i] != NoError) ? errorCodes[i] : err;
+        if (libraryErr == NoError) {
+            executionResults (CreateSuccessfulExecutionResult ());
+        } else {
+            executionResults (CreateFailedExecutionResult (libraryErr, "Failed to " + action + " the library '" + libraries[i] + "'."));
+        }
+    }
+    return response;
+}
+
+#endif
+
+UploadLibrariesToBIMcloudCommand::UploadLibrariesToBIMcloudCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String UploadLibrariesToBIMcloudCommand::GetName () const
+{
+    return "UploadLibrariesToBIMcloud";
+}
+
+GS::Optional<GS::UniString> UploadLibrariesToBIMcloudCommand::GetInputParametersSchema () const
+{
+    return BuildBIMcloudLibrariesInputParametersSchema ("libraryPaths", "The paths of the local library folders or container files (.lcf) to upload.");
+}
+
+GS::Optional<GS::UniString> UploadLibrariesToBIMcloudCommand::GetRawResponseSchema () const
+{
+    return BuildBIMcloudLibrariesResponseSchema ();
+}
+
+GS::ObjectState UploadLibrariesToBIMcloudCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::UniString> libraryPaths;
+    GS::UniString serverUrl;
+    GS::UniString parentPath;
+    if (!GetBIMcloudLibrariesParameters (parameters, "libraryPaths", libraryPaths, serverUrl, parentPath)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'libraryPaths', 'serverUrl' or 'parentPath' parameter.");
+    }
+
+    const GS::Array<IO::Location> libraryLocations = libraryPaths.Transform<IO::Location> ([] (const GS::UniString& path) {
+        return IO::Location (path);
+    });
+
+    GS::Array<GSErrCode> errorCodes;
+    const GSErrCode err = ACAPI_Teamwork_UploadLibraries (libraryLocations, serverUrl, parentPath, errorCodes);
+
+    return CreateBIMcloudLibrariesResponse (err, errorCodes, libraryPaths, "upload");
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "UploadLibrariesToBIMcloud requires Archicad 29 or newer.");
+#endif
+}
+
+RemoveLibrariesFromBIMcloudCommand::RemoveLibrariesFromBIMcloudCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RemoveLibrariesFromBIMcloudCommand::GetName () const
+{
+    return "RemoveLibrariesFromBIMcloud";
+}
+
+GS::Optional<GS::UniString> RemoveLibrariesFromBIMcloudCommand::GetInputParametersSchema () const
+{
+    return BuildBIMcloudLibrariesInputParametersSchema ("libraryNames", "The names of the libraries on the server to remove.");
+}
+
+GS::Optional<GS::UniString> RemoveLibrariesFromBIMcloudCommand::GetRawResponseSchema () const
+{
+    return BuildBIMcloudLibrariesResponseSchema ();
+}
+
+GS::ObjectState RemoveLibrariesFromBIMcloudCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::UniString> libraryNames;
+    GS::UniString serverUrl;
+    GS::UniString parentPath;
+    if (!GetBIMcloudLibrariesParameters (parameters, "libraryNames", libraryNames, serverUrl, parentPath)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'libraryNames', 'serverUrl' or 'parentPath' parameter.");
+    }
+
+    GS::Array<GSErrCode> errorCodes;
+    const GSErrCode err = ACAPI_Teamwork_RemoveLibraries (libraryNames, serverUrl, parentPath, errorCodes);
+
+    return CreateBIMcloudLibrariesResponse (err, errorCodes, libraryNames, "remove");
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "RemoveLibrariesFromBIMcloud requires Archicad 29 or newer.");
+#endif
 }
