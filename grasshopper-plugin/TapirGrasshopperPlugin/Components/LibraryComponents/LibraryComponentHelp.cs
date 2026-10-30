@@ -32,7 +32,7 @@ namespace TapirGrasshopperPlugin.Components.LibraryComponents
             GH_Component component,
             IGH_DataAccess da,
             int index,
-            out int sectionId)
+            out long sectionId)
         {
             sectionId = 0;
             if (!da.TryGet(
@@ -47,15 +47,18 @@ namespace TapirGrasshopperPlugin.Components.LibraryComponents
                 ? goo.ScriptVariable()
                 : wrapper.Value;
 
+            // sectionId is an unsigned 32-bit value in the schema, so it is kept in a long
+            // and sent unchanged; a code starting with a character >= 0x80 stays positive.
             switch (value)
             {
-                case int integer:
+                case int integer when integer >= 0:
                     sectionId = integer;
                     return true;
-                case double number when Math.Abs(number - Math.Round(number)) < 1e-9:
-                    sectionId = (int)Math.Round(number);
+                case double number when Math.Abs(number - Math.Round(number)) < 1e-9 &&
+                                        number >= 0 && number <= uint.MaxValue:
+                    sectionId = (long)Math.Round(number);
                     return true;
-                case string text when int.TryParse(text, out var parsed):
+                case string text when uint.TryParse(text, out var parsed):
                     sectionId = parsed;
                     return true;
                 case string code when code.Length == 4 && code.All(c => c <= 0xFF):
@@ -64,12 +67,12 @@ namespace TapirGrasshopperPlugin.Components.LibraryComponents
                     {
                         id = (id << 8) | character;
                     }
-                    sectionId = unchecked((int)id);
+                    sectionId = id;
                     return true;
             }
 
             component.AddError(
-                $"The {component.Params.Input[index].Name} input must be an integer or a four-character code.");
+                $"The {component.Params.Input[index].Name} input must be an integer from 0 to 4294967295 or a four-character code.");
             return false;
         }
     }
