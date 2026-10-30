@@ -9858,13 +9858,55 @@ GS::Optional<GS::UniString> GetOpeningSymbolParametersCommand::GetRawResponseSch
 }
 
 #ifdef ServerMainVers_2900
-static void AddSymbolParameters (GS::ObjectState& os, const char* key, const std::optional<GDL::Parameters>& symbolParameters)
+// The DevKit has no library or framework of the GDL module, so only the virtual functions of
+// GDL::Parameters link (called through the vtable), not its constructors, destructor or
+// assignment. The opening gives a symbol's parameters in a std::optional, whose destructor
+// calls ~Parameters directly. This holds that optional without ever running its destructor
+// and destroys the parameters through their virtual destructor instead. The parameters are
+// the opening's copy, so they are changed in place; they are never copied.
+class SymbolParameters
 {
-    if (!symbolParameters.has_value ()) {
+public:
+    template <typename Getter>
+    explicit SymbolParameters (const Getter& getter) :
+        parameters (getter ())
+    {
+    }
+
+    ~SymbolParameters ()
+    {
+        if (parameters.has_value ()) {
+            GDL::ParameterGetter& value = *parameters;
+            value.~ParameterGetter ();
+        }
+    }
+
+    SymbolParameters (const SymbolParameters&) = delete;
+    SymbolParameters& operator= (const SymbolParameters&) = delete;
+
+    bool HasValue () const
+    {
+        return parameters.has_value ();
+    }
+
+    GDL::Parameters& Get ()
+    {
+        return *parameters;
+    }
+
+private:
+    union {
+        std::optional<GDL::Parameters> parameters;
+    };
+};
+
+static void AddSymbolParameters (GS::ObjectState& os, const char* key, SymbolParameters& symbolParameters)
+{
+    if (!symbolParameters.HasValue ()) {
         return;
     }
     const auto& parameterAdder = os.AddList<GS::ObjectState> (key);
-    for (const GS::ObjectState& parameter : GDLParametersToObjectStates (*symbolParameters)) {
+    for (const GS::ObjectState& parameter : GDLParametersToObjectStates (symbolParameters.Get ())) {
         parameterAdder (parameter);
     }
 }
@@ -9890,8 +9932,10 @@ GS::ObjectState GetOpeningSymbolParametersCommand::Execute (const GS::ObjectStat
         const auto& floorPlanParameters = opening->GetFloorPlanParameters ();
         GS::ObjectState details;
         details.Add ("elementId", CreateGuidObjectState (openingGuid));
-        AddSymbolParameters (details, "cutSymbolParameters", floorPlanParameters.GetCutSymbolParameters ());
-        AddSymbolParameters (details, "unCutSymbolParameters", floorPlanParameters.GetUnCutSymbolParameters ());
+        SymbolParameters cutSymbolParameters ([&] () { return floorPlanParameters.GetCutSymbolParameters (); });
+        SymbolParameters unCutSymbolParameters ([&] () { return floorPlanParameters.GetUnCutSymbolParameters (); });
+        AddSymbolParameters (details, "cutSymbolParameters", cutSymbolParameters);
+        AddSymbolParameters (details, "unCutSymbolParameters", unCutSymbolParameters);
         openings (details);
     }
     return response;
@@ -9950,24 +9994,25 @@ GS::Optional<GS::UniString> SetOpeningSymbolParametersCommand::GetRawResponseSch
 }
 
 #ifdef ServerMainVers_2900
-// Reads the parameters of the symbol and changes the ones given. Returns an error message when
-// the opening has no such symbol or a parameter cannot be set; then nothing is written.
-static GS::Optional<GS::UniString> GetChangedSymbolParameters (const GS::ObjectState& data, const char* key, const char* symbolName, const std::optional<GDL::Parameters>& currentParameters, std::optional<GDL::Parameters>& changedParameters, GSErrCode& error)
+// Changes the given parameters of the symbol in the opening's copy of them and sets `changed`.
+// Returns an error message when the opening has no such symbol or a parameter cannot be set;
+// then nothing is written.
+static GS::Optional<GS::UniString> ChangeSymbolParameters (const GS::ObjectState& data, const char* key, const char* symbolName, SymbolParameters& symbolParameters, bool& changed, GSErrCode& error)
 {
     GS::Array<GS::ObjectState> changes;
     if (!data.Get (key, changes)) {
         return GS::NoValue;
     }
-    if (!currentParameters.has_value ()) {
+    if (!symbolParameters.HasValue ()) {
         error = APIERR_BADPARS;
         return GS::UniString::Printf ("The opening has no %s symbol.", symbolName);
     }
-    changedParameters = *currentParameters;
     GS::UniString errMessage;
-    error = SetGDLParametersFromObjectStates (*changedParameters, changes, errMessage);
+    error = SetGDLParametersFromObjectStates (symbolParameters.Get (), changes, errMessage);
     if (error != NoError) {
         return GS::UniString::Printf ("The parameters of the %s symbol were not changed: ", symbolName) + errMessage;
     }
+    changed = true;
     return GS::NoValue;
 }
 
@@ -9985,19 +10030,22 @@ static GS::ObjectState SetOpeningSymbolParameters (const GS::ObjectState& data)
         return CreateFailedExecutionResult (opening.UnwrapErr ().kind, "Failed to load opening: the element is missing or is not an Opening.");
     }
 
-    // Both symbols are changed on copies of their parameters and checked before the opening is touched.
+    // Both symbols are changed in copies of their parameters (the ones the opening gives) and
+    // checked before the opening is touched.
     const auto& floorPlanParameters = opening->GetFloorPlanParameters ();
-    std::optional<GDL::Parameters> cutSymbolParameters;
-    std::optional<GDL::Parameters> unCutSymbolParameters;
+    SymbolParameters cutSymbolParameters ([&] () { return floorPlanParameters.GetCutSymbolParameters (); });
+    SymbolParameters unCutSymbolParameters ([&] () { return floorPlanParameters.GetUnCutSymbolParameters (); });
+    bool cutSymbolChanged = false;
+    bool unCutSymbolChanged = false;
     GSErrCode inputError = NoError;
-    GS::Optional<GS::UniString> inputErrorMessage = GetChangedSymbolParameters (data, "cutSymbolParameters", "cut", floorPlanParameters.GetCutSymbolParameters (), cutSymbolParameters, inputError);
+    GS::Optional<GS::UniString> inputErrorMessage = ChangeSymbolParameters (data, "cutSymbolParameters", "cut", cutSymbolParameters, cutSymbolChanged, inputError);
     if (!inputErrorMessage.HasValue ()) {
-        inputErrorMessage = GetChangedSymbolParameters (data, "unCutSymbolParameters", "uncut", floorPlanParameters.GetUnCutSymbolParameters (), unCutSymbolParameters, inputError);
+        inputErrorMessage = ChangeSymbolParameters (data, "unCutSymbolParameters", "uncut", unCutSymbolParameters, unCutSymbolChanged, inputError);
     }
     if (inputErrorMessage.HasValue ()) {
         return CreateFailedExecutionResult (inputError, inputErrorMessage.Get ());
     }
-    if (!cutSymbolParameters.has_value () && !unCutSymbolParameters.has_value ()) {
+    if (!cutSymbolChanged && !unCutSymbolChanged) {
         return CreateSuccessfulExecutionResult ();
     }
 
@@ -10005,19 +10053,19 @@ static GS::ObjectState SetOpeningSymbolParameters (const GS::ObjectState& data)
     GS::Optional<GS::UniString> failedMessage;
     ACAPI::Result<void> modifyResult = opening->Modify ([&] (Opening::Modifier& modifier) {
         auto modifiableFloorPlanParameters = modifier.GetFloorPlanParameters ();
-        if (cutSymbolParameters.has_value ()) {
-            ACAPI::Result<void> result = modifiableFloorPlanParameters.SetCutSymbolParameters (*cutSymbolParameters);
+        if (cutSymbolChanged) {
+            ACAPI::Result<void> result = modifiableFloorPlanParameters.SetCutSymbolParameters (cutSymbolParameters.Get ());
             if (result.IsErr ()) {
                 failedError = result.UnwrapErr ().kind;
                 failedMessage = "Failed to set the parameters of the cut symbol: " + GS::UniString (result.UnwrapErr ().text.c_str ());
                 return;
             }
         }
-        if (unCutSymbolParameters.has_value ()) {
-            ACAPI::Result<void> result = modifiableFloorPlanParameters.SetUnCutSymbolParameters (*unCutSymbolParameters);
+        if (unCutSymbolChanged) {
+            ACAPI::Result<void> result = modifiableFloorPlanParameters.SetUnCutSymbolParameters (unCutSymbolParameters.Get ());
             if (result.IsErr ()) {
                 failedError = result.UnwrapErr ().kind;
-                failedMessage = GS::UniString (cutSymbolParameters.has_value () ? "Failed to set the parameters of the uncut symbol (the cut symbol's were set): " : "Failed to set the parameters of the uncut symbol: ") + GS::UniString (result.UnwrapErr ().text.c_str ());
+                failedMessage = GS::UniString (cutSymbolChanged ? "Failed to set the parameters of the uncut symbol (the cut symbol's were set): " : "Failed to set the parameters of the uncut symbol: ") + GS::UniString (result.UnwrapErr ().text.c_str ());
             }
         }
     }, "Set Opening Symbol Parameters");

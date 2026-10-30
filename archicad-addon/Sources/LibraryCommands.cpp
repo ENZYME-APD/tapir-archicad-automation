@@ -2445,8 +2445,12 @@ GS::ObjectState SetLibraryPartParametersCommand::Execute (const GS::ObjectState&
                 continue;
             }
 
-            // The changes are made in a copy, which is only written when all of them succeed.
-            GDL::Parameters gdlParameters = currentParameters.Unwrap ();
+            // The changes are made in the parameters read above, a copy that is only written when
+            // all of them succeed. They are used by reference only: the DevKit has no library or
+            // framework of the GDL module, so the constructors, destructor and assignment of
+            // GDL::Parameters do not link, only its virtual functions (the Result destroys them
+            // through the virtual destructor).
+            GDL::Parameters& gdlParameters = *currentParameters;
             GS::UniString errMessage;
             const GSErrCode setErr = SetGDLParametersFromObjectStates (gdlParameters, parameterChanges, errMessage);
             if (setErr != NoError) {
