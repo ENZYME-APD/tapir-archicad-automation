@@ -108,6 +108,7 @@ void AddPolygonFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, co
 void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName, bool includeZCoords = false);
 bool GetHoleGeometry (const GS::ObjectState& holeOs, GS::Array<GS::ObjectState>& outCoords, GS::Array<GS::ObjectState>& outArcs);
 GS::Optional<GS::UniString> ValidateHoles (const GS::Array<GS::ObjectState>& holes);
+bool BuildHatchPolygonMemo (const GS::Array<GS::ObjectState>& coordinates, const GS::Array<GS::ObjectState>& arcs, const GS::Array<GS::ObjectState>& holes, API_Polygon& poly, API_ElementMemo& memo);
 void AddBeamHolesFromMemo (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& holesFieldName);
 void AddColumnSectionFromMemo (const API_Guid& elemGuid, GS::ObjectState& os);
 void AddBeamSectionFromMemo (const API_Guid& elemGuid, GS::ObjectState& os);
@@ -135,7 +136,7 @@ GS::ObjectState CreateCoverFillObjectState (bool use, bool useFromSurface, bool 
 GS::UniString HatchOrientationTypeToString (API_HatchOrientationTypeID type);
 API_HatchOrientationTypeID HatchOrientationTypeFromString (const GS::UniString& str, API_HatchOrientationTypeID defaultValue = API_HatchGlobal);
 GS::ObjectState CreateHatchOrientationObjectState (const API_HatchOrientation& orientation);
-API_HatchOrientation GetHatchOrientationFromObjectState (const GS::ObjectState& os);
+API_HatchOrientation GetHatchOrientationFromObjectState (const GS::ObjectState& os, const API_HatchOrientation& currentOrientation);
 GS::UniString DrawingNameTypeToString (API_NameTypeValues nameType);
 API_NameTypeValues DrawingNameTypeFromString (const GS::UniString& str, API_NameTypeValues defaultValue = APIName_ViewOrSrcFileName);
 
@@ -164,6 +165,8 @@ struct Story {
 using Stories = std::map<short, Story>;
 
 Stories GetStories ();
+// Returns the index of the highest story whose level is at or below zPos and the offset of zPos
+// from that level. A zPos below every story resolves to the lowest story with a negative offset.
 GS::Pair<short, double> GetFloorIndexAndOffset (const double zPos, const Stories& stories);
 double GetZPos (const short floorIndex, const double offset, const Stories& stories);
 // Same result as GetFloorIndexAndOffset (zPos, stories), except an explicit floorIndex value under
@@ -175,6 +178,8 @@ double GetZPos (const short floorIndex, const double offset, const Stories& stor
 GS::Pair<short, double> ResolveFloorIndexAndOffset (const GS::ObjectState& parameters, const char* floorIndexFieldName, const double zPos, const Stories& stories);
 GS::UniString GetElementTypeNonLocalizedName (API_ElemTypeID typeID);
 API_ElemTypeID GetElementTypeFromNonLocalizedName (const GS::UniString& typeStr);
+// The model element a section/elevation element was cut from, or elemGuid itself for any other element.
+API_Guid GetParentElemOfSectElem (const API_Guid& elemGuid);
 short ParseAnchorPointString (const GS::UniString& anchorPoint);
 
 API_Guid GetAttributeGuidFromIndex (API_AttrTypeID typeID, API_AttributeIndex index);
@@ -208,6 +213,10 @@ GSErrCode ExecuteActionForEachDatabase (
     const std::function<GSErrCode ()>& action,
     const std::function<void ()>& actionSuccess,
     const std::function<void (GSErrCode, const GS::UniString&)>& actionFailure);
+
+// The Project Map item of an independent worksheet or detail database, found by its database;
+// NoValue for any other database type or when the Project Map has no such item.
+GS::Optional<API_Guid> FindProjectMapItemOfWorksheetOrDetail (const API_DatabaseInfo& database);
 
 template<std::size_t N>
 bool SetCharProperty (const GS::ObjectState* os, const char* propertyKey, char (&targetProperty)[N])
@@ -267,5 +276,15 @@ GS::Optional<GS::UniString> BuildSlabMemoFromGeometry (
 // ExtendedElementCommands.cpp, next to the Window/Door specific variant.
 GSErrCode ApplyFavoriteToElementDefaults (const GS::UniString& favoriteName, API_ElemTypeID expectedTypeId);
 
+// Makes the floor plan the current database (not the front window) and reports in `switched`
+// whether it had to; the caller puts `previousDatabase` back when it did. Defined in
+// ExtendedElementCommands.cpp.
+GSErrCode SwitchCurrentDatabaseToFloorPlan (API_DatabaseInfo& previousDatabase, bool& switched);
+
 bool LoadElementHeaderByGuid (const API_Guid& elementGuid, API_Elem_Head& elementHeader);
 bool DoesElementExist (const API_Guid& elementGuid, API_ElemTypeID expectedTypeId);
+
+// Writes the Element ID of an existing element: the elemInfoString memo part, which
+// GetDetailsOfElements reads back as "id" (APIMemoMask_ElemInfoString). Must be called
+// inside an undoable command. Defined in CommandBase.cpp.
+GSErrCode ChangeElementId (const API_Guid& elementGuid, const GS::UniString& id);

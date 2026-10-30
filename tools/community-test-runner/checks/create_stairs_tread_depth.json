@@ -3,7 +3,7 @@
   "minTapir": "1.6.0",
   "steps": [
     {
-      "id": "going 0.25, 15 risers",
+      "id": "going 0.25, 14 risers",
       "command": "CreateStairs",
       "timeout": 120,
       "params": {
@@ -22,7 +22,7 @@
             "zCoordinate": 0.0,
             "totalHeight": 2.75,
             "flightWidth": 1.0,
-            "stepNum": 15,
+            "stepNum": 14,
             "treadDepth": 0.25
           }
         ]
@@ -32,7 +32,7 @@
       }
     },
     {
-      "id": "going 0.25, 15 risers: bounding box",
+      "id": "going 0.25, 14 risers: bounding box",
       "command": "Get3DBoundingBoxes",
       "creates": false,
       "params": {
@@ -50,7 +50,7 @@
       }
     },
     {
-      "id": "going 0.25, 16 risers",
+      "id": "going 0.25, 15 risers",
       "command": "CreateStairs",
       "timeout": 120,
       "params": {
@@ -69,7 +69,7 @@
             "zCoordinate": 0.0,
             "totalHeight": 2.75,
             "flightWidth": 1.0,
-            "stepNum": 16,
+            "stepNum": 15,
             "treadDepth": 0.25
           }
         ]
@@ -79,7 +79,7 @@
       }
     },
     {
-      "id": "going 0.25, 16 risers: bounding box",
+      "id": "going 0.25, 15 risers: bounding box",
       "command": "Get3DBoundingBoxes",
       "creates": false,
       "params": {

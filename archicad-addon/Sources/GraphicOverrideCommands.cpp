@@ -117,6 +117,20 @@ GS::ObjectState CreateStyleObjectState (const API_OverrideRuleStyle& style)
     return os;
 }
 
+// A rule does not name its group; the group is given when it is known.
+GS::ObjectState CreateRuleObjectState (const API_OverrideRule& rule, const GS::Optional<GS::UniString>& ruleGroupName)
+{
+    GS::ObjectState ruleOs (
+        "graphicOverrideRuleId", CreateGuidObjectState (rule.guid),
+        "name", rule.name,
+        "criterionXML", rule.criterionXML,
+        "style", CreateStyleObjectState (rule.style));
+    if (ruleGroupName.HasValue ()) {
+        ruleOs.Add ("ruleGroupName", ruleGroupName.Get ());
+    }
+    return ruleOs;
+}
+
 GSErrCode GetStyleFromObjectState (const GS::ObjectState& os, API_OverrideRuleStyle& style, GS::UniString& errorMessage)
 {
     style = {};
@@ -204,24 +218,62 @@ GSErrCode GetStyleFromObjectState (const GS::ObjectState& os, API_OverrideRuleSt
     return NoError;
 }
 
-GSErrCode FindOrCreateRuleGroup (const GS::UniString& name, API_Guid& ruleGroupGuid)
+// Finds a rule group by name; ruleIds, when given, receives its rules in their order.
+bool FindRuleGroupByName (const GS::UniString& name, API_Guid& ruleGroupGuid, GS::Array<API_Guid>* ruleIds = nullptr)
 {
     GS::Array<API_Guid> ruleGroupIds;
-    GSErrCode err = ACAPI_GraphicalOverride_GetOverrideRuleGroupList (ruleGroupIds);
-    if (err != NoError) {
-        return err;
+    if (ACAPI_GraphicalOverride_GetOverrideRuleGroupList (ruleGroupIds) != NoError) {
+        return false;
     }
     for (const API_Guid& ruleGroupId : ruleGroupIds) {
         API_OverrideRuleGroup ruleGroup = {};
         ruleGroup.guid = ruleGroupId;
-        if (ACAPI_GraphicalOverride_GetOverrideRuleGroup (ruleGroup) == NoError && ruleGroup.name == name) {
+        GS::Array<API_Guid> groupRuleIds;
+        if (ACAPI_GraphicalOverride_GetOverrideRuleGroup (ruleGroup, &groupRuleIds) == NoError && ruleGroup.name == name) {
             ruleGroupGuid = ruleGroup.guid;
-            return NoError;
+            if (ruleIds != nullptr) {
+                *ruleIds = groupRuleIds;
+            }
+            return true;
         }
+    }
+    return false;
+}
+
+// The rule functions may crash Archicad when given the guid of something that exists but is not a rule,
+// e.g. an element, so a guid is checked against the rule list and the rules of the rule groups first.
+bool IsGraphicOverrideRule (const API_Guid& guid)
+{
+    if (guid == APINULLGuid) {
+        return false;
+    }
+    GS::Array<API_Guid> ruleIds;
+    if (ACAPI_GraphicalOverride_GetOverrideRuleList (ruleIds) == NoError && ruleIds.Contains (guid)) {
+        return true;
+    }
+    GS::Array<API_Guid> ruleGroupIds;
+    if (ACAPI_GraphicalOverride_GetOverrideRuleGroupList (ruleGroupIds) != NoError) {
+        return false;
+    }
+    for (const API_Guid& ruleGroupId : ruleGroupIds) {
+        API_OverrideRuleGroup ruleGroup = {};
+        ruleGroup.guid = ruleGroupId;
+        GS::Array<API_Guid> groupRuleIds;
+        if (ACAPI_GraphicalOverride_GetOverrideRuleGroup (ruleGroup, &groupRuleIds) == NoError && groupRuleIds.Contains (guid)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+GSErrCode FindOrCreateRuleGroup (const GS::UniString& name, API_Guid& ruleGroupGuid)
+{
+    if (FindRuleGroupByName (name, ruleGroupGuid)) {
+        return NoError;
     }
     API_OverrideRuleGroup ruleGroup = {};
     ruleGroup.name = name;
-    err = ACAPI_GraphicalOverride_CreateOverrideRuleGroup (ruleGroup);
+    const GSErrCode err = ACAPI_GraphicalOverride_CreateOverrideRuleGroup (ruleGroup);
     ruleGroupGuid = ruleGroup.guid;
     return err;
 }
@@ -279,33 +331,7 @@ GS::Optional<GS::UniString> GetGraphicOverrideRulesCommand::GetRawResponseSchema
                 "type": "array",
                 "description": "The graphic override rules of the project.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "graphicOverrideRuleId": {
-                            "$ref": "#/GraphicOverrideRuleId"
-                        },
-                        "name": {
-                            "type": "string"
-                        },
-                        "ruleGroupName": {
-                            "type": "string",
-                            "description": "The name of the rule group the rule belongs to."
-                        },
-                        "criterionXML": {
-                            "type": "string",
-                            "description": "The criterion of the rule, in the XML format Archicad saves override rules in. Change its values and pass it to CreateGraphicOverrideRules or ModifyGraphicOverrideRules to make similar rules."
-                        },
-                        "style": {
-                            "$ref": "#/GraphicOverrideStyle"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "graphicOverrideRuleId",
-                        "name",
-                        "criterionXML",
-                        "style"
-                    ]
+                    "$ref": "#/GraphicOverrideRule"
                 }
             }
         },
@@ -348,19 +374,148 @@ GS::ObjectState GetGraphicOverrideRulesCommand::Execute (const GS::ObjectState& 
         if (ACAPI_GraphicalOverride_GetOverrideRuleById (rule) != NoError) {
             continue;
         }
-        GS::ObjectState ruleOs (
-            "graphicOverrideRuleId", CreateGuidObjectState (rule.guid),
-            "name", rule.name,
-            "criterionXML", rule.criterionXML,
-            "style", CreateStyleObjectState (rule.style));
+        GS::Optional<GS::UniString> ruleGroupName;
         if (ruleGroupNames.ContainsKey (ruleId)) {
-            ruleOs.Add ("ruleGroupName", ruleGroupNames[ruleId]);
+            ruleGroupName = ruleGroupNames[ruleId];
         }
-        graphicOverrideRulesList (ruleOs);
+        graphicOverrideRulesList (CreateRuleObjectState (rule, ruleGroupName));
     }
 
     return response;
 #else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
+GetGraphicOverrideRulesByNameCommand::GetGraphicOverrideRulesByNameCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetGraphicOverrideRulesByNameCommand::GetName () const
+{
+    return "GetGraphicOverrideRulesByName";
+}
+
+GS::Optional<GS::UniString> GetGraphicOverrideRulesByNameCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "graphicOverrideRules": {
+                "type": "array",
+                "description": "The graphic override rules to get, by name.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the rule. Rule names are unique within the project."
+                        },
+                        "ruleGroupName": {
+                            "type": "string",
+                            "description": "The name of the rule group to search the rule in. Left out: every rule group is searched."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "graphicOverrideRules"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetGraphicOverrideRulesByNameCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "graphicOverrideRules": {
+                "type": "array",
+                "description": "The rules, or errors, in the order of the input.",
+                "items": {
+                    "$ref": "#/GraphicOverrideRuleOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "graphicOverrideRules"
+        ]
+    })";
+}
+
+GS::ObjectState GetGraphicOverrideRulesByNameCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> graphicOverrideRules;
+    if (!parameters.Get ("graphicOverrideRules", graphicOverrideRules)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'graphicOverrideRules' parameter.");
+    }
+
+    // ACAPI_GraphicalOverride_GetOverrideRuleByName searches one rule group, so the groups are
+    // listed once: a rule is looked up in the group named in its item, or in every group in turn.
+    GS::Array<API_Guid> ruleGroupIds;
+    const GSErrCode err = ACAPI_GraphicalOverride_GetOverrideRuleGroupList (ruleGroupIds);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the graphic override rule groups.");
+    }
+    GS::Array<API_OverrideRuleGroup> ruleGroups;
+    for (const API_Guid& ruleGroupId : ruleGroupIds) {
+        API_OverrideRuleGroup ruleGroup = {};
+        ruleGroup.guid = ruleGroupId;
+        if (ACAPI_GraphicalOverride_GetOverrideRuleGroup (ruleGroup) == NoError) {
+            ruleGroups.Push (ruleGroup);
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& graphicOverrideRulesList = response.AddList<GS::ObjectState> ("graphicOverrideRules");
+    for (const GS::ObjectState& item : graphicOverrideRules) {
+        GS::UniString name;
+        if (!item.Get ("name", name)) {
+            graphicOverrideRulesList (CreateErrorResponse (APIERR_BADPARS, "Missing 'name' parameter."));
+            continue;
+        }
+        GS::UniString ruleGroupName;
+        const bool hasRuleGroupName = item.Get ("ruleGroupName", ruleGroupName);
+
+        bool ruleGroupFound = false;
+        bool ruleFound = false;
+        for (const API_OverrideRuleGroup& ruleGroup : ruleGroups) {
+            if (hasRuleGroupName && ruleGroup.name != ruleGroupName) {
+                continue;
+            }
+            ruleGroupFound = true;
+            API_OverrideRule rule = {};
+            rule.name = name;
+            if (ACAPI_GraphicalOverride_GetOverrideRuleByName (rule, ruleGroup.guid) == NoError && rule.guid != APINULLGuid) {
+                graphicOverrideRulesList (CreateRuleObjectState (rule, ruleGroup.name));
+                ruleFound = true;
+                break;
+            }
+        }
+        if (ruleFound) {
+            continue;
+        }
+        if (hasRuleGroupName && !ruleGroupFound) {
+            graphicOverrideRulesList (CreateErrorResponse (APIERR_BADNAME, "No rule group is named '" + ruleGroupName + "'."));
+        } else if (hasRuleGroupName) {
+            graphicOverrideRulesList (CreateErrorResponse (APIERR_BADNAME, "No graphic override rule is named '" + name + "' in the rule group '" + ruleGroupName + "'."));
+        } else {
+            graphicOverrideRulesList (CreateErrorResponse (APIERR_BADNAME, "No graphic override rule is named '" + name + "'."));
+        }
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
 #endif
 }
@@ -588,6 +743,10 @@ GS::ObjectState ModifyGraphicOverrideRulesCommand::Execute (const GS::ObjectStat
             }
             API_OverrideRule rule = {};
             rule.guid = GetGuidFromObjectState (*graphicOverrideRuleId);
+            if (!IsGraphicOverrideRule (rule.guid)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "The graphic override rule does not exist."));
+                continue;
+            }
             GSErrCode err = ACAPI_GraphicalOverride_GetOverrideRuleById (rule);
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "The graphic override rule does not exist."));
@@ -685,6 +844,10 @@ GS::ObjectState DeleteGraphicOverrideRulesCommand::Execute (const GS::ObjectStat
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
     ACAPI_CallUndoableCommand ("Delete Graphic Override Rules", [&] () -> GSErrCode {
         for (const API_Guid& ruleGuid : GetRuleGuidsFromArray (graphicOverrideRuleIds)) {
+            if (!IsGraphicOverrideRule (ruleGuid)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "The graphic override rule does not exist."));
+                continue;
+            }
             const GSErrCode err = ACAPI_GraphicalOverride_DeleteOverrideRule (ruleGuid);
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to delete the graphic override rule."));
@@ -890,6 +1053,196 @@ GS::ObjectState CreateGraphicOverrideCombinationsCommand::Execute (const GS::Obj
 #endif
 }
 
+ModifyGraphicOverrideCombinationsCommand::ModifyGraphicOverrideCombinationsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyGraphicOverrideCombinationsCommand::GetName () const
+{
+    return "ModifyGraphicOverrideCombinations";
+}
+
+GS::Optional<GS::UniString> ModifyGraphicOverrideCombinationsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "graphicOverrideCombinations": {
+                "type": "array",
+                "description": "The graphic override combinations to modify.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "graphicOverrideCombinationId": {
+                            "$ref": "#/GraphicOverrideCombinationId"
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The new name of the combination, unique within the project. The current name is kept when omitted."
+                        },
+                        "graphicOverrideRuleIds": {
+                            "type": "array",
+                            "description": "The new rules of the combination, in priority order. They replace the current rules. The current rules are kept when omitted.",
+                            "items": {
+                                "$ref": "#/GraphicOverrideRuleIdArrayItem"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "graphicOverrideCombinationId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "graphicOverrideCombinations"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyGraphicOverrideCombinationsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ModifyGraphicOverrideCombinationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> graphicOverrideCombinations;
+    if (!parameters.Get ("graphicOverrideCombinations", graphicOverrideCombinations)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'graphicOverrideCombinations' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    ACAPI_CallUndoableCommand ("Modify Graphic Override Combinations", [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : graphicOverrideCombinations) {
+            // Read the combination first: ChangeOverrideCombination always applies the given name, so an
+            // omitted name must be filled with the current one instead of being sent empty (APIERR_BADNAME).
+            API_OverrideCombination combination = {};
+            combination.guid = GetGuidFromArrayItem ("graphicOverrideCombinationId", item);
+            if (ACAPI_GraphicalOverride_GetOverrideCombination (combination) != NoError) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "The graphic override combination does not exist."));
+                continue;
+            }
+            item.Get ("name", combination.name);
+
+            // A null rule list keeps the current rules of the combination.
+            GS::Array<GS::ObjectState> ruleIds;
+            GS::Array<API_Guid> ruleGuids;
+            const bool hasRuleIds = item.Get ("graphicOverrideRuleIds", ruleIds);
+            if (hasRuleIds) {
+                ruleGuids = GetRuleGuidsFromArray (ruleIds);
+            }
+
+            const GSErrCode err = ACAPI_GraphicalOverride_ChangeOverrideCombination (combination, hasRuleIds ? &ruleGuids : nullptr);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to modify the combination '" + combination.name + "'. Its name must be unique and not empty, its rules must exist, and built-in combinations cannot be modified."));
+                continue;
+            }
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
+CreateGraphicOverrideRuleGroupsCommand::CreateGraphicOverrideRuleGroupsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateGraphicOverrideRuleGroupsCommand::GetName () const
+{
+    return "CreateGraphicOverrideRuleGroups";
+}
+
+GS::Optional<GS::UniString> CreateGraphicOverrideRuleGroupsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "ruleGroupNames": {
+                "type": "array",
+                "description": "The names of the rule groups to create, unique within the project. The groups are created empty.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "ruleGroupNames"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateGraphicOverrideRuleGroupsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState CreateGraphicOverrideRuleGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::UniString> ruleGroupNames;
+    if (!parameters.Get ("ruleGroupNames", ruleGroupNames)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'ruleGroupNames' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    ACAPI_CallUndoableCommand ("Create Graphic Override Rule Groups", [&] () -> GSErrCode {
+        for (const GS::UniString& ruleGroupName : ruleGroupNames) {
+            API_OverrideRuleGroup ruleGroup = {};
+            ruleGroup.name = ruleGroupName;
+            const GSErrCode err = ACAPI_GraphicalOverride_CreateOverrideRuleGroup (ruleGroup);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to create the rule group '" + ruleGroupName + "'. Its name must be unique and not empty."));
+                continue;
+            }
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
 GetGraphicOverrideRuleGroupsCommand::GetGraphicOverrideRuleGroupsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -969,6 +1322,277 @@ GS::ObjectState GetGraphicOverrideRuleGroupsCommand::Execute (const GS::ObjectSt
 #endif
 }
 
+SetGraphicOverrideRuleOrderCommand::SetGraphicOverrideRuleOrderCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetGraphicOverrideRuleOrderCommand::GetName () const
+{
+    return "SetGraphicOverrideRuleOrder";
+}
+
+GS::Optional<GS::UniString> SetGraphicOverrideRuleOrderCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "graphicOverrideRuleGroups": {
+                "type": "array",
+                "description": "The rule groups to reorder, in the shape GetGraphicOverrideRuleGroups returns them.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the rule group."
+                        },
+                        "graphicOverrideRuleIds": {
+                            "type": "array",
+                            "description": "The rules of the group in their new order. Each must be a rule of this group, listed once. The listed rules come first, in this order; the rules of the group that are not listed keep their order after them.",
+                            "items": {
+                                "$ref": "#/GraphicOverrideRuleIdArrayItem"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "graphicOverrideRuleIds"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "graphicOverrideRuleGroups"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetGraphicOverrideRuleOrderCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetGraphicOverrideRuleOrderCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> graphicOverrideRuleGroups;
+    if (!parameters.Get ("graphicOverrideRuleGroups", graphicOverrideRuleGroups)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'graphicOverrideRuleGroups' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    ACAPI_CallUndoableCommand ("Set Graphic Override Rule Order", [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : graphicOverrideRuleGroups) {
+            GS::UniString ruleGroupName;
+            if (!item.Get ("name", ruleGroupName)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'name' parameter."));
+                continue;
+            }
+            GS::Array<GS::ObjectState> graphicOverrideRuleIds;
+            if (!item.Get ("graphicOverrideRuleIds", graphicOverrideRuleIds)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'graphicOverrideRuleIds' parameter."));
+                continue;
+            }
+
+            API_Guid ruleGroupGuid = APINULLGuid;
+            GS::Array<API_Guid> currentRuleIds;
+            if (!FindRuleGroupByName (ruleGroupName, ruleGroupGuid, &currentRuleIds)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADNAME, "No rule group is named '" + ruleGroupName + "'."));
+                continue;
+            }
+
+            // Archicad takes the complete order of the group: the listed rules first, then the
+            // rules of the group that are not listed, in the order they have now.
+            GS::Array<API_Guid> orderedRuleIds;
+            GS::UniString errorMessage;
+            for (const API_Guid& ruleGuid : GetRuleGuidsFromArray (graphicOverrideRuleIds)) {
+                if (!currentRuleIds.Contains (ruleGuid)) {
+                    errorMessage = "The rule " + APIGuidToString (ruleGuid) + " is not in the rule group '" + ruleGroupName + "'.";
+                    break;
+                }
+                if (orderedRuleIds.Contains (ruleGuid)) {
+                    errorMessage = "The rule " + APIGuidToString (ruleGuid) + " is listed more than once.";
+                    break;
+                }
+                orderedRuleIds.Push (ruleGuid);
+            }
+            if (!errorMessage.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, errorMessage));
+                continue;
+            }
+            for (const API_Guid& ruleGuid : currentRuleIds) {
+                if (!orderedRuleIds.Contains (ruleGuid)) {
+                    orderedRuleIds.Push (ruleGuid);
+                }
+            }
+
+            const GSErrCode err = ACAPI_GraphicalOverride_SetOverrideRuleOrder (ruleGroupGuid, orderedRuleIds);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to set the rule order of the rule group '" + ruleGroupName + "'."));
+                continue;
+            }
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
+RenameGraphicOverrideRuleGroupsCommand::RenameGraphicOverrideRuleGroupsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RenameGraphicOverrideRuleGroupsCommand::GetName () const
+{
+    return "RenameGraphicOverrideRuleGroups";
+}
+
+GS::Optional<GS::UniString> RenameGraphicOverrideRuleGroupsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "ruleGroups": {
+                "type": "array",
+                "description": "The rule groups to rename. Their rules and the combinations that contain them are kept.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The current name of the rule group."
+                        },
+                        "newName": {
+                            "type": "string",
+                            "description": "The new name of the rule group. It must not be empty or used by another rule group."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "newName"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "ruleGroups"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> RenameGraphicOverrideRuleGroupsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState RenameGraphicOverrideRuleGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> ruleGroups;
+    if (!parameters.Get ("ruleGroups", ruleGroups)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'ruleGroups' parameter.");
+    }
+
+    // Looked up again for each item, so a group renamed by an earlier item is found by its new name.
+    const auto findRuleGroup = [] (const GS::UniString& name, API_OverrideRuleGroup& foundRuleGroup) -> bool {
+        GS::Array<API_Guid> ruleGroupIds;
+        if (ACAPI_GraphicalOverride_GetOverrideRuleGroupList (ruleGroupIds) != NoError) {
+            return false;
+        }
+        for (const API_Guid& ruleGroupId : ruleGroupIds) {
+            API_OverrideRuleGroup ruleGroup = {};
+            ruleGroup.guid = ruleGroupId;
+            if (ACAPI_GraphicalOverride_GetOverrideRuleGroup (ruleGroup) == NoError && ruleGroup.name == name) {
+                foundRuleGroup = ruleGroup;
+                return true;
+            }
+        }
+        return false;
+    };
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    ACAPI_CallUndoableCommand ("Rename Graphic Override Rule Groups", [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : ruleGroups) {
+            GS::UniString name;
+            GS::UniString newName;
+            if (!item.Get ("name", name) || !item.Get ("newName", newName)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Invalid or missing 'name' or 'newName'."));
+                continue;
+            }
+            if (newName.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The new name of the rule group '" + name + "' is empty."));
+                continue;
+            }
+
+            API_OverrideRuleGroup ruleGroup = {};
+            if (!findRuleGroup (name, ruleGroup)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADNAME, "No rule group is named '" + name + "'."));
+                continue;
+            }
+            if (newName == name) {
+                executionResults (CreateSuccessfulExecutionResult ());
+                continue;
+            }
+            API_OverrideRuleGroup otherRuleGroup = {};
+            if (findRuleGroup (newName, otherRuleGroup)) {
+                executionResults (CreateFailedExecutionResult (APIERR_NAMEALREADYUSED, "Another rule group is already named '" + newName + "'."));
+                continue;
+            }
+
+            // The group is read whole and only its name is changed, so nothing else of it is reset.
+            ruleGroup.name = newName;
+            const GSErrCode err = ACAPI_GraphicalOverride_ChangeOverrideRuleGroup (ruleGroup);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to rename the rule group '" + name + "'."));
+                continue;
+            }
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
 DeleteGraphicOverrideRuleGroupsCommand::DeleteGraphicOverrideRuleGroupsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -1040,22 +1664,6 @@ GS::ObjectState DeleteGraphicOverrideRuleGroupsCommand::Execute (const GS::Objec
 
     // Archicad deletes the rules of a group together with the group, and a rule cannot live
     // outside a group. So the rules are moved first, deleted on request, or the group is kept.
-    const auto findRuleGroup = [] (const GS::UniString& name, API_Guid& ruleGroupGuid, GS::Array<API_Guid>& ruleIds) -> bool {
-        GS::Array<API_Guid> ruleGroupIds;
-        if (ACAPI_GraphicalOverride_GetOverrideRuleGroupList (ruleGroupIds) != NoError) {
-            return false;
-        }
-        for (const API_Guid& ruleGroupId : ruleGroupIds) {
-            API_OverrideRuleGroup ruleGroup = {};
-            ruleGroup.guid = ruleGroupId;
-            ruleIds.Clear ();
-            if (ACAPI_GraphicalOverride_GetOverrideRuleGroup (ruleGroup, &ruleIds) == NoError && ruleGroup.name == name) {
-                ruleGroupGuid = ruleGroup.guid;
-                return true;
-            }
-        }
-        return false;
-    };
 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
@@ -1063,7 +1671,7 @@ GS::ObjectState DeleteGraphicOverrideRuleGroupsCommand::Execute (const GS::Objec
         for (const GS::UniString& ruleGroupName : ruleGroupNames) {
             API_Guid ruleGroupGuid = APINULLGuid;
             GS::Array<API_Guid> ruleIds;
-            if (!findRuleGroup (ruleGroupName, ruleGroupGuid, ruleIds)) {
+            if (!FindRuleGroupByName (ruleGroupName, ruleGroupGuid, &ruleIds)) {
                 executionResults (CreateFailedExecutionResult (APIERR_BADNAME, "No rule group is named '" + ruleGroupName + "'."));
                 continue;
             }
@@ -1279,6 +1887,157 @@ GS::ObjectState DeleteGraphicOverrideCombinationsCommand::Execute (const GS::Obj
             const GSErrCode err = ACAPI_GraphicalOverride_DeleteOverrideCombination (combinationGuid);
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to delete the graphic override combination."));
+                continue;
+            }
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
+MoveGraphicOverrideRulesCommand::MoveGraphicOverrideRulesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String MoveGraphicOverrideRulesCommand::GetName () const
+{
+    return "MoveGraphicOverrideRules";
+}
+
+GS::Optional<GS::UniString> MoveGraphicOverrideRulesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "graphicOverrideRules": {
+                "type": "array",
+                "description": "The rules to move, processed in this order.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "graphicOverrideRuleId": {
+                            "$ref": "#/GraphicOverrideRuleId"
+                        },
+                        "ruleGroupName": {
+                            "type": "string",
+                            "description": "The rule group the rule is moved to; it can be the rule's own group to change its place there. Created when no rule group has this name."
+                        },
+                        "beforeGraphicOverrideRuleId": {
+                            "$ref": "#/GraphicOverrideRuleId",
+                            "description": "The rule of the target group the moved rule is put in front of. Left out: the rule becomes the last of the group."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "graphicOverrideRuleId",
+                        "ruleGroupName"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "graphicOverrideRules"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> MoveGraphicOverrideRulesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState MoveGraphicOverrideRulesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> graphicOverrideRules;
+    if (!parameters.Get ("graphicOverrideRules", graphicOverrideRules)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'graphicOverrideRules' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    ACAPI_CallUndoableCommand ("Move Graphic Override Rules", [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : graphicOverrideRules) {
+            const GS::ObjectState* ruleId = item.Get ("graphicOverrideRuleId");
+            GS::UniString ruleGroupName;
+            if (ruleId == nullptr || !item.Get ("ruleGroupName", ruleGroupName)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'graphicOverrideRuleId' or 'ruleGroupName' parameter."));
+                continue;
+            }
+            API_OverrideRule rule = {};
+            rule.guid = GetGuidFromObjectState (*ruleId);
+            if (!IsGraphicOverrideRule (rule.guid) || ACAPI_GraphicalOverride_GetOverrideRuleById (rule) != NoError) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "The graphic override rule does not exist."));
+                continue;
+            }
+            API_Guid targetGuid = APINULLGuid;
+            GS::Array<API_Guid> targetRuleIds;
+            const bool targetIsNew = !FindRuleGroupByName (ruleGroupName, targetGuid, &targetRuleIds);
+            const GS::ObjectState* beforeId = item.Get ("beforeGraphicOverrideRuleId");
+            API_Guid beforeGuid = APINULLGuid;
+            if (beforeId != nullptr) {
+                beforeGuid = GetGuidFromObjectState (*beforeId);
+                if (!targetRuleIds.Contains (beforeGuid)) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "'beforeGraphicOverrideRuleId' is not a rule of the group '" + ruleGroupName + "'."));
+                    continue;
+                }
+                if (beforeGuid == rule.guid) {
+                    executionResults (CreateSuccessfulExecutionResult ());
+                    continue;
+                }
+            }
+            GSErrCode err = FindOrCreateRuleGroup (ruleGroupName, targetGuid);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to find or create the rule group '" + ruleGroupName + "'."));
+                continue;
+            }
+            // Archicad refuses to move a rule into its own group (APIERR_NAMEALREADYUSED): change its place
+            // in the group's order instead.
+            if (targetRuleIds.Contains (rule.guid)) {
+                GS::Array<API_Guid> newOrder;
+                for (const API_Guid& ruleGuid : targetRuleIds) {
+                    if (ruleGuid == rule.guid) {
+                        continue;
+                    }
+                    if (beforeId != nullptr && ruleGuid == beforeGuid) {
+                        newOrder.Push (rule.guid);
+                    }
+                    newOrder.Push (ruleGuid);
+                }
+                if (beforeId == nullptr) {
+                    newOrder.Push (rule.guid);
+                }
+                err = ACAPI_GraphicalOverride_SetOverrideRuleOrder (targetGuid, newOrder);
+            } else {
+                err = ACAPI_GraphicalOverride_MoveOverrideRule (rule.guid, targetGuid, beforeId != nullptr ? &beforeGuid : nullptr);
+            }
+            if (err != NoError) {
+                if (targetIsNew) {
+                    ACAPI_GraphicalOverride_DeleteOverrideRuleGroup (targetGuid);
+                }
+                const GS::UniString reason =
+                    err == APIERR_NAMEALREADYUSED ? " The target group already holds a rule with this name." :
+                    err == APIERR_NOACCESSRIGHT ? " Built-in rules, like the renovation rules, cannot be moved." : "";
+                executionResults (CreateFailedExecutionResult (err, "Failed to move the rule '" + rule.name + "'." + reason));
                 continue;
             }
             executionResults (CreateSuccessfulExecutionResult ());
