@@ -740,6 +740,83 @@ GS::Optional<GS::UniString> ValidateHoles (const GS::Array<GS::ObjectState>& hol
     return {};
 }
 
+// Hatch is a CLOSED polygon (unlike PolyLine): coords[0] dummy is (0,0) not
+// (-1,0), and every contour (the main outline, plus each hole) needs its own
+// explicit closing vertex duplicating that contour's first point, whose vertexID
+// also duplicates that first point's ID. Vertex IDs restart at 1 for EACH contour
+// (not continued sequentially across contours) - confirmed live: global numbering
+// across contours reproducibly failed with APIERR_BADPOLY for a hatch with holes,
+// per-contour numbering works. The holes are expected to be checked by ValidateHoles.
+// Returns false (with poly untouched) when the memo handles could not be allocated.
+bool BuildHatchPolygonMemo (const GS::Array<GS::ObjectState>& coordinates, const GS::Array<GS::ObjectState>& arcs, const GS::Array<GS::ObjectState>& holes, API_Polygon& poly, API_ElementMemo& memo)
+{
+    // Each contour: N unique coords -> N+1 stored coords (with closing duplicate).
+    Int32 totalCoords = (Int32) coordinates.GetSize () + 1;
+    Int32 totalArcs = (Int32) arcs.GetSize ();
+    GS::Array<GS::Array<GS::ObjectState>> holeCoordsList;
+    GS::Array<GS::Array<GS::ObjectState>> holeArcsList;
+    for (const GS::ObjectState& hole : holes) {
+        GS::Array<GS::ObjectState> holeCoords, holeArcs;
+        if (GetHoleGeometry (hole, holeCoords, holeArcs) && holeCoords.GetSize () >= 3) {
+            totalCoords += (Int32) holeCoords.GetSize () + 1;
+            totalArcs += (Int32) holeArcs.GetSize ();
+            holeCoordsList.Push (holeCoords);
+            holeArcsList.Push (holeArcs);
+        }
+    }
+    const Int32 nSubPolys = 1 + (Int32) holeCoordsList.GetSize ();
+
+    memo.coords    = reinterpret_cast<API_Coord**>   (BMAllocateHandle ((totalCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    memo.pends     = reinterpret_cast<Int32**>       (BMAllocateHandle ((nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0));
+    memo.parcs     = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (totalArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+    memo.vertexIDs = reinterpret_cast<UInt32**>      (BMAllocateHandle ((totalCoords + 1) * sizeof (UInt32), ALLOCATE_CLEAR, 0));
+    if (memo.coords == nullptr || memo.pends == nullptr || memo.vertexIDs == nullptr) {
+        return false;
+    }
+
+    Int32 maxContourUnique = (Int32) coordinates.GetSize ();
+    for (const auto& hc : holeCoordsList) {
+        maxContourUnique = GS::Max (maxContourUnique, (Int32) hc.GetSize ());
+    }
+    (*memo.coords)[0] = { 0.0, 0.0 };
+    (*memo.vertexIDs)[0] = (UInt32) maxContourUnique;
+    (*memo.pends)[0] = 0;
+
+    Int32 iCoord = 0;
+    Int32 iArc = 0;
+    Int32 subPolyIndex = 1;
+
+    auto writeContour = [&] (const GS::Array<GS::ObjectState>& contourCoords, const GS::Array<GS::ObjectState>& contourArcs) {
+        const Int32 firstIndex = iCoord + 1;
+        const Int32 nUniqueLocal = (Int32) contourCoords.GetSize ();
+        for (Int32 i = 0; i < nUniqueLocal; ++i) {
+            ++iCoord;
+            (*memo.coords)[iCoord] = Get2DCoordinateFromObjectState (contourCoords[i]);
+            (*memo.vertexIDs)[iCoord] = (UInt32) (i + 1); // per-contour, restarts at 1
+        }
+        ++iCoord;
+        (*memo.coords)[iCoord] = (*memo.coords)[firstIndex]; // closing duplicate
+        (*memo.vertexIDs)[iCoord] = (*memo.vertexIDs)[firstIndex];
+        (*memo.pends)[subPolyIndex++] = iCoord;
+
+        if (memo.parcs != nullptr) {
+            const GS::Array<API_PolyArc> localArcs = GetPolyArcs (contourArcs, firstIndex);
+            for (const API_PolyArc& a : localArcs)
+                (*memo.parcs)[iArc++] = a;
+        }
+    };
+
+    writeContour (coordinates, arcs);
+    for (UIndex i = 0; i < holeCoordsList.GetSize (); ++i) {
+        writeContour (holeCoordsList[i], holeArcsList[i]);
+    }
+
+    poly.nCoords   = totalCoords;
+    poly.nSubPolys = nSubPolys;
+    poly.nArcs     = totalArcs;
+    return true;
+}
+
 GS::ObjectState CreateIdObjectState (const GS::String& idFieldName, const API_Guid& guid)
 {
     return GS::ObjectState (idFieldName, CreateGuidObjectState (guid));
@@ -1185,6 +1262,31 @@ GSErrCode ExecuteActionForEachDatabase (
         return err;
     }
     return NoError;
+}
+
+GS::Optional<API_Guid> FindProjectMapItemOfWorksheetOrDetail (const API_DatabaseInfo& database)
+{
+    API_NavigatorItem filterItem = {};
+    if (database.typeID == APIWind_WorksheetID) {
+        filterItem.itemType = API_WorksheetDrawingNavItem;
+    } else if (database.typeID == APIWind_DetailID) {
+        filterItem.itemType = API_DetailDrawingNavItem;
+    } else {
+        return {};
+    }
+    filterItem.mapId           = API_ProjectMap;
+    filterItem.db.databaseUnId = database.databaseUnId;
+
+    GS::Array<API_NavigatorItem> results;
+    if (ACAPI_Navigator_SearchNavigatorItem (&filterItem, &results) != NoError) {
+        return {};
+    }
+    for (const API_NavigatorItem& result : results) {
+        if (result.itemType == filterItem.itemType) {
+            return result.guid;
+        }
+    }
+    return {};
 }
 
 bool LoadElementHeaderByGuid (const API_Guid& elementGuid, API_Elem_Head& elementHeader)
