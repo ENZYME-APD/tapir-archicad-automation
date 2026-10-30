@@ -1334,7 +1334,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetAttributesFromProjectCommand> (
             attributeCommands, "1.7.3",
-            "Reads the attributes of the given types from another project or template file without opening it, for example to compare them with the attributes of the open project. Nothing is imported into the open project. The names are the legacy 8-bit names, so non-ASCII characters may not come through. Available from Archicad 27."
+            "Reads the attributes of the given types from another project or template file without opening it, for example to compare them with the attributes of the open project. Nothing is imported into the open project. The names are the legacy 8-bit names, so non-ASCII characters may not come through. Archicad does not read Layer, Surface, BuildingMaterial and MEPSystem attributes from a file that is not open: these types get an error item instead of an empty list. Available from Archicad 27."
         );
         err |= RegisterCommand<DeleteAttributesCommand> (
             attributeCommands, "1.5.4",
