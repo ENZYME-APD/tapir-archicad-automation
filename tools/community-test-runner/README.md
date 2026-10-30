@@ -143,8 +143,9 @@ A pull request adds a JSON file to `archicad-addon/Test/checks/`. Example:
 - Checks run on every language version of Archicad, each with its own template and defaults (stair
   rules, pens, layers, units). Send every value the result depends on, and prefer differences
   (one more riser adds the going) over absolute values (the run is 4.15 m), which a template can shift.
-- `minTapir` skips the file on older add-ons. `requiresEmpty` changes the element types that
-  must be absent.
+- `minTapir` skips the file on older add-ons, `minArchicad` (e.g. `"27"`) on older Archicad
+  versions, for commands that need a newer Archicad API. `requiresEmpty` changes the element
+  types that must be absent.
 
 `checks/` holds examples taken from the October 2026 verification of #747-#753.
 
