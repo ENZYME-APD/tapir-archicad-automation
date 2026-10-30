@@ -12177,6 +12177,16 @@
             "dimensionLinePosition": {
                 "$ref": "#/Coordinate2D"
             },
+            "appearance": {
+                "type": "string",
+                "enum": ["Linear", "Cumulative", "Baseline", "Elevation"],
+                "description": "The dimension type, as in the Dimension Settings."
+            },
+            "elevationOrigin": {
+                "type": "string",
+                "enum": ["ProjectZero", "ReferenceLevel1", "ReferenceLevel2", "UserOrigin", "SeaLevel"],
+                "description": "The level an Elevation dimension measures from (kept for the other types too)."
+            },
             "witnessPoints": {
                 "type": "array",
                 "description": "The witness points of the dimension. Besides the geometry each item carries the base element reference as CreateAssociativeDimensions takes it (API_Base: baseElementId, line, inIndex, special, nodeType, nodeStatus, nodeId): read a dimension placed by hand to learn the values an element type needs.",
