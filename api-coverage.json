@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-30 13:33 UTC",
+ "generatedAt": "2026-10-30 13:38 UTC",
  "versions": [
   25,
   26,
@@ -3058,6 +3058,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1670,
+     "title": "CreateHotlinkInstances: place on the Archicad layer when the default layer was deleted"
+    },
     {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
