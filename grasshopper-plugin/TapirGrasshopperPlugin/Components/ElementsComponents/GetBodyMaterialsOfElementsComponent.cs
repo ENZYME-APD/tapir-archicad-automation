@@ -46,11 +46,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         // A building material identifier of a response item, as an attribute
-        // guid wrapper; null when absent.
+        // guid wrapper; null when absent. Add-Ons up to 1.7.3 sent it wrapped
+        // as {"attributeId": {"guid": ...}} instead of the schema's {"guid": ...}.
         public static AttributeGuidWrapper BuildingMaterialOf(
             JToken item)
         {
-            var guid = JsonOutputHelp.GuidOf(item?["buildingMaterialId"]);
+            var guid = JsonOutputHelp.GuidOf(item?["buildingMaterialId"]) ??
+                       JsonOutputHelp.WrappedGuidOf(item?["buildingMaterialId"], "attributeId");
             return guid == null
                 ? null
                 : new AttributeGuidWrapper
