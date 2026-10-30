@@ -34,6 +34,12 @@ static GSFlags FlagsFromObjectState (const GS::ObjectState& os)
     return flags;
 }
 
+// ACAPI_Element_SolidLink_Remove answers APIERR_BADDATABASE (-2130313110) when the current
+// database is not the floor plan (e.g. the 3D window is active), even though the link is
+// gone afterwards (#1566). SwitchCurrentDatabaseToFloorPlan (CommandBase.hpp, defined in
+// ExtendedElementCommands.cpp) changes only the CURRENT DATABASE, not the visible window,
+// and `switched` says whether the caller has to put the previous one back.
+
 static bool SolidLinkExists (const API_Guid& targetGuid, const API_Guid& operatorGuid)
 {
     GS::Array<API_Guid> operators;
@@ -199,11 +205,8 @@ GS::ObjectState RemoveSolidElementLinksCommand::Execute (const GS::ObjectState& 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
-    // ACAPI_Element_SolidLink_Remove answers APIERR_BADDATABASE (-2130313110) when the current
-    // database is not the floor plan (e.g. the 3D window is active), even though the link is
-    // gone afterwards (#1566). Remove from the floor plan database whatever window is active
-    // (SwitchCurrentDatabaseToFloorPlan, CommandBase.hpp); the previous database is restored
-    // after the undoable command has finished, on every exit path.
+    // Remove from the floor plan database whatever window is active (#1566); the previous
+    // database is restored after the undoable command has finished, on every exit path.
     API_DatabaseInfo previousDatabase = {};
     bool databaseSwitched = false;
     SwitchCurrentDatabaseToFloorPlan (previousDatabase, databaseSwitched);

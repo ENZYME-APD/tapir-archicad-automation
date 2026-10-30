@@ -240,6 +240,14 @@ GSErrCode Initialize (void)
             applicationCommands, "1.7.3",
             "Asks the designer to click an element in the current window and returns its id, its type and the clicked point. A click on empty space or on an element of a type not asked for asks again. Archicad waits for the click or for Escape, and every other JSON command queues behind this one until then; cancelling returns cancelled."
         );
+        err |= RegisterCommand<GetLineFromUserCommand> (
+            applicationCommands, "1.7.4",
+            "Waits for the user to input a line in the active Archicad window and returns start and end coordinates."
+        );
+        err |= RegisterCommand<GetPolygonFromUserCommand> (
+            applicationCommands, "1.7.4",
+            "Waits for the user to input a polygon in the active Archicad window and returns its points and arcs."
+        );
         err |= RegisterCommand<GetCurrentWindowTypeCommand> (
             applicationCommands, "1.0.7",
             "Returns the type of the current (active) window."
@@ -254,7 +262,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ChangeWindowCommand> (
             applicationCommands, "1.3.1",
-            "Changes the current (active) window to the given window. A databaseId on its own is enough; the window type is taken from the database. With windowType 'FloorPlan' and a storyIndex it also activates that story on the floor plan."
+            "Changes the current (active) window to the given window. A databaseId on its own is enough; the window type is taken from the database. The databaseId of a worksheet or detail whose window was never opened opens its Project Map item instead (from Archicad 27). With windowType 'FloorPlan' and a storyIndex it also activates that story on the floor plan."
         );
         err |= RegisterCommand<GetContainingDatabasesCommand> (
             applicationCommands, "1.7.2",
@@ -842,6 +850,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.4.0",
             "Creates Roof elements based on footprint, level and roof profile data. Creates a multi-plane roof by default; pass 'pivotLine' (and optionally 'angle') to create a single-plane roof instead."
         );
+        err |= RegisterCommand<CreateRailingsCommand> (
+            elementCommands, "1.7.4",
+            "Creates Railing elements along a reference polyline. Posts, rails, handrails, toprails, panels and balusters come from the favorite or from the Railing tool defaults; Archicad generates one node per vertex and one segment per pair of consecutive vertices."
+        );
         err |= RegisterCommand<CreateCurtainWallsCommand> (
             elementCommands, "1.7.2",
             "Creates Curtain Wall elements along a reference polyline with a column (primary) and row (secondary) pattern. The frame and panel classes come from the favorite or from the Curtain Wall tool defaults; the pattern cells can assign them to the grid."
@@ -864,7 +876,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetOpeningTransformationsCommand> (
             elementCommands, "1.7.3",
-            "Gets the placement of Opening elements without changing them: the global-to-local transformation matrix Archicad returns, its inverse, and the origin and axes of the opening in world coordinates derived from the inverse. Mirrored openings give a left-handed matrix (isMirrored). Needs Archicad 27 or later."
+            "Gets the placement of Opening elements, Windows, Doors and Skylights without changing them: a global-to-local transformation matrix, its inverse, and the origin and axes in world coordinates derived from the inverse. For Windows, Doors and Skylights the local-to-global matrix is the one Archicad returns, and mirrored ones give a left-handed matrix (isMirrored). For Opening elements it is built from the opening geometry (Archicad 29 and later): origin at the anchor point, the X and Y axes of the opening and Z = X × Y, which points against the extrusion direction. Needs Archicad 27 or later."
         );
         err |= RegisterCommand<CreateZonesCommand> (
             elementCommands, "1.1.8",
@@ -892,7 +904,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateHatchesCommand> (
             elementCommands, "1.5.6",
-            "Creates Hatch elements based on the given parameters."
+            "Creates Hatch elements based on the given parameters. A hatch can have holes, in the same format SetDetailsOfElements accepts for hatches."
         );
         err |= RegisterCommand<CreateSplinesCommand> (
             elementCommands, "1.5.6",
@@ -1175,7 +1187,7 @@ GSErrCode Initialize (void)
         CommandGroup propertyCommands ("Property Commands");
         err |= RegisterCommand<GetAllPropertiesCommand> (
             propertyCommands, "1.1.3",
-            "Returns all user defined and built-in properties."
+            "Returns all user defined and built-in properties. Optionally only the given properties or property types, and without the availability lists."
         );
         err |= RegisterCommand<GetPropertyValuesOfElementsCommand> (
             propertyCommands, "1.0.6",
@@ -1334,7 +1346,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetAttributesFromProjectCommand> (
             attributeCommands, "1.7.3",
-            "Reads the attributes of the given types from another project or template file without opening it, for example to compare them with the attributes of the open project. Nothing is imported into the open project. The names are the legacy 8-bit names, so non-ASCII characters may not come through. Available from Archicad 27."
+            "Reads the attributes of the given types from another project or template file without opening it, for example to compare them with the attributes of the open project. Nothing is imported into the open project. The names are the legacy 8-bit names, so non-ASCII characters may not come through. Archicad does not read Layer, Surface, BuildingMaterial and MEPSystem attributes from a file that is not open: these types get an error item instead of an empty list. Available from Archicad 27."
         );
         err |= RegisterCommand<DeleteAttributesCommand> (
             attributeCommands, "1.5.4",
@@ -1500,9 +1512,17 @@ GSErrCode Initialize (void)
             attributeCommands, "1.7.2",
             "Creates graphic override combinations from existing rules. Available from Archicad 27."
         );
+        err |= RegisterCommand<ModifyGraphicOverrideCombinationsCommand> (
+            attributeCommands, "1.7.3",
+            "Modifies the name and/or the rules of graphic override combinations. Omitted fields are kept. Available from Archicad 27."
+        );
         err |= RegisterCommand<DeleteGraphicOverrideCombinationsCommand> (
             attributeCommands, "1.7.2",
             "Deletes graphic override combinations. Their rules are kept. Available from Archicad 27."
+        );
+        err |= RegisterCommand<CreateGraphicOverrideRuleGroupsCommand> (
+            attributeCommands, "1.7.3",
+            "Creates empty graphic override rule groups. Available from Archicad 27."
         );
         err |= RegisterCommand<GetGraphicOverrideRuleGroupsCommand> (
             attributeCommands, "1.7.2",
@@ -1763,11 +1783,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateDetailsCommand> (
             navigatorCommands, "1.4.0",
-            "Creates independent Detail databases."
+            "Creates independent Detail databases. Returns the databaseId and the Project Map navigatorItemId of each new detail."
         );
         err |= RegisterCommand<CreateWorksheetsCommand> (
             navigatorCommands, "1.4.0",
-            "Creates independent Worksheet databases."
+            "Creates independent Worksheet databases. Returns the databaseId and the Project Map navigatorItemId of each new worksheet."
         );
         err |= RegisterCommand<CreateLayoutCommand> (
             navigatorCommands, "1.4.0",
@@ -1939,7 +1959,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateSectionsCommand> (
             navigatorCommands, "1.5.0",
-            "Creates Section elements on the floor plan."
+            "Creates Section elements on the floor plan. A section looks to the left of its start to end direction, with its depth line that far on that side. GetDetailsOfElements reads the geometry of existing sections back."
         );
         err |= RegisterCommand<CreateInteriorElevationsCommand> (
             navigatorCommands, "1.5.8",

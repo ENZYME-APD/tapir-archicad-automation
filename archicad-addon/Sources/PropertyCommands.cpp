@@ -225,6 +225,37 @@ GS::String GetAllPropertiesCommand::GetName () const
     return "GetAllProperties";
 }
 
+GS::Optional<GS::UniString> GetAllPropertiesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "properties": {
+                "$ref": "#/PropertyIds",
+                "description": "Returns only the definitions of these properties. Identifiers not found in the project are left out of the response. All properties are returned when omitted."
+            },
+            "propertyTypes": {
+                "type": "array",
+                "description": "Returns only the properties of these types. All types are returned when omitted.",
+                "items": {
+                    "type": "string",
+                    "enum": [
+                        "StaticBuiltIn",
+                        "DynamicBuiltIn",
+                        "Custom"
+                    ]
+                }
+            },
+            "includeAvailability": {
+                "type": "boolean",
+                "description": "Adds the availability list (the classification items a custom property is available for) to each custom property. Default is true."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
 GS::Optional<GS::UniString> GetAllPropertiesCommand::GetRawResponseSchema () const
 {
     return R"({
@@ -252,8 +283,24 @@ GS::Optional<GS::UniString> GetAllPropertiesCommand::GetRawResponseSchema () con
     })";
 }
 
-GS::ObjectState GetAllPropertiesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState GetAllPropertiesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    GS::Array<GS::ObjectState> properties;
+    const bool filterByIds = parameters.Get ("properties", properties);
+    GS::HashSet<API_Guid> requestedGuids;
+    for (const GS::ObjectState& property : properties) {
+        const GS::ObjectState* propertyId = property.Get ("propertyId");
+        if (propertyId != nullptr) {
+            requestedGuids.Add (GetGuidFromObjectState (*propertyId));
+        }
+    }
+
+    GS::Array<GS::UniString> propertyTypes;
+    const bool filterByTypes = parameters.Get ("propertyTypes", propertyTypes);
+
+    bool includeAvailability = true;
+    parameters.Get ("includeAvailability", includeAvailability);
+
     GS::ObjectState response;
     auto propertyAdder = response.AddList<GS::ObjectState> ("properties");
 
@@ -271,13 +318,21 @@ GS::ObjectState GetAllPropertiesCommand::Execute (const GS::ObjectState& /*param
         GS::Array<API_PropertyDefinition> definitions;
         ACAPI_Property_GetPropertyDefinitions (group.guid, definitions);
         for (const API_PropertyDefinition& definition : definitions) {
+            if (filterByIds && !requestedGuids.Contains (definition.guid)) {
+                continue;
+            }
+            const GS::UniString propertyType = GetPropertyTypeString (definition.definitionType);
+            if (filterByTypes && !propertyTypes.Contains (propertyType)) {
+                continue;
+            }
+
             GS::ObjectState details;
 
             GS::ObjectState propertyId;
             propertyId.Add ("guid", APIGuidToString (definition.guid));
             details.Add ("propertyId", propertyId);
 
-            details.Add ("propertyType", GetPropertyTypeString (definition.definitionType));
+            details.Add ("propertyType", propertyType);
             details.Add ("propertyGroupName", group.name);
             details.Add ("propertyName", definition.name);
             details.Add ("propertyCollectionType", GetPropertyTypeString (definition.collectionType));
@@ -300,9 +355,11 @@ GS::ObjectState GetAllPropertiesCommand::Execute (const GS::ObjectState& /*param
                         details.Add ("defaultValueDisplay", defaultString);
                     }
                 }
-                const auto& availabilityList = details.AddList<GS::ObjectState> ("availability");
-                for (const API_Guid& itemGuid : definition.availability) {
-                    availabilityList (CreateIdObjectState ("classificationItemId", itemGuid));
+                if (includeAvailability) {
+                    const auto& availabilityList = details.AddList<GS::ObjectState> ("availability");
+                    for (const API_Guid& itemGuid : definition.availability) {
+                        availabilityList (CreateIdObjectState ("classificationItemId", itemGuid));
+                    }
                 }
                 // The option guids an enum default holds. The display text above joins the
                 // options of a multi-choice default, and two options can share a text, so a
