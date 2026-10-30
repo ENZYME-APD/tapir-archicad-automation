@@ -241,6 +241,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap CopyFilesIntoEmbeddedLibrary
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CopyFilesIntoEmbeddedLibrary", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -1504,6 +1512,22 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap GetLibraryPartCustomSection
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetLibraryPartCustomSection", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetLibraryPartPictures
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetLibraryPartPictures", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap ReloadLibraries
         {
             get {
@@ -1856,6 +1880,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap CreateFolderInEmbeddedLibrary
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateFolderInEmbeddedLibrary", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap CreateZoneCategories
         {
             get {
@@ -1964,6 +1996,22 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("CreateLayoutSubset", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateLibraryPart
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateLibraryPart", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateLibraryParts
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateLibraryParts", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -2673,6 +2721,38 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap SetLibraryPartCustomSection
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetLibraryPartCustomSection", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetLibraryPartMetadata
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetLibraryPartMetadata", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetLibraryPartPictures
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetLibraryPartPictures", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetLibraryPartScripts
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetLibraryPartScripts", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap AddLibraries
         {
             get {
@@ -2805,6 +2885,14 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("ImportPropertiesXml", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap IsUsableGDLString
+        {
+            get {
+                object obj = ResourceManager.GetObject ("IsUsableGDLString", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }

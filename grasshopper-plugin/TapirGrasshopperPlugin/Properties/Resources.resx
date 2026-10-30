@@ -247,6 +247,9 @@
   <data name="ConnectedElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ConnectedElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="CopyFilesIntoEmbeddedLibrary" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CopyFilesIntoEmbeddedLibrary.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="CreateIssue" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateIssue.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -577,6 +580,12 @@
   <data name="GetLibraries" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetLibraries.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="GetLibraryPartCustomSection" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetLibraryPartCustomSection.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetLibraryPartPictures" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetLibraryPartPictures.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="ReloadLibraries" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ReloadLibraries.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -709,6 +718,9 @@
   <data name="CreateFills" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateFills.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="CreateFolderInEmbeddedLibrary" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateFolderInEmbeddedLibrary.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="CreateZoneCategories" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateZoneCategories.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -750,6 +762,12 @@
   </data>
   <data name="CreateLayoutSubset" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateLayoutSubset.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateLibraryPart" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateLibraryPart.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateLibraryParts" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateLibraryParts.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="CreateDrawings" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateDrawings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -1009,6 +1027,18 @@
   <data name="SetLibraries" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SetLibraries.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="SetLibraryPartCustomSection" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetLibraryPartCustomSection.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SetLibraryPartMetadata" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetLibraryPartMetadata.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SetLibraryPartPictures" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetLibraryPartPictures.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SetLibraryPartScripts" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetLibraryPartScripts.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="AddLibraries" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\AddLibraries.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -1059,6 +1089,9 @@
   </data>
   <data name="ImportPropertiesXml" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ImportPropertiesXml.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="IsUsableGDLString" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\IsUsableGDLString.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="ImportClassificationsXml" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ImportClassificationsXml.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
