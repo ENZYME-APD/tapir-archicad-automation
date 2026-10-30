@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-30 15:40 UTC",
+ "generatedAt": "2026-10-30 16:08 UTC",
  "versions": [
   25,
   26,
@@ -6597,6 +6597,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1673,
+     "title": "GetDetailsOfElements: surface overrides of Roofs, Beams and Columns"
+    },
+    {
      "number": 1642,
      "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
     },
@@ -9147,6 +9151,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1673,
+     "title": "GetDetailsOfElements: surface overrides of Roofs, Beams and Columns"
+    },
     {
      "number": 1608,
      "title": "Read the geometry of sections (CutPlane) in GetDetailsOfElements"
@@ -36760,6 +36768,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1673,
+     "title": "GetDetailsOfElements: surface overrides of Roofs, Beams and Columns"
+    },
+    {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
     },
@@ -53936,6 +53948,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1673,
+     "title": "GetDetailsOfElements: surface overrides of Roofs, Beams and Columns"
+    },
+    {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
     },
@@ -58688,6 +58704,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1673,
+     "title": "GetDetailsOfElements: surface overrides of Roofs, Beams and Columns"
+    },
     {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
