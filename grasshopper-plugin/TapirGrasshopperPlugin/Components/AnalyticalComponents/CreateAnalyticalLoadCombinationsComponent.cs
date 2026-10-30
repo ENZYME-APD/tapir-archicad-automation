@@ -98,21 +98,39 @@ namespace TapirGrasshopperPlugin.Components.AnalyticalComponents
                 "Error message of each load combination (empty when it was created successfully).");
         }
 
-        // The number branch of the given combination; empty when the tree
-        // has no branches.
-        private static List<double> NumberBranch(
-            GH_Structure<GH_Number> tree,
-            int index)
+        // The number of branches an optional number tree input holds; an
+        // unconnected tree input may still hold one empty branch.
+        private static int BranchCount(
+            GH_Structure<GH_Number> tree)
         {
-            if (tree == null ||
-                tree.Branches.Count == 0)
+            return (tree?.DataCount ?? 0) == 0
+                ? 0
+                : tree.Branches.Count;
+        }
+
+        // The number branch of the given combination; empty when the tree
+        // has no data. An empty item would shift the following values onto
+        // the wrong load cases, so it is an error.
+        private bool TryGetNumberBranch(
+            GH_Structure<GH_Number> tree,
+            int index,
+            string inputName,
+            out List<double> numbers)
+        {
+            numbers = new List<double>();
+            if (BranchCount(tree) == 0)
             {
-                return new List<double>();
+                return true;
             }
-            return tree.Branches[tree.Branches.Count == 1 ? 0 : index]
-                .Where(x => x != null)
-                .Select(x => x.Value)
-                .ToList();
+            var branch = tree.Branches[tree.Branches.Count == 1 ? 0 : index];
+            if (branch.Any(x => x == null))
+            {
+                this.AddError(
+                    $"The input {inputName} must not contain empty items.");
+                return false;
+            }
+            numbers = branch.Select(x => x.Value).ToList();
+            return true;
         }
 
         protected override void Solve(
@@ -167,11 +185,13 @@ namespace TapirGrasshopperPlugin.Components.AnalyticalComponents
                 return;
             }
 
-            if ((factorTree?.Branches.Count ?? 0) > Math.Max(loadCaseBranchCount, 1) ||
-                (multiplierTree?.Branches.Count ?? 0) > Math.Max(loadCaseBranchCount, 1))
+            var factorBranchCount = BranchCount(factorTree);
+            var multiplierBranchCount = BranchCount(multiplierTree);
+            if ((factorBranchCount > 1 && factorBranchCount != loadCaseBranchCount) ||
+                (multiplierBranchCount > 1 && multiplierBranchCount != loadCaseBranchCount))
             {
                 this.AddError(
-                    "The inputs Factors and Multipliers must have 1 branch or as many branches as the input LoadCaseGuids.");
+                    "The inputs Factors and Multipliers must have 0 branches, 1 branch or as many branches as the input LoadCaseGuids.");
                 return;
             }
 
@@ -208,11 +228,21 @@ namespace TapirGrasshopperPlugin.Components.AnalyticalComponents
                         return;
                     }
 
-                    if (!AnalyticalHelp.TryBuildLoadFactors(
+                    if (!TryGetNumberBranch(
+                            factorTree,
+                            branchIndex,
+                            "Factors",
+                            out List<double> factors) ||
+                        !TryGetNumberBranch(
+                            multiplierTree,
+                            branchIndex,
+                            "Multipliers",
+                            out List<double> multipliers) ||
+                        !AnalyticalHelp.TryBuildLoadFactors(
                             this,
                             loadCaseIds,
-                            NumberBranch(factorTree, branchIndex),
-                            NumberBranch(multiplierTree, branchIndex),
+                            factors,
+                            multipliers,
                             out JArray loadFactors))
                     {
                         return;
