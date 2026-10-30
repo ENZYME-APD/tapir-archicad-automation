@@ -5190,7 +5190,7 @@ static const char* OpeningExtrusionParametersResponseSchema = R"({
         "linkedStatus": {
             "type": "string",
             "enum": ["Linked", "NotLinked"],
-            "description": "Whether the opening is linked to its parent element. Left out when Archicad gives none."
+            "description": "Whether the opening's width and height are linked. Left out when Archicad gives none."
         },
         "shapeType": {
             "type": "string",
@@ -5519,15 +5519,15 @@ static const char* OpeningExtrusionParametersInputSchema = R"({
         "linkedStatus": {
             "type": "string",
             "enum": ["Linked", "NotLinked"],
-            "description": "Whether the opening is linked to its parent element."
+            "description": "Whether the opening's width and height are linked. While they are linked, giving both width and height makes a square of the height; give NotLinked with them to get a different width and height."
         },
         "shapeType": {
             "type": "string",
             "enum": ["Rectangular", "Circular", "Polygonal"],
             "description": "The shape of the opening's polygon."
         },
-        "width": { "type": "number", "exclusiveMinimum": 0.0 },
-        "height": { "type": "number", "exclusiveMinimum": 0.0 },
+        "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "The opening's width. See linkedStatus." },
+        "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "The opening's height. See linkedStatus." },
         "anchor": {
             "type": "string",
             "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"],
@@ -9937,8 +9937,6 @@ GS::ObjectState PlaceOpeningsCommand::Execute (const GS::ObjectState& parameters
     notification.notifID = APINotifyElement_BeginEvents;
     AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
 
-    // OpeningDefault::Place opens and closes its own undoable command, so unlike the other
-    // creation commands this one is not run inside ACAPI_CallUndoableCommand.
     for (const GS::ObjectState& data : openingsData) {
         const GS::ObjectState* parentElementId = data.Get ("parentElementId");
         const GS::ObjectState* point = data.Get ("point");
@@ -9969,7 +9967,22 @@ GS::ObjectState PlaceOpeningsCommand::Execute (const GS::ObjectState& parameters
         }
 
         const ACAPI::UniqueID parentElemId (APIGuid2GSGuid (GetGuidFromObjectState (*parentElementId)), ACAPI_GetToken ());
-        ACAPI::Result<ACAPI::UniqueID> resultId = openingDefault->Place (parentElemId, Get3DCoordinateFromObjectState (*point));
+        const API_Coord3D placePoint = Get3DCoordinateFromObjectState (*point);
+
+        // Although the header says OpeningDefault::Place opens its own undoable command, calling it
+        // outside ACAPI_CallUndoableCommand crashes Archicad 30 with an ODB assertion (#1665), so it
+        // is run inside one, like the other creation commands.
+        std::optional<ACAPI::Result<ACAPI::UniqueID>> placed;
+        const GSErrCode scopeErr = ACAPI_CallUndoableCommand ("Place Opening", [&] () -> GSErrCode {
+            placed.emplace (openingDefault->Place (parentElemId, placePoint));
+            return NoError;
+        });
+        if (!placed.has_value ()) {
+            results.Push (CreateErrorResponse (scopeErr, "Failed to open an undoable command for the opening."));
+            continue;
+        }
+
+        ACAPI::Result<ACAPI::UniqueID>& resultId = *placed;
         if (resultId.IsErr ()) {
             results.Push (CreateErrorResponse (resultId.UnwrapErr ().kind, "Failed to place the opening: " + GS::UniString (resultId.UnwrapErr ().text.c_str ())));
             continue;
