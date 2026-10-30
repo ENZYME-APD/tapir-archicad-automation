@@ -543,9 +543,9 @@ GS::Optional<GS::UniString> CreateLayoutCommand::GetInputParametersSchema () con
                                 "topMargin":                { "type": "number" },
                                 "rightMargin":              { "type": "number" },
                                 "bottomMargin":             { "type": "number" },
-                                "customLayoutNumber":       { "type": "string" },
-                                "customLayoutNumbering":    { "type": "boolean" },
-                                "doNotIncludeInNumbering":  { "type": "boolean" },
+                                "customLayoutNumber":       { "type": "string", "description": "The layout's own number, used when customLayoutNumbering is true. It only replaces this layout's displayed number: the layout still counts in its subset's numbering, so the sheets after it are renumbered. Use doNotIncludeInNumbering to leave it out." },
+                                "customLayoutNumbering":    { "type": "boolean", "description": "Use customLayoutNumber instead of the automatic number. Does not leave the layout out of the subset's numbering; see doNotIncludeInNumbering." },
+                                "doNotIncludeInNumbering":  { "type": "boolean", "description": "Leave the new layout out of its subset's automatic numbering, so the numbers of the other sheets do not change." },
                                 "displayMasterLayoutBelow": { "type": "boolean" }
                             },
                             "additionalProperties": false
