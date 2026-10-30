@@ -517,9 +517,29 @@ inline GSErrCode ACAPI_ProjectOperation_SaveAsModuleFile (const IO::Location* lo
     return ACAPI_Automate (APIDo_SaveAsModuleFileID, (void*) location);
 }
 
+// The AC25/26 forms of the AC27 ACAPI_UserInput_* input functions (APIdefs_Interface.h):
+// APIIo_GetPointID       par1: API_GetPointType*   par2: [RubberLineInfoProc*]   par3: [Get3DComponentProc*]
+// APIIo_GetLineID        par1: API_GetLineType*    par2: [RubberLineInfoProc*]
+// APIIo_GetPolyID        par1: API_GetPolyType*    par2: [API_RubberPolyCallbacks*]
+// APIIo_DrawRubberLineID par1: API_RubberLineType*
 inline GSErrCode ACAPI_UserInput_GetPoint (API_GetPointType* pointInfo, RubberLineInfoProc* rubberLineInfoProc = nullptr, Get3DComponentProc* get3DComponentProc = nullptr)
 {
     return ACAPI_Interface (APIIo_GetPointID, pointInfo, (void*) rubberLineInfoProc, (void*) get3DComponentProc);
+}
+
+inline GSErrCode ACAPI_UserInput_GetLine (API_GetLineType* lineInfo, RubberLineInfoProc* rubberLineInfoProc = nullptr)
+{
+    return ACAPI_Interface (APIIo_GetLineID, lineInfo, (void*) rubberLineInfoProc);
+}
+
+inline GSErrCode ACAPI_UserInput_GetPoly (API_GetPolyType* polyInfo, API_RubberPolyCallbacks* rubberPolyCallbacks = nullptr)
+{
+    return ACAPI_Interface (APIIo_GetPolyID, polyInfo, (void*) rubberPolyCallbacks);
+}
+
+inline GSErrCode ACAPI_UserInput_DrawRubberLine (API_RubberLineType* rubberLine)
+{
+    return ACAPI_Interface (APIIo_DrawRubberLineID, rubberLine);
 }
 
 inline GSErrCode ACAPI_Selection_GetSelectedElement (const API_Neig* apiNeig, API_Guid* apiGuid)

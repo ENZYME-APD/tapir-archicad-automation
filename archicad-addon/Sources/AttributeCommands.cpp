@@ -264,7 +264,7 @@ GS::Optional<GS::UniString> GetAttributesFromProjectCommand::GetInputParametersS
             },
             "attributeTypes": {
                 "type": "array",
-                "description": "The attribute types to read.",
+                "description": "The attribute types to read. Layer, Surface, BuildingMaterial and MEPSystem cannot be read from a file that is not open; they get an error item.",
                 "items": {
                     "$ref": "#/AttributeType"
                 },
@@ -328,6 +328,20 @@ GS::Optional<GS::UniString> GetAttributesFromProjectCommand::GetRawResponseSchem
     })";
 }
 
+#ifdef ServerMainVers_2700
+// ACAPI_Attribute_GetAttributesFromProject returns NoError and an empty list for these types
+// (tested on Archicad 29 with .pln and .tpl files that contain them, see #1582), so an empty list of
+// one of them means "not read", not "the file has none". A non-empty list is still passed through,
+// in case an Archicad version reads them.
+static bool IsNotReadFromProjectFileWhenEmpty (API_AttrTypeID typeID)
+{
+    return typeID == API_LayerID ||
+        typeID == API_MaterialID ||
+        typeID == API_BuildingMaterialID ||
+        typeID == API_MEPSystemID;
+}
+#endif
+
 GS::ObjectState GetAttributesFromProjectCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2700
@@ -381,6 +395,9 @@ GS::ObjectState GetAttributesFromProjectCommand::Execute (const GS::ObjectState&
         if (err != NoError) {
             attributesByType (CreateErrorResponse (err,
                 GS::UniString::Printf ("Failed to read the %T attributes of the project file.", typeStr.ToPrintf ())));
+        } else if (loaded.IsEmpty () && IsNotReadFromProjectFileWhenEmpty (typeID)) {
+            attributesByType (CreateErrorResponse (APIERR_NOTSUPPORTED,
+                GS::UniString::Printf ("Archicad returned no %T attributes from the project file. It does not read this type from a file that is not open; open the file and use GetAttributesByType instead.", typeStr.ToPrintf ())));
         } else {
             attributesByType (typeResult);
         }
@@ -939,6 +956,15 @@ GS::ObjectState GetFillsCommand::Execute (const GS::ObjectState& parameters, GS:
         }
         if (wantsField.Wants ("gradientEnd") && isGradient) {
             fill.Add ("gradientEnd", Create2DCoordinateObjectState (attr.filltype.c2));
+        }
+        // For Symbol fills c1/c2 are the offset vectors of the repeating motif (X1/Y1 and X2/Y2 in the Fill Types
+        // dialog); without them a copied symbol fill draws every motif on top of the other.
+        bool isSymbol = (attr.filltype.subType == APIFill_Symbol);
+        if (wantsField.Wants ("symbolOffset1") && isSymbol) {
+            fill.Add ("symbolOffset1", Create2DCoordinateObjectState (attr.filltype.c1));
+        }
+        if (wantsField.Wants ("symbolOffset2") && isSymbol) {
+            fill.Add ("symbolOffset2", Create2DCoordinateObjectState (attr.filltype.c2));
         }
         if (wantsField.Wants ("percent")) {
             fill.Add ("percent", attr.filltype.percent);
@@ -4003,13 +4029,13 @@ GS::Optional<GS::UniString> CreateLayerCombinationsCommand::GetInputParametersSc
                             "description": "Name. If overwriteExisting is true, then the existing Layer Combination with the given name will be overwritten."
                         },
                         "layers": {
-                            "$ref": "#/LayersOfLayerCombination"
+                            "$ref": "#/LayersOfLayerCombination",
+                            "description": "Layer states to set. Layers not listed keep their current state when overwriting an existing Layer Combination (or get the default visible/unlocked state for a new one), so this can be omitted to e.g. only rename an existing Layer Combination."
                         }
                     },
                     "additionalProperties": false,
                     "required" : [
-                        "name",
-                        "layers"
+                        "name"
                     ]
                 }
             },
@@ -4419,6 +4445,14 @@ GS::Optional<GS::UniString> CreateFillsCommand::GetInputParametersSchema () cons
                             "description": "Gradient end point (LinearGradient/RadialGradient fills only).",
                             "$ref": "#/Coordinate2D"
                         },
+                        "symbolOffset1": {
+                            "description": "First offset vector of the repeating symbol motif, X1/Y1 in the Fill Types dialog (Symbol fills only).",
+                            "$ref": "#/Coordinate2D"
+                        },
+                        "symbolOffset2": {
+                            "description": "Second offset vector of the repeating symbol motif, X2/Y2 in the Fill Types dialog (Symbol fills only).",
+                            "$ref": "#/Coordinate2D"
+                        },
                         "percent": {
                             "type": "number",
                             "description": "Translucency percentage [0..1] (gradient and some Solid fills)."
@@ -4629,6 +4663,13 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
         }
         if (const GS::ObjectState* gradientEnd = data.Get ("gradientEnd")) {
             fill.filltype.c2 = Get2DCoordinateFromObjectState (*gradientEnd);
+        }
+        // Same c1/c2 fields, under the names GetFills returns them for Symbol fills.
+        if (const GS::ObjectState* symbolOffset1 = data.Get ("symbolOffset1")) {
+            fill.filltype.c1 = Get2DCoordinateFromObjectState (*symbolOffset1);
+        }
+        if (const GS::ObjectState* symbolOffset2 = data.Get ("symbolOffset2")) {
+            fill.filltype.c2 = Get2DCoordinateFromObjectState (*symbolOffset2);
         }
 
         GS::ObjectState textureObj;
@@ -6076,7 +6117,7 @@ GS::Optional<GS::UniString> CreateCompositesCommand::GetInputParametersSchema ()
                         },
                         "useWith": {
                             "type": "array",
-                            "description" : "Array of types the composite can used with.",
+                            "description" : "Array of types the composite can used with. If omitted when overwriting an existing Composite, its current setting is kept.",
                             "items": {
                                 "type": "string",
                                 "description": "Element type (Wall, Slab, Roof, or Shell)"
@@ -6084,7 +6125,7 @@ GS::Optional<GS::UniString> CreateCompositesCommand::GetInputParametersSchema ()
                         },
                         "skins": {
                             "type": "array",
-                            "description" : "Array of skin data.",
+                            "description" : "Array of skin data. Required when creating a new Composite. If omitted when overwriting an existing Composite, its current skins are kept.",
                             "items" : {
                                 "type": "object",
                                 "description" : "Data to represent a skin.",
@@ -6116,7 +6157,7 @@ GS::Optional<GS::UniString> CreateCompositesCommand::GetInputParametersSchema ()
                         },
                         "separators": {
                             "type": "array",
-                            "description" : "Array of skin separator data. The number of items must be the number of skins plus one.",
+                            "description" : "Array of skin separator data. The number of items must be the number of skins plus one. Required when creating a new Composite. If omitted when overwriting an existing Composite, its current separators are kept (only possible if the number of skins does not change).",
                             "items" : {
                                 "type": "object",
                                 "description" : "Data to represent a skin separator.",
@@ -6139,9 +6180,7 @@ GS::Optional<GS::UniString> CreateCompositesCommand::GetInputParametersSchema ()
                     },
                     "additionalProperties": false,
                     "required" : [
-                        "name",
-                        "skins",
-                        "separators"
+                        "name"
                     ]
                 }
             },
@@ -6216,82 +6255,122 @@ GS::ObjectState CreateCompositesCommand::Execute (const GS::ObjectState& paramet
             composite.header.uniStringNamePtr = &name;
         }
 
+        // useWith is only applied when given: a modify that omits it (e.g. a pure rename) keeps the
+        // Composite's current Wall/Slab/Roof/Shell flags, already loaded by ACAPI_Attribute_Get above,
+        // instead of clearing all of them.
         GS::Array<GS::UniString> useWith;
-        compositeData.Get ("useWith", useWith);
-        composite.header.flags &= ~APICWall_ForWall;
-        composite.header.flags &= ~APICWall_ForSlab;
-        composite.header.flags &= ~APICWall_ForRoof;
-        composite.header.flags &= ~APICWall_ForShell;
-        for (const GS::UniString& useWithStr : useWith) {
-            if (useWithStr == "Wall") {
-                composite.header.flags |= APICWall_ForWall;
-            } else if (useWithStr == "Slab") {
-                composite.header.flags |= APICWall_ForSlab;
-            } else if (useWithStr == "Roof") {
-                composite.header.flags |= APICWall_ForRoof;
-            } else if (useWithStr == "Shell") {
-                composite.header.flags |= APICWall_ForShell;
+        if (compositeData.Get ("useWith", useWith)) {
+            composite.header.flags &= ~APICWall_ForWall;
+            composite.header.flags &= ~APICWall_ForSlab;
+            composite.header.flags &= ~APICWall_ForRoof;
+            composite.header.flags &= ~APICWall_ForShell;
+            for (const GS::UniString& useWithStr : useWith) {
+                if (useWithStr == "Wall") {
+                    composite.header.flags |= APICWall_ForWall;
+                } else if (useWithStr == "Slab") {
+                    composite.header.flags |= APICWall_ForSlab;
+                } else if (useWithStr == "Roof") {
+                    composite.header.flags |= APICWall_ForRoof;
+                } else if (useWithStr == "Shell") {
+                    composite.header.flags |= APICWall_ForShell;
+                }
             }
         }
 
         GS::Array<GS::ObjectState> skins;
-        compositeData.Get ("skins", skins);
+        bool hasSkins = compositeData.Get ("skins", skins);
 
         GS::Array<GS::ObjectState> separators;
-        compositeData.Get ("separators", separators);
+        bool hasSeparators = compositeData.Get ("separators", separators);
 
-        if (skins.IsEmpty ()) {
+        // skins/separators are only required for a brand new Composite. When overwriting an existing
+        // one, whichever of the two is omitted is taken from its current definition, so a rename or a
+        // useWith-only change does not have to resend the whole skin structure. nComps/totalThick are
+        // already the existing values here (filled by ACAPI_Attribute_Get above).
+        if (!doesExist && (!hasSkins || !hasSeparators)) {
+            attributeIds (CreateErrorResponse (APIERR_BADPARS, "skins and separators are required when creating a new Composite."));
+            continue;
+        }
+
+        UInt32 componentCount = hasSkins ? skins.GetSize () : (UInt32) composite.compWall.nComps;
+        if (componentCount == 0) {
             attributeIds (CreateErrorResponse (Error, "Skin array is empty."));
             continue;
         }
-        if (separators.GetSize () != skins.GetSize () + 1) {
+        if (hasSeparators && separators.GetSize () != componentCount + 1) {
             attributeIds (CreateErrorResponse (Error, "Invalid separator count."));
             continue;
         }
-
-        UInt32 componentCount = skins.GetSize ();
-        double totalThickness = 0.0;
-        compositeDefs.cwall_compItems = (API_CWallComponent**) BMAllocateHandle (componentCount * sizeof (API_CWallComponent), ALLOCATE_CLEAR, 0);
-        for (UInt32 i = 0; i < componentCount; i++) {
-            const GS::ObjectState& skinData = skins[i];
-            API_CWallComponent& compData = (*compositeDefs.cwall_compItems)[i];
-
-            GS::UniString type;
-            skinData.Get ("type", type);
-            if (type == "Core") {
-                compData.flagBits |= APICWallComp_Core;
-            } else if (type == "Finish") {
-                compData.flagBits |= APICWallComp_Finish;
-            }
-
-            GS::ObjectState buildingMaterialId;
-            skinData.Get ("buildingMaterialId", buildingMaterialId);
-            API_AttributeIndex buildingMaterialIndex;
-            if (GetAttributeIndexFromAttributeId (buildingMaterialId, API_BuildingMaterialID, buildingMaterialIndex)) {
-                compData.buildingMaterial = buildingMaterialIndex;
-            }
-
-            skinData.Get ("framePen", compData.framePen);
-            skinData.Get ("thickness", compData.fillThick);
-            totalThickness += compData.fillThick;
+        if (!hasSeparators && componentCount != (UInt32) composite.compWall.nComps) {
+            attributeIds (CreateErrorResponse (APIERR_BADPARS, "separators are required when the number of skins changes."));
+            continue;
         }
 
-        composite.compWall.nComps = (short) componentCount;
-        composite.compWall.totalThick = totalThickness;
+        if (!hasSkins || !hasSeparators) {
+            API_AttributeDefExt existingDefs = {};
+            if (ACAPI_Attribute_GetDefExt (API_CompWallID, composite.header.index, &existingDefs) != NoError) {
+                attributeIds (CreateErrorResponse (Error, "Failed to read the existing Composite's skins."));
+                continue;
+            }
+            // Take ownership of the kept handles (nulled in existingDefs so they are not disposed twice),
+            // compositeDefs is disposed as a whole once the Composite has been modified.
+            if (!hasSkins) {
+                compositeDefs.cwall_compItems = existingDefs.cwall_compItems;
+                existingDefs.cwall_compItems = nullptr;
+            }
+            if (!hasSeparators) {
+                compositeDefs.cwall_compLItems = existingDefs.cwall_compLItems;
+                existingDefs.cwall_compLItems = nullptr;
+            }
+            ACAPI_DisposeAttrDefsHdlsExt (&existingDefs);
+        }
 
-        compositeDefs.cwall_compLItems = (API_CWallLineComponent**) BMAllocateHandle ((componentCount + 1) * sizeof (API_CWallLineComponent), ALLOCATE_CLEAR, 0);
-        for (UInt32 i = 0; i < componentCount + 1; i++) {
-            const GS::ObjectState& separatorData = separators[i];
-            API_CWallLineComponent& lineData = (*compositeDefs.cwall_compLItems)[i];
+        if (hasSkins) {
+            double totalThickness = 0.0;
+            compositeDefs.cwall_compItems = (API_CWallComponent**) BMAllocateHandle (componentCount * sizeof (API_CWallComponent), ALLOCATE_CLEAR, 0);
+            for (UInt32 i = 0; i < componentCount; i++) {
+                const GS::ObjectState& skinData = skins[i];
+                API_CWallComponent& compData = (*compositeDefs.cwall_compItems)[i];
 
-            GS::ObjectState lineTypeId;
-            separatorData.Get ("lineTypeId", lineTypeId);
-            API_AttributeIndex lineTypeIndex;
-            if (GetAttributeIndexFromAttributeId (lineTypeId, API_LinetypeID, lineTypeIndex)) {
-                lineData.ltypeInd = lineTypeIndex;
+                GS::UniString type;
+                skinData.Get ("type", type);
+                if (type == "Core") {
+                    compData.flagBits |= APICWallComp_Core;
+                } else if (type == "Finish") {
+                    compData.flagBits |= APICWallComp_Finish;
+                }
+
+                GS::ObjectState buildingMaterialId;
+                skinData.Get ("buildingMaterialId", buildingMaterialId);
+                API_AttributeIndex buildingMaterialIndex;
+                if (GetAttributeIndexFromAttributeId (buildingMaterialId, API_BuildingMaterialID, buildingMaterialIndex)) {
+                    compData.buildingMaterial = buildingMaterialIndex;
+                }
+
+                skinData.Get ("framePen", compData.framePen);
+                skinData.Get ("thickness", compData.fillThick);
+                totalThickness += compData.fillThick;
             }
 
-            separatorData.Get ("linePen", lineData.linePen);
+            composite.compWall.nComps = (short) componentCount;
+            composite.compWall.totalThick = totalThickness;
+        }
+
+        if (hasSeparators) {
+            compositeDefs.cwall_compLItems = (API_CWallLineComponent**) BMAllocateHandle ((componentCount + 1) * sizeof (API_CWallLineComponent), ALLOCATE_CLEAR, 0);
+            for (UInt32 i = 0; i < componentCount + 1; i++) {
+                const GS::ObjectState& separatorData = separators[i];
+                API_CWallLineComponent& lineData = (*compositeDefs.cwall_compLItems)[i];
+
+                GS::ObjectState lineTypeId;
+                separatorData.Get ("lineTypeId", lineTypeId);
+                API_AttributeIndex lineTypeIndex;
+                if (GetAttributeIndexFromAttributeId (lineTypeId, API_LinetypeID, lineTypeIndex)) {
+                    lineData.ltypeInd = lineTypeIndex;
+                }
+
+                separatorData.Get ("linePen", lineData.linePen);
+            }
         }
 
         if (doesExist) {
