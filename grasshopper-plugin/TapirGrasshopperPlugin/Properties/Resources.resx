@@ -703,6 +703,9 @@
   <data name="Get3DProjectionSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Get3DProjectionSettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="GetAllFavorites" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetAllFavorites.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Set3DProjectionSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Set3DProjectionSettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -741,6 +744,9 @@
   </data>
   <data name="GetFavoritePreviewImage" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetFavoritePreviewImage.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetFavoriteSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetFavoriteSettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="CreateLines" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateLines.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -1083,6 +1089,12 @@
   </data>
   <data name="GetElementTrims" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetElementTrims.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetFavoriteDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetFavoriteDetails.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetFavoriteFolders" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetFavoriteFolders.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="ModifyTexts" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ModifyTexts.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>

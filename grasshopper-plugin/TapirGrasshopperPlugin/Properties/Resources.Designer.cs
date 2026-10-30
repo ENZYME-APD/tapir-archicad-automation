@@ -1840,6 +1840,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap GetAllFavorites
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAllFavorites", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap Set3DProjectionSettings
         {
             get {
@@ -1940,6 +1948,14 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("GetFavoritePreviewImage", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetFavoriteSettings
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetFavoriteSettings", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -2869,6 +2885,22 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("GetElementTrims", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetFavoriteDetails
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetFavoriteDetails", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetFavoriteFolders
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetFavoriteFolders", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
