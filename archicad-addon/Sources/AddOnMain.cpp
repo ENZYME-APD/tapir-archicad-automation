@@ -400,7 +400,8 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<OpenProjectCommand> (
             projectCommands, "1.0.7",
-            "Opens the given project."
+            "Opens the given project. The unsaved changes of the open project are discarded without asking: Archicad has no query for them, "
+            "so call SaveProject first when they must be kept."
         );
         err |= RegisterCommand<NewProjectCommand> (
             projectCommands, "1.7.2",
