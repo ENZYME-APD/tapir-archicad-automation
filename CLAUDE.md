@@ -419,7 +419,8 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   no workflow on their own; see
   [tools/discord-issue-bot/README.md](tools/discord-issue-bot/README.md)).
 - `api_coverage.yml` — keeps the Archicad API coverage checklist live: on a push
-  to `main`, a release, pull request and issue events, hourly and by hand, it runs
+  to `main`, a release, issue events, hourly (which picks up pull request changes)
+  and by hand, it runs
   `tools/generate_api_coverage.py` over the DevKits in `devkits.json` (C functions with
   their older names and AC25/26 command ids, and the C++ `ACAPI::`/`IFCAPI::` API)
   and marks each item used on `main`, merged but not released, in an open PR,
@@ -430,7 +431,8 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   image (`api-coverage.svg`, `api-coverage-dark.svg`), so the README never needs
   an edit when the coverage changes; it also writes the
   summary into the issue numbered in the `API_COVERAGE_ISSUE` repository variable
-  when set; `API_COVERAGE=false` turns it off. It uses `pull_request_target`, so it
+  when set; `API_COVERAGE=false` turns it off. It never runs on pull request
+  events (its check would only keep pull requests from showing green), and it
   must never check out or run pull request code. Maintainers mark items skipped,
   with a reason, in the `skip` section of `tools/api_coverage_rules.json`; the
   `notApplicable` section lists what cannot be a JSON command. The same run
