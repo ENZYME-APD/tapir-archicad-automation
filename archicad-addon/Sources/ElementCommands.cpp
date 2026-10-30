@@ -6015,6 +6015,36 @@ static GSErrCode CalculateStairBounds (const API_Elem_Head& stairElemHead, API_B
     return NoError;
 }
 
+// ACAPI_Element_CalcBounds only finds elements of the current database, and the 3D model of a
+// Slab, Zone or Roof can't be read while a layout or a section is the current database. So the
+// current database is switched to the one that contains the element (the floor plan for model
+// elements; a layout, a master layout, a worksheet, a section ... for 2D elements), and the
+// starting database is put back after the last element.
+static GSErrCode ChangeToContainingDatabase (const API_Guid& elemGuid, API_DatabaseInfo& currentDatabase)
+{
+    API_DatabaseInfo elemDatabase = {};
+    GSErrCode err = ACAPI_Database_GetContainingDatabase (&elemGuid, &elemDatabase);
+    if (err != NoError) {
+        return err;
+    }
+
+    const DatabaseIdResolver& resolver = DatabaseIdResolver::Instance ();
+    if (resolver.GetIdOfDatabase (elemDatabase) == resolver.GetIdOfDatabase (currentDatabase)) {
+        return NoError;
+    }
+
+    err = ACAPI_Window_GetDatabaseInfo (&elemDatabase);
+    if (err != NoError) {
+        return err;
+    }
+    err = ACAPI_Database_ChangeCurrentDatabase (&elemDatabase);
+    if (err != NoError) {
+        return err;
+    }
+    currentDatabase = elemDatabase;
+    return NoError;
+}
+
 Get3DBoundingBoxesCommand::Get3DBoundingBoxesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -6062,6 +6092,14 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
 
+    API_DatabaseInfo startingDatabase = {};
+    GSErrCode err = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the current database.");
+    }
+    API_DatabaseInfo currentDatabase = startingDatabase;
+    const GS::OnExit restoreDatabase ([&] () { ACAPI_Database_ChangeCurrentDatabase (&startingDatabase); });
+
     GS::ObjectState response;
     const auto& boundingBoxes3D = response.AddList<GS::ObjectState> ("boundingBoxes3D");
 
@@ -6074,7 +6112,12 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
 
         API_Elem_Head elemHead = {};
         elemHead.guid = GetGuidFromObjectState (*elementId);
-        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        err = ChangeToContainingDatabase (elemHead.guid, currentDatabase);
+        if (err != NoError) {
+            boundingBoxes3D (CreateErrorResponse (err, err == APIERR_BADID ? "Failed to find element in Archicad" : "Failed to switch to the database of the element"));
+            continue;
+        }
+        err = ACAPI_Element_GetHeader (&elemHead);
         if (err != NoError) {
             boundingBoxes3D (CreateErrorResponse (err, "Failed to find element in Archicad"));
             continue;
@@ -6174,34 +6217,6 @@ GS::Optional<GS::UniString> Get2DBoundingBoxesCommand::GetRawResponseSchema () c
             "boundingBoxes2D"
         ]
     })";
-}
-
-// ACAPI_Element_CalcBounds only finds elements of the current database, so the current database
-// is switched to the one that contains the element (a layout, a master layout, a worksheet, a
-// section ...) and the starting database is put back after the last element.
-static GSErrCode ChangeToContainingDatabase (const API_Guid& elemGuid, API_DatabaseInfo& currentDatabase)
-{
-    API_DatabaseInfo elemDatabase = {};
-    GSErrCode err = ACAPI_Database_GetContainingDatabase (&elemGuid, &elemDatabase);
-    if (err != NoError) {
-        return err;
-    }
-
-    const DatabaseIdResolver& resolver = DatabaseIdResolver::Instance ();
-    if (resolver.GetIdOfDatabase (elemDatabase) == resolver.GetIdOfDatabase (currentDatabase)) {
-        return NoError;
-    }
-
-    err = ACAPI_Window_GetDatabaseInfo (&elemDatabase);
-    if (err != NoError) {
-        return err;
-    }
-    err = ACAPI_Database_ChangeCurrentDatabase (&elemDatabase);
-    if (err != NoError) {
-        return err;
-    }
-    currentDatabase = elemDatabase;
-    return NoError;
 }
 
 GS::ObjectState Get2DBoundingBoxesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
