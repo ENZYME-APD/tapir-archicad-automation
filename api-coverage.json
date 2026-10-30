@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-30 14:14 UTC",
+ "generatedAt": "2026-10-30 15:40 UTC",
  "versions": [
   25,
   26,
@@ -9173,6 +9173,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1672,
+     "title": "GetDetailsOfElements: surface overrides of Roofs, Shells, Beams and Columns"
+    },
     {
      "number": 1580,
      "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
