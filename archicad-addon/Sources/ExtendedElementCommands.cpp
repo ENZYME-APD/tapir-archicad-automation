@@ -1927,6 +1927,14 @@ bool ApplyWallDetails (API_Element& element, API_Element& mask, const GS::Object
         ACAPI_ELEMENT_MASK_SET (mask, API_WallType, referenceLineLocation);
         changed = true;
     }
+    // Mirrors the wall to its reference line (#1598): without it a new wall takes the
+    // Wall tool default's side, which mirrors a Profile wall's whole cross section.
+    bool flipped = false;
+    if (details.Get ("flipped", flipped)) {
+        element.wall.flipped = flipped;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, flipped);
+        changed = true;
+    }
     GS::UniString profileTypeStr;
     if (details.Get ("profileType", profileTypeStr)) {
         // Distinct from geometryType/wall.type above: this is the cross section shape
@@ -3767,6 +3775,10 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                         "referenceLineLocation": {
                             "$ref": "#/WallReferenceLineLocation",
                             "description": "Optional. When omitted, the favorite's or the Wall tool default's reference line location is kept. The Core* values only have an effect on a Composite or Profile wall."
+                        },
+                        "flipped": {
+                            "type": "boolean",
+                            "description": "Optional. True mirrors the wall to its reference line (the side GetDetailsOfElements reports as flipped). When omitted, the favorite's or the Wall tool default's side is kept, which for a Profile wall mirrors its whole cross section."
                         },
                         "structureType": {
                             "$ref": "#/WallStructureType",
@@ -6942,6 +6954,7 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                         "referenceLineLocation": {
                             "$ref": "#/WallReferenceLineLocation"
                         },
+                        "flipped": { "type": "boolean", "description": "True mirrors the wall to its reference line (the side GetDetailsOfElements reports as flipped)." },
                         "profileType": { "$ref": "#/WallModificationProfileType", "description": "slantAlpha/slantBeta only have an effect once this is set to Slanted." },
                         "slantAlpha": { "type": "number", "description": "Only has an effect once profileType is set to Slanted or Trapez." },
                         "slantBeta": { "type": "number", "description": "Only has an effect once profileType is set to Slanted or Trapez." },
