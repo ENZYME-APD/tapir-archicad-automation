@@ -961,17 +961,33 @@ def QuitArchicadAndWait (updateTarget, cancelEvent = None, waitingCallback = Non
         pass
 
 
+def GetArchicadEnvironment ():
+    # The frozen installer sets variables for its own Python: PyInstaller's
+    # tkinter hook points TCL_LIBRARY and TK_LIBRARY at the installer's Tcl/Tk
+    # and the bootloader sets _PYI_* (_MEIPASS2 in older versions). Archicad
+    # started with them passes them on to the scripts it runs, whose Python
+    # then loads the installer's Tcl/Tk files and fails to open a window.
+    environment = dict (os.environ)
+    if getattr (sys, 'frozen', False):
+        for name in list (environment):
+            if name in ('TCL_LIBRARY', 'TK_LIBRARY', '_MEIPASS2') or name.startswith ('_PYI_'):
+                del environment[name]
+    return environment
+
+
 def StartArchicad (archicadLocation):
+    environment = GetArchicadEnvironment ()
     if IsUsingMacOS ():
         # Archicad is only started once its port closed, so an instance that
         # is still there is exiting: plain open would only activate that one.
-        subprocess.Popen (['open', '-n', archicadLocation])
+        # open passes its environment on to Archicad.
+        subprocess.Popen (['open', '-n', archicadLocation], env = environment)
     elif IsUsingWindows ():
         # The installer runs as administrator (--uac-admin), so Archicad
         # started directly would too. Explorer starts it as the logged in user.
-        subprocess.Popen ([os.path.join (os.environ.get ('SystemRoot', 'C:\\Windows'), 'explorer.exe'), archicadLocation])
+        subprocess.Popen ([os.path.join (os.environ.get ('SystemRoot', 'C:\\Windows'), 'explorer.exe'), archicadLocation], env = environment)
     else:
-        subprocess.Popen ([archicadLocation])
+        subprocess.Popen ([archicadLocation], env = environment)
 
 
 def RemovePathQuietly (path):
