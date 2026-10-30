@@ -34,6 +34,21 @@ static GSFlags FlagsFromObjectState (const GS::ObjectState& os)
     return flags;
 }
 
+// ACAPI_Element_SolidLink_Remove answers APIERR_BADDATABASE (-2130313110) when the current
+// database is not the floor plan (e.g. the 3D window is active), even though the link is
+// gone afterwards (#1566). SwitchCurrentDatabaseToFloorPlan (CommandBase.hpp, defined in
+// ExtendedElementCommands.cpp) changes only the CURRENT DATABASE, not the visible window,
+// and `switched` says whether the caller has to put the previous one back.
+
+static bool SolidLinkExists (const API_Guid& targetGuid, const API_Guid& operatorGuid)
+{
+    GS::Array<API_Guid> operators;
+    if (ACAPI_Element_SolidLink_GetOperators (targetGuid, &operators) != NoError) {
+        return false;
+    }
+    return operators.Contains (operatorGuid);
+}
+
 static GS::ObjectState FlagsToObjectState (GSFlags flags)
 {
     GS::ObjectState os;
@@ -190,6 +205,17 @@ GS::ObjectState RemoveSolidElementLinksCommand::Execute (const GS::ObjectState& 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    // Remove from the floor plan database whatever window is active (#1566); the previous
+    // database is restored after the undoable command has finished, on every exit path.
+    API_DatabaseInfo previousDatabase = {};
+    bool databaseSwitched = false;
+    SwitchCurrentDatabaseToFloorPlan (previousDatabase, databaseSwitched);
+    const GS::OnExit restoreDatabase ([&] () {
+        if (databaseSwitched) {
+            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
+        }
+    });
+
     ACAPI_CallUndoableCommand ("RemoveSolidElementLinks", [&] () -> GSErrCode {
         for (const GS::ObjectState& link : solidLinks) {
             GS::ObjectState targetIdOs, operatorIdOs;
@@ -201,8 +227,12 @@ GS::ObjectState RemoveSolidElementLinksCommand::Execute (const GS::ObjectState& 
             const API_Guid targetGuid   = GetGuidFromObjectState (targetIdOs);
             const API_Guid operatorGuid = GetGuidFromObjectState (operatorIdOs);
 
+            const bool existedBefore = SolidLinkExists (targetGuid, operatorGuid);
             const GSErrCode err = ACAPI_Element_SolidLink_Remove (targetGuid, operatorGuid);
-            if (err != NoError) {
+            if (err != NoError && existedBefore && !SolidLinkExists (targetGuid, operatorGuid)) {
+                // The API reported an error but the link is gone: report what happened.
+                executionResults (CreateSuccessfulExecutionResult ());
+            } else if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to remove solid element link."));
             } else {
                 executionResults (CreateSuccessfulExecutionResult ());
@@ -210,6 +240,162 @@ GS::ObjectState RemoveSolidElementLinksCommand::Execute (const GS::ObjectState& 
         }
         return NoError;
     });
+
+    return response;
+}
+
+// ---------------------------------------------------------------------------
+// CreateSolidOperations
+// ---------------------------------------------------------------------------
+
+static bool IsMorph (const API_Guid& guid)
+{
+    API_Elem_Head elemHead = {};
+    return LoadElementHeaderByGuid (guid, elemHead) && GetElemTypeId (elemHead) == API_MorphID;
+}
+
+CreateSolidOperationsCommand::CreateSolidOperationsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String CreateSolidOperationsCommand::GetName () const
+{
+    return "CreateSolidOperations";
+}
+
+GS::Optional<GS::UniString> CreateSolidOperationsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "operations": {
+                "type": "array",
+                "description": "The solid operations to run, each on two morphs. The target and the operator morph are replaced by the resulting morph.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "targetId": {
+                            "$ref": "#/ElementId",
+                            "description": "The target morph."
+                        },
+                        "operatorId": {
+                            "$ref": "#/ElementId",
+                            "description": "The operator morph."
+                        },
+                        "operation": {
+                            "$ref": "#/SolidOperationType"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "targetId",
+                        "operatorId",
+                        "operation"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "operations"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateSolidOperationsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "results": {
+                "type": "array",
+                "description": "One item per operation, in the order of the input: the resulting morphs, or an error.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elements": {
+                                    "$ref": "#/Elements",
+                                    "description": "The morphs created by the operation."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elements"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "results"
+        ]
+    })";
+}
+
+GS::ObjectState CreateSolidOperationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> operations;
+    parameters.Get ("operations", operations);
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("results");
+
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("CreateSolidOperations", [&] () -> GSErrCode {
+        for (const GS::ObjectState& operationOs : operations) {
+            GS::ObjectState targetIdOs, operatorIdOs;
+            if (!operationOs.Get ("targetId", targetIdOs) || !operationOs.Get ("operatorId", operatorIdOs)) {
+                results (CreateErrorResponse (APIERR_BADPARS, "targetId or operatorId is missing."));
+                continue;
+            }
+
+            const API_Guid targetGuid   = GetGuidFromObjectState (targetIdOs);
+            const API_Guid operatorGuid = GetGuidFromObjectState (operatorIdOs);
+            if (targetGuid == operatorGuid) {
+                results (CreateErrorResponse (APIERR_BADPARS, "targetId and operatorId must be different morphs."));
+                continue;
+            }
+            if (!IsMorph (targetGuid) || !IsMorph (operatorGuid)) {
+                results (CreateErrorResponse (APIERR_BADPARS, "targetId and operatorId must both be existing morphs."));
+                continue;
+            }
+
+            // OperationFromString falls back to Subtraction, so an unknown name is caught here.
+            GS::UniString operationStr;
+            operationOs.Get ("operation", operationStr);
+            const API_SolidOperationID operation = OperationFromString (operationStr);
+            if (OperationToString (operation) != operationStr) {
+                results (CreateErrorResponse (APIERR_BADPARS, "Unknown operation: " + operationStr));
+                continue;
+            }
+
+            GS::Array<API_Guid> resultGuids;
+            const GSErrCode err = ACAPI_Element_SolidOperation_Create (targetGuid, operatorGuid, operation, &resultGuids);
+            if (err != NoError) {
+                results (CreateErrorResponse (err, "Failed to run the solid operation."));
+                continue;
+            }
+
+            GS::ObjectState result;
+            const auto& elements = result.AddList<GS::ObjectState> ("elements");
+            for (const API_Guid& resultGuid : resultGuids) {
+                elements (CreateElementIdObjectState (resultGuid));
+            }
+            results (result);
+        }
+        return NoError;
+    });
+
+    if (undoErr != NoError) {
+        return CreateErrorResponse (undoErr, "Failed to run the solid operations.");
+    }
 
     return response;
 }
@@ -604,6 +790,230 @@ GS::ObjectState GetElementTrimsCommand::Execute (const GS::ObjectState& paramete
         }
         for (const API_Guid& t : trimmed) {
             trims (CreateElementIdObjectState (t));
+        }
+        items (item);
+    }
+    return response;
+}
+
+// ---------------------------------------------------------------------------
+// Merges: construction elements joined at their junctions
+// ---------------------------------------------------------------------------
+
+MergeElementsCommand::MergeElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String MergeElementsCommand::GetName () const
+{
+    return "MergeElements";
+}
+
+GS::Optional<GS::UniString> MergeElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The construction elements to merge together. At least two."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> MergeElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState MergeElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    const GS::Array<API_Guid> guids = GuidsFromElements (parameters);
+    if (guids.GetSize () < 2) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "At least two elements are needed to merge.");
+    }
+
+    // The element types are not filtered here: the API reports the ones it cannot merge
+    // (APIERR_BADELEMENTTYPE), and which types it accepts is not documented.
+    GSErrCode err = NoError;
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("MergeElements", [&] () -> GSErrCode {
+        err = ACAPI_Element_Merge_Elements (guids);
+        return err;
+    });
+    if (err == NoError && undoErr != NoError) {
+        // The undo scope did not open (nested undoable command, teamwork state): the lambda never ran.
+        err = undoErr;
+    }
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to merge the elements: every element must be an existing construction element of the current database.");
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
+UnmergeElementsCommand::UnmergeElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String UnmergeElementsCommand::GetName () const
+{
+    return "UnmergeElements";
+}
+
+GS::Optional<GS::UniString> UnmergeElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementPairs": {
+                "type": "array",
+                "description": "The pairs of merged elements to separate. The order within a pair does not matter.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId1": {
+                            "$ref": "#/ElementId"
+                        },
+                        "elementId2": {
+                            "$ref": "#/ElementId"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId1",
+                        "elementId2"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementPairs"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> UnmergeElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState UnmergeElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> pairs;
+    parameters.Get ("elementPairs", pairs);
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("UnmergeElements", [&] () -> GSErrCode {
+        for (const GS::ObjectState& pair : pairs) {
+            GS::ObjectState element1Os, element2Os;
+            if (!pair.Get ("elementId1", element1Os) || !pair.Get ("elementId2", element2Os)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId1 or elementId2 is missing."));
+                continue;
+            }
+            const GSErrCode err = ACAPI_Element_Merge_Remove (GetGuidFromObjectState (element1Os), GetGuidFromObjectState (element2Os));
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to remove the merge between the elements."));
+            } else {
+                executionResults (CreateSuccessfulExecutionResult ());
+            }
+        }
+        return NoError;
+    });
+    if (undoErr != NoError) {
+        // The undo scope did not open, so no pair was tried: say so once per pair,
+        // keeping one result per input as the schema promises.
+        for (USize i = 0; i < pairs.GetSize (); ++i) {
+            executionResults (CreateFailedExecutionResult (undoErr, "Failed to open an undoable command; no merge was removed."));
+        }
+    }
+    return response;
+}
+
+GetMergedElementsCommand::GetMergedElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetMergedElementsCommand::GetName () const
+{
+    return "GetMergedElements";
+}
+
+GS::Optional<GS::UniString> GetMergedElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetMergedElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementMerges": {
+                "type": "array",
+                "description": "One item per queried element, in order: the elements it is merged with. An unknown or deleted element is an error item, so it cannot be mistaken for an element that is simply not merged.",
+                "items": {
+                    "$ref": "#/MergedElementsOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementMerges"
+        ]
+    })";
+}
+
+GS::ObjectState GetMergedElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    const GS::Array<API_Guid> guids = GuidsFromElements (parameters);
+    GS::ObjectState response;
+    const auto& items = response.AddList<GS::ObjectState> ("elementMerges");
+    for (const API_Guid& guid : guids) {
+        // A read that fails is reported as an error item, never as "not merged":
+        // an unknown or deleted guid must stay distinguishable from an element
+        // with no merges.
+        GS::Array<API_Guid> merged;
+        const GSErrCode err = ACAPI_Element_Merge_GetMergedElements (guid, &merged);
+        if (err != NoError) {
+            items (CreateErrorResponse (err, "Failed to read the elements merged with the element."));
+            continue;
+        }
+        GS::ObjectState item;
+        const auto& mergedElements = item.AddList<GS::ObjectState> ("mergedElements");
+        for (const API_Guid& m : merged) {
+            mergedElements (CreateElementIdObjectState (m));
         }
         items (item);
     }
