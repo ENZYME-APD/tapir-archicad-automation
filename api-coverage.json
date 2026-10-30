@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-30 12:29 UTC",
+ "generatedAt": "2026-10-30 12:39 UTC",
  "versions": [
   25,
   26,
@@ -4631,6 +4631,10 @@
    ],
    "issues": [
     {
+     "number": 1665,
+     "title": "PlaceOpenings crashes Archicad 30 (ODB assert in AddIsolatedObject); wrapping Place in ACAPI_CallUndoableCommand fixes it"
+    },
+    {
      "number": 1580,
      "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
     },
@@ -7655,6 +7659,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1664,
+     "title": "Shell structure in GetDetailsOfElements and a ModifyShells command"
+    },
+    {
      "number": 1640,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
     },
@@ -8343,6 +8351,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1664,
+     "title": "Shell structure in GetDetailsOfElements and a ModifyShells command"
+    },
     {
      "number": 1640,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
@@ -29323,6 +29335,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1664,
+     "title": "Shell structure in GetDetailsOfElements and a ModifyShells command"
+    },
+    {
      "number": 1648,
      "title": "CreateStairs: landings and winders per baseline edge and point"
     },
@@ -36714,6 +36730,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1664,
+     "title": "Shell structure in GetDetailsOfElements and a ModifyShells command"
+    },
     {
      "number": 1639,
      "title": "Dimensions: textFrame on the creation commands, text settings in GetDimensionData (replaces #1593)"
@@ -45083,6 +45103,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1664,
+     "title": "Shell structure in GetDetailsOfElements and a ModifyShells command"
+    },
     {
      "number": 1648,
      "title": "CreateStairs: landings and winders per baseline edge and point"
@@ -53863,6 +53887,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1664,
+     "title": "Shell structure in GetDetailsOfElements and a ModifyShells command"
+    },
+    {
      "number": 1639,
      "title": "Dimensions: textFrame on the creation commands, text settings in GetDimensionData (replaces #1593)"
     },
@@ -58603,6 +58631,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1664,
+     "title": "Shell structure in GetDetailsOfElements and a ModifyShells command"
+    },
     {
      "number": 1639,
      "title": "Dimensions: textFrame on the creation commands, text settings in GetDimensionData (replaces #1593)"
