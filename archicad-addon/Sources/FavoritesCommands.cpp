@@ -1,4 +1,5 @@
 #include "FavoritesCommands.hpp"
+#include "PropertyCommands.hpp"
 #include "ElementGDLParameterCommands.hpp"
 #include "MigrationHelper.hpp"
 #include "NativeImage.hpp"
@@ -8,6 +9,8 @@
 #ifdef ServerMainVers_2900
 #include "ACAPI/Result.hpp"
 #include "ACAPI/Favorite.hpp"
+#include "ACAPI/Element/Opening/OpeningDefault.hpp"
+#include <optional>
 #include <vector>
 #endif
 
@@ -292,6 +295,244 @@ GS::ObjectState GetFavoritePreviewImageCommand::Execute (const GS::ObjectState& 
     auto str = Base64Converter::Encode (memChannel.GetDestination (), memChannel.GetDataSize ());
     str.DeleteAll (GS::UniChar(char('\n')));
     return GS::ObjectState ("previewImage", str);
+}
+
+// ============================================================================
+// GetFavoriteDetails — read-only audit of what a Favorite would apply: its
+// classifications, property values and element category values, as
+// ACAPI_Favorite_Get fills them in (the same data ApplyFavoritesToElements and
+// ApplyFavoritesToElementDefaults apply). The memo and the sub-elements are not
+// requested, so no handle is allocated.
+// ============================================================================
+
+GetFavoriteDetailsCommand::GetFavoriteDetailsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetFavoriteDetailsCommand::GetName () const
+{
+    return "GetFavoriteDetails";
+}
+
+GS::Optional<GS::UniString> GetFavoriteDetailsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "favorites": {
+                "$ref": "#/Favorites"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favorites"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetFavoriteDetailsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "favoriteDetails": {
+                "type": "array",
+                "description": "The details of the given favorites, in the order of the input, or an error for a favorite that could not be read.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "favorite": {
+                                    "type": "string",
+                                    "description": "The name of the favorite."
+                                },
+                                "elementType": {
+                                    "type": "string",
+                                    "description": "The element type of the favorite, as in GetFavoritesByType."
+                                },
+                                "classifications": {
+                                    "type": "array",
+                                    "description": "The classifications the favorite applies, one per classification system.",
+                                    "items": {
+                                        "$ref": "#/ClassificationIdArrayItem"
+                                    }
+                                },
+                                "properties": {
+                                    "type": "array",
+                                    "description": "The property values stored in the favorite.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "propertyId": {
+                                                "$ref": "#/PropertyId"
+                                            },
+                                            "propertyName": {
+                                                "type": "string"
+                                            },
+                                            "status": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "HasValue",
+                                                    "NotEvaluated",
+                                                    "NotAvailable"
+                                                ],
+                                                "description": "The evaluation status of the value. propertyValue is only present for HasValue."
+                                            },
+                                            "isDefault": {
+                                                "type": "boolean",
+                                                "description": "True if the value is the default value of the property."
+                                            },
+                                            "propertyValue": {
+                                                "$ref": "#/PropertyValue"
+                                            },
+                                            "error": {
+                                                "$ref": "#/Error"
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "propertyId",
+                                            "propertyName",
+                                            "status",
+                                            "isDefault"
+                                        ]
+                                    }
+                                },
+                                "categoryValues": {
+                                    "type": "array",
+                                    "description": "The element category values (e.g. Structural Function, Position, Renovation Status) stored in the favorite.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "categoryId": {
+                                                "$ref": "#/GuidId"
+                                            },
+                                            "categoryName": {
+                                                "type": "string"
+                                            },
+                                            "categoryValueId": {
+                                                "$ref": "#/GuidId"
+                                            },
+                                            "categoryValueName": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "categoryId",
+                                            "categoryName",
+                                            "categoryValueId",
+                                            "categoryValueName"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "favorite",
+                                "elementType",
+                                "classifications",
+                                "properties",
+                                "categoryValues"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favoriteDetails"
+        ]
+    })";
+}
+
+static GS::UniString PropertyValueStatusToString (API_PropertyValueStatus status)
+{
+    switch (status) {
+        case API_Property_HasValue:     return "HasValue";
+        case API_Property_NotEvaluated: return "NotEvaluated";
+        default:                        return "NotAvailable";
+    }
+}
+
+GS::ObjectState GetFavoriteDetailsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> favorites;
+    parameters.Get ("favorites", favorites);
+
+    GS::ObjectState response;
+    const auto& favoriteDetails = response.AddList<GS::ObjectState> ("favoriteDetails");
+
+    for (const GS::UniString& favoriteName : favorites) {
+        API_Favorite favorite;
+        favorite.name = favoriteName;
+        favorite.properties.New ();
+        favorite.classifications.New ();
+        favorite.elemCategoryValues.New ();
+
+        const GSErrCode err = ACAPI_Favorite_Get (&favorite);
+        if (err != NoError) {
+            favoriteDetails (CreateErrorResponse (err, GS::UniString::Printf ("Failed to get favorite '%T'.", favoriteName.ToPrintf ())));
+            continue;
+        }
+
+        GS::ObjectState details;
+        details.Add ("favorite", favoriteName);
+        details.Add ("elementType", GetElementTypeNonLocalizedName (GetElemTypeId (favorite.element.header)));
+
+        const auto& classifications = details.AddList<GS::ObjectState> ("classifications");
+        for (const GS::Pair<API_Guid, API_Guid>& pair : *favorite.classifications) {
+            GS::ObjectState classificationId;
+            classificationId.Add ("classificationSystemId", CreateGuidObjectState (pair.first));
+            classificationId.Add ("classificationItemId", CreateGuidObjectState (pair.second));
+            classifications (GS::ObjectState ("classificationId", classificationId));
+        }
+
+        // The value is only valid for API_Property_HasValue, so it is left out otherwise
+        // rather than reported as an empty string.
+        const auto& properties = details.AddList<GS::ObjectState> ("properties");
+        for (const API_Property& property : *favorite.properties) {
+            GS::ObjectState propertyDetails;
+            propertyDetails.Add ("propertyId", CreateGuidObjectState (property.definition.guid));
+            propertyDetails.Add ("propertyName", property.definition.name);
+            propertyDetails.Add ("status", PropertyValueStatusToString (property.status));
+            propertyDetails.Add ("isDefault", property.isDefault);
+            if (property.status == API_Property_HasValue) {
+                GS::UniString valueString;
+                const GSErrCode valueErr = GetPropertyValueString (property, valueString);
+                if (valueErr == NoError) {
+                    propertyDetails.Add ("propertyValue", GS::ObjectState ("value", valueString));
+                } else {
+                    GS::ObjectState error;
+                    error.Add ("code", valueErr);
+                    error.Add ("message", "Failed to get property value as string");
+                    propertyDetails.Add ("error", error);
+                }
+            }
+            properties (propertyDetails);
+        }
+
+        const auto& categoryValues = details.AddList<GS::ObjectState> ("categoryValues");
+        for (const API_ElemCategoryValue& categoryValue : *favorite.elemCategoryValues) {
+            GS::ObjectState categoryValueDetails;
+            categoryValueDetails.Add ("categoryId", CreateGuidObjectState (categoryValue.category.guid));
+            categoryValueDetails.Add ("categoryName", GS::UniString (categoryValue.category.name));
+            categoryValueDetails.Add ("categoryValueId", CreateGuidObjectState (categoryValue.guid));
+            categoryValueDetails.Add ("categoryValueName", GS::UniString (categoryValue.name));
+            categoryValues (categoryValueDetails);
+        }
+
+        favoriteDetails (details);
+    }
+
+    return response;
 }
 
 ApplyFavoritesToElementDefaultsCommand::ApplyFavoritesToElementDefaultsCommand () :
@@ -620,6 +861,150 @@ static API_FavoriteNameConflictResolutionPolicy ParseConflictPolicy (
     return fallback;
 }
 
+#ifdef ServerMainVers_2900
+
+// The conflict policies of the ACAPI::Favorite::FavoriteManager calls (Archicad 29+), which differ
+// from those of ACAPI_Favorite_Import above.
+static bool ParseFavoriteManagerConflictPolicy (const GS::UniString& s, ACAPI::Favorite::FavoriteManager::ConflictPolicy& policy)
+{
+    if (s == "Error") {
+        policy = ACAPI::Favorite::FavoriteManager::ConflictPolicy::Error;
+    } else if (s == "Skip") {
+        policy = ACAPI::Favorite::FavoriteManager::ConflictPolicy::Skip;
+    } else if (s == "OverwriteExisting") {
+        policy = ACAPI::Favorite::FavoriteManager::ConflictPolicy::OverwriteExisting;
+    } else if (s == "RenameNew") {
+        policy = ACAPI::Favorite::FavoriteManager::ConflictPolicy::RenameNew;
+    } else {
+        return false;
+    }
+    return true;
+}
+
+// Finds the folder of the Favorites palette at `path`, the folder names from the root down; an
+// empty path is the root folder.
+static GSErrCode FindFavoriteFolderOfPath (const ACAPI::Favorite::FavoriteManager& manager, const GS::Array<GS::UniString>& path, std::optional<ACAPI::Favorite::FavoriteFolder>& folder, GS::UniString& errorMessage)
+{
+    const auto rootFolder = manager.GetRootFolder ();
+    if (rootFolder.IsErr ()) {
+        errorMessage = "Failed to get the root folder of the Favorites.";
+        return rootFolder.UnwrapErr ().kind;
+    }
+    folder.emplace (rootFolder.Unwrap ());
+
+    for (const GS::UniString& name : path) {
+        std::optional<ACAPI::Favorite::FavoriteFolder> found;
+        for (const ACAPI::Favorite::FavoriteFolder& subFolder : folder->GetSubFolders ()) {
+            const auto subFolderName = subFolder.GetName ();
+            if (subFolderName.IsErr ()) {
+                errorMessage = "Failed to get the name of a Favorites folder.";
+                return subFolderName.UnwrapErr ().kind;
+            }
+            if (subFolderName.Unwrap () == name) {
+                found.emplace (subFolder);
+                break;
+            }
+        }
+        if (!found.has_value ()) {
+            errorMessage = GS::UniString::Printf ("The Favorites folder '%T' was not found.", name.ToPrintf ());
+            return APIERR_BADNAME;
+        }
+        folder.emplace (*found);
+    }
+
+    return NoError;
+}
+
+// The path of `folder` from the root down, found by walking up its parents until the root.
+static GSErrCode GetPathOfFavoriteFolder (const ACAPI::Favorite::FavoriteFolder& folder, GS::Array<GS::UniString>& path, GS::UniString& errorMessage)
+{
+    // A guard against a parent chain that never reaches the root.
+    const UIndex maxDepth = 1000;
+
+    GS::Array<GS::UniString> namesUpwards;
+    std::optional<ACAPI::Favorite::FavoriteFolder> current;
+    current.emplace (folder);
+    for (UIndex depth = 0; ; ++depth) {
+        if (depth >= maxDepth) {
+            errorMessage = "The Favorites folder hierarchy is too deep.";
+            return APIERR_GENERAL;
+        }
+
+        const auto isRoot = current->IsRoot ();
+        if (isRoot.IsErr ()) {
+            errorMessage = "Failed to check whether a Favorites folder is the root.";
+            return isRoot.UnwrapErr ().kind;
+        }
+        if (isRoot.Unwrap ()) {
+            break;
+        }
+
+        const auto name = current->GetName ();
+        if (name.IsErr ()) {
+            errorMessage = "Failed to get the name of a Favorites folder.";
+            return name.UnwrapErr ().kind;
+        }
+        namesUpwards.Push (name.Unwrap ());
+
+        const auto parent = current->GetParentFolder ();
+        if (parent.IsErr ()) {
+            errorMessage = "Failed to get the parent of a Favorites folder.";
+            return parent.UnwrapErr ().kind;
+        }
+        current.emplace (parent.Unwrap ());
+    }
+
+    path.Clear ();
+    for (UIndex ii = namesUpwards.GetSize (); ii >= 1; --ii) {
+        path.Push (namesUpwards[ii - 1]);
+    }
+    return NoError;
+}
+
+// Calls `func` with the settings a new or changed Favorite takes from `source`: those of another
+// Favorite ({favoriteName}) or the current tool default ({toolDefault}, only Opening so far, the
+// one tool whose ACAPI::ElementDefault the API can create).
+template<typename Func>
+static GSErrCode WithFavoriteSource (const ACAPI::Favorite::FavoriteManager& manager, const GS::ObjectState& source, GS::UniString& errorMessage, Func&& func)
+{
+    GS::UniString sourceFavoriteName;
+    GS::UniString toolDefault;
+    const bool hasFavoriteName = source.Get ("favoriteName", sourceFavoriteName);
+    const bool hasToolDefault = source.Get ("toolDefault", toolDefault);
+    if (hasFavoriteName == hasToolDefault) {
+        errorMessage = "The source must have exactly one of favoriteName and toolDefault.";
+        return APIERR_BADPARS;
+    }
+
+    if (hasFavoriteName) {
+        const auto sourceFavorite = manager.GetFavoriteByName (sourceFavoriteName);
+        if (sourceFavorite.IsErr ()) {
+            errorMessage = GS::UniString::Printf ("The source Favorite '%T' was not found.", sourceFavoriteName.ToPrintf ());
+            return sourceFavorite.UnwrapErr ().kind;
+        }
+        const auto elementDefault = sourceFavorite.Unwrap ().GetElementDefault ();
+        if (elementDefault.IsErr ()) {
+            errorMessage = GS::UniString::Printf ("Failed to get the settings of the source Favorite '%T': %s", sourceFavoriteName.ToPrintf (), elementDefault.UnwrapErr ().text.c_str ());
+            return elementDefault.UnwrapErr ().kind;
+        }
+        return func (elementDefault.Unwrap ());
+    }
+
+    if (toolDefault != "Opening") {
+        errorMessage = GS::UniString::Printf ("Invalid toolDefault '%T'.", toolDefault.ToPrintf ());
+        return APIERR_BADPARS;
+    }
+    const ACAPI::Result<ACAPI::Element::OpeningDefault> openingDefault = ACAPI::Element::CreateOpeningDefault ();
+    if (openingDefault.IsErr ()) {
+        errorMessage = GS::UniString::Printf ("Failed to get the Opening tool default: %s", openingDefault.UnwrapErr ().text.c_str ());
+        return openingDefault.UnwrapErr ().kind;
+    }
+    const ACAPI::ElementDefault& elementDefault = openingDefault.Unwrap ();
+    return func (elementDefault);
+}
+
+#endif
+
 ImportFavoritesCommand::ImportFavoritesCommand () :
     CommandBase (CommonSchema::Used)
 {}
@@ -636,21 +1021,31 @@ GS::Optional<GS::UniString> ImportFavoritesCommand::GetInputParametersSchema () 
         "properties": {
             "path": {
                 "type": "string",
-                "description": "Absolute path on the AC host to a Favorites file (.prefs) or folder."
+                "description": "Absolute path on the AC host. With the prefs format: a Favorites file (.prefs) or folder. With the xml format: the folder of Favorite files, as ExportFavorites writes it. With the legacyPRF format: the .prf file."
+            },
+            "format": {
+                "type": "string",
+                "enum": ["prefs", "xml", "legacyPRF"],
+                "description": "The format to import from, the counterpart of the format of ExportFavorites. prefs (the default) works in every Archicad version. xml imports Favorite files from a folder, and legacyPRF a Favorites file of earlier Archicad versions; these two require Archicad 29 or newer."
+            },
+            "fileNames": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Only with the xml format: the names of the Favorite files in the folder to import. Default: every Favorite file of the folder."
             },
             "targetFolder": {
                 "type": "array",
                 "items": { "type": "string" },
-                "description": "Folder hierarchy under which to import. Empty = root."
+                "description": "Folder hierarchy under which to import. Empty = root. With the xml and legacyPRF formats the folder must exist, and omitting it keeps the folders stored with the Favorites."
             },
             "importFolders": {
                 "type": "boolean",
-                "description": "If true and `path` is a folder, the folder structure is preserved."
+                "description": "Only with the prefs format: if true and `path` is a folder, the folder structure is preserved."
             },
             "conflictPolicy": {
                 "type": "string",
-                "enum": ["Error", "Skip", "Overwrite", "Append"],
-                "description": "How to resolve name conflicts. Default Overwrite."
+                "enum": ["Error", "Skip", "Overwrite", "Append", "OverwriteExisting", "RenameNew"],
+                "description": "How to resolve name conflicts. The prefs format takes Error, Skip, Overwrite or Append, default Overwrite. The xml and legacyPRF formats take Error, Skip, OverwriteExisting or RenameNew, default Error."
             }
         },
         "required": ["path"],
@@ -680,11 +1075,71 @@ GS::ObjectState ImportFavoritesCommand::Execute (const GS::ObjectState& paramete
         return CreateErrorResponse (APIERR_BADPARS, "path is required");
     }
 
+    GS::UniString format = "prefs";
+    parameters.Get ("format", format);
+    if (format != "prefs" && format != "xml" && format != "legacyPRF") {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("Invalid format '%T'.", format.ToPrintf ()));
+    }
+
+    GS::Array<GS::UniString> fileNames;
+    const bool hasFileNames = parameters.Get ("fileNames", fileNames);
+    if (hasFileNames && format != "xml") {
+        return CreateErrorResponse (APIERR_BADPARS, "fileNames can only be given with the xml format.");
+    }
+
     API_FavoriteFolderHierarchy targetFolder;
     GS::Array<GS::UniString> folders;
-    parameters.Get ("targetFolder", folders);
+    const bool hasTargetFolder = parameters.Get ("targetFolder", folders);
     for (const GS::UniString& f : folders) {
         targetFolder.Push (f);
+    }
+
+    const IO::Location location = LocationFromPath (path);
+
+    if (format != "prefs") {
+#ifdef ServerMainVers_2900
+        GS::UniString managerPolicyStr = "Error";
+        parameters.Get ("conflictPolicy", managerPolicyStr);
+        ACAPI::Favorite::FavoriteManager::ConflictPolicy managerPolicy = ACAPI::Favorite::FavoriteManager::ConflictPolicy::Error;
+        if (!ParseFavoriteManagerConflictPolicy (managerPolicyStr, managerPolicy)) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("The %T format does not take conflictPolicy '%T'; use Error, Skip, OverwriteExisting or RenameNew.", format.ToPrintf (), managerPolicyStr.ToPrintf ()));
+        }
+
+        const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
+
+        // Without a target folder Archicad keeps the folders stored with the Favorites.
+        std::optional<ACAPI::Favorite::FavoriteFolder> targetOrKeep;
+        if (hasTargetFolder) {
+            GS::UniString errorMessage;
+            const GSErrCode findErr = FindFavoriteFolderOfPath (manager, folders, targetOrKeep, errorMessage);
+            if (findErr != NoError) {
+                return CreateErrorResponse (findErr, errorMessage);
+            }
+        }
+
+        const ACAPI::Result<void> importResult = [&] () -> ACAPI::Result<void> {
+            if (format == "legacyPRF") {
+                return manager.ImportFavoritesFromLegacyPRF (location, managerPolicy, targetOrKeep);
+            }
+            if (!hasFileNames) {
+                return manager.ImportAllFavorites (location, managerPolicy, targetOrKeep);
+            }
+            std::vector<IO::Location> favoriteXMLs;
+            for (const GS::UniString& fileName : fileNames) {
+                IO::Location fileLocation = location;
+                fileLocation.AppendToLocal (IO::Name (fileName));
+                favoriteXMLs.push_back (fileLocation);
+            }
+            return manager.ImportFavorites (favoriteXMLs, managerPolicy, targetOrKeep);
+        } ();
+        if (importResult.IsErr ()) {
+            return CreateErrorResponse (importResult.UnwrapErr ().kind, GS::UniString::Printf ("Failed to import favorites: %s", importResult.UnwrapErr ().text.c_str ()));
+        }
+        return GS::ObjectState ();
+#else
+        UNUSED_VARIABLE (hasTargetFolder);
+        return CreateErrorResponse (APIERR_NOTSUPPORTED, GS::UniString::Printf ("The %T format requires Archicad 29 or newer.", format.ToPrintf ()));
+#endif
     }
 
     bool importFolders = false;
@@ -693,8 +1148,6 @@ GS::ObjectState ImportFavoritesCommand::Execute (const GS::ObjectState& paramete
     GS::UniString policyStr = "Overwrite";
     parameters.Get ("conflictPolicy", policyStr);
     const auto policy = ParseConflictPolicy (policyStr, API_FavoriteOverwrite);
-
-    const IO::Location location = LocationFromPath (path);
     GS::UniString firstConflictName;
     const GSErrCode err = ACAPI_Favorite_Import (
         location, targetFolder, importFolders, policy, &firstConflictName);
@@ -1037,6 +1490,28 @@ static GSErrCode RestoreKeptFields (const API_Element& elementBefore, API_Elemen
     return NoError;
 }
 
+// Puts the target back on the story it was on before the Favorite was applied, should
+// ACAPI_Element_ChangeParameters have moved it despite the target's own story being passed in
+// with the Favorite (#1565). Done with the same call SetDetailsOfElements changes floorIndex with.
+static GSErrCode RestoreHomeStory (const API_Element& elementBefore)
+{
+    API_Element element = {};
+    element.header.guid = elementBefore.header.guid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+    if (element.header.floorInd == elementBefore.header.floorInd) {
+        return NoError;
+    }
+
+    element.header.floorInd = elementBefore.header.floorInd;
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+    return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+}
+
 ApplyFavoritesToElementsCommand::ApplyFavoritesToElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -1074,7 +1549,7 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
             },
             "applySettings": {
                 "type": "boolean",
-                "description": "Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc. - never geometry). For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. A Dimension's text size, text pen and text frame are not changed (tested in Archicad 28): the dimension creation commands take textHeight and textPen for them. Default is true."
+                "description": "Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc. - never geometry; the element stays on its own home story). For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. A Dimension's text size, text pen and text frame are not changed (tested in Archicad 28): the dimension creation commands take textHeight and textPen for them. Default is true."
             },
             "applyClassifications": {
                 "type": "boolean",
@@ -1226,7 +1701,16 @@ GS::ObjectState ApplyFavoritesToElementsCommand::Execute (const GS::ObjectState&
                     ? nullptr
                     : favorite.memo.GetPtr ();
 
+                // The home story is part of the header the full mask covers, and the Favorite
+                // carries the story of the element it was captured from: applied as is, it moved
+                // a Wall from story 2 down to story 0 (#1565). The target keeps its own story.
+                favorite.element.header.floorInd = targetElement.header.floorInd;
+                mask.header.floorInd = 0;
+
                 err = ACAPI_Element_ChangeParameters (targetGuids, &favorite.element, memoToApply, &mask);
+                if (err == NoError) {
+                    err = RestoreHomeStory (targetElement);
+                }
             }
             ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
             if (err != NoError) {
@@ -1493,6 +1977,99 @@ GS::ObjectState DeleteFavoritesCommand::Execute (const GS::ObjectState& paramete
     return response;
 }
 
+#ifdef ServerMainVers_2900
+
+// Writes the folder, its Favorites and its subfolders recursively. The path is
+// built while walking down from the root, whose name and path are empty.
+static GSErrCode AddFavoriteFolderToObjectState (const ACAPI::Favorite::FavoriteFolder& folder, const GS::UniString& name, const GS::Array<GS::UniString>& path, GS::ObjectState& os, GS::UniString& errorMessage)
+{
+    os.Add ("name", name);
+    os.Add ("path", path);
+
+    GS::Array<GS::UniString> favoriteNames;
+    for (const ACAPI::Favorite::Favorite& favorite : folder.GetFavorites ()) {
+        const auto favoriteName = favorite.GetName ();
+        if (favoriteName.IsErr ()) {
+            errorMessage = "Failed to get the name of a Favorite.";
+            return favoriteName.UnwrapErr ().kind;
+        }
+        favoriteNames.Push (favoriteName.Unwrap ());
+    }
+    os.Add ("favorites", favoriteNames);
+
+    const auto& subFoldersList = os.AddList<GS::ObjectState> ("subFolders");
+    for (const ACAPI::Favorite::FavoriteFolder& subFolder : folder.GetSubFolders ()) {
+        const auto subFolderName = subFolder.GetName ();
+        if (subFolderName.IsErr ()) {
+            errorMessage = "Failed to get the name of a Favorite folder.";
+            return subFolderName.UnwrapErr ().kind;
+        }
+        GS::Array<GS::UniString> subFolderPath = path;
+        subFolderPath.Push (subFolderName.Unwrap ());
+
+        GS::ObjectState subFolderOs;
+        const GSErrCode err = AddFavoriteFolderToObjectState (subFolder, subFolderName.Unwrap (), subFolderPath, subFolderOs, errorMessage);
+        if (err != NoError) {
+            return err;
+        }
+        subFoldersList (subFolderOs);
+    }
+
+    return NoError;
+}
+
+#endif
+
+GetFavoriteFoldersCommand::GetFavoriteFoldersCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetFavoriteFoldersCommand::GetName () const
+{
+    return "GetFavoriteFolders";
+}
+
+GS::Optional<GS::UniString> GetFavoriteFoldersCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "rootFolder": {
+                "$ref": "#/FavoriteFolderDetails"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "rootFolder"
+        ]
+    })";
+}
+
+GS::ObjectState GetFavoriteFoldersCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
+    const auto rootFolder = manager.GetRootFolder ();
+    if (rootFolder.IsErr ()) {
+        return CreateErrorResponse (rootFolder.UnwrapErr ().kind, "Failed to get the root folder of the Favorites.");
+    }
+
+    GS::ObjectState rootFolderOs;
+    GS::UniString errorMessage;
+    const GSErrCode err = AddFavoriteFolderToObjectState (rootFolder.Unwrap (), GS::UniString (), GS::Array<GS::UniString> (), rootFolderOs, errorMessage);
+    if (err != NoError) {
+        return CreateErrorResponse (err, errorMessage);
+    }
+
+    GS::ObjectState response;
+    response.Add ("rootFolder", rootFolderOs);
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
 // ============================================================================
 // GetFavoriteSettings — reads what ACAPI_Favorite_Get returns about a Favorite
 // (element type, the GDL parameters of its library part, its marker, its
@@ -1745,4 +2322,485 @@ GS::ObjectState GetFavoriteSettingsCommand::Execute (const GS::ObjectState& para
     }
 
     return response;
+}
+
+// ============================================================================
+// CreateFavorite / ChangeFavorite / ApplyFavoriteToToolDefault / MoveFavoriteFolder
+// — the ACAPI::Favorite::FavoriteManager calls of Archicad 29, which take the
+// settings of a Favorite as an ACAPI::ElementDefault (from another Favorite or
+// from a tool default, see WithFavoriteSource) instead of an element.
+// ============================================================================
+
+CreateFavoriteCommand::CreateFavoriteCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateFavoriteCommand::GetName () const
+{
+    return "CreateFavorite";
+}
+
+GS::Optional<GS::UniString> CreateFavoriteCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the new Favorite."
+            },
+            "folder": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "The folder of the Favorites palette to create the Favorite in, as the folder names from the root down. The folder must exist. Empty or omitted = root."
+            },
+            "source": {
+                "type": "object",
+                "description": "Where the settings of the new Favorite come from: exactly one of favoriteName and toolDefault.",
+                "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Take the settings of this Favorite."
+                    },
+                    "toolDefault": {
+                        "type": "string",
+                        "enum": ["Opening"],
+                        "description": "Take the current settings of this tool."
+                    }
+                },
+                "additionalProperties": false
+            },
+            "conflictPolicy": {
+                "type": "string",
+                "enum": ["Error", "Skip", "OverwriteExisting", "RenameNew"],
+                "description": "What to do when a Favorite with this name already exists: Error fails, Skip leaves the existing Favorite unchanged, OverwriteExisting gives the existing Favorite the new settings (its folder does not change), RenameNew creates the Favorite with ' (2)', ' (3)', ... appended to the name. Default Error."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "source"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateFavoriteCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the Favorite: the given name, or the new name with RenameNew."
+            },
+            "folder": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "The folder of the Favorite, as the folder names from the root down. Empty for the root. Missing when Archicad cannot read it."
+            },
+            "outcome": {
+                "type": "string",
+                "enum": ["Created", "Skipped", "Overwritten"],
+                "description": "Created for a new Favorite (also with RenameNew), Skipped or Overwritten when a Favorite with the name already existed."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "outcome"
+        ]
+    })";
+}
+
+GS::ObjectState CreateFavoriteCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    GS::UniString name;
+    parameters.Get ("name", name);
+    if (name.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "name is required.");
+    }
+
+    GS::Array<GS::UniString> folderPath;
+    parameters.Get ("folder", folderPath);
+
+    const GS::ObjectState* source = parameters.Get ("source");
+    if (source == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "source is required.");
+    }
+
+    GS::UniString policyStr = "Error";
+    parameters.Get ("conflictPolicy", policyStr);
+    if (policyStr != "Error" && policyStr != "Skip" && policyStr != "OverwriteExisting" && policyStr != "RenameNew") {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("Invalid conflictPolicy '%T'.", policyStr.ToPrintf ()));
+    }
+
+    GS::UniString usedName = name;
+    GS::UniString outcome = "Created";
+    std::optional<ACAPI::Favorite::Favorite> resultFavorite;
+    GS::UniString errorMessage;
+
+    const GSErrCode err = ACAPI_CallUndoableCommand ("CreateFavorite", [&] () -> GSErrCode {
+        const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
+
+        const auto existing = manager.GetFavoriteByName (name);
+        if (existing.IsOk ()) {
+            if (policyStr == "Error") {
+                errorMessage = GS::UniString::Printf ("A Favorite named '%T' already exists.", name.ToPrintf ());
+                return APIERR_NAMEALREADYUSED;
+            }
+            if (policyStr == "Skip") {
+                outcome = "Skipped";
+                resultFavorite.emplace (existing.Unwrap ());
+                return NoError;
+            }
+            if (policyStr == "OverwriteExisting") {
+                outcome = "Overwritten";
+                resultFavorite.emplace (existing.Unwrap ());
+                return WithFavoriteSource (manager, *source, errorMessage, [&] (const ACAPI::ElementDefault& elementDefault) -> GSErrCode {
+                    const auto changeResult = manager.ChangeFavorite (existing.Unwrap (), elementDefault);
+                    if (changeResult.IsErr ()) {
+                        errorMessage = GS::UniString::Printf ("Failed to change the Favorite: %s", changeResult.UnwrapErr ().text.c_str ());
+                        return changeResult.UnwrapErr ().kind;
+                    }
+                    return NoError;
+                });
+            }
+
+            // RenameNew: the first of "name (2)", "name (3)", ... that is not taken.
+            bool foundFreeName = false;
+            for (UInt32 suffix = 2; suffix < 10000 && !foundFreeName; ++suffix) {
+                usedName = GS::UniString::Printf ("%T (%u)", name.ToPrintf (), suffix);
+                foundFreeName = manager.GetFavoriteByName (usedName).IsErr ();
+            }
+            if (!foundFreeName) {
+                errorMessage = GS::UniString::Printf ("Found no free name for the Favorite '%T'.", name.ToPrintf ());
+                return APIERR_NAMEALREADYUSED;
+            }
+        }
+
+        std::optional<ACAPI::Favorite::FavoriteFolder> folder;
+        const GSErrCode findErr = FindFavoriteFolderOfPath (manager, folderPath, folder, errorMessage);
+        if (findErr != NoError) {
+            return findErr;
+        }
+
+        return WithFavoriteSource (manager, *source, errorMessage, [&] (const ACAPI::ElementDefault& elementDefault) -> GSErrCode {
+            const auto created = manager.CreateFavorite (usedName, *folder, elementDefault);
+            if (created.IsErr ()) {
+                errorMessage = GS::UniString::Printf ("Failed to create the Favorite: %s", created.UnwrapErr ().text.c_str ());
+                return created.UnwrapErr ().kind;
+            }
+            resultFavorite.emplace (created.Unwrap ());
+            return NoError;
+        });
+    });
+
+    if (err != NoError) {
+        return CreateErrorResponse (err, errorMessage.IsEmpty () ? GS::UniString ("Failed to create the Favorite.") : errorMessage);
+    }
+
+    GS::ObjectState response;
+    response.Add ("name", usedName);
+    response.Add ("outcome", outcome);
+    if (resultFavorite.has_value ()) {
+        const auto parentFolder = resultFavorite->GetParentFolder ();
+        GS::Array<GS::UniString> resultFolderPath;
+        GS::UniString pathErrorMessage;
+        if (parentFolder.IsOk () && GetPathOfFavoriteFolder (parentFolder.Unwrap (), resultFolderPath, pathErrorMessage) == NoError) {
+            const auto& folderAdder = response.AddList<GS::UniString> ("folder");
+            for (const GS::UniString& folderName : resultFolderPath) {
+                folderAdder (folderName);
+            }
+        }
+    }
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
+ChangeFavoriteCommand::ChangeFavoriteCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ChangeFavoriteCommand::GetName () const
+{
+    return "ChangeFavorite";
+}
+
+GS::Optional<GS::UniString> ChangeFavoriteCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "favoriteName": {
+                "type": "string",
+                "description": "The name of the Favorite to change."
+            },
+            "source": {
+                "type": "object",
+                "description": "Where the new settings of the Favorite come from: exactly one of favoriteName and toolDefault.",
+                "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Take the settings of this Favorite."
+                    },
+                    "toolDefault": {
+                        "type": "string",
+                        "enum": ["Opening"],
+                        "description": "Take the current settings of this tool."
+                    }
+                },
+                "additionalProperties": false
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favoriteName",
+            "source"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ChangeFavoriteCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState ChangeFavoriteCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    GS::UniString favoriteName;
+    parameters.Get ("favoriteName", favoriteName);
+
+    const GS::ObjectState* source = parameters.Get ("source");
+    if (source == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "source is required.");
+    }
+
+    GS::UniString errorMessage;
+    const GSErrCode err = ACAPI_CallUndoableCommand ("ChangeFavorite", [&] () -> GSErrCode {
+        const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
+        const auto favorite = manager.GetFavoriteByName (favoriteName);
+        if (favorite.IsErr ()) {
+            errorMessage = GS::UniString::Printf ("The Favorite '%T' was not found.", favoriteName.ToPrintf ());
+            return favorite.UnwrapErr ().kind;
+        }
+
+        return WithFavoriteSource (manager, *source, errorMessage, [&] (const ACAPI::ElementDefault& elementDefault) -> GSErrCode {
+            const auto changeResult = manager.ChangeFavorite (favorite.Unwrap (), elementDefault);
+            if (changeResult.IsErr ()) {
+                errorMessage = GS::UniString::Printf ("Failed to change the Favorite: %s", changeResult.UnwrapErr ().text.c_str ());
+                return changeResult.UnwrapErr ().kind;
+            }
+            return NoError;
+        });
+    });
+
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, errorMessage.IsEmpty () ? GS::UniString ("Failed to change the Favorite.") : errorMessage);
+    }
+    return CreateSuccessfulExecutionResult ();
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
+ApplyFavoriteToToolDefaultCommand::ApplyFavoriteToToolDefaultCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ApplyFavoriteToToolDefaultCommand::GetName () const
+{
+    return "ApplyFavoriteToToolDefault";
+}
+
+GS::Optional<GS::UniString> ApplyFavoriteToToolDefaultCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "favoriteName": {
+                "type": "string",
+                "description": "The name of the Favorite whose settings become the settings of its tool."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favoriteName"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ApplyFavoriteToToolDefaultCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementType": {
+                "$ref": "#/ElementType",
+                "description": "The element type of the tool whose settings changed."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementType"
+        ]
+    })";
+}
+
+GS::ObjectState ApplyFavoriteToToolDefaultCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    GS::UniString favoriteName;
+    parameters.Get ("favoriteName", favoriteName);
+
+    const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
+    const auto favorite = manager.GetFavoriteByName (favoriteName);
+    if (favorite.IsErr ()) {
+        return CreateErrorResponse (favorite.UnwrapErr ().kind, GS::UniString::Printf ("The Favorite '%T' was not found.", favoriteName.ToPrintf ()));
+    }
+
+    const auto elementDefault = favorite.Unwrap ().GetElementDefault ();
+    if (elementDefault.IsErr ()) {
+        return CreateErrorResponse (elementDefault.UnwrapErr ().kind, GS::UniString::Printf ("Failed to get the settings of the Favorite: %s", elementDefault.UnwrapErr ().text.c_str ()));
+    }
+
+    const auto setResult = elementDefault.Unwrap ().SetAsArchicadDefault ();
+    if (setResult.IsErr ()) {
+        return CreateErrorResponse (setResult.UnwrapErr ().kind, GS::UniString::Printf ("Failed to make the Favorite's settings the tool's settings: %s", setResult.UnwrapErr ().text.c_str ()));
+    }
+
+    return GS::ObjectState ("elementType", GetElementTypeNonLocalizedName (elementDefault.Unwrap ().GetElemType ().typeID));
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
+MoveFavoriteFolderCommand::MoveFavoriteFolderCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String MoveFavoriteFolderCommand::GetName () const
+{
+    return "MoveFavoriteFolder";
+}
+
+GS::Optional<GS::UniString> MoveFavoriteFolderCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "folder": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "The folder of the Favorites palette to move, as the folder names from the root down. The root folder cannot be moved."
+            },
+            "targetFolder": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "The folder to move it into, as the folder names from the root down. Empty = root. It cannot be the moved folder or one of its subfolders."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "folder",
+            "targetFolder"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> MoveFavoriteFolderCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "folder": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "The new path of the moved folder, as the folder names from the root down."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "folder"
+        ]
+    })";
+}
+
+GS::ObjectState MoveFavoriteFolderCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::UniString> folderPath;
+    GS::Array<GS::UniString> targetPath;
+    parameters.Get ("folder", folderPath);
+    parameters.Get ("targetFolder", targetPath);
+
+    if (folderPath.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "The root folder cannot be moved.");
+    }
+
+    bool targetIsInFolder = targetPath.GetSize () >= folderPath.GetSize ();
+    for (UIndex ii = 0; targetIsInFolder && ii < folderPath.GetSize (); ++ii) {
+        targetIsInFolder = targetPath[ii] == folderPath[ii];
+    }
+    if (targetIsInFolder) {
+        return CreateErrorResponse (APIERR_BADPARS, "A folder cannot be moved into itself or into one of its subfolders.");
+    }
+
+    std::optional<ACAPI::Favorite::FavoriteFolder> folder;
+    GS::UniString errorMessage;
+    const GSErrCode err = ACAPI_CallUndoableCommand ("MoveFavoriteFolder", [&] () -> GSErrCode {
+        const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
+
+        GSErrCode findErr = FindFavoriteFolderOfPath (manager, folderPath, folder, errorMessage);
+        if (findErr != NoError) {
+            return findErr;
+        }
+
+        std::optional<ACAPI::Favorite::FavoriteFolder> targetFolder;
+        findErr = FindFavoriteFolderOfPath (manager, targetPath, targetFolder, errorMessage);
+        if (findErr != NoError) {
+            return findErr;
+        }
+
+        const auto moveResult = manager.MoveFolder (*folder, *targetFolder);
+        if (moveResult.IsErr ()) {
+            errorMessage = GS::UniString::Printf ("Failed to move the folder: %s", moveResult.UnwrapErr ().text.c_str ());
+            return moveResult.UnwrapErr ().kind;
+        }
+        return NoError;
+    });
+
+    if (err != NoError) {
+        return CreateErrorResponse (err, errorMessage.IsEmpty () ? GS::UniString ("Failed to move the folder.") : errorMessage);
+    }
+
+    // Read after the undoable command, so that a failure here cannot undo the move.
+    GS::Array<GS::UniString> newPath;
+    const GSErrCode pathErr = GetPathOfFavoriteFolder (*folder, newPath, errorMessage);
+    if (pathErr != NoError) {
+        return CreateErrorResponse (pathErr, GS::UniString ("The folder was moved, but its new path could not be read: ") + errorMessage);
+    }
+
+    GS::ObjectState response;
+    const auto& folderAdder = response.AddList<GS::UniString> ("folder");
+    for (const GS::UniString& folderName : newPath) {
+        folderAdder (folderName);
+    }
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
 }

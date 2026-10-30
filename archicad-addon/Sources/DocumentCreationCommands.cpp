@@ -34,6 +34,19 @@ GS::ObjectState CreateNavigatorItemsResponse (const GS::Array<GS::ObjectState>& 
     return response;
 }
 
+// The id of a new worksheet or detail database, with the navigatorItemId of its Project Map item,
+// so that the new item can be opened with ChangeWindow or placed with CreateDrawings without
+// reading the whole Project Map (#1602). Without the item only the databaseId is returned.
+GS::ObjectState CreateNewWorksheetOrDetailObjectState (const API_DatabaseInfo& dbInfo)
+{
+    GS::ObjectState result = CreateDatabaseIdObjectState (DatabaseIdResolver::Instance ().GetIdOfDatabase (dbInfo));
+    const GS::Optional<API_Guid> navigatorItemId = FindProjectMapItemOfWorksheetOrDetail (dbInfo);
+    if (navigatorItemId.HasValue ()) {
+        result.Add ("navigatorItemId", CreateGuidObjectState (navigatorItemId.Get ()));
+    }
+    return result;
+}
+
 bool GetItems (const GS::ObjectState& parameters, const char* fieldName, GS::Array<GS::ObjectState>& outItems, GS::ObjectState& errorResponse)
 {
     if (!parameters.Get (fieldName, outItems)) {
@@ -406,7 +419,34 @@ GS::Optional<GS::UniString> CreateDetailsCommand::GetInputParametersSchema () co
 
 GS::Optional<GS::UniString> CreateDetailsCommand::GetRawResponseSchema () const
 {
-    return R"({"type":"object","properties":{"databases":{"$ref":"#/DatabaseIdsOrErrors"}},"additionalProperties":false,"required":["databases"]})";
+    return R"({
+        "type": "object",
+        "properties": {
+            "databases": {
+                "type": "array",
+                "description": "One item per input item, in the same order.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "databaseId": { "$ref": "#/DatabaseId" },
+                                "navigatorItemId": {
+                                    "$ref": "#/NavigatorItemId",
+                                    "description": "The Project Map item of the new database, for ChangeWindow or CreateDrawings. Missing when the item could not be found."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["databaseId"]
+                        },
+                        { "$ref": "#/ErrorItem" }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["databases"]
+    })";
 }
 
 GS::ObjectState CreateDetailsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -430,7 +470,7 @@ GS::ObjectState CreateDetailsCommand::Execute (const GS::ObjectState& parameters
             continue;
         }
 
-        databases.Push (CreateDatabaseIdObjectState (DatabaseIdResolver::Instance ().GetIdOfDatabase (dbInfo)));
+        databases.Push (CreateNewWorksheetOrDetailObjectState (dbInfo));
     }
     return CreateDatabasesResponse (databases);
 }
@@ -494,7 +534,7 @@ GS::ObjectState CreateWorksheetsCommand::Execute (const GS::ObjectState& paramet
             continue;
         }
 
-        databases.Push (CreateDatabaseIdObjectState (DatabaseIdResolver::Instance ().GetIdOfDatabase (dbInfo)));
+        databases.Push (CreateNewWorksheetOrDetailObjectState (dbInfo));
     }
     return CreateDatabasesResponse (databases);
 }
@@ -1077,7 +1117,12 @@ GS::Optional<GS::UniString> CreateDrawingsCommand::GetInputParametersSchema () c
                             "$ref": "#/Coordinate2D",
                             "description": "Offset of the model origin within the drawing. Defaults to the Drawing tool's current default."
                         },
-                        "clipPolygon": { "type": "array", "items": { "$ref": "#/Coordinate2D" }, "minItems": 3 }
+                        "clipPolygon": {
+                            "type": "array",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 3,
+                            "description": "Optional polygon to clip the drawing with, in layout coordinates (meters on the layout, the same coordinate system as position) - not the coordinates of the source view's model. Stored as given: position, angle, scale and modelOffset are not applied to it."
+                        }
                     },
                     "additionalProperties": false,
                     "required": ["navigatorItemId", "position"]
@@ -2030,6 +2075,100 @@ GS::ObjectState GetLayoutCustomSchemeCommand::Execute (const GS::ObjectState&, G
                 "customSchemeName", *kv.value));
 #endif
         }
+    }
+
+    return response;
+}
+
+GetDrawingNumberingGridLinesCommand::GetDrawingNumberingGridLinesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetDrawingNumberingGridLinesCommand::GetName () const
+{
+    return "GetDrawingNumberingGridLines";
+}
+
+GS::Optional<GS::UniString> GetDrawingNumberingGridLinesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "lines": {
+                "type": "array",
+                "description": "The lines of the grid of the grid-based drawing numbering of the current layout. Only a layout that uses grid-based drawing numbering has such a grid.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "begC": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "The start point of the line, in layout coordinates."
+                        },
+                        "endC": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "The end point of the line, in layout coordinates."
+                        },
+                        "penIndex": {
+                            "type": "integer",
+                            "description": "The index of the pen of the line."
+                        },
+                        "lineTypeIndex": {
+                            "type": "integer",
+                            "description": "The index of the line type of the line."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "begC",
+                        "endC",
+                        "penIndex",
+                        "lineTypeIndex"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "lines"
+        ]
+    })";
+}
+
+// ACAPI_Drawing_GetNumberingGridLines calls back with only the line, without a user pointer,
+// so the lines of one call are collected here.
+static GS::Array<API_NumberingGridLine> collectedNumberingGridLines;
+
+static GSErrCode CollectNumberingGridLine (const API_NumberingGridLine* gridLine)
+{
+    if (gridLine != nullptr) {
+        collectedNumberingGridLines.Push (*gridLine);
+    }
+    return NoError;
+}
+
+GS::ObjectState GetDrawingNumberingGridLinesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    collectedNumberingGridLines.Clear ();
+    const GSErrCode err = ACAPI_Drawing_GetNumberingGridLines (CollectNumberingGridLine);
+    const GS::Array<API_NumberingGridLine> gridLines = collectedNumberingGridLines;
+    collectedNumberingGridLines.Clear ();
+
+    if (err == APIERR_BADDATABASE) {
+        return CreateErrorResponse (err, "The current window is not a layout. The drawing numbering grid belongs to a layout: activate a layout first (see ChangeWindow).");
+    }
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the lines of the drawing numbering grid.");
+    }
+
+    GS::ObjectState response;
+    const auto& lines = response.AddList<GS::ObjectState> ("lines");
+    for (const API_NumberingGridLine& gridLine : gridLines) {
+        lines (GS::ObjectState (
+            "begC",          Create2DCoordinateObjectState (gridLine.begC),
+            "endC",          Create2DCoordinateObjectState (gridLine.endC),
+            "penIndex",      gridLine.penInd,
+            "lineTypeIndex", GetAttributeIndex (gridLine.ltypeInd)));
     }
 
     return response;
