@@ -754,6 +754,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap CheckMEPPortConnectability
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CheckMEPPortConnectability", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap CreateProjectInfoFields
         {
             get {
@@ -2312,6 +2320,22 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap DeleteMEPPhysicalSystems
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteMEPPhysicalSystems", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap DeleteMEPPreferenceTableRows
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteMEPPreferenceTableRows", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap CreateKeynoteFolders
         {
             get {
@@ -2368,10 +2392,34 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap GetMEPPreferenceTableContainers
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetMEPPreferenceTableContainers", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetMEPPreferenceTableRows
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetMEPPreferenceTableRows", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap GetMEPDistributionSystems
         {
             get {
                 object obj = ResourceManager.GetObject ("GetMEPDistributionSystems", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetMEPElementDetails
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetMEPElementDetails", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -2392,10 +2440,26 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap CreateMEPPreferenceTables
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateMEPPreferenceTables", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap ModifyMEPRoutingElements
         {
             get {
                 object obj = ResourceManager.GetObject ("ModifyMEPRoutingElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyMEPSystemGroups
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyMEPSystemGroups", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -2557,6 +2621,30 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("ModifyLamps", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyMEPPhysicalSystems
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyMEPPhysicalSystems", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyMEPPorts
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyMEPPorts", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyMEPPreferenceTables
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyMEPPreferenceTables", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -2753,10 +2841,26 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap SetMEPPreferenceTableRows
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetMEPPreferenceTableRows", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap AddLibraries
         {
             get {
                 object obj = ResourceManager.GetObject ("AddLibraries", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap AddMEPPreferenceTableRows
+        {
+            get {
+                object obj = ResourceManager.GetObject ("AddMEPPreferenceTableRows", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
