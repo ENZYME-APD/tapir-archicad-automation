@@ -395,6 +395,72 @@ GS::ObjectState GetRevisionChangesCommand::Execute (const GS::ObjectState& /*par
     return response;
 }
 
+GetRevisionChangeCustomSchemeCommand::GetRevisionChangeCustomSchemeCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetRevisionChangeCustomSchemeCommand::GetName () const
+{
+    return "GetRevisionChangeCustomScheme";
+}
+
+GS::Optional<GS::UniString> GetRevisionChangeCustomSchemeCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "customScheme": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "customSchemeKey": {
+                            "type": "string",
+                            "description": "The identifier of the custom field. The same key is used in the customSchemeData of the revision changes."
+                        },
+                        "customSchemeName": {
+                            "type": "string",
+                            "description": "The name of the custom field."
+                        }
+                    },
+                    "required": ["customSchemeKey", "customSchemeName"],
+                    "additionalProperties": false
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "customScheme"
+        ]
+    })";
+}
+
+GS::ObjectState GetRevisionChangeCustomSchemeCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GS::HashTable<API_Guid, GS::UniString> customScheme;
+    GSErrCode err = ACAPI_Revision_GetRVMChangeCustomScheme (&customScheme);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve the custom scheme of changes.");
+    }
+
+    GS::ObjectState response;
+    const auto& schemeList = response.AddList<GS::ObjectState> ("customScheme");
+
+    for (const auto& kv : customScheme) {
+        schemeList (GS::ObjectState (
+#ifdef ServerMainVers_2800
+            "customSchemeKey", APIGuidToString (kv.key),
+            "customSchemeName", kv.value));
+#else
+            "customSchemeKey", APIGuidToString (*kv.key),
+            "customSchemeName", *kv.value));
+#endif
+    }
+
+    return response;
+}
+
 GetDocumentRevisionsCommand::GetDocumentRevisionsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -603,7 +669,7 @@ GS::ObjectState GetRevisionChangesOfElementsCommand::Execute (const GS::ObjectSt
 {
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
-    const GS::Array<API_Guid> elementIds = elements.Transform<API_Guid> (GetGuidFromDatabaseArrayItem);
+    const GS::Array<API_Guid> elementIds = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
 
     GS::ObjectState response;
     const auto& revisionChangesOfElements = response.AddList<GS::ObjectState> ("revisionChangesOfElements");
