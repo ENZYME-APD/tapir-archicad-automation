@@ -1,0 +1,89 @@
+name: Download the Archicad DevKit headers
+description: >-
+  Downloads the DevKit of every Archicad version in archicad-addon/devkits.json
+  into archicad-addon/Build/DevKits, keeping only what the Claude jobs read: the
+  headers of every version and, optionally, the C/C++ sources of the newest
+  DevKit's Examples folder. Cached, so a run downloads only when the list
+  changes. Used by api_coverage.yml and by the Claude jobs of
+  claude_issue_triage.yml, claude_bot_pr_steward.yml and claude_pr_review.yml.
+
+# This runs from a trusted commit only (the workflow's own, never a pull
+# request's branch): the jobs that check out a pull request load this action
+# from a separate checkout of github.workflow_sha. It runs no code from the
+# repository, only jq, curl and unzip. The list it reads may come from a pull
+# request (so the bots see the headers of a version that pull request adds),
+# which is safe because it is data: every entry must be an Archicad version
+# and a release number of that version, and the download URL is always a
+# GRAPHISOFT/archicad-api-devkit release. tools/devkits.py checks the same.
+
+inputs:
+  devkits:
+    description: >-
+      The devkits.json to read. Default: archicad-addon/devkits.json of the
+      workspace, or of the commit this action comes from when the workspace has
+      none (a base commit older than the file).
+    default: ''
+  path:
+    description: Folder that receives one AC<version> folder per DevKit.
+    default: archicad-addon/Build/DevKits
+  examples:
+    description: Also keep the C/C++ sources of the newest DevKit's Examples folder.
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - name: Read the DevKit list
+      id: list
+      shell: bash
+      env:
+        LIST: ${{ inputs.devkits }}
+        OWN_LIST: ${{ github.action_path }}/../../../archicad-addon/devkits.json
+      run: |
+        set -eu
+        for candidate in "$LIST" archicad-addon/devkits.json "$OWN_LIST"; do
+          if [ -n "$candidate" ] && [ -f "$candidate" ]; then LIST=$candidate; break; fi
+        done
+        echo "DevKit list: $LIST"
+        pairs=$(jq -r '.devkits[] | "\(.archicad):\(.release)"' "$LIST")
+        newest=""
+        for entry in $pairs; do
+          if ! [[ "$entry" =~ ^([2-9][0-9]):([2-9][0-9])\.[0-9]{4}$ ]] || [ "${BASH_REMATCH[1]}" != "${BASH_REMATCH[2]}" ]; then
+            echo "::error::not an Archicad version and DevKit release: $entry"
+            exit 1
+          fi
+          if [ -z "$newest" ] || [ "${entry%%:*}" -gt "$newest" ]; then newest=${entry%%:*}; fi
+        done
+        [ -n "$newest" ] || { echo "::error::$LIST lists no DevKit"; exit 1; }
+        echo "pairs=$(echo $pairs)" >> "$GITHUB_OUTPUT"
+        echo "newest=$newest" >> "$GITHUB_OUTPUT"
+
+    - name: Cache the DevKits
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ inputs.path }}
+        key: archicad-devkit-headers-examples=${{ inputs.examples }}-${{ steps.list.outputs.pairs }}
+
+    - name: Download the DevKits
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        PAIRS: ${{ steps.list.outputs.pairs }}
+        NEWEST: ${{ steps.list.outputs.newest }}
+        DEST: ${{ inputs.path }}
+        EXAMPLES: ${{ inputs.examples }}
+      run: |
+        set -euf  # -f: the unzip patterns are for unzip, not the shell
+        zip="$RUNNER_TEMP/devkit.zip"
+        for entry in $PAIRS; do
+          version=${entry%%:*}; release=${entry#*:}
+          mkdir -p "$DEST/AC$version"
+          curl -sSfL --retry 3 -o "$zip" "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/$release/API.Development.Kit.WIN.$release.zip"
+          patterns="Support/Inc/*.h Support/Inc/*.hpp Support/Modules/*.h Support/Modules/*.hpp"
+          if [ "$version" = "$NEWEST" ] && [ "$EXAMPLES" = true ]; then
+            patterns="$patterns Examples/*.cpp Examples/*.c Examples/*.hpp Examples/*.h Examples/*.grc"
+          fi
+          unzip -qq -o "$zip" $patterns -d "$DEST/AC$version"
+          rm "$zip"
+        done
