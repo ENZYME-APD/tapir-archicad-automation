@@ -403,6 +403,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap GetElementsByClassification
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetElementsByClassification", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -766,6 +774,22 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("GetCalculationUnits", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetClassificationItemParents
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetClassificationItemParents", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetClassificationItemVisibility
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetClassificationItemVisibility", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -1828,6 +1852,14 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("GetClassificationsOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetClassificationsOfToolDefaults
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetClassificationsOfToolDefaults", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }

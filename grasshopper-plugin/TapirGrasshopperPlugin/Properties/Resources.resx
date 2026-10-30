@@ -265,6 +265,9 @@
   <data name="GetElementsAttachedToAnIssue" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetElementsAttachedToAnIssue.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="GetElementsByClassification" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetElementsByClassification.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="ImportIssuesFromBCF" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ImportIssuesFromBCF.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -354,6 +357,12 @@
   </data>
   <data name="GetCalculationUnits" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetCalculationUnits.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetClassificationItemParents" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetClassificationItemParents.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetClassificationItemVisibility" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetClassificationItemVisibility.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="RebuildView" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\RebuildView.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -699,6 +708,9 @@
   </data>
   <data name="GetClassificationsOfElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetClassificationsOfElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetClassificationsOfToolDefaults" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetClassificationsOfToolDefaults.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="GetDimensionData" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetDimensionData.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
