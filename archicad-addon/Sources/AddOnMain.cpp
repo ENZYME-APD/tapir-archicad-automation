@@ -852,7 +852,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateAssociativeDimensionsOnSectionCommand> (
             elementCommands, "1.4.0",
-            "Creates associative linear dimensions on section elements using common wall, slab, beam, column and opening presets. The preset points of multiple section elements can be merged into one continuous dimension chain via sectionElementIds."
+            "Creates associative linear dimensions on section elements using common wall, slab, beam, column, door and window presets. The preset points of multiple section elements can be merged into one continuous dimension chain via sectionElementIds. For Opening tool elements, which Archicad does not associate with dimensions, the OpeningEdges preset places fixed points at their edges instead."
         );
         err |= RegisterCommand<CreateWallThicknessDimensionsCommand> (
             elementCommands, "1.4.0",
