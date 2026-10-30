@@ -375,4 +375,49 @@ namespace TapirGrasshopperPlugin.Types.DesignOptions
         [JsonProperty("designOptionCombinations")]
         public List<RenameDesignOptionCombinationParameter> DesignOptionCombinations;
     }
+
+    public class SetDefaultDesignOptionParameters
+    {
+        // Null selects the Main Model as the default.
+        [JsonProperty(
+            "designOptionId",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public DesignOptionGuid DesignOptionId;
+    }
+
+    public class ReorderDesignOptionSetParameter
+    {
+        [JsonProperty("designOptionSetId")]
+        public DesignOptionSetGuid DesignOptionSetId;
+
+        // Null moves the set to the end.
+        [JsonProperty(
+            "beforeDesignOptionSetId",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public DesignOptionSetGuid BeforeDesignOptionSetId;
+    }
+
+    public class ReorderDesignOptionSetsParameters
+    {
+        [JsonProperty("designOptionSets")]
+        public List<ReorderDesignOptionSetParameter> DesignOptionSets;
+    }
+
+    public class ReorderDesignOptionInSetParameter
+    {
+        [JsonProperty("designOptionId")]
+        public DesignOptionGuid DesignOptionId;
+
+        // Null moves the design option to the end of its set.
+        [JsonProperty(
+            "beforeDesignOptionId",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public DesignOptionGuid BeforeDesignOptionId;
+    }
+
+    public class ReorderDesignOptionsInSetParameters
+    {
+        [JsonProperty("designOptions")]
+        public List<ReorderDesignOptionInSetParameter> DesignOptions;
+    }
 }

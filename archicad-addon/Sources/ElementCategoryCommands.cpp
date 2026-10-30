@@ -56,6 +56,43 @@ static GS::ObjectState CreateCategoryValueObjectState (const API_ElemCategory& c
         "name", GS::UniString (value.name));
 }
 
+// The categories given in the optional "categories" parameter, in the requested order; every
+// known category when none is given.
+static GSErrCode GetRequestedCategories (const GS::ObjectState& parameters, GS::Array<API_ElemCategory>& categories, GS::UniString& errorMessage)
+{
+    GS::Array<API_ElemCategory> allCategories;
+    const GSErrCode err = TAPIR_GetElementCategories (allCategories);
+    if (err != NoError) {
+        errorMessage = "Failed to get the element categories.";
+        return err;
+    }
+
+    GS::Array<GS::UniString> categoryTypes;
+    if (parameters.Get ("categories", categoryTypes) && !categoryTypes.IsEmpty ()) {
+        for (const GS::UniString& categoryType : categoryTypes) {
+            API_ElemCategoryID categoryID = API_ElemCategory_Undefined;
+            if (!CategoryTypeFromString (categoryType, categoryID)) {
+                errorMessage = GS::UniString::Printf ("Unknown category type '%T'.", categoryType.ToPrintf ());
+                return APIERR_BADPARS;
+            }
+            const API_ElemCategory* category = FindCategory (allCategories, categoryID);
+            if (category == nullptr) {
+                errorMessage = GS::UniString::Printf ("The %T category is not available in this project.", categoryType.ToPrintf ());
+                return APIERR_BADPARS;
+            }
+            categories.Push (*category);
+        }
+    } else {
+        for (const API_ElemCategory& category : allCategories) {
+            if (CategoryTypeToString (category.categoryID) != nullptr) {
+                categories.Push (category);
+            }
+        }
+    }
+
+    return NoError;
+}
+
 GetElementCategoriesCommand::GetElementCategoriesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -277,33 +314,11 @@ GS::ObjectState GetCategoryValuesOfElementsCommand::Execute (const GS::ObjectSta
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
 
-    GS::Array<API_ElemCategory> allCategories;
-    const GSErrCode err = TAPIR_GetElementCategories (allCategories);
-    if (err != NoError) {
-        return CreateErrorResponse (err, "Failed to get the element categories.");
-    }
-
-    // The categories to read, in the requested order; every known category when none is given.
     GS::Array<API_ElemCategory> categories;
-    GS::Array<GS::UniString> categoryTypes;
-    if (parameters.Get ("categories", categoryTypes) && !categoryTypes.IsEmpty ()) {
-        for (const GS::UniString& categoryType : categoryTypes) {
-            API_ElemCategoryID categoryID = API_ElemCategory_Undefined;
-            if (!CategoryTypeFromString (categoryType, categoryID)) {
-                return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("Unknown category type '%T'.", categoryType.ToPrintf ()));
-            }
-            const API_ElemCategory* category = FindCategory (allCategories, categoryID);
-            if (category == nullptr) {
-                return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("The %T category is not available in this project.", categoryType.ToPrintf ()));
-            }
-            categories.Push (*category);
-        }
-    } else {
-        for (const API_ElemCategory& category : allCategories) {
-            if (CategoryTypeToString (category.categoryID) != nullptr) {
-                categories.Push (category);
-            }
-        }
+    GS::UniString errorMessage;
+    const GSErrCode err = GetRequestedCategories (parameters, categories, errorMessage);
+    if (err != NoError) {
+        return CreateErrorResponse (err, errorMessage);
     }
 
     GS::ObjectState response;
@@ -343,6 +358,158 @@ GS::ObjectState GetCategoryValuesOfElementsCommand::Execute (const GS::ObjectSta
         }
 
         categoryValuesOfElements (categoryValuesOfElement);
+    }
+
+    return response;
+}
+
+GetCategoryValuesOfDefaultsCommand::GetCategoryValuesOfDefaultsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetCategoryValuesOfDefaultsCommand::GetName () const
+{
+    return "GetCategoryValuesOfDefaults";
+}
+
+GS::Optional<GS::UniString> GetCategoryValuesOfDefaultsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementTypes": {
+                "type": "array",
+                "description": "The element types whose tool defaults (the settings new elements get) are read.",
+                "items": {
+                    "$ref": "#/ElementType"
+                }
+            },
+            "categories": {
+                "type": "array",
+                "description": "The categories to read. Left out: every category of the project.",
+                "items": {
+                    "$ref": "#/ElementCategoryType"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementTypes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetCategoryValuesOfDefaultsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "categoryValuesOfDefaults": {
+                "type": "array",
+                "description": "The category values of the tool defaults of each element type, in the order of the input. A category Archicad cannot read for the type is left out of its list; an invalid element type, or one with none of the requested categories, is represented by an error object.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "categoryValues": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "$ref": "#/ElementCategoryType"
+                                            },
+                                            "categoryId": {
+                                                "$ref": "#/ElementCategoryId"
+                                            },
+                                            "categoryValueId": {
+                                                "$ref": "#/ElementCategoryValueId",
+                                                "description": "Left out when the default has no value in this category."
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "description": "The localized name of the value, for display only. Left out when the default has no value in this category."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "type",
+                                            "categoryId"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "categoryValues"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "categoryValuesOfDefaults"
+        ]
+    })";
+}
+
+GS::ObjectState GetCategoryValuesOfDefaultsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> elementTypes;
+    parameters.Get ("elementTypes", elementTypes);
+
+    GS::Array<API_ElemCategory> categories;
+    GS::UniString errorMessage;
+    const GSErrCode err = GetRequestedCategories (parameters, categories, errorMessage);
+    if (err != NoError) {
+        return CreateErrorResponse (err, errorMessage);
+    }
+
+    GS::ObjectState response;
+    const auto& categoryValuesOfDefaults = response.AddList<GS::ObjectState> ("categoryValuesOfDefaults");
+
+    for (const GS::UniString& elementTypeStr : elementTypes) {
+        const API_ElemTypeID typeID = GetElementTypeFromNonLocalizedName (elementTypeStr);
+        if (typeID == API_ZombieElemID) {
+            categoryValuesOfDefaults (CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ())));
+            continue;
+        }
+
+        GS::ObjectState categoryValuesOfDefault;
+        const auto& categoryValues = categoryValuesOfDefault.AddList<GS::ObjectState> ("categoryValues");
+        UInt32 foundCategories = 0;
+        for (const API_ElemCategory& category : categories) {
+            // A type without this category (an annotation, for example) fails here; the category
+            // is left out of the type's list.
+            API_ElemCategoryValue value = {};
+            if (TAPIR_Element_GetCategoryValueDefault (typeID, category, value) != NoError) {
+                continue;
+            }
+            if (value.guid == APINULLGuid) {
+                categoryValues (GS::ObjectState (
+                    "type", GS::UniString (CategoryTypeToString (category.categoryID)),
+                    "categoryId", CreateGuidObjectState (category.guid)));
+            } else {
+                categoryValues (CreateCategoryValueObjectState (category, value));
+            }
+            ++foundCategories;
+        }
+
+        if (foundCategories == 0) {
+            categoryValuesOfDefaults (CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf ("The defaults of elementType '%T' have none of the requested categories.", elementTypeStr.ToPrintf ())));
+            continue;
+        }
+
+        categoryValuesOfDefaults (categoryValuesOfDefault);
     }
 
     return response;
