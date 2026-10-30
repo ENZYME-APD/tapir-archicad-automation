@@ -5919,6 +5919,11 @@ static void InitializeEmptyBounds (API_Box3D& bounds)
     bounds.xMax = bounds.yMax = bounds.zMax = -1e30;
 }
 
+static bool IsEmptyBounds (const API_Box3D& bounds)
+{
+    return bounds.xMin > bounds.xMax || bounds.yMin > bounds.yMax || bounds.zMin > bounds.zMax;
+}
+
 // Extends bounds with the solid 3D bodies of the element. foundSolidBody is only ever set to
 // true here, so the same accumulator can be run over several elements in a row.
 static GSErrCode AccumulateSolidBodyBounds (const API_Elem_Head& elemHead, API_Box3D& bounds, bool& foundSolidBody)
@@ -6107,6 +6112,13 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
         }
         if (err != NoError) {
             boundingBoxes3D (CreateErrorResponse (err, "Failed to get the 3D bounding box"));
+            continue;
+        }
+        if (IsEmptyBounds (box3D)) {
+            // ACAPI_Element_CalcBounds succeeds with an empty, inverted box (min 1e35, max -1e35)
+            // for an element that has no 3D geometry of its own, e.g. a Stair tread whose 3D model
+            // cannot be read (#1567). That is no bounding box, so it is reported as an error.
+            boundingBoxes3D (CreateErrorResponse (APIERR_GENERAL, "The element has no 3D geometry to get the bounding box of"));
             continue;
         }
 
