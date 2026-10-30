@@ -1,15 +1,15 @@
 {
- "generatedAt": "2026-10-30 16:08 UTC",
+ "generatedAt": "2026-10-30 16:21 UTC",
  "counts": {
   "done": 302,
-  "open": 217,
+  "open": 222,
   "in progress": 16,
   "merged": 15,
   "not applicable": 1
  },
  "parameters": {
-  "all": 251,
-  "partial": 20,
+  "all": 250,
+  "partial": 21,
   "json": 46
  },
  "items": [
@@ -156,6 +156,36 @@
    "issues": []
   },
   {
+   "id": "GetLineFromUser",
+   "group": "Application Commands",
+   "version": "1.7.4",
+   "brief": "Waits for the user to input a line in the active Archicad window and returns start and end coordinates.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetPolygonFromUser",
+   "group": "Application Commands",
+   "version": "1.7.4",
+   "brief": "Waits for the user to input a polygon in the active Archicad window and returns its points and arcs.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetCurrentWindowType",
    "group": "Application Commands",
    "version": "1.0.7",
@@ -209,7 +239,7 @@
    "id": "ChangeWindow",
    "group": "Application Commands",
    "version": "1.3.1",
-   "brief": "Changes the current (active) window to the given window. A databaseId on its own is enough; the window type is taken from the database. With windowType 'FloorPlan' and a storyIndex it also activates that story on the floor plan.",
+   "brief": "Changes the current (active) window to the given window. A databaseId on its own is enough; the window type is taken from the database. The databaseId of a worksheet or detail whose window was never opened opens its Project Map item instead (from Archicad 27). With windowType 'FloorPlan' and a storyIndex it also activates that story on the floor plan.",
    "status": "done",
    "reason": "",
    "components": [
@@ -2750,7 +2780,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 20,
+   "parameterCount": 21,
    "coveredParameters": [
     "columnsData",
     "columnsData.axisRotationAngle",
@@ -2773,6 +2803,7 @@
     "columnsData.id",
     "columnsData.isSlanted",
     "columnsData.isWidthAndHeightLinked",
+    "columnsData.layerIndex",
     "columnsData.slantDirectionAngle"
    ],
    "pullRequests": [],
@@ -2792,7 +2823,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 31,
+   "parameterCount": 33,
    "coveredParameters": [
     "wallsData",
     "wallsData.arcAngle",
@@ -2819,8 +2850,10 @@
     "wallsData.contourPen",
     "wallsData.contourPen3D",
     "wallsData.displayOption",
+    "wallsData.flipped",
     "wallsData.id",
     "wallsData.inheritEndSurface",
+    "wallsData.layerIndex",
     "wallsData.linkToSettings",
     "wallsData.logHeight",
     "wallsData.materialsChained",
@@ -2845,7 +2878,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 20,
+   "parameterCount": 21,
    "coveredParameters": [
     "beamsData",
     "beamsData.anchorPoint",
@@ -2868,6 +2901,7 @@
     "beamsData.id",
     "beamsData.isSlanted",
     "beamsData.isWidthAndHeightLinked",
+    "beamsData.layerIndex",
     "beamsData.profileAngle"
    ],
    "pullRequests": [],
@@ -2936,7 +2970,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 13,
+   "parameterCount": 14,
    "coveredParameters": [
     "slabsData",
     "slabsData.buildingMaterialId",
@@ -2952,7 +2986,8 @@
     "slabsData.thickness"
    ],
    "missingParameters": [
-    "slabsData.id"
+    "slabsData.id",
+    "slabsData.layerIndex"
    ],
    "pullRequests": [],
    "issues": []
@@ -3250,6 +3285,21 @@
    "issues": []
   },
   {
+   "id": "CreateRailings",
+   "group": "Element Commands",
+   "version": "1.7.4",
+   "brief": "Creates Railing elements along a reference polyline. Posts, rails, handrails, toprails, panels and balusters come from the favorite or from the Railing tool defaults; Archicad generates one node per vertex and one segment per pair of consecutive vertices.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 7,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "CreateCurtainWalls",
    "group": "Element Commands",
    "version": "1.7.2",
@@ -3402,7 +3452,7 @@
    "id": "GetOpeningTransformations",
    "group": "Element Commands",
    "version": "1.7.3",
-   "brief": "Gets the placement of Opening elements without changing them: the global-to-local transformation matrix Archicad returns, its inverse, and the origin and axes of the opening in world coordinates derived from the inverse. Mirrored openings give a left-handed matrix (isMirrored). Needs Archicad 27 or later.",
+   "brief": "Gets the placement of Opening elements, Windows, Doors and Skylights without changing them: a global-to-local transformation matrix, its inverse, and the origin and axes in world coordinates derived from the inverse. For Windows, Doors and Skylights the local-to-global matrix is the one Archicad returns, and mirrored ones give a left-handed matrix (isMirrored). For Opening elements it is built from the opening geometry (Archicad 29 and later): origin at the anchor point, the X and Y axes of the opening and Z = X × Y, which points against the extrusion direction. Needs Archicad 27 or later.",
    "status": "open",
    "reason": "",
    "components": [],
@@ -3427,7 +3477,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 11,
+   "parameterCount": 13,
    "coveredParameters": [
     "zonesData",
     "zonesData.categoryAttributeId",
@@ -3438,6 +3488,8 @@
     "zonesData.stampPosition"
    ],
    "missingParameters": [
+    "zonesData.contourLine",
+    "zonesData.coverFill",
     "zonesData.fixedStampAngle",
     "zonesData.floorIndex",
     "zonesData.id",
@@ -3611,7 +3663,7 @@
    "id": "CreateHatches",
    "group": "Element Commands",
    "version": "1.5.6",
-   "brief": "Creates Hatch elements based on the given parameters.",
+   "brief": "Creates Hatch elements based on the given parameters. A hatch can have holes, in the same format SetDetailsOfElements accepts for hatches.",
    "status": "done",
    "reason": "",
    "components": [
@@ -3621,7 +3673,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 16,
+   "parameterCount": 17,
    "coveredParameters": [
     "hatchesData",
     "hatchesData.arcs",
@@ -3635,6 +3687,7 @@
     "hatchesData.fillPenIndex",
     "hatchesData.floorInd",
     "hatchesData.foregroundColor",
+    "hatchesData.holes",
     "hatchesData.layerIndex",
     "hatchesData.showArea"
    ],
@@ -4004,7 +4057,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 43,
+   "parameterCount": 44,
    "coveredParameters": [
     "wallsWithDetails",
     "wallsWithDetails.arcAngle",
@@ -4033,6 +4086,7 @@
     "wallsWithDetails.cutFillBackgroundPen",
     "wallsWithDetails.cutFillPen",
     "wallsWithDetails.displayOption",
+    "wallsWithDetails.flipped",
     "wallsWithDetails.inheritEndSurface",
     "wallsWithDetails.isAutoOnStoryVisibility",
     "wallsWithDetails.linkToSettings",
@@ -5271,7 +5325,7 @@
    "id": "GetAllProperties",
    "group": "Property Commands",
    "version": "1.1.3",
-   "brief": "Returns all user defined and built-in properties.",
+   "brief": "Returns all user defined and built-in properties. Optionally only the given properties or property types, and without the availability lists.",
    "status": "done",
    "reason": "",
    "components": [
@@ -5292,10 +5346,15 @@
      "path": "Components/PropertiesComponents/GetAllPropertiesComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 0,
-   "coveredParameters": [],
-   "missingParameters": [],
+   "parameters": "partial",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "properties"
+   ],
+   "missingParameters": [
+    "includeAvailability",
+    "propertyTypes"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -6057,7 +6116,7 @@
    "id": "GetAttributesFromProject",
    "group": "Attribute Commands",
    "version": "1.7.3",
-   "brief": "Reads the attributes of the given types from another project or template file without opening it, for example to compare them with the attributes of the open project. Nothing is imported into the open project. The names are the legacy 8-bit names, so non-ASCII characters may not come through. Available from Archicad 27.",
+   "brief": "Reads the attributes of the given types from another project or template file without opening it, for example to compare them with the attributes of the open project. Nothing is imported into the open project. The names are the legacy 8-bit names, so non-ASCII characters may not come through. Archicad does not read Layer, Surface, BuildingMaterial and MEPSystem attributes from a file that is not open: these types get an error item instead of an empty list. Available from Archicad 27.",
    "status": "open",
    "reason": "",
    "components": [],
@@ -6328,7 +6387,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 22,
+   "parameterCount": 24,
    "coveredParameters": [
     "fillDataArray",
     "fillDataArray.angle",
@@ -6349,6 +6408,8 @@
     "fillDataArray.symbolArcs",
     "fillDataArray.symbolHotspots",
     "fillDataArray.symbolLines",
+    "fillDataArray.symbolOffset1",
+    "fillDataArray.symbolOffset2",
     "fillDataArray.texture",
     "fillDataArray.useForCover",
     "fillDataArray.useForDraft",
@@ -7059,10 +7120,40 @@
    "issues": []
   },
   {
+   "id": "ModifyGraphicOverrideCombinations",
+   "group": "Attribute Commands",
+   "version": "1.7.3",
+   "brief": "Modifies the name and/or the rules of graphic override combinations. Omitted fields are kept. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 4,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "DeleteGraphicOverrideCombinations",
    "group": "Attribute Commands",
    "version": "1.7.2",
    "brief": "Deletes graphic override combinations. Their rules are kept. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "CreateGraphicOverrideRuleGroups",
+   "group": "Attribute Commands",
+   "version": "1.7.3",
+   "brief": "Creates empty graphic override rule groups. Available from Archicad 27.",
    "status": "open",
    "reason": "",
    "components": [],
@@ -8172,7 +8263,7 @@
    "id": "CreateDetails",
    "group": "Navigator Commands",
    "version": "1.4.0",
-   "brief": "Creates independent Detail databases.",
+   "brief": "Creates independent Detail databases. Returns the databaseId and the Project Map navigatorItemId of each new detail.",
    "status": "done",
    "reason": "",
    "components": [
@@ -8196,7 +8287,7 @@
    "id": "CreateWorksheets",
    "group": "Navigator Commands",
    "version": "1.4.0",
-   "brief": "Creates independent Worksheet databases.",
+   "brief": "Creates independent Worksheet databases. Returns the databaseId and the Project Map navigatorItemId of each new worksheet.",
    "status": "done",
    "reason": "",
    "components": [
@@ -9033,7 +9124,7 @@
    "id": "CreateSections",
    "group": "Navigator Commands",
    "version": "1.5.0",
-   "brief": "Creates Section elements on the floor plan.",
+   "brief": "Creates Section elements on the floor plan. A section looks to the left of its start to end direction, with its depth line that far on that side. GetDetailsOfElements reads the geometry of existing sections back.",
    "status": "done",
    "reason": "",
    "components": [

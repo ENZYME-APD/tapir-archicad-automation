@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-30 16:08 UTC",
+ "generatedAt": "2026-10-30 16:21 UTC",
  "versions": [
   25,
   26,
@@ -3075,16 +3075,8 @@
      "title": "SetDetailsOfElements: say why Archicad refused the element (hidden or locked layer)"
     },
     {
-     "number": 1597,
-     "title": "CreateWalls, CreateSlabs, CreateColumns, CreateBeams: optional layerIndex"
-    },
-    {
      "number": 1578,
      "title": "CreateMorphs, ModifyMorphs: say when the morph's layer is hidden"
-    },
-    {
-     "number": 1398,
-     "title": "Allow partial modify of Composites and Layer Combinations"
     },
     {
      "number": 1395,
@@ -3159,10 +3151,6 @@
     {
      "number": 1619,
      "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
-    },
-    {
-     "number": 1595,
-     "title": "GetAttributesFromProject: report Layer, Surface, BuildingMaterial and MEPSystem as not read instead of an empty list"
     }
    ],
    "issues": [
@@ -3323,10 +3311,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1398,
-     "title": "Allow partial modify of Composites and Layer Combinations"
-    },
     {
      "number": 975,
      "title": "Add ModifyPens: change single pens of the active pen table"
@@ -3518,10 +3502,6 @@
     {
      "number": 1365,
      "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
-    },
-    {
-     "number": 1333,
-     "title": "[1/4] Add GetPropertyDefinitionsOfAttributes command"
     }
    ],
    "issues": []
@@ -4551,10 +4531,6 @@
     {
      "number": 1421,
      "title": "Add ReorderNavigatorItems command"
-    },
-    {
-     "number": 1399,
-     "title": "Add ModifyGraphicOverrideCombinations and CreateGraphicOverrideRuleGroups"
     },
     {
      "number": 1383,
@@ -6525,10 +6501,6 @@
      "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
     },
     {
-     "number": 1398,
-     "title": "Allow partial modify of Composites and Layer Combinations"
-    },
-    {
      "number": 975,
      "title": "Add ModifyPens: change single pens of the active pen table"
     }
@@ -6603,18 +6575,6 @@
     {
      "number": 1642,
      "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
-    },
-    {
-     "number": 1608,
-     "title": "Read the geometry of sections (CutPlane) in GetDetailsOfElements"
-    },
-    {
-     "number": 1606,
-     "title": "Add CreateRailings and the Railing case of GetDetailsOfElements"
-    },
-    {
-     "number": 1596,
-     "title": "Zones: read and set the contour line and the cover fill"
     },
     {
      "number": 1383,
@@ -7695,10 +7655,6 @@
      "title": "SetDetailsOfElements: say why Archicad refused the element (hidden or locked layer)"
     },
     {
-     "number": 1588,
-     "title": "Keep Label/Text widthFactor and charSpaceFactor on create and content changes"
-    },
-    {
      "number": 1489,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
     },
@@ -8016,14 +7972,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1606,
-     "title": "Add CreateRailings and the Railing case of GetDetailsOfElements"
-    },
-    {
-     "number": 1588,
-     "title": "Keep Label/Text widthFactor and charSpaceFactor on create and content changes"
-    },
-    {
      "number": 1578,
      "title": "CreateMorphs, ModifyMorphs: say when the morph's layer is hidden"
     },
@@ -8052,10 +8000,6 @@
     {
      "number": 567,
      "title": "CreateAssociativeDimensionsOnSection still returns ghost GUIDs: the #512 guard was not applied to it (Interior Elevation, 1.5.8)"
-    },
-    {
-     "number": 531,
-     "title": "CreateWalls: a complex-profile Wall tool default silently overrides explicit parameters (defaults memo leak)"
     },
     {
      "number": 425,
@@ -8147,12 +8091,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1588,
-     "title": "Keep Label/Text widthFactor and charSpaceFactor on create and content changes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8382,10 +8321,6 @@
     {
      "number": 1629,
      "title": "ModifySlabs: report a floor fill origin or matrix that Archicad ignored (#662)"
-    },
-    {
-     "number": 1588,
-     "title": "Keep Label/Text widthFactor and charSpaceFactor on create and content changes"
     },
     {
      "number": 1533,
@@ -8701,10 +8636,6 @@
     {
      "number": 652,
      "title": "\"Drawing\" favorite fails every time"
-    },
-    {
-     "number": 531,
-     "title": "CreateWalls: a complex-profile Wall tool default silently overrides explicit parameters (defaults memo leak)"
     }
    ]
   },
@@ -9156,14 +9087,6 @@
      "title": "GetDetailsOfElements: surface overrides of Roofs, Beams and Columns"
     },
     {
-     "number": 1608,
-     "title": "Read the geometry of sections (CutPlane) in GetDetailsOfElements"
-    },
-    {
-     "number": 1606,
-     "title": "Add CreateRailings and the Railing case of GetDetailsOfElements"
-    },
-    {
      "number": 1281,
      "title": "Add GetRoofPlanes: the single planes of multi-plane roofs"
     },
@@ -9255,12 +9178,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1611,
-     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11335,10 +11253,6 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
-     "number": 1611,
-     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
-    },
-    {
      "number": 1530,
      "title": "[2/6] SetLibraryPartParameters"
     },
@@ -11378,10 +11292,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1399,
-     "title": "Add ModifyGraphicOverrideCombinations and CreateGraphicOverrideRuleGroups"
-    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -11519,10 +11429,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1399,
-     "title": "Add ModifyGraphicOverrideCombinations and CreateGraphicOverrideRuleGroups"
-    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -11703,10 +11609,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1399,
-     "title": "Add ModifyGraphicOverrideCombinations and CreateGraphicOverrideRuleGroups"
-    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -16803,12 +16705,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1605,
-     "title": "[1/2] CreateWorksheets/CreateDetails return navigatorItemId; ChangeWindow opens never-opened worksheets by databaseId"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18551,10 +18448,6 @@
      "title": "SetStories: set every story's level directly with SetElevation"
     },
     {
-     "number": 1606,
-     "title": "Add CreateRailings and the Railing case of GetDetailsOfElements"
-    },
-    {
      "number": 900,
      "title": "UpdateZones: optional list of Zones to update instead of the current selection"
     }
@@ -18745,10 +18638,6 @@
     {
      "number": 1634,
      "title": "IFCFileOperation: storyIndex for merge, so the IFC's storeys no longer follow the active story (#1616)"
-    },
-    {
-     "number": 1606,
-     "title": "Add CreateRailings and the Railing case of GetDetailsOfElements"
     },
     {
      "number": 900,
@@ -21517,12 +21406,7 @@
    ],
    "status": "not applicable",
    "reason": "interactive input from the user",
-   "pullRequests": [
-    {
-     "number": 1545,
-     "title": "Feat implement GetLineFromUser and GetPolygonFromUser commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -21568,12 +21452,7 @@
    ],
    "status": "not applicable",
    "reason": "interactive input from the user",
-   "pullRequests": [
-    {
-     "number": 1545,
-     "title": "Feat implement GetLineFromUser and GetPolygonFromUser commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -21619,12 +21498,7 @@
    ],
    "status": "not applicable",
    "reason": "interactive input from the user",
-   "pullRequests": [
-    {
-     "number": 1545,
-     "title": "Feat implement GetLineFromUser and GetPolygonFromUser commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -21647,12 +21521,7 @@
    ],
    "status": "not applicable",
    "reason": "interactive input from the user",
-   "pullRequests": [
-    {
-     "number": 1545,
-     "title": "Feat implement GetLineFromUser and GetPolygonFromUser commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -22544,12 +22413,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1605,
-     "title": "[1/2] CreateWorksheets/CreateDetails return navigatorItemId; ChangeWindow opens never-opened worksheets by databaseId"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25056,10 +24920,6 @@
     {
      "number": 1584,
      "title": "[3/4] DeleteGhostRecords, HighlightElements on Archicad 25, GetDetailsOfElements for elements of other databases"
-    },
-    {
-     "number": 1545,
-     "title": "Feat implement GetLineFromUser and GetPolygonFromUser commands"
     },
     {
      "number": 1373,
@@ -29387,14 +29247,6 @@
      "title": "SetDetailsOfElements: say why Archicad refused the element (hidden or locked layer)"
     },
     {
-     "number": 1611,
-     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
-    },
-    {
-     "number": 1599,
-     "title": "CreateWalls/ModifyWalls: accept flipped"
-    },
-    {
      "number": 1593,
      "title": "Dimensions: add textFrame to the dimension creation commands"
     },
@@ -29559,10 +29411,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1611,
-     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
-    },
-    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -29683,10 +29531,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1611,
-     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
-    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -30681,10 +30525,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1611,
-     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
-    },
-    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -30706,10 +30546,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1611,
-     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
-    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -30748,12 +30584,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1611,
-     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30770,12 +30601,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1611,
-     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36790,18 +36616,6 @@
     {
      "number": 1620,
      "title": "Hatch fill orientation in Get/SetDetailsOfElements"
-    },
-    {
-     "number": 1611,
-     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
-    },
-    {
-     "number": 1608,
-     "title": "Read the geometry of sections (CutPlane) in GetDetailsOfElements"
-    },
-    {
-     "number": 1606,
-     "title": "Add CreateRailings and the Railing case of GetDetailsOfElements"
     },
     {
      "number": 1584,
@@ -45221,34 +45035,6 @@
      "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
     },
     {
-     "number": 1617,
-     "title": "[1/2] GetFills/CreateFills: symbol fill offsets (c1/c2)"
-    },
-    {
-     "number": 1611,
-     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
-    },
-    {
-     "number": 1606,
-     "title": "Add CreateRailings and the Railing case of GetDetailsOfElements"
-    },
-    {
-     "number": 1604,
-     "title": "CreateHatches: accept holes (same format as SetDetailsOfElements)"
-    },
-    {
-     "number": 1599,
-     "title": "CreateWalls/ModifyWalls: accept flipped"
-    },
-    {
-     "number": 1597,
-     "title": "CreateWalls, CreateSlabs, CreateColumns, CreateBeams: optional layerIndex"
-    },
-    {
-     "number": 1596,
-     "title": "Zones: read and set the contour line and the cover fill"
-    },
-    {
      "number": 1593,
      "title": "Dimensions: add textFrame to the dimension creation commands"
     },
@@ -45311,10 +45097,6 @@
     {
      "number": 1431,
      "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
-    },
-    {
-     "number": 1398,
-     "title": "Allow partial modify of Composites and Layer Combinations"
     },
     {
      "number": 1395,
@@ -53972,18 +53754,6 @@
      "title": "Hatch fill orientation in Get/SetDetailsOfElements"
     },
     {
-     "number": 1611,
-     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
-    },
-    {
-     "number": 1608,
-     "title": "Read the geometry of sections (CutPlane) in GetDetailsOfElements"
-    },
-    {
-     "number": 1606,
-     "title": "Add CreateRailings and the Railing case of GetDetailsOfElements"
-    },
-    {
      "number": 1584,
      "title": "[3/4] DeleteGhostRecords, HighlightElements on Archicad 25, GetDetailsOfElements for elements of other databases"
     },
@@ -58727,18 +58497,6 @@
     {
      "number": 1620,
      "title": "Hatch fill orientation in Get/SetDetailsOfElements"
-    },
-    {
-     "number": 1611,
-     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
-    },
-    {
-     "number": 1608,
-     "title": "Read the geometry of sections (CutPlane) in GetDetailsOfElements"
-    },
-    {
-     "number": 1606,
-     "title": "Add CreateRailings and the Railing case of GetDetailsOfElements"
     },
     {
      "number": 1584,
@@ -66091,10 +65849,6 @@
      "title": "[1/3] Add GetPropertyValuesOfElementDefaults command (property values of tool defaults)"
     },
     {
-     "number": 1333,
-     "title": "[1/4] Add GetPropertyDefinitionsOfAttributes command"
-    },
-    {
      "number": 1309,
      "title": "[3/3] Add GetIFCClassificationReferencesOfElements command"
     },
@@ -67595,10 +67349,6 @@
     {
      "number": 1336,
      "title": "[1/3] Add GetPropertyValuesOfElementDefaults command (property values of tool defaults)"
-    },
-    {
-     "number": 1333,
-     "title": "[1/4] Add GetPropertyDefinitionsOfAttributes command"
     },
     {
      "number": 1325,
