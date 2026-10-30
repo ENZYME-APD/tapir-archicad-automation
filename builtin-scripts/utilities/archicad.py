@@ -112,6 +112,21 @@ def get_story_names() -> dict[int, str]:
     return {s["index"]: s.get("name") or f"Story {s['index']}" for s in stories}
 
 
+def _without_sub_element_objects(elements: list[ElementId], filters: list[str]) -> list[ElementId]:
+    """ GetAllElements also lists the objects that belong to another element (zone stamps, the
+    parts of a stair or railing) as Object elements; GetElementsByType leaves them out unless
+    asked to. They are dropped here, so a script only sees what the user placed. Add-Ons that
+    do not know the IncludeSubElemObjects filter get the list unchanged. """
+    try:
+        owned = run_tapir("GetElementsByType", {"elementType": "Object", "filters": filters + ["IncludeSubElemObjects"]})
+        placed = run_tapir("GetElementsByType", {"elementType": "Object", **({"filters": filters} if filters else {})})
+    except ArchicadError:
+        return elements
+    sub_elements = ({e["elementId"]["guid"] for e in owned.get("elements", [])}
+                    - {e["elementId"]["guid"] for e in placed.get("elements", [])})
+    return [e for e in elements if e["elementId"]["guid"] not in sub_elements]
+
+
 def get_elements(scope: str, element_types: list[str] | None = None, filters: list[str] | None = None) -> list[ElementId]:
     """ The elements of the given types (all types when None) in the scope:
     "selection", "story" (the current story) or "project". The filters are not
@@ -128,7 +143,7 @@ def get_elements(scope: str, element_types: list[str] | None = None, filters: li
         filters.append("OnActualFloor")
     parameters = {"filters": filters} if filters else {}
     if element_types is None:
-        return run_tapir("GetAllElements", parameters).get("elements", [])
+        return _without_sub_element_objects(run_tapir("GetAllElements", parameters).get("elements", []), filters)
     elements = []
     for element_type in element_types:
         try:
