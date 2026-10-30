@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-30 20:42 UTC",
+ "generatedAt": "2026-10-30 23:13 UTC",
  "versions": [
   25,
   26,
@@ -5757,6 +5757,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1687,
+     "title": "CreateAssociativeDimensionsOnSection: OpeningEdges preset for Opening tool elements"
+    },
+    {
      "number": 1686,
      "title": "Get3DBoundingBoxes: work for Slabs and Zones while a layout or a section is open"
     },
@@ -5796,6 +5800,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1687,
+     "title": "CreateAssociativeDimensionsOnSection: OpeningEdges preset for Opening tool elements"
+    },
     {
      "number": 1686,
      "title": "Get3DBoundingBoxes: work for Slabs and Zones while a layout or a section is open"
@@ -7827,6 +7835,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1687,
+     "title": "CreateAssociativeDimensionsOnSection: OpeningEdges preset for Opening tool elements"
+    },
     {
      "number": 1686,
      "title": "Get3DBoundingBoxes: work for Slabs and Zones while a layout or a section is open"
@@ -11371,7 +11383,12 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "memory management",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1508,
+     "title": "[4/6] Add GetViewOptions and SetViewOptions"
+    }
+   ],
    "issues": [
     {
      "number": 781,
@@ -29989,6 +30006,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1687,
+     "title": "CreateAssociativeDimensionsOnSection: OpeningEdges preset for Opening tool elements"
+    },
+    {
      "number": 1668,
      "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands"
     },
@@ -45102,8 +45123,16 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1687,
+     "title": "CreateAssociativeDimensionsOnSection: OpeningEdges preset for Opening tool elements"
+    },
+    {
      "number": 1686,
      "title": "Get3DBoundingBoxes: work for Slabs and Zones while a layout or a section is open"
+    },
+    {
+     "number": 1677,
+     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
     },
     {
      "number": 1675,
