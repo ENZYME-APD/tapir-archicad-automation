@@ -472,6 +472,28 @@ namespace TapirGrasshopperPlugin.Properties
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap GetProjectData
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetProjectData", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap GetProjectDataKeys
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetProjectDataKeys", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap GetProjectInfoGroups
         {
             get {
@@ -674,6 +696,17 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("SetClassifications", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap SetProjectData
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetProjectData", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -959,6 +992,17 @@ namespace TapirGrasshopperPlugin.Properties
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap DeleteProjectData
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteProjectData", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap DeleteProjectInfoGroups
         {
             get {
@@ -1018,6 +1062,17 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("GetSurveyPointTransformation", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap GrantProjectData
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GrantProjectData", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -1113,6 +1168,17 @@ namespace TapirGrasshopperPlugin.Properties
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap ReleaseProjectData
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ReleaseProjectData", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap RenameNavigatorItem
         {
             get {
@@ -1128,6 +1194,28 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("RenameProjectInfoGroups", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap RequestProjectData
+        {
+            get {
+                object obj = ResourceManager.GetObject ("RequestProjectData", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap ReserveProjectData
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ReserveProjectData", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }

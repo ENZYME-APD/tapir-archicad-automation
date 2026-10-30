@@ -304,6 +304,9 @@
   <data name="DeleteNavigatorItems" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\DeleteNavigatorItems.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="DeleteProjectData" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DeleteProjectData.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="FindNavigatorItem" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\FindNavigatorItem.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -342,6 +345,9 @@
   </data>
   <data name="RenameProjectInfoGroups" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\RenameProjectInfoGroups.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="RequestProjectData" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\RequestProjectData.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="SetStories" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SetStories.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -442,6 +448,9 @@
   <data name="SetMarkerParametersOfElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SetMarkerParametersOfElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="SetProjectData" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetProjectData.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="TeamworkSend" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\TeamworkSend.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -457,8 +466,14 @@
   <data name="ReserveLockableObjectSet" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ReserveLockableObjectSet.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="ReserveProjectData" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ReserveProjectData.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="ReleaseLockableObjectSet" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ReleaseLockableObjectSet.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ReleaseProjectData" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ReleaseProjectData.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="GetLockableObjectSetStatus" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetLockableObjectSetStatus.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -565,6 +580,9 @@
   <data name="GetZoneCategories" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetZoneCategories.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="GrantProjectData" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GrantProjectData.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="GetMEPSystems" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetMEPSystems.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -576,6 +594,12 @@
   </data>
   <data name="GetProfiles" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetProfiles.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetProjectData" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetProjectData.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetProjectDataKeys" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetProjectDataKeys.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="GetProjectInfoGroups" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetProjectInfoGroups.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
