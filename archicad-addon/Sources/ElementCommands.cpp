@@ -46,7 +46,10 @@ static void AddPivotPolygonFromMemo (const API_Guid& guid, GS::ObjectState& os)
 // the way CalculateStairBounds and GetSubelementsOfHierarchicalElements already read the
 // Stair's memo in this file. The arcs come back with the same 0-based indices as the
 // polygon arcs of the other element types.
-static void AddStairBaseLineFromMemo (const API_Guid& guid, GS::ObjectState& os)
+// On a placed stair the coords are relative to the stair's basePlane.basePoint (a stair
+// created at (110, 0) reads its baseline from (0, 0), #1561), so they are moved by origin
+// to report them in the same coordinates as CreateStairs takes them.
+static void AddStairBaseLineFromMemo (const API_Guid& guid, const API_Coord& origin, GS::ObjectState& os)
 {
     const auto& coords = os.AddList<GS::ObjectState> ("baseLinePoints");
 
@@ -63,7 +66,8 @@ static void AddStairBaseLineFromMemo (const API_Guid& guid, GS::ObjectState& os)
         last = (*baseLine.pends)[1];
     }
     for (GSIndex i = 1; i <= last && i < nCoords; ++i) {
-        coords (Create2DCoordinateObjectState ((*baseLine.coords)[i]));
+        const API_Coord& coord = (*baseLine.coords)[i];
+        coords (Create2DCoordinateObjectState ({ coord.x + origin.x, coord.y + origin.y }));
     }
 
     if (baseLine.parcs == nullptr) {
@@ -77,6 +81,64 @@ static void AddStairBaseLineFromMemo (const API_Guid& guid, GS::ObjectState& os)
     for (GSIndex i = 0; i < nArcs; ++i) {
         arcs (CreatePolyArcObjectState ((*baseLine.parcs)[i]));
     }
+}
+
+// The section line and the depth line of a Section (CutPlane) live in the memo's
+// sectionSegmentMainCoords and sectionSegmentDepthCoords, 0-based pointers with
+// cutPlane.segment.nMainCoord and nDepthCoord points: the very ones CreateSectionsCommand
+// fills in to place one (#1607). The counts are checked against the pointer sizes. depth and
+// viewDirection are derived from the first segment of the section line and the first depth
+// point, the way CreateSections puts the depth line to the left of start -> end.
+static void AddSectionLinesFromMemo (const API_Guid& guid, GSSize nMainCoord, GSSize nDepthCoord, GS::ObjectState& os)
+{
+    const auto& mainCoords = os.AddList<GS::ObjectState> ("mainCoordinates");
+    const auto& depthCoords = os.AddList<GS::ObjectState> ("depthCoordinates");
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_All) != NoError || memo.sectionSegmentMainCoords == nullptr) {
+        return;
+    }
+
+    const GSSize nMain = std::min<GSSize> (nMainCoord,
+        BMGetPtrSize (reinterpret_cast<GSPtr> (memo.sectionSegmentMainCoords)) / sizeof (API_Coord));
+    for (GSIndex i = 0; i < nMain; ++i) {
+        mainCoords (Create2DCoordinateObjectState (memo.sectionSegmentMainCoords[i]));
+    }
+    if (nMain < 2) {
+        return;
+    }
+    const API_Coord& begC = memo.sectionSegmentMainCoords[0];
+    const API_Coord& endC = memo.sectionSegmentMainCoords[nMain - 1];
+    os.Add ("startCoordinate", Create2DCoordinateObjectState (begC));
+    os.Add ("endCoordinate", Create2DCoordinateObjectState (endC));
+
+    if (memo.sectionSegmentDepthCoords == nullptr) {
+        return;
+    }
+    const GSSize nDepth = std::min<GSSize> (nDepthCoord,
+        BMGetPtrSize (reinterpret_cast<GSPtr> (memo.sectionSegmentDepthCoords)) / sizeof (API_Coord));
+    for (GSIndex i = 0; i < nDepth; ++i) {
+        depthCoords (Create2DCoordinateObjectState (memo.sectionSegmentDepthCoords[i]));
+    }
+    if (nDepth < 1) {
+        return;
+    }
+
+    const API_Coord& secondC = memo.sectionSegmentMainCoords[1];
+    const double dx = secondC.x - begC.x;
+    const double dy = secondC.y - begC.y;
+    const double length = std::sqrt (dx * dx + dy * dy);
+    if (length < 1e-9) {
+        return;
+    }
+    // Signed distance of the first depth point from the first segment, positive on its left.
+    const API_Coord& depthC = memo.sectionSegmentDepthCoords[0];
+    const double leftDistance = (dx * (depthC.y - begC.y) - dy * (depthC.x - begC.x)) / length;
+    os.Add ("depth", std::fabs (leftDistance));
+    const double side = leftDistance < 0.0 ? -1.0 : 1.0;
+    const API_Coord viewDirection = { -dy / length * side, dx / length * side };
+    os.Add ("viewDirection", Create2DCoordinateObjectState (viewDirection));
 }
 
 
@@ -195,6 +257,18 @@ static GS::UniString StructureTypeToString (API_ModelElemStructureType structure
     }
 }
 
+// An object that belongs to another element, such as a zone stamp or a part of a stair or railing.
+// The listing commands leave these out unless the IncludeSubElemObjects filter asks for them.
+static bool IsSubElemObject (const API_Guid& elemGuid)
+{
+    API_Element elem = {};
+    elem.header.guid = elemGuid;
+    if (ACAPI_Element_GetHeader (&elem.header) != NoError || GetElemTypeId (elem.header) != API_ObjectID) {
+        return false;
+    }
+    return ACAPI_Element_Get (&elem) != NoError || elem.object.owner != APINULLGuid;
+}
+
 template <typename ListProxyType>
 static GSErrCode GetElementsFromCurrentDatabase (const GS::ObjectState& parameters, ListProxyType& elementsListProxy)
 {
@@ -223,19 +297,14 @@ static GSErrCode GetElementsFromCurrentDatabase (const GS::ObjectState& paramete
         return err;
     }
 
-    if (elemType == API_ObjectID && !includeSubElemObjects) {
-        for (const API_Guid& elemGuid : elemList) {
-            const API_Guid parentGuid = GetParentElemOfSectElem (elemGuid);
-            API_Element elem = {};
-            elem.header.guid = parentGuid;
-            if (ACAPI_Element_Get (&elem) == NoError && elem.object.owner == APINULLGuid) {
-                elementsListProxy (CreateElementIdObjectState (parentGuid));
-            }
+    // Only a listing of Objects or of every type (GetAllElements) can contain sub-element objects.
+    const bool skipSubElemObjects = !includeSubElemObjects && (elemType == API_ObjectID || elemType == API_ZombieElemID);
+    for (const API_Guid& elemGuid : elemList) {
+        const API_Guid parentGuid = GetParentElemOfSectElem (elemGuid);
+        if (skipSubElemObjects && IsSubElemObject (parentGuid)) {
+            continue;
         }
-    } else {
-        for (const API_Guid& elemGuid : elemList) {
-            elementsListProxy (CreateElementIdObjectState (GetParentElemOfSectElem (elemGuid)));
-        }
+        elementsListProxy (CreateElementIdObjectState (parentGuid));
     }
     return NoError;
 }
@@ -427,12 +496,8 @@ static GSErrCode GetElementsInDrawOrderFromCurrentDatabase (const GS::ObjectStat
         if (elemType != API_ZombieElemID && reportedType != elemType) {
             continue;
         }
-        if (elemType == API_ObjectID && !includeSubElemObjects) {
-            API_Element elem = {};
-            elem.header.guid = elemGuid;
-            if (ACAPI_Element_Get (&elem) != NoError || elem.object.owner != APINULLGuid) {
-                continue;
-            }
+        if (!includeSubElemObjects && reportedType == API_ObjectID && IsSubElemObject (elemGuid)) {
+            continue;
         }
         if (reportedGuids.Contains (elemGuid)) {
             continue;
@@ -798,72 +863,80 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetRawResponseSchema ()
         "properties": {
             "detailsOfElements": {
                 "type": "array",
+                "description": "One entry per input element, in the same order as the input elements array. An element that cannot be read gets an error entry in its place, so the position of an entry tells which input element it belongs to.",
                 "items": {
-                    "type": "object",
-                    "description": "Details of an element. When the optional fields filter is given in the input, only the requested fields are present; the required list below applies to unfiltered requests.",
-                    "properties": {
-                        "type": {
-                            "$ref": "#/ElementType"
-                        },
-                        "id": {
-                            "type": "string"
-                        },
-                        "floorIndex": {
-                            "type": "number"
-                        },
-                        "layerIndex": {
-                            "type": "number"
-                        },
-                        "drawIndex": {
-                            "type": "number"
-                        },
-                        "hotlinkId": {
-                            "$ref": "#/ElementId",
-                            "description": "The hotlink instance this element belongs to. Present only for elements that came in through a placed hotlink; such elements are read-only."
-                        },
-                        "details": {
-                            "$ref": "#/TypeSpecificDetails"
-                        },
-                        "floorPlanPolygons": {
-                            "type": "array",
-                            "description": "Cut-fill polygons as drawn on the floor plan (wall joins resolved by ArchiCAD). Only collected for construction element types whose floor plan symbol comes from a real cut through the element - walls, columns, beams and their segments, slabs, roofs, shells, meshes, morphs, curtain walls and their segments/panels/frames, stairs and their risers/treads/structures. Absent for every other type, when the element has no cut fill, or when the floor plan database is not accessible.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "coordinates": {
-                                        "type": "array",
-                                        "items": {
-                                            "$ref": "#/Coordinate2D"
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "description": "Details of an element. When the optional fields filter is given in the input, only the requested fields are present; the required list below applies to unfiltered requests.",
+                            "properties": {
+                                "type": {
+                                    "$ref": "#/ElementType"
+                                },
+                                "id": {
+                                    "type": "string"
+                                },
+                                "floorIndex": {
+                                    "type": "number"
+                                },
+                                "layerIndex": {
+                                    "type": "number"
+                                },
+                                "drawIndex": {
+                                    "type": "number"
+                                },
+                                "hotlinkId": {
+                                    "$ref": "#/ElementId",
+                                    "description": "The hotlink instance this element belongs to. Present only for elements that came in through a placed hotlink; such elements are read-only."
+                                },
+                                "details": {
+                                    "$ref": "#/TypeSpecificDetails"
+                                },
+                                "floorPlanPolygons": {
+                                    "type": "array",
+                                    "description": "Cut-fill polygons as drawn on the floor plan (wall joins resolved by ArchiCAD). Only collected for construction element types whose floor plan symbol comes from a real cut through the element - walls, columns, beams and their segments, slabs, roofs, shells, meshes, morphs, curtain walls and their segments/panels/frames, stairs and their risers/treads/structures. Absent for every other type, when the element has no cut fill, or when the floor plan database is not accessible.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "coordinates": {
+                                                "type": "array",
+                                                "items": {
+                                                    "$ref": "#/Coordinate2D"
+                                                }
+                                            }
                                         }
                                     }
+                                },
+                                "infoString": {
+                                    "type": "string",
+                                    "description": "The element ID (info string) as Archicad shows it. Present only when requested in additionalFields."
+                                },
+                                "compoundInfoString": {
+                                    "type": "string",
+                                    "description": "The compound info string of the element, e.g. the summary of its composite or profile, as Archicad shows it. Present only when requested in additionalFields and the element has a non-empty one."
+                                },
+                                "libraryPartUnId": {
+                                    "type": "string",
+                                    "description": "The unique ID of the library part the element was placed from. Present only when requested in additionalFields and the element is library part based (e.g. object, lamp, door, window)."
+                                },
+                                "creatorToolUnId": {
+                                    "type": "string",
+                                    "description": "The unique ID of the tool that created the element. Present only when requested in additionalFields and Archicad reports one for the element."
                                 }
-                            }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "type",
+                                "id",
+                                "floorIndex",
+                                "layerIndex",
+                                "drawIndex",
+                                "details"
+                            ]
                         },
-                        "infoString": {
-                            "type": "string",
-                            "description": "The element ID (info string) as Archicad shows it. Present only when requested in additionalFields."
-                        },
-                        "compoundInfoString": {
-                            "type": "string",
-                            "description": "The compound info string of the element, e.g. the summary of its composite or profile, as Archicad shows it. Present only when requested in additionalFields and the element has a non-empty one."
-                        },
-                        "libraryPartUnId": {
-                            "type": "string",
-                            "description": "The unique ID of the library part the element was placed from. Present only when requested in additionalFields and the element is library part based (e.g. object, lamp, door, window)."
-                        },
-                        "creatorToolUnId": {
-                            "type": "string",
-                            "description": "The unique ID of the tool that created the element. Present only when requested in additionalFields and Archicad reports one for the element."
+                        {
+                            "$ref": "#/ErrorItem"
                         }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "type",
-                        "id",
-                        "floorIndex",
-                        "layerIndex",
-                        "drawIndex",
-                        "details"
                     ]
                 }
             }
@@ -1209,6 +1282,31 @@ static const API_CWFrameType* FindNextFrameOfPanel (std::vector<const API_CWFram
 
 using CWSegmentGridCellID = std::pair<UInt32, API_GridElemID>;
 
+// The reference line of a railing (memo.coords from index 1, one vertex per node) and the height of
+// each generated segment, which can differ from defSegment.height once a segment was edited.
+static void AddRailingReferenceLineAndSegments (const API_Element& elem, GS::ObjectState& typeSpecificDetails)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    const auto& referenceLine = typeSpecificDetails.AddList<GS::ObjectState> ("referenceLine");
+    const auto& segmentHeights = typeSpecificDetails.AddList<double> ("segmentHeights");
+    if (ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_Polygon | APIMemoMask_RailingSegment) != NoError) {
+        return;
+    }
+    if (memo.coords != nullptr) {
+        const Int32 nCoords = BMGetHandleSize (reinterpret_cast<GSHandle> (memo.coords)) / sizeof (API_Coord) - 1;
+        const Int32 nVertices = std::min<Int32> (nCoords, static_cast<Int32> (elem.railing.nVertices));
+        for (Int32 i = 1; i <= nVertices; ++i) {
+            referenceLine (Create2DCoordinateObjectState ((*memo.coords)[i]));
+        }
+    }
+    if (memo.railingSegments != nullptr) {
+        for (UInt32 i = 0; i < elem.railing.nSegments; ++i) {
+            segmentHeights (memo.railingSegments[i].height);
+        }
+    }
+}
+
 // The fields of GetDetailsOfElements requested through additionalFields. Each one is left out
 // when Archicad reports an error or nothing for the element (e.g. libraryPartUnId on a wall),
 // so a field the element type does not have never turns the whole entry into an error.
@@ -1273,7 +1371,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
         GSErrCode err = ACAPI_Element_Get (&elem);
 
         if (err != NoError) {
-            detailsOfElements (CreateErrorResponse (err, "Failed to get the details of element"));
+            detailsOfElements (CreateErrorResponse (err, "Failed to get the details of element (element guid: \"" + APIGuidToString (elem.header.guid) + "\")"));
             continue;
         }
 
@@ -1520,6 +1618,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     typeSpecificDetails.Add ("referencePosition", Create2DCoordinateObjectState (elem.zone.refPos));
                 }
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.zone.roomBaseLev, stories));
+                AddZoneContourAndCoverFill (elem.zone, typeSpecificDetails);
                 AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
                 break;
 
@@ -1761,6 +1860,13 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
             } break;
 
+            case API_RailingID: {
+                typeSpecificDetails.Add ("bottomOffset", elem.railing.bottomOffset);
+                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.railing.bottomOffset, stories));
+                typeSpecificDetails.Add ("height", elem.railing.defSegment.height);
+                AddRailingReferenceLineAndSegments (elem, typeSpecificDetails);
+            } break;
+
             case API_CurtainWallID: {
                 typeSpecificDetails.Add ("height", elem.curtainWall.height);
                 double actualHeight = 0.0;
@@ -1937,6 +2043,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("drawingScale",  elem.drawing.drawingScale);
                 typeSpecificDetails.Add ("modelOffset",   Create2DCoordinateObjectState (elem.drawing.modelOffset));
                 typeSpecificDetails.Add ("isCutWithFrame", elem.drawing.isCutWithFrame);
+                // Not the source view: once the Drawing exists Archicad reports its own link id
+                // here, which navigator commands do not accept (#1480).
                 typeSpecificDetails.Add ("navigatorItemId", CreateGuidObjectState (elem.drawing.drawingGuid));
                 typeSpecificDetails.Add ("bounds", GS::ObjectState (
                     "xMin", elem.drawing.bounds.xMin,
@@ -2032,17 +2140,28 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 // The fields CreateStairs writes, read back (#823). The finishes and the
                 // structure are modeled by the Stair's subelements (risers, treads and
                 // structures, see GetSubelementsOfHierarchicalElements), not by the Stair
-                // element itself. basePlane.basePoint.z is the base's offset from the home
-                // story, the way CreateStairs sets it from the resolved floor index.
+                // element itself. On a placed stair basePlane.basePoint is in model
+                // coordinates: its z is the absolute elevation of the base, not the offset
+                // from the home story CreateStairs writes (a stair created on the 6.4 story
+                // reads 6.4, and read 12.8 as zCoordinate when the story level was added
+                // again, #1561), and its x and y are the origin of the baseline's coords.
+                const API_Coord3D& basePoint = elem.stair.basePlane.basePoint;
                 typeSpecificDetails.Add ("stepNum", static_cast<Int32> (elem.stair.stepNum));
                 typeSpecificDetails.Add ("riserHeight", elem.stair.riserHeight);
                 typeSpecificDetails.Add ("treadDepth", elem.stair.treadDepth);
                 typeSpecificDetails.Add ("flightWidth", elem.stair.flightWidth);
                 typeSpecificDetails.Add ("totalHeight", elem.stair.totalHeight);
-                typeSpecificDetails.Add ("level", elem.stair.basePlane.basePoint.z);
-                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.stair.basePlane.basePoint.z, stories));
+                typeSpecificDetails.Add ("level", basePoint.z - GetZPos (elem.header.floorInd, 0.0, stories));
+                typeSpecificDetails.Add ("zCoordinate", basePoint.z);
                 typeSpecificDetails.Add ("finishVisible", elem.stair.finishVisible);
-                AddStairBaseLineFromMemo (elem.header.guid, typeSpecificDetails);
+                AddStairBaseLineFromMemo (elem.header.guid, { basePoint.x, basePoint.y }, typeSpecificDetails);
+            } break;
+
+            case API_CutPlaneID: {
+                // The fields CreateSections writes, read back (#1607).
+                typeSpecificDetails.Add ("name", GS::UniString (elem.cutPlane.segment.cutPlName));
+                typeSpecificDetails.Add ("idStr", GS::UniString (elem.cutPlane.segment.cutPlIdStr));
+                AddSectionLinesFromMemo (elem.header.guid, static_cast<GSSize> (elem.cutPlane.segment.nMainCoord), static_cast<GSSize> (elem.cutPlane.segment.nDepthCoord), typeSpecificDetails);
             } break;
 
             default:
@@ -2408,6 +2527,7 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             }
             short drwIndexTarget = -1;
             GetIndexValue (*details, "drawIndex", drwIndexTarget);
+            GS::Optional<double> requestedDrawingScale;
 
             API_ElementMemo clipMemo = {};
             UInt64 memoMask = 0;
@@ -2465,6 +2585,12 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         if (referencePosition != nullptr && !elem.zone.manual) {
                             elem.zone.refPos = Get2DCoordinateFromObjectState (*referencePosition);
                             ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, refPos);
+                        }
+                        const GS::Optional<GS::UniString> contourAndFillError = ApplyZoneContourAndCoverFill (*typeSpecificDetails, elem.zone, &mask);
+                        if (contourAndFillError.HasValue ()) {
+                            ACAPI_DisposeElemMemoHdls (&clipMemo);
+                            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, *contourAndFillError));
+                            continue;
                         }
                     } break;
                     case API_LineID: {
@@ -2565,6 +2691,7 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         }
                         if (typeSpecificDetails->Get ("drawingScale", elem.drawing.drawingScale)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, drawingScale);
+                            requestedDrawingScale = elem.drawing.drawingScale;
                         }
                         if (typeSpecificDetails->Get ("ratio", elem.drawing.ratio)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, ratio);
@@ -2788,13 +2915,8 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     }
                 }
             } else if (typeSpecificDetails != nullptr && GetElemTypeId (elem.header) == API_HatchID) {
-                // Hatch is a CLOSED polygon (unlike PolyLine): coords[0] dummy is (0,0) not
-                // (-1,0), and every contour (the main outline, plus each hole) needs its own
-                // explicit closing vertex duplicating that contour's first point, whose vertexID
-                // also duplicates that first point's ID. Vertex IDs restart at 1 for EACH contour
-                // (not continued sequentially across contours) - confirmed live: global numbering
-                // across contours reproducibly failed with APIERR_BADPOLY for a hatch with holes,
-                // per-contour numbering works.
+                // The memo layout of a Hatch (closing vertices, per-contour vertex IDs) is
+                // described at BuildHatchPolygonMemo, shared with CreateHatches.
                 GS::Array<GS::ObjectState> coordinates;
                 if (typeSpecificDetails->Get ("coordinates", coordinates) && coordinates.GetSize () >= 3) {
                     GS::Array<GS::ObjectState> arcs;
@@ -2807,69 +2929,7 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         continue;
                     }
 
-                    // Each contour: N unique coords -> N+1 stored coords (with closing duplicate).
-                    Int32 totalUnique = (Int32) coordinates.GetSize ();
-                    Int32 totalCoords = totalUnique + 1;
-                    Int32 totalArcs = (Int32) arcs.GetSize ();
-                    GS::Array<GS::Array<GS::ObjectState>> holeCoordsList;
-                    GS::Array<GS::Array<GS::ObjectState>> holeArcsList;
-                    for (const GS::ObjectState& hole : holes) {
-                        GS::Array<GS::ObjectState> holeCoords, holeArcs;
-                        if (GetHoleGeometry (hole, holeCoords, holeArcs) && holeCoords.GetSize () >= 3) {
-                            totalUnique += (Int32) holeCoords.GetSize ();
-                            totalCoords += (Int32) holeCoords.GetSize () + 1;
-                            totalArcs += (Int32) holeArcs.GetSize ();
-                            holeCoordsList.Push (holeCoords);
-                            holeArcsList.Push (holeArcs);
-                        }
-                    }
-                    const Int32 nSubPolys = 1 + (Int32) holeCoordsList.GetSize ();
-
-                    clipMemo.coords    = reinterpret_cast<API_Coord**>   (BMAllocateHandle ((totalCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
-                    clipMemo.pends     = reinterpret_cast<Int32**>       (BMAllocateHandle ((nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0));
-                    clipMemo.parcs     = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (totalArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
-                    clipMemo.vertexIDs = reinterpret_cast<UInt32**>      (BMAllocateHandle ((totalCoords + 1) * sizeof (UInt32), ALLOCATE_CLEAR, 0));
-                    if (clipMemo.coords != nullptr && clipMemo.pends != nullptr && clipMemo.vertexIDs != nullptr) {
-                        Int32 maxContourUnique = (Int32) coordinates.GetSize ();
-                        for (const auto& hc : holeCoordsList) {
-                            maxContourUnique = GS::Max (maxContourUnique, (Int32) hc.GetSize ());
-                        }
-                        (*clipMemo.coords)[0] = { 0.0, 0.0 };
-                        (*clipMemo.vertexIDs)[0] = (UInt32) maxContourUnique;
-                        (*clipMemo.pends)[0] = 0;
-
-                        Int32 iCoord = 0;
-                        Int32 iArc = 0;
-                        Int32 subPolyIndex = 1;
-
-                        auto writeContour = [&] (const GS::Array<GS::ObjectState>& contourCoords, const GS::Array<GS::ObjectState>& contourArcs) {
-                            const Int32 firstIndex = iCoord + 1;
-                            const Int32 nUniqueLocal = (Int32) contourCoords.GetSize ();
-                            for (Int32 i = 0; i < nUniqueLocal; ++i) {
-                                ++iCoord;
-                                (*clipMemo.coords)[iCoord] = Get2DCoordinateFromObjectState (contourCoords[i]);
-                                (*clipMemo.vertexIDs)[iCoord] = (UInt32) (i + 1); // per-contour, restarts at 1
-                            }
-                            ++iCoord;
-                            (*clipMemo.coords)[iCoord] = (*clipMemo.coords)[firstIndex]; // closing duplicate
-                            (*clipMemo.vertexIDs)[iCoord] = (*clipMemo.vertexIDs)[firstIndex];
-                            (*clipMemo.pends)[subPolyIndex++] = iCoord;
-
-                            if (clipMemo.parcs != nullptr) {
-                                const GS::Array<API_PolyArc> localArcs = GetPolyArcs (contourArcs, firstIndex);
-                                for (const API_PolyArc& a : localArcs)
-                                    (*clipMemo.parcs)[iArc++] = a;
-                            }
-                        };
-
-                        writeContour (coordinates, arcs);
-                        for (Int32 i = 0; i < (Int32) holeCoordsList.GetSize (); ++i) {
-                            writeContour (holeCoordsList[i], holeArcsList[i]);
-                        }
-
-                        elem.hatch.poly.nCoords   = totalCoords;
-                        elem.hatch.poly.nSubPolys = nSubPolys;
-                        elem.hatch.poly.nArcs     = totalArcs;
+                    if (BuildHatchPolygonMemo (coordinates, arcs, holes, elem.hatch.poly, clipMemo)) {
                         ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, poly);
                         memoMask = APIMemoMask_Polygon;
                         hasMemoChanges = true;
@@ -2913,16 +2973,27 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, hatchFlags);
                     hasElementChanges = true;
                 }
+                // The hatch type decides which of fillInd and buildingMaterial Archicad uses, so a given
+                // attribute alone also switches the type. GetDetailsOfElements reports both, so when both are
+                // given the type is kept and the details read can be written back unchanged.
                 const GS::ObjectState* fillId = typeSpecificDetails->Get ("fillId");
+                const GS::ObjectState* buildingMaterialId = typeSpecificDetails->Get ("buildingMaterialId");
                 if (fillId != nullptr) {
                     elem.hatch.fillInd = GetAttributeIndexFromGuid (API_FilltypeID, GetGuidFromObjectState (*fillId));
                     ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, fillInd);
+                    if (buildingMaterialId == nullptr) {
+                        elem.hatch.hatchType = API_FillHatch;
+                        ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, hatchType);
+                    }
                     hasElementChanges = true;
                 }
-                const GS::ObjectState* buildingMaterialId = typeSpecificDetails->Get ("buildingMaterialId");
                 if (buildingMaterialId != nullptr) {
                     elem.hatch.buildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialId));
                     ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, buildingMaterial);
+                    if (fillId == nullptr) {
+                        elem.hatch.hatchType = API_BuildingMaterialHatch;
+                        ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, hatchType);
+                    }
                     hasElementChanges = true;
                 }
                 Int32 roomSpecial = 0;
@@ -3002,6 +3073,22 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 } else if (drwIndexTarget != 0 || !IsResetOrderReliable (elem.header)) {
                     const short resolvedTarget = (drwIndexTarget == 0) ? (short) GetDefaultDrwIndex (elem.header) : drwIndexTarget;
                     ApplyDrawIndexStrategy (guids, elem.header, (Int32) resolvedTarget, (Int32) elem.header.drwIndex);
+                }
+            }
+
+            // Reported live (#1476): ACAPI_Element_Change can return NoError on a placed
+            // Drawing and still keep its old drawingScale, while the rest of the change
+            // (ratio, name, ...) is applied. Read it back so an ignored scale is not
+            // reported as a success.
+            if (requestedDrawingScale.HasValue ()) {
+                API_Element changedElem = {};
+                changedElem.header.guid = elem.header.guid;
+                if (ACAPI_Element_Get (&changedElem) == NoError &&
+                    GS::Abs (changedElem.drawing.drawingScale - *requestedDrawingScale) > 1e-9 * GS::Max (1.0, GS::Abs (*requestedDrawingScale))) {
+                    executionResults (CreateFailedExecutionResult (APIERR_GENERAL, GS::UniString::Printf (
+                        "Archicad did not apply drawingScale: it stayed %g instead of %g. The other details given were applied.",
+                        changedElem.drawing.drawingScale, *requestedDrawingScale)));
+                    continue;
                 }
             }
 
@@ -3400,6 +3487,130 @@ GS::ObjectState GetSubelementsOfHierarchicalElementsCommand::Execute (const GS::
     }
 
     return response;
+}
+
+EditHierarchicalElementCommand::EditHierarchicalElementCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String EditHierarchicalElementCommand::GetName () const
+{
+    return "EditHierarchicalElement";
+}
+
+GS::Optional<GS::UniString> EditHierarchicalElementCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "The hierarchical element (Curtain Wall, Stair, Railing, Beam or Column) to open in hierarchical editing mode."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> EditHierarchicalElementCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState EditHierarchicalElementCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#if defined (ServerMainVers_2700)
+    const GS::ObjectState* elementId = parameters.Get ("elementId");
+    if (elementId == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing");
+    }
+
+    const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+    if (elemGuid == APINULLGuid) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "elementId is corrupt or missing");
+    }
+
+    // A complete operation: it must not run inside ACAPI_CallUndoableCommand, so it is called directly.
+    const GSErrCode err = ACAPI_HierarchicalEditing_EditHierarchicalElem (&elemGuid);
+    if (err == APIERR_REFUSEDCMD) {
+        return CreateFailedExecutionResult (err, "Archicad refused to enter the hierarchical editing mode; it may already be in an editing mode. Finish it first with FinishHierarchicalEditing.");
+    }
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to open the element in hierarchical editing mode; it must be a Curtain Wall, Stair, Railing, Beam or Column.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "EditHierarchicalElement requires Archicad 27 or later.");
+#endif
+}
+
+FinishHierarchicalEditingCommand::FinishHierarchicalEditingCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String FinishHierarchicalEditingCommand::GetName () const
+{
+    return "FinishHierarchicalEditing";
+}
+
+GS::Optional<GS::UniString> FinishHierarchicalEditingCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "accept": {
+                "type": "boolean",
+                "description": "True to accept the changes made in the hierarchical editing mode (OK), false to discard them (Cancel)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "accept"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> FinishHierarchicalEditingCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState FinishHierarchicalEditingCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#if defined (ServerMainVers_2700)
+    // Required, never defaulted: the changes are only discarded when the caller asks for it.
+    bool accept = false;
+    if (!parameters.Get ("accept", accept)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing parameter: accept.");
+    }
+
+    // Complete operations: they must not run inside ACAPI_CallUndoableCommand, so they are called directly.
+    const GSErrCode err = accept
+        ? ACAPI_HierarchicalEditing_OkHierarchicalElem ()
+        : ACAPI_HierarchicalEditing_CancelHierarchicalElem ();
+    if (err == APIERR_REFUSEDCMD) {
+        return CreateFailedExecutionResult (err, "Archicad is not in a hierarchical editing mode that can be finished.");
+    }
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, accept ? "Failed to accept the hierarchical editing." : "Failed to cancel the hierarchical editing.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "FinishHierarchicalEditing requires Archicad 27 or later.");
+#endif
 }
 
 GetHierarchicalElementOwnersCommand::GetHierarchicalElementOwnersCommand () :
@@ -4732,12 +4943,14 @@ GS::Optional<GS::UniString> SetZoneLabelingSettingsCommand::GetInputParametersSc
             "automaticLabeling": {
                 "type": "boolean",
                 "description": "Turns the automatic labeling of Zones (placing a Label on each new Zone) on or off."
+            },
+            "favoriteName": {
+                "type": "string",
+                "description": "The name of the Label Favorite that is placed on each new Zone by the automatic labeling."
             }
         },
         "additionalProperties": false,
-        "required": [
-            "automaticLabeling"
-        ]
+        "minProperties": 1
     })";
 }
 
@@ -4751,24 +4964,101 @@ GS::Optional<GS::UniString> SetZoneLabelingSettingsCommand::GetRawResponseSchema
 GS::ObjectState SetZoneLabelingSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     bool automaticLabeling = false;
-    if (!parameters.Get ("automaticLabeling", automaticLabeling)) {
-        return CreateFailedExecutionResult (APIERR_BADPARS, "automaticLabeling is missing.");
+    const bool hasAutomaticLabeling = parameters.Get ("automaticLabeling", automaticLabeling);
+    GS::UniString favoriteName;
+    const bool hasFavoriteName = parameters.Get ("favoriteName", favoriteName);
+    if (!hasAutomaticLabeling && !hasFavoriteName) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Neither automaticLabeling nor favoriteName is given.");
     }
 
 #ifdef ServerMainVers_2800
     ACAPI::ZoneLabelingSettings settings = ACAPI::CreateZoneLabelingSettings ();
 
+    GS::UniString errorMessage = "Failed to modify the zone labeling settings.";
     ACAPI::Result<void> modifyResult = settings.Modify (
-        [&] (ACAPI::ZoneLabelingSettings::Modifier& modifier) {
-            return modifier.SetAutomaticLabeling (automaticLabeling);
+        [&] (ACAPI::ZoneLabelingSettings::Modifier& modifier) -> ACAPI::Result<void> {
+            if (hasFavoriteName) {
+                ACAPI::Result<void> favoriteResult = modifier.SetSelectedFavorite (favoriteName);
+                if (favoriteResult.IsErr ()) {
+                    switch (favoriteResult.UnwrapErr ().kind) {
+                        case APIERR_GENERAL:
+                            errorMessage = "Failed to select the Favorite '" + favoriteName + "': there are no Favorites in the project.";
+                            break;
+                        case APIERR_BADNAME:
+                            errorMessage = "Failed to select the Favorite '" + favoriteName + "': there is no Favorite with this name.";
+                            break;
+                        case APIERR_BADELEMENTTYPE:
+                            errorMessage = "Failed to select the Favorite '" + favoriteName + "': it is not a Label Favorite.";
+                            break;
+                        default:
+                            errorMessage = "Failed to select the Favorite '" + favoriteName + "'.";
+                            break;
+                    }
+                    return favoriteResult;
+                }
+            }
+            if (hasAutomaticLabeling) {
+                modifier.SetAutomaticLabeling (automaticLabeling);
+            }
+            return ACAPI::Ok ();
         }
     );
 
     return modifyResult.IsOk ()
         ? CreateSuccessfulExecutionResult ()
-        : CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, "Failed to modify the zone labeling settings.");
+        : CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, errorMessage);
 #else
     return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command is only supported in Archicad 28 or later.");
+#endif
+}
+
+GetZoneLabelingSettingsCommand::GetZoneLabelingSettingsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetZoneLabelingSettingsCommand::GetName () const
+{
+    return "GetZoneLabelingSettings";
+}
+
+GS::Optional<GS::UniString> GetZoneLabelingSettingsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "isAutomaticLabelingOn": {
+                "type": "boolean",
+                "description": "Whether the automatic labeling of Zones (placing a Label on each new Zone) is on."
+            },
+            "selectedFavoriteName": {
+                "type": "string",
+                "description": "The name of the Label Favorite that is placed on each new Zone. Missing when no Favorite is selected."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "isAutomaticLabelingOn"
+        ]
+    })";
+}
+
+GS::ObjectState GetZoneLabelingSettingsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    ACAPI::ZoneLabelingSettings settings = ACAPI::CreateZoneLabelingSettings ();
+
+    GS::ObjectState response;
+    response.Add ("isAutomaticLabelingOn", settings.IsAutomaticLabelingOn ());
+
+    ACAPI::Result<GS::UniString> favoriteName = settings.GetSelectedFavoriteName ();
+    if (favoriteName.IsOk ()) {
+        response.Add ("selectedFavoriteName", favoriteName.Unwrap ());
+    }
+
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command is only supported in Archicad 28 or later.");
 #endif
 }
 
@@ -4993,9 +5283,45 @@ GS::Optional<GS::UniString> MoveElementsCommand::GetRawResponseSchema () const
     })";
 }
 
+// ACAPI_Element_Edit also reports NoError and leaves the element untouched when
+// the element lives in a 2D database (worksheet, detail, layout, ...) that is
+// not the current one (#1473). Returns the name of that database, or nothing
+// when the element is in the current database, on the floor plan (model
+// elements are edited from the 3D, section, ... windows too, so they are left
+// as they were), or when its database cannot be determined.
+static GS::Optional<GS::UniString> GetOtherDatabaseOfElement (const API_Guid& elemGuid)
+{
+    API_DatabaseInfo currentDb = {};
+    if (ACAPI_Database_GetCurrentDatabase (&currentDb) != NoError) {
+        return GS::NoValue;
+    }
+
+    API_DatabaseInfo elemDb = {};
+    if (ACAPI_Database_GetContainingDatabase (&elemGuid, &elemDb) != NoError) {
+        return GS::NoValue;
+    }
+
+    // Fills in the type and the name of the database from its id, as
+    // GetContainingDatabases does.
+    if (ACAPI_Window_GetDatabaseInfo (&elemDb) != NoError) {
+        return GS::NoValue;
+    }
+
+    if (elemDb.typeID == APIWind_FloorPlanID) {
+        return GS::NoValue;
+    }
+
+    const DatabaseIdResolver& resolver = DatabaseIdResolver::Instance ();
+    if (resolver.GetIdOfDatabase (elemDb) == resolver.GetIdOfDatabase (currentDb)) {
+        return GS::NoValue;
+    }
+
+    return GS::UniString (elemDb.name);
+}
+
 // ACAPI_Element_Edit reports NoError for an element it is not allowed to edit
-// (hidden or locked layer, locked element, teamwork access) and leaves it
-// untouched, so the element is checked before the edit. Returns the failed
+// (hidden or locked layer, locked element, teamwork access, another database)
+// and leaves it untouched, so the element is checked before the edit. Returns the failed
 // execution result for an element that cannot be edited, and nothing when the
 // edit may go ahead. operation is the past participle of the edit ("moved").
 static GS::Optional<GS::ObjectState> GetFailedExecutionResultIfNotEditable (const API_Guid& elemGuid, const char* operation)
@@ -5019,6 +5345,13 @@ static GS::Optional<GS::ObjectState> GetFailedExecutionResultIfNotEditable (cons
 
     if (!ACAPI_Element_Filter (elemGuid, APIFilt_IsEditable)) {
         return CreateFailedExecutionResult (APIERR_GENERAL, GS::UniString::Printf ("The element was not %s, because it is not editable.", operation));
+    }
+
+    const GS::Optional<GS::UniString> otherDatabase = GetOtherDatabaseOfElement (elemGuid);
+    if (otherDatabase.HasValue ()) {
+        return CreateFailedExecutionResult (APIERR_BADDATABASE,
+            GS::UniString::Printf ("The element was not %s, because it is in another database (%T) than the current one. Activate its window first (see GetContainingDatabases and ChangeWindow).",
+                operation, otherDatabase->ToPrintf ()));
     }
 
     return GS::NoValue;
@@ -5687,6 +6020,11 @@ static void InitializeEmptyBounds (API_Box3D& bounds)
     bounds.xMax = bounds.yMax = bounds.zMax = -1e30;
 }
 
+static bool IsEmptyBounds (const API_Box3D& bounds)
+{
+    return bounds.xMin > bounds.xMax || bounds.yMin > bounds.yMax || bounds.zMin > bounds.zMax;
+}
+
 // Extends bounds with the solid 3D bodies of the element. foundSolidBody is only ever set to
 // true here, so the same accumulator can be run over several elements in a row.
 static GSErrCode AccumulateSolidBodyBounds (const API_Elem_Head& elemHead, API_Box3D& bounds, bool& foundSolidBody)
@@ -5877,6 +6215,13 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
             boundingBoxes3D (CreateErrorResponse (err, "Failed to get the 3D bounding box"));
             continue;
         }
+        if (IsEmptyBounds (box3D)) {
+            // ACAPI_Element_CalcBounds succeeds with an empty, inverted box (min 1e35, max -1e35)
+            // for an element that has no 3D geometry of its own, e.g. a Stair tread whose 3D model
+            // cannot be read (#1567). That is no bounding box, so it is reported as an error.
+            boundingBoxes3D (CreateErrorResponse (APIERR_GENERAL, "The element has no 3D geometry to get the bounding box of"));
+            continue;
+        }
 
         GS::ObjectState boundingBox3D ("xMin", box3D.xMin,
                                        "xMax", box3D.xMax,
@@ -5885,6 +6230,143 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
                                        "zMin", box3D.zMin,
                                        "zMax", box3D.zMax);
         boundingBoxes3D (GS::ObjectState ("boundingBox3D", boundingBox3D));
+    }
+
+    return response;
+}
+
+GetLibPartTransformationsCommand::GetLibPartTransformationsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetLibPartTransformationsCommand::GetName () const
+{
+    return "GetLibPartTransformations";
+}
+
+GS::Optional<GS::UniString> GetLibPartTransformationsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetLibPartTransformationsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "transformations": {
+                "type": "array",
+                "description": "The placement transformation of each element, aligned with the input, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "transformation": {
+                                    "type": "object",
+                                    "description": "The transformation chain of the library part instance: placement at location, rotation by angle, then scaling by xRatio and yRatio in the rotated coordinate system.",
+                                    "properties": {
+                                        "location": {
+                                            "$ref": "#/Coordinate2D",
+                                            "description": "The location of the referenced library part on the floor plan."
+                                        },
+                                        "angle": {
+                                            "type": "number",
+                                            "description": "The rotation angle in radians."
+                                        },
+                                        "xRatio": {
+                                            "type": "number",
+                                            "description": "The scaling along the rotated x axis."
+                                        },
+                                        "yRatio": {
+                                            "type": "number",
+                                            "description": "The scaling along the rotated y axis."
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "location",
+                                        "angle",
+                                        "xRatio",
+                                        "yRatio"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "transformation"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "transformations"
+        ]
+    })";
+}
+
+GS::ObjectState GetLibPartTransformationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& transformations = response.AddList<GS::ObjectState> ("transformations");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            transformations (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            transformations (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+
+        // ACAPI_Element_GetSyTran is documented for these types only, so the others are
+        // rejected here instead of being passed to it.
+        const API_ElemTypeID typeID = GetElemTypeId (elemHead);
+        if (typeID != API_WindowID && typeID != API_DoorID && typeID != API_ObjectID &&
+            typeID != API_LampID && typeID != API_ZoneID) {
+            transformations (CreateErrorResponse (APIERR_BADPARS, "Invalid element type, only Window, Door, Object, Lamp and Zone are supported"));
+            continue;
+        }
+
+        API_SyTran syTran = {};
+        err = ACAPI_Element_GetSyTran (&elemHead, &syTran);
+        if (err != NoError) {
+            transformations (CreateErrorResponse (err, "Failed to get the transformation of the element"));
+            continue;
+        }
+
+        GS::ObjectState transformation ("location", GS::ObjectState ("x", syTran.loc.x, "y", syTran.loc.y),
+                                        "angle", syTran.angle,
+                                        "xRatio", syTran.xRatio,
+                                        "yRatio", syTran.yRatio);
+        transformations (GS::ObjectState ("transformation", transformation));
     }
 
     return response;
@@ -6311,6 +6793,32 @@ GS::ObjectState Get3DGeometryOfElementsCommand::Execute (const GS::ObjectState& 
     GS::ObjectState response;
     const auto& geometries3D = response.AddList<GS::ObjectState> ("geometries3D");
 
+    // ACAPI_ModelAccess_Get3DInfo answers APIERR_BADDATABASE (-2130313110) when the current
+    // database is a 3D Document (and likewise a section, elevation, layout, ...), while it works
+    // from the floor plan and the 3D window (#1482). So switch the CURRENT DATABASE - not the
+    // visible window - to the floor plan for the reads in those cases, as CreateWindows and
+    // CreateDoors do (see SwitchCurrentDatabaseToFloorPlan in ExtendedElementCommands.cpp), and
+    // put the previous one back on every exit path.
+    API_DatabaseInfo previousDatabase = {};
+    bool databaseSwitched = false;
+    const GS::OnExit restoreDatabase ([&]() {
+        if (databaseSwitched) {
+            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
+        }
+    });
+    if (ACAPI_Database_GetCurrentDatabase (&previousDatabase) == NoError &&
+        previousDatabase.typeID != APIWind_FloorPlanID &&
+        previousDatabase.typeID != APIWind_3DModelID)
+    {
+        API_DatabaseInfo floorPlanDatabase = {};
+        floorPlanDatabase.typeID = APIWind_FloorPlanID;
+        if (ACAPI_Window_GetDatabaseInfo (&floorPlanDatabase) == NoError &&
+            ACAPI_Database_ChangeCurrentDatabase (&floorPlanDatabase) == NoError)
+        {
+            databaseSwitched = true;
+        }
+    }
+
     for (const GS::ObjectState& element : elements) {
         const GS::ObjectState* elementId = element.Get ("elementId");
         if (elementId == nullptr) {
@@ -6349,6 +6857,123 @@ GS::ObjectState Get3DGeometryOfElementsCommand::Execute (const GS::ObjectState& 
     return response;
 }
 
+GetVisibleSkinStatusCommand::GetVisibleSkinStatusCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetVisibleSkinStatusCommand::GetName () const
+{
+    return "GetVisibleSkinStatus";
+}
+
+GS::Optional<GS::UniString> GetVisibleSkinStatusCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "structureDisplay": {
+                "type": "string",
+                "description": "The Partial Structure Display mode to check the elements in. The current window is not changed.",
+                "enum": ["EntireStructure", "CoreOnly", "WithoutFinishes", "StructureOnly"]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "structureDisplay"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetVisibleSkinStatusCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "visibleSkinStatuses": {
+                "type": "array",
+                "description": "Whether each element has a visible skin in the given Partial Structure Display mode, aligned with the input, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "hasVisibleSkin": {
+                                    "type": "boolean",
+                                    "description": "True when the element has at least one skin shown in the given Partial Structure Display mode."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "hasVisibleSkin"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "visibleSkinStatuses"
+        ]
+    })";
+}
+
+GS::ObjectState GetVisibleSkinStatusCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString structureDisplayStr;
+    parameters.Get ("structureDisplay", structureDisplayStr);
+
+    API_StructureDisplay structureDisplay = API_EntireStructure;
+    if      (structureDisplayStr == "EntireStructure")  structureDisplay = API_EntireStructure;
+    else if (structureDisplayStr == "CoreOnly")         structureDisplay = API_CoreOnly;
+    else if (structureDisplayStr == "WithoutFinishes")  structureDisplay = API_WithoutFinishes;
+    else if (structureDisplayStr == "StructureOnly")    structureDisplay = API_StructureOnly;
+    else {
+        return CreateErrorResponse (APIERR_BADPARS, "structureDisplay must be one of EntireStructure, CoreOnly, WithoutFinishes, StructureOnly.");
+    }
+
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& visibleSkinStatuses = response.AddList<GS::ObjectState> ("visibleSkinStatuses");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            visibleSkinStatuses (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            visibleSkinStatuses (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+
+        bool hasVisibleSkin = false;
+        err = ACAPI_Element_ElemHasVisibleSkin (&elemHead.guid, &structureDisplay, &hasVisibleSkin);
+        if (err != NoError) {
+            visibleSkinStatuses (CreateErrorResponse (err, "Failed to check the visible skins of the element"));
+            continue;
+        }
+
+        visibleSkinStatuses (GS::ObjectState ("hasVisibleSkin", hasVisibleSkin));
+    }
+
+    return response;
+}
+
 GetElementAtCoordinateCommand::GetElementAtCoordinateCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -6374,7 +6999,7 @@ GS::Optional<GS::UniString> GetElementAtCoordinateCommand::GetInputParametersSch
             },
             "z": {
                 "type": "number",
-                "description": "Optional. The elevation of the search point, handed to Archicad together with the coordinate. Default is 0."
+                "description": "Optional. The elevation of the search point, handed to Archicad together with the coordinate. Default is 0; without z a point 1 mm higher is also tried, so an element whose top is at 0 (for example a slab at the story level) is found."
             },
             "filters": {
                 "type": "array",
@@ -6439,7 +7064,7 @@ GS::ObjectState GetElementAtCoordinateCommand::Execute (const GS::ObjectState& p
 #endif
     searchPars.loc = Get2DCoordinateFromObjectState (*coordinate);
     searchPars.z = 0.0;
-    parameters.Get ("z", searchPars.z);
+    const bool zGiven = parameters.Get ("z", searchPars.z);
 
     GS::Array<GS::UniString> filters;
     if (parameters.Get ("filters", filters)) {
@@ -6451,17 +7076,25 @@ GS::ObjectState GetElementAtCoordinateCommand::Execute (const GS::ObjectState& p
     }
 
     API_Guid elemGuid = APINULLGuid;
-    const GSErrCode err = ACAPI_Element_SearchElementByCoord (&searchPars, &elemGuid);
+    GSErrCode err = ACAPI_Element_SearchElementByCoord (&searchPars, &elemGuid);
+    if (err == APIERR_BADPARS && !zGiven) {
+        // Archicad 27 and later miss an element whose top is exactly at the default elevation
+        // (a slab with its top at the story level), so the search is repeated slightly above it.
+        searchPars.z = 0.001;
+        elemGuid = APINULLGuid;
+        err = ACAPI_Element_SearchElementByCoord (&searchPars, &elemGuid);
+    }
     if (err == APIERR_REFUSEDPAR) {
         return CreateErrorResponse (err, "Only polygonal element types can be searched by coordinate (for example Slab, Roof, Mesh, Zone or Hatch).");
     }
-    if (err != NoError) {
+    // Both pointers are valid here, so APIERR_BADPARS is Archicad's way of saying that there
+    // is no element at the point.
+    if (err != NoError && err != APIERR_BADPARS) {
         return CreateErrorResponse (err, "Failed to search for an element at the coordinate.");
     }
 
-    // A successful search leaves the guid null when there is nothing at the point.
     GS::ObjectState response;
-    const bool found = (elemGuid != APINULLGuid);
+    const bool found = (err == NoError && elemGuid != APINULLGuid);
     response.Add ("found", found);
     if (found) {
         response.Add ("elementId", CreateGuidObjectState (elemGuid));
@@ -6519,6 +7152,12 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
 
     const GS::Array<API_Guid> elemGuids = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
 
+    // A guid that is not in the project must not reach ACAPI_Element_Delete:
+    // listed after an existing element it makes the whole call fail, the
+    // undoable command rolls back and that existing element stays in the
+    // project (#749). Such guids are left out of the calls and reported as
+    // APIERR_BADID below.
+    //
     // The zones of the call are deleted before everything else (#901). An automatic
     // zone is recomputed from its bounding elements when one of them is deleted, and
     // when the room is no longer closed Archicad opens its modal "No closed polygon
@@ -6526,13 +7165,18 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
     // later one, until someone clicks it in Archicad. One ACAPI_Element_Delete call
     // with the walls listed before their zone opened that dialog, while deleting the
     // zone first in a call of its own did not; so the zones get a call of their own,
-    // before the rest, within the same undoable command. Guids that are not in the
-    // project stay in the second call, which deletes the rest of the batch regardless.
+    // before the rest, within the same undoable command.
+    GS::Array<bool> existedBeforeDelete;
     GS::Array<API_Guid> zoneGuids;
     GS::Array<API_Guid> otherGuids;
     for (const API_Guid& elemGuid : elemGuids) {
         API_Elem_Head elemHead = {};
-        if (LoadElementHeaderByGuid (elemGuid, elemHead) && GetElemTypeId (elemHead) == API_ZoneID) {
+        const bool exists = LoadElementHeaderByGuid (elemGuid, elemHead);
+        existedBeforeDelete.Push (exists);
+        if (!exists) {
+            continue;
+        }
+        if (GetElemTypeId (elemHead) == API_ZoneID) {
             zoneGuids.Push (elemGuid);
         } else {
             otherGuids.Push (elemGuid);
@@ -6540,7 +7184,7 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
     }
 
     GSErrCode deleteErr = NoError;
-    if (!elemGuids.IsEmpty ()) {
+    if (!zoneGuids.IsEmpty () || !otherGuids.IsEmpty ()) {
         ACAPI_CallUndoableCommand ("DeleteElementsCommand", [&]() {
             if (!zoneGuids.IsEmpty ()) {
                 deleteErr = ACAPI_Element_Delete (zoneGuids);
@@ -6562,10 +7206,15 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
     // ACAPI_Element_Delete reports NoError even when it skips elements it is
     // not allowed to delete (locked layer, locked element, teamwork access),
     // so success is decided per element by whether the element is really gone
-    // afterwards. An element that is gone is the asked-for outcome however it
-    // got there: deleted by this call, deleted with its owner, or never in the
-    // project to begin with.
-    for (const API_Guid& elemGuid : elemGuids) {
+    // afterwards. An element that existed and is gone is the asked-for outcome
+    // however it got there: deleted by this call or deleted with its owner.
+    for (UIndex i = 0; i < elemGuids.GetSize (); ++i) {
+        if (!existedBeforeDelete[i]) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "The element was not deleted, because it does not exist."));
+            continue;
+        }
+
+        const API_Guid& elemGuid = elemGuids[i];
         API_Elem_Head elemHead = {};
         if (!LoadElementHeaderByGuid (elemGuid, elemHead)) {
             executionResults (CreateSuccessfulExecutionResult ());
@@ -6715,6 +7364,89 @@ GS::ObjectState UnlockElementsCommand::Execute (const GS::ObjectState& parameter
     return err == NoError
         ? CreateSuccessfulExecutionResult ()
         : CreateFailedExecutionResult (err, "Failed to unlock elements.");
+}
+
+RefreshElementsCommand::RefreshElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RefreshElementsCommand::GetName () const
+{
+    return "RefreshElements";
+}
+
+GS::Optional<GS::UniString> RefreshElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "force": {
+                "type": "boolean",
+                "description": "Forces the rebuild of GDL-based elements, which runs their parameter script. The default is false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> RefreshElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+// ACAPI_Element_RefreshElement is a non-undoable data structure modifier, so,
+// like the hotlink node functions in UpdateHotlinks, it is not wrapped in
+// ACAPI_CallUndoableCommand.
+GS::ObjectState RefreshElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    bool force = false;
+    parameters.Get ("force", force);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& element : elements) {
+        const API_Guid elemGuid = GetGuidFromElementsArrayItem (element);
+
+        // The header is read from the current database, so an element of
+        // another database (or a deleted one) is reported here instead of
+        // being passed to the refresh with an incomplete header.
+        API_Elem_Head elemHead = {};
+        if (!LoadElementHeaderByGuid (elemGuid, elemHead)) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "The element was not found in the current database (the floor plan, section or detail window that is open)."));
+            continue;
+        }
+
+        const GSErrCode err = ACAPI_Element_RefreshElement (&elemHead, &force);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to refresh the element."));
+            continue;
+        }
+        executionResults (CreateSuccessfulExecutionResult ());
+    }
+
+    return response;
 }
 
 GetElementPreviewImageCommand::GetElementPreviewImageCommand () :
@@ -7128,6 +7860,99 @@ GS::ObjectState TriangulatePolygonsOfElementsCommand::Execute (const GS::ObjectS
     }
 
     return response;
+}
+
+// Get3DModelCounts
+
+Get3DModelCountsCommand::Get3DModelCountsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String Get3DModelCountsCommand::GetName () const
+{
+    return "Get3DModelCounts";
+}
+
+GS::Optional<GS::UniString> Get3DModelCountsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "counts": {
+                "type": "array",
+                "description": "The number of components of each type in the 3D model Archicad currently holds, one item per type, or an error for a type that could not be counted.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "componentType": {
+                                    "type": "string",
+                                    "description": "The component type: the API_3DTypeID enumerator name without its API_ prefix and ID suffix.",
+                                    "enum": ["Body", "Pgon", "Pedg", "Edge", "Vert", "Vect", "Umat", "Lght"]
+                                },
+                                "count": {
+                                    "type": "integer",
+                                    "description": "The number of components of this type."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "componentType",
+                                "count"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "counts"
+        ]
+    })";
+}
+
+GS::ObjectState Get3DModelCountsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    // Every API_3DTypeID except API_Zombie3DID, in the order of the enum.
+    static const std::pair<API_3DTypeID, const char*> componentTypes[] = {
+        { API_BodyID, "Body" },
+        { API_PgonID, "Pgon" },
+        { API_PedgID, "Pedg" },
+        { API_EdgeID, "Edge" },
+        { API_VertID, "Vert" },
+        { API_VectID, "Vect" },
+        { API_UmatID, "Umat" },
+        { API_LghtID, "Lght" }
+    };
+
+    GS::ObjectState response;
+    const auto& counts = response.AddList<GS::ObjectState> ("counts");
+
+    for (const auto& componentType : componentTypes) {
+        Int32 count = 0;
+        const GSErrCode err = ACAPI_ModelAccess_GetNum (componentType.first, &count);
+        if (err != NoError) {
+            counts (CreateErrorResponse (err, GS::UniString::Printf ("Failed to count the %s components of the 3D model", componentType.second)));
+            continue;
+        }
+
+        GS::ObjectState countOS;
+        countOS.Add ("componentType", GS::UniString (componentType.second));
+        countOS.Add ("count", count);
+        counts (countOS);
+    }
+
+    return response;
+#else
+    return CreateErrorResponse (APIERR_GENERAL, "Get3DModelCounts is available from Archicad 27.");
+#endif
 }
 
 
