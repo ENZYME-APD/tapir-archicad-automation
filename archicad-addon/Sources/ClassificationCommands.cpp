@@ -103,6 +103,103 @@ GS::ObjectState GetClassificationsOfElementsCommand::Execute (const GS::ObjectSt
     return response;
 }
 
+GetElementsByClassificationCommand::GetElementsByClassificationCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetElementsByClassificationCommand::GetName () const
+{
+    return "GetElementsByClassification";
+}
+
+GS::Optional<GS::UniString> GetElementsByClassificationCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "classificationItemIds": {
+                "$ref": "#/ClassificationItemIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationItemIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetElementsByClassificationCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementsOfClassificationItems": {
+                "type": "array",
+                "description": "The elements classified with each classification item, aligned with the input, or an error for a non-existing classification item.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elements": {
+                                    "$ref": "#/Elements"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elements"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementsOfClassificationItems"
+        ]
+    })";
+}
+
+GS::ObjectState GetElementsByClassificationCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> classificationItemIds;
+    parameters.Get ("classificationItemIds", classificationItemIds);
+
+    GS::ObjectState response;
+    const auto& elementsOfClassificationItems = response.AddList<GS::ObjectState> ("elementsOfClassificationItems");
+
+    for (const GS::ObjectState& classificationItemId : classificationItemIds) {
+        const GS::ObjectState* itemId = classificationItemId.Get ("classificationItemId");
+        if (itemId == nullptr) {
+            elementsOfClassificationItems (CreateErrorResponse (APIERR_BADPARS, "classificationItemId is missing"));
+            continue;
+        }
+
+        const API_Guid itemGuid = GetGuidFromObjectState (*itemId);
+
+        GS::Array<API_Guid> elemGuids;
+        GSErrCode err = ACAPI_Element_GetElementsWithClassification (itemGuid, elemGuids);
+        if (err != NoError) {
+            elementsOfClassificationItems (CreateErrorResponse (err, "Failed to get the elements of the classification item"));
+            continue;
+        }
+
+        GS::ObjectState elementsOfClassificationItem;
+        const auto& elements = elementsOfClassificationItem.AddList<GS::ObjectState> ("elements");
+        for (const API_Guid& elemGuid : elemGuids) {
+            elements (CreateElementIdObjectState (elemGuid));
+        }
+        elementsOfClassificationItems (elementsOfClassificationItem);
+    }
+
+    return response;
+}
+
 SetClassificationsOfElementsCommand::SetClassificationsOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -206,6 +303,642 @@ GS::ObjectState SetClassificationsOfElementsCommand::Execute (const GS::ObjectSt
 
         return NoError;
     });
+
+    return response;
+}
+
+GetClassificationsOfAttributesCommand::GetClassificationsOfAttributesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetClassificationsOfAttributesCommand::GetName () const
+{
+    return "GetClassificationsOfAttributes";
+}
+
+GS::Optional<GS::UniString> GetClassificationsOfAttributesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeIds": {
+                "$ref": "#/AttributeIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetClassificationsOfAttributesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeClassifications": {
+                "type": "array",
+                "description": "The classifications of the attributes, in the order of the input. A non-existing attribute is represented by an error object.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "classificationIds": {
+                                    "type": "array",
+                                    "description": "The classification of the attribute in every classification system it is classified in.",
+                                    "items": {
+                                        "$ref": "#/ClassificationId"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [ "classificationIds" ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeClassifications"
+        ]
+    })";
+}
+
+GS::ObjectState GetClassificationsOfAttributesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> attributeIds;
+    parameters.Get ("attributeIds", attributeIds);
+
+    GS::ObjectState response;
+    const auto& attributeClassifications = response.AddList<GS::ObjectState> ("attributeClassifications");
+
+    for (const GS::ObjectState& attribute : attributeIds) {
+        const GS::ObjectState* attributeId = attribute.Get ("attributeId");
+        if (attributeId == nullptr) {
+            attributeClassifications (CreateErrorResponse (APIERR_BADPARS, "attributeId is missing"));
+            continue;
+        }
+
+        const API_Attr_Head attrHead = GetAttributeHeadFromGuid (GetGuidFromObjectState (*attributeId));
+        if (attrHead.typeID == API_ZombieAttrID) {
+            attributeClassifications (CreateErrorResponse (APIERR_BADID, "Attribute not found"));
+            continue;
+        }
+
+        GS::Array<GS::Pair<API_Guid, API_Guid>> systemItemPairs;
+        const GSErrCode err = ACAPI_Attribute_GetClassificationItems (attrHead, systemItemPairs);
+        if (err != NoError) {
+            attributeClassifications (CreateErrorResponse (err, "Failed to get the classifications of the attribute"));
+            continue;
+        }
+
+        GS::ObjectState attributeClassification;
+        const auto& classificationIds = attributeClassification.AddList<GS::ObjectState> ("classificationIds");
+        for (const GS::Pair<API_Guid, API_Guid>& systemItemPair : systemItemPairs) {
+            classificationIds (GS::ObjectState (
+                "classificationSystemId", CreateGuidObjectState (systemItemPair.first),
+                "classificationItemId", CreateGuidObjectState (systemItemPair.second)));
+        }
+
+        attributeClassifications (attributeClassification);
+    }
+
+    return response;
+}
+
+SetClassificationsOfAttributesCommand::SetClassificationsOfAttributesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetClassificationsOfAttributesCommand::GetName () const
+{
+    return "SetClassificationsOfAttributes";
+}
+
+GS::Optional<GS::UniString> SetClassificationsOfAttributesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeClassifications": {
+                "type": "array",
+                "description": "The classifications to set, one per attribute and classification system.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "attributeId": {
+                            "$ref": "#/AttributeId"
+                        },
+                        "classificationId": {
+                            "$ref": "#/ClassificationId",
+                            "description": "The classification to set. The item replaces the attribute's current item in the same classification system. If the classificationItemId field is omitted, the attribute becomes unclassified in the given system."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "attributeId",
+                        "classificationId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeClassifications"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetClassificationsOfAttributesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+static GS::UniString DescribeAttributeClassificationError (GSErrCode err, const GS::UniString& action)
+{
+    switch (err) {
+        case APIERR_READONLY:          return action + ": the attribute cannot be modified (e.g. it comes from a hotlink) or you have no right to classify attributes in the teamwork project";
+        case APIERR_BADID:             return action + ": classification item not found";
+        case APIERR_BADCLASSIFICATION: return action + ": the classification item is not available for the attribute";
+        case APIERR_BADPARS:           return action + ": the attribute does not have the classification item";
+        default:                       return action;
+    }
+}
+
+// The classification item of the attribute in the given system, or NoValue when it is unclassified there.
+static GS::Optional<API_Guid> GetClassificationItemOfAttributeInSystem (const GS::Array<GS::Pair<API_Guid, API_Guid>>& systemItemPairs, const API_Guid& systemGuid)
+{
+    for (const GS::Pair<API_Guid, API_Guid>& systemItemPair : systemItemPairs) {
+        if (systemItemPair.first == systemGuid) {
+            return systemItemPair.second;
+        }
+    }
+    return GS::NoValue;
+}
+
+GS::ObjectState SetClassificationsOfAttributesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> attributeClassifications;
+    parameters.Get ("attributeClassifications", attributeClassifications);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("SetClassificationsOfAttributesCommand", [&] () -> GSErrCode {
+        for (const GS::ObjectState& attributeClassification : attributeClassifications) {
+            const GS::ObjectState* attributeId = attributeClassification.Get ("attributeId");
+            if (attributeId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "attributeId is missing"));
+                continue;
+            }
+
+            const GS::ObjectState* classificationId = attributeClassification.Get ("classificationId");
+            if (classificationId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "classificationId is missing"));
+                continue;
+            }
+
+            const GS::ObjectState* classificationSystemId = classificationId->Get ("classificationSystemId");
+            if (classificationSystemId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "classificationSystemId is missing"));
+                continue;
+            }
+
+            const API_Attr_Head attrHead = GetAttributeHeadFromGuid (GetGuidFromObjectState (*attributeId));
+            if (attrHead.typeID == API_ZombieAttrID) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Attribute not found"));
+                continue;
+            }
+
+            const API_Guid systemGuid = GetGuidFromObjectState (*classificationSystemId);
+
+            GS::Array<GS::Pair<API_Guid, API_Guid>> systemItemPairs;
+            GSErrCode err = ACAPI_Attribute_GetClassificationItems (attrHead, systemItemPairs);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to get the classifications of the attribute"));
+                continue;
+            }
+
+            const GS::Optional<API_Guid> currentItemGuid = GetClassificationItemOfAttributeInSystem (systemItemPairs, systemGuid);
+
+            const GS::ObjectState* classificationItemId = classificationId->Get ("classificationItemId");
+            if (classificationItemId != nullptr) {
+                const API_Guid itemGuid = GetGuidFromObjectState (*classificationItemId);
+
+                if (currentItemGuid.HasValue () && currentItemGuid.Get () == itemGuid) {
+                    executionResults (CreateSuccessfulExecutionResult ());
+                    continue;
+                }
+
+                err = ACAPI_Attribute_AddClassificationItem (attrHead, itemGuid);
+                if (err != NoError) {
+                    executionResults (CreateFailedExecutionResult (err, DescribeAttributeClassificationError (err, "Failed to set the classification item of the attribute")));
+                    continue;
+                }
+
+                // The new item replaces the previous one of its system. Archicad may already have done so;
+                // when it has not, the previous item is removed here so the attribute keeps one item per system.
+                systemItemPairs.Clear ();
+                if (ACAPI_Attribute_GetClassificationItems (attrHead, systemItemPairs) == NoError) {
+                    const API_Guid newItemSystemGuid = [&] () -> API_Guid {
+                        for (const GS::Pair<API_Guid, API_Guid>& systemItemPair : systemItemPairs) {
+                            if (systemItemPair.second == itemGuid) {
+                                return systemItemPair.first;
+                            }
+                        }
+                        return systemGuid;
+                    } ();
+                    for (const GS::Pair<API_Guid, API_Guid>& systemItemPair : systemItemPairs) {
+                        if (systemItemPair.first == newItemSystemGuid && systemItemPair.second != itemGuid) {
+                            err = ACAPI_Attribute_RemoveClassificationItem (attrHead, systemItemPair.second);
+                            if (err != NoError) {
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (err != NoError) {
+                    executionResults (CreateFailedExecutionResult (err, DescribeAttributeClassificationError (err, "Failed to remove the previous classification item of the attribute")));
+                    continue;
+                }
+            } else {
+                if (currentItemGuid.HasValue ()) {
+                    err = ACAPI_Attribute_RemoveClassificationItem (attrHead, currentItemGuid.Get ());
+                    if (err != NoError) {
+                        executionResults (CreateFailedExecutionResult (err, DescribeAttributeClassificationError (err, "Failed to remove the classification item of the attribute")));
+                        continue;
+                    }
+                }
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
+GetClassificationsOfElementDefaultsCommand::GetClassificationsOfElementDefaultsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetClassificationsOfElementDefaultsCommand::GetName () const
+{
+    return "GetClassificationsOfElementDefaults";
+}
+
+GS::Optional<GS::UniString> GetClassificationsOfElementDefaultsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementTypes": {
+                "type": "array",
+                "description": "The element types whose tool defaults (the settings new elements get) are read.",
+                "items": {
+                    "$ref": "#/ElementType"
+                }
+            },
+            "classificationSystemIds": {
+                "$ref": "#/ClassificationSystemIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementTypes",
+            "classificationSystemIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetClassificationsOfElementDefaultsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementDefaultClassifications": {
+                "$ref": "#/ElementClassificationsOrErrors",
+                "description": "Order of the outer list is that of the given element types, the inner list that of the given classification systems. Invalid element types or non-existing classification systems are represented by error objects."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementDefaultClassifications"
+        ]
+    })";
+}
+
+GS::ObjectState GetClassificationsOfElementDefaultsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> elementTypes;
+    parameters.Get ("elementTypes", elementTypes);
+
+    GS::Array<GS::ObjectState> classificationSystemIds;
+    parameters.Get ("classificationSystemIds", classificationSystemIds);
+
+    GS::ObjectState response;
+    const auto& elementDefaultClassifications = response.AddList<GS::ObjectState> ("elementDefaultClassifications");
+
+    for (const GS::UniString& elementTypeStr : elementTypes) {
+        const API_ElemTypeID typeID = GetElementTypeFromNonLocalizedName (elementTypeStr);
+        if (typeID == API_ZombieElemID) {
+            elementDefaultClassifications (CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ())));
+            continue;
+        }
+
+        GS::ObjectState elementClassification;
+        const auto& classificationIds = elementClassification.AddList<GS::ObjectState> ("classificationIds");
+
+        for (const GS::ObjectState& classificationSystemId : classificationSystemIds) {
+            const GS::ObjectState* systemId = classificationSystemId.Get ("classificationSystemId");
+            if (systemId == nullptr) {
+                classificationIds (CreateErrorResponse (APIERR_BADPARS, "classificationSystemId is missing"));
+                continue;
+            }
+
+            const API_Guid systemGuid = GetGuidFromObjectState (*systemId);
+
+            API_ClassificationItem item;
+            const GSErrCode err = TAPIR_Element_GetClassificationInSystemDefault (typeID, systemGuid, item);
+            if (err != NoError) {
+                classificationIds (CreateErrorResponse (err, "Failed to get classification item"));
+                continue;
+            }
+
+            GS::ObjectState classificationId ("classificationSystemId", GS::ObjectState ("guid", APIGuidToString (systemGuid)));
+            if (item.guid != APINULLGuid) {
+                classificationId.Add ("classificationItemId", GS::ObjectState ("guid", APIGuidToString (item.guid)));
+            }
+            classificationIds (classificationId);
+        }
+
+        elementDefaultClassifications (elementClassification);
+    }
+
+    return response;
+}
+
+SetClassificationsOfElementDefaultsCommand::SetClassificationsOfElementDefaultsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetClassificationsOfElementDefaultsCommand::GetName () const
+{
+    return "SetClassificationsOfElementDefaults";
+}
+
+GS::Optional<GS::UniString> SetClassificationsOfElementDefaultsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementDefaultClassifications": {
+                "type": "array",
+                "description": "The classifications to set on the tool defaults (the settings new elements get).",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementType": {
+                            "$ref": "#/ElementType"
+                        },
+                        "classificationId": {
+                            "$ref": "#/ClassificationId"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementType",
+                        "classificationId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementDefaultClassifications"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetClassificationsOfElementDefaultsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetClassificationsOfElementDefaultsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementDefaultClassifications;
+    parameters.Get ("elementDefaultClassifications", elementDefaultClassifications);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("SetClassificationsOfElementDefaultsCommand", [&] () -> GSErrCode {
+        for (const GS::ObjectState& elementDefaultClassification : elementDefaultClassifications) {
+            GS::UniString elementTypeStr;
+            if (!elementDefaultClassification.Get ("elementType", elementTypeStr)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementType is missing"));
+                continue;
+            }
+
+            const API_ElemTypeID typeID = GetElementTypeFromNonLocalizedName (elementTypeStr);
+            if (typeID == API_ZombieElemID) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS,
+                    GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ())));
+                continue;
+            }
+
+            const GS::ObjectState* classificationId = elementDefaultClassification.Get ("classificationId");
+            if (classificationId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "classificationId is missing"));
+                continue;
+            }
+
+            const GS::ObjectState* classificationItemId = classificationId->Get ("classificationItemId");
+            if (classificationItemId != nullptr) {
+                const API_Guid classificationItemGuid = GetGuidFromObjectState (*classificationItemId);
+
+                const GSErrCode err = TAPIR_Element_AddClassificationItemDefault (typeID, classificationItemGuid);
+                if (err != NoError) {
+                    executionResults (CreateFailedExecutionResult (err, "Failed to set classification item for the element defaults"));
+                    continue;
+                }
+            } else {
+                const GS::ObjectState* classificationSystemId = classificationId->Get ("classificationSystemId");
+                if (classificationSystemId == nullptr) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "classificationSystemId is missing"));
+                    continue;
+                }
+
+                const API_Guid classificationSystemGuid = GetGuidFromObjectState (*classificationSystemId);
+
+                API_ClassificationItem item;
+                GSErrCode err = TAPIR_Element_GetClassificationInSystemDefault (typeID, classificationSystemGuid, item);
+                if (err != NoError) {
+                    executionResults (CreateFailedExecutionResult (err, "Failed to get classification item for the element defaults"));
+                    continue;
+                }
+
+                if (item.guid != APINULLGuid) {
+                    err = TAPIR_Element_RemoveClassificationItemDefault (typeID, item.guid);
+                    if (err != NoError) {
+                        executionResults (CreateFailedExecutionResult (err, "Failed to remove classification item for the element defaults"));
+                        continue;
+                    }
+                }
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
+GetClassificationsOfToolDefaultsCommand::GetClassificationsOfToolDefaultsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetClassificationsOfToolDefaultsCommand::GetName () const
+{
+    return "GetClassificationsOfToolDefaults";
+}
+
+GS::Optional<GS::UniString> GetClassificationsOfToolDefaultsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementTypes": {
+                "type": "array",
+                "description": "The element types whose tool defaults (the settings new elements get) are read.",
+                "items": {
+                    "$ref": "#/ElementType"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementTypes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetClassificationsOfToolDefaultsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "classificationsOfToolDefaults": {
+                "type": "array",
+                "description": "The classifications of the tool defaults of each element type, in the order of the given element types. Invalid element types are represented by error objects.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "classificationIds": {
+                                    "type": "array",
+                                    "description": "One item for each classification system in which the tool default is classified. Systems in which it is unclassified are left out.",
+                                    "items": {
+                                        "$ref": "#/ClassificationId"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "classificationIds"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationsOfToolDefaults"
+        ]
+    })";
+}
+
+GS::ObjectState GetClassificationsOfToolDefaultsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> elementTypes;
+    parameters.Get ("elementTypes", elementTypes);
+
+    GS::ObjectState response;
+    const auto& classificationsOfToolDefaults = response.AddList<GS::ObjectState> ("classificationsOfToolDefaults");
+
+    for (const GS::UniString& elementTypeStr : elementTypes) {
+        const API_ElemTypeID typeID = GetElementTypeFromNonLocalizedName (elementTypeStr);
+        if (typeID == API_ZombieElemID) {
+            classificationsOfToolDefaults (CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ())));
+            continue;
+        }
+
+        GS::Array<GS::Pair<API_Guid, API_Guid>> systemItemPairs;
+        const GSErrCode err = TAPIR_Element_GetClassificationItemsDefault (typeID, systemItemPairs);
+        if (err != NoError) {
+            classificationsOfToolDefaults (CreateErrorResponse (err, "Failed to get the classifications of the tool defaults"));
+            continue;
+        }
+
+        GS::ObjectState classificationsOfToolDefault;
+        const auto& classificationIds = classificationsOfToolDefault.AddList<GS::ObjectState> ("classificationIds");
+        for (const GS::Pair<API_Guid, API_Guid>& systemItemPair : systemItemPairs) {
+            if (systemItemPair.second == APINULLGuid) {
+                continue;
+            }
+            classificationIds (GS::ObjectState (
+                "classificationSystemId", GS::ObjectState ("guid", APIGuidToString (systemItemPair.first)),
+                "classificationItemId", GS::ObjectState ("guid", APIGuidToString (systemItemPair.second))));
+        }
+
+        classificationsOfToolDefaults (classificationsOfToolDefault);
+    }
 
     return response;
 }
@@ -764,6 +1497,135 @@ static GS::HashSet<API_Guid> AllClassificationGuids ()
     return guids;
 }
 
+GetClassificationItemParentsCommand::GetClassificationItemParentsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetClassificationItemParentsCommand::GetName () const
+{
+    return "GetClassificationItemParents";
+}
+
+GS::Optional<GS::UniString> GetClassificationItemParentsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "classificationItemIds": {
+                "$ref": "#/ClassificationItemIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationItemIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetClassificationItemParentsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "classificationItemParents": {
+                "type": "array",
+                "description": "The parent and the system of each given item, in the order of the input. A non-existing item is an error item.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "classificationSystemId": {
+                                    "$ref": "#/ClassificationSystemId",
+                                    "description": "The classification system the item belongs to."
+                                },
+                                "parentClassificationItemId": {
+                                    "$ref": "#/ClassificationItemId",
+                                    "description": "The parent item. Missing for a top level item of its system."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "classificationSystemId"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationItemParents"
+        ]
+    })";
+}
+
+static bool IsRootItemOfClassificationSystem (const API_Guid& systemGuid, const API_Guid& itemGuid)
+{
+    GS::Array<API_ClassificationItem> roots;
+    if (ACAPI_Classification_GetClassificationSystemRootItems (systemGuid, roots) != NoError) {
+        return false;
+    }
+    for (const API_ClassificationItem& root : roots) {
+        if (root.guid == itemGuid) {
+            return true;
+        }
+    }
+    return false;
+}
+
+GS::ObjectState GetClassificationItemParentsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> classificationItemIds;
+    parameters.Get ("classificationItemIds", classificationItemIds);
+
+    GS::ObjectState response;
+    const auto& classificationItemParents = response.AddList<GS::ObjectState> ("classificationItemParents");
+
+    for (const GS::ObjectState& classificationItemId : classificationItemIds) {
+        const GS::ObjectState* itemId = classificationItemId.Get ("classificationItemId");
+        if (itemId == nullptr) {
+            classificationItemParents (CreateErrorResponse (APIERR_BADPARS, "classificationItemId is missing"));
+            continue;
+        }
+
+        API_ClassificationItem item;
+        item.guid = GetGuidFromObjectState (*itemId);
+        if (ACAPI_Classification_GetClassificationItem (item) != NoError) {
+            classificationItemParents (CreateErrorResponse (APIERR_BADID, "classification item not found"));
+            continue;
+        }
+
+        API_ClassificationSystem system;
+        GSErrCode err = ACAPI_Classification_GetClassificationItemSystem (item.guid, system);
+        if (err != NoError) {
+            classificationItemParents (CreateErrorResponse (err, "Failed to get the classification system of the item"));
+            continue;
+        }
+
+        GS::ObjectState itemParent ("classificationSystemId", CreateGuidObjectState (system.guid));
+
+        API_ClassificationItem parent;
+        err = ACAPI_Classification_GetClassificationItemParent (item.guid, parent);
+        if (err == NoError && parent.guid != APINULLGuid) {
+            itemParent.Add ("parentClassificationItemId", CreateGuidObjectState (parent.guid));
+        } else if (!IsRootItemOfClassificationSystem (system.guid, item.guid)) {
+            // A top level item has no parent; whether Archicad reports that with an error or
+            // an empty parent, the root items of the system tell the two cases apart.
+            classificationItemParents (CreateErrorResponse (err != NoError ? err : APIERR_GENERAL, "Failed to get the parent of the classification item"));
+            continue;
+        }
+
+        classificationItemParents (itemParent);
+    }
+
+    return response;
+}
+
 ImportClassificationsXmlCommand::ImportClassificationsXmlCommand () :
     CommandBase (CommonSchema::Used)
 {}
@@ -827,5 +1689,236 @@ GS::ObjectState ImportClassificationsXmlCommand::Execute (const GS::ObjectState&
                                                     : CreateFailedExecutionResult (err, err == APIERR_BADPARS ? GS::UniString ("invalid classification XML") : DescribeDefinitionChangeError (err)));
     AddGuidDifference (after, before, response.AddList<GS::ObjectState> ("created"));
     AddGuidDifference (before, after, response.AddList<GS::ObjectState> ("removed"));
+    return response;
+}
+
+GetClassificationItemVisibilityCommand::GetClassificationItemVisibilityCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetClassificationItemVisibilityCommand::GetName () const
+{
+    return "GetClassificationItemVisibility";
+}
+
+GS::Optional<GS::UniString> GetClassificationItemVisibilityCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "targets": {
+                "type": "array",
+                "description": "The elements, element tool defaults and attributes to check the classification items for.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementId": {
+                                    "$ref": "#/ElementId"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementId"
+                            ]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementType": {
+                                    "$ref": "#/ElementType",
+                                    "description": "The tool default of this element type is checked."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementType"
+                            ]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "attributeId": {
+                                    "$ref": "#/AttributeId"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "attributeId"
+                            ]
+                        }
+                    ]
+                },
+                "minItems": 1
+            },
+            "classificationItemIds": {
+                "$ref": "#/ClassificationItemIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "targets",
+            "classificationItemIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetClassificationItemVisibilityCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "classificationItemVisibilities": {
+                "type": "array",
+                "description": "One entry per target, in the order of the input. A non-existing element or attribute, or an invalid element type, is represented by an error object.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "visibilities": {
+                                    "type": "array",
+                                    "description": "One entry per classification item, in the order of the input. A non-existing classification item is represented by an error object.",
+                                    "items": {
+                                        "type": "object",
+                                        "oneOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "classificationItemId": {
+                                                        "$ref": "#/ClassificationItemId"
+                                                    },
+                                                    "isVisible": {
+                                                        "type": "boolean",
+                                                        "description": "Whether the classification item is visible (offered) for the target, as Archicad reports it. It can be true even if a parent item is not visible. It does not tell whether the target is classified with the item."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "classificationItemId",
+                                                    "isVisible"
+                                                ]
+                                            },
+                                            {
+                                                "$ref": "#/ErrorItem"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "visibilities"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationItemVisibilities"
+        ]
+    })";
+}
+
+GS::ObjectState GetClassificationItemVisibilityCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> targets;
+    parameters.Get ("targets", targets);
+
+    GS::Array<GS::ObjectState> classificationItemIds;
+    parameters.Get ("classificationItemIds", classificationItemIds);
+
+    // The visibility functions return false for invalid parameters too,
+    // so the classification items and the targets are checked first.
+    GS::Array<API_Guid> itemGuids;
+    GS::Array<bool> itemExists;
+    for (const GS::ObjectState& classificationItemId : classificationItemIds) {
+        const GS::ObjectState* itemId = classificationItemId.Get ("classificationItemId");
+        API_ClassificationItem classificationItem;
+        classificationItem.guid = itemId != nullptr ? GetGuidFromObjectState (*itemId) : APINULLGuid;
+        itemGuids.Push (classificationItem.guid);
+        itemExists.Push (itemId != nullptr && ACAPI_Classification_GetClassificationItem (classificationItem) == NoError);
+    }
+
+    GS::ObjectState response;
+    const auto& classificationItemVisibilities = response.AddList<GS::ObjectState> ("classificationItemVisibilities");
+
+    for (const GS::ObjectState& target : targets) {
+        enum class TargetKind { Element, ElementDefault, Attribute };
+        TargetKind targetKind = TargetKind::Element;
+        API_Elem_Head elemHead = {};
+        API_Attr_Head attrHead = {};
+        GS::UniString elementTypeStr;
+
+        if (const GS::ObjectState* elementId = target.Get ("elementId")) {
+            elemHead.guid = GetGuidFromObjectState (*elementId);
+            if (ACAPI_Element_GetHeader (&elemHead) != NoError) {
+                classificationItemVisibilities (CreateErrorResponse (APIERR_BADID, "element not found"));
+                continue;
+            }
+            targetKind = TargetKind::Element;
+        } else if (target.Get ("elementType", elementTypeStr)) {
+            const API_ElemTypeID elemTypeID = GetElementTypeFromNonLocalizedName (elementTypeStr);
+            if (elemTypeID == API_ZombieElemID) {
+                classificationItemVisibilities (CreateErrorResponse (APIERR_BADPARS,
+                    GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ())));
+                continue;
+            }
+#ifdef ServerMainVers_2600
+            elemHead.type = elemTypeID;
+#else
+            elemHead.typeID = elemTypeID;
+#endif
+            targetKind = TargetKind::ElementDefault;
+        } else if (const GS::ObjectState* attributeId = target.Get ("attributeId")) {
+            attrHead = GetAttributeHeadFromGuid (GetGuidFromObjectState (*attributeId));
+            if (attrHead.typeID == API_ZombieAttrID) {
+                classificationItemVisibilities (CreateErrorResponse (APIERR_BADID, "attribute not found"));
+                continue;
+            }
+            targetKind = TargetKind::Attribute;
+        } else {
+            classificationItemVisibilities (CreateErrorResponse (APIERR_BADPARS, "elementId, elementType or attributeId is missing"));
+            continue;
+        }
+
+        GS::ObjectState targetVisibility;
+        const auto& visibilities = targetVisibility.AddList<GS::ObjectState> ("visibilities");
+        for (UIndex i = 0; i < itemGuids.GetSize (); ++i) {
+            if (!itemExists[i]) {
+                visibilities (CreateErrorResponse (APIERR_BADID, "classification item not found"));
+                continue;
+            }
+
+            bool isVisible = false;
+            switch (targetKind) {
+                case TargetKind::Element:
+                    isVisible = ACAPI_Element_IsClassificationItemVisible (elemHead.guid, itemGuids[i]);
+                    break;
+                case TargetKind::ElementDefault:
+                    isVisible = TAPIR_Element_IsClassificationItemVisibleDefault (elemHead, itemGuids[i]);
+                    break;
+                case TargetKind::Attribute:
+                    isVisible = ACAPI_Attribute_IsClassificationItemVisible (attrHead, itemGuids[i]);
+                    break;
+            }
+
+            visibilities (GS::ObjectState (
+                "classificationItemId", GS::ObjectState ("guid", APIGuidToString (itemGuids[i])),
+                "isVisible", isVisible));
+        }
+
+        classificationItemVisibilities (targetVisibility);
+    }
+
     return response;
 }
