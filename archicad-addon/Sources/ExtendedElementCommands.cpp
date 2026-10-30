@@ -1795,6 +1795,51 @@ GS::Optional<GS::UniString> ApplyRoofStructure (
     return {};
 }
 
+// Same as ApplyRoofStructure: the shell keeps its structure in the same API_ShellBaseType.
+GS::Optional<GS::UniString> ApplyShellStructure (
+    API_Element& element,
+    API_Element* mask,
+    const GS::ObjectState& details,
+    bool& changed)
+{
+    StructureSelection selection;
+    auto error = ParseStructureSelection (details, true, false, selection);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    if (selection.kind == StructureSelectionKind::Unspecified) {
+        return {};
+    }
+
+    switch (selection.kind) {
+        case StructureSelectionKind::Basic:
+            element.shell.shellBase.modelElemStructureType = API_BasicStructure;
+            if (selection.buildingMaterial != APIInvalidAttributeIndex) {
+                element.shell.shellBase.buildingMaterial = selection.buildingMaterial;
+            }
+            element.shell.shellBase.composite = APIInvalidAttributeIndex;
+            break;
+        case StructureSelectionKind::Composite:
+            element.shell.shellBase.modelElemStructureType = API_CompositeStructure;
+            if (selection.composite != APIInvalidAttributeIndex) {
+                element.shell.shellBase.composite = selection.composite;
+            }
+            break;
+        case StructureSelectionKind::Profile:
+        case StructureSelectionKind::Unspecified:
+            break;
+    }
+
+    if (mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET ((*mask), API_ShellType, shellBase.modelElemStructureType);
+        ACAPI_ELEMENT_MASK_SET ((*mask), API_ShellType, shellBase.buildingMaterial);
+        ACAPI_ELEMENT_MASK_SET ((*mask), API_ShellType, shellBase.composite);
+    }
+    changed = true;
+    return {};
+}
+
 } // namespace
 
 // Defined OUTSIDE the anonymous namespace: ExtendedElementCommands.hpp declares it
@@ -7473,6 +7518,94 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
 
             err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
             results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify roof."));
+        }
+    });
+}
+
+ModifyShellsCommand::ModifyShellsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyShellsCommand::GetName () const
+{
+    return "ModifyShells";
+}
+
+GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "shellsWithDetails": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "structureType": {
+                            "$ref": "#/ShellStructureType"
+                        },
+                        "buildingMaterialId": { "$ref": "#/AttributeId" },
+                        "compositeId": { "$ref": "#/AttributeId" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["shellsWithDetails"]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyShellsCommand::GetRawResponseSchema () const
+{
+    return ModifyWallsCommand ().GetRawResponseSchema ();
+}
+
+GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> items;
+    auto error = GetElementArray (parameters, "shellsWithDetails", items);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+
+    return ExecuteModifyWithResults ("Modify Shells", [&](GS::Array<GS::ObjectState>& results) {
+        for (const auto& item : items) {
+            if (item.Get ("elementId") == nullptr) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
+                continue;
+            }
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to load shell."));
+                continue;
+            }
+            if (GetElemTypeId (element.header) != API_ShellID) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "The element is not a shell."));
+                continue;
+            }
+
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+            bool changed = false;
+            auto error = ApplyShellStructure (element, &mask, item, changed);
+            if (error.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
+                continue;
+            }
+
+            if (!changed) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No shell fields to modify."));
+                continue;
+            }
+
+            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify shell."));
         }
     });
 }

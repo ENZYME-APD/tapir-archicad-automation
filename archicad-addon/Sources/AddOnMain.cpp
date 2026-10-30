@@ -966,6 +966,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.4.0",
             "Modifies multi-plane Roof elements based on the given parameters."
         );
+        err |= RegisterCommand<ModifyShellsCommand> (
+            elementCommands, "1.7.4",
+            "Modifies the structure (Basic or Composite, building material or composite) of Shell elements based on the given parameters."
+        );
         err |= RegisterCommand<ModifyMeshesCommand> (
             elementCommands, "1.5.4",
             "Modifies the attributes of Mesh elements based on the given parameters."

@@ -1963,6 +1963,23 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
             } break;
 
+            case API_ShellID: {
+                // The structure, as for roofs: both keep it in an API_ShellBaseType (#1663).
+                const API_ShellBaseType& base = elem.shell.shellBase;
+                switch (elem.shell.shellClass) {
+                    case API_RevolvedShellID: typeSpecificDetails.Add ("shellClass", "Revolved"); break;
+                    case API_RuledShellID:    typeSpecificDetails.Add ("shellClass", "Ruled");    break;
+                    default:                  typeSpecificDetails.Add ("shellClass", "Extruded"); break;
+                }
+                typeSpecificDetails.Add ("structureType", StructureTypeToString (base.modelElemStructureType));
+                typeSpecificDetails.Add ("thickness", base.thickness);
+                if (StructureTypeToString (base.modelElemStructureType) == "Composite") {
+                    typeSpecificDetails.Add ("compositeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_CompWallID, base.composite)));
+                } else {
+                    typeSpecificDetails.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, base.buildingMaterial)));
+                }
+            } break;
+
             case API_HotlinkID: {
                 API_Coord3D origin;
                 double rotationAngle;

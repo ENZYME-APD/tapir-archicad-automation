@@ -3615,6 +3615,13 @@
             "Composite"
         ]
     },
+    "ShellStructureType": {
+        "type": "string",
+        "enum": [
+            "Basic",
+            "Composite"
+        ]
+    },
     "DisplayOption": {
         "type": "string",
         "description": "Floor plan display option.",
@@ -8102,6 +8109,33 @@
             "polygonOutline"
         ]
     },
+    "ShellDetails": {
+        "type": "object",
+        "properties": {
+            "shellClass": {
+                "type": "string",
+                "enum": [ "Extruded", "Revolved", "Ruled" ]
+            },
+            "structureType": {
+                "$ref": "#/ShellStructureType"
+            },
+            "thickness": {
+                "type": "number"
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId"
+            },
+            "compositeId": {
+                "$ref": "#/AttributeId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "shellClass",
+            "structureType",
+            "thickness"
+        ]
+    },
     "SlabDetails": {
         "type": "object",
         "properties": {
@@ -9937,6 +9971,9 @@
             },
             {
                 "$ref": "#/RoofDetails"
+            },
+            {
+                "$ref": "#/ShellDetails"
             },
             {
                 "$ref": "#/ColumnDetails"
