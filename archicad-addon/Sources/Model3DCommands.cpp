@@ -4,6 +4,7 @@
 #ifdef ServerMainVers_2800
 #include "Model.hpp"
 #include "ModelElement.hpp"
+#include "ModelMeshBody.hpp"
 #include "Polygon2D.hpp"
 
 #include <optional>
