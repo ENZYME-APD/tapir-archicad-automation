@@ -4773,7 +4773,7 @@
             },
             "layerIndex": {
                 "type": "integer",
-                "description": "Move the instance to this layer."
+                "description": "Move the instance to this layer. A layerIndex that is not a layer of the project is refused."
             }
         },
         "additionalProperties": false,
@@ -4810,7 +4810,7 @@
             },
             "layerIndex": {
                 "type": "integer",
-                "description": "Optional layer of the instance. Defaults to the hotlink tool's current default layer."
+                "description": "Optional layer of the instance. Defaults to the hotlink tool's current default layer, or to the built-in Archicad layer when that layer has been deleted. A layerIndex that is not a layer of the project is refused."
             },
             "skipNested": {
                 "type": "boolean",
