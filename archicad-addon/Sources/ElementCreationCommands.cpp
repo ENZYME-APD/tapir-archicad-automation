@@ -204,6 +204,25 @@ CreateColumnsCommand::CreateColumnsCommand () :
 {
 }
 
+GS::Optional<GS::ObjectState> ApplyLayerIndexFromParameters (const GS::ObjectState& parameters, API_Element& element)
+{
+    Int32 layerIndex = 0;
+    if (!parameters.Get ("layerIndex", layerIndex)) {
+        return GS::NoValue;
+    }
+    API_Attribute layerAttr = {};
+    layerAttr.header.typeID = API_LayerID;
+    layerAttr.header.index = ACAPI_CreateAttributeIndex (layerIndex);
+    if (layerIndex <= 0 || ACAPI_Attribute_Get (&layerAttr) != NoError) {
+        return CreateErrorResponse (APIERR_BADINDEX, "The 'layerIndex' parameter does not refer to an existing layer.");
+    }
+    if ((layerAttr.header.flags & APILay_Locked) != 0) {
+        return CreateErrorResponse (APIERR_LOCKEDLAY, "The layer given by the 'layerIndex' parameter is locked.");
+    }
+    element.header.layer = layerAttr.header.index;
+    return GS::NoValue;
+}
+
 GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () const
 {
     return R"({
@@ -223,6 +242,11 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                         "id": {
                             "type": "string",
                             "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                        },
+                        "layerIndex": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults."
                         },
                         "coordinates": {
                             "type": "object",
@@ -319,6 +343,11 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
 
 GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
 {
+    const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (parameters, element);
+    if (layerError.HasValue ()) {
+        return layerError;
+    }
+
     GS::ObjectState coordinates;
     parameters.Get ("coordinates", coordinates);
     API_Coord3D apiCoordinate = Get3DCoordinateFromObjectState (coordinates);
@@ -420,6 +449,11 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                     "id": {
                         "type": "string",
                         "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                    },
+                    "layerIndex": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults."
                     },
                     "level": {
                         "type": "number",
@@ -552,6 +586,11 @@ void AddPolyToMemo (const GS::Array<GS::ObjectState>& coords,
 
 GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
 {
+    const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (parameters, element);
+    if (layerError.HasValue ()) {
+        return layerError;
+    }
+
     double inputLevel = 0.0;
     parameters.Get ("level", inputLevel);
     const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (parameters, "floorIndex", inputLevel, stories);
