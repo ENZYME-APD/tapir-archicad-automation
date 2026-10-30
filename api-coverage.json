@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-30 13:54 UTC",
+ "generatedAt": "2026-10-30 14:14 UTC",
  "versions": [
   25,
   26,
@@ -7666,6 +7666,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1671,
+     "title": "Drawing anchor placement, offset, and pen table control"
+    },
     {
      "number": 1664,
      "title": "Shell structure in GetDetailsOfElements and a ModifyShells command"
