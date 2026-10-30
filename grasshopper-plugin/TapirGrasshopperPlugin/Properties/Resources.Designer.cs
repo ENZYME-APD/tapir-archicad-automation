@@ -384,6 +384,17 @@ namespace TapirGrasshopperPlugin.Properties
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap FindModelViewOption
+        {
+            get {
+                object obj = ResourceManager.GetObject ("FindModelViewOption", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap GetCommentsOfAnIssue
         {
             get {
@@ -749,6 +760,17 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap GetDatabases
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetDatabases", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap ChangeWindow
         {
             get {
@@ -860,6 +882,17 @@ namespace TapirGrasshopperPlugin.Properties
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap GetStructureDisplay
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetStructureDisplay", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap MoveNavigatorItem
         {
             get {
@@ -952,6 +985,17 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("SetStories", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap SetStructureDisplay
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetStructureDisplay", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -1094,10 +1138,43 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap GetNavigatorItemTree
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetNavigatorItemTree", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap GetNavigatorParentItems
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetNavigatorParentItems", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap SetMarkerParametersOfElements
         {
             get {
                 object obj = ResourceManager.GetObject ("SetMarkerParametersOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap SetMasterLayoutContext
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetMasterLayoutContext", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -1713,6 +1790,28 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap GetDrawingContentBoxes
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetDrawingContentBoxes", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap GetDrawingNumberingGridLines
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetDrawingNumberingGridLines", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap GetCurrentRevisionChangesOfLayouts
         {
             get {
@@ -1789,6 +1888,17 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("GetLayoutSettings", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap GetLayoutSubsetSettings
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetLayoutSubsetSettings", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
