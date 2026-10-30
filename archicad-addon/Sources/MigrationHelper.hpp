@@ -184,6 +184,7 @@ inline GSErrCode ACAPI_Navigator_ChangeLayoutSets (const API_LayoutInfo* layoutI
 #define ACAPI_Grouping_Tool                 ACAPI_Element_Tool
 
 #define ACAPI_ProjectSetting_GetPreferences(par1, par2) ACAPI_Environment (APIEnv_GetPreferencesID, par1, (void*)par2)
+#define ACAPI_ProjectSetting_GetExportTolerance(par1) ACAPI_Environment (APIEnv_GetExportToleranceID, par1)
 #define ACAPI_View_Rebuild(par1) ACAPI_Automate (APIDo_RebuildID, (void*) par1)
 
 // The drawing scale of the current database (APIdefs_Database.h: APIDb_GetDrawingScaleID 'GSCL',
@@ -1147,5 +1148,51 @@ inline GSErrCode TAPIR_ElementLink_SetLinkedPropertyObjects (API_Elem_Head& head
     return ACAPI_ElementLink_SetLinkedPropertyObjects (&head, criteria, individuallyLibInd);
 #else
     return ACAPI_Element_SetLinkedPropertyObjects (&head, criteria, individuallyLibInd);
+#endif
+}
+
+// The last-used 3D levels of element defaults. AC25 reaches them through
+// APIDb_GetLast3DDefLevelsID / APIDb_SetLast3DDefLevelsID (par1 the element types, par2
+// the levels), AC26 through ACAPI_Database_*Last3DDefLevels and AC27 and later through
+// ACAPI_ProjectSetting_*Last3DDefLevels.
+
+#ifdef ServerMainVers_2600
+inline GS::Array<API_ElemType> TAPIR_GetLast3DDefLevelsElemTypes (const GS::Array<API_ElemTypeID>& typeIDs)
+{
+    GS::Array<API_ElemType> elemTypes;
+    for (const API_ElemTypeID typeID : typeIDs) {
+        elemTypes.Push (API_ElemType (typeID));
+    }
+    return elemTypes;
+}
+#else
+inline GS::Array<API_ElemTypeID> TAPIR_GetLast3DDefLevelsElemTypes (const GS::Array<API_ElemTypeID>& typeIDs)
+{
+    return typeIDs;
+}
+#endif
+
+inline GSErrCode TAPIR_ProjectSetting_GetLast3DDefLevels (const GS::Array<API_ElemTypeID>& typeIDs, GS::Array<double>& levels)
+{
+    auto elemTypes = TAPIR_GetLast3DDefLevelsElemTypes (typeIDs);
+#ifdef ServerMainVers_2700
+    return ACAPI_ProjectSetting_GetLast3DDefLevels (elemTypes, levels);
+#elif defined (ServerMainVers_2600)
+    return ACAPI_Database_GetLast3DDefLevels (elemTypes, levels);
+#else
+    return ACAPI_Database (APIDb_GetLast3DDefLevelsID, &elemTypes, &levels);
+#endif
+}
+
+inline GSErrCode TAPIR_ProjectSetting_SetLast3DDefLevels (const GS::Array<API_ElemTypeID>& typeIDs, const GS::Array<double>& levels)
+{
+    auto elemTypes = TAPIR_GetLast3DDefLevelsElemTypes (typeIDs);
+    GS::Array<double> levelsToSet = levels;
+#ifdef ServerMainVers_2700
+    return ACAPI_ProjectSetting_SetLast3DDefLevels (elemTypes, levelsToSet);
+#elif defined (ServerMainVers_2600)
+    return ACAPI_Database_SetLast3DDefLevels (elemTypes, levelsToSet);
+#else
+    return ACAPI_Database (APIDb_SetLast3DDefLevelsID, &elemTypes, &levelsToSet);
 #endif
 }
