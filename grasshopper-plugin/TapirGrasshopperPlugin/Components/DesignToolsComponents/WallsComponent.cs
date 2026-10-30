@@ -28,7 +28,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         {
             "aboveViewLinePen", "aboveViewLineTypeId", "alignTexture", "arcAngle", "begCoordinate",
             "belowViewLineTypeId", "buildingMaterialId", "compositeId", "contourLineTypeId", "contourPen",
-            "contourPen3D", "displayOption", "endCoordinate", "favoriteName", "floorIndex", "height",
+            "contourPen3D", "displayOption", "endCoordinate", "favoriteName", "flipped", "floorIndex", "height",
             "inheritEndSurface", "linkToSettings", "logHeight", "materialsChained", "offset", "polyCanChange",
             "profileId", "referenceLineLocation", "structureType", "thickness", "useCompositePriority",
             "viewDepthLimitation", "zCoordinate"
@@ -39,7 +39,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             "aboveViewLinePen", "aboveViewLineTypeId", "alignTexture", "arcAngle", "begCoordinate",
             "belowViewLineTypeId", "bottomOffset", "buildingMaterialId", "compositeId", "contourLineTypeId",
             "contourPen", "contourPen3D", "cutFillBackgroundPen", "cutFillPen", "displayOption", "endCoordinate",
-            "geometryType", "height", "inheritEndSurface", "isAutoOnStoryVisibility", "linkToSettings",
+            "flipped", "geometryType", "height", "inheritEndSurface", "isAutoOnStoryVisibility", "linkToSettings",
             "logHeight", "materialsChained", "offset", "oppositeMaterial", "polyCanChange", "profileId",
             "profileType", "referenceLineLocation", "referenceMaterial", "relativeTopStory", "sideMaterial",
             "slantAlpha", "slantBeta", "structureType", "thickness", "topOffset", "useCompositePriority",
