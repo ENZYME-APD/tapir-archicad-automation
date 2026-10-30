@@ -9536,7 +9536,7 @@
         "properties": {
             "pos": {
                 "$ref": "#/Coordinate2D",
-                "description": "Position of the drawing's reference point on the layout."
+                "description": "Position of the drawing on the layout, in meters. Without a clip polygon it is the lower left corner of the drawing (before rotation); with one it is where the origin of the source view lands (a modelOffset can move it by modelOffset * drawingScale)."
             },
             "angle": {
                 "type": "number",
@@ -9548,11 +9548,11 @@
             },
             "drawingScale": {
                 "type": "number",
-                "description": "The nominal scale of the drawing."
+                "description": "The scale of the drawing, taken from its source view (e.g. 0.01 for 1:100)."
             },
             "modelOffset": {
                 "$ref": "#/Coordinate2D",
-                "description": "Offset of the model origin within the drawing."
+                "description": "Offset of the model origin within the drawing, in model meters. Used only by clipped drawings; Archicad then adds modelOffset * drawingScale (times ratio, rotated by angle) to pos."
             },
             "isCutWithFrame": {
                 "type": "boolean",
@@ -11259,7 +11259,7 @@
         "properties": {
             "pos": {
                 "$ref": "#/Coordinate2D",
-                "description": "Position of the drawing's reference point on the layout."
+                "description": "Position of the drawing on the layout, in meters. Without a clip polygon it is the lower left corner of the drawing (before rotation); with one it is where the origin of the source view lands (a modelOffset can move it by modelOffset * drawingScale)."
             },
             "angle": {
                 "type": "number",
@@ -11275,7 +11275,7 @@
             },
             "modelOffset": {
                 "$ref": "#/Coordinate2D",
-                "description": "Offset of the model origin within the drawing."
+                "description": "Offset of the model origin within the drawing, in model meters. Used only by clipped drawings; Archicad then adds modelOffset * drawingScale (times ratio, rotated by angle) to pos."
             },
             "isCutWithFrame": {
                 "type": "boolean",
