@@ -17,11 +17,17 @@ name: Auto Merge
 #   - the commit status `claude-review` on that head is a success, and has been
 #     for BOT_AUTO_MERGE_DELAY_HOURS (repository variable, default 72) - the
 #     time people get to look. claude_pr_review.yml sets it from its verdict,
-#     in a job that runs no model; no other job holds statuses: write;
+#     in a job that runs no model; only jobs that run no model hold
+#     statuses: write (claude_bot_pr_steward.yml's sweep and restart, which
+#     set their own `steward-fix` status - pending while a pull request
+#     waits for an earlier one, which holds the merge back like any check);
 #   - no review thread a person opened is unresolved, and no reviewer's latest
 #     review requests changes;
 #   - gates 2 and 3 hold, as for everyone: the release critical paths below
-#     are never merged without a person, whoever wrote the change.
+#     are never merged without a person, whoever wrote the change. The one
+#     exception is archicad-addon/devkits.json on the new Archicad version
+#     pull request of archicad_devkit_update.yml, when it only appends
+#     versions (see devkits_appended).
 # The accepted risk: the issue text is written by anyone, and the review is a
 # model reading what another model wrote from it, so nothing but that review
 # and the waiting time stands between a crafted issue and the next weekly
@@ -113,14 +119,48 @@ jobs:
           # sources are included because the Windows installer is code signed
           # (SignPath Foundation) and runs elevated: its code and build scripts
           # must have a human review before they reach a signing request.
-          PROTECTED='^\.github/|^archicad-addon/Tools/|^archicad-addon/Installer/|^tools/|CMakeLists\.txt$|\.cmake$|\.csproj$'
+          # archicad-addon/devkits.json picks the DevKits the release builds
+          # and signs with. The one exception is the bot's own new Archicad
+          # version pull request (archicad_devkit_update.yml), which may only
+          # append entries to it - see devkits_appended below.
+          PROTECTED='^\.github/|^archicad-addon/Tools/|^archicad-addon/Installer/|^tools/|^archicad-addon/devkits\.json$|CMakeLists\.txt$|\.cmake$|\.csproj$'
+
+          # True when the head's devkits.json is main's with new Archicad
+          # versions appended and nothing else changed: the same entries in the
+          # same order, then ascending versions above them, each with an
+          # NN.NNNN release of its own version (the download URL is always a
+          # GRAPHISOFT/archicad-api-devkit release, so a release that does not
+          # exist fails the builds), and the branch named after the newest one
+          # as archicad_devkit_update.yml names it.
+          devkits_appended () {
+            local head_oid=$1 head_name=$2 base_json head_json
+            base_json=$(gh api -H 'Accept: application/vnd.github.raw' \
+              "repos/$REPO/contents/archicad-addon/devkits.json?ref=main") || return 1
+            head_json=$(gh api -H 'Accept: application/vnd.github.raw' \
+              "repos/$REPO/contents/archicad-addon/devkits.json?ref=$head_oid") || return 1
+            jq -en --argjson base "$base_json" --argjson head "$head_json" --arg branch "$head_name" '
+              ($base.devkits | length) as $n
+              | $head.devkits as $h
+              | ($h | length) > $n
+                and ($head | del(.devkits)) == ($base | del(.devkits))
+                and $h[:$n] == $base.devkits
+                and ([range($n; $h | length) as $i | $h[$i] as $e
+                      | ($e | type) == "object" and ($e | keys) == ["archicad", "release"]
+                        and ($e.archicad | type) == "number" and $e.archicad == ($e.archicad | floor)
+                        and $e.archicad <= 99 and $e.archicad > $h[$i - 1].archicad
+                        and ($e.release | type) == "string"
+                        and ($e.release | test("^" + ($e.archicad | tostring) + "\\.[0-9]{4}$"))] | all)
+                and $branch == "claude/devkit-\($h[-1].archicad)-\($h[-1].release)"
+            ' >/dev/null
+          }
 
           # Every trigger sweeps the open pull requests rather than reading the
           # candidates off the event. The event payloads carry no pull requests
           # for forks, and a sweep costs a handful of API calls - so this is
           # both simpler and the only version that works for outside
-          # contributions.
-          candidates=$(gh pr list --repo "$REPO" --state open --base main \
+          # contributions. `gh pr list` returns only the newest 30 without
+          # --limit, which left every older pull request unevaluated.
+          candidates=$(gh pr list --repo "$REPO" --state open --base main --limit 1000 \
             --json number --jq '.[].number')
 
           if [ -z "${candidates:-}" ]; then
@@ -265,8 +305,12 @@ jobs:
             # request with no checks at all is not merged either.
             # The latest run of each check counts: a build started again
             # replaces the run it superseded (cancelled) on the same commit.
+            # API Coverage is left out: it runs on pull_request_target only to
+            # refresh the checklist, never tests the pull request's code, and
+            # cancels itself on every newer event, so its check on a head is
+            # cancelled more often than not.
             raw=$(gh pr checks "$pr" --repo "$REPO" --json name,bucket,workflow,startedAt 2>/dev/null || true)
-            checks=$(jq 'group_by([.workflow, .name]) | map(max_by(.startedAt // ""))' <<<"${raw:-[]}" 2>/dev/null || echo '[]')
+            checks=$(jq '[.[] | select(.workflow != "API Coverage")] | group_by([.workflow, .name]) | map(max_by(.startedAt // ""))' <<<"${raw:-[]}" 2>/dev/null || echo '[]')
             total=$(printf '%s' "$checks" | jq 'length')
             if [ "$total" -eq 0 ]; then
               echo "skip: no checks have reported yet"
@@ -286,13 +330,29 @@ jobs:
               echo "skip: could not read the diff"
               echo "::endgroup::"; continue
             fi
-            if printf '%s\n' "$files" | grep -Eq "$PROTECTED"; then
+            protectedFiles=$(printf '%s\n' "$files" | grep -E "$PROTECTED" || true)
+            if [ "$protectedFiles" = "archicad-addon/devkits.json" ] && [ "$isBot" = "true" ]; then
+              if devkits_appended "$headOid" "$headName"; then
+                echo "devkits.json only gains new Archicad versions, on the DevKit update's branch - allowed"
+                protectedFiles=""
+              else
+                echo "devkits.json changes more than appending new Archicad versions on a claude/devkit-<version>-<release> branch"
+              fi
+            fi
+            if [ -n "$protectedFiles" ]; then
               echo "skip: touches a release critical path:"
-              printf '%s\n' "$files" | grep -E "$PROTECTED" | sed 's/^/    /'
+              printf '%s\n' "$protectedFiles" | sed 's/^/    /'
               echo "::endgroup::"; continue
             fi
 
-            # Conflicts, or a base branch that has moved on.
+            # Conflicts, or a base branch that has moved on. GitHub computes
+            # mergeability in the background and resets it whenever main moves,
+            # so the first read after a merge is often UNKNOWN: ask again.
+            for attempt in 1 2 3; do
+              [ "$mergeable" = "UNKNOWN" ] || break
+              sleep 5
+              mergeable=$(gh pr view "$pr" --repo "$REPO" --json mergeable --jq '.mergeable' 2>/dev/null || echo UNKNOWN)
+            done
             if [ "$mergeable" != "MERGEABLE" ]; then
               echo "skip: not mergeable (mergeable=$mergeable)"
               echo "::endgroup::"; continue
