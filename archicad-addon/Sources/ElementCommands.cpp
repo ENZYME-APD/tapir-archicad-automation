@@ -83,6 +83,64 @@ static void AddStairBaseLineFromMemo (const API_Guid& guid, const API_Coord& ori
     }
 }
 
+// The section line and the depth line of a Section (CutPlane) live in the memo's
+// sectionSegmentMainCoords and sectionSegmentDepthCoords, 0-based pointers with
+// cutPlane.segment.nMainCoord and nDepthCoord points: the very ones CreateSectionsCommand
+// fills in to place one (#1607). The counts are checked against the pointer sizes. depth and
+// viewDirection are derived from the first segment of the section line and the first depth
+// point, the way CreateSections puts the depth line to the left of start -> end.
+static void AddSectionLinesFromMemo (const API_Guid& guid, GSSize nMainCoord, GSSize nDepthCoord, GS::ObjectState& os)
+{
+    const auto& mainCoords = os.AddList<GS::ObjectState> ("mainCoordinates");
+    const auto& depthCoords = os.AddList<GS::ObjectState> ("depthCoordinates");
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_All) != NoError || memo.sectionSegmentMainCoords == nullptr) {
+        return;
+    }
+
+    const GSSize nMain = std::min<GSSize> (nMainCoord,
+        BMGetPtrSize (reinterpret_cast<GSPtr> (memo.sectionSegmentMainCoords)) / sizeof (API_Coord));
+    for (GSIndex i = 0; i < nMain; ++i) {
+        mainCoords (Create2DCoordinateObjectState (memo.sectionSegmentMainCoords[i]));
+    }
+    if (nMain < 2) {
+        return;
+    }
+    const API_Coord& begC = memo.sectionSegmentMainCoords[0];
+    const API_Coord& endC = memo.sectionSegmentMainCoords[nMain - 1];
+    os.Add ("startCoordinate", Create2DCoordinateObjectState (begC));
+    os.Add ("endCoordinate", Create2DCoordinateObjectState (endC));
+
+    if (memo.sectionSegmentDepthCoords == nullptr) {
+        return;
+    }
+    const GSSize nDepth = std::min<GSSize> (nDepthCoord,
+        BMGetPtrSize (reinterpret_cast<GSPtr> (memo.sectionSegmentDepthCoords)) / sizeof (API_Coord));
+    for (GSIndex i = 0; i < nDepth; ++i) {
+        depthCoords (Create2DCoordinateObjectState (memo.sectionSegmentDepthCoords[i]));
+    }
+    if (nDepth < 1) {
+        return;
+    }
+
+    const API_Coord& secondC = memo.sectionSegmentMainCoords[1];
+    const double dx = secondC.x - begC.x;
+    const double dy = secondC.y - begC.y;
+    const double length = std::sqrt (dx * dx + dy * dy);
+    if (length < 1e-9) {
+        return;
+    }
+    // Signed distance of the first depth point from the first segment, positive on its left.
+    const API_Coord& depthC = memo.sectionSegmentDepthCoords[0];
+    const double leftDistance = (dx * (depthC.y - begC.y) - dy * (depthC.x - begC.x)) / length;
+    os.Add ("depth", std::fabs (leftDistance));
+    const double side = leftDistance < 0.0 ? -1.0 : 1.0;
+    const API_Coord viewDirection = { -dy / length * side, dx / length * side };
+    os.Add ("viewDirection", Create2DCoordinateObjectState (viewDirection));
+}
+
 
 // Shared "line-family settings" fields present on Line/PolyLine/Arc/Circle/Spline
 // (API_LineType/API_PolyLineType/API_ArcType/API_SplineType all share this exact shape).
@@ -1200,6 +1258,31 @@ static const API_CWFrameType* FindNextFrameOfPanel (std::vector<const API_CWFram
 
 using CWSegmentGridCellID = std::pair<UInt32, API_GridElemID>;
 
+// The reference line of a railing (memo.coords from index 1, one vertex per node) and the height of
+// each generated segment, which can differ from defSegment.height once a segment was edited.
+static void AddRailingReferenceLineAndSegments (const API_Element& elem, GS::ObjectState& typeSpecificDetails)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    const auto& referenceLine = typeSpecificDetails.AddList<GS::ObjectState> ("referenceLine");
+    const auto& segmentHeights = typeSpecificDetails.AddList<double> ("segmentHeights");
+    if (ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_Polygon | APIMemoMask_RailingSegment) != NoError) {
+        return;
+    }
+    if (memo.coords != nullptr) {
+        const Int32 nCoords = BMGetHandleSize (reinterpret_cast<GSHandle> (memo.coords)) / sizeof (API_Coord) - 1;
+        const Int32 nVertices = std::min<Int32> (nCoords, static_cast<Int32> (elem.railing.nVertices));
+        for (Int32 i = 1; i <= nVertices; ++i) {
+            referenceLine (Create2DCoordinateObjectState ((*memo.coords)[i]));
+        }
+    }
+    if (memo.railingSegments != nullptr) {
+        for (UInt32 i = 0; i < elem.railing.nSegments; ++i) {
+            segmentHeights (memo.railingSegments[i].height);
+        }
+    }
+}
+
 GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elements;
@@ -1471,6 +1554,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     typeSpecificDetails.Add ("referencePosition", Create2DCoordinateObjectState (elem.zone.refPos));
                 }
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.zone.roomBaseLev, stories));
+                AddZoneContourAndCoverFill (elem.zone, typeSpecificDetails);
                 AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
                 break;
 
@@ -1710,6 +1794,13 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("closed", elem.spline.closed);
                 AddLineFamilySettingsDetails (typeSpecificDetails, elem.spline.linePen, elem.spline.ltypeInd, elem.spline.roomSeparator);
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
+            } break;
+
+            case API_RailingID: {
+                typeSpecificDetails.Add ("bottomOffset", elem.railing.bottomOffset);
+                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.railing.bottomOffset, stories));
+                typeSpecificDetails.Add ("height", elem.railing.defSegment.height);
+                AddRailingReferenceLineAndSegments (elem, typeSpecificDetails);
             } break;
 
             case API_CurtainWallID: {
@@ -2000,6 +2091,13 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("zCoordinate", basePoint.z);
                 typeSpecificDetails.Add ("finishVisible", elem.stair.finishVisible);
                 AddStairBaseLineFromMemo (elem.header.guid, { basePoint.x, basePoint.y }, typeSpecificDetails);
+            } break;
+
+            case API_CutPlaneID: {
+                // The fields CreateSections writes, read back (#1607).
+                typeSpecificDetails.Add ("name", GS::UniString (elem.cutPlane.segment.cutPlName));
+                typeSpecificDetails.Add ("idStr", GS::UniString (elem.cutPlane.segment.cutPlIdStr));
+                AddSectionLinesFromMemo (elem.header.guid, static_cast<GSSize> (elem.cutPlane.segment.nMainCoord), static_cast<GSSize> (elem.cutPlane.segment.nDepthCoord), typeSpecificDetails);
             } break;
 
             default:
@@ -2424,6 +2522,12 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             elem.zone.refPos = Get2DCoordinateFromObjectState (*referencePosition);
                             ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, refPos);
                         }
+                        const GS::Optional<GS::UniString> contourAndFillError = ApplyZoneContourAndCoverFill (*typeSpecificDetails, elem.zone, &mask);
+                        if (contourAndFillError.HasValue ()) {
+                            ACAPI_DisposeElemMemoHdls (&clipMemo);
+                            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, *contourAndFillError));
+                            continue;
+                        }
                     } break;
                     case API_LineID: {
                         const GS::ObjectState* begCoordinate = typeSpecificDetails->Get ("begCoordinate");
@@ -2747,13 +2851,8 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     }
                 }
             } else if (typeSpecificDetails != nullptr && GetElemTypeId (elem.header) == API_HatchID) {
-                // Hatch is a CLOSED polygon (unlike PolyLine): coords[0] dummy is (0,0) not
-                // (-1,0), and every contour (the main outline, plus each hole) needs its own
-                // explicit closing vertex duplicating that contour's first point, whose vertexID
-                // also duplicates that first point's ID. Vertex IDs restart at 1 for EACH contour
-                // (not continued sequentially across contours) - confirmed live: global numbering
-                // across contours reproducibly failed with APIERR_BADPOLY for a hatch with holes,
-                // per-contour numbering works.
+                // The memo layout of a Hatch (closing vertices, per-contour vertex IDs) is
+                // described at BuildHatchPolygonMemo, shared with CreateHatches.
                 GS::Array<GS::ObjectState> coordinates;
                 if (typeSpecificDetails->Get ("coordinates", coordinates) && coordinates.GetSize () >= 3) {
                     GS::Array<GS::ObjectState> arcs;
@@ -2766,69 +2865,7 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         continue;
                     }
 
-                    // Each contour: N unique coords -> N+1 stored coords (with closing duplicate).
-                    Int32 totalUnique = (Int32) coordinates.GetSize ();
-                    Int32 totalCoords = totalUnique + 1;
-                    Int32 totalArcs = (Int32) arcs.GetSize ();
-                    GS::Array<GS::Array<GS::ObjectState>> holeCoordsList;
-                    GS::Array<GS::Array<GS::ObjectState>> holeArcsList;
-                    for (const GS::ObjectState& hole : holes) {
-                        GS::Array<GS::ObjectState> holeCoords, holeArcs;
-                        if (GetHoleGeometry (hole, holeCoords, holeArcs) && holeCoords.GetSize () >= 3) {
-                            totalUnique += (Int32) holeCoords.GetSize ();
-                            totalCoords += (Int32) holeCoords.GetSize () + 1;
-                            totalArcs += (Int32) holeArcs.GetSize ();
-                            holeCoordsList.Push (holeCoords);
-                            holeArcsList.Push (holeArcs);
-                        }
-                    }
-                    const Int32 nSubPolys = 1 + (Int32) holeCoordsList.GetSize ();
-
-                    clipMemo.coords    = reinterpret_cast<API_Coord**>   (BMAllocateHandle ((totalCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
-                    clipMemo.pends     = reinterpret_cast<Int32**>       (BMAllocateHandle ((nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0));
-                    clipMemo.parcs     = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (totalArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
-                    clipMemo.vertexIDs = reinterpret_cast<UInt32**>      (BMAllocateHandle ((totalCoords + 1) * sizeof (UInt32), ALLOCATE_CLEAR, 0));
-                    if (clipMemo.coords != nullptr && clipMemo.pends != nullptr && clipMemo.vertexIDs != nullptr) {
-                        Int32 maxContourUnique = (Int32) coordinates.GetSize ();
-                        for (const auto& hc : holeCoordsList) {
-                            maxContourUnique = GS::Max (maxContourUnique, (Int32) hc.GetSize ());
-                        }
-                        (*clipMemo.coords)[0] = { 0.0, 0.0 };
-                        (*clipMemo.vertexIDs)[0] = (UInt32) maxContourUnique;
-                        (*clipMemo.pends)[0] = 0;
-
-                        Int32 iCoord = 0;
-                        Int32 iArc = 0;
-                        Int32 subPolyIndex = 1;
-
-                        auto writeContour = [&] (const GS::Array<GS::ObjectState>& contourCoords, const GS::Array<GS::ObjectState>& contourArcs) {
-                            const Int32 firstIndex = iCoord + 1;
-                            const Int32 nUniqueLocal = (Int32) contourCoords.GetSize ();
-                            for (Int32 i = 0; i < nUniqueLocal; ++i) {
-                                ++iCoord;
-                                (*clipMemo.coords)[iCoord] = Get2DCoordinateFromObjectState (contourCoords[i]);
-                                (*clipMemo.vertexIDs)[iCoord] = (UInt32) (i + 1); // per-contour, restarts at 1
-                            }
-                            ++iCoord;
-                            (*clipMemo.coords)[iCoord] = (*clipMemo.coords)[firstIndex]; // closing duplicate
-                            (*clipMemo.vertexIDs)[iCoord] = (*clipMemo.vertexIDs)[firstIndex];
-                            (*clipMemo.pends)[subPolyIndex++] = iCoord;
-
-                            if (clipMemo.parcs != nullptr) {
-                                const GS::Array<API_PolyArc> localArcs = GetPolyArcs (contourArcs, firstIndex);
-                                for (const API_PolyArc& a : localArcs)
-                                    (*clipMemo.parcs)[iArc++] = a;
-                            }
-                        };
-
-                        writeContour (coordinates, arcs);
-                        for (Int32 i = 0; i < (Int32) holeCoordsList.GetSize (); ++i) {
-                            writeContour (holeCoordsList[i], holeArcsList[i]);
-                        }
-
-                        elem.hatch.poly.nCoords   = totalCoords;
-                        elem.hatch.poly.nSubPolys = nSubPolys;
-                        elem.hatch.poly.nArcs     = totalArcs;
+                    if (BuildHatchPolygonMemo (coordinates, arcs, holes, elem.hatch.poly, clipMemo)) {
                         ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, poly);
                         memoMask = APIMemoMask_Polygon;
                         hasMemoChanges = true;
@@ -5919,6 +5956,11 @@ static void InitializeEmptyBounds (API_Box3D& bounds)
     bounds.xMax = bounds.yMax = bounds.zMax = -1e30;
 }
 
+static bool IsEmptyBounds (const API_Box3D& bounds)
+{
+    return bounds.xMin > bounds.xMax || bounds.yMin > bounds.yMax || bounds.zMin > bounds.zMax;
+}
+
 // Extends bounds with the solid 3D bodies of the element. foundSolidBody is only ever set to
 // true here, so the same accumulator can be run over several elements in a row.
 static GSErrCode AccumulateSolidBodyBounds (const API_Elem_Head& elemHead, API_Box3D& bounds, bool& foundSolidBody)
@@ -6107,6 +6149,13 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
         }
         if (err != NoError) {
             boundingBoxes3D (CreateErrorResponse (err, "Failed to get the 3D bounding box"));
+            continue;
+        }
+        if (IsEmptyBounds (box3D)) {
+            // ACAPI_Element_CalcBounds succeeds with an empty, inverted box (min 1e35, max -1e35)
+            // for an element that has no 3D geometry of its own, e.g. a Stair tread whose 3D model
+            // cannot be read (#1567). That is no bounding box, so it is reported as an error.
+            boundingBoxes3D (CreateErrorResponse (APIERR_GENERAL, "The element has no 3D geometry to get the bounding box of"));
             continue;
         }
 

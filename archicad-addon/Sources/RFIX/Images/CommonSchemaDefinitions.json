@@ -1283,6 +1283,12 @@
             "gradientEnd": {
                 "$ref": "#/Coordinate2D"
             },
+            "symbolOffset1": {
+                "$ref": "#/Coordinate2D"
+            },
+            "symbolOffset2": {
+                "$ref": "#/Coordinate2D"
+            },
             "percent": {
                 "type": "number"
             },
@@ -3435,6 +3441,8 @@
             "bitPattern",
             "gradientStart",
             "gradientEnd",
+            "symbolOffset1",
+            "symbolOffset2",
             "percent",
             "texture",
             "lineItems",
@@ -8903,6 +8911,12 @@
             },
             "zCoordinate": {
                 "type": "number"
+            },
+            "contourLine": {
+                "$ref": "#/ZoneContourLine"
+            },
+            "coverFill": {
+                "$ref": "#/ZoneCoverFill"
             }
         },
         "additionalProperties": false,
@@ -8913,7 +8927,48 @@
             "stampPosition",
             "isManual",
             "polygonOutline",
-            "zCoordinate"
+            "zCoordinate",
+            "contourLine",
+            "coverFill"
+        ]
+    },
+    "RailingDetails": {
+        "type": "object",
+        "properties": {
+            "referenceLine": {
+                "type": "array",
+                "description": "The 2D coordinates of the reference line of the railing, one per node.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "bottomOffset": {
+                "type": "number",
+                "description": "The base height of the railing relative to the floor level."
+            },
+            "zCoordinate": {
+                "type": "number",
+                "description": "The absolute elevation of the base of the railing."
+            },
+            "height": {
+                "type": "number",
+                "description": "The segment height new segments of the railing are made with (the default segment)."
+            },
+            "segmentHeights": {
+                "type": "array",
+                "description": "The height of each segment of the railing, in the order of the reference line.",
+                "items": {
+                    "type": "number"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "referenceLine",
+            "bottomOffset",
+            "zCoordinate",
+            "height",
+            "segmentHeights"
         ]
     },
     "CurtainWallDetails": {
@@ -9907,6 +9962,57 @@
             "baseLinePoints"
         ]
     },
+    "SectionDetails": {
+        "type": "object",
+        "description": "The geometry of a Section (CutPlane) marker on the floor plan, the fields CreateSections takes.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the section."
+            },
+            "idStr": {
+                "type": "string",
+                "description": "The reference ID of the section."
+            },
+            "mainCoordinates": {
+                "type": "array",
+                "description": "The points of the section line, from start to end. More than two for a broken section line. Empty when the line cannot be read.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "depthCoordinates": {
+                "type": "array",
+                "description": "The points of the depth line, the far boundary of the section. Empty when it cannot be read.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "startCoordinate": {
+                "$ref": "#/Coordinate2D",
+                "description": "The first point of the section line (startCoordinate of CreateSections)."
+            },
+            "endCoordinate": {
+                "$ref": "#/Coordinate2D",
+                "description": "The last point of the section line (endCoordinate of CreateSections)."
+            },
+            "depth": {
+                "type": "number",
+                "description": "The distance of the first depth point from the first segment of the section line (depth of CreateSections)."
+            },
+            "viewDirection": {
+                "$ref": "#/Coordinate2D",
+                "description": "The unit vector perpendicular to the first segment of the section line, pointing to the side of the depth line: the direction the section looks in. CreateSections puts it to the left of the start to end direction."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "idStr",
+            "mainCoordinates",
+            "depthCoordinates"
+        ]
+    },
     "NotYetSupportedElementTypeDetails": {
         "type": "object",
         "properties": {
@@ -9966,6 +10072,9 @@
                 "$ref": "#/ZoneDetails"
             },
             {
+                "$ref": "#/RailingDetails"
+            },
+            {
                 "$ref": "#/CurtainWallDetails"
             },
             {
@@ -9997,6 +10106,9 @@
             },
             {
                 "$ref": "#/StairDetails"
+            },
+            {
+                "$ref": "#/SectionDetails"
             },
             {
                 "$ref": "#/NotYetSupportedElementTypeDetails"
@@ -10862,19 +10974,23 @@
         },
         "additionalProperties": false,
         "required": [
-            "revisionChange"
+            "revisionChanges"
         ]
     },
     "RevisionChangesOfEntities": {
-        "type": "object",
-        "oneOf": [
-            {
-                "$ref": "#/RevisionChangesArrayItem"
-            },
-            {
-                "$ref": "#/ErrorItem"
-            }
-        ]
+        "type": "array",
+        "description": "The revision changes of the requested entities, in the order of the input, or an error for an entity whose changes could not be retrieved.",
+        "items": {
+            "type": "object",
+            "oneOf": [
+                {
+                    "$ref": "#/RevisionChangesArrayItem"
+                },
+                {
+                    "$ref": "#/ErrorItem"
+                }
+            ]
+        }
     },
     "StoryParameters": {
         "type": "object",
@@ -11068,6 +11184,62 @@
             "referencePosition": {
                 "$ref": "#/Coordinate2D",
                 "description": "Moves the reference point of an automatic zone; the zone is found around the new point when zones are next updated. Ignored for a manual zone (isManual true)."
+            },
+            "contourLine": {
+                "$ref": "#/ZoneContourLine"
+            },
+            "coverFill": {
+                "$ref": "#/ZoneCoverFill"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "ZoneContourLine": {
+        "type": "object",
+        "description": "The contour line of a zone on the floor plan. GetDetailsOfElements returns every field; when setting, only the given fields are changed.",
+        "properties": {
+            "use": {
+                "type": "boolean",
+                "description": "Whether the contour line is drawn."
+            },
+            "pen": {
+                "type": "integer",
+                "description": "The pen index of the contour line.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type attribute of the contour line."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "ZoneCoverFill": {
+        "type": "object",
+        "description": "The cover fill of a zone on the floor plan. GetDetailsOfElements returns every field; when setting, only the given fields are changed.",
+        "properties": {
+            "use": {
+                "type": "boolean",
+                "description": "Whether the cover fill is drawn."
+            },
+            "fillId": {
+                "$ref": "#/AttributeId",
+                "description": "The fill attribute of the cover fill."
+            },
+            "foregroundPen": {
+                "type": "integer",
+                "description": "The pen index of the fill pattern.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "backgroundPen": {
+                "type": "integer",
+                "description": "The pen index of the fill background. 0 is a transparent background; -1 also occurs in projects and is accepted, so a value read with GetDetailsOfElements can always be written back.",
+                "minimum": -1,
+                "maximum": 255
             }
         },
         "additionalProperties": false,
