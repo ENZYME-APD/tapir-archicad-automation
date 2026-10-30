@@ -1,10 +1,10 @@
 {
- "generatedAt": "2026-10-30 16:21 UTC",
+ "generatedAt": "2026-10-30 20:42 UTC",
  "counts": {
   "done": 302,
-  "open": 222,
-  "in progress": 16,
+  "in progress": 236,
   "merged": 15,
+  "open": 2,
   "not applicable": 1
  },
  "parameters": {
@@ -58,14 +58,19 @@
    "group": "Application Commands",
    "version": "1.7.3",
    "brief": "Retrieves the main version, release version and build number of the running Archicad, with the caption of its window.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1678,
+     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -73,14 +78,19 @@
    "group": "Application Commands",
    "version": "1.7.3",
    "brief": "Retrieves Archicad's current print settings: the print area, grid, fixed text size and scale (the settings PrintView takes).",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1678,
+     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -88,14 +98,19 @@
    "group": "Application Commands",
    "version": "1.7.3",
    "brief": "Retrieves the printer selected in Archicad, with its name and orientation, and the selected plotter, with its name and model.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1678,
+     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -145,14 +160,19 @@
    "group": "Application Commands",
    "version": "1.7.3",
    "brief": "Asks the designer to click an element in the current window and returns its id, its type and the clicked point. A click on empty space or on an element of a type not asked for asks again. Archicad waits for the click or for Escape, and every other JSON command queues behind this one until then; cancelling returns cancelled.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1678,
+     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -160,14 +180,19 @@
    "group": "Application Commands",
    "version": "1.7.4",
    "brief": "Waits for the user to input a line in the active Archicad window and returns start and end coordinates.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1678,
+     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -175,14 +200,19 @@
    "group": "Application Commands",
    "version": "1.7.4",
    "brief": "Waits for the user to input a polygon in the active Archicad window and returns its points and arcs.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1678,
+     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -210,14 +240,19 @@
    "group": "Application Commands",
    "version": "1.7.2",
    "brief": "Returns the drawing scale of the current (active) window, the scale shown in the bottom bar, as its denominator: 100.0 for 1:100, 20.0 for 1:20. Unlike GetViewSettings it needs no saved view. It reads the scale of the current database: the floor plan, a section, elevation, interior elevation, detail, worksheet or 3D document window, each of which has its own. Layouts always return 1.0.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1678,
+     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -225,14 +260,19 @@
    "group": "Application Commands",
    "version": "1.7.2",
    "brief": "Changes the drawing scale of the current (active) window, the scale shown in the bottom bar, to the given denominator: 100 for 1:100. It changes the scale of the current database: the floor plan, a section, elevation, interior elevation, detail, worksheet or 3D document window, each of which has its own. Layouts are always 1:1 and are rejected. The scale must be between 1 and 30000. The change is undoable.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1678,
+     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -260,14 +300,19 @@
    "group": "Application Commands",
    "version": "1.7.2",
    "brief": "Returns the database (window type, database id and name) that contains each of the given elements, from any database, not only the current one. Pass the windowType and databaseId to ChangeWindow to open it, for example to find an element placed on a layout.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1678,
+     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -275,14 +320,19 @@
    "group": "Application Commands",
    "version": "1.7.3",
    "brief": "Closes the windows of the given databases (for example layouts, sections or details opened earlier with ChangeWindow), with one execution result per window; a window Archicad cannot close gets a failed result. Requires Archicad 27 or later.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1678,
+     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -290,14 +340,19 @@
    "group": "Application Commands",
    "version": "1.7.3",
    "brief": "Rebuilds the current database, the one the API works on (see ChangeWindow). Requires Archicad 27 or later.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1678,
+     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -375,14 +430,19 @@
    "group": "Application Commands",
    "version": "1.7.3",
    "brief": "Tells whether Archicad is in a hierarchical editing mode (curtain wall, stair, beam or column editing), and which element is being edited. Read only: it never enters, leaves or cancels an editing mode. Commands that modify the project can fail while such a mode is active. The overall inEditMode flag requires Archicad 29 or later; the command requires Archicad 27 or later.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1678,
+     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -390,14 +450,19 @@
    "group": "Application Commands",
    "version": "1.7.3",
    "brief": "Retrieves the version information of the running Archicad: build number, language code, product family and version text, plus the product name, product type, main/update/hotfix versions, the available domains (Architecture, MEP) and the CEIP project identifier of the open project from Archicad 29. Requires Archicad 28 or later.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1678,
+     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -405,14 +470,19 @@
    "group": "Application Commands",
    "version": "1.7.3",
    "brief": "Returns whether 3D Cutaway is on and whether the cutting planes are shown in the 3D window. In Archicad 25-27 the 3D window may need to be open.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1678,
+     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -420,14 +490,19 @@
    "group": "Application Commands",
    "version": "1.7.3",
    "brief": "Turns 3D Cutaway on or off and shows or hides the cutting planes in the 3D window. In Archicad 25-27 the 3D window may need to be open.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1678,
+     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -435,14 +510,19 @@
    "group": "Application Commands",
    "version": "1.7.3",
    "brief": "Turns the dialog auto close on or off. While it is on, Archicad closes the dialogs it would show with their default button instead of waiting for the user, so automation is not blocked by them. To have it on already while Archicad opens a project (before any command can be sent), set the TAPIR_DIALOG_AUTOCLOSE environment variable to true for the Archicad process before starting it.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1678,
+     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -566,6 +646,10 @@
    "missingParameters": [],
    "pullRequests": [
     {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    },
+    {
      "number": 1012,
      "title": "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30"
     }
@@ -585,6 +669,10 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [
+    {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    },
     {
      "number": 1012,
      "title": "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30"
@@ -606,6 +694,10 @@
    "missingParameters": [],
    "pullRequests": [
     {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    },
+    {
      "number": 1012,
      "title": "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30"
     }
@@ -626,6 +718,10 @@
    "missingParameters": [],
    "pullRequests": [
     {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    },
+    {
      "number": 1012,
      "title": "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30"
     }
@@ -645,6 +741,10 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [
+    {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    },
     {
      "number": 1012,
      "title": "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30"
@@ -743,14 +843,19 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Retrieves the keywords of note autotexts (the autotexts of dimension, label and other element notes) by their numeric API_NoteAutotextID values. Available from Archicad 26.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -895,14 +1000,19 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Tells for each element whether it comes from a hotlinked module, and returns the hotlink element that contains it and the hotlink instance it belongs to. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -910,14 +1020,19 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Maps the proxy elements of placed hotlink instances to the elements of the source file they were made from, so an element seen in a hotlinked module can be traced back to its source element.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -961,7 +1076,12 @@
     "newAndReset"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -1101,7 +1221,12 @@
     "source"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -1143,7 +1268,12 @@
     "name"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -1159,6 +1289,10 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [
+    {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    },
     {
      "number": 1030,
      "title": "[4/4] Add the GetProjectPreferences and SetProjectPreferences Grasshopper components"
@@ -1180,6 +1314,10 @@
    "missingParameters": [],
    "pullRequests": [
     {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    },
+    {
      "number": 1030,
      "title": "[4/4] Add the GetProjectPreferences and SetProjectPreferences Grasshopper components"
     }
@@ -1191,14 +1329,19 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Formats lengths, areas, volumes and angles (given in meters, square meters, cubic meters and radians) as Archicad shows them with the unit and rounding of the given Project Preference, returning the text, its extra accuracy decimals and the unit. The output is aligned with the input array of values. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -1206,14 +1349,19 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Gets the names the running Archicad shows for the renovation statuses Existing, New and Demolished (localized). Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -1241,14 +1389,19 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Gets the 3x4 matrix that transforms points from the Project Origin coordinate system into the Survey Point coordinate system, row by row, and its inverse when it is invertible. Read only. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -1279,14 +1432,19 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Gets the Project Notes of the project (File > Info > Project Notes): client, project name, company, address, architect, draftsmen, project status, date of issue, keywords and notes.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -1294,14 +1452,19 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Changes the Project Notes of the project (File > Info > Project Notes). Only the given fields are changed; texts longer than the field Archicad stores are truncated.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 13,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -1309,14 +1472,19 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Gets the project's date and time (Options > Project Preferences > Location Settings), the sun position Archicad calculates for them at the project location, and the sun and ambient light settings.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -1324,14 +1492,19 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Calculates the sun position (azimuth and altitude in degrees) for a date and time, at the project location unless another one is given, without changing the project.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -1386,14 +1559,19 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Gets whether Auto-Intersection (Options > Auto-Intersection) is on. It changes what the wall and beam creation commands produce: with it on, the new elements are joined at their intersections.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -1401,14 +1579,19 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Turns Auto-Intersection on or off. It is a setting of the running Archicad, not of the project; remember to restore the previous state afterwards.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -1416,14 +1599,19 @@
    "group": "Custom Data Commands",
    "version": "1.7.3",
    "brief": "Stores string values under keys on elements, for scripts to keep their own state per element (external database ids, sync timestamps, markers). The data is saved with the project as the user data of the Tapir add-on on the element and appears nowhere in the Archicad UI. The given keys are merged into what the element already holds: a key that exists gets the new value, other keys are left as they are, and the keys listed in keysToDelete are removed. Prefix the keys with the script's name so that scripts do not overwrite each other's data. One undo step per call; in a Teamwork project the element has to be reserved.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 6,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1678,
+     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -1431,14 +1619,19 @@
    "group": "Custom Data Commands",
    "version": "1.7.3",
    "brief": "Reads the values stored on elements by SetElementUserData: every key of each element, or only the given keys.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1678,
+     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -1521,14 +1714,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Gets the localized names of the given element types, as the running Archicad shows them (for example 'Wand' for Wall in German Archicad). The output is aligned with the input array of element types. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1685,
+     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -1644,7 +1842,12 @@
     "fields"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": [
     {
      "number": 639,
@@ -1690,7 +1893,12 @@
     "elementsWithDetails.elementId"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -1698,14 +1906,19 @@
    "group": "Element Commands",
    "version": "1.7.2",
    "brief": "Lists the element categories of the project (Structural Function, Position, Renovation Status, Renovation Filter and, in the German version, BRI) with their possible values. The names of the categories and values are localized: identify a category by its type and a value by its categoryValueId, never by name.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1685,
+     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -1713,14 +1926,19 @@
    "group": "Element Commands",
    "version": "1.7.2",
    "brief": "Gets the category values (Structural Function, Position, Renovation Status ...) of the given elements, optionally only for the given category types. An element that has none of the requested categories (an annotation, for example) gets an error item. The names are localized: use the type and the categoryValueId in scripts.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1685,
+     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -1728,14 +1946,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Gets the category values (Structural Function, Position, Renovation Status ...) of the tool defaults of the given element types, the values new elements of the type get, optionally only for the given category types. A category the default has no value in is listed without categoryValueId; an element type without any of the requested categories gets an error item. The names are localized: use the type and the categoryValueId in scripts.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1685,
+     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -1743,14 +1966,19 @@
    "group": "Element Commands",
    "version": "1.7.2",
    "brief": "Sets the category values (Structural Function, Position, Renovation Status ...) of the given elements, one element and one category per item, in a single undoable step. The value must belong to the given category, as GetElementCategories lists them; an element without that category gets a failed execution result. The names are localized: use the type and the categoryValueId in scripts.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 4,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1685,
+     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -1780,14 +2008,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Gets the placement transformation of library part instances (Window, Door, Object, Lamp, Zone) as Archicad computes it: the location, the rotation angle and the x/y scaling. The output is aligned with the input array of elements.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1685,
+     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -1795,14 +2028,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Converts the reveal depth offset of windows and doors placed in walls between the two references Archicad uses: measured from the core skin of a composite wall, or from the wall side. Give exactly one of coreOffset or sideOffset per opening; both values are returned. For walls with a basic structure the two values are equal. The output is aligned with the input array of openings. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 4,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1685,
+     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -1832,14 +2070,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Gets the connections among the given elements: each pair of touching elements once, with the polygons of the surface where they touch, in world coordinates. The 3D model of the elements is generated with separate components in a temporary sight, so the 3D window is not changed. Also returns, aligned with the input array of elements, whether each element was found. Available from Archicad 28.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1685,
+     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -1847,14 +2090,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Gets the building material of each body of the 3D model of the given elements. The 3D model is generated with separate components in a temporary sight, so a composite structure has one body per skin and the 3D window is not changed. The output is aligned with the input array of elements. Available from Archicad 28.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1685,
+     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -1871,8 +2119,8 @@
    "missingParameters": [],
    "pullRequests": [
     {
-     "number": 1038,
-     "title": "[4/4] Add GetCutPolygonsOfElements: the floor plan cut polygons and area of elements"
+     "number": 1685,
+     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
     }
    ],
    "issues": []
@@ -1899,7 +2147,12 @@
     "z"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -1907,14 +2160,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Checks whether elements have a visible skin in a given Partial Structure Display mode (EntireStructure, CoreOnly, WithoutFinishes or StructureOnly), e.g. a finish-only slab has none in CoreOnly. The current window is not changed. The output is aligned with the input array of elements.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1685,
+     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -1947,14 +2205,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Triangulates the plan polygon of the given elements, holes excluded, as Archicad does it: the outline of a Slab, Zone, Hatch or Mesh and the polygon of a Roof. Each triangle is given by the 2D coordinates of its three vertices. The output is aligned with the input array of elements; an element of another type gets an error item.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1685,
+     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -1962,14 +2225,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Gets the number of components of each type (bodies, polygons, polygon edges, edges, vertices, normal vectors, materials and lights) in the 3D model Archicad currently holds, as ACAPI_ModelAccess_GetNum counts them. A type that cannot be counted gets an error item. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1685,
+     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -1992,7 +2260,12 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -2022,14 +2295,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Gets the owner of each given element in its hierarchical element: the root (e.g. the Curtain Wall, Stair or Railing of a frame, tread or post) or the immediate parent. Also returns whether the given element is a main element, a subelement or not part of a hierarchical element.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1685,
+     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -2037,14 +2315,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Opens the given hierarchical element (Curtain Wall, Stair, Railing, Beam or Column) in its hierarchical 3D editing mode, as the Edit button of the element does. Fails when Archicad is already in an editing mode. Leave the mode with FinishHierarchicalEditing. Requires Archicad 27 or later.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1685,
+     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -2052,14 +2335,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Finishes the current hierarchical editing mode (Curtain Wall, Stair, Railing, Beam or Column): accept true keeps the changes (OK), accept false discards them (Cancel). The accept parameter is required, so changes are never discarded silently. Fails when Archicad is not in such an editing mode. Requires Archicad 27 or later.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1685,
+     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -2090,14 +2378,19 @@
    "group": "Element Commands",
    "version": "1.7.2",
    "brief": "Returns the identifier of every element of the current database, or of the given databases, in Archicad's drawing order (the order set by Bring to Front and Send to Back), as ACAPI_DrawOrder_DrawOrderGetNext walks it. Use the optional elementType and filters parameters for filtering. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1685,
+     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -2105,14 +2398,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Returns the 2D drawing primitives (points, lines, arcs, texts, polylines, triangles, polygons, pictures) Archicad draws each given floor plan element from, in drawing order, as ACAPI_DrawingPrimitive_ShapePrimsExt decomposes it on every story and unclipped. Control items (type Ctrl_*) mark the beginning and the end of sub-parts such as hatches and texts. The floor plan must be the current database. The output is aligned with the input array of elements.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1685,
+     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -2120,14 +2418,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Returns the 2D drawing primitives of the story levels (story lines and their markers) drawn in the given section, elevation or interior elevation database, as ACAPI_DrawingPrimitive_DrawStoryControl draws them, in the same format as GetDrawingPrimitivesOfElements. The databaseId can be obtained with GetDatabaseIdFromNavigatorItemId.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1685,
+     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -2189,6 +2492,10 @@
    "missingParameters": [],
    "pullRequests": [
     {
+     "number": 1685,
+     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+    },
+    {
      "number": 1033,
      "title": "[2/2] Grasshopper: add LinkElements, UnlinkElements and GetLinksOfElements components"
     }
@@ -2209,6 +2516,10 @@
    "missingParameters": [],
    "pullRequests": [
     {
+     "number": 1685,
+     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+    },
+    {
      "number": 1033,
      "title": "[2/2] Grasshopper: add LinkElements, UnlinkElements and GetLinksOfElements components"
     }
@@ -2228,6 +2539,10 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [
+    {
+     "number": 1685,
+     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+    },
     {
      "number": 1033,
      "title": "[2/2] Grasshopper: add LinkElements, UnlinkElements and GetLinksOfElements components"
@@ -2278,7 +2593,12 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -2286,14 +2606,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Gets the property objects of the given elements: the library parts of the old listing system (used by projects migrated from older Archicad versions) linked to each element by criteria or individually, with the library part's index (the same as the index returned by GetAvailableLibraryParts), name and guid. The output is aligned with the input array of elements.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1685,
+     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -2301,14 +2626,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Gets the descriptors of the given elements: the listing descriptors in the property objects of each element, with the library part that declares them (index, name and guid), their listing database set and index, and their status (Normal, Deleted or Local). The output is aligned with the input array of elements.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1685,
+     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -2316,14 +2646,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Gets how property objects (the library parts of the old listing system) are linked to the given elements, or to the element defaults of the given element types: whether the property objects matching their criteria are linked, which of them match, and which one is assigned individually, each with the library part's index (the same as the index returned by GetAvailableLibraryParts), name and guid. The output is aligned with the input array of elements.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1684,
+     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -2331,14 +2666,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Sets how property objects (the library parts of the old listing system) are linked to the given elements, or to the element defaults of the given element types: whether the property objects matching their criteria are linked, and which one is assigned individually (0 removes the individual assignment). A link that is not given stays unchanged. All changes are made in one undoable step.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 5,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1684,
+     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -2370,14 +2710,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Turns the automatic labeling of Zones on or off and selects the Label Favorite it places. Only the given settings are changed. Available from Archicad 28.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1684,
+     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -2385,14 +2730,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Returns whether the automatic labeling of Zones is on and the name of the Label Favorite it places. Available from Archicad 28.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1684,
+     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -2532,7 +2882,12 @@
     "elementsWithMirrorAxes.mirrorAxis.endPoint"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -2566,14 +2921,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Deletes the currently selected elements in one undo step, the same as pressing the Delete key.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1684,
+     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -2625,14 +2985,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Refreshes (rebuilds) the given elements, for example placed Objects, Windows and Doors that still show the old geometry after their library part's script or embedded file changed. Set force to true to run the parameter script of GDL-based elements too. The elements are looked up in the current database (floor plan, section or detail window). Returns an execution result for each input element. The refresh cannot be undone.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1684,
+     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -2741,14 +3106,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Changes the library part of the given Object, Lamp, Window, Door, Skylight, Zone and symbol Label elements to another library part of the same type, given by name, index or guid, e.g. to replace missing library parts with ones from the loaded libraries. The elements themselves (guid, properties, classifications) are kept. Components of stairs and railings are not supported, even when they are reported as Objects. Optionally keeps the values of the GDL parameters with the same name and type, and the size (A and B).",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 8,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1684,
+     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -2756,14 +3126,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Runs the parameter script of the library part of the given elements (objects, lamps, windows, doors, etc.), so that parameter values that depend on other parameters are updated, e.g. after SetGDLParametersOfElements.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1684,
+     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -2861,7 +3236,12 @@
     "wallsData.useCompositePriority",
     "wallsData.viewDepthLimitation"
    ],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -2946,14 +3326,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Runs the Archicad stair solver on the given Stair baselines and parameters without creating any element. Returns for each one whether the baseline was already correct, could be solved or could not be solved, with the baseline and the main stair settings after solving. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 10,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1684,
+     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -3089,14 +3474,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Returns the settings of the Opening tool defaults: the extrusion parameters (as GetOpeningDetails returns them) and the floor plan parameters (as GetOpeningFloorPlanParameters returns them). Available from Archicad 29.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1684,
+     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -3104,14 +3494,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Changes the settings of the Opening tool defaults, with the names GetOpeningDefault returns. Only the given settings change. Available from Archicad 29.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 43,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1684,
+     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -3119,14 +3514,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Places openings with the Opening tool settings at points of their parent elements. A point off the parent element's surface is moved to the closest point of the surface. Each opening can be given its own extrusion and floor plan settings, which change only that opening and not the tool's settings. Available from Archicad 29.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 46,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1684,
+     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -3134,14 +3534,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Returns the floor plan parameters of Opening elements: the floor plan display mode, the divided opening mode, the open edge style, the reference axis, the cut surface and outline lines, the cover fills and the cut and uncut symbols. Available from Archicad 29.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1684,
+     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -3149,14 +3554,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Changes the floor plan parameters of Opening elements returned by GetOpeningFloorPlanParameters, and sets or removes their cut and uncut symbols. Available from Archicad 29.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 29,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1684,
+     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -3164,14 +3574,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Returns the details of Opening elements: whether they exist, the parent element, the cut and connected elements, the geometry (anchor point, extrusion direction, axes, polygon) and the extrusion parameters (constraint, limit type, linked status, shape type, size, anchor, offsets, surface overrides). Available from Archicad 29.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1684,
+     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -3179,14 +3594,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Changes the details of Opening elements: the parent element, the cut elements, the polygon, a transformation of the geometry and the extrusion parameters (constraint, limit type, linked status, shape type, size, anchor, offsets, surface overrides) returned by GetOpeningDetails. Available from Archicad 29.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 23,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1684,
+     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -3289,14 +3709,19 @@
    "group": "Element Commands",
    "version": "1.7.4",
    "brief": "Creates Railing elements along a reference polyline. Posts, rails, handrails, toprails, panels and balusters come from the favorite or from the Railing tool defaults; Archicad generates one node per vertex and one segment per pair of consecutive vertices.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 7,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1684,
+     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -3453,14 +3878,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Gets the placement of Opening elements, Windows, Doors and Skylights without changing them: a global-to-local transformation matrix, its inverse, and the origin and axes in world coordinates derived from the inverse. For Windows, Doors and Skylights the local-to-global matrix is the one Archicad returns, and mirrored ones give a left-handed matrix (isMirrored). For Opening elements it is built from the opening geometry (Archicad 29 and later): origin at the anchor point, the X and Y axes of the opening and Z = X × Y, which points against the extrusion direction. Needs Archicad 27 or later.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1684,
+     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -4033,14 +4463,19 @@
    "group": "Element Commands",
    "version": "1.7.2",
    "brief": "Creates Level Dimension elements (the Level Dimension tool) based on the given parameters. With a parentElementId the dimension is associative: it shows the height of the parent element (Mesh, Slab, Roof ...) at its position and follows the element when it changes.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 16,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1684,
+     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -4106,7 +4541,12 @@
     "wallsWithDetails.visibility",
     "wallsWithDetails.zoneRel"
    ],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -4579,14 +5019,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Replaces a range of the content of Text elements and text Labels, keeping the styles of the runs and the autotexts in the rest of the content.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 5,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1684,
+     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -4594,14 +5039,19 @@
    "group": "Element Commands",
    "version": "1.7.2",
    "brief": "Measures texts before placing them: the length of every line for a given font, style and height, on paper in millimetres or in the model at the current drawing scale, and the font's capital size factor. Creates nothing.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 10,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1684,
+     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -4663,14 +5113,19 @@
    "group": "Element Commands",
    "version": "1.2.8",
    "brief": "Sets up a new notification client to receive element events.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 5,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1684,
+     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -4678,14 +5133,19 @@
    "group": "Element Commands",
    "version": "1.2.8",
    "brief": "Removes an element notification client.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1684,
+     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -4693,14 +5153,19 @@
    "group": "Element Commands",
    "version": "1.7.2",
    "brief": "Regularizes polygons with Archicad's own polygon regularization, before they are used to create slabs, zones or fills: removes duplicate points, fixes the orientation, resolves self-intersections and touching holes. Each input polygon gives 0, 1 or more valid polygons in the format of CreateSlabs, optionally with the input vertex and edge each result vertex and edge came from. Changes nothing in the project.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 5,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1684,
+     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -4708,14 +5173,19 @@
    "group": "Element Commands",
    "version": "1.7.2",
    "brief": "Regularizes polylines with Archicad's own polyline regularization: removes repeated consecutive points. The result is in the format of CreatePolylines and may be empty, optionally with the input point and segment each result point and segment came from. Changes nothing in the project.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 4,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1684,
+     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -4759,7 +5229,12 @@
     "groups"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -4811,14 +5286,19 @@
    "group": "Element grouping Commands",
    "version": "1.7.3",
    "brief": "Gets the elements and the custom data of each given element set. Element sets are created by add-ons to link elements together; the custom data is returned as Base64 encoded bytes.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -4826,14 +5306,19 @@
    "group": "Element grouping Commands",
    "version": "1.7.2",
    "brief": "Gets the user data an add-on attached to each given group: its version, platform sign, flags and bytes (base64 encoded), and, when its version is 1 (the layout SetUserDataOfGroups writes), its key-value pairs. Returns an error for groups that have no user data.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -4841,14 +5326,19 @@
    "group": "Element grouping Commands",
    "version": "1.7.3",
    "brief": "Stores string values under keys in the user data of groups, for scripts to keep their own state on a group. The given pairs are merged into what each group already holds: a key that exists gets the new value, other keys are left as they are, and the keys listed in keysToDelete are removed. Prefix the keys with the script's name so that scripts do not overwrite each other's data. User data in another layout is left unchanged and reported as an error. One undo step per call.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -4898,14 +5388,19 @@
    "group": "Element grouping Commands",
    "version": "1.7.3",
    "brief": "Creates element sets of the given elements. An element set is a hidden, persistent collection of elements (it is not a group and has no effect on selection or editing).",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -4913,14 +5408,19 @@
    "group": "Element grouping Commands",
    "version": "1.7.3",
    "brief": "Gets the element sets that contain each given element. Only element sets created by the Tapir Add-On are examined; sets created by other add-ons are not found.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -4950,14 +5450,19 @@
    "group": "Favorites Commands",
    "version": "1.7.3",
    "brief": "Returns every Favorite of the project, or only those of the given element type, with its name and element type. Available from Archicad 29.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -4991,14 +5496,19 @@
    "group": "Favorites Commands",
    "version": "1.7.3",
    "brief": "Returns the classifications, property values and element category values stored in the given favorites, so they can be audited before elements are placed. Each property value comes with its evaluation status and default-value flag; the value itself is only returned when it has been evaluated.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -5200,14 +5710,19 @@
    "group": "Favorites Commands",
    "version": "1.7.3",
    "brief": "Returns the folder tree of the Favorites palette from its root folder: the name and path of every folder and the names of the Favorites in it. Available from Archicad 29.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -5215,14 +5730,19 @@
    "group": "Favorites Commands",
    "version": "1.7.3",
    "brief": "Reads the stored settings of the given favorites without applying them or placing an element: the element type, the folder, the library part and GDL parameters, the marker (library part and parameters) of Window and Door favorites, and the sub-elements. A favorite without a marker has no marker field, which is not an error. The other settings of the element (pens, layer, structure, etc.) are not returned.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -5249,7 +5769,12 @@
     "source.toolDefault"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -5273,7 +5798,12 @@
     "source.toolDefault"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -5295,7 +5825,12 @@
     "favoriteName"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -5318,7 +5853,12 @@
     "targetFolder"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -5418,7 +5958,12 @@
     "elementPropertyValues"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -5473,14 +6018,19 @@
    "group": "Property Commands",
    "version": "1.7.3",
    "brief": "Returns the property definitions of the given attributes (for example Building Materials): the user defined, the fundamental built-in, or all of them.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -5488,14 +6038,19 @@
    "group": "Property Commands",
    "version": "1.7.3",
    "brief": "Returns the property definitions of the tool defaults (the settings new elements get) of the given element types, filtered by kind (all by default), and optionally the value of each property in the tool default.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -5503,14 +6058,19 @@
    "group": "Property Commands",
    "version": "1.7.3",
    "brief": "Makes an existing custom property available for the given attributes (for example Building Materials), in one undo step. Available in Archicad 25, 26 and 27 only.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -5518,14 +6078,19 @@
    "group": "Property Commands",
    "version": "1.7.3",
    "brief": "Makes a custom property unavailable for the given attributes (for example Building Materials), in one undo step. Available in Archicad 25, 26 and 27 only.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -5696,14 +6261,19 @@
    "group": "Property Commands",
    "version": "1.7.3",
    "brief": "Sets one property value on all the given elements in a single step. If the property is not available for any of the elements, none of them is changed. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -5711,14 +6281,19 @@
    "group": "Property Commands",
    "version": "1.7.2",
    "brief": "Makes a property definition available for all the given elements. Available only in Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -5726,14 +6301,19 @@
    "group": "Property Commands",
    "version": "1.7.2",
    "brief": "Makes a property definition unavailable for all the given elements. Available only in Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -5764,14 +6344,19 @@
    "group": "Classification Commands",
    "version": "1.7.3",
    "brief": "Returns the elements classified with the given classification items, one list per item, so elements can be filtered by classification in a single call.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -5815,7 +6400,12 @@
     "attributeIds"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -5839,7 +6429,12 @@
     "attributeClassifications.classificationId"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -5862,7 +6457,12 @@
     "elementTypes"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -5886,7 +6486,12 @@
     "elementDefaultClassifications.elementType"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -5894,14 +6499,19 @@
    "group": "Classification Commands",
    "version": "1.7.3",
    "brief": "Returns every classification of the tool defaults (the settings new elements get) of the given element types, in all classification systems at once. Unlike GetClassificationsOfElementDefaults it needs no list of classification systems; systems in which a default is unclassified are left out.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -6041,14 +6651,19 @@
    "group": "Classification Commands",
    "version": "1.7.3",
    "brief": "Returns the parent item and the classification system of the given Classification Items; a top level item has no parent. The output is aligned with the input array of items.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -6080,14 +6695,19 @@
    "group": "Classification Commands",
    "version": "1.7.3",
    "brief": "Tells whether the given classification items are visible (offered) for the given elements, element tool defaults and attributes, such as building materials. Non-existing targets and classification items are reported as errors. Visibility does not tell whether the target is classified with the item, and an item can be visible even if its parent item is not.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 5,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -6117,14 +6737,19 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Reads the attributes of the given types from another project or template file without opening it, for example to compare them with the attributes of the open project. Nothing is imported into the open project. The names are the legacy 8-bit names, so non-ASCII characters may not come through. Archicad does not read Layer, Surface, BuildingMaterial and MEPSystem attributes from a file that is not open: these types get an error item instead of an empty list. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1677,
+     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
+    }
+   ],
    "issues": []
   },
   {
@@ -6156,14 +6781,19 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Gets the attributes in use, as Archicad reports them for the usedAttributes JSON query: parsed into usedAttributes when the report is a JSON object, otherwise as text in raw. Helps to find the attributes DeleteAttributes can remove before a handover. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1677,
+     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
+    }
+   ],
    "issues": []
   },
   {
@@ -6171,14 +6801,19 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Runs the Line Consolidation menu command of Archicad on the current window, as the menu does, and reports whether it ran together with what Archicad answered. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1677,
+     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
+    }
+   ],
    "issues": []
   },
   {
@@ -6186,14 +6821,19 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Runs the Fill Consolidation menu command of Archicad on the current window, as the menu does, and reports whether it ran together with what Archicad answered. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1677,
+     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
+    }
+   ],
    "issues": []
   },
   {
@@ -6209,6 +6849,10 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [
+    {
+     "number": 1677,
+     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
+    },
     {
      "number": 1029,
      "title": "[4/4] Grasshopper components for the attribute folder commands"
@@ -6230,6 +6874,10 @@
    "missingParameters": [],
    "pullRequests": [
     {
+     "number": 1677,
+     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
+    },
+    {
      "number": 1029,
      "title": "[4/4] Grasshopper components for the attribute folder commands"
     }
@@ -6250,6 +6898,10 @@
    "missingParameters": [],
    "pullRequests": [
     {
+     "number": 1677,
+     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
+    },
+    {
      "number": 1029,
      "title": "[4/4] Grasshopper components for the attribute folder commands"
     }
@@ -6269,6 +6921,10 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [
+    {
+     "number": 1677,
+     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
+    },
     {
      "number": 1029,
      "title": "[4/4] Grasshopper components for the attribute folder commands"
@@ -6734,14 +7390,19 @@
    "group": "Attribute Commands",
    "version": "1.7.2",
    "brief": "Returns the layer combination in effect in the current window. No layer combination is returned when the current state of the layers matches none.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1677,
+     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
+    }
+   ],
    "issues": []
   },
   {
@@ -6869,14 +7530,19 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Returns the current Pen Table (its index, attribute identifier and name) and its number of pens. Pass the returned attributeId to GetPenTables to read the pens.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1677,
+     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
+    }
+   ],
    "issues": []
   },
   {
@@ -7004,14 +7670,19 @@
    "group": "Attribute Commands",
    "version": "1.7.2",
    "brief": "Finds loaded fonts by name through Archicad's font search and returns their index (as Text and Label fields reference fonts in fontIndex) and name, or an error for a name no loaded font has.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1677,
+     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
+    }
+   ],
    "issues": []
   },
   {
@@ -7019,14 +7690,19 @@
    "group": "Attribute Commands",
    "version": "1.7.2",
    "brief": "Gets all graphic override rules of the project, with their rule group, criterion and style. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1676,
+     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7034,14 +7710,19 @@
    "group": "Attribute Commands",
    "version": "1.7.2",
    "brief": "Gets graphic override rules by name, with their rule group, criterion and style. The rule group narrows the search; without it the rule is searched in every rule group. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1676,
+     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7049,14 +7730,19 @@
    "group": "Attribute Commands",
    "version": "1.7.2",
    "brief": "Creates graphic override rules. The criterion is given as Archicad's criterion XML or as structured conditions. The rule group is created when no rule group has the given name. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 6,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1676,
+     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7064,14 +7750,19 @@
    "group": "Attribute Commands",
    "version": "1.7.2",
    "brief": "Modifies the name, criterion or style of graphic override rules. The criterion is given as Archicad's criterion XML or as structured conditions. A given style replaces the whole style of the rule. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 6,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1676,
+     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7079,14 +7770,19 @@
    "group": "Attribute Commands",
    "version": "1.7.2",
    "brief": "Deletes graphic override rules. They are also removed from the combinations that contain them. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1676,
+     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7094,14 +7790,19 @@
    "group": "Attribute Commands",
    "version": "1.7.2",
    "brief": "Gets all graphic override combinations of the project with the rules they contain. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1676,
+     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7109,14 +7810,19 @@
    "group": "Attribute Commands",
    "version": "1.7.2",
    "brief": "Creates graphic override combinations from existing rules. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1676,
+     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7124,14 +7830,19 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Modifies the name and/or the rules of graphic override combinations. Omitted fields are kept. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 4,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1676,
+     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7139,14 +7850,19 @@
    "group": "Attribute Commands",
    "version": "1.7.2",
    "brief": "Deletes graphic override combinations. Their rules are kept. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1676,
+     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7154,14 +7870,19 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Creates empty graphic override rule groups. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1676,
+     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7169,14 +7890,19 @@
    "group": "Attribute Commands",
    "version": "1.7.2",
    "brief": "Gets all graphic override rule groups of the project with the rules they contain, empty groups included. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1676,
+     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7184,14 +7910,19 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Sets the order of the rules in graphic override rule groups, found by name. The listed rules come first, in the given order; the other rules of the group keep their order after them. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1676,
+     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7199,14 +7930,19 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Renames graphic override rule groups, found by name. Their rules are kept. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1676,
+     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7214,14 +7950,19 @@
    "group": "Attribute Commands",
    "version": "1.7.2",
    "brief": "Deletes graphic override rule groups, found by name. A group that still contains rules is kept unless its rules are moved to another group or deleted with it. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1676,
+     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7229,14 +7970,19 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Moves graphic override rules to another rule group, or to another place in their own group. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 4,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1676,
+     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7244,14 +7990,19 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Reads the key-value pairs stored on attributes by SetUserDataOfAttributes. An attribute without user data returns no pairs; one holding user data in another layout returns an error.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1677,
+     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
+    }
+   ],
    "issues": []
   },
   {
@@ -7259,14 +8010,19 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Stores string values under keys in the user data of attributes, for scripts to keep their own state on an attribute. The given pairs are merged into what each attribute already holds: a key that exists gets the new value, other keys are left as they are, and the keys listed in keysToDelete are removed. Prefix the keys with the script's name so that scripts do not overwrite each other's data. User data in another layout is left unchanged and reported as an error. Archicad does not record this change as an undo step, so Undo does not revert it.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1677,
+     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
+    }
+   ],
    "issues": []
   },
   {
@@ -7274,14 +8030,19 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Removes the user data of attributes, every key at once. Archicad does not record this change as an undo step, so Undo does not revert it.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1677,
+     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
+    }
+   ],
    "issues": []
   },
   {
@@ -7423,14 +8184,19 @@
    "group": "IFC Commands",
    "version": "1.7.3",
    "brief": "Retrieves the IFC attributes (Name, Description, ObjectType, Tag, PredefinedType, LongName, ...) of the given elements, subelements included: the name, the IFC value type and the value of each attribute. On Archicad 25, 26 and 27 storedOnly returns only the attributes stored on the elements.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7438,14 +8204,19 @@
    "group": "IFC Commands",
    "version": "1.7.3",
    "brief": "Sets the values of IFC attributes (Name, Description, ObjectType, Tag, ...) of elements. The attribute must be one GetIFCAttributesOfElements returns for the element; its IFC value type is kept. Available only in Archicad 25, 26 and 27 for now.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 4,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7480,14 +8251,19 @@
    "group": "IFC Commands",
    "version": "1.7.3",
    "brief": "Retrieves the IFC classification references of the given elements, subelements included: identification, name, location, description (from Archicad 29), the referenced classification (name, source, edition) and whether the reference comes from the preview translator or is stored locally. On Archicad 25, 26 and 27 the source is not given, the referenced classification also has its edition date, description and location, and storedOnly returns only the references stored on the elements.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7495,14 +8271,19 @@
    "group": "IFC Commands",
    "version": "1.7.3",
    "brief": "Stores IFC classification references (identification, name, location and the referenced classification with its name, edition, edition date, description and location) on elements. Available only in Archicad 25, 26 and 27 for now.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 9,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7510,14 +8291,19 @@
    "group": "IFC Commands",
    "version": "1.7.3",
    "brief": "Removes IFC classification references stored on elements, given by the name of their classification and optionally their identification; without identification every stored reference of that classification is removed. Available only in Archicad 25, 26 and 27 for now.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 5,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7525,14 +8311,19 @@
    "group": "IFC Commands",
    "version": "1.7.3",
    "brief": "Removes local IFC properties, given by property set and property name, from elements. Available only in Archicad 25, 26 and 27 for now.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 4,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1680,
+     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7635,6 +8426,10 @@
    "missingParameters": [],
    "pullRequests": [
     {
+     "number": 1681,
+     "title": "Grasshopper: library and MEP commands"
+    },
+    {
      "number": 1023,
      "title": "[2/2] Grasshopper: add the CreateLibraryParts component"
     }
@@ -7646,14 +8441,19 @@
    "group": "Library Commands",
    "version": "1.7.3",
    "brief": "Creates a folder, with any missing parent folders, inside the embedded library. The folderPath is relative to the embedded library, like the outputPath of AddFilesToEmbeddedLibrary.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1681,
+     "title": "Grasshopper: library and MEP commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7661,14 +8461,19 @@
    "group": "Library Commands",
    "version": "1.7.3",
    "brief": "Copies the given files, keeping their names, into a folder of the embedded library with one library operation. The target folder is created when it is missing. With overwriteIfExists an item of the same name in that folder is replaced.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 4,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1681,
+     "title": "Grasshopper: library and MEP commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7742,14 +8547,19 @@
    "group": "Library Commands",
    "version": "1.7.3",
    "brief": "Checks whether each of the given strings is usable in GDL, e.g. before writing it into a GDL parameter or script. Returns one boolean for each string.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1681,
+     "title": "Grasshopper: library and MEP commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7757,14 +8567,19 @@
    "group": "Library Commands",
    "version": "1.7.3",
    "brief": "Sets and deletes the master, parameter, 2D, 3D, properties, interface and forward and backward migration scripts of loaded library parts. Only the given scripts are changed; an empty script makes the section empty, deleteScripts removes it. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. Available from Archicad 28.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 12,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1681,
+     "title": "Grasshopper: library and MEP commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7772,14 +8587,19 @@
    "group": "Library Commands",
    "version": "1.7.3",
    "brief": "Sets the author, keywords, license, license version, password and the placeable, UI default, subtype and hierarchical pages flags of loaded library parts. Only the given fields are changed. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. Available from Archicad 28.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 12,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1681,
+     "title": "Grasshopper: library and MEP commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7787,14 +8607,19 @@
    "group": "Library Commands",
    "version": "1.7.3",
    "brief": "Gets the preview picture and the GDL pictures of a loaded library part as base64 encoded PNGs, and from Archicad 29 also their dark user interface variants. Available from Archicad 28.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1681,
+     "title": "Grasshopper: library and MEP commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7802,14 +8627,19 @@
    "group": "Library Commands",
    "version": "1.7.3",
    "brief": "Deletes the preview picture, the GDL pictures (and from Archicad 29 their dark variants) or the 2D symbol of a loaded library part, or copies the 2D symbol from another library part. A library part that is not editable is refused and left unchanged. Available from Archicad 28.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 7,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1681,
+     "title": "Grasshopper: library and MEP commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7817,14 +8647,19 @@
    "group": "Library Commands",
    "version": "1.7.3",
    "brief": "Gets a custom section of a loaded library part by its section identifier and index: whether it exists, its data version and its content as base64. Available from Archicad 28.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1681,
+     "title": "Grasshopper: library and MEP commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7832,14 +8667,19 @@
    "group": "Library Commands",
    "version": "1.7.3",
    "brief": "Creates, replaces or deletes a custom section of a loaded library part. The content is given as base64. A library part that is not editable is refused and left unchanged. Available from Archicad 28.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 6,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1681,
+     "title": "Grasshopper: library and MEP commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7847,14 +8687,19 @@
    "group": "Library Commands",
    "version": "1.7.3",
    "brief": "Creates a new library part file (.gsm) of the given loaded subtype, inheriting its parameters, and reports whether it is loaded with its index and names. Available from Archicad 28.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1681,
+     "title": "Grasshopper: library and MEP commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -7914,7 +8759,12 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -7980,7 +8830,12 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -8003,7 +8858,12 @@
     "userId"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -8117,14 +8977,19 @@
    "group": "Teamwork Commands",
    "version": "1.7.3",
    "brief": "Returns whether the opened project is a Teamwork project and is online, the members of the shared project and who has reserved the Hotlink and XRef management. Works in a solo project too, then isShared and isOnline are false.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1676,
+     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -8132,14 +8997,19 @@
    "group": "Teamwork Commands",
    "version": "1.7.3",
    "brief": "Uploads local library folders or container files (.lcf) to a folder of a BIMcloud or Teamwork server, as BIMcloud libraries. Returns a result per library. Available from Archicad 29.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1676,
+     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -8147,14 +9017,19 @@
    "group": "Teamwork Commands",
    "version": "1.7.3",
    "brief": "Removes libraries, given by name, from a folder of a BIMcloud or Teamwork server. Returns a result per library. Available from Archicad 29.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1676,
+     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -8208,14 +9083,19 @@
    "group": "Navigator Commands",
    "version": "1.7.2",
    "brief": "Returns the full content box of the given Drawing elements, independent of their frames, as ACAPI_Drawing_GetFullDrawingContentBox reports it. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -8249,14 +9129,19 @@
    "group": "Navigator Commands",
    "version": "1.7.2",
    "brief": "Lists every database of the given types (sections, elevations, interior elevations, details, worksheets, 3D documents, layouts, master layouts) with its database ID, name and reference ID, without walking the navigator trees.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -8387,14 +9272,19 @@
    "group": "Navigator Commands",
    "version": "1.7.2",
    "brief": "Gets the settings of existing Layout Book subsets: the same fields CreateLayoutSubset accepts (name, ID prefix, numbering style, ...).",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -8543,14 +9433,19 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Gets the lines of the grid of the grid-based drawing numbering of the current layout (start and end point, pen index, line type index), for example to find which grid cell a drawing on the layout sits in. The current window must be a layout (see ChangeWindow), and only a layout that uses grid-based drawing numbering has such a grid.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -8583,14 +9478,19 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Finds a model view option combination by id or by name and returns its index, id, name and flags. The index is the one Archicad uses to switch the model view options of a window to the combination. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -8656,7 +9556,12 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -8680,7 +9585,12 @@
     "name"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -8700,7 +9610,12 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -8728,7 +9643,12 @@
     "storyIndex"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -8736,14 +9656,19 @@
    "group": "Navigator Commands",
    "version": "1.7.2",
    "brief": "Gets the Partial Structure Display (EntireStructure, CoreOnly, WithoutFinishes or StructureOnly) of the current window, and whether it is the 3D window. This is the setting of the window itself, not the one stored in a saved view (see GetViewSettings). Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -8751,14 +9676,19 @@
    "group": "Navigator Commands",
    "version": "1.7.2",
    "brief": "Sets the Partial Structure Display (EntireStructure, CoreOnly, WithoutFinishes or StructureOnly) of the current window, e.g. the floor plan, a section or the 3D window. The change cannot be undone. The saved view is not changed (see SetViewSettings for that). Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -8903,14 +9833,19 @@
    "group": "Navigator Commands",
    "version": "1.7.2",
    "brief": "Gets whether the 3D cut planes are on and the cut planes (pa, pb, pc, pd) of the 3D window, in the form accepted by Set3DCutPlanes.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -8918,14 +9853,19 @@
    "group": "Navigator Commands",
    "version": "1.7.2",
    "brief": "Gets the settings of 3D styles by name (an empty name or no names means the current 3D style): rendering engine, model type, monochrome and background colors, contours, shadows and hatching. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -8933,14 +9873,19 @@
    "group": "Navigator Commands",
    "version": "1.7.2",
    "brief": "Creates 3D styles. Each new style starts from the current 3D style and differs from it only in the given fields. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 23,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -8948,14 +9893,19 @@
    "group": "Navigator Commands",
    "version": "1.7.2",
    "brief": "Changes the given fields of existing 3D styles, identified by name. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 23,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -9005,14 +9955,19 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Gets the defaults a newly created 3D Document starts with: name, reference ID, vectorial hatching and sun shadows, transparency, connection to the model, surfaces, boundary contours and the uniform cut, uncut, shadow and hidden edge attributes.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -9020,14 +9975,19 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Sets the defaults a newly created 3D Document starts with. Only the given fields are changed; existing 3D Documents are not affected. The fields are the ones returned by GetDocumentFrom3DDefaults.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 27,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -9035,14 +9995,19 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Gets the 3D window settings: the pixel size of the 3D window and the zoom (scale and displacement) of its projection.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -9050,14 +10015,19 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Changes the pixel size of the 3D window and/or the zoom (scale and displacement) of its projection; the values not given are kept. Returns the settings read back after the change. Archicad may need a rebuild of the 3D window (RebuildView) before it shows the change, e.g. before SaveCurrentWindowAsImage.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 6,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -9065,14 +10035,23 @@
    "group": "Navigator Commands",
    "version": "1.3.1",
    "brief": "Zooms to the given elements or fits everything in the window.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    },
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -9080,14 +10059,19 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Zooms the current window, 2D or 3D, to the given elements: selects them, zooms to the selection and restores the previous selection unless keepSelection is false. Fails when none of the elements could be selected, e.g. all of them are on another story or on a hidden layer.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -9095,14 +10079,19 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Zooms the current 2D window to the given box in model coordinates.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -9110,14 +10099,19 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Steps back in the zoom history of the current window, like Archicad's Zoom Back.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -9174,14 +10168,19 @@
    "group": "Navigator Commands",
    "version": "1.1.7",
    "brief": "Moves a navigator item to a new parent in the navigator tree, or to a new position within its current parent. Fails when Archicad does not put the item where it was asked to.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -9229,14 +10228,19 @@
    "group": "Navigator Commands",
    "version": "1.1.7",
    "brief": "Returns the full navigator item tree for the specified map. With includeChildCount true every item also reports the number of its direct children.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -9244,14 +10248,19 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Returns the parent of each given navigator item: the folder, subset or layout book item it is in. The root of a map has no parent and gets an error.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -9259,14 +10268,19 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Sets which layout's context the master layout of the current window is drawn in: its autotexts then show the values of the given layout. The current window must be a master layout, otherwise an error is returned. It does not assign a master layout to a layout. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -9274,14 +10288,19 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Returns the roots of the add-on viewpoints: the Project Map items created through the Archicad API by an add-on, as Archicad lists them to Tapir. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -9289,14 +10308,19 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Returns the direct children of an add-on viewpoint root or group. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -9304,14 +10328,19 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Returns the details of the given add-on viewpoint items: their parent, type (Root, Group or Leaf), ID, name, view settings flags and attached data (base64 encoded). The output is aligned with the input array; an item that cannot be read gets an error. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -9319,14 +10348,19 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Creates add-on viewpoint roots, groups and leaf nodes in the Project Map, with their ID, name, view settings flags (leaf nodes only) and attached data (base64 encoded). A group or a leaf node is created in the given parent root or group. Returns the identifier of each new item, or an error for an item that could not be created. Roots and groups can't be created in a Teamwork project. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 8,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -9334,14 +10368,19 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Changes the ID, name, view settings flags or attached data (base64 encoded) of the given add-on viewpoint items; only the given fields are changed. Roots and groups can't be changed in a Teamwork project. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 7,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1682,
+     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -9349,14 +10388,19 @@
    "group": "Graphic Override Commands",
    "version": "1.7.2",
    "brief": "Creates or overwrites a graphic override rule in a rule group: name, criterion XML, surface color and line pen. Needs Archicad 27 or later.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 9,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1676,
+     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -9364,14 +10408,19 @@
    "group": "Graphic Override Commands",
    "version": "1.7.2",
    "brief": "Returns every graphic override rule with its criterion XML. Needs Archicad 27 or later.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1676,
+     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -9379,14 +10428,19 @@
    "group": "Graphic Override Commands",
    "version": "1.7.2",
    "brief": "Creates a graphic override combination from rule names, or replaces the rules of an existing one. Needs Archicad 27 or later.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1676,
+     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -9408,7 +10462,12 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -9662,7 +10721,12 @@
     "pdfFilePath"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -9710,14 +10774,19 @@
    "group": "Revision Management Commands",
    "version": "1.7.3",
    "brief": "Retrieves the custom fields of changes (the change custom scheme): the key and the name of each field. The keys are the customSchemeKey values in the customSchemeData of changes.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1678,
+     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -9983,14 +11052,19 @@
    "group": "Design Options Commands",
    "version": "1.7.3",
    "brief": "Activates one design option in each of the given combinations, without listing all active design options of the combination. Available from Archicad 29.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1678,
+     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -9998,14 +11072,19 @@
    "group": "Design Options Commands",
    "version": "1.7.3",
    "brief": "Turns off the given design options in the given combinations, leaving their other options as they are. Available from Archicad 29.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1678,
+     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -10214,7 +11293,12 @@
     "designOptionId"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -10238,7 +11322,12 @@
     "designOptionSets.designOptionSetId"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -10262,7 +11351,12 @@
     "designOptions.designOptionId"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -10270,14 +11364,19 @@
    "group": "Design Options Commands",
    "version": "1.7.3",
    "brief": "Duplicates the given design option combinations and returns the identifiers of the new combinations. Available from Archicad 29.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1678,
+     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -10501,14 +11600,19 @@
    "group": "Project Data Commands",
    "version": "1.7.3",
    "brief": "Lists the project data stored by Tapir in the project: the names, the identifiers of the add-on objects that store them, whether they are kept on this client only and the Teamwork user who has reserved them. Project data is text (for example JSON) saved in the project file by scripts and Grasshopper definitions, such as their settings or the mapping of elements to an external system.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -10516,14 +11620,19 @@
    "group": "Project Data Commands",
    "version": "1.7.3",
    "brief": "Gets the content of the project data with the given names.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -10531,14 +11640,19 @@
    "group": "Project Data Commands",
    "version": "1.7.3",
    "brief": "Creates or overwrites project data: text (for example JSON) saved in the project under a name. New project data can be kept on this client only, or created as unique so that in Teamwork only one can exist with its name. Prefix the names with the name of your tool (for example 'my-tool/settings') so scripts do not overwrite each other's data.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 5,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -10546,14 +11660,19 @@
    "group": "Project Data Commands",
    "version": "1.7.3",
    "brief": "Deletes the project data with the given names.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -10561,14 +11680,19 @@
    "group": "Project Data Commands",
    "version": "1.7.3",
    "brief": "Reserves the project data with the given names in Teamwork, so that other users cannot change it. Returns the users who have already reserved some of it.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -10576,14 +11700,19 @@
    "group": "Project Data Commands",
    "version": "1.7.3",
    "brief": "Releases the project data with the given names in Teamwork.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -10591,14 +11720,19 @@
    "group": "Project Data Commands",
    "version": "1.7.3",
    "brief": "Requests the project data with the given names in Teamwork from the users who have reserved it, with an optional message.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -10606,14 +11740,19 @@
    "group": "Project Data Commands",
    "version": "1.7.3",
    "brief": "Grants the project data with the given names, reserved by the current user, to another Teamwork user.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1679,
+     "title": "Grasshopper: project and project data commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -10809,14 +11948,19 @@
    "group": "MEP Commands",
    "version": "1.7.3",
    "brief": "Modifies the given MEP ports (as returned by GetMEPPorts): shape, connection style (from Archicad 30), the flow direction of piping and ventilation ports, and the outer diameter and nominal size (from Archicad 30) of piping ports. Only the given fields are changed. Available from Archicad 28.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 7,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1681,
+     "title": "Grasshopper: library and MEP commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -10848,14 +11992,19 @@
    "group": "MEP Commands",
    "version": "1.7.3",
    "brief": "Checks whether MEP ports can be connected to other ports, for the given pairs of ports. Archicad 28 and later check the physical connection. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1681,
+     "title": "Grasshopper: library and MEP commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -10887,14 +12036,19 @@
    "group": "MEP Commands",
    "version": "1.7.3",
    "brief": "Modifies the MEP preference tables of a domain, in the shape GetMEPPreferenceTables returns them: adds tables, changes their names, segmentation lengths (from Archicad 29) and row values and descriptions, deletes or empties rows, adds rows to the rectangular duct and cable carrier tables, deletes tables, and deletes reference ids from the reference set and angles from the angle set (from Archicad 29). Each table is changed in one undoable step. Available from Archicad 28.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 8,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1681,
+     "title": "Grasshopper: library and MEP commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -10914,7 +12068,12 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -10937,7 +12096,12 @@
     "systemGroupsData.name"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -10963,7 +12127,12 @@
     "physicalSystemsData.systemGroupId"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -10971,14 +12140,19 @@
    "group": "MEP Commands",
    "version": "1.7.3",
    "brief": "Renames MEP system groups. Available from Archicad 29.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1681,
+     "title": "Grasshopper: library and MEP commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -10986,14 +12160,19 @@
    "group": "MEP Commands",
    "version": "1.7.3",
    "brief": "Modifies MEP physical systems: name, root element and the MEP system used as their category. Only the given fields are changed. Available from Archicad 29.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 5,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1681,
+     "title": "Grasshopper: library and MEP commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11001,14 +12180,19 @@
    "group": "MEP Commands",
    "version": "1.7.3",
    "brief": "Removes MEP physical systems from their system groups. Their member elements are not deleted. Available from Archicad 29.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1681,
+     "title": "Grasshopper: library and MEP commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11367,14 +12551,19 @@
    "group": "MEP Commands",
    "version": "1.7.3",
    "brief": "Retrieves the type-specific details of the given MEP elements: insulation thickness and routing segment of rigid segments, control points of flexible segments, radius factor, insulation thickness, preference table and routing node of elbows (from Archicad 29), angle, length and insulation thickness of branches, and offsets, wider and narrower ports, insulation thickness, routing node and (from Archicad 29) preference table of transitions. Available from Archicad 28.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1681,
+     "title": "Grasshopper: library and MEP commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11382,14 +12571,19 @@
    "group": "MEP Commands (extended)",
    "version": "1.7.3",
    "brief": "Gets rows of a segment, branch, elbow or (from Archicad 29) transition preference table by their key (the reference ids and, for branch and elbow rows from Archicad 29, the angle): whether the row is valid and its values (diameters, wall thickness, radius, length, angle, branch offset, connection length, description), and whether the table exists. Rectangular duct and cable carrier segment tables only give whether they exist, as their rows have no key. On Archicad 27, which has one kind of preference table, a row is found by its shape and index and has a value and a description; the table's name and number of rows per shape are returned too. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 12,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1681,
+     "title": "Grasshopper: library and MEP commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11397,14 +12591,19 @@
    "group": "MEP Commands (extended)",
    "version": "1.7.3",
    "brief": "Sets the given values of rows of a segment, branch, elbow or (from Archicad 29) transition preference table, found by their key (the reference ids and, for branch and elbow rows from Archicad 29, the angle). Only the given values are changed, in one undo step. On Archicad 27 a row is found by its shape and index, its value and description are set, and its index after the call is returned; the keys give the indices before the call. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 26,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1681,
+     "title": "Grasshopper: library and MEP commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11412,14 +12611,19 @@
    "group": "MEP Commands (extended)",
    "version": "1.7.3",
    "brief": "Adds rows with the given keys and optionally values to a branch, elbow or transition preference table and returns their index, in one undo step. Branch tables from Archicad 28, elbow and transition tables from Archicad 29; segment tables have a row for each reference id. On Archicad 27 a row is added to the list of the given shape of any preference table, and the index of each new row after the call is returned. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 26,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1681,
+     "title": "Grasshopper: library and MEP commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11427,14 +12631,19 @@
    "group": "MEP Commands (extended)",
    "version": "1.7.3",
    "brief": "Deletes rows of a segment, branch, elbow or (from Archicad 29) transition preference table by their key (the reference ids and, for branch and elbow rows from Archicad 29, the angle), in one undo step. The rows of segment tables, and of the elbow tables of Archicad 28, are emptied instead. On Archicad 27 a row is found by its shape and index. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 12,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1681,
+     "title": "Grasshopper: library and MEP commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11442,14 +12651,19 @@
    "group": "MEP Commands (extended)",
    "version": "1.7.3",
    "brief": "Lists the preference tables of the Piping, Ventilation and Cable Carrier preference table containers of Archicad 27: their id, name, whether they exist and their number of rows per shape, and whether the container exists. Only for Archicad 27; from Archicad 28 use GetMEPPreferenceTables.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1681,
+     "title": "Grasshopper: library and MEP commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11457,14 +12671,19 @@
    "group": "MEP Commands (extended)",
    "version": "1.7.3",
    "brief": "Adds empty preference tables with the given names to the preference table container of a domain of Archicad 27 and returns their id, in one undo step. Only for Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1681,
+     "title": "Grasshopper: library and MEP commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11472,14 +12691,19 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Retrieves the Structural Analytical Model created for the current view. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1683,
+     "title": "Grasshopper: analytical model and load commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11487,14 +12711,19 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Triggers an update of the given Structural Analytical Model, or of the model of the current view when no model is given. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1683,
+     "title": "Grasshopper: analytical model and load commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11502,14 +12731,19 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Sets the generation settings of the current Structural Analytical Model to no rules. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1683,
+     "title": "Grasshopper: analytical model and load commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11517,14 +12751,19 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Retrieves the type identifier of the Structural Analytical Model check. Available from Archicad 29.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1683,
+     "title": "Grasshopper: analytical model and load commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11532,14 +12771,19 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Retrieves the variation of the given Structural Analytical Model, or of the model of the current view when no model is given (the model is required before Archicad 27). The fields of the variation depend on the Archicad version.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1683,
+     "title": "Grasshopper: analytical model and load commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11547,14 +12791,19 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Retrieves the Structural Analytical Model of the given variation, as returned by GetAnalyticalModelVariation.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1683,
+     "title": "Grasshopper: analytical model and load commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11562,14 +12811,19 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Retrieves the visibility settings of the Structural Analytical Model. Available from Archicad 26.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1683,
+     "title": "Grasshopper: analytical model and load commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11577,14 +12831,19 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Changes the given fields of the Structural Analytical Model visibility settings; the others keep their value. Available from Archicad 26.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1683,
+     "title": "Grasshopper: analytical model and load commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11592,14 +12851,19 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Retrieves the analytical member type (Beam, Column, Roof, Slab, Wall or Unknown) of the given elements.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1683,
+     "title": "Grasshopper: analytical model and load commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11607,14 +12871,19 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Retrieves the structural analysis load groups of the project with all their fields.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1683,
+     "title": "Grasshopper: analytical model and load commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11622,14 +12891,19 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Retrieves the structural analysis load cases of the given load group, or of the project when no load group is given, with all their fields.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1683,
+     "title": "Grasshopper: analytical model and load commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11637,14 +12911,19 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Retrieves the structural analysis load combinations of the project with all their fields and load factors.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1683,
+     "title": "Grasshopper: analytical model and load commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11652,14 +12931,19 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Creates structural analysis load groups in one undo step and returns their identifiers.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 5,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1683,
+     "title": "Grasshopper: analytical model and load commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11667,14 +12951,19 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Creates structural analysis load cases in the given load groups in one undo step and returns their identifiers.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 7,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1683,
+     "title": "Grasshopper: analytical model and load commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11682,14 +12971,19 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Creates structural analysis load combinations, optionally with their load factors, in one undo step and returns their identifiers. The combination type is available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 7,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1683,
+     "title": "Grasshopper: analytical model and load commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11697,14 +12991,19 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Deletes the given structural analysis load groups in one undo step.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1683,
+     "title": "Grasshopper: analytical model and load commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11712,14 +13011,19 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Deletes the given structural analysis load cases in one undo step.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1683,
+     "title": "Grasshopper: analytical model and load commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11727,14 +13031,19 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Deletes the given structural analysis load combinations in one undo step.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1683,
+     "title": "Grasshopper: analytical model and load commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11742,14 +13051,19 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Adds load cases with their factors to the given structural analysis load combination in one undo step.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1683,
+     "title": "Grasshopper: analytical model and load commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11823,14 +13137,19 @@
    "group": "Solid Element Operation Commands",
    "version": "1.7.3",
    "brief": "Runs a solid operation (subtraction, intersection, addition) on two morphs and returns the resulting morphs, one item per operation. Unlike CreateSolidElementLinks this is not a link: the target and the operator morph are replaced by the result. Morphs only; the operations run in one undo step.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 4,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1676,
+     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11908,14 +13227,19 @@
    "group": "Solid Element Operation Commands",
    "version": "1.7.3",
    "brief": "Merges the given construction elements (the Merge command of Archicad, which cleans up the junctions of slabs, beams, walls and similar elements). Undoable. The element types are not filtered: Archicad reports the ones it cannot merge.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1676,
+     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11923,14 +13247,19 @@
    "group": "Solid Element Operation Commands",
    "version": "1.7.3",
    "brief": "Removes the merge between the two elements of each given pair. Undoable; one execution result per pair.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1676,
+     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11938,14 +13267,19 @@
    "group": "Solid Element Operation Commands",
    "version": "1.7.3",
    "brief": "Gets the elements each queried element is merged with, one item per queried element; an unknown element is an error item.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1676,
+     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11953,14 +13287,19 @@
    "group": "Script UI Commands",
    "version": "1.5.4",
    "brief": "Shows the given HTML content in a native Archicad palette (a tkinter alternative for Python scripts).",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 13,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1678,
+     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11968,14 +13307,19 @@
    "group": "Script UI Commands",
    "version": "1.5.4",
    "brief": "Retrieves and clears the result last submitted from the Script UI palette's page (via window.ACAPI.SubmitResult), if any, and reports whether the palette is still open, so a waiting script can stop when the user closes it.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1678,
+     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+    }
+   ],
    "issues": []
   },
   {
