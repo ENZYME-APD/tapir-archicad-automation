@@ -216,16 +216,17 @@ inline GSErrCode ACAPI_Rendering_PhotoRender (const API_PhotoRenderPars* photoRe
 // The rendering settings calls of AC27+ (ACAPI_Rendering.h), on the pre-27 dispatcher:
 // APIEnv_GetRenderingSetsID and APIEnv_ChangeRenderingSetsID of APIdefs_Environment.h
 // take the settings structure (API_RendImage for APIRendSet_ImageID, API_RendEffects for
-// APIRendSet_EffectsID) as par1 and the settings type as par2, by pointer; the get form
-// takes the scene name as par3, nullptr being the current scene.
+// APIRendSet_EffectsID) as par1 and the settings type as par2, by value cast to a pointer
+// (as the AC27 ACAPI_MigrationHeader.hpp reads it back); the get form takes the scene
+// name as par3, nullptr being the current scene.
 inline GSErrCode ACAPI_Rendering_GetRenderingSets (void* rendInfo, API_RendSetTypeID rendSetType, const GS::UniString* sceneName = nullptr)
 {
-    return ACAPI_Environment (APIEnv_GetRenderingSetsID, rendInfo, &rendSetType, (void*) sceneName);
+    return ACAPI_Environment (APIEnv_GetRenderingSetsID, rendInfo, (void*) (GS::IntPtr) rendSetType, (void*) sceneName);
 }
 
 inline GSErrCode ACAPI_Rendering_ChangeRenderingSets (const void* rendInfo, API_RendSetTypeID rendSetType)
 {
-    return ACAPI_Environment (APIEnv_ChangeRenderingSetsID, (void*) rendInfo, &rendSetType);
+    return ACAPI_Environment (APIEnv_ChangeRenderingSetsID, (void*) rendInfo, (void*) (GS::IntPtr) rendSetType);
 }
 
 inline GSErrCode ACAPI_View_ZoomToElements (const GS::Array<API_Guid>* elemIds)
