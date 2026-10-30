@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 57 % | 82 | 39 | 8 | 13 | 3 | 19 |  | 57 |
 | C++ API (ACAPI::, IFCAPI::) | 80 % | 1436 | 679 | 476 | 248 | 32 | 1 |  | 391 |
 
-Archicad 25–30 DevKits; updated 2026-10-30 00:20 UTC.
+Archicad 25–30 DevKits; updated 2026-10-30 06:26 UTC.
 
 | | Status |
 |---|---|
@@ -122,7 +122,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_AddClassificationItem` – Classifies an element. — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
 - ✅ `ACAPI_Element_AddClassificationItemDefault` – Classifies an element.
 - ✅ `ACAPI_Element_AttachObserver` – Attaches an observer to the given element.
-- ✅ `ACAPI_Element_CalcBounds` – Returns the model extent of an element in the current database. <sub>(was `APIDb_CalcBoundsID`)</sub> — [#1570](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1570 "Get3DBoundingBoxes: return an error instead of inverted ±1e35 bounds"), [#1011](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1011 "Support Archicad 29 and 30 in ModifyOpenings")
+- ✅ `ACAPI_Element_CalcBounds` – Returns the model extent of an element in the current database. <sub>(was `APIDb_CalcBoundsID`)</sub> — [#1011](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1011 "Support Archicad 29 and 30 in ModifyOpenings")
 - ✅ `ACAPI_Element_CalcCoreOffsetToSideOffset` – Converts the reveal depth offset from core skin to wall side for wall openings. <sub>(was `APIAny_CalcCoreOffsetToSideOffsetID`)</sub>
 - ✅ `ACAPI_Element_CalcSideOffsetToCoreOffset` – Converts the reveal depth offset from wall side to core skin for wall openings. <sub>(was `APIAny_CalcSideOffsetToCoreOffsetID`)</sub>
 - ➖ `ACAPI_Element_CatchChangeDefaults` – Register or unregister your add-on to be notified if the default settings of a given element type is modified. <sub>(was `ACAPI_Notify_CatchChangeDefaults`)</sub> *(event handlers, not commands)*
