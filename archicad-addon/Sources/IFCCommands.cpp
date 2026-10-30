@@ -4,6 +4,7 @@
 
 #ifdef ServerMainVers_2800
 #include "ACAPI/IFCAttribute.hpp"
+#include "ACAPI/IFCClassificationReference.hpp"
 #include "ACAPI/IFCObjectAccessor.hpp"
 #include "ACAPI/IFCObjectID.hpp"
 #include "ACAPI/IFCProperty.hpp"
@@ -1465,4 +1466,533 @@ GS::ObjectState GetIFCExportTranslatorsCommand::Execute (const GS::ObjectState& 
     }
 
     return response;
+}
+
+GetIFCClassificationReferencesOfElementsCommand::GetIFCClassificationReferencesOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetIFCClassificationReferencesOfElementsCommand::GetName () const
+{
+    return "GetIFCClassificationReferencesOfElements";
+}
+
+GS::Optional<GS::UniString> GetIFCClassificationReferencesOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "storedOnly": {
+                "type": "boolean",
+                "description": "Return only the classification references stored on the elements, not the ones Archicad would generate on IFC export. Used only in Archicad 25, 26 and 27. Default: false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetIFCClassificationReferencesOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementIFCClassificationReferences": {
+                "$ref": "#/ElementIFCClassificationReferencesOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementIFCClassificationReferences"
+        ]
+    })";
+}
+
+#ifdef ServerMainVers_2800
+// Values the IFC API gives as std::nullopt are left out of the object
+static void AddOptionalString (GS::ObjectState& os, const char* name, const std::optional<GS::UniString>& value)
+{
+    if (value.has_value ()) {
+        os.Add (name, *value);
+    }
+}
+
+static GS::ObjectState ClassificationReferenceToObjectState (const IFCAPI::ClassificationReference& classificationReference, const char* source)
+{
+    GS::ObjectState ifcClassificationReference;
+    AddOptionalString (ifcClassificationReference, "identification", classificationReference.GetIdentification ());
+    AddOptionalString (ifcClassificationReference, "name", classificationReference.GetName ());
+    AddOptionalString (ifcClassificationReference, "location", classificationReference.GetLocation ());
+#ifdef ServerMainVers_2900
+    AddOptionalString (ifcClassificationReference, "description", classificationReference.GetDescription ());
+#endif
+
+    const IFCAPI::Classification referencedSource = classificationReference.GetReferencedSource ();
+    GS::ObjectState referencedSourceObject ("name", referencedSource.GetName ());
+    AddOptionalString (referencedSourceObject, "source", referencedSource.GetSource ());
+    AddOptionalString (referencedSourceObject, "edition", referencedSource.GetEdition ());
+    ifcClassificationReference.Add ("referencedSource", referencedSourceObject);
+
+    ifcClassificationReference.Add ("source", GS::UniString (source));
+    return ifcClassificationReference;
+}
+#else
+// Empty texts are left out of the object, as the IFCAPI leaves out the values it does not have
+static void AddNonEmptyString (GS::ObjectState& os, const char* name, const GS::UniString& value)
+{
+    if (!value.IsEmpty ()) {
+        os.Add (name, value);
+    }
+}
+
+// Archicad 26 and 27 give the texts as GS::Optional, Archicad 25 as GS::UniString
+template <typename T>
+static void AddNonEmptyString (GS::ObjectState& os, const char* name, const GS::Optional<T>& value)
+{
+    if (value.HasValue ()) {
+        AddNonEmptyString (os, name, *value);
+    }
+}
+
+static GS::ObjectState ClassificationReferenceToObjectState (const API_IFCClassificationReference& classificationReference)
+{
+    GS::ObjectState ifcClassificationReference;
+    AddNonEmptyString (ifcClassificationReference, "identification", classificationReference.identification);
+    AddNonEmptyString (ifcClassificationReference, "name", classificationReference.name);
+    AddNonEmptyString (ifcClassificationReference, "location", classificationReference.location);
+
+    const API_IFCClassification& referencedSource = classificationReference.referencedSource;
+    GS::ObjectState referencedSourceObject ("name", referencedSource.name);
+    AddNonEmptyString (referencedSourceObject, "edition", referencedSource.edition);
+    AddNonEmptyString (referencedSourceObject, "editionDate", referencedSource.editionDate);
+    AddNonEmptyString (referencedSourceObject, "description", referencedSource.description);
+    AddNonEmptyString (referencedSourceObject, "location", referencedSource.location);
+    ifcClassificationReference.Add ("referencedSource", referencedSourceObject);
+
+    return ifcClassificationReference;
+}
+#endif
+
+GS::ObjectState GetIFCClassificationReferencesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+#ifndef ServerMainVers_2800
+    bool storedOnly = false;
+    parameters.Get ("storedOnly", storedOnly);
+#endif
+
+    GS::ObjectState response;
+    const auto& elementIFCClassificationReferences = response.AddList<GS::ObjectState> ("elementIFCClassificationReferences");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            elementIFCClassificationReferences (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+        API_Elem_Head elemHeader;
+        if (!LoadElementHeaderByGuid (elemGuid, elemHeader)) {
+            elementIFCClassificationReferences (CreateErrorResponse (APIERR_BADPARS, "The given element was not found"));
+            continue;
+        }
+
+#ifdef ServerMainVers_2800
+        auto objectID = IFCAPI::GetObjectAccessor ().CreateElementObjectID (elemHeader);
+        if (objectID.IsErr ()) {
+            elementIFCClassificationReferences (CreateErrorResponse (objectID.UnwrapErr ().kind, "Failed to get IFC accessor for the element"));
+            continue;
+        }
+        IFCAPI::PropertyAccessor propertyAccessor = IFCAPI::PropertyAccessor (*objectID);
+        auto previewReferences = propertyAccessor.GetPreviewClassificationReferences ();
+        auto localReferences = propertyAccessor.GetLocalClassificationReferences ();
+        if (previewReferences.IsErr () && localReferences.IsErr ()) {
+            elementIFCClassificationReferences (CreateErrorResponse (previewReferences.UnwrapErr ().kind, "Failed to get the IFC classification references of the element"));
+            continue;
+        }
+
+        GS::ObjectState elemIFCClassificationReferences = CreateElementIdObjectState (elemGuid);
+        const auto& ifcClassificationReferences = elemIFCClassificationReferences.AddList<GS::ObjectState> ("ifcClassificationReferences");
+        if (previewReferences.IsOk ()) {
+            for (const auto& classificationReference : previewReferences.Unwrap ()) {
+                ifcClassificationReferences (ClassificationReferenceToObjectState (classificationReference, "preview"));
+            }
+        }
+        if (localReferences.IsOk ()) {
+            for (const auto& classificationReference : localReferences.Unwrap ()) {
+                ifcClassificationReferences (ClassificationReferenceToObjectState (classificationReference, "local"));
+            }
+        }
+
+        elementIFCClassificationReferences (elemIFCClassificationReferences);
+#else
+        GS::Array<API_IFCClassificationReference> classificationReferences;
+        const GSErrCode err = ACAPI_Element_GetIFCClassificationReferences (elemGuid, storedOnly, &classificationReferences);
+        if (err != NoError) {
+            elementIFCClassificationReferences (CreateErrorResponse (err, "Failed to get the IFC classification references of the element"));
+            continue;
+        }
+
+        GS::ObjectState elemIFCClassificationReferences = CreateElementIdObjectState (elemGuid);
+        const auto& ifcClassificationReferences = elemIFCClassificationReferences.AddList<GS::ObjectState> ("ifcClassificationReferences");
+        for (const API_IFCClassificationReference& classificationReference : classificationReferences) {
+            ifcClassificationReferences (ClassificationReferenceToObjectState (classificationReference));
+        }
+
+        elementIFCClassificationReferences (elemIFCClassificationReferences);
+#endif
+    }
+
+    return response;
+}
+
+SetIFCClassificationReferencesOfElementsCommand::SetIFCClassificationReferencesOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetIFCClassificationReferencesOfElementsCommand::GetName () const
+{
+    return "SetIFCClassificationReferencesOfElements";
+}
+
+GS::Optional<GS::UniString> SetIFCClassificationReferencesOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementIFCClassificationReferences": {
+                "type": "array",
+                "description": "The IFC classification references to store on the elements.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "identification": {
+                            "type": "string",
+                            "description": "The identification of the classification reference, for example a classification code. Default: empty."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the classification reference. Default: empty."
+                        },
+                        "location": {
+                            "type": "string",
+                            "description": "The location of the classification reference, for example a URL. Default: empty."
+                        },
+                        "referencedSource": {
+                            "type": "object",
+                            "description": "The classification (IfcClassification) the reference belongs to.",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "The name of the classification."
+                                },
+                                "edition": {
+                                    "type": "string",
+                                    "description": "The edition of the classification. Default: empty."
+                                },
+                                "editionDate": {
+                                    "type": "string",
+                                    "description": "The edition date of the classification. Default: empty."
+                                },
+                                "description": {
+                                    "type": "string",
+                                    "description": "The description of the classification. Default: empty."
+                                },
+                                "location": {
+                                    "type": "string",
+                                    "description": "The location of the classification, for example a URL. Default: empty."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "name"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "referencedSource"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementIFCClassificationReferences"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetIFCClassificationReferencesOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetIFCClassificationReferencesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    UNUSED_PARAMETER (parameters);
+    // The IFCAPI introduced in Archicad 28 replaced ACAPI_Element_SetIFCClassificationReference without a write counterpart here yet
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Writing IFC classification references is not supported in Archicad 28 and newer yet.");
+#else
+    GS::Array<GS::ObjectState> elementIFCClassificationReferences;
+    parameters.Get ("elementIFCClassificationReferences", elementIFCClassificationReferences);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    struct SettableIFCClassificationReference {
+        API_Guid                        elemGuid;
+        API_IFCClassificationReference  classificationReference;
+        UIndex                          resultIndex;
+    };
+
+    GS::Array<GS::ObjectState> results (elementIFCClassificationReferences.GetSize ());
+    GS::Array<SettableIFCClassificationReference> referencesToSet;
+
+    for (const GS::ObjectState& elementIFCClassificationReference : elementIFCClassificationReferences) {
+        const GS::ObjectState* elementId = elementIFCClassificationReference.Get ("elementId");
+        if (elementId == nullptr) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        const GS::ObjectState* referencedSource = elementIFCClassificationReference.Get ("referencedSource");
+        GS::UniString referencedSourceName;
+        if (referencedSource == nullptr || !referencedSource->Get ("name", referencedSourceName) || referencedSourceName.IsEmpty ()) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "referencedSource.name is missing"));
+            continue;
+        }
+
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+        API_Elem_Head elemHeader;
+        if (!LoadElementHeaderByGuid (elemGuid, elemHeader)) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "The given element was not found"));
+            continue;
+        }
+
+        // Missing texts stay empty
+        API_IFCClassificationReference classificationReference = {};
+        elementIFCClassificationReference.Get ("identification", classificationReference.identification);
+        elementIFCClassificationReference.Get ("name", classificationReference.name);
+        elementIFCClassificationReference.Get ("location", classificationReference.location);
+        classificationReference.referencedSource.name = referencedSourceName;
+        referencedSource->Get ("edition", classificationReference.referencedSource.edition);
+        referencedSource->Get ("editionDate", classificationReference.referencedSource.editionDate);
+        referencedSource->Get ("description", classificationReference.referencedSource.description);
+        referencedSource->Get ("location", classificationReference.referencedSource.location);
+
+        referencesToSet.Push ({ elemGuid, classificationReference, results.GetSize () });
+        results.PushNew ();
+    }
+
+    ACAPI_CallUndoableCommand ("SetIFCClassificationReferencesOfElementsCommand", [&]() -> GSErrCode {
+        for (const SettableIFCClassificationReference& referenceToSet : referencesToSet) {
+            const GSErrCode err = ACAPI_Element_SetIFCClassificationReference (referenceToSet.elemGuid, referenceToSet.classificationReference);
+            results[referenceToSet.resultIndex] = err == NoError
+                ? CreateSuccessfulExecutionResult ()
+                : CreateFailedExecutionResult (err, "Failed to set the IFC classification reference for the element");
+        }
+        return NoError;
+    });
+
+    for (const GS::ObjectState& result : results) {
+        executionResults (result);
+    }
+
+    return response;
+#endif
+}
+
+RemoveIFCClassificationReferencesOfElementsCommand::RemoveIFCClassificationReferencesOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RemoveIFCClassificationReferencesOfElementsCommand::GetName () const
+{
+    return "RemoveIFCClassificationReferencesOfElements";
+}
+
+GS::Optional<GS::UniString> RemoveIFCClassificationReferencesOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementIFCClassificationReferences": {
+                "type": "array",
+                "description": "The IFC classification references to remove from the elements. Only references stored on the elements (the ones GetIFCClassificationReferencesOfElements returns with storedOnly) can be removed.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "referencedSource": {
+                            "type": "object",
+                            "description": "The classification (IfcClassification) the reference belongs to.",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "The name of the classification."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "name"
+                            ]
+                        },
+                        "identification": {
+                            "type": "string",
+                            "description": "The identification of the classification reference to remove. When it is not given, every stored reference of the classification is removed from the element."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "referencedSource"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementIFCClassificationReferences"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> RemoveIFCClassificationReferencesOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState RemoveIFCClassificationReferencesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    UNUSED_PARAMETER (parameters);
+    // The IFCAPI introduced in Archicad 28 replaced ACAPI_Element_RemoveIFCClassificationReference without a write counterpart here yet
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Removing IFC classification references is not supported in Archicad 28 and newer yet.");
+#else
+    GS::Array<GS::ObjectState> elementIFCClassificationReferences;
+    parameters.Get ("elementIFCClassificationReferences", elementIFCClassificationReferences);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    struct RemovableIFCClassificationReferences {
+        API_Guid                                        elemGuid;
+        GS::Array<API_IFCClassificationReference>       classificationReferences;
+        UIndex                                          resultIndex;
+    };
+
+    GS::Array<GS::ObjectState> results (elementIFCClassificationReferences.GetSize ());
+    GS::Array<RemovableIFCClassificationReferences> referencesToRemove;
+
+    for (const GS::ObjectState& elementIFCClassificationReference : elementIFCClassificationReferences) {
+        const GS::ObjectState* elementId = elementIFCClassificationReference.Get ("elementId");
+        if (elementId == nullptr) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        const GS::ObjectState* referencedSource = elementIFCClassificationReference.Get ("referencedSource");
+        GS::UniString referencedSourceName;
+        if (referencedSource == nullptr || !referencedSource->Get ("name", referencedSourceName) || referencedSourceName.IsEmpty ()) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "referencedSource.name is missing"));
+            continue;
+        }
+
+        GS::UniString identification;
+        const bool hasIdentification = elementIFCClassificationReference.Get ("identification", identification);
+
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+        API_Elem_Head elemHeader;
+        if (!LoadElementHeaderByGuid (elemGuid, elemHeader)) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "The given element was not found"));
+            continue;
+        }
+
+        // Remove the stored references exactly as Archicad gives them, so they are found
+        GS::Array<API_IFCClassificationReference> storedReferences;
+        const GSErrCode err = ACAPI_Element_GetIFCClassificationReferences (elemGuid, true, &storedReferences);
+        if (err != NoError) {
+            results.Push (CreateFailedExecutionResult (err, "Failed to get the IFC classification references of the element"));
+            continue;
+        }
+
+        GS::Array<API_IFCClassificationReference> matchingReferences;
+        for (const API_IFCClassificationReference& storedReference : storedReferences) {
+            if (storedReference.referencedSource.name == referencedSourceName &&
+                (!hasIdentification || storedReference.identification == identification)) {
+                matchingReferences.Push (storedReference);
+            }
+        }
+        if (matchingReferences.IsEmpty ()) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "The element has no stored IFC classification reference of the given classification and identification"));
+            continue;
+        }
+
+        referencesToRemove.Push ({ elemGuid, matchingReferences, results.GetSize () });
+        results.PushNew ();
+    }
+
+    ACAPI_CallUndoableCommand ("RemoveIFCClassificationReferencesOfElementsCommand", [&]() -> GSErrCode {
+        for (const RemovableIFCClassificationReferences& referenceToRemove : referencesToRemove) {
+            GSErrCode err = NoError;
+            for (const API_IFCClassificationReference& classificationReference : referenceToRemove.classificationReferences) {
+                err = ACAPI_Element_RemoveIFCClassificationReference (referenceToRemove.elemGuid, classificationReference);
+                if (err != NoError) {
+                    break;
+                }
+            }
+            results[referenceToRemove.resultIndex] = err == NoError
+                ? CreateSuccessfulExecutionResult ()
+                : CreateFailedExecutionResult (err, "Failed to remove the IFC classification reference from the element");
+        }
+        return NoError;
+    });
+
+    for (const GS::ObjectState& result : results) {
+        executionResults (result);
+    }
+
+    return response;
+#endif
 }
