@@ -66,7 +66,8 @@ enum class SectionAssociativeDimensionPreset {
     BeamOrColumnRefLineEndPoints,
     BeamOrColumnBoundingBoxCorners,
     DoorWindowWallHoleCorners,
-    DoorWindowModelHotspots
+    DoorWindowModelHotspots,
+    OpeningEdges
 };
 
 GS::Optional<double> GetOptionalDouble (const GS::ObjectState& parameters, const char* fieldName)
@@ -790,6 +791,8 @@ GS::Optional<GS::UniString> ParseSectionAssociativeDimensionPreset (
         preset = SectionAssociativeDimensionPreset::DoorWindowWallHoleCorners;
     } else if (presetName == "DoorWindowModelHotspots") {
         preset = SectionAssociativeDimensionPreset::DoorWindowModelHotspots;
+    } else if (presetName == "OpeningEdges") {
+        preset = SectionAssociativeDimensionPreset::OpeningEdges;
     } else {
         return "Invalid 'preset' value for section associative dimension.";
     }
@@ -839,6 +842,14 @@ void AddSectionAssociativePoint (
     point.nodeType = nodeType;
     point.nodeStatus = nodeStatus;
     point.nodeId = nodeId;
+    points.Push (point);
+}
+
+void AddSectionStaticPoint (GS::Array<AssociativeDimensionPoint>& points, double x, double y)
+{
+    AssociativeDimensionPoint point;
+    point.isStatic = true;
+    point.coordinate = {x, y};
     points.Push (point);
 }
 
@@ -988,6 +999,44 @@ GS::Optional<GS::UniString> AppendSectionAssociativeDimensionPoints (
             defaultDirection = {1.0, 0.0};
             AddSectionAssociativePoint (points, sectionElement.header.guid, false, 0, 0, 11111);
             AddSectionAssociativePoint (points, sectionElement.header.guid, false, 0, 0, 11113);
+            break;
+        }
+
+        case SectionAssociativeDimensionPreset::OpeningEdges: {
+            auto error = requireParentType ({API_OpeningID}, "The 'OpeningEdges' preset requires an opening section element.");
+            if (error.HasValue ()) {
+                return error;
+            }
+            // Archicad does not associate dimensions with the section elements of Opening tool
+            // elements: in Archicad 29 even a dimension snapped to them by hand keeps only fixed
+            // points, in a cut and in a seen wall alike. So this preset places fixed points at the
+            // edges of the opening as the section draws it, which is the extent of its section
+            // element in the section's coordinates: left and right for a horizontal chain, bottom
+            // and top for a vertical one (chosen by 'direction'). They don't follow the opening
+            // when it changes.
+            // The fixed points are in the coordinates of the section, so they only land on the
+            // opening when the dimension is created there.
+            API_DatabaseInfo sectionDatabase = {};
+            API_DatabaseInfo currentDatabase = {};
+            if (ACAPI_Database_GetContainingDatabase (&sectionElement.header.guid, &sectionDatabase) != NoError ||
+                ACAPI_Database_GetCurrentDatabase (&currentDatabase) != NoError ||
+                DatabaseIdResolver::Instance ().GetIdOfDatabase (sectionDatabase) != DatabaseIdResolver::Instance ().GetIdOfDatabase (currentDatabase)) {
+                return "The 'OpeningEdges' preset needs the section of the opening as the current window. Open it first, e.g. with ChangeWindow.";
+            }
+            API_Box3D bounds = {};
+            if (ACAPI_Element_CalcBounds (&sectionElement.header, &bounds) != NoError || bounds.xMin > bounds.xMax || bounds.yMin > bounds.yMax) {
+                return "Failed to get the extent of the opening section element.";
+            }
+            const auto direction = GetOptionalCoordinate2D (data, "direction");
+            const bool vertical = direction.HasValue () && std::abs (direction.Get ().y) > std::abs (direction.Get ().x);
+            defaultDirection = {1.0, 0.0};
+            if (vertical) {
+                AddSectionStaticPoint (points, bounds.xMin, bounds.yMin);
+                AddSectionStaticPoint (points, bounds.xMin, bounds.yMax);
+            } else {
+                AddSectionStaticPoint (points, bounds.xMin, bounds.yMin);
+                AddSectionStaticPoint (points, bounds.xMax, bounds.yMin);
+            }
             break;
         }
     }
@@ -6654,8 +6703,10 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsOnSectionCommand::GetInpu
                                 "BeamOrColumnRefLineEndPoints",
                                 "BeamOrColumnBoundingBoxCorners",
                                 "DoorWindowWallHoleCorners",
-                                "DoorWindowModelHotspots"
-                            ]
+                                "DoorWindowModelHotspots",
+                                "OpeningEdges"
+                            ],
+                            "description": "OpeningEdges puts fixed points, not associated ones, at the edges of an Opening tool element as the section draws it: left and right for a horizontal direction, bottom and top for a vertical one. Archicad does not associate dimensions with openings in sections."
                         },
                         "direction": { "$ref": "#/Coordinate2D" },
                         "skinBorderIndices": {
