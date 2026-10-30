@@ -29,11 +29,13 @@ body:
     id: declarations
     attributes:
       label: Declarations from the DevKit (optional)
-      description: If you have the DevKit, paste the declarations and doc comments of these functions. The issue bot has no DevKit and builds from what is here.
+      description: If you have the DevKit, paste the declarations and doc comments of these functions. The issue bot reads the DevKit headers too, but this shows it which declarations you mean.
       render: cpp
-  - type: dropdown
+  # A text field rather than a list of versions, so a new Archicad version
+  # (added to archicad-addon/devkits.json without a person) needs no edit here.
+  - type: input
     id: versions
     attributes:
       label: Archicad versions you need it in
-      multiple: true
-      options: ["25", "26", "27", "28", "29", "30"]
+      description: For example "29, 30", or "all" for every version Tapir supports.
+      placeholder: all
