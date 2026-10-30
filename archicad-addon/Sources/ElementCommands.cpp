@@ -5664,6 +5664,18 @@ GS::Optional<GS::UniString> FilterElementsCommand::GetInputParametersSchema () c
                     "$ref": "#/ElementType"
                 },
                 "minItems": 1
+            },
+            "fromHotlink": {
+                "type": "boolean",
+                "description": "Optional. true keeps only the elements that came in through a placed hotlink (they are read-only), false only the project's own elements."
+            },
+            "hotlinkIds": {
+                "type": "array",
+                "description": "Optional. An element is kept only when it came in through one of these placed hotlink instances (the hotlinkId field of GetDetailsOfElements, elements of type Hotlink).",
+                "items": {
+                    "$ref": "#/ElementId"
+                },
+                "minItems": 1
             }
         },
         "additionalProperties": false,
@@ -5723,8 +5735,19 @@ GS::ObjectState FilterElementsCommand::Execute (const GS::ObjectState& parameter
         elementTypes.Push (elementType);
     }
 
-    // The header based criteria (layer, home story, type) are checked only when at least one of them is given.
-    const bool checkHeader = !layerIndices.IsEmpty () || !floorIndices.IsEmpty () || !elementTypes.IsEmpty ();
+    bool fromHotlink = false;
+    const bool checkFromHotlink = parameters.Get ("fromHotlink", fromHotlink);
+
+    GS::Array<GS::ObjectState> hotlinkIdStates;
+    parameters.Get ("hotlinkIds", hotlinkIdStates);
+    GS::Array<API_Guid> hotlinkIds;
+    for (const GS::ObjectState& hotlinkIdState : hotlinkIdStates) {
+        hotlinkIds.Push (GetGuidFromObjectState (hotlinkIdState));
+    }
+
+    // The header based criteria (layer, home story, type, hotlink) are checked only when at least one of them is given.
+    const bool checkHeader = !layerIndices.IsEmpty () || !floorIndices.IsEmpty () || !elementTypes.IsEmpty () ||
+        checkFromHotlink || !hotlinkIds.IsEmpty ();
     if (filterFlags == APIFilt_None && !checkHeader) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing filters!");
     }
@@ -5756,6 +5779,14 @@ GS::ObjectState FilterElementsCommand::Execute (const GS::ObjectState& parameter
                 continue;
             }
             if (!elementTypes.IsEmpty () && !elementTypes.Contains (GetElemTypeId (elemHead))) {
+                continue;
+            }
+            // hotlinkGuid is the placed hotlink instance the element came in through, APINULLGuid
+            // for the project's own elements (#1657).
+            if (checkFromHotlink && (elemHead.hotlinkGuid != APINULLGuid) != fromHotlink) {
+                continue;
+            }
+            if (!hotlinkIds.IsEmpty () && !hotlinkIds.Contains (elemHead.hotlinkGuid)) {
                 continue;
             }
         }
