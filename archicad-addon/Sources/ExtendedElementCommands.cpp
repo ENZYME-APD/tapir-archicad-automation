@@ -549,12 +549,20 @@ void FillDimensionDefaults (API_Element& element, const API_Coord& referencePoin
     element.dimension.direction = direction;
 }
 
-static API_AppearID DimensionAppearanceFromString (const GS::UniString& appearance)
+static bool ParseDimensionAppearanceString (const GS::UniString& appearance, API_AppearID& result)
 {
-    if (appearance == "Cumulative") return APIApp_Cumu;
-    if (appearance == "Baseline")   return APIApp_CumuSv;
-    if (appearance == "Elevation")  return APIApp_Elev;
-    return APIApp_Normal;
+    if (appearance == "Linear") {
+        result = APIApp_Normal;
+    } else if (appearance == "Cumulative") {
+        result = APIApp_Cumu;
+    } else if (appearance == "Baseline") {
+        result = APIApp_CumuSv;
+    } else if (appearance == "Elevation") {
+        result = APIApp_Elev;
+    } else {
+        return false;
+    }
+    return true;
 }
 
 static GS::UniString DimensionAppearanceToString (API_AppearID appearance)
@@ -567,41 +575,32 @@ static GS::UniString DimensionAppearanceToString (API_AppearID appearance)
     }
 }
 
-static API_DimOriginID DimensionElevationOriginFromString (const GS::UniString& origin)
-{
-    if (origin == "ReferenceLevel1") return APIDimOrigin_RefLevel1;
-    if (origin == "ReferenceLevel2") return APIDimOrigin_RefLevel2;
-    if (origin == "UserOrigin")      return APIDimOrigin_StoredOrigin;
-    if (origin == "SeaLevel")        return APIDimOrigin_Altitude;
-    return APIDimOrigin_ProjectZero;
-}
-
-static GS::UniString DimensionElevationOriginToString (API_DimOriginID origin)
-{
-    switch (origin) {
-        case APIDimOrigin_RefLevel1:      return "ReferenceLevel1";
-        case APIDimOrigin_RefLevel2:      return "ReferenceLevel2";
-        case APIDimOrigin_StoredOrigin:   return "UserOrigin";
-        case APIDimOrigin_Altitude:       return "SeaLevel";
-        default:                          return "ProjectZero";
-    }
-}
-
 // The dimension creation commands always made linear dimensions (APIApp_Normal, set by
 // FillDimensionDefaults), whatever the favorite or the tool defaults say, so existing scripts
 // keep getting them. The item's optional "appearance" chooses another type, and
-// "elevationOrigin" the level an Elevation dimension measures from; without it the
-// favorite's or the tool's origin is kept (#1662).
-static void ApplyDimensionAppearance (const GS::ObjectState& data, API_Element& element)
+// "elevationOrigin" the level an Elevation dimension measures from, named as the DimensionOrigin
+// of CreateLevelDimensions; without it the favorite's or the tool's origin is kept (#1662).
+static GS::Optional<GS::ObjectState> ApplyDimensionAppearance (const GS::ObjectState& data, API_Element& element)
 {
     GS::UniString appearance;
     if (data.Get ("appearance", appearance)) {
-        element.dimension.dimAppear = DimensionAppearanceFromString (appearance);
+        API_AppearID appearID = APIApp_Normal;
+        if (!ParseDimensionAppearanceString (appearance, appearID)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'appearance' value: " + appearance);
+        }
+        element.dimension.dimAppear = appearID;
     }
     GS::UniString elevationOrigin;
     if (data.Get ("elevationOrigin", elevationOrigin)) {
-        element.dimension.ed_origin = DimensionElevationOriginFromString (elevationOrigin);
+        // The schema can't reject an unknown value behind "$ref": "#/DimensionOrigin", so it is
+        // checked here, as CreateLevelDimensions does.
+        API_DimOriginID origin = APIDimOrigin_ProjectZero;
+        if (!ParseDimensionOriginString (elevationOrigin, origin)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'elevationOrigin' value: " + elevationOrigin);
+        }
+        element.dimension.ed_origin = origin;
     }
+    return {};
 }
 
 // Reads the Dimension tool defaults into element and memo, with the item's optional
@@ -6428,8 +6427,7 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsCommand::GetInputParamete
                             "description": "Optional dimension type, as in the Dimension Settings. Defaults to Linear, whatever favoriteName or the Dimension tool defaults say. Elevation gives level marks, e.g. on a vertical chain in a section."
                         },
                         "elevationOrigin": {
-                            "type": "string",
-                            "enum": ["ProjectZero", "ReferenceLevel1", "ReferenceLevel2", "UserOrigin", "SeaLevel"],
+                            "$ref": "#/DimensionOrigin",
                             "description": "Optional level an Elevation dimension measures from. Defaults to the one of favoriteName or the Dimension tool defaults."
                         },
                         "referencePoint": { "$ref": "#/Coordinate2D" },
@@ -6531,7 +6529,11 @@ GS::ObjectState CreateAssociativeDimensionsCommand::Execute (const GS::ObjectSta
                 Get2DCoordinateFromObjectState (*data.Get ("referencePoint")),
                 {directionCoord.x, directionCoord.y}
             );
-            ApplyDimensionAppearance (data, element);
+            auto appearanceError = ApplyDimensionAppearance (data, element);
+            if (appearanceError.HasValue ()) {
+                elements.Push (appearanceError.Get ());
+                continue;
+            }
 
             auto error = PopulateAssociativeDimensionMemo (witnessPoints, element, memo);
             if (error.HasValue ()) {
@@ -6598,8 +6600,7 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsOnSectionCommand::GetInpu
                             "description": "Optional dimension type, as in the Dimension Settings. Defaults to Linear, whatever favoriteName or the Dimension tool defaults say. Elevation gives level marks, e.g. on a vertical chain in a section."
                         },
                         "elevationOrigin": {
-                            "type": "string",
-                            "enum": ["ProjectZero", "ReferenceLevel1", "ReferenceLevel2", "UserOrigin", "SeaLevel"],
+                            "$ref": "#/DimensionOrigin",
                             "description": "Optional level an Elevation dimension measures from. Defaults to the one of favoriteName or the Dimension tool defaults."
                         },
                         "sectionElementId": {
@@ -6712,7 +6713,11 @@ GS::ObjectState CreateAssociativeDimensionsOnSectionCommand::Execute (const GS::
                 Get2DCoordinateFromObjectState (*data.Get ("referencePoint")),
                 {directionCoord.x, directionCoord.y}
             );
-            ApplyDimensionAppearance (data, element);
+            auto appearanceError = ApplyDimensionAppearance (data, element);
+            if (appearanceError.HasValue ()) {
+                elements.Push (appearanceError.Get ());
+                continue;
+            }
 
             auto error = PopulateAssociativeDimensionMemo (witnessPoints, element, memo);
 
@@ -6781,8 +6786,7 @@ GS::Optional<GS::UniString> CreateWallThicknessDimensionsCommand::GetInputParame
                             "description": "Optional dimension type, as in the Dimension Settings. Defaults to Linear, whatever favoriteName or the Dimension tool defaults say. Elevation gives level marks, e.g. on a vertical chain in a section."
                         },
                         "elevationOrigin": {
-                            "type": "string",
-                            "enum": ["ProjectZero", "ReferenceLevel1", "ReferenceLevel2", "UserOrigin", "SeaLevel"],
+                            "$ref": "#/DimensionOrigin",
                             "description": "Optional level an Elevation dimension measures from. Defaults to the one of favoriteName or the Dimension tool defaults."
                         },
                         "wallId": { "$ref": "#/ElementId" },
@@ -6863,7 +6867,11 @@ GS::ObjectState CreateWallThicknessDimensionsCommand::Execute (const GS::ObjectS
             element.dimension.horizontalText = false;
             element.dimension.refC = Get2DCoordinateFromObjectState (*data.Get ("referencePoint"));
             element.dimension.direction = {directionCoord.x, directionCoord.y};
-            ApplyDimensionAppearance (data, element);
+            auto appearanceError = ApplyDimensionAppearance (data, element);
+            if (appearanceError.HasValue ()) {
+                elements.Push (appearanceError.Get ());
+                continue;
+            }
             element.dimension.nDimElem = 2;
 
             memo.dimElems = reinterpret_cast<API_DimElem**> (BMhAllClear (element.dimension.nDimElem * sizeof (API_DimElem)));
@@ -7672,7 +7680,7 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
         dimensionData.Add ("direction", Create2DCoordinateObjectState (element.dimension.direction));
         dimensionData.Add ("dimensionLinePosition", Create2DCoordinateObjectState (element.dimension.refC));
         dimensionData.Add ("appearance", DimensionAppearanceToString (element.dimension.dimAppear));
-        dimensionData.Add ("elevationOrigin", DimensionElevationOriginToString (element.dimension.ed_origin));
+        dimensionData.Add ("elevationOrigin", GS::UniString (DimensionOriginToString (element.dimension.ed_origin)));
 
         const auto& witnessPoints = dimensionData.AddList<GS::ObjectState> ("witnessPoints");
 

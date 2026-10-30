@@ -12183,8 +12183,7 @@
                 "description": "The dimension type, as in the Dimension Settings."
             },
             "elevationOrigin": {
-                "type": "string",
-                "enum": ["ProjectZero", "ReferenceLevel1", "ReferenceLevel2", "UserOrigin", "SeaLevel"],
+                "$ref": "#/DimensionOrigin",
                 "description": "The level an Elevation dimension measures from (kept for the other types too)."
             },
             "witnessPoints": {
