@@ -2202,6 +2202,223 @@ GS::ObjectState DeleteDesignOptionCombinationsCommand::Execute (const GS::Object
 #endif
 }
 
+// A hotlinked module brings the design options of its source file with it;
+// each hotlink node keeps its own table of which of them it shows.
+
+GetHotlinkDesignOptionTableDetailsCommand::GetHotlinkDesignOptionTableDetailsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetHotlinkDesignOptionTableDetailsCommand::GetName () const
+{
+    return "GetHotlinkDesignOptionTableDetails";
+}
+
+GS::Optional<GS::UniString> GetHotlinkDesignOptionTableDetailsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkNodes": {
+                "type": "array",
+                "description": "The hotlink nodes, from GetHotlinks or CreateHotlinkNodes.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "hotlinkNodeId": {
+                            "$ref": "#/HotlinkNodeId"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "hotlinkNodeId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkNodes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetHotlinkDesignOptionTableDetailsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkDesignOptionTables": {
+                "type": "array",
+                "description": "One item per requested node, in order: the design options of the hotlinked source file and which of them the node shows, or an error.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "nodeGuid": {
+                                    "$ref": "#/GuidId",
+                                    "description": "The node guid the design option table belongs to."
+                                },
+                                "filterMode": {
+                                    "type": "string",
+                                    "enum": [
+                                        "MainModelOnly",
+                                        "FilterByOptions",
+                                        "FilterByCombination"
+                                    ],
+                                    "description": "What the node shows: only the main model of the source, the active option of each set, or the active combination."
+                                },
+                                "sets": {
+                                    "type": "array",
+                                    "description": "The design option sets of the source file.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "description": "The name of the set."
+                                            },
+                                            "options": {
+                                                "type": "array",
+                                                "description": "The names of the design options in the set.",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "activeOption": {
+                                                "type": "string",
+                                                "description": "The name of the option the node shows from this set. Left out when none is active."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "name",
+                                            "options"
+                                        ]
+                                    }
+                                },
+                                "combinations": {
+                                    "type": "array",
+                                    "description": "The names of the design option combinations of the source file.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "activeCombination": {
+                                    "type": "string",
+                                    "description": "The name of the combination the node shows. Left out when none is active."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "nodeGuid",
+                                "filterMode",
+                                "sets",
+                                "combinations"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkDesignOptionTables"
+        ]
+    })";
+}
+
+#ifdef ServerMainVers_2900
+static GS::UniString GetHotlinkDesignOptionFilterModeName (HotlinkDesignOptionTable::FilterMode filterMode)
+{
+    switch (filterMode) {
+        case HotlinkDesignOptionTable::FilterMode::FilterByOptions:     return "FilterByOptions";
+        case HotlinkDesignOptionTable::FilterMode::FilterByCombination: return "FilterByCombination";
+        case HotlinkDesignOptionTable::FilterMode::MainModelOnly:
+        default:                                                        return "MainModelOnly";
+    }
+}
+#endif
+
+GS::ObjectState GetHotlinkDesignOptionTableDetailsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
+    if (manager.IsErr ()) {
+        return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to retrieve the design option tables of hotlinks.");
+    }
+
+    GS::Array<GS::ObjectState> hotlinkNodes;
+    parameters.Get ("hotlinkNodes", hotlinkNodes);
+
+    GS::ObjectState response;
+    const auto& hotlinkDesignOptionTables = response.AddList<GS::ObjectState> ("hotlinkDesignOptionTables");
+
+    for (const GS::ObjectState& nodeData : hotlinkNodes) {
+        const GS::ObjectState* hotlinkNodeId = nodeData.Get ("hotlinkNodeId");
+        if (hotlinkNodeId == nullptr) {
+            hotlinkDesignOptionTables (CreateErrorResponse (APIERR_BADPARS, "hotlinkNodeId is missing"));
+            continue;
+        }
+
+        API_HotlinkNode node = {};
+        node.guid = GetGuidFromObjectState (*hotlinkNodeId);
+        bool enableUnplaced = true;     // the node may have been created and not placed yet
+        if (ACAPI_Hotlink_GetHotlinkNode (&node, &enableUnplaced) != NoError) {
+            hotlinkDesignOptionTables (CreateErrorResponse (APIERR_BADID, "hotlinkNodeId is not a hotlink node"));
+            continue;
+        }
+
+        auto table = manager->GetHotlinkDesignOptionTable (node);
+        if (table.IsErr ()) {
+            hotlinkDesignOptionTables (CreateErrorResponse (table.UnwrapErr ().kind, "Failed to get the design option table of the hotlink node."));
+            continue;
+        }
+
+        GS::ObjectState item;
+        item.Add ("nodeGuid", CreateGuidObjectState (table->GetNodeGuid ()));
+        item.Add ("filterMode", GetHotlinkDesignOptionFilterModeName (table->GetFilterMode ()));
+
+        const auto& sets = item.AddList<GS::ObjectState> ("sets");
+        for (const GS::UniString& setName : table->GetSetsNames ()) {
+            GS::ObjectState set;
+            set.Add ("name", setName);
+            const auto& options = set.AddList<GS::UniString> ("options");
+            for (const GS::UniString& optionName : table->GetOptionsNamesOfSet (setName)) {
+                options (optionName);
+            }
+            const std::optional<GS::UniString> activeOption = table->GetActiveOptionInSet (setName);
+            if (activeOption.has_value ()) {
+                set.Add ("activeOption", *activeOption);
+            }
+            sets (set);
+        }
+
+        const auto& combinations = item.AddList<GS::UniString> ("combinations");
+        for (const GS::UniString& combinationName : table->GetCombinationsNames ()) {
+            combinations (combinationName);
+        }
+        const std::optional<GS::UniString> activeCombination = table->GetActiveCombination ();
+        if (activeCombination.has_value ()) {
+            item.Add ("activeCombination", *activeCombination);
+        }
+
+        hotlinkDesignOptionTables (item);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
 SetDefaultDesignOptionCommand::SetDefaultDesignOptionCommand () :
     CommandBase (CommonSchema::Used)
 {
