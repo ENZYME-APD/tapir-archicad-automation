@@ -7853,9 +7853,10 @@ GS::ObjectState ModifyOpeningsCommand::Execute (const GS::ObjectState& parameter
 #else
             // Archicad 29 replaced the API_OpeningType struct, which the branch above and the
             // pre-29 CreateOpenings write, with the ACAPI::Element::Opening interface that
-            // CreateOpenings uses there to place a new opening. Changing an existing opening
-            // through that interface is not implemented yet.
-            results.Push (CreateFailedExecutionResult (APIERR_GENERAL, "ModifyOpenings is not supported in Archicad 29 and later yet; it needs Archicad 28 or earlier."));
+            // CreateOpenings uses there to place a new opening. SetOpeningDetails changes an
+            // existing opening through that interface (extrusionParameters.width/height and
+            // a transformation), so this command points there.
+            results.Push (CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "ModifyOpenings needs Archicad 28 or earlier; in Archicad 29 and later use SetOpeningDetails (extrusionParameters.width, extrusionParameters.height and transformation)."));
 #endif
         }
     });

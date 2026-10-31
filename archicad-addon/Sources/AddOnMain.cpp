@@ -785,7 +785,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyOpeningsCommand> (
             elementCommands, "1.7.4",
-            "Modifies Opening elements: the width, the height and the base point CreateOpenings takes. Needs Archicad 28 or earlier; in Archicad 29 and later every item fails with a message saying so."
+            "Modifies Opening elements: the width, the height and the base point CreateOpenings takes. Needs Archicad 28 or earlier; in Archicad 29 and later every item fails with a message pointing to SetOpeningDetails, which changes the size and the position of an opening there."
         );
         err |= RegisterCommand<ModifyMorphsCommand> (
             elementCommands, "1.4.0",
