@@ -710,7 +710,7 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
             case API_MasterFolderNavItem:
             case API_SubSetNavItem:
             case API_FolderNavItem:
-                return CreateFailedExecutionResult (APIERR_BADPARS, "navigatorItemId must be a view or viewpoint; got a container or folder");
+                return CreateFailedExecutionResult (APIERR_BADPARS, "navigatorItemId must be a view or viewpoint; got a container or folder. To open the Session Report, pass windowType 'Report' instead.");
             default:
                 break;
         }
@@ -760,6 +760,21 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
         if (windowInfo.typeID == API_ZombieWindowID) {
             return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: windowType.");
         }
+    }
+
+    // The Session Report is not a database, so ACAPI_Window_ChangeWindow fails on it, even
+    // when its window is already open (#1707). It is opened with its own API function.
+    if (windowInfo.typeID == APIWind_ReportID && databaseId == nullptr && !parameters.Contains ("storyIndex")) {
+#if defined (ServerMainVers_2700)
+        const GSErrCode err = ACAPI_Dialog_ActivateSessionReport ();
+#elif defined (ServerMainVers_2600)
+        const GSErrCode err = ACAPI_Goodies (APIAny_ActivateSessionReportID);
+#else
+        const GSErrCode err = APIERR_NOTSUPPORTED;
+#endif
+        return err == NoError
+            ? CreateSuccessfulExecutionResult ()
+            : CreateErrorResponse (err, "Failed to activate the Session Report window.");
     }
 
     Int32 storyIndex = 0;
