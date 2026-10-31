@@ -7891,6 +7891,101 @@ GS::ObjectState Get3DModelCountsCommand::Execute (const GS::ObjectState& /*param
 #endif
 }
 
+// DeleteUserDataOfElements
+
+// ACAPI_UserData_DeleteUserData is the Archicad 27+ name (ACAPinc.h); Archicad 25/26 call the same
+// function ACAPI_Element_DeleteUserData.
+static GSErrCode TAPIR_UserData_DeleteUserData (API_Elem_Head* elemHead)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_UserData_DeleteUserData (elemHead);
+#else
+    return ACAPI_Element_DeleteUserData (elemHead);
+#endif
+}
+
+DeleteUserDataOfElementsCommand::DeleteUserDataOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeleteUserDataOfElementsCommand::GetName () const
+{
+    return "DeleteUserDataOfElements";
+}
+
+GS::Optional<GS::UniString> DeleteUserDataOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteUserDataOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result per element, aligned with the input."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteUserDataOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    // Archicad keeps the user data of an element per add-on, so this deletes only what this
+    // add-on stored on the element.
+    ACAPI_CallUndoableCommand ("DeleteUserDataOfElements", [&] () -> GSErrCode {
+        for (const GS::ObjectState& element : elements) {
+            const GS::ObjectState* elementId = element.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            API_Elem_Head elemHead = {};
+            elemHead.guid = GetGuidFromObjectState (*elementId);
+            GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to find the element"));
+                continue;
+            }
+
+            err = TAPIR_UserData_DeleteUserData (&elemHead);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to delete the user data of the element."));
+            } else {
+                executionResults (CreateSuccessfulExecutionResult ());
+            }
+        }
+        return NoError;
+    });
+
+    return response;
+}
+
 
 // GetQuantitiesOfElements
 
