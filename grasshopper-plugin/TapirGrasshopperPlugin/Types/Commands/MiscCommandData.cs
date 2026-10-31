@@ -115,4 +115,28 @@ namespace TapirGrasshopperPlugin.Types.Commands
         [JsonProperty("solidLinks")]
         public List<SolidLink> SolidLinks;
     }
+
+    // Element links
+
+    public class ElementLink
+    {
+        [JsonProperty("fromElementId")]
+        public ElementGuid FromElementId;
+
+        [JsonProperty("toElementId")]
+        public ElementGuid ToElementId;
+
+        // Only LinkElements takes flags; UnlinkElements rejects them, so
+        // they are left out of the JSON when not set.
+        [JsonProperty(
+            "flags",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public int? Flags;
+    }
+
+    public class ElementLinksParameters
+    {
+        [JsonProperty("links")]
+        public List<ElementLink> Links;
+    }
 }

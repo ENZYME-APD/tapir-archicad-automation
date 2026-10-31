@@ -1198,4 +1198,16 @@
   <data name="GetGridElementDefaults" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetGridElementDefaults.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="LinkElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateSolidElementLinks.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+    <comment>Placeholder: point at Resources\LinkElements.png once IconSource\LinkElements.svg is rasterized to a 24 px PNG.</comment>
+  </data>
+  <data name="UnlinkElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\RemoveSolidElementLinks.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+    <comment>Placeholder: point at Resources\UnlinkElements.png once IconSource\UnlinkElements.svg is rasterized to a 24 px PNG.</comment>
+  </data>
+  <data name="GetLinksOfElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ChangeDrawingLink.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+    <comment>Placeholder: point at Resources\GetLinksOfElements.png once IconSource\GetLinksOfElements.svg is rasterized to a 24 px PNG.</comment>
+  </data>
 </root>
