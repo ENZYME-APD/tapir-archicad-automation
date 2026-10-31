@@ -2849,7 +2849,10 @@ GS::Optional<GS::UniString> RenameNavigatorItemCommand::GetInputParametersSchema
         "type": "object",
         "properties": {
             "navigatorItemId": { "$ref": "#/NavigatorItemId" },
-            "newName":         { "type": "string" },
+            "newName": {
+                "type": "string",
+                "description": "The new name of the item. On the Layout Book item of a placed Drawing it is also set as the custom name of the Drawing (nameType CustomName)."
+            },
             "newId": {
                 "type": "string",
                 "description": "The new ID of the item. On a layout it is the custom layout number (customLayoutNumbering is switched on); on a Project Map section, elevation, interior elevation, detail or worksheet it is the reference ID of the element behind the item; on any other item it is the custom ID of the navigator item (customUiId becomes true)."
@@ -3028,6 +3031,122 @@ static bool IsProjectMapItem (const API_Guid& guid)
     return ContainsNavigatorItem (rootItem, API_ProjectMap, guid);
 }
 
+// Finds the Drawing element of a placed Drawing's Layout Book item in the current database, which is the database
+// of the item's layout. Neither the element's guid nor its drawingGuid is the item's guid; what links them is the
+// view the Drawing shows: the item's sourceGuid is the Drawing's linkGuid (ACAPI_Drawing_GetDrawingLink, tested on
+// Archicad 29). When the layout holds more than one Drawing of that view, the one whose custom name is the item's
+// current name is taken; ambiguous is set when that still leaves no single Drawing.
+static bool FindDrawingOfNavigatorItemInCurrentDatabase (const API_NavigatorItem& navItem, API_Element& drawing, bool& ambiguous)
+{
+    ambiguous = false;
+    if (navItem.sourceGuid == APINULLGuid) {
+        return false;
+    }
+    GS::Array<API_Guid> drawings;
+    if (ACAPI_Element_GetElemList (API_DrawingID, &drawings) != NoError) {
+        return false;
+    }
+    GS::Array<API_Element> candidates;
+    for (const API_Guid& guid : drawings) {
+        API_DrawingLinkInfo link = {};
+        API_Guid drawingGuid = guid;
+        if (ACAPI_Drawing_GetDrawingLink (&drawingGuid, &link) != NoError) {
+            continue;
+        }
+        if (link.viewPath != nullptr) {
+            BMpFree (link.viewPath);
+        }
+        delete link.linkPath;
+        if (link.linkGuid != navItem.sourceGuid) {
+            continue;
+        }
+        API_Element candidate = {};
+        candidate.header.guid = guid;
+        if (ACAPI_Element_Get (&candidate) == NoError) {
+            candidates.Push (candidate);
+        }
+    }
+    if (candidates.GetSize () > 1) {
+        const GS::UniString itemName (navItem.uName);
+        GS::Array<API_Element> sameName;
+        for (const API_Element& candidate : candidates) {
+            if (candidate.drawing.nameType == APIName_CustomName && GS::UniString (candidate.drawing.name) == itemName) {
+                sameName.Push (candidate);
+            }
+        }
+        candidates = sameName;
+        ambiguous = candidates.GetSize () != 1;
+    }
+    if (candidates.GetSize () != 1) {
+        return false;
+    }
+    drawing = candidates[0];
+    return true;
+}
+
+// Gives the Drawing element of the current database the new name as its custom name and checks that it stuck.
+static GSErrCode SetCustomNameOfDrawing (API_Element& drawing, const char* drawingName)
+{
+    CHTruncate (drawingName, drawing.drawing.name, GS::ArraySize (drawing.drawing.name));
+    drawing.drawing.nameType = APIName_CustomName;
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, name);
+    ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, nameType);
+    GSErrCode err = ACAPI_Element_Change (&drawing, &mask, nullptr, 0, true);
+    if (err != NoError) {
+        return err;
+    }
+
+    API_Element changedDrawing = {};
+    changedDrawing.header.guid = drawing.header.guid;
+    err = ACAPI_Element_Get (&changedDrawing);
+    if (err != NoError) {
+        return err;
+    }
+    if (changedDrawing.drawing.nameType != APIName_CustomName || strcmp (changedDrawing.drawing.name, drawing.drawing.name) != 0) {
+        return APIERR_REFUSEDPAR;
+    }
+    return NoError;
+}
+
+// A Drawing placed on a layout has its own name (API_DrawingType::name and nameType), which
+// GetDetailsOfElements, the Drawing Settings and the Drawing's title read, while
+// ACAPI_Navigator_ChangeNavigatorItem only renames its Layout Book item (#1479). So the new name
+// is written to the Drawing too, as a custom name, as renaming it in the Navigator does in Archicad.
+// The Drawing item's own db is empty; the Drawing is in the database of its parent item, the layout.
+// navItem is the item as read before the rename, so its name is the old one.
+static GSErrCode RenameDrawingOfNavigatorItem (const API_NavigatorItem& navItem, const GS::UniString& newName, bool& found, bool& ambiguous)
+{
+    const auto drawingName = newName.ToCStr ();
+    found = false;
+    ambiguous = false;
+    API_NavigatorItem layoutItem = {};
+    API_DatabaseInfo startDb = {};
+    GSErrCode err = ACAPI_Navigator_GetNavigatorParentItem (&navItem.guid, &layoutItem);
+    if (err == NoError) {
+        err = ACAPI_Database_GetCurrentDatabase (&startDb);
+    }
+    API_DatabaseInfo layoutDb = layoutItem.db;
+    if (err == NoError) {
+        err = ACAPI_Window_GetDatabaseInfo (&layoutDb);
+    }
+    if (err == NoError) {
+        err = ACAPI_Database_ChangeCurrentDatabase (&layoutDb);
+    }
+    if (err != NoError) {
+        return err;
+    }
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("RenameNavigatorItemCommand", [&]() -> GSErrCode {
+        API_Element drawing = {};
+        found = FindDrawingOfNavigatorItemInCurrentDatabase (navItem, drawing, ambiguous);
+        err = found ? SetCustomNameOfDrawing (drawing, drawingName.Get ()) : NoError;
+        return err;
+    });
+    ACAPI_Database_ChangeCurrentDatabase (&startDb);
+    return undoErr != NoError ? undoErr : err;
+}
+
 GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     const GS::ObjectState* navIdOS = parameters.Get ("navigatorItemId");
@@ -3042,6 +3161,7 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to get navigator item.");
     }
+    const API_NavigatorItem navItemBefore = navItem;
 
     GS::UniString newName;
     const bool hasNewName = parameters.Get ("newName", newName) && !newName.IsEmpty ();
@@ -3164,6 +3284,22 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
         if (hasNewItemId && GS::UniString (changedItem.uiId) != GS::UniString (navItem.uiId)) {
             return CreateFailedExecutionResult (APIERR_REFUSEDPAR,
                 "Archicad did not apply the new ID. The ID of this navigator item cannot be changed by this command.");
+        }
+    }
+
+    // A Drawing that is not found (it shows no view, e.g. an image or a PDF) keeps its old name, and the rename
+    // of the Layout Book item still succeeds, as it did before the Drawing was renamed too.
+    if (hasNewName && navItem.itemType == API_DrawingNavItem) {
+        bool drawingFound = false;
+        bool drawingAmbiguous = false;
+        err = RenameDrawingOfNavigatorItem (navItemBefore, newName, drawingFound, drawingAmbiguous);
+        if (drawingAmbiguous) {
+            return CreateFailedExecutionResult (APIERR_GENERAL,
+                "The Layout Book item was renamed, but its layout holds more than one Drawing of the same view with that name, so no Drawing was renamed. Set the Drawing's customName with SetDetailsOfElements.");
+        }
+        if (drawingFound && err != NoError) {
+            return CreateFailedExecutionResult (err,
+                "The Layout Book item was renamed, but Archicad did not apply the new name to its Drawing. Set the Drawing's customName with SetDetailsOfElements.");
         }
     }
 
