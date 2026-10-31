@@ -978,6 +978,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap UnmergeElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("UnmergeElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -1304,6 +1312,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap SetGraphicOverrideRuleOrder
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetGraphicOverrideRuleOrder", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap SetIFCAttributesOfElements
         {
             get {
@@ -1340,6 +1356,14 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("GetNavigatorParentItems", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetMergedElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetMergedElements", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -1608,6 +1632,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap MoveGraphicOverrideRules
+        {
+            get {
+                object obj = ResourceManager.GetObject ("MoveGraphicOverrideRules", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap MoveDesignOptionsToAnotherSet
         {
             get {
@@ -1716,6 +1748,46 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("GetFontsByName", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetGraphicOverrideCombinations
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetGraphicOverrideCombinations", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetGraphicOverrideRuleGroups
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetGraphicOverrideRuleGroups", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetGraphicOverrideRules
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetGraphicOverrideRules", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetGraphicOverrideRulesByName
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetGraphicOverrideRulesByName", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetGraphicalOverrideRules
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetGraphicalOverrideRules", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -1944,6 +2016,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap CreateSolidOperations
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateSolidOperations", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap RemoveSolidElementLinks
         {
             get {
@@ -1992,10 +2072,42 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap RenameGraphicOverrideRuleGroups
+        {
+            get {
+                object obj = ResourceManager.GetObject ("RenameGraphicOverrideRuleGroups", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap DeleteFavorites
         {
             get {
                 object obj = ResourceManager.GetObject ("DeleteFavorites", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap DeleteGraphicOverrideCombinations
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteGraphicOverrideCombinations", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap DeleteGraphicOverrideRuleGroups
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteGraphicOverrideRuleGroups", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap DeleteGraphicOverrideRules
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteGraphicOverrideRules", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -2396,6 +2508,46 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("CreateFills", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateGraphicOverrideCombinations
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateGraphicOverrideCombinations", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateGraphicOverrideRuleGroups
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateGraphicOverrideRuleGroups", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateGraphicOverrideRules
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateGraphicOverrideRules", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateGraphicalOverrideCombination
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateGraphicalOverrideCombination", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateGraphicalOverrideRule
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateGraphicalOverrideRule", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -3016,6 +3168,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap GetTeamworkStatus
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetTeamworkStatus", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap GetUserDataOfGroups
         {
             get {
@@ -3085,6 +3245,14 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("UpdateZones", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap UploadLibrariesToBIMcloud
+        {
+            get {
+                object obj = ResourceManager.GetObject ("UploadLibrariesToBIMcloud", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -3217,6 +3385,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap MergeElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("MergeElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap GetSectionElements
         {
             get {
@@ -3333,6 +3509,14 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("RemoveElementTrims", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap RemoveLibrariesFromBIMcloud
+        {
+            get {
+                object obj = ResourceManager.GetObject ("RemoveLibrariesFromBIMcloud", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -3645,6 +3829,22 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("ModifyElectricalProjectSettings", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyGraphicOverrideCombinations
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyGraphicOverrideCombinations", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyGraphicOverrideRules
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyGraphicOverrideRules", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
