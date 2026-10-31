@@ -4221,6 +4221,46 @@ GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () con
                         "finishVisible": {
                             "type": "boolean",
                             "description": "Optional. If false, the tread/riser finishes are hidden and only the stair structure (e.g. a monolith) is modeled."
+                        },
+                        "baseLineEdges": {
+                            "type": "array",
+                            "description": "Optional. The segment type of each baseline edge, one item per edge (baseLinePoints.length - 1 items; edge i runs from point i to point i + 1). A U-shaped stair with a half landing is Flight, Landing, Flight with landing turns at both inner points. When neither baseLineEdges nor baseLineVertices is given, Archicad decides the segments and turns itself; when only baseLineVertices is given, every edge is a flight. Combinations Archicad cannot build fail like any other invalid stair.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "segmentType": {
+                                        "type": "string",
+                                        "enum": ["Flight", "Landing", "DividedLanding"],
+                                        "description": "Flight: steps. Landing: a landing segment, the edge between two landing turns of a U-shaped stair. DividedLanding: a divided landing segment."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": ["segmentType"]
+                            }
+                        },
+                        "baseLineVertices": {
+                            "type": "array",
+                            "description": "Optional. The turn at each baseline point, one item per point (baseLinePoints.length items). When neither baseLineEdges nor baseLineVertices is given, Archicad decides the segments and turns itself; when only baseLineEdges is given, the first and last points get no turn and every other point a landing turn. Winders use Archicad's default winder settings.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "turnType": {
+                                        "type": "string",
+                                        "enum": ["None", "Landing", "Winder", "DividedLanding"],
+                                        "description": "The turn at this point. The first and last points take None."
+                                    },
+                                    "minLandingStartEdgeOffset": {
+                                        "type": "number",
+                                        "description": "Optional, 0 by default. The minimal lead edge offset of a landing turn: makes the landing longer before the turn. Archicad calculates the actual offset, at least this much, to fit the steps (GetDetailsOfElements returns it as landingStartEdgeOffset)."
+                                    },
+                                    "minLandingEndEdgeOffset": {
+                                        "type": "number",
+                                        "description": "Optional, 0 by default. The minimal trail edge offset of a landing turn: makes the landing longer after the turn. Archicad calculates the actual offset, at least this much (GetDetailsOfElements returns it as landingEndEdgeOffset)."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": ["turnType"]
+                            }
                         }
                     },
                     "additionalProperties": false,
@@ -4233,12 +4273,59 @@ GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () con
     })";
 }
 
+static bool StairSegmentTypeFromString (const GS::UniString& str, API_StairSegmentTypeID& type)
+{
+    if (str == "Flight")         { type = APIST_StepsSegment;          return true; }
+    if (str == "Landing")        { type = APIST_LandingSegment;        return true; }
+    if (str == "DividedLanding") { type = APIST_DividedLandingSegment; return true; }
+    return false;
+}
+
+static bool StairTurnTypeFromString (const GS::UniString& str, API_StairTurnTypeID& type)
+{
+    if (str == "None")           { type = APIST_NoTurn;             return true; }
+    if (str == "Landing")        { type = APIST_LandingTurn;        return true; }
+    if (str == "Winder")         { type = APIST_WinderTurn;         return true; }
+    if (str == "DividedLanding") { type = APIST_DividedLandingTurn; return true; }
+    return false;
+}
+
 GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
 {
     GS::Array<GS::ObjectState> baseLinePoints;
     parameters.Get ("baseLinePoints", baseLinePoints);
     if (baseLinePoints.GetSize () < 2) {
         return CreateErrorResponse (APIERR_BADPARS, "baseLinePoints must have at least 2 points.");
+    }
+
+    // Segments and turns (#1628), checked before anything is allocated.
+    GS::Array<GS::ObjectState> baseLineEdges;
+    GS::Array<GS::ObjectState> baseLineVertices;
+    const bool hasEdges = parameters.Get ("baseLineEdges", baseLineEdges);
+    const bool hasVertices = parameters.Get ("baseLineVertices", baseLineVertices);
+    GS::Array<API_StairSegmentTypeID> segmentTypes;
+    for (const GS::ObjectState& edge : baseLineEdges) {
+        GS::UniString segmentType;
+        API_StairSegmentTypeID type = APIST_StepsSegment;
+        if (!edge.Get ("segmentType", segmentType) || !StairSegmentTypeFromString (segmentType, type)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid segmentType in baseLineEdges.");
+        }
+        segmentTypes.Push (type);
+    }
+    GS::Array<API_StairTurnTypeID> turnTypes;
+    for (const GS::ObjectState& vertex : baseLineVertices) {
+        GS::UniString turnType;
+        API_StairTurnTypeID type = APIST_NoTurn;
+        if (!vertex.Get ("turnType", turnType) || !StairTurnTypeFromString (turnType, type)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid turnType in baseLineVertices.");
+        }
+        turnTypes.Push (type);
+    }
+    if (hasEdges && baseLineEdges.GetSize () != baseLinePoints.GetSize () - 1) {
+        return CreateErrorResponse (APIERR_BADPARS, "baseLineEdges must have one item per baseline edge (baseLinePoints.length - 1).");
+    }
+    if (hasVertices && baseLineVertices.GetSize () != baseLinePoints.GetSize ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "baseLineVertices must have one item per baseline point (baseLinePoints.length).");
     }
 
     double zCoordinate = 0.0;
@@ -4318,6 +4405,48 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
     memo.stairBaseLine.polygon.nCoords = nCoords;
     memo.stairBaseLine.polygon.nSubPolys = 1;
     memo.stairBaseLine.polygon.nArcs = 0;
+
+    if (hasEdges || hasVertices) {
+        // Landings (#1628): edgeData and vertexData hold nCoords + 1 entries with slot 0 unused,
+        // like the coords; entry i belongs to point i, and edge i runs from point i to point i + 1.
+        // That is the layout GetDetailsOfElements reads back from stairs Archicad itself created.
+        // A turn must be set at every inner point: NoTurn there made L/U baselines fail (#444).
+        // The winder settings are the values Archicad derives when it fills the arrays itself;
+        // left at 0, every winder turn failed. The current landing offsets are calculated by
+        // Archicad, so only the minimal ones are taken.
+        memo.stairBaseLine.edgeData = reinterpret_cast<API_StairPolylineEdgeData*> (BMAllocatePtr ((nCoords + 1) * sizeof (API_StairPolylineEdgeData), ALLOCATE_CLEAR, 0));
+        memo.stairBaseLine.vertexData = reinterpret_cast<API_StairPolylineVertexData*> (BMAllocatePtr ((nCoords + 1) * sizeof (API_StairPolylineVertexData), ALLOCATE_CLEAR, 0));
+        for (Int32 i = 0; i <= nCoords; ++i) {
+            API_StairPolylineEdgeData& edge = memo.stairBaseLine.edgeData[i];
+            edge.type = APISP_BaseLine;
+            edge.geometryType = APISG_Edge;
+            edge.segmentType = (1 <= i && i < nCoords && hasEdges) ? segmentTypes[i - 1] : APIST_StepsSegment;
+
+            API_StairPolylineVertexData& vertex = memo.stairBaseLine.vertexData[i];
+            vertex.type = APISP_BaseLine;
+            vertex.geometryType = APISG_Vertex;
+            vertex.winderStepNumBackward = 1;
+            vertex.winderStepNumForward = 1;
+            vertex.innerWidthOffsetType = APIIWO_Min;
+            vertex.numOfWindersType = APIWN_Min;
+            vertex.dividedLandingNumOfWindersType = APIDWN_Optimal;
+            vertex.dividedLandingFixedNumOfSteps = 2;
+            vertex.winderType = APIWT_SIPTurn;
+            if (i >= 1 && hasVertices) {
+                vertex.turnType = turnTypes[i - 1];
+                auto startOffset = GetOptionalDouble (baseLineVertices[i - 1], "minLandingStartEdgeOffset");
+                auto endOffset = GetOptionalDouble (baseLineVertices[i - 1], "minLandingEndEdgeOffset");
+                if (startOffset.HasValue ()) {
+                    vertex.minLandingStartEdgeOffset = startOffset.Get ();
+                }
+                if (endOffset.HasValue ()) {
+                    vertex.minLandingEndEdgeOffset = endOffset.Get ();
+                }
+            } else {
+                vertex.turnType = (1 < i && i < nCoords) ? APIST_LandingTurn : APIST_NoTurn;
+            }
+        }
+    }
 
     return {};
 }
