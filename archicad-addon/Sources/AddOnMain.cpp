@@ -604,6 +604,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.7.2",
             "Finds the element of the given polygonal type (for example Slab, Roof, Mesh, Zone or Hatch) at a coordinate of the floor plan of the current database, the way a click there would. Use the optional filters parameter (the values of FilterElements) to consider only, for example, the elements visible by layer, and the optional z parameter to give the elevation of the point. Returns found: false when there is no such element. Useful together with GetPointFromUser."
         );
+        err |= RegisterCommand<GetSkylightHolePolygonsCommand> (
+            elementCommands, "1.7.4",
+            "Gets the polygon of the hole each given Skylight cuts into its host Roof or Shell: the outline and any holes of it as 2D coordinates. The output is aligned with the input array of elements; an element that is not a Skylight gets an error item."
+        );
         err |= RegisterCommand<GetVisibleSkinStatusCommand> (
             elementCommands, "1.7.3",
             "Checks whether elements have a visible skin in a given Partial Structure Display mode (EntireStructure, CoreOnly, WithoutFinishes or StructureOnly), e.g. a finish-only slab has none in CoreOnly. The current window is not changed. The output is aligned with the input array of elements."
