@@ -14,7 +14,8 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
         public ExportFavoritesComponent()
             : base(
                 "ExportFavorites",
-                "Export the project's Favorites to a .prefs file or folder.",
+                "Export the project's Favorites to a .prefs file or folder. From Archicad 29 they can also be " +
+                "exported to a folder of Favorite files (xml format) or to a legacy .prf file (legacyPRF format).",
                 GroupNames.Favorites)
         {
         }
@@ -23,13 +24,26 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
         {
             InText(
                 "Path",
-                "Absolute path on the Archicad host. A .prefs extension writes a single file; otherwise it is treated as a folder.");
+                "Absolute path on the Archicad host. With the prefs format a .prefs extension writes a single file; " +
+                "otherwise it is treated as a folder. With the xml format: the folder to write the Favorite files to. " +
+                "With the legacyPRF format: the .prf file to write.");
 
             InTexts(
                 "Names",
                 "Optional subset of Favorites to export. Default: export all.");
 
-            SetOptionality(1);
+            InText(
+                "Format",
+                "The format to export to: prefs (the default, every Archicad version), xml (each Favorite " +
+                "to its own file in the folder) or legacyPRF (a Favorites file of earlier Archicad versions). " +
+                "xml and legacyPRF require Archicad 29 or newer.");
+
+            SetOptionality(
+                new[]
+                {
+                    1,
+                    2
+                });
         }
 
         protected override void AddOutputs()
@@ -59,6 +73,14 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
                 names.Count > 0)
             {
                 input.Names = names;
+            }
+
+            if (da.TryGet(
+                    2,
+                    out string format) &&
+                !string.IsNullOrEmpty(format))
+            {
+                input.Format = format;
             }
 
             // The command answers with an ExecutionResult: the export fails as a
