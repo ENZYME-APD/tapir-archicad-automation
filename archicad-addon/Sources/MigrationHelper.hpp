@@ -95,6 +95,8 @@
 #define ACAPI_Revision_GetRVMLayoutCurrentRevisionChanges(par1, par2) ACAPI_Database (APIDb_GetRVMLayoutCurrentRevisionChangesID, (void*)par1, par2)
 #define ACAPI_Revision_GetRVMElemChangeIds(par1, par2) ACAPI_Database (APIDb_GetRVMElemChangeIdsID, (void*)par1, par2)
 #define ACAPI_Revision_GetRVMChangesFromChangeIds(par1, par2) ACAPI_Database (APIDb_GetRVMChangesFromChangeIdsID, (void*)par1, par2)
+#define ACAPI_Revision_GetRVMIssueCustomScheme(par1) ACAPI_Database (APIDb_GetRVMIssueCustomSchemeID, par1)
+#define ACAPI_Revision_ChangeRVMIssue(par1) ACAPI_Database (APIDb_ChangeRVMIssueID, par1)
 #define ACAPI_Revision_GetRVMChangeCustomScheme(par1) ACAPI_Database (APIDb_GetRVMChangeCustomSchemeID, par1)
 
 #define ACAPI_LibraryPart_Register(par1) ACAPI_LibPart_Register(par1)
