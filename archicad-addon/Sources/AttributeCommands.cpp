@@ -659,6 +659,65 @@ GS::ObjectState GetCurrentLayerCombinationCommand::Execute (const GS::ObjectStat
     return response;
 }
 
+ActivateLayerCombinationCommand::ActivateLayerCombinationCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ActivateLayerCombinationCommand::GetName () const
+{
+    return "ActivateLayerCombination";
+}
+
+GS::Optional<GS::UniString> ActivateLayerCombinationCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeId": {
+                "$ref": "#/AttributeId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeId"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ActivateLayerCombinationCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState ActivateLayerCombinationCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::ObjectState attributeId;
+    if (!parameters.Get ("attributeId", attributeId)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing parameter: attributeId.");
+    }
+
+    API_Attribute attribute = {};
+    attribute.header.typeID = API_LayerCombID;
+    attribute.header.guid = GetGuidFromObjectState (attributeId);
+    GSErrCode err = ACAPI_Attribute_Get (&attribute);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Layer combination not found.");
+    }
+
+    // Applies the combination to the current window, like choosing it in the
+    // Quick Layers palette; the saved views are left as they are.
+    API_AttributeIndex layerCombIndex = attribute.header.index;
+    err = ACAPI_Navigator_ChangeCurrLayerComb (&layerCombIndex);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to activate the layer combination in the current window.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
 static GS::UniString LineItemTypeToString (API_LtypItemID itemType)
 {
     switch (itemType) {
