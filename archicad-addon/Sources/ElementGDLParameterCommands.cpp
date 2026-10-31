@@ -720,24 +720,17 @@ static GSErrCode ReadParametersAgain (API_GetParamsType& getParams, const API_Gu
 }
 
 // Every parameter write ends in one ACAPI_Element_Change, which refuses an element Archicad does
-// not let the user edit either - on a locked layer, locked with Edit > Locking, or in Teamwork not
+// not let the user edit either - on a hidden or locked layer, locked with Edit > Locking, or in Teamwork not
 // reserved by the user - with a bare error code, whatever the parameter (the one non-editable
 // element of TestProject.pla answers every change with -2130312912, in SetDetailsOfElements too).
 // The reason is reported next to the code, the way DeleteElements does, so the caller does not
 // take the refusal for an invalid parameter or value.
-static GS::UniString GetElementChangeFailureMessage (const API_Elem_Head& elemHead)
+static GS::UniString GetElementChangeFailureMessage (GSErrCode err, const API_Elem_Head& elemHead)
 {
     const GS::UniString guidString = APIGuidToString (elemHead.guid);
-
-    API_Attribute layerAttr = {};
-    layerAttr.header.typeID = API_LayerID;
-    layerAttr.header.index = elemHead.layer;
-    if (ACAPI_Attribute_Get (&layerAttr) == NoError && (layerAttr.header.flags & APILay_Locked) != 0) {
-        return GS::UniString::Printf ("The parameters of element with guid %T were not changed, because its layer is locked", guidString.ToPrintf ());
-    }
-
-    if (!ACAPI_Element_Filter (elemHead.guid, APIFilt_IsEditable)) {
-        return GS::UniString::Printf ("The parameters of element with guid %T were not changed, because the element is not editable (locked with Edit > Locking, or not reserved by you in a Teamwork project)", guidString.ToPrintf ());
+    const GS::UniString refusal = DescribeElementEditRefusal (err, elemHead);
+    if (!refusal.IsEmpty ()) {
+        return GS::UniString::Printf ("The parameters of element with guid %T were not changed, because %T", guidString.ToPrintf (), refusal.ToPrintf ());
     }
 
     return GS::UniString::Printf ("The parameters of element with guid %T were set, but Archicad refused to change the element with them (ACAPI_Element_Change failed)", guidString.ToPrintf ());
@@ -947,7 +940,7 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                         memo.params = getParams.params;
                         err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AddPars, true);
                         if (err != NoError) {
-                            errMessage = GetElementChangeFailureMessage (element.header);
+                            errMessage = GetElementChangeFailureMessage (err, element.header);
                         }
                     }
                 }

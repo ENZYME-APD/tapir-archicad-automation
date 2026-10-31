@@ -7257,7 +7257,7 @@ Response:
         {
             "error": {
                 "code": -2130312912,
-                "message": "Failed to change element"
+                "message": "Failed to change element, because its layer is hidden"
             },
             "success": false
         },
