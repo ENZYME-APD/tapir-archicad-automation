@@ -6,6 +6,8 @@
 #include "FileSystem.hpp"
 #include "GSUnID.hpp"
 
+#include <string>
+
 // The library part type names of the LibraryPartType schema definition.
 static bool LibPartTypeIdFromString (const GS::UniString& typeStr, API_LibTypeID& typeID)
 {
@@ -1844,6 +1846,300 @@ GS::ObjectState GetAvailableLibraryPartsCommand::Execute (const GS::ObjectState&
 
     response.Add ("skippedCount", skippedCount);
 
+    return response;
+}
+
+// A library part unique ID string is "{main GUID}-{revision GUID}".
+static bool SplitLibPartUnId (const char* unId, std::string& mainGuid, std::string& revisionGuid)
+{
+    const std::string str (unId);
+    const size_t separator = str.find ("}-{");
+    if (str.size () < 6 || str.front () != '{' || str.back () != '}' || separator == std::string::npos) {
+        return false;
+    }
+    mainGuid = str.substr (1, separator - 1);
+    revisionGuid = str.substr (separator + 3, str.size () - separator - 4);
+    // APIGuidFromString returns APINULLGuid for a string that is not a GUID.
+    return APIGuidFromString (mainGuid.c_str ()) != APINULLGuid && APIGuidFromString (revisionGuid.c_str ()) != APINULLGuid;
+}
+
+// The file of a library part given by its index (as GetAvailableLibraryParts returns it) or by its path.
+static GSErrCode GetLibraryPartLocation (const GS::ObjectState& libraryPart, IO::Location& location, GS::UniString& errorMessage)
+{
+    Int32 index = 0;
+    if (libraryPart.Get ("index", index)) {
+        API_LibPart libPart = {};
+        libPart.index = index;
+        const GSErrCode err = ACAPI_LibraryPart_Get (&libPart);
+        if (err != NoError) {
+            // libPart.location is not allocated on failure.
+            errorMessage = GS::UniString::Printf ("No library part with index %d.", static_cast<int> (index));
+            return err;
+        }
+        if (libPart.location == nullptr) {
+            errorMessage = GS::UniString::Printf ("The library part with index %d has no file.", static_cast<int> (index));
+            return APIERR_GENERAL;
+        }
+        location = *libPart.location;
+        delete libPart.location;
+        return NoError;
+    }
+
+    GS::UniString path;
+    if (libraryPart.Get ("path", path) && !path.IsEmpty ()) {
+        location = IO::Location (path);
+        return NoError;
+    }
+
+    errorMessage = "Give either the index or the path of the library part.";
+    return APIERR_BADPARS;
+}
+
+GetLibraryPartIdentitiesCommand::GetLibraryPartIdentitiesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetLibraryPartIdentitiesCommand::GetName () const
+{
+    return "GetLibraryPartIdentities";
+}
+
+GS::Optional<GS::UniString> GetLibraryPartIdentitiesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "description": "The library parts, each given by its index or by the path of its file.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "index": {
+                            "type": "integer",
+                            "description": "The index of a loaded library part, as GetAvailableLibraryParts returns it."
+                        },
+                        "path": {
+                            "type": "string",
+                            "description": "The path of a library part file, for example a .gsm file."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "oneOf": [
+                        { "required": ["index"] },
+                        { "required": ["path"] }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryParts"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetLibraryPartIdentitiesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "identities": {
+                "type": "array",
+                "description": "One item for each given library part, in the same order.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "path": {
+                                    "type": "string",
+                                    "description": "The path of the library part file."
+                                },
+                                "unId": {
+                                    "type": "string",
+                                    "description": "The unique ID of the library part, '{main GUID}-{revision GUID}'."
+                                },
+                                "mainGuid": {
+                                    "$ref": "#/Guid",
+                                    "description": "The main GUID of the unique ID. It stays the same across the revisions of a library part."
+                                },
+                                "revisionGuid": {
+                                    "$ref": "#/Guid",
+                                    "description": "The revision GUID of the unique ID. It changes whenever the library part is saved."
+                                },
+                                "refGuid": {
+                                    "$ref": "#/Guid",
+                                    "description": "The reference GUID of the library part file. Missing when Archicad could not tell it."
+                                },
+                                "lockStatus": {
+                                    "type": "string",
+                                    "enum": ["Free", "Editable", "Locked", "NotAvailable", "NotExist"],
+                                    "description": "The Teamwork lock status of the library part file. Missing when Archicad could not tell it."
+                                },
+                                "isServerLibraryPart": {
+                                    "type": "boolean",
+                                    "description": "True when the library part is in a BIMcloud or Teamwork server library."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "path",
+                                "unId",
+                                "isServerLibraryPart"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "identities"
+        ]
+    })";
+}
+
+GS::ObjectState GetLibraryPartIdentitiesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> libraryParts;
+    parameters.Get ("libraryParts", libraryParts);
+
+    GS::ObjectState response;
+    const auto& identities = response.AddList<GS::ObjectState> ("identities");
+
+    for (const GS::ObjectState& libraryPart : libraryParts) {
+        IO::Location location;
+        GS::UniString errorMessage;
+        GSErrCode err = GetLibraryPartLocation (libraryPart, location, errorMessage);
+        if (err != NoError) {
+            identities (CreateErrorResponse (err, errorMessage));
+            continue;
+        }
+
+        // A unique ID string is 77 characters: two braced GUIDs and a hyphen.
+        char unId[128] = {};
+        err = ACAPI_LibraryPart_GetLibPartUnIDStr (&location, unId);
+        if (err != NoError) {
+            identities (CreateErrorResponse (err, "Failed to get the unique ID of the library part " + location.ToDisplayText () + "."));
+            continue;
+        }
+
+        GS::ObjectState identity;
+        identity.Add ("path", location.ToDisplayText ());
+        identity.Add ("unId", GS::UniString (unId));
+
+        std::string mainGuid;
+        std::string revisionGuid;
+        if (SplitLibPartUnId (unId, mainGuid, revisionGuid)) {
+            identity.Add ("mainGuid", GS::UniString (mainGuid.c_str ()));
+            identity.Add ("revisionGuid", GS::UniString (revisionGuid.c_str ()));
+        }
+
+        API_Guid refGuid = APINULLGuid;
+        if (ACAPI_LibraryPart_GetLibPartRefGuid (&location, &refGuid) == NoError) {
+            identity.Add ("refGuid", APIGuidToString (refGuid));
+        }
+
+        API_LockableStatus lockStatus = APILockableStatus_NotExist;
+        if (ACAPI_LibraryPart_GetLibPartLockStatus (&location, &lockStatus) == NoError) {
+            identity.Add ("lockStatus", GS::UniString (LockableStatusToString (lockStatus)));
+        }
+
+        identity.Add ("isServerLibraryPart", ACAPI_Teamwork_IsServerLibPart (location));
+        identities (identity);
+    }
+
+    return response;
+}
+
+CompareLibraryPartUnIdsCommand::CompareLibraryPartUnIdsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CompareLibraryPartUnIdsCommand::GetName () const
+{
+    return "CompareLibraryPartUnIds";
+}
+
+GS::Optional<GS::UniString> CompareLibraryPartUnIdsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "unId1": {
+                "type": "string",
+                "description": "A library part unique ID, '{main GUID}-{revision GUID}', as GetLibraryPartIdentities returns it."
+            },
+            "unId2": {
+                "type": "string",
+                "description": "The library part unique ID to compare unId1 with."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "unId1",
+            "unId2"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CompareLibraryPartUnIdsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "apiErrorCode": {
+                "type": "integer",
+                "description": "The code ACAPI_LibraryPart_CompareLibPartUnIds returned: 0 (NoError) when Archicad reports the two unique IDs as matching, otherwise the API error code that tells how they differ."
+            },
+            "sameMainGuid": {
+                "type": "boolean",
+                "description": "True when the two unique IDs have the same main GUID, that is they are revisions of the same library part."
+            },
+            "sameRevisionGuid": {
+                "type": "boolean",
+                "description": "True when the two unique IDs have the same revision GUID."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "apiErrorCode",
+            "sameMainGuid",
+            "sameRevisionGuid"
+        ]
+    })";
+}
+
+GS::ObjectState CompareLibraryPartUnIdsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString unId1;
+    GS::UniString unId2;
+    parameters.Get ("unId1", unId1);
+    parameters.Get ("unId2", unId2);
+
+    const std::string unIdStr1 (unId1.ToCStr ().Get ());
+    const std::string unIdStr2 (unId2.ToCStr ().Get ());
+
+    std::string mainGuid1;
+    std::string revisionGuid1;
+    std::string mainGuid2;
+    std::string revisionGuid2;
+    if (!SplitLibPartUnId (unIdStr1.c_str (), mainGuid1, revisionGuid1) || !SplitLibPartUnId (unIdStr2.c_str (), mainGuid2, revisionGuid2)) {
+        return CreateErrorResponse (APIERR_BADPARS, "A library part unique ID has the form '{main GUID}-{revision GUID}'.");
+    }
+
+    const GSErrCode err = ACAPI_LibraryPart_CompareLibPartUnIds (unIdStr1.c_str (), unIdStr2.c_str ());
+
+    GS::ObjectState response;
+    response.Add ("apiErrorCode", static_cast<Int32> (err));
+    response.Add ("sameMainGuid", APIGuidFromString (mainGuid1.c_str ()) == APIGuidFromString (mainGuid2.c_str ()));
+    response.Add ("sameRevisionGuid", APIGuidFromString (revisionGuid1.c_str ()) == APIGuidFromString (revisionGuid2.c_str ()));
     return response;
 }
 
