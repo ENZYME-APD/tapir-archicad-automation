@@ -1498,6 +1498,240 @@ GS::ObjectState GetEditModeStateCommand::Execute (const GS::ObjectState& /*param
 }
 
 // ---------------------------------------------------------------------------
+// Archicad visibility, Action Center checks, redraw
+// ---------------------------------------------------------------------------
+
+GetArchicadVisibilityCommand::GetArchicadVisibilityCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetArchicadVisibilityCommand::GetName () const
+{
+    return "GetArchicadVisibility";
+}
+
+GS::Optional<GS::UniString> GetArchicadVisibilityCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "isVisible": {
+                "type": "boolean",
+                "description": "True when the Archicad application is shown, false when it is hidden."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "isVisible"
+        ]
+    })";
+}
+
+GS::ObjectState GetArchicadVisibilityCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#if defined (WINDOWS)
+    bool isShown = true;
+    const GSErrCode err = TAPIR_View_GetShowHideState (&isShown);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the visibility of Archicad.");
+    }
+    return GS::ObjectState ("isVisible", isShown);
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Supported on Windows only.");
+#endif
+}
+
+SetArchicadVisibilityCommand::SetArchicadVisibilityCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetArchicadVisibilityCommand::GetName () const
+{
+    return "SetArchicadVisibility";
+}
+
+GS::Optional<GS::UniString> SetArchicadVisibilityCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "isVisible": {
+                "type": "boolean",
+                "description": "True shows the Archicad application, false hides it."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "isVisible"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetArchicadVisibilityCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetArchicadVisibilityCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#if defined (WINDOWS)
+    bool isVisible = true;
+    if (!parameters.Get ("isVisible", isVisible)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing parameter: isVisible.");
+    }
+
+    const GSErrCode err = TAPIR_View_ChangeShowHideState (&isVisible);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, isVisible ? "Failed to show Archicad." : "Failed to hide Archicad.");
+    }
+    return CreateSuccessfulExecutionResult ();
+#else
+    (void) parameters;
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "Supported on Windows only.");
+#endif
+}
+
+RunActionCenterChecksCommand::RunActionCenterChecksCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RunActionCenterChecksCommand::GetName () const
+{
+    return "RunActionCenterChecks";
+}
+
+GS::Optional<GS::UniString> RunActionCenterChecksCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "checks": {
+                "type": "array",
+                "description": "The Action Center checks to run, in this order. Omitted means [\"Hotlinks\"]. \"Hotlinks\" is available on every Archicad version; \"All\", \"Libraries\", \"Drawings\" and \"Licenses\" only on Archicad 25, later versions return an error for them in their execution result.",
+                "items": {
+                    "type": "string",
+                    "enum": ["Hotlinks", "All", "Libraries", "Drawings", "Licenses"]
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> RunActionCenterChecksCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+static GS::Optional<API_ActionCenterItemID> ConvertStringToActionCenterItemID (const GS::UniString& checkName)
+{
+    // Always the named enumerator: Hotlinks is 1 on AC25 (after All) and 0 from AC26 on.
+    if (checkName == "Hotlinks") {
+        return APIActionCenterItem_Hotlinks;
+    }
+#ifndef ServerMainVers_2600
+    if (checkName == "All") {
+        return APIActionCenterItem_All;
+    }
+    if (checkName == "Libraries") {
+        return APIActionCenterItem_Libraries;
+    }
+    if (checkName == "Drawings") {
+        return APIActionCenterItem_Drawings;
+    }
+    if (checkName == "Licenses") {
+        return APIActionCenterItem_Licenses;
+    }
+#endif
+    return GS::NoValue;
+}
+
+GS::ObjectState RunActionCenterChecksCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> checks;
+    if (!parameters.Get ("checks", checks)) {
+        checks.Push ("Hotlinks");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::UniString& checkName : checks) {
+        const GS::Optional<API_ActionCenterItemID> itemId = ConvertStringToActionCenterItemID (checkName);
+        if (!itemId.HasValue ()) {
+            if (checkName == "All" || checkName == "Libraries" || checkName == "Drawings" || checkName == "Licenses") {
+                executionResults (CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "Not available on this Archicad version: " + checkName));
+            } else {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Invalid check: " + checkName));
+            }
+            continue;
+        }
+
+        // Returns only whether the check could run: the Action Center tab appears
+        // in Archicad when the check found an issue, the caller is not told.
+        const GSErrCode err = TAPIR_Window_ActionCenterCheck (itemId.Get ());
+        if (err == NoError) {
+            executionResults (CreateSuccessfulExecutionResult ());
+        } else if (err == APIERR_NOPLAN) {
+            executionResults (CreateFailedExecutionResult (err, "There is no open project."));
+        } else if (err == APIERR_REFUSEDCMD) {
+            executionResults (CreateFailedExecutionResult (err, "Refused to run the check because a modal dialog is open."));
+        } else {
+            executionResults (CreateFailedExecutionResult (err, "Failed to run the check: " + checkName));
+        }
+    }
+
+    return response;
+}
+
+RedrawCurrentDatabaseCommand::RedrawCurrentDatabaseCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RedrawCurrentDatabaseCommand::GetName () const
+{
+    return "RedrawCurrentDatabase";
+}
+
+GS::Optional<GS::UniString> RedrawCurrentDatabaseCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState RedrawCurrentDatabaseCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    const GSErrCode err = TAPIR_Database_RedrawCurrentDatabase ();
+    if (err == APIERR_NOPLAN) {
+        return CreateFailedExecutionResult (err, "There is no open project.");
+    }
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to redraw the current database.");
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
+// ---------------------------------------------------------------------------
 // GetProductVersionInfo
 // ---------------------------------------------------------------------------
 
