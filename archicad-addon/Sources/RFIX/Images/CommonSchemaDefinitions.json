@@ -12766,7 +12766,8 @@
                 "description": "Use Vectorial 3D Hatch patterns in Floor Plan view, taken from the top side material."
             },
             "orientation": {
-                "$ref": "#/HatchOrientation"
+                "$ref": "#/HatchOrientation",
+                "description": "Orientation of the cover fill. On a Slab, Archicad applies only the type through the API: it resets the origin and the distortion matrix, so ModifySlabs reports a given origin or matrix that did not stick as a failure."
             }
         },
         "additionalProperties": false
