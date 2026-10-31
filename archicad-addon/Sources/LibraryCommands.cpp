@@ -1659,6 +1659,93 @@ GS::ObjectState ReloadLibrariesCommand::Execute (const GS::ObjectState& /*parame
     return CreateSuccessfulExecutionResult ();
 }
 
+GetGDLDateCommand::GetGDLDateCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetGDLDateCommand::GetName () const
+{
+    return "GetGDLDate";
+}
+
+GS::Optional<GS::UniString> GetGDLDateCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "date": {
+                "type": "integer",
+                "description": "The date GDL scripts see, as the Int32 value of ACAPI_LibraryManagement_GetGDLDate."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "date"
+        ]
+    })";
+}
+
+GS::ObjectState GetGDLDateCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    Int32 date = 0;
+    GSErrCode err = ACAPI_LibraryManagement_GetGDLDate (&date);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the GDL date.");
+    }
+
+    return GS::ObjectState ("date", date);
+}
+
+SetGDLDateCommand::SetGDLDateCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetGDLDateCommand::GetName () const
+{
+    return "SetGDLDate";
+}
+
+GS::Optional<GS::UniString> SetGDLDateCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "date": {
+                "type": "integer",
+                "description": "The date GDL scripts should see, in the same Int32 format GetGDLDate returns."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "date"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetGDLDateCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetGDLDateCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    Int32 date = 0;
+    if (!parameters.Get ("date", date)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "The date parameter is missing.");
+    }
+
+    GSErrCode err = ACAPI_LibraryManagement_ChangeGDLDate (&date);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to set the GDL date.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
 GetAvailableLibraryPartsCommand::GetAvailableLibraryPartsCommand () :
     CommandBase (CommonSchema::Used)
 {
