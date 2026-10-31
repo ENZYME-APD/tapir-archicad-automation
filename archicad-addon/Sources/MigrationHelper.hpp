@@ -291,6 +291,25 @@ inline GSErrCode ACAPI_ProjectOperation_GetMiscPlotterInfo (API_MiscPlotterInfo*
     return ACAPI_Environment (APIEnv_GetMiscPlotterInfoID, miscPlotterInfo);
 }
 
+// The rendering scene calls of AC27+ (ACAPI_Rendering.h), on the pre-27 dispatchers:
+// APIEnv_GetRenderingSceneNamesID and APIEnv_SetCurrentRenderingSceneID of
+// APIdefs_Environment.h, APIDo_PhotoRenderID of APIdefs_Automate.h (par2, the
+// print parameters, is optional there too).
+inline GSErrCode ACAPI_Rendering_GetRenderingSceneNames (GS::Array<GS::UniString>* sceneNames)
+{
+    return ACAPI_Environment (APIEnv_GetRenderingSceneNamesID, (void*) sceneNames);
+}
+
+inline GSErrCode ACAPI_Rendering_SetCurrentRenderingScene (const GS::UniString* sceneName)
+{
+    return ACAPI_Environment (APIEnv_SetCurrentRenderingSceneID, (void*) sceneName);
+}
+
+inline GSErrCode ACAPI_Rendering_PhotoRender (const API_PhotoRenderPars* photoRenderPars, const API_PrintPars* printPars = nullptr)
+{
+    return ACAPI_Automate (APIDo_PhotoRenderID, (void*) photoRenderPars, (void*) printPars);
+}
+
 inline GSErrCode ACAPI_View_Zoom ()
 {
     return ACAPI_Automate (APIDo_ZoomID);

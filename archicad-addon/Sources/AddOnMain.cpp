@@ -58,6 +58,7 @@
 #include "GraphicalOverrideCommands.hpp"
 #include "PolygonCommands.hpp"
 #include "DrawingPrimitiveCommands.hpp"
+#include "RenderingCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -437,6 +438,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetCurrentViewImageCommand> (
             projectCommands, "1.7.2",
             "Returns what the 3D window, or the PhotoRendering window, shows as a base64 encoded png or jpg image with its size in pixels, without writing a file. Available from Archicad 30."
+        );
+        err |= RegisterCommand<GetRenderingScenesCommand> (
+            projectCommands, "1.7.4",
+            "Gets the names of the rendering scenes of the project, as the Scene list of the PhotoRendering Settings palette shows them."
+        );
+        err |= RegisterCommand<SetCurrentRenderingSceneCommand> (
+            projectCommands, "1.7.4",
+            "Makes the given rendering scene the current one, as selecting it in the PhotoRendering Settings palette does."
+        );
+        err |= RegisterCommand<PhotoRenderCommand> (
+            projectCommands, "1.7.4",
+            "Renders the 3D model with the current rendering scene, or with the given one, as Document > Creative Imaging > PhotoRender Projection does, and saves the image to a file (png, jpg, bmp, tiff or gif). The image size and quality come from the scene."
         );
         err |= RegisterCommand<GetCalculationUnitsCommand> (
             projectCommands, "1.4.0",

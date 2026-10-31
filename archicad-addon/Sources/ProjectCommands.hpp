@@ -305,6 +305,12 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+// The picture format names of SaveCurrentWindowAsImage (png, jpg, bmp, tiff, gif), as
+// API_FTypeID; PhotoRender names its formats the same way. The second form reads the
+// format from the extension of the path (.jpeg and .tif are accepted too).
+bool ParseImageFileType (const GS::UniString& format, API_FTypeID& fileTypeID);
+bool ParseImageFileTypeFromExtension (const GS::UniString& imageFilePath, API_FTypeID& fileTypeID);
+
 class GetGeoLocationCommand : public CommandBase
 {
 public:
