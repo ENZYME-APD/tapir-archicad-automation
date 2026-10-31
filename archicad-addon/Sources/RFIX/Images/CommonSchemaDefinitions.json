@@ -2363,7 +2363,7 @@
                 "description": "The 2nd dimension of array (in case of array value)."
             },
             "value": {
-                "description": "The value of the parameter."
+                "description": "The value of the parameter. For an array parameter it is a flat list of all items row by row: dimension1 rows of dimension2 items each. SetGDLParametersOfElements accepts the same flat list back."
             },
             "valueDescription": {
                 "type": "string",
@@ -2440,7 +2440,7 @@
                 "description": "Optional 1-based second index for changing a single item of a two-dimensional array parameter. Only valid together with index1. Defaults to 1."
             },
             "value": {
-                "description": "The new value of the parameter, in the unit GetGDLParametersOfElements reports it in (Angle parameters in radians). For array parameters provide a list of values for one-dimensional arrays (e.g. [1, 2, 3]) or a list of lists for two-dimensional arrays (e.g. [[11, 12], [21, 22]]); the list must contain exactly as many values as the parameter has items, resizing an array parameter is not supported. Alternatively provide index1 (and optionally index2) together with a single value to change one item of the array. Within one command call whole-array (list) values are applied after all single-value changes."
+                "description": "The new value of the parameter, in the unit GetGDLParametersOfElements reports it in (Angle parameters in radians). For array parameters provide a list of values for one-dimensional arrays (e.g. [1, 2, 3]) or a list of lists for two-dimensional arrays (e.g. [[11, 12], [21, 22]]); the list must contain exactly as many values as the parameter has items, resizing an array parameter is not supported. A two-dimensional array can also be given as a flat list of all its dimension1 x dimension2 items row by row, the layout GetGDLParametersOfElements returns. Alternatively provide index1 (and optionally index2) together with a single value to change one item of the array. Within one command call whole-array (list) values are applied after all single-value changes."
             }
         },
         "additionalProperties": false,
@@ -2466,7 +2466,7 @@
                 "description": "Optional 1-based second index for changing a single item of a two-dimensional array parameter. Only valid together with index1. Defaults to 1."
             },
             "value": {
-                "description": "The new value of the parameter, in the unit GetGDLParametersOfElements reports it in (Angle parameters in radians). For array parameters provide a list of values for one-dimensional arrays (e.g. [1, 2, 3]) or a list of lists for two-dimensional arrays (e.g. [[11, 12], [21, 22]]); the list must contain exactly as many values as the parameter has items, resizing an array parameter is not supported. Alternatively provide index1 (and optionally index2) together with a single value to change one item of the array. Within one command call whole-array (list) values are applied after all single-value changes."
+                "description": "The new value of the parameter, in the unit GetGDLParametersOfElements reports it in (Angle parameters in radians). For array parameters provide a list of values for one-dimensional arrays (e.g. [1, 2, 3]) or a list of lists for two-dimensional arrays (e.g. [[11, 12], [21, 22]]); the list must contain exactly as many values as the parameter has items, resizing an array parameter is not supported. A two-dimensional array can also be given as a flat list of all its dimension1 x dimension2 items row by row, the layout GetGDLParametersOfElements returns. Alternatively provide index1 (and optionally index2) together with a single value to change one item of the array. Within one command call whole-array (list) values are applied after all single-value changes."
             }
         },
         "additionalProperties": false,
