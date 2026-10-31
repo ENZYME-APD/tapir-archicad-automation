@@ -1080,6 +1080,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.8.1",
             "Creates extruded, revolved and ruled Shell elements from profile polylines, with thickness, structure, an optional clipping contour and holes."
         );
+        err |= RegisterCommand<CreateSkylightsCommand> (
+            elementCommands, "1.7.4",
+            "Creates Skylight elements in single- and multi-plane roofs and in shells, at a floor plan position of the owner. The skylight is placed on the owner's surface and turned to its slope; width, height, anchor point and library part are optional, the rest comes from the Skylight tool defaults or a favorite."
+        );
         err |= RegisterCommand<CreateRailingsCommand> (
             elementCommands, "1.8.0",
             "Creates Railing elements along a reference polyline. Posts, rails, handrails, toprails, panels and balusters come from the favorite or from the Railing tool defaults; Archicad generates one node per vertex and one segment per pair of consecutive vertices."
