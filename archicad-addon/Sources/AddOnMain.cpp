@@ -1690,6 +1690,14 @@ GSErrCode Initialize (void)
             libraryCommands, "1.7.3",
             "Creates a new library part file (.gsm) of the given loaded subtype, inheriting its parameters, and reports whether it is loaded with its index and names. Available from Archicad 28."
         );
+        err |= RegisterCommand<GetLibraryPartScriptsCommand> (
+            libraryCommands, "1.7.4",
+            "Gets the master, parameter, 2D, 3D and properties scripts of loaded library parts, given by name or by an element placed from them, with the unique ID of each part. A script section the part does not have is reported as not present. Password protected parts need their password. Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetLibraryPartFileInfoCommand> (
+            libraryCommands, "1.7.4",
+            "Reads library part files (.gsm) without loading them into the libraries of the project: the unique ID of the part, the unique ID of its subtype and its master, parameter, 2D, 3D and properties scripts. Password protected parts need their password. Available from Archicad 28."
+        );
         AddCommandGroup (libraryCommands);
     }
 
