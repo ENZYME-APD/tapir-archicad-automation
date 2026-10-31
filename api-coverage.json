@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-31 07:48 UTC",
+ "generatedAt": "2026-10-31 08:08 UTC",
  "versions": [
   25,
   26,
@@ -16219,7 +16219,12 @@
      "title": "RenameNavigatorItem: set a view's ID with newId and fail when the ID is kept"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1694,
+     "title": "SetLayoutSettings layoutName reports success without changing a Layout or Master Layout name"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_ChangeNavigatorItem",
@@ -23294,7 +23299,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1692,
+     "title": "SetZoom resets a rotated floor plan to zero, even with the identical zoomBox"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_ShowAllIn3D",

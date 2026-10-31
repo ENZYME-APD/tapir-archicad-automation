@@ -1,14 +1,14 @@
 {
- "generatedAt": "2026-10-31 07:48 UTC",
+ "generatedAt": "2026-10-31 08:08 UTC",
  "counts": {
   "done": 303,
-  "in progress": 118,
-  "merged": 134,
+  "in progress": 94,
+  "merged": 158,
   "not applicable": 1
  },
  "parameters": {
-  "all": 384,
-  "partial": 7,
+  "all": 410,
+  "partial": 5,
   "json": 46
  },
  "items": [
@@ -8626,18 +8626,39 @@
    "group": "Library Commands",
    "version": "1.7.3",
    "brief": "Creates GDL library parts in the embedded library from their scripts (master, 2D, 3D, parameter, interface, properties) and parameter definitions, under the given parent subtype. The new parts are placeable right away, e.g. with CreateObjects. With the overwriteExisting flag an embedded library item already existing on the path of a new part is replaced (Archicad 27 or newer).",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "CreateLibraryPartsComponent",
+     "path": "Components/LibraryComponents/CreateLibraryPartsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 19,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "libraryParts",
+    "libraryParts.a",
+    "libraryParts.b",
+    "libraryParts.masterScript",
+    "libraryParts.name",
+    "libraryParts.parameterScript",
+    "libraryParts.parameters",
+    "libraryParts.parameters.description",
+    "libraryParts.parameters.isHidden",
+    "libraryParts.parameters.value",
+    "libraryParts.parentId",
+    "libraryParts.parentName",
+    "libraryParts.path",
+    "libraryParts.propertiesScript",
+    "libraryParts.script2D",
+    "libraryParts.script3D",
+    "libraryParts.type",
+    "libraryParts.uiScript",
+    "overwriteExisting"
+   ],
    "missingParameters": [],
    "pullRequests": [
-    {
-     "number": 1681,
-     "title": "Grasshopper: library and MEP commands"
-    },
     {
      "number": 1023,
      "title": "[2/2] Grasshopper: add the CreateLibraryParts component"
@@ -8650,19 +8671,21 @@
    "group": "Library Commands",
    "version": "1.7.3",
    "brief": "Creates a folder, with any missing parent folders, inside the embedded library. The folderPath is relative to the embedded library, like the outputPath of AddFilesToEmbeddedLibrary.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1681,
-     "title": "Grasshopper: library and MEP commands"
+     "name": "CreateFolderInEmbeddedLibraryComponent",
+     "path": "Components/LibraryComponents/CreateFolderInEmbeddedLibraryComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "folderPath"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8670,19 +8693,24 @@
    "group": "Library Commands",
    "version": "1.7.3",
    "brief": "Copies the given files, keeping their names, into a folder of the embedded library with one library operation. The target folder is created when it is missing. With overwriteIfExists an item of the same name in that folder is replaced.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 4,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1681,
-     "title": "Grasshopper: library and MEP commands"
+     "name": "CopyFilesIntoEmbeddedLibraryComponent",
+     "path": "Components/LibraryComponents/CopyFilesIntoEmbeddedLibraryComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "files",
+    "files.path",
+    "overwriteIfExists",
+    "targetFolder"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8756,19 +8784,21 @@
    "group": "Library Commands",
    "version": "1.7.3",
    "brief": "Checks whether each of the given strings is usable in GDL, e.g. before writing it into a GDL parameter or script. Returns one boolean for each string.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1681,
-     "title": "Grasshopper: library and MEP commands"
+     "name": "IsUsableGDLStringComponent",
+     "path": "Components/LibraryComponents/IsUsableGDLStringComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "strings"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8776,19 +8806,32 @@
    "group": "Library Commands",
    "version": "1.7.3",
    "brief": "Sets and deletes the master, parameter, 2D, 3D, properties, interface and forward and backward migration scripts of loaded library parts. Only the given scripts are changed; an empty script makes the section empty, deleteScripts removes it. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 12,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1681,
-     "title": "Grasshopper: library and MEP commands"
+     "name": "SetLibraryPartScriptsComponent",
+     "path": "Components/LibraryComponents/SetLibraryPartScriptsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 12,
+   "coveredParameters": [
+    "libraryParts",
+    "libraryParts.deleteScripts",
+    "libraryParts.name",
+    "libraryParts.scripts",
+    "libraryParts.scripts.2d",
+    "libraryParts.scripts.3d",
+    "libraryParts.scripts.backwardMigration",
+    "libraryParts.scripts.forwardMigration",
+    "libraryParts.scripts.interface",
+    "libraryParts.scripts.master",
+    "libraryParts.scripts.parameter",
+    "libraryParts.scripts.properties"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8796,19 +8839,32 @@
    "group": "Library Commands",
    "version": "1.7.3",
    "brief": "Sets the author, keywords, license, license version, password and the placeable, UI default, subtype and hierarchical pages flags of loaded library parts. Only the given fields are changed. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 12,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1681,
-     "title": "Grasshopper: library and MEP commands"
+     "name": "SetLibraryPartMetadataComponent",
+     "path": "Components/LibraryComponents/SetLibraryPartMetadataComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 12,
+   "coveredParameters": [
+    "libraryParts",
+    "libraryParts.metadata",
+    "libraryParts.metadata.author",
+    "libraryParts.metadata.hierarchicalPagesUsed",
+    "libraryParts.metadata.isSubtype",
+    "libraryParts.metadata.keywords",
+    "libraryParts.metadata.license",
+    "libraryParts.metadata.licenseVersion",
+    "libraryParts.metadata.password",
+    "libraryParts.metadata.placeable",
+    "libraryParts.metadata.uiDefault",
+    "libraryParts.name"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8816,19 +8872,21 @@
    "group": "Library Commands",
    "version": "1.7.3",
    "brief": "Gets the preview picture and the GDL pictures of a loaded library part as base64 encoded PNGs, and from Archicad 29 also their dark user interface variants. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1681,
-     "title": "Grasshopper: library and MEP commands"
+     "name": "GetLibraryPartPicturesComponent",
+     "path": "Components/LibraryComponents/GetLibraryPartPicturesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "name"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8836,19 +8894,27 @@
    "group": "Library Commands",
    "version": "1.7.3",
    "brief": "Deletes the preview picture, the GDL pictures (and from Archicad 29 their dark variants) or the 2D symbol of a loaded library part, or copies the 2D symbol from another library part. A library part that is not editable is refused and left unchanged. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 7,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1681,
-     "title": "Grasshopper: library and MEP commands"
+     "name": "SetLibraryPartPicturesComponent",
+     "path": "Components/LibraryComponents/SetLibraryPartPicturesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 7,
+   "coveredParameters": [
+    "copy2DSymbolFrom",
+    "delete2DSymbol",
+    "deleteDarkGdlPictures",
+    "deleteDarkPreviewPicture",
+    "deleteGdlPictures",
+    "deletePreviewPicture",
+    "name"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8856,19 +8922,23 @@
    "group": "Library Commands",
    "version": "1.7.3",
    "brief": "Gets a custom section of a loaded library part by its section identifier and index: whether it exists, its data version and its content as base64. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1681,
-     "title": "Grasshopper: library and MEP commands"
+     "name": "GetLibraryPartCustomSectionComponent",
+     "path": "Components/LibraryComponents/GetLibraryPartCustomSectionComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "index",
+    "name",
+    "sectionId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8876,19 +8946,26 @@
    "group": "Library Commands",
    "version": "1.7.3",
    "brief": "Creates, replaces or deletes a custom section of a loaded library part. The content is given as base64. A library part that is not editable is refused and left unchanged. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 6,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1681,
-     "title": "Grasshopper: library and MEP commands"
+     "name": "SetLibraryPartCustomSectionComponent",
+     "path": "Components/LibraryComponents/SetLibraryPartCustomSectionComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 6,
+   "coveredParameters": [
+    "data",
+    "dataVersion",
+    "delete",
+    "index",
+    "name",
+    "sectionId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8896,19 +8973,22 @@
    "group": "Library Commands",
    "version": "1.7.3",
    "brief": "Creates a new library part file (.gsm) of the given loaded subtype, inheriting its parameters, and reports whether it is loaded with its index and names. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1681,
-     "title": "Grasshopper: library and MEP commands"
+     "name": "CreateLibraryPartComponent",
+     "path": "Components/LibraryComponents/CreateLibraryPartComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "ancestorSubtype",
+    "path"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12338,33 +12418,32 @@
      "path": "Components/MEPComponents/ModifyMEPRoutingElementsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 21,
    "coveredParameters": [
     "routingElementsData",
+    "routingElementsData.anchor",
+    "routingElementsData.branchPreferenceTableId",
+    "routingElementsData.connectionStyle",
     "routingElementsData.crossSectionHeight",
     "routingElementsData.crossSectionReferenceId",
     "routingElementsData.crossSectionShape",
     "routingElementsData.crossSectionWidth",
-    "routingElementsData.elementId",
-    "routingElementsData.mepSystemId",
-    "routingElementsData.nodePositions",
-    "routingElementsData.preferenceTableId"
-   ],
-   "missingParameters": [
-    "routingElementsData.anchor",
-    "routingElementsData.branchPreferenceTableId",
-    "routingElementsData.connectionStyle",
     "routingElementsData.cutPlanePosition",
+    "routingElementsData.elementId",
     "routingElementsData.flangeSize",
     "routingElementsData.floorPlanDisplayOption",
+    "routingElementsData.mepSystemId",
+    "routingElementsData.nodePositions",
     "routingElementsData.onStoryVisibility",
+    "routingElementsData.preferenceTableId",
     "routingElementsData.preferredTransitionPlacement",
     "routingElementsData.referenceLineOffsetX",
     "routingElementsData.referenceLineOffsetY",
     "routingElementsData.showProjection",
     "routingElementsData.wallThickness"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -12373,19 +12452,27 @@
    "group": "MEP Commands",
    "version": "1.7.3",
    "brief": "Modifies the given MEP ports (as returned by GetMEPPorts): shape, connection style (from Archicad 30), the flow direction of piping and ventilation ports, and the outer diameter and nominal size (from Archicad 30) of piping ports. Only the given fields are changed. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 7,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1681,
-     "title": "Grasshopper: library and MEP commands"
+     "name": "ModifyMEPPortsComponent",
+     "path": "Components/MEPComponents/ModifyMEPPortsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 7,
+   "coveredParameters": [
+    "portsData",
+    "portsData.connectionStyle",
+    "portsData.flowDirection",
+    "portsData.nominalSize",
+    "portsData.outerDiameter",
+    "portsData.portId",
+    "portsData.shape"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12417,19 +12504,23 @@
    "group": "MEP Commands",
    "version": "1.7.3",
    "brief": "Checks whether MEP ports can be connected to other ports, for the given pairs of ports. Archicad 28 and later check the physical connection. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1681,
-     "title": "Grasshopper: library and MEP commands"
+     "name": "CheckMEPPortConnectabilityComponent",
+     "path": "Components/MEPComponents/CheckMEPPortConnectabilityComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "portPairs",
+    "portPairs.otherPortId",
+    "portPairs.portId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12445,14 +12536,13 @@
      "path": "Components/MEPComponents/GetMEPPreferenceTablesComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
-    "domain"
-   ],
-   "missingParameters": [
+    "domain",
     "includeFittingTables"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -12461,19 +12551,28 @@
    "group": "MEP Commands",
    "version": "1.7.3",
    "brief": "Modifies the MEP preference tables of a domain, in the shape GetMEPPreferenceTables returns them: adds tables, changes their names, segmentation lengths (from Archicad 29) and row values and descriptions, deletes or empties rows, adds rows to the rectangular duct and cable carrier tables, deletes tables, and deletes reference ids from the reference set and angles from the angle set (from Archicad 29). Each table is changed in one undoable step. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 8,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1681,
-     "title": "Grasshopper: library and MEP commands"
+     "name": "ModifyMEPPreferenceTablesComponent",
+     "path": "Components/MEPComponents/ModifyMEPPreferenceTablesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 8,
+   "coveredParameters": [
+    "anglesToDelete",
+    "domain",
+    "referenceIdsToDelete",
+    "tables",
+    "tablesToAdd",
+    "tablesToAdd.name",
+    "tablesToAdd.type",
+    "tablesToDelete"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12565,19 +12664,23 @@
    "group": "MEP Commands",
    "version": "1.7.3",
    "brief": "Renames MEP system groups. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1681,
-     "title": "Grasshopper: library and MEP commands"
+     "name": "ModifyMEPSystemGroupsComponent",
+     "path": "Components/MEPComponents/ModifyMEPSystemGroupsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "systemGroupsData",
+    "systemGroupsData.name",
+    "systemGroupsData.systemGroupId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12585,19 +12688,25 @@
    "group": "MEP Commands",
    "version": "1.7.3",
    "brief": "Modifies MEP physical systems: name, root element and the MEP system used as their category. Only the given fields are changed. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 5,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1681,
-     "title": "Grasshopper: library and MEP commands"
+     "name": "ModifyMEPPhysicalSystemsComponent",
+     "path": "Components/MEPComponents/ModifyMEPPhysicalSystemsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 5,
+   "coveredParameters": [
+    "physicalSystemsData",
+    "physicalSystemsData.mepSystemId",
+    "physicalSystemsData.name",
+    "physicalSystemsData.physicalSystemId",
+    "physicalSystemsData.rootElementId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12605,19 +12714,22 @@
    "group": "MEP Commands",
    "version": "1.7.3",
    "brief": "Removes MEP physical systems from their system groups. Their member elements are not deleted. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1681,
-     "title": "Grasshopper: library and MEP commands"
+     "name": "DeleteMEPPhysicalSystemsComponent",
+     "path": "Components/MEPComponents/DeleteMEPPhysicalSystemsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "physicalSystems",
+    "physicalSystems.physicalSystemId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12976,19 +13088,21 @@
    "group": "MEP Commands",
    "version": "1.7.3",
    "brief": "Retrieves the type-specific details of the given MEP elements: insulation thickness and routing segment of rigid segments, control points of flexible segments, radius factor, insulation thickness, preference table and routing node of elbows (from Archicad 29), angle, length and insulation thickness of branches, and offsets, wider and narrower ports, insulation thickness, routing node and (from Archicad 29) preference table of transitions. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1681,
-     "title": "Grasshopper: library and MEP commands"
+     "name": "GetMEPElementDetailsComponent",
+     "path": "Components/MEPComponents/GetMEPElementDetailsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12996,19 +13110,32 @@
    "group": "MEP Commands (extended)",
    "version": "1.7.3",
    "brief": "Gets rows of a segment, branch, elbow or (from Archicad 29) transition preference table by their key (the reference ids and, for branch and elbow rows from Archicad 29, the angle): whether the row is valid and its values (diameters, wall thickness, radius, length, angle, branch offset, connection length, description), and whether the table exists. Rectangular duct and cable carrier segment tables only give whether they exist, as their rows have no key. On Archicad 27, which has one kind of preference table, a row is found by its shape and index and has a value and a description; the table's name and number of rows per shape are returned too. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 12,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1681,
-     "title": "Grasshopper: library and MEP commands"
+     "name": "GetMEPPreferenceTableRowsComponent",
+     "path": "Components/MEPComponents/GetMEPPreferenceTableRowsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 12,
+   "coveredParameters": [
+    "keys",
+    "keys.angle",
+    "keys.beginReferenceId",
+    "keys.branchAxisAngle",
+    "keys.branchAxisReferenceId",
+    "keys.endReferenceId",
+    "keys.index",
+    "keys.mainAxisReferenceId",
+    "keys.referenceId",
+    "keys.shape",
+    "tableId",
+    "tableId.guid"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13016,19 +13143,46 @@
    "group": "MEP Commands (extended)",
    "version": "1.7.3",
    "brief": "Sets the given values of rows of a segment, branch, elbow or (from Archicad 29) transition preference table, found by their key (the reference ids and, for branch and elbow rows from Archicad 29, the angle). Only the given values are changed, in one undo step. On Archicad 27 a row is found by its shape and index, its value and description are set, and its index after the call is returned; the keys give the indices before the call. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 26,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1681,
-     "title": "Grasshopper: library and MEP commands"
+     "name": "SetMEPPreferenceTableRowsComponent",
+     "path": "Components/MEPComponents/SetMEPPreferenceTableRowsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 26,
+   "coveredParameters": [
+    "rows",
+    "rows.key",
+    "rows.key.angle",
+    "rows.key.beginReferenceId",
+    "rows.key.branchAxisAngle",
+    "rows.key.branchAxisReferenceId",
+    "rows.key.endReferenceId",
+    "rows.key.index",
+    "rows.key.mainAxisReferenceId",
+    "rows.key.referenceId",
+    "rows.key.shape",
+    "rows.values",
+    "rows.values.beginDiameter",
+    "rows.values.branchAxisDiameter",
+    "rows.values.branchOffset",
+    "rows.values.connectionLength",
+    "rows.values.description",
+    "rows.values.diameter",
+    "rows.values.endDiameter",
+    "rows.values.length",
+    "rows.values.mainAxisDiameter",
+    "rows.values.radius",
+    "rows.values.value",
+    "rows.values.wallThickness",
+    "tableId",
+    "tableId.guid"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13036,19 +13190,46 @@
    "group": "MEP Commands (extended)",
    "version": "1.7.3",
    "brief": "Adds rows with the given keys and optionally values to a branch, elbow or transition preference table and returns their index, in one undo step. Branch tables from Archicad 28, elbow and transition tables from Archicad 29; segment tables have a row for each reference id. On Archicad 27 a row is added to the list of the given shape of any preference table, and the index of each new row after the call is returned. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 26,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1681,
-     "title": "Grasshopper: library and MEP commands"
+     "name": "AddMEPPreferenceTableRowsComponent",
+     "path": "Components/MEPComponents/AddMEPPreferenceTableRowsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 26,
+   "coveredParameters": [
+    "rows",
+    "rows.key",
+    "rows.key.angle",
+    "rows.key.beginReferenceId",
+    "rows.key.branchAxisAngle",
+    "rows.key.branchAxisReferenceId",
+    "rows.key.endReferenceId",
+    "rows.key.index",
+    "rows.key.mainAxisReferenceId",
+    "rows.key.referenceId",
+    "rows.key.shape",
+    "rows.values",
+    "rows.values.beginDiameter",
+    "rows.values.branchAxisDiameter",
+    "rows.values.branchOffset",
+    "rows.values.connectionLength",
+    "rows.values.description",
+    "rows.values.diameter",
+    "rows.values.endDiameter",
+    "rows.values.length",
+    "rows.values.mainAxisDiameter",
+    "rows.values.radius",
+    "rows.values.value",
+    "rows.values.wallThickness",
+    "tableId",
+    "tableId.guid"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13056,19 +13237,32 @@
    "group": "MEP Commands (extended)",
    "version": "1.7.3",
    "brief": "Deletes rows of a segment, branch, elbow or (from Archicad 29) transition preference table by their key (the reference ids and, for branch and elbow rows from Archicad 29, the angle), in one undo step. The rows of segment tables, and of the elbow tables of Archicad 28, are emptied instead. On Archicad 27 a row is found by its shape and index. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 12,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1681,
-     "title": "Grasshopper: library and MEP commands"
+     "name": "DeleteMEPPreferenceTableRowsComponent",
+     "path": "Components/MEPComponents/DeleteMEPPreferenceTableRowsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 12,
+   "coveredParameters": [
+    "keys",
+    "keys.angle",
+    "keys.beginReferenceId",
+    "keys.branchAxisAngle",
+    "keys.branchAxisReferenceId",
+    "keys.endReferenceId",
+    "keys.index",
+    "keys.mainAxisReferenceId",
+    "keys.referenceId",
+    "keys.shape",
+    "tableId",
+    "tableId.guid"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13076,19 +13270,21 @@
    "group": "MEP Commands (extended)",
    "version": "1.7.3",
    "brief": "Lists the preference tables of the Piping, Ventilation and Cable Carrier preference table containers of Archicad 27: their id, name, whether they exist and their number of rows per shape, and whether the container exists. Only for Archicad 27; from Archicad 28 use GetMEPPreferenceTables.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1681,
-     "title": "Grasshopper: library and MEP commands"
+     "name": "GetMEPPreferenceTableContainersComponent",
+     "path": "Components/MEPComponents/GetMEPPreferenceTableContainersComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "domains"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13096,19 +13292,23 @@
    "group": "MEP Commands (extended)",
    "version": "1.7.3",
    "brief": "Adds empty preference tables with the given names to the preference table container of a domain of Archicad 27 and returns their id, in one undo step. Only for Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1681,
-     "title": "Grasshopper: library and MEP commands"
+     "name": "CreateMEPPreferenceTablesComponent",
+     "path": "Components/MEPComponents/CreateMEPPreferenceTablesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "domain",
+    "tables",
+    "tables.name"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {

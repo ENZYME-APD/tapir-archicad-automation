@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 58 % | 80 | 39 | 8 | 13 | 1 | 19 | 2 | 57 |
 | C++ API (ACAPI::, IFCAPI::) | 80 % | 1435 | 679 | 476 | 244 | 35 | 1 |  | 392 |
 
-Archicad 25–30 DevKits; updated 2026-10-31 07:48 UTC.
+Archicad 25–30 DevKits; updated 2026-10-31 08:08 UTC.
 
 | | Status |
 |---|---|
@@ -405,7 +405,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_View_Redraw` – Redraws the content of the current window. <sub>(was `APIDo_RedrawID`)</sub>
 - ✅ `ACAPI_View_ResetZoom` <sub>AC27–30</sub> – Restores the zoom parameters of the current database by a given number of steps.
 - 🚧 `ACAPI_View_SetCurrent3DStyle` – Sets an existing style as active. <sub>(was `APIEnv_SetCurrent3DStyleID`)</sub> — [#954](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/954 "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands")
-- ✅ `ACAPI_View_SetZoom` – Sets the zoom box of the current database. <sub>(was `APIDb_SetZoomID`)</sub>
+- ✅ `ACAPI_View_SetZoom` – Sets the zoom box of the current database. <sub>(was `APIDb_SetZoomID`)</sub> — [#1692](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1692 "SetZoom resets a rotated floor plan to zero, even with the identical zoomBox")
 - 🚧 `ACAPI_View_ShowAllIn3D` – Activates the 3D window and shows the whole model. <sub>(was `APIDo_ShowAllIn3DID`, `APIIo_ShowAllIn3DID`)</sub> — [#954](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/954 "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands")
 - 🚧 `ACAPI_View_ShowSelectionIn3D` – Activates the 3D window and shows the selected elements. <sub>(was `APIDo_ShowSelectionIn3DID`, `APIIo_ShowSelectionIn3DID`)</sub> — [#954](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/954 "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands")
 - ⬜ `ACAPI_View_StoreViewSettings` – Stores or restores the current view settings. <sub>(was `APIDb_StoreViewSettingsID`)</sub>
@@ -462,7 +462,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 ## Navigator
 
 - 🚧 `ACAPI_Navigator_ChangeCurrLayerComb` – Activates a layer combination. <sub>(was `APIEnv_ChangeCurrLayerCombID`)</sub> — [#916](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/916 "Add ActivateLayerCombination command and Grasshopper component")
-- ✅ `ACAPI_Navigator_ChangeLayoutSets` – Changes the settings of the current layout in Archicad. <sub>(was `APIEnv_ChangeLayoutSetsID`)</sub> — [#765](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/765 "RenameNavigatorItem: set a view's ID with newId and fail when the ID is kept")
+- ✅ `ACAPI_Navigator_ChangeLayoutSets` – Changes the settings of the current layout in Archicad. <sub>(was `APIEnv_ChangeLayoutSetsID`)</sub> — [#765](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/765 "RenameNavigatorItem: set a view's ID with newId and fail when the ID is kept"), [#1694](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1694 "SetLayoutSettings layoutName reports success without changing a Layout or Master Layout name")
 - ✅ `ACAPI_Navigator_ChangeNavigatorItem` – Modifies the given Project Navigator item. <sub>(was `APINavigator_ChangeNavigatorItemID`)</sub> — [#1640](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1640 "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"), [#1489](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1489 "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item")
 - 🔀 `ACAPI_Navigator_ChangeNavigatorVPItem` – Changes an existing Navigator viewpoint root, group or leaf node in the Project Map. <sub>(was `APINavigator_ChangeNavigatorVPItemID`)</sub>
 - ✅ `ACAPI_Navigator_ChangeNavigatorView` – Sets the given Project Navigator item and its view settings. <sub>(was `APINavigator_ChangeNavigatorViewID`)</sub> — [#1660](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1660 "CreateViewsInViewMap: accept a View Map view as the source"), [#1047](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1047 "GetViewSettings: return the stored in this view flags and the full transformation (split from #876)"), [#688](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/688 "SetViewSettings fails at ACAPI_Navigator_ChangeNavigatorView (-2130313113) even when writing a view's current values")
