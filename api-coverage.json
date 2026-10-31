@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-31 09:57 UTC",
+ "generatedAt": "2026-10-31 12:03 UTC",
  "versions": [
   25,
   26,
@@ -5833,7 +5833,12 @@
      "title": "UpdateZones: optional list of Zones to update instead of the current selection"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1708,
+     "title": "Return the active window's database/view identity, not only its type"
+    }
+   ]
   },
   {
    "id": "ACAPI_Database_GetDBUnIdFromGuid",
@@ -9393,6 +9398,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1706,
+     "title": "UpdateZones: optional list of the Zones to update"
+    },
     {
      "number": 1686,
      "title": "Get3DBoundingBoxes: work for Slabs and Zones while a layout or a section is open"
@@ -20588,6 +20597,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1706,
+     "title": "UpdateZones: optional list of the Zones to update"
+    },
+    {
      "number": 963,
      "title": "[1/2] Add the DeselectAll, GetMarquee and SetMarquee commands"
     },
@@ -20617,6 +20630,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1706,
+     "title": "UpdateZones: optional list of the Zones to update"
+    },
     {
      "number": 963,
      "title": "[1/2] Add the DeselectAll, GetMarquee and SetMarquee commands"
@@ -20677,6 +20694,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1706,
+     "title": "UpdateZones: optional list of the Zones to update"
+    },
     {
      "number": 954,
      "title": "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"
@@ -23726,7 +23747,12 @@
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1708,
+     "title": "Return the active window's database/view identity, not only its type"
+    }
+   ]
   },
   {
    "id": "ACAPI_Window_GetDatabaseInfo",
@@ -37583,6 +37609,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1706,
+     "title": "UpdateZones: optional list of the Zones to update"
+    },
+    {
      "number": 1673,
      "title": "GetDetailsOfElements: surface overrides of Roofs, Beams and Columns"
     },
@@ -45235,6 +45265,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1706,
+     "title": "UpdateZones: optional list of the Zones to update"
+    },
     {
      "number": 1703,
      "title": "Add CreateSkylights: place skylights in roofs and shells"
@@ -53248,6 +53282,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1706,
+     "title": "UpdateZones: optional list of the Zones to update"
+    },
+    {
      "number": 1673,
      "title": "GetDetailsOfElements: surface overrides of Roofs, Beams and Columns"
     },
@@ -57739,6 +57777,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1706,
+     "title": "UpdateZones: optional list of the Zones to update"
+    },
     {
      "number": 1673,
      "title": "GetDetailsOfElements: surface overrides of Roofs, Beams and Columns"

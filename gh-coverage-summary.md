@@ -30,4 +30,4 @@ Parameters of the 530 used commands: 🟢 483 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 2 |  | 2 |  |  |  |  |  | 2 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-10-31 09:57 UTC.
+Updated 2026-10-31 12:03 UTC.
