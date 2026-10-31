@@ -2425,6 +2425,26 @@ GS::Optional<GS::UniString> CreateViewsInViewMapCommand::GetRawResponseSchema ()
     })";
 }
 
+// Frees what ACAPI_Navigator_GetNavigatorView allocates for a view with
+// custom settings (as the DevKit's Navigator_Test example does).
+static void FreeNavigatorView (API_NavigatorView& navigatorView)
+{
+    if (navigatorView.modelViewOpt != nullptr) {
+        ACAPI_FreeGDLModelViewOptionsPtr (&navigatorView.modelViewOpt->gdlOptions);
+        BMKillPtr ((GSPtr*) &navigatorView.modelViewOpt);
+    }
+#ifdef ServerMainVers_2700
+    delete navigatorView.layerStats;
+    navigatorView.layerStats = nullptr;
+    delete navigatorView.pens;
+    navigatorView.pens = nullptr;
+#else
+    BMKillHandle ((GSHandle*) &navigatorView.layerStats);
+    BMKillPtr ((GSPtr*) &navigatorView.pens);
+#endif
+    BMKillPtr ((GSPtr*) &navigatorView.dimPrefs);
+}
+
 GS::ObjectState CreateViewsInViewMapCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> viewsData;
@@ -2524,6 +2544,7 @@ GS::ObjectState CreateViewsInViewMapCommand::Execute (const GS::ObjectState& par
             if (err == NoError) {
                 err = ACAPI_Navigator_ChangeNavigatorView (&createdItem, &sourceViewSettings);
             }
+            FreeNavigatorView (sourceViewSettings);
             if (err != NoError) {
                 // Do not leave a view with the wrong settings behind that the
                 // caller never gets the id of.
