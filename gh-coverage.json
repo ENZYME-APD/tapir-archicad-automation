@@ -1,14 +1,14 @@
 {
- "generatedAt": "2026-10-31 08:08 UTC",
+ "generatedAt": "2026-10-31 09:00 UTC",
  "counts": {
   "done": 303,
-  "in progress": 94,
-  "merged": 158,
+  "merged": 208,
+  "in progress": 44,
   "not applicable": 1
  },
  "parameters": {
-  "all": 410,
-  "partial": 5,
+  "all": 464,
+  "partial": 1,
   "json": 46
  },
  "items": [
@@ -57,19 +57,19 @@
    "group": "Application Commands",
    "version": "1.7.3",
    "brief": "Retrieves the main version, release version and build number of the running Archicad, with the caption of its window.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetArchicadReleaseInfoComponent",
+     "path": "Components/GeneralComponents/GetArchicadReleaseInfoComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1678,
-     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -77,19 +77,19 @@
    "group": "Application Commands",
    "version": "1.7.3",
    "brief": "Retrieves Archicad's current print settings: the print area, grid, fixed text size and scale (the settings PrintView takes).",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetPrinterInfoComponent",
+     "path": "Components/GeneralComponents/GetPrinterInfoComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1678,
-     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -97,19 +97,19 @@
    "group": "Application Commands",
    "version": "1.7.3",
    "brief": "Retrieves the printer selected in Archicad, with its name and orientation, and the selected plotter, with its name and model.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetPrinterAndPlotterInfoComponent",
+     "path": "Components/GeneralComponents/GetPrinterAndPlotterInfoComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1678,
-     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -159,19 +159,22 @@
    "group": "Application Commands",
    "version": "1.7.3",
    "brief": "Asks the designer to click an element in the current window and returns its id, its type and the clicked point. A click on empty space or on an element of a type not asked for asks again. Archicad waits for the click or for Escape, and every other JSON command queues behind this one until then; cancelling returns cancelled.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1678,
-     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+     "name": "GetElementFromUserComponent",
+     "path": "Components/GeneralComponents/GetElementFromUserComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "elementTypes",
+    "prompt"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -179,19 +182,23 @@
    "group": "Application Commands",
    "version": "1.7.4",
    "brief": "Waits for the user to input a line in the active Archicad window and returns start and end coordinates.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1678,
-     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+     "name": "GetLineFromUserComponent",
+     "path": "Components/GeneralComponents/GetLineFromUserComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "endPrompt",
+    "showRubberLineFeedback",
+    "startPrompt"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -199,19 +206,23 @@
    "group": "Application Commands",
    "version": "1.7.4",
    "brief": "Waits for the user to input a polygon in the active Archicad window and returns its points and arcs.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1678,
-     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+     "name": "GetPolygonFromUserComponent",
+     "path": "Components/GeneralComponents/GetPolygonFromUserComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "method",
+    "prompt",
+    "startPrompt"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -239,19 +250,19 @@
    "group": "Application Commands",
    "version": "1.7.2",
    "brief": "Returns the drawing scale of the current (active) window, the scale shown in the bottom bar, as its denominator: 100.0 for 1:100, 20.0 for 1:20. Unlike GetViewSettings it needs no saved view. It reads the scale of the current database: the floor plan, a section, elevation, interior elevation, detail, worksheet or 3D document window, each of which has its own. Layouts always return 1.0.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetCurrentWindowDrawingScaleComponent",
+     "path": "Components/GeneralComponents/GetCurrentWindowDrawingScaleComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1678,
-     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -259,19 +270,22 @@
    "group": "Application Commands",
    "version": "1.7.2",
    "brief": "Changes the drawing scale of the current (active) window, the scale shown in the bottom bar, to the given denominator: 100 for 1:100. It changes the scale of the current database: the floor plan, a section, elevation, interior elevation, detail, worksheet or 3D document window, each of which has its own. Layouts are always 1:1 and are rejected. The scale must be between 1 and 30000. The change is undoable.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1678,
-     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+     "name": "SetCurrentWindowDrawingScaleComponent",
+     "path": "Components/GeneralComponents/SetCurrentWindowDrawingScaleComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "rebuild",
+    "scale"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -299,19 +313,21 @@
    "group": "Application Commands",
    "version": "1.7.2",
    "brief": "Returns the database (window type, database id and name) that contains each of the given elements, from any database, not only the current one. Pass the windowType and databaseId to ChangeWindow to open it, for example to find an element placed on a layout.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1678,
-     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+     "name": "GetContainingDatabasesComponent",
+     "path": "Components/GeneralComponents/GetContainingDatabasesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -319,19 +335,23 @@
    "group": "Application Commands",
    "version": "1.7.3",
    "brief": "Closes the windows of the given databases (for example layouts, sections or details opened earlier with ChangeWindow), with one execution result per window; a window Archicad cannot close gets a failed result. Requires Archicad 27 or later.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1678,
-     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+     "name": "CloseWindowsComponent",
+     "path": "Components/GeneralComponents/CloseWindowsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "windows",
+    "windows.databaseId",
+    "windows.windowType"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -339,19 +359,19 @@
    "group": "Application Commands",
    "version": "1.7.3",
    "brief": "Rebuilds the current database, the one the API works on (see ChangeWindow). Requires Archicad 27 or later.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "RebuildCurrentDatabaseComponent",
+     "path": "Components/GeneralComponents/RebuildCurrentDatabaseComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1678,
-     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -429,19 +449,19 @@
    "group": "Application Commands",
    "version": "1.7.3",
    "brief": "Tells whether Archicad is in a hierarchical editing mode (curtain wall, stair, beam or column editing), and which element is being edited. Read only: it never enters, leaves or cancels an editing mode. Commands that modify the project can fail while such a mode is active. The overall inEditMode flag requires Archicad 29 or later; the command requires Archicad 27 or later.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetEditModeStateComponent",
+     "path": "Components/GeneralComponents/GetEditModeStateComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1678,
-     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -449,19 +469,19 @@
    "group": "Application Commands",
    "version": "1.7.3",
    "brief": "Retrieves the version information of the running Archicad: build number, language code, product family and version text, plus the product name, product type, main/update/hotfix versions, the available domains (Architecture, MEP) and the CEIP project identifier of the open project from Archicad 29. Requires Archicad 28 or later.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetProductVersionInfoComponent",
+     "path": "Components/GeneralComponents/GetProductVersionInfoComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1678,
-     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -469,19 +489,19 @@
    "group": "Application Commands",
    "version": "1.7.3",
    "brief": "Returns whether 3D Cutaway is on and whether the cutting planes are shown in the 3D window. In Archicad 25-27 the 3D window may need to be open.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "Get3DCutawayStatusComponent",
+     "path": "Components/GeneralComponents/Get3DCutawayStatusComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1678,
-     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -489,19 +509,22 @@
    "group": "Application Commands",
    "version": "1.7.3",
    "brief": "Turns 3D Cutaway on or off and shows or hides the cutting planes in the 3D window. In Archicad 25-27 the 3D window may need to be open.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1678,
-     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+     "name": "Set3DCutawayStatusComponent",
+     "path": "Components/GeneralComponents/Set3DCutawayStatusComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "cutawayEnabled",
+    "cuttingPlanesVisible"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -509,19 +532,21 @@
    "group": "Application Commands",
    "version": "1.7.3",
    "brief": "Turns the dialog auto close on or off. While it is on, Archicad closes the dialogs it would show with their default button instead of waiting for the user, so automation is not blocked by them. To have it on already while Archicad opens a project (before any command can be sent), set the TAPIR_DIALOG_AUTOCLOSE environment variable to true for the Archicad process before starting it.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1678,
-     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+     "name": "SetDialogAutoCloseComponent",
+     "path": "Components/GeneralComponents/SetDialogAutoCloseComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "enabled"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1678,19 +1703,26 @@
    "group": "Custom Data Commands",
    "version": "1.7.3",
    "brief": "Stores string values under keys on elements, for scripts to keep their own state per element (external database ids, sync timestamps, markers). The data is saved with the project as the user data of the Tapir add-on on the element and appears nowhere in the Archicad UI. The given keys are merged into what the element already holds: a key that exists gets the new value, other keys are left as they are, and the keys listed in keysToDelete are removed. Prefix the keys with the script's name so that scripts do not overwrite each other's data. One undo step per call; in a Teamwork project the element has to be reserved.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 6,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1678,
-     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+     "name": "SetElementUserDataComponent",
+     "path": "Components/ElementsComponents/SetElementUserDataComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 6,
+   "coveredParameters": [
+    "elementUserData",
+    "elementUserData.elementId",
+    "elementUserData.keysToDelete",
+    "elementUserData.userData",
+    "elementUserData.userData.key",
+    "elementUserData.userData.value"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1698,19 +1730,22 @@
    "group": "Custom Data Commands",
    "version": "1.7.3",
    "brief": "Reads the values stored on elements by SetElementUserData: every key of each element, or only the given keys.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1678,
-     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+     "name": "GetElementUserDataComponent",
+     "path": "Components/ElementsComponents/GetElementUserDataComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "elements",
+    "keys"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5427,19 +5462,23 @@
    "group": "Element grouping Commands",
    "version": "1.7.3",
    "brief": "Gets the elements and the custom data of each given element set. Element sets are created by add-ons to link elements together; the custom data is returned as Base64 encoded bytes.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+     "name": "GetElementSetDataComponent",
+     "path": "Components/ElementsComponents/GetElementSetDataComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "elementSets",
+    "elementSets.elementSetId",
+    "elementSets.elementSetId.guid"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5447,19 +5486,21 @@
    "group": "Element grouping Commands",
    "version": "1.7.2",
    "brief": "Gets the user data an add-on attached to each given group: its version, platform sign, flags and bytes (base64 encoded), and, when its version is 1 (the layout SetUserDataOfGroups writes), its key-value pairs. Returns an error for groups that have no user data.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+     "name": "GetUserDataOfGroupsComponent",
+     "path": "Components/ElementsComponents/GetUserDataOfGroupsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "groups"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5467,19 +5508,23 @@
    "group": "Element grouping Commands",
    "version": "1.7.3",
    "brief": "Stores string values under keys in the user data of groups, for scripts to keep their own state on a group. The given pairs are merged into what each group already holds: a key that exists gets the new value, other keys are left as they are, and the keys listed in keysToDelete are removed. Prefix the keys with the script's name so that scripts do not overwrite each other's data. User data in another layout is left unchanged and reported as an error. One undo step per call.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+     "name": "SetUserDataOfGroupsComponent",
+     "path": "Components/ElementsComponents/SetUserDataOfGroupsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "groups",
+    "keysToDelete",
+    "pairs"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5529,19 +5574,22 @@
    "group": "Element grouping Commands",
    "version": "1.7.3",
    "brief": "Creates element sets of the given elements. An element set is a hidden, persistent collection of elements (it is not a group and has no effect on selection or editing).",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+     "name": "CreateElementSetsComponent",
+     "path": "Components/ElementsComponents/CreateElementSetsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "elementSets",
+    "elementSets.elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5549,19 +5597,21 @@
    "group": "Element grouping Commands",
    "version": "1.7.3",
    "brief": "Gets the element sets that contain each given element. Only element sets created by the Tapir Add-On are examined; sets created by other add-ons are not found.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+     "name": "GetElementSetsOfElementsComponent",
+     "path": "Components/ElementsComponents/GetElementSetsOfElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5591,19 +5641,21 @@
    "group": "Favorites Commands",
    "version": "1.7.3",
    "brief": "Returns every Favorite of the project, or only those of the given element type, with its name and element type. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+     "name": "GetAllFavoritesComponent",
+     "path": "Components/FavoritesComponents/GetAllFavoritesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elementType"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5637,19 +5689,21 @@
    "group": "Favorites Commands",
    "version": "1.7.3",
    "brief": "Returns the classifications, property values and element category values stored in the given favorites, so they can be audited before elements are placed. Each property value comes with its evaluation status and default-value flag; the value itself is only returned when it has been evaluated.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+     "name": "GetFavoriteDetailsComponent",
+     "path": "Components/FavoritesComponents/GetFavoriteDetailsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "favorites"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5739,15 +5793,14 @@
      "path": "Components/FavoritesComponents/ExportFavoritesComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 3,
    "coveredParameters": [
+    "format",
     "names",
     "path"
    ],
-   "missingParameters": [
-    "format"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -5851,19 +5904,19 @@
    "group": "Favorites Commands",
    "version": "1.7.3",
    "brief": "Returns the folder tree of the Favorites palette from its root folder: the name and path of every folder and the names of the Favorites in it. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetFavoriteFoldersComponent",
+     "path": "Components/FavoritesComponents/GetFavoriteFoldersComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5871,19 +5924,21 @@
    "group": "Favorites Commands",
    "version": "1.7.3",
    "brief": "Reads the stored settings of the given favorites without applying them or placing an element: the element type, the folder, the library part and GDL parameters, the marker (library part and parameters) of Window and Door favorites, and the sub-elements. A favorite without a marker has no marker field, which is not an error. The other settings of the element (pens, layer, structure, etc.) are not returned.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+     "name": "GetFavoriteSettingsComponent",
+     "path": "Components/FavoritesComponents/GetFavoriteSettingsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "favorites"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6027,15 +6082,14 @@
      "path": "Components/PropertiesComponents/GetAllPropertiesComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 3,
    "coveredParameters": [
-    "properties"
-   ],
-   "missingParameters": [
     "includeAvailability",
+    "properties",
     "propertyTypes"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -6056,15 +6110,14 @@
      "path": "Components/PropertiesComponents/GetPropertyValuesOfElementsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 3,
    "coveredParameters": [
     "elements",
+    "includeAvailability",
     "properties"
    ],
-   "missingParameters": [
-    "includeAvailability"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -6120,15 +6173,14 @@
      "path": "Components/PropertiesComponents/GetPropertyValuesOfAttributesComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 3,
    "coveredParameters": [
     "attributeIds",
+    "includeStatus",
     "properties"
    ],
-   "missingParameters": [
-    "includeStatus"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -6159,19 +6211,22 @@
    "group": "Property Commands",
    "version": "1.7.3",
    "brief": "Returns the property definitions of the given attributes (for example Building Materials): the user defined, the fundamental built-in, or all of them.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+     "name": "GetPropertyDefinitionsOfAttributesComponent",
+     "path": "Components/PropertiesComponents/GetPropertyDefinitionsOfAttributesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "attributeIds",
+    "filter"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6179,19 +6234,23 @@
    "group": "Property Commands",
    "version": "1.7.3",
    "brief": "Returns the property definitions of the tool defaults (the settings new elements get) of the given element types, filtered by kind (all by default), and optionally the value of each property in the tool default.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+     "name": "GetPropertiesOfToolDefaultsComponent",
+     "path": "Components/PropertiesComponents/GetPropertiesOfToolDefaultsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "elementTypes",
+    "filter",
+    "includeValues"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6199,19 +6258,22 @@
    "group": "Property Commands",
    "version": "1.7.3",
    "brief": "Makes an existing custom property available for the given attributes (for example Building Materials), in one undo step. Available in Archicad 25, 26 and 27 only.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+     "name": "AddPropertyToAttributesComponent",
+     "path": "Components/PropertiesComponents/AddPropertyToAttributesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "attributeIds",
+    "propertyId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6219,19 +6281,22 @@
    "group": "Property Commands",
    "version": "1.7.3",
    "brief": "Makes a custom property unavailable for the given attributes (for example Building Materials), in one undo step. Available in Archicad 25, 26 and 27 only.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+     "name": "RemovePropertyFromAttributesComponent",
+     "path": "Components/PropertiesComponents/RemovePropertyFromAttributesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "attributeIds",
+    "propertyId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6402,19 +6467,23 @@
    "group": "Property Commands",
    "version": "1.7.3",
    "brief": "Sets one property value on all the given elements in a single step. If the property is not available for any of the elements, none of them is changed. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+     "name": "ModifyPropertyValueOfElementsComponent",
+     "path": "Components/PropertiesComponents/ModifyPropertyValueOfElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "elements",
+    "propertyId",
+    "propertyValue"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6422,19 +6491,22 @@
    "group": "Property Commands",
    "version": "1.7.2",
    "brief": "Makes a property definition available for all the given elements. Available only in Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+     "name": "MakePropertyAvailableForElementsComponent",
+     "path": "Components/PropertiesComponents/MakePropertyAvailableForElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "elements",
+    "propertyId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6442,19 +6514,22 @@
    "group": "Property Commands",
    "version": "1.7.2",
    "brief": "Makes a property definition unavailable for all the given elements. Available only in Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+     "name": "MakePropertyUnavailableForElementsComponent",
+     "path": "Components/PropertiesComponents/MakePropertyUnavailableForElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "elements",
+    "propertyId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6485,19 +6560,21 @@
    "group": "Classification Commands",
    "version": "1.7.3",
    "brief": "Returns the elements classified with the given classification items, one list per item, so elements can be filtered by classification in a single call.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+     "name": "GetElementsByClassificationComponent",
+     "path": "Components/ClassificationsComponents/GetElementsByClassificationComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "classificationItemIds"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6640,19 +6717,21 @@
    "group": "Classification Commands",
    "version": "1.7.3",
    "brief": "Returns every classification of the tool defaults (the settings new elements get) of the given element types, in all classification systems at once. Unlike GetClassificationsOfElementDefaults it needs no list of classification systems; systems in which a default is unclassified are left out.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+     "name": "GetClassificationsOfToolDefaultsComponent",
+     "path": "Components/ClassificationsComponents/GetClassificationsOfToolDefaultsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elementTypes"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6792,19 +6871,21 @@
    "group": "Classification Commands",
    "version": "1.7.3",
    "brief": "Returns the parent item and the classification system of the given Classification Items; a top level item has no parent. The output is aligned with the input array of items.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+     "name": "GetClassificationItemParentsComponent",
+     "path": "Components/ClassificationsComponents/GetClassificationItemParentsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "classificationItemIds"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6836,19 +6917,25 @@
    "group": "Classification Commands",
    "version": "1.7.3",
    "brief": "Tells whether the given classification items are visible (offered) for the given elements, element tool defaults and attributes, such as building materials. Non-existing targets and classification items are reported as errors. Visibility does not tell whether the target is classified with the item, and an item can be visible even if its parent item is not.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 5,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+     "name": "GetClassificationItemVisibilityComponent",
+     "path": "Components/ClassificationsComponents/GetClassificationItemVisibilityComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 5,
+   "coveredParameters": [
+    "classificationItemIds",
+    "targets",
+    "targets.attributeId",
+    "targets.elementId",
+    "targets.elementType"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8393,19 +8480,22 @@
    "group": "IFC Commands",
    "version": "1.7.3",
    "brief": "Retrieves the IFC attributes (Name, Description, ObjectType, Tag, PredefinedType, LongName, ...) of the given elements, subelements included: the name, the IFC value type and the value of each attribute. On Archicad 25, 26 and 27 storedOnly returns only the attributes stored on the elements.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+     "name": "GetIFCAttributesOfElementsComponent",
+     "path": "Components/IFCComponents/GetIFCAttributesOfElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "elements",
+    "storedOnly"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8413,19 +8503,24 @@
    "group": "IFC Commands",
    "version": "1.7.3",
    "brief": "Sets the values of IFC attributes (Name, Description, ObjectType, Tag, ...) of elements. The attribute must be one GetIFCAttributesOfElements returns for the element; its IFC value type is kept. Available only in Archicad 25, 26 and 27 for now.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 4,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+     "name": "SetIFCAttributesOfElementsComponent",
+     "path": "Components/IFCComponents/SetIFCAttributesOfElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "elementIFCAttributeValues",
+    "elementIFCAttributeValues.elementId",
+    "elementIFCAttributeValues.name",
+    "elementIFCAttributeValues.value"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8460,19 +8555,22 @@
    "group": "IFC Commands",
    "version": "1.7.3",
    "brief": "Retrieves the IFC classification references of the given elements, subelements included: identification, name, location, description (from Archicad 29), the referenced classification (name, source, edition) and whether the reference comes from the preview translator or is stored locally. On Archicad 25, 26 and 27 the source is not given, the referenced classification also has its edition date, description and location, and storedOnly returns only the references stored on the elements.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+     "name": "GetIFCClassificationReferencesOfElementsComponent",
+     "path": "Components/IFCComponents/GetIFCClassificationReferencesOfElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "elements",
+    "storedOnly"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8480,19 +8578,29 @@
    "group": "IFC Commands",
    "version": "1.7.3",
    "brief": "Stores IFC classification references (identification, name, location and the referenced classification with its name, edition, edition date, description and location) on elements. Available only in Archicad 25, 26 and 27 for now.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 9,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+     "name": "SetIFCClassificationReferencesOfElementsComponent",
+     "path": "Components/IFCComponents/SetIFCClassificationReferencesOfElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 9,
+   "coveredParameters": [
+    "elementIFCClassificationReferences",
+    "elementIFCClassificationReferences.elementId",
+    "elementIFCClassificationReferences.identification",
+    "elementIFCClassificationReferences.location",
+    "elementIFCClassificationReferences.name",
+    "elementIFCClassificationReferences.referencedSource",
+    "elementIFCClassificationReferences.referencedSource.description",
+    "elementIFCClassificationReferences.referencedSource.edition",
+    "elementIFCClassificationReferences.referencedSource.editionDate"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8500,19 +8608,25 @@
    "group": "IFC Commands",
    "version": "1.7.3",
    "brief": "Removes IFC classification references stored on elements, given by the name of their classification and optionally their identification; without identification every stored reference of that classification is removed. Available only in Archicad 25, 26 and 27 for now.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 5,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+     "name": "RemoveIFCClassificationReferencesOfElementsComponent",
+     "path": "Components/IFCComponents/RemoveIFCClassificationReferencesOfElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 5,
+   "coveredParameters": [
+    "elementIFCClassificationReferences",
+    "elementIFCClassificationReferences.elementId",
+    "elementIFCClassificationReferences.identification",
+    "elementIFCClassificationReferences.referencedSource",
+    "elementIFCClassificationReferences.referencedSource.name"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8520,19 +8634,24 @@
    "group": "IFC Commands",
    "version": "1.7.3",
    "brief": "Removes local IFC properties, given by property set and property name, from elements. Available only in Archicad 25, 26 and 27 for now.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 4,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1680,
-     "title": "Grasshopper: property, classification, IFC, element set and favorites commands"
+     "name": "RemoveIFCPropertiesOfElementsComponent",
+     "path": "Components/IFCComponents/RemoveIFCPropertiesOfElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "elementIFCProperties",
+    "elementIFCProperties.elementId",
+    "elementIFCProperties.propertyName",
+    "elementIFCProperties.propertySetName"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11259,19 +11378,19 @@
    "group": "Revision Management Commands",
    "version": "1.7.3",
    "brief": "Retrieves the custom fields of changes (the change custom scheme): the key and the name of each field. The keys are the customSchemeKey values in the customSchemeData of changes.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetRevisionChangeCustomSchemeComponent",
+     "path": "Components/RevisionComponents/GetRevisionChangeCustomSchemeComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1678,
-     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11537,19 +11656,23 @@
    "group": "Design Options Commands",
    "version": "1.7.3",
    "brief": "Activates one design option in each of the given combinations, without listing all active design options of the combination. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1678,
-     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+     "name": "ActivateDesignOptionsInCombinationsComponent",
+     "path": "Components/DesignOptionsComponents/ActivateDesignOptionsInCombinationsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "designOptionsToActivate",
+    "designOptionsToActivate.designOptionCombinationId",
+    "designOptionsToActivate.designOptionId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11557,19 +11680,23 @@
    "group": "Design Options Commands",
    "version": "1.7.3",
    "brief": "Turns off the given design options in the given combinations, leaving their other options as they are. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1678,
-     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+     "name": "DeactivateDesignOptionsInCombinationsComponent",
+     "path": "Components/DesignOptionsComponents/DeactivateDesignOptionsInCombinationsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "deactivatedDesignOptionsInCombinations",
+    "deactivatedDesignOptionsInCombinations.designOptionCombinationId",
+    "deactivatedDesignOptionsInCombinations.designOptions"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11849,19 +11976,21 @@
    "group": "Design Options Commands",
    "version": "1.7.3",
    "brief": "Duplicates the given design option combinations and returns the identifiers of the new combinations. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1678,
-     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+     "name": "DuplicateDesignOptionCombinationsComponent",
+     "path": "Components/DesignOptionsComponents/DuplicateDesignOptionCombinationsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "designOptionCombinations"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13925,19 +14054,33 @@
    "group": "Script UI Commands",
    "version": "1.5.4",
    "brief": "Shows the given HTML content in a native Archicad palette (a tkinter alternative for Python scripts).",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 13,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1678,
-     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
+     "name": "ShowScriptUIComponent",
+     "path": "Components/GeneralComponents/ShowScriptUIComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 13,
+   "coveredParameters": [
+    "allowSelfSignedCertificates",
+    "autoHeight",
+    "clearCookies",
+    "contextMenuEnabled",
+    "height",
+    "htmlContent",
+    "navigationDisabled",
+    "resizable",
+    "scrollBarsVisible",
+    "title",
+    "width",
+    "zoomEnabled",
+    "zoomLevel"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13945,19 +14088,19 @@
    "group": "Script UI Commands",
    "version": "1.5.4",
    "brief": "Retrieves and clears the result last submitted from the Script UI palette's page (via window.ACAPI.SubmitResult), if any, and reports whether the palette is still open, so a waiting script can stop when the user closes it.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetScriptUIResultComponent",
+     "path": "Components/GeneralComponents/GetScriptUIResultComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1678,
-     "title": "Grasshopper: application, Script UI, element user data, revision and design option commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {

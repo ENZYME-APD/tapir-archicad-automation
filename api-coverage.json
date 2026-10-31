@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-31 08:08 UTC",
+ "generatedAt": "2026-10-31 09:00 UTC",
  "versions": [
   25,
   26,
@@ -6240,6 +6240,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1699,
+     "title": "SetLayoutSettings: apply layoutName by renaming the layout database"
+    },
+    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -6707,6 +6711,14 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1703,
+     "title": "Add CreateSkylights: place skylights in roofs and shells"
+    },
+    {
+     "number": 1698,
+     "title": "SetGDLParametersOfElements: report written parameters Archicad did not keep"
+    },
+    {
      "number": 1642,
      "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
     },
@@ -6850,6 +6862,14 @@
    "status": "not applicable",
    "reason": "memory management",
    "pullRequests": [
+    {
+     "number": 1702,
+     "title": "Add CreateShells: extruded, revolved and ruled shells"
+    },
+    {
+     "number": 1700,
+     "title": "CreateWindows, CreateDoors: create without a marker when the marker defaults cannot be read"
+    },
     {
      "number": 1673,
      "title": "GetDetailsOfElements: surface overrides of Roofs, Beams and Columns"
@@ -7972,6 +7992,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1698,
+     "title": "SetGDLParametersOfElements: report written parameters Archicad did not keep"
+    },
+    {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
     },
@@ -8327,6 +8351,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1700,
+     "title": "CreateWindows, CreateDoors: create without a marker when the marker defaults cannot be read"
+    },
+    {
      "number": 1578,
      "title": "CreateMorphs, ModifyMorphs: say when the morph's layer is hidden"
     },
@@ -8381,6 +8409,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1700,
+     "title": "CreateWindows, CreateDoors: create without a marker when the marker defaults cannot be read"
+    },
     {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
@@ -9000,6 +9032,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1702,
+     "title": "Add CreateShells: extruded, revolved and ruled shells"
+    },
+    {
+     "number": 1700,
+     "title": "CreateWindows, CreateDoors: create without a marker when the marker defaults cannot be read"
+    },
     {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
@@ -13980,6 +14020,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1698,
+     "title": "SetGDLParametersOfElements: report written parameters Archicad did not keep"
+    },
+    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -14167,6 +14211,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1698,
+     "title": "SetGDLParametersOfElements: report written parameters Archicad did not keep"
+    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -14587,6 +14635,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1703,
+     "title": "Add CreateSkylights: place skylights in roofs and shells"
+    },
+    {
      "number": 1642,
      "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
     },
@@ -14835,6 +14887,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1698,
+     "title": "SetGDLParametersOfElements: report written parameters Archicad did not keep"
+    },
+    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -15007,6 +15063,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1703,
+     "title": "Add CreateSkylights: place skylights in roofs and shells"
+    },
     {
      "number": 1642,
      "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
@@ -16215,6 +16275,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1699,
+     "title": "SetLayoutSettings: apply layoutName by renaming the layout database"
+    },
+    {
      "number": 765,
      "title": "RenameNavigatorItem: set a view's ID with newId and fail when the ID is kept"
     }
@@ -16970,6 +17034,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1696,
+     "title": "SetViewSettings: report an unknown dimensionStyle as a failure"
+    },
     {
      "number": 1660,
      "title": "CreateViewsInViewMap: accept a View Map view as the source"
@@ -23015,7 +23083,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1697,
+     "title": "SetZoom: keep the rotation of the window"
+    }
+   ],
    "issues": []
   },
   {
@@ -23298,7 +23371,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1697,
+     "title": "SetZoom: keep the rotation of the window"
+    }
+   ],
    "issues": [
     {
      "number": 1692,
@@ -23680,6 +23758,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1699,
+     "title": "SetLayoutSettings: apply layoutName by renaming the layout database"
+    },
     {
      "number": 1686,
      "title": "Get3DBoundingBoxes: work for Slabs and Zones while a layout or a section is open"
@@ -30033,6 +30115,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1703,
+     "title": "Add CreateSkylights: place skylights in roofs and shells"
+    },
+    {
+     "number": 1702,
+     "title": "Add CreateShells: extruded, revolved and ruled shells"
+    },
     {
      "number": 1687,
      "title": "CreateAssociativeDimensionsOnSection: OpeningEdges preset for Opening tool elements"
@@ -45150,6 +45240,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1703,
+     "title": "Add CreateSkylights: place skylights in roofs and shells"
+    },
+    {
+     "number": 1702,
+     "title": "Add CreateShells: extruded, revolved and ruled shells"
+    },
+    {
+     "number": 1701,
+     "title": "Add CreateRailingsFromPolyline: railings along a 3D polyline with arcs"
+    },
+    {
+     "number": 1698,
+     "title": "SetGDLParametersOfElements: report written parameters Archicad did not keep"
+    },
     {
      "number": 1687,
      "title": "CreateAssociativeDimensionsOnSection: OpeningEdges preset for Opening tool elements"
