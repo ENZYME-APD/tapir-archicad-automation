@@ -9001,20 +9001,27 @@
         "type": "object",
         "properties": {
             "begCoordinate": {
-                "$ref": "#/Coordinate3D"
+                "$ref": "#/Coordinate3D",
+                "description": "The start of the segment's reference line. Its z is measured from the curtain wall's home story (see homeStoryLevel), not from project zero."
             },
             "endCoordinate": {
-                "$ref": "#/Coordinate3D"
+                "$ref": "#/Coordinate3D",
+                "description": "The end of the segment's reference line. Its z is measured from the curtain wall's home story (see homeStoryLevel), not from project zero."
             },
             "extrusionVector": {
                 "$ref": "#/Coordinate3D"
             },
             "gridOrigin": {
-                "$ref": "#/Coordinate3D"
+                "$ref": "#/Coordinate3D",
+                "description": "The origin of the segment's grid. Its z is measured from the curtain wall's home story (see homeStoryLevel), not from project zero."
             },
             "gridAngle": {
                 "type": "number",
                 "description": "The angle of the grid in radians."
+            },
+            "homeStoryLevel": {
+                "type": "number",
+                "description": "The absolute level of the curtain wall's home story: the z the other z values of this item are measured from. Add it to them for absolute coordinates."
             },
             "arcOrigin": {
                 "$ref": "#/Coordinate3D"
@@ -9036,9 +9043,13 @@
     "CurtainWallPanelDetails": {
         "type": "object",
         "properties": {
+            "homeStoryLevel": {
+                "type": "number",
+                "description": "The absolute level of the curtain wall's home story: the z the other z values of this item are measured from. Add it to them for absolute coordinates."
+            },
             "polygonCoordinates": {
                 "type": "array",
-                "description": "The 3D coordinates of the panel polygon.",
+                "description": "The 3D coordinates of the panel polygon. Their z is measured from the curtain wall's home story (see homeStoryLevel), not from project zero.",
                 "items": {
                     "$ref": "#/Coordinate3D"
                 },
@@ -9091,11 +9102,17 @@
     "CurtainWallFrameDetails": {
         "type": "object",
         "properties": {
+            "homeStoryLevel": {
+                "type": "number",
+                "description": "The absolute level of the curtain wall's home story: the z the other z values of this item are measured from. Add it to them for absolute coordinates."
+            },
             "begCoordinate": {
-                "$ref": "#/Coordinate3D"
+                "$ref": "#/Coordinate3D",
+                "description": "The start of the frame. Its z is measured from the curtain wall's home story (see homeStoryLevel), not from project zero."
             },
             "endCoordinate": {
-                "$ref": "#/Coordinate3D"
+                "$ref": "#/Coordinate3D",
+                "description": "The end of the frame. Its z is measured from the curtain wall's home story (see homeStoryLevel), not from project zero."
             },
             "orientationVector": {
                 "$ref": "#/Coordinate3D"

@@ -142,6 +142,18 @@ static void AddSectionLinesFromMemo (const API_Guid& guid, GSSize nMainCoord, GS
 }
 
 
+// The z values of curtain wall segments, frames and panels (begC, endC, gridOrigin, the panel
+// polygon) are measured from the curtain wall's home story, not from project zero like the
+// curtain wall's own 3D box. homeStoryLevel is that story's absolute level, so callers can add it.
+static void AddCurtainWallHomeStoryLevel (const API_Guid& curtainWallGuid, const Stories& stories, GS::ObjectState& os)
+{
+    API_Element curtainWall = {};
+    curtainWall.header.guid = curtainWallGuid;
+    if (ACAPI_Element_Get (&curtainWall) == NoError) {
+        os.Add ("homeStoryLevel", GetZPos (curtainWall.header.floorInd, 0.0, stories));
+    }
+}
+
 // Shared "line-family settings" fields present on Line/PolyLine/Arc/Circle/Spline
 // (API_LineType/API_PolyLineType/API_ArcType/API_SplineType all share this exact shape).
 // NOTE: penWeight is deliberately NOT exposed here (GET or SET) - confirmed live that a raw
@@ -1823,6 +1835,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     typeSpecificDetails.Add ("arcOrigin", Create3DCoordinateObjectState (elem.cwSegment.arcOrigin));
                     typeSpecificDetails.Add ("isNegativeArc", elem.cwSegment.negArc);
                 }
+                AddCurtainWallHomeStoryLevel (elem.cwSegment.owner, stories, typeSpecificDetails);
             } break;
 
             case API_CurtainWallPanelID: {
@@ -1910,6 +1923,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
                 typeSpecificDetails.Add ("segmentIndex", elem.cwPanel.segmentID);
                 typeSpecificDetails.Add ("className", GS::UniString (elem.cwPanel.className));
+                AddCurtainWallHomeStoryLevel (elem.cwPanel.owner, stories, typeSpecificDetails);
             } break;
 
             case API_CurtainWallFrameID: {
@@ -1925,6 +1939,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     elem.cwFrame.classID == APICWFrameClass_Boundary ? "Boundary" :
                     elem.cwFrame.classID == APICWFrameClass_Corner ? "Corner" :
                     elem.cwFrame.classID == APICWFrameClass_Division ? "Division" : "Custom");
+                AddCurtainWallHomeStoryLevel (elem.cwFrame.owner, stories, typeSpecificDetails);
             } break;
 
             case API_MeshID: {
