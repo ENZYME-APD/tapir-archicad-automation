@@ -1,5 +1,5 @@
 {
-  "title": "ModifyMEPRoutingElements sets and removes the insulation of a route, and refuses it on a cable carrier",
+  "title": "ModifyMEPRoutingElements sets and removes the insulation of a route, also together with a new cross section, and refuses it on a cable carrier",
   "minTapir": "1.7.4",
   "steps": [
     {
@@ -101,6 +101,63 @@
           "path": "routingElements[0].segments[0].insulationThickness",
           "exists": false,
           "name": "no insulation left"
+        }
+      ]
+    },
+    {
+      "id": "duct route",
+      "command": "CreateMEPRoutingElements",
+      "params": {
+        "routingElementsData": [
+          {
+            "domain": "Ventilation",
+            "crossSectionShape": "Rectangular",
+            "crossSectionWidth": 0.3,
+            "crossSectionHeight": 0.2,
+            "nodeCoordinates": [
+              { "x": 0.0, "y": -12.0, "z": 3.0 },
+              { "x": 4.0, "y": -12.0, "z": 3.0 }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "duct": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "resize and insulate in one call",
+      "command": "ModifyMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "routingElementsData": [
+          { "elementId": { "guid": "${duct}" }, "crossSectionWidth": 0.4, "insulationThickness": 0.025 }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "read the duct",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${duct}" } } ]
+      },
+      "expect": [
+        {
+          "path": "routingElements[0].segments[0].crossSectionWidth",
+          "approx": 0.4,
+          "name": "new width kept"
+        },
+        {
+          "path": "routingElements[0].segments[0].insulationThickness",
+          "approx": 0.025,
+          "name": "duct insulated"
         }
       ]
     },

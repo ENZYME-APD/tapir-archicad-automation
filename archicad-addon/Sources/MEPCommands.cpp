@@ -1921,6 +1921,12 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
             success &= result.IsOk () && setterSucceeded;
         }
 
+        // The insulation first: it writes back the route's segment defaults as they were read, so it
+        // must not run after the cross section and the other segment settings below are changed.
+        if (hasInsulationThickness) {
+            success &= SetInsulationOfRoutingElement (*routingElement, insulationThickness);
+        }
+
         double width = 0.0;
         double height = 0.0;
         GS::UniString shapeStr;
@@ -1992,10 +1998,6 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
                 }, "Modify Routing Segment");
                 success &= result.IsOk () && settersSucceeded;
             }
-        }
-
-        if (hasInsulationThickness) {
-            success &= SetInsulationOfRoutingElement (*routingElement, insulationThickness);
         }
 
         if (preferredTransitionPlacement.has_value ()) {
