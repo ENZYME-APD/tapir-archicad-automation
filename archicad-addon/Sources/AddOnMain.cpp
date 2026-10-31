@@ -1299,6 +1299,10 @@ GSErrCode Initialize (void)
             classificationCommands, "1.7.3",
             "Returns every classification of the tool defaults (the settings new elements get) of the given element types, in all classification systems at once. Unlike GetClassificationsOfElementDefaults it needs no list of classification systems; systems in which a default is unclassified are left out."
         );
+        err |= RegisterCommand<GetClassificationSystemsCommand> (
+            classificationCommands, "1.7.4",
+            "Returns all Classification Systems of the project with their id, name, description, source, version and date. Tapir's own equivalent of the official GetAllClassificationSystems."
+        );
         err |= RegisterCommand<CreateClassificationSystemsCommand> (
             classificationCommands, "1.5.0",
             "Creates Classification Systems including Classification Items based on the given parameters."

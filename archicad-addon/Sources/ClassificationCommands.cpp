@@ -1497,6 +1497,92 @@ static GS::HashSet<API_Guid> AllClassificationGuids ()
     return guids;
 }
 
+GetClassificationSystemsCommand::GetClassificationSystemsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetClassificationSystemsCommand::GetName () const
+{
+    return "GetClassificationSystems";
+}
+
+GS::Optional<GS::UniString> GetClassificationSystemsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> GetClassificationSystemsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "classificationSystems": {
+                "type": "array",
+                "description": "All classification systems of the project.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "classificationSystemId": {
+                            "$ref": "#/ClassificationSystemId"
+                        },
+                        "name": { "type": "string" },
+                        "description": { "type": "string" },
+                        "source": { "type": "string" },
+                        "version": { "type": "string" },
+                        "date": {
+                            "type": "string",
+                            "description": "The edition date as YYYY-MM-DD."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "classificationSystemId",
+                        "name",
+                        "description",
+                        "source",
+                        "version",
+                        "date"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationSystems"
+        ]
+    })";
+}
+
+GS::ObjectState GetClassificationSystemsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GS::ObjectState response;
+    const auto& classificationSystems = response.AddList<GS::ObjectState> ("classificationSystems");
+
+    GS::Array<API_ClassificationSystem> systems;
+    ACAPI_Classification_GetClassificationSystems (systems);
+    for (const API_ClassificationSystem& system : systems) {
+        GS::ObjectState classificationSystem;
+        classificationSystem.Add ("classificationSystemId", CreateGuidObjectState (system.guid));
+        classificationSystem.Add ("name", system.name);
+        classificationSystem.Add ("description", system.description);
+        classificationSystem.Add ("source", system.source);
+        classificationSystem.Add ("version", system.editionVersion);
+#ifdef ServerMainVers_2900
+        const std::chrono::year_month_day& date = system.editionDate;
+        classificationSystem.Add ("date", GS::UniString::SPrintf ("%04d-%02u-%02u", (int) date.year (), (unsigned) date.month (), (unsigned) date.day ()));
+#else
+        classificationSystem.Add ("date", GS::UniString::SPrintf ("%04u-%02u-%02u", (unsigned) system.editionDate.year, (unsigned) system.editionDate.month, (unsigned) system.editionDate.day));
+#endif
+        classificationSystems (classificationSystem);
+    }
+
+    return response;
+}
+
 GetClassificationItemParentsCommand::GetClassificationItemParentsCommand () :
     CommandBase (CommonSchema::Used)
 {}
