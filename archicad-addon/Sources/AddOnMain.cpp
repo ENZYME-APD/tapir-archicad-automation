@@ -1016,7 +1016,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetModelExtentCommand> (
             elementCommands, "1.7.4",
-            "Returns the 3D extent (xMin, yMin, zMin, xMax, yMax, zMax) of the current database, the region Archicad's Fit in Window would show. Available from Archicad 29."
+            "Returns the 3D extent (xMin, yMin, zMin, xMax, yMax, zMax) of the current database, the region Archicad's Fit in Window would show."
         );
         err |= RegisterCommand<AddElementNotificationClientCommand> (
             elementCommands, "1.2.8",

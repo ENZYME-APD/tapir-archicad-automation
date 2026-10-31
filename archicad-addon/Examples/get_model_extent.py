@@ -1,6 +1,5 @@
 import aclib
 
-# Requires Archicad 29 or newer.
 # GetModelExtent returns the region Fit in Window would show in the current database,
 # vertical range included. A stray element far from the building makes it much larger
 # than expected.

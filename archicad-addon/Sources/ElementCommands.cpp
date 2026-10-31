@@ -7912,7 +7912,6 @@ GS::Optional<GS::UniString> GetModelExtentCommand::GetRawResponseSchema () const
 
 GS::ObjectState GetModelExtentCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
-#ifdef ServerMainVers_2900
     // The region Fit in Window would show in the current database, vertical range included.
     API_Box3D extent3D = {};
     const GSErrCode err = ACAPI_Element_GetExtent3D (&extent3D);
@@ -7926,9 +7925,6 @@ GS::ObjectState GetModelExtentCommand::Execute (const GS::ObjectState& /*paramet
                             "yMax", extent3D.yMax,
                             "zMin", extent3D.zMin,
                             "zMax", extent3D.zMax);
-#else
-    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
-#endif
 }
 
 
