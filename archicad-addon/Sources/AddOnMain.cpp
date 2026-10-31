@@ -2188,6 +2188,14 @@ GSErrCode Initialize (void)
             designOptionsCommands, "1.7.1",
             "Deletes the given design option combinations. Available from Archicad 29."
         );
+        err |= RegisterCommand<GetDesignOptionCombinationOfViewsCommand> (
+            designOptionsCommands, "1.7.4",
+            "Retrieves which design option combination the given views show: only the main model, a combination, a custom set of design options or a deleted combination. Available from Archicad 29."
+        );
+        err |= RegisterCommand<SetDesignOptionCombinationOfViewsCommand> (
+            designOptionsCommands, "1.7.4",
+            "Sets the design option combination the given views show, or makes them show only the main model. Available from Archicad 29."
+        );
         err |= RegisterCommand<SetDefaultDesignOptionCommand> (
             designOptionsCommands, "1.7.3",
             "Sets the given design option as the default, or the Main Model when no design option is given. Available from Archicad 29."
