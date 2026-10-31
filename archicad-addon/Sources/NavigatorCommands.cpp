@@ -3296,7 +3296,11 @@ GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& par
         } else if (navItem.itemType == API_SubSetNavItem) {
             err = APIERR_NOTSUPPORTED;
         } else if (navItem.mapId == API_ProjectMap) {
+            // ACAPI_Navigator_DeleteNavigatorVPItem deletes only the viewpoints of this
+            // add-on (CreateAddOnViewpoints) and answers APIERR_BADID for any other one;
+            // the API cannot delete Archicad's own Project Map viewpoints.
             err = ACAPI_Navigator_DeleteNavigatorVPItem (&guid);
+            failureMessage = "Failed to delete the Project Map viewpoint. Only the viewpoints the Tapir Add-On created (CreateAddOnViewpoints) can be deleted; Archicad's own Project Map items, such as schedules, cannot be deleted through the API.";
         } else {
             bool silentMode = true;
             err = ACAPI_Navigator_DeleteNavigatorView (&guid, &silentMode);
