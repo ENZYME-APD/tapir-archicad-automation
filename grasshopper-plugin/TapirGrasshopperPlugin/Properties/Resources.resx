@@ -448,6 +448,9 @@
   <data name="UnlockElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\UnlockElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="UnmergeElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\UnmergeElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Layers" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Layers.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -499,6 +502,9 @@
   <data name="SetElementGDLs" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SetElementGDLs.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="SetGraphicOverrideRuleOrder" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetGraphicOverrideRuleOrder.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="SetElementNotificationClient" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SetElementNotificationClient.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -510,6 +516,9 @@
   </data>
   <data name="GetNavigatorParentItems" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetNavigatorParentItems.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetMergedElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetMergedElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="GetOpeningDefault" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetOpeningDefault.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -631,6 +640,9 @@
   <data name="MoveElementsToDesignOptions" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\MoveElementsToDesignOptions.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="MoveGraphicOverrideRules" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\MoveGraphicOverrideRules.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="MoveDesignOptionsToAnotherSet" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\MoveDesignOptionsToAnotherSet.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -675,6 +687,21 @@
   </data>
   <data name="GetFontsByName" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetFontsByName.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetGraphicOverrideCombinations" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetGraphicOverrideCombinations.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetGraphicOverrideRuleGroups" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetGraphicOverrideRuleGroups.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetGraphicOverrideRules" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetGraphicOverrideRules.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetGraphicOverrideRulesByName" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetGraphicOverrideRulesByName.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetGraphicalOverrideRules" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetGraphicalOverrideRules.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="GetZoneCategories" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetZoneCategories.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -766,6 +793,9 @@
   <data name="CreateSolidElementLinks" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateSolidElementLinks.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="CreateSolidOperations" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateSolidOperations.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="RemoveSolidElementLinks" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\RemoveSolidElementLinks.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -784,8 +814,20 @@
   <data name="RenameFavorites" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\RenameFavorites.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="RenameGraphicOverrideRuleGroups" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\RenameGraphicOverrideRuleGroups.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="DeleteFavorites" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\DeleteFavorites.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="DeleteGraphicOverrideCombinations" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DeleteGraphicOverrideCombinations.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="DeleteGraphicOverrideRuleGroups" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DeleteGraphicOverrideRuleGroups.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="DeleteGraphicOverrideRules" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DeleteGraphicOverrideRules.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="IFCFileOperation" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\IFCFileOperation.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -921,6 +963,21 @@
   </data>
   <data name="CreateFills" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateFills.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateGraphicOverrideCombinations" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateGraphicOverrideCombinations.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateGraphicOverrideRuleGroups" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateGraphicOverrideRuleGroups.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateGraphicOverrideRules" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateGraphicOverrideRules.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateGraphicalOverrideCombination" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateGraphicalOverrideCombination.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateGraphicalOverrideRule" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateGraphicalOverrideRule.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="CreateZoneCategories" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateZoneCategories.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -1150,6 +1207,9 @@
   <data name="GetUserDataOfAttributes" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetUserDataOfAttributes.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="GetTeamworkStatus" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetTeamworkStatus.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="SetSuspendGroupsMode" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SetSuspendGroupsMode.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -1173,6 +1233,9 @@
   </data>
   <data name="UpdateZones" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\UpdateZones.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="UploadLibrariesToBIMcloud" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\UploadLibrariesToBIMcloud.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="GetUserGSID" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetUserGSID.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -1228,6 +1291,9 @@
   <data name="MEPDomainValueList" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\MEPDomainValueList.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="MergeElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\MergeElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="MeasureTexts" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\MeasureTexts.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -1269,6 +1335,9 @@
   </data>
   <data name="RemoveElementTrims" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\RemoveElementTrims.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="RemoveLibrariesFromBIMcloud" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\RemoveLibrariesFromBIMcloud.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="GetElementTrims" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetElementTrims.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -1377,6 +1446,12 @@
   </data>
   <data name="ModifyElectricalProjectSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ModifyElectricalProjectSettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ModifyGraphicOverrideCombinations" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ModifyGraphicOverrideCombinations.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ModifyGraphicOverrideRules" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ModifyGraphicOverrideRules.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="CreateGridElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateGridElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
