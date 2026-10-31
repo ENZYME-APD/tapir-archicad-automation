@@ -93,8 +93,15 @@ namespace TapirGrasshopperPlugin.Types.Navigator
         [JsonProperty("zoom", NullValueHandling = NullValueHandling.Ignore)]
         public ViewZoomBox Zoom { get; set; }
 
+        [JsonProperty("saveFlags", NullValueHandling = NullValueHandling.Ignore)]
+        public ViewSaveFlags SaveFlags { get; set; }
+
         [JsonProperty("rotation", NullValueHandling = NullValueHandling.Ignore)]
         public double? Rotation { get; set; }
+
+        // Read-only on the wire: GetViewSettings sends it, SetViewSettings ignores it.
+        [JsonProperty("transformationMatrix", NullValueHandling = NullValueHandling.Ignore)]
+        public List<double> TransformationMatrix { get; set; }
 
         [JsonProperty("structureDisplay", NullValueHandling = NullValueHandling.Ignore)]
         public string StructureDisplay { get; set; }
@@ -110,6 +117,32 @@ namespace TapirGrasshopperPlugin.Types.Navigator
 
         [JsonProperty("usePhotoRendering", NullValueHandling = NullValueHandling.Ignore)]
         public bool? UsePhotoRendering { get; set; }
+    }
+
+    // The "stored in this view" checkboxes of the View Settings dialog. Every flag
+    // is optional for SetViewSettings: a flag left null keeps its current value.
+    public class ViewSaveFlags
+    {
+        [JsonProperty("zoom", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? Zoom { get; set; }
+
+        [JsonProperty("displayOptions", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? DisplayOptions { get; set; }
+
+        [JsonProperty("layers", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? Layers { get; set; }
+
+        [JsonProperty("drawingScale", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? DrawingScale { get; set; }
+
+        [JsonProperty("dimensions", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? Dimensions { get; set; }
+
+        [JsonProperty("penSet", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? PenSet { get; set; }
+
+        [JsonProperty("structureDisplay", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? StructureDisplay { get; set; }
     }
 
     public class ViewZoomBox

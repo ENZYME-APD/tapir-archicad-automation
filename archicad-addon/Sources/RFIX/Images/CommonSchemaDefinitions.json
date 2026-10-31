@@ -7552,11 +7552,11 @@
             },
             "drawingScale": {
                 "type": "integer",
-                "description": "The drawing scale stored on the view, if enabled."
+                "description": "The drawing scale stored on the view, if enabled (see saveFlags.drawingScale). Giving it to SetViewSettings also turns saveFlags.drawingScale on, unless that flag is given explicitly."
             },
             "saveZoom": {
                 "type": "boolean",
-                "description": "Whether the zoom box is stored in the view."
+                "description": "Whether the zoom box is stored in the view. The same flag as saveFlags.zoom, kept for compatibility; in SetViewSettings saveFlags.zoom wins when both are given."
             },
             "ignoreSavedZoom": {
                 "type": "boolean",
@@ -7564,11 +7564,56 @@
             },
             "zoom": {
                 "$ref": "#/Zoom",
-                "description": "Stored zoom box. Used only when saveZoom is true."
+                "description": "Stored zoom box. Used only when saveZoom is true. Giving it to SetViewSettings also turns saveFlags.zoom on, unless that flag is given explicitly."
+            },
+            "saveFlags": {
+                "type": "object",
+                "description": "Which settings the view stores: the \"stored in this view\" checkboxes of the View Settings dialog. A stored setting whose name field is empty is a custom (unnamed) one; a setting that is not stored is not part of the view at all, which the name fields alone cannot tell apart. Always complete in a GetViewSettings response. In SetViewSettings every flag is optional, a flag that is not given keeps its current value, and a flag given here overrides the one implied by drawingScale, zoom, structureDisplay or saveZoom.",
+                "properties": {
+                    "zoom": {
+                        "type": "boolean",
+                        "description": "Whether the zoom box is stored in the view."
+                    },
+                    "displayOptions": {
+                        "type": "boolean",
+                        "description": "Whether the model view options are stored in the view (named by modelViewOptions, custom if that is empty)."
+                    },
+                    "layers": {
+                        "type": "boolean",
+                        "description": "Whether the layer settings are stored in the view (named by layerCombination, custom if that is empty)."
+                    },
+                    "drawingScale": {
+                        "type": "boolean",
+                        "description": "Whether the drawing scale is stored in the view."
+                    },
+                    "dimensions": {
+                        "type": "boolean",
+                        "description": "Whether the dimension settings are stored in the view (named by dimensionStyle, custom if that is empty)."
+                    },
+                    "penSet": {
+                        "type": "boolean",
+                        "description": "Whether the pen set is stored in the view (named by penSetName, custom if that is empty)."
+                    },
+                    "structureDisplay": {
+                        "type": "boolean",
+                        "description": "Whether the structure display mode is stored in the view."
+                    }
+                },
+                "additionalProperties": false,
+                "required": []
             },
             "rotation": {
                 "type": "number",
-                "description": "View rotation angle in radians. Read via GetViewSettings; use SetViewRotation to change it."
+                "description": "View rotation angle in radians, derived from transformationMatrix. Read via GetViewSettings; use SetViewRotation to change it."
+            },
+            "transformationMatrix": {
+                "type": "array",
+                "description": "The full 2D transformation of the view that rotation is derived from: the 3x4 matrix row by row (12 numbers), in the layout Get3DProjectionSettings uses. Read via GetViewSettings; SetViewSettings ignores it, use rotation or SetViewRotation to change it.",
+                "items": {
+                    "type": "number"
+                },
+                "minItems": 12,
+                "maxItems": 12
             },
             "structureDisplay": {
                 "type": "string",

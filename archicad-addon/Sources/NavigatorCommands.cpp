@@ -840,6 +840,18 @@ GS::ObjectState GetViewSettingsCommand::Execute (const GS::ObjectState& paramete
             "saveZoom", navigatorView.saveZoom,
             "ignoreSavedZoom", navigatorView.ignoreSavedZoom);
 
+        // The "stored in this view" checkboxes of the View Settings dialog. A stored setting
+        // with an empty name is a custom one; a setting that is not stored is not part of the
+        // view at all, so the name fields above cannot tell the two apart on their own.
+        viewSetting.Add ("saveFlags", GS::ObjectState (
+            "zoom", navigatorView.saveZoom,
+            "displayOptions", navigatorView.saveDispOpt,
+            "layers", navigatorView.saveLaySet,
+            "drawingScale", navigatorView.saveDScale,
+            "dimensions", navigatorView.saveDim,
+            "penSet", navigatorView.savePenSet,
+            "structureDisplay", navigatorView.saveStructureDisplay));
+
         if (navigatorView.saveZoom) {
             viewSetting.Add ("zoom", GS::ObjectState (
                 "xMin", navigatorView.zoom.xMin,
@@ -860,6 +872,13 @@ GS::ObjectState GetViewSettingsCommand::Execute (const GS::ObjectState& paramete
             double rotAngle = 0.0;
             Geometry::TranAngle (trafo, &rotAngle);
             viewSetting.Add ("rotation", rotAngle);
+
+            // The full 2D transformation the rotation above is derived from, in the same
+            // row-by-row layout Get3DProjectionSettings uses for its transformationMatrix.
+            const auto& transformationMatrix = viewSetting.AddList<double> ("transformationMatrix");
+            for (double value : navigatorView.tr.tmx) {
+                transformationMatrix (value);
+            }
         }
 
         const char* structureDisplayStr = "EntireStructure";
@@ -1029,6 +1048,20 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
         SetUCharProperty (viewSettingsOS, "d3styleName", navigatorView.d3styleName);
         SetUCharProperty (viewSettingsOS, "renderingSceneName", navigatorView.renderingSceneName);
         viewSettingsOS->Get ("usePhotoRendering", navigatorView.usePhotoRendering);
+
+        // Explicit "stored in this view" flags come last, so they override the ones implied
+        // above by drawingScale, zoom, structureDisplay and the legacy saveZoom field.
+        // A flag that is not given keeps the value the view already has.
+        const GS::ObjectState* saveFlagsOS = viewSettingsOS->Get ("saveFlags");
+        if (saveFlagsOS != nullptr) {
+            saveFlagsOS->Get ("zoom", navigatorView.saveZoom);
+            saveFlagsOS->Get ("displayOptions", navigatorView.saveDispOpt);
+            saveFlagsOS->Get ("layers", navigatorView.saveLaySet);
+            saveFlagsOS->Get ("drawingScale", navigatorView.saveDScale);
+            saveFlagsOS->Get ("dimensions", navigatorView.saveDim);
+            saveFlagsOS->Get ("penSet", navigatorView.savePenSet);
+            saveFlagsOS->Get ("structureDisplay", navigatorView.saveStructureDisplay);
+        }
 
         err = ACAPI_Navigator_ChangeNavigatorView (&navigatorItem, &navigatorView);
         if (err != NoError) {
