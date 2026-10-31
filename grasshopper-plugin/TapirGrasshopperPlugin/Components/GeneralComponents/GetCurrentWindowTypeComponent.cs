@@ -12,7 +12,7 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
         public GetCurrentWindowTypeComponent()
             : base(
                 "GetCurrentWindowType",
-                "Get the type of the current (active) window.",
+                "Get the type of the current (active) window and the database it shows.",
                 GroupNames.General)
         {
         }
@@ -22,6 +22,10 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
             OutText(
                 "CurrentWindowType",
                 "The type of the current (active) window (e.g. FloorPlan, Section, 3DModel, Layout).");
+
+            OutGeneric(
+                "DatabaseId",
+                "The database shown in the current window; connect it to ChangeWindow to bring the window back. Empty when the window has no database, e.g. a report.");
         }
 
         protected override void Solve(
@@ -40,6 +44,13 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
             da.SetData(
                 0,
                 response.CurrentWindowType);
+
+            if (response.DatabaseId != null)
+            {
+                da.SetData(
+                    1,
+                    response.DatabaseId);
+            }
         }
 
         protected override System.Drawing.Bitmap Icon =>
