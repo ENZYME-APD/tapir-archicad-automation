@@ -3382,6 +3382,129 @@ GS::Optional<GS::ObjectState> CreateRailingsCommand::SetTypeSpecificParameters (
     return {};
 }
 
+GS::String CreateRailingsFromPolylineCommand::GetName () const
+{
+    return "CreateRailingsFromPolyline";
+}
+
+GS::Optional<GS::UniString> CreateRailingsFromPolylineCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "railingsData": {
+            "type": "array",
+            "description": "Array of data to create Railings.",
+            "items": {
+                "type": "object",
+                "description": "The parameters of the new Railing. Everything not given here - the posts, rails, handrails, toprails, panels and balusters - comes from the favorite or from the Railing tool defaults of the open project. Archicad generates one node per vertex and one segment per pair of consecutive vertices from them.",
+                "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                    },
+                    "floorIndex": {
+                        "type": "integer",
+                        "description": "Optional floor index (home story) of the railing. The story is made active in the floor plan while the railing is created and the previously active story is restored afterwards. When omitted, the current story."
+                    },
+                    "polylineCoordinates": {
+                        "type": "array",
+                        "description": "The nodes of the reference line of the railing. z is the elevation of the node relative to the floor level of the home story, so the railing can climb or descend along its segments.",
+                        "items": {
+                            "$ref": "#/Coordinate3D"
+                        },
+                        "minItems": 2
+                    },
+                    "polylineArcs": {
+                        "type": "array",
+                        "description": "Optional arc segments of the reference line. begIndex and endIndex are indices into polylineCoordinates and must be consecutive (endIndex = begIndex + 1).",
+                        "items": {
+                            "$ref": "#/PolyArc"
+                        }
+                    },
+                    "height": {
+                        "type": "number",
+                        "description": "Optional height of the railing segments. When omitted, the segment height of the favorite (or of the Railing tool defaults) is kept.",
+                        "exclusiveMinimum": 0.0
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "polylineCoordinates"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "railingsData"
+    ]
+})";
+}
+
+GS::Optional<GS::ObjectState> CreateRailingsFromPolylineCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
+{
+    GS::Array<GS::ObjectState> coordinates;
+    GS::Array<GS::ObjectState> arcs;
+    parameters.Get ("polylineCoordinates", coordinates);
+    parameters.Get ("polylineArcs", arcs);
+    const Int32 nCoords = (Int32) coordinates.GetSize ();
+    if (nCoords < 2) {
+        return CreateErrorResponse (APIERR_BADPARS, "polylineCoordinates must have at least 2 points.");
+    }
+    for (UIndex i = 1; i < coordinates.GetSize (); ++i) {
+        if (IsSame2DCoordinate (coordinates[i - 1], coordinates[i])) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("Zero-length segment: polylineCoordinates[%u] and polylineCoordinates[%u] have the same x and y.", i - 1, i));
+        }
+    }
+    // The memo indices start at 1 (index 0 is unused), so the arcs are shifted by one.
+    const GS::Array<API_PolyArc> polyArcs = GetPolyArcs (arcs, 1);
+    for (const API_PolyArc& arc : polyArcs) {
+        if (arc.begIndex < 1 || arc.endIndex > nCoords || arc.endIndex != arc.begIndex + 1) {
+            return CreateErrorResponse (APIERR_BADPARS, "Each item of polylineArcs must connect two consecutive points of polylineCoordinates.");
+        }
+    }
+
+    short floorIndex = 0;
+    if (parameters.Get ("floorIndex", floorIndex)) {
+        element.header.floorInd = floorIndex;
+    }
+    parameters.Get ("height", element.railing.defSegment.height);
+
+    // As in CreateRailings, only the reference line is written; the segment, post, rail and panel
+    // definitions in the memo of the defaults are kept. polyZCoords holds the elevation of each vertex,
+    // from which Archicad derives bottomOffset, so the z of the request is taken from the home story.
+    if (memo.coords != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.coords));
+    }
+    if (memo.parcs != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.parcs));
+    }
+    if (memo.polyZCoords != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.polyZCoords));
+    }
+    memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    memo.polyZCoords = reinterpret_cast<double**> (BMAllocateHandle ((nCoords + 1) * sizeof (double), ALLOCATE_CLEAR, 0));
+    for (Int32 i = 0; i < nCoords; ++i) {
+        const API_Coord3D coord = Get3DCoordinateFromObjectState (coordinates[i]);
+        (*memo.coords)[i + 1] = { coord.x, coord.y };
+        (*memo.polyZCoords)[i + 1] = GetZPos (element.header.floorInd, coord.z, stories);
+    }
+    if (!polyArcs.IsEmpty ()) {
+        memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (polyArcs.GetSize () * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+        for (UIndex i = 0; i < polyArcs.GetSize (); ++i) {
+            (*memo.parcs)[i] = polyArcs[i];
+        }
+    }
+    element.railing.nVertices = nCoords;
+
+    return {};
+}
+
 CreateCurtainWallsCommand::CreateCurtainWallsCommand () :
     CreateElementsCommandBase ("CreateCurtainWalls", API_CurtainWallID, "curtainWallsData")
 {
