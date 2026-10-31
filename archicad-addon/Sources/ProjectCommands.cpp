@@ -423,6 +423,137 @@ GS::ObjectState GetAutoTextNameCommand::Execute (const GS::ObjectState& paramete
     return response;
 }
 
+#ifdef ServerMainVers_3000
+
+// Plain wording for the errors the ACAPI_ProjectInfo_* calls return (ACAPinc.h, "ProjectInfo
+// Group and Field Management", Archicad 30), so a caller sees why a change was refused without
+// an error table. APIERR_REFUSEDPAR means something else for every call, so its wording is the
+// caller's.
+static GS::ObjectState CreateProjectInfoErrorResponse (GSErrCode err, const GS::UniString& failedAction, const GS::UniString& refusedParReason = GS::UniString ())
+{
+    GS::UniString reason;
+    switch (err) {
+        case APIERR_BADID:           reason = "no Project Info group or field has the given id"; break;
+        case APIERR_NAMEALREADYUSED: reason = "the name is already used"; break;
+        case APIERR_NOACCESSRIGHT:   reason = "no access right: in Teamwork this needs the permission to modify Project Info"; break;
+        case APIERR_REFUSEDPAR:      reason = refusedParReason; break;
+        default:                     break;
+    }
+    return CreateErrorResponse (err, reason.IsEmpty () ? failedAction + "." : failedAction + ": " + reason + ".");
+}
+
+// The autotexts that can be fields of the Project Info groups: the built-in ones by their fixed
+// keys and every custom one, whose key starts with 'autotext-' whatever follows (the fields the
+// dialog adds get 'autotext-<section>-<n>', the ones created by the API 'autotext-<guid>').
+static bool IsProjectInfoOrCustomAutoTextId (const GS::UniString& autoTextId)
+{
+    return IsProjectInfoAutoTextId (autoTextId) || autoTextId.BeginsWith ("autotext-");
+}
+
+// The autotext key of a project info field with the given name, the key GetProjectInfoFields
+// returns and SetProjectInfoField takes. The Project Info API identifies a field by a guid and
+// the autotext API by a key, and nothing in the DevKit maps one to the other, so the two are
+// matched by the name the field shows on the UI - only when exactly one project info autotext
+// has it, as a wrong key would change another field.
+static GS::Optional<GS::UniString> FindProjectInfoAutoTextKey (const GS::Array<GS::ArrayFB<GS::UniString, 3>>& autoTexts, const GS::UniString& fieldName)
+{
+    GS::Optional<GS::UniString> foundKey;
+    for (const auto& autoText : autoTexts) {
+        if (autoText[0] != fieldName || !IsProjectInfoOrCustomAutoTextId (autoText[1])) {
+            continue;
+        }
+        if (foundKey.HasValue ()) {
+            return GS::NoValue;
+        }
+        foundKey = autoText[1];
+    }
+    return foundKey;
+}
+
+// The name a project info field shows on the UI, by its autotext key: the way back from the key
+// to the field of the Project Info API (see FindProjectInfoAutoTextKey). Only project info keys
+// are taken: another kind of autotext may show the same name as a custom field.
+static GS::Optional<GS::UniString> FindProjectInfoAutoTextName (const GS::Array<GS::ArrayFB<GS::UniString, 3>>& autoTexts, const GS::UniString& autoTextKey)
+{
+    if (!IsProjectInfoOrCustomAutoTextId (autoTextKey)) {
+        return GS::NoValue;
+    }
+    for (const auto& autoText : autoTexts) {
+        if (autoText[1] == autoTextKey) {
+            return autoText[0];
+        }
+    }
+    return GS::NoValue;
+}
+
+// The field of the Project Info API with the given UI name, searched in every group - only when
+// exactly one field has the name, for the same reason as in FindProjectInfoAutoTextKey. No value
+// means no field or more than one has it; a failed API call is returned as such.
+static GSErrCode FindProjectInfoFieldByName (const GS::UniString& fieldName, GS::Optional<API_Guid>& foundFieldGuid)
+{
+    foundFieldGuid = GS::NoValue;
+
+    std::vector<API_Guid> groupGuids;
+    GSErrCode err = ACAPI_ProjectInfo_GetGroups (groupGuids);
+    if (err != NoError) {
+        return err;
+    }
+
+    for (const API_Guid& groupGuid : groupGuids) {
+        std::vector<API_Guid> fieldGuids;
+        err = ACAPI_ProjectInfo_GetFields (groupGuid, fieldGuids);
+        if (err != NoError) {
+            return err;
+        }
+
+        for (const API_Guid& fieldGuid : fieldGuids) {
+            GS::UniString name;
+            GS::UniString value;
+            err = ACAPI_ProjectInfo_GetField (fieldGuid, name, value);
+            if (err != NoError) {
+                return err;
+            }
+            if (name != fieldName) {
+                continue;
+            }
+            if (foundFieldGuid.HasValue ()) {
+                foundFieldGuid = GS::NoValue;
+                return NoError;
+            }
+            foundFieldGuid = fieldGuid;
+        }
+    }
+
+    return NoError;
+}
+
+// The group a new field goes to when the caller names none: the first group of the Project Info
+// dialog (the one with the built-in project fields).
+static GSErrCode GetFirstProjectInfoGroup (API_Guid& groupGuid)
+{
+    std::vector<API_Guid> groupGuids;
+    const GSErrCode err = ACAPI_ProjectInfo_GetGroups (groupGuids);
+    if (err != NoError) {
+        return err;
+    }
+    if (groupGuids.empty ()) {
+        return APIERR_GENERAL;
+    }
+    groupGuid = groupGuids.front ();
+    return NoError;
+}
+
+static GS::ObjectState DeleteProjectInfoField (const API_Guid& fieldGuid)
+{
+    const GSErrCode err = ACAPI_ProjectInfo_DeleteField (fieldGuid);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to delete the project info field",
+            "the field is a fixed (built-in) field and cannot be deleted"));
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
+#endif
 GetNoteAutoTextKeywordsCommand::GetNoteAutoTextKeywordsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -563,7 +694,7 @@ GS::Optional<GS::UniString> CreateProjectInfoFieldsCommand::GetRawResponseSchema
         "type": "object",
         "properties": {
             "fields": {
-                "$ref": "#/ProjectInfoFields"
+                "$ref": "#/CreatedProjectInfoFieldsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -595,8 +726,66 @@ GS::ObjectState CreateProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
             projectInfoField.Get ("projectInfoValue", projectInfoValue);
 
 #ifdef ServerMainVers_3000
-            fieldsAdder (CreateErrorResponse (APIERR_NOTSUPPORTED, "TODO: this function was not migrated to AC30 yet. Failed to create project information field."));
+            // On the Project Info API of Archicad 30 (ACAPinc.h, "ProjectInfo Group and Field
+            // Management"), which replaces the autotext goodies the older versions use below.
+            // A given but unparseable group id is an error, not a silent fallback to the first group.
+            API_Guid groupGuid = APINULLGuid;
+            if (projectInfoField.Contains ("projectInfoGroupId")) {
+                groupGuid = GetGuidFromArrayItem ("projectInfoGroupId", projectInfoField);
+                if (groupGuid == APINULLGuid) {
+                    fieldsAdder (CreateErrorResponse (APIERR_BADPARS, "Invalid 'projectInfoGroupId' parameter."));
+                    continue;
+                }
+            } else {
+                const GSErrCode groupErr = GetFirstProjectInfoGroup (groupGuid);
+                if (groupErr != NoError) {
+                    fieldsAdder (CreateErrorResponse (groupErr, "Failed to find the Project Info group to create the field in."));
+                    continue;
+                }
+            }
+
+            API_Guid fieldGuid = APINULLGuid;
+            GSErrCode err = ACAPI_ProjectInfo_CreateField (groupGuid, projectInfoName, fieldGuid);
+            if (err != NoError) {
+                fieldsAdder (CreateProjectInfoErrorResponse (err, "Failed to create the project information field"));
+                continue;
+            }
+
+            // A new field starts empty, so an empty value needs no call.
+            if (!projectInfoValue.IsEmpty ()) {
+                err = ACAPI_ProjectInfo_SetFieldValue (fieldGuid, projectInfoValue);
+                if (err != NoError) {
+                    // Roll back the empty field: the caller gets no id to clean it up with.
+                    ACAPI_ProjectInfo_DeleteField (fieldGuid);
+                    fieldsAdder (CreateProjectInfoErrorResponse (err, "Failed to set the initial value of the project information field"));
+                    continue;
+                }
+            }
+
+            GS::ObjectState createdField;
+            createdField.Add ("projectInfoFieldId", CreateGuidObjectState (fieldGuid));
+
+            // The autotext key of the new field, for SetProjectInfoField, when it can be told
+            // (see FindProjectInfoAutoTextKey). The list is fetched after the creation so that it
+            // contains the new field.
+            GS::Array<GS::ArrayFB<GS::UniString, 3>> autoTexts;
+            if (ACAPI_AutoText_GetAutoTexts (&autoTexts, APIAutoText_All) == NoError) {
+                const GS::Optional<GS::UniString> autoTextKey = FindProjectInfoAutoTextKey (autoTexts, projectInfoName);
+                if (autoTextKey.HasValue ()) {
+                    createdField.Add ("projectInfoId", autoTextKey.Get ());
+                }
+            }
+
+            createdField.Add ("projectInfoName", projectInfoName);
+            createdField.Add ("projectInfoValue", projectInfoValue);
+            fieldsAdder (createdField);
 #else
+            // The autotext API knows no groups; a requested group is refused rather than ignored.
+            if (projectInfoField.Contains ("projectInfoGroupId")) {
+                fieldsAdder (CreateErrorResponse (APIERR_NOTSUPPORTED, "projectInfoGroupId requires Archicad 30 or newer."));
+                continue;
+            }
+
             GS::Guid guid;
             guid.Generate ();
             API_Guid dbKey = GSGuid2APIGuid (guid);
@@ -647,16 +836,20 @@ GS::Optional<GS::UniString> DeleteProjectInfoFieldsCommand::GetInputParametersSc
         "properties": {
             "projectInfoIds": {
                 "type": "array",
-                "description": "List of project info field ids to delete. Only custom fields (ids starting with 'autotext-') can be deleted.",
+                "description": "List of project info field ids (autotext keys, as GetProjectInfoFields returns them) to delete. Only custom fields can be deleted. On Archicad 30 a key is matched to the field by its name, so it fails when more than one field has the name; delete such a field by its projectInfoFieldId instead.",
                 "items": {
                     "type": "string"
                 }
+            },
+            "projectInfoFieldIds": {
+                "type": "array",
+                "description": "List of fields of the Project Info groups to delete, by the ids GetProjectInfoGroups returns. Available from Archicad 30. Their results follow the results of projectInfoIds.",
+                "items": {
+                    "$ref": "#/ProjectInfoFieldIdArrayItem"
+                }
             }
         },
-        "additionalProperties": false,
-        "required": [
-            "projectInfoIds"
-        ]
+        "additionalProperties": false
     })";
 }
 
@@ -679,18 +872,49 @@ GS::Optional<GS::UniString> DeleteProjectInfoFieldsCommand::GetRawResponseSchema
 GS::ObjectState DeleteProjectInfoFieldsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::UniString> projectInfoIds;
-    if (!parameters.Get ("projectInfoIds", projectInfoIds) || projectInfoIds.IsEmpty ()) {
-        return CreateErrorResponse (APIERR_BADPARS, "projectInfoIds is missing or empty.");
+    parameters.Get ("projectInfoIds", projectInfoIds);
+    GS::Array<GS::ObjectState> projectInfoFieldIds;
+    parameters.Get ("projectInfoFieldIds", projectInfoFieldIds);
+    if (projectInfoIds.IsEmpty () && projectInfoFieldIds.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "projectInfoIds and projectInfoFieldIds are both missing or empty.");
     }
 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
     ACAPI_CallUndoableCommand ("DeleteProjectInfoFields", [&]() -> GSErrCode {
+#ifdef ServerMainVers_3000
+        // The autotext keys are matched to the fields of the Project Info API by name (see
+        // FindProjectInfoAutoTextKey); the list is fetched once, before the first deletion.
+        GS::Array<GS::ArrayFB<GS::UniString, 3>> autoTexts;
+        const GSErrCode autoTextsErr = ACAPI_AutoText_GetAutoTexts (&autoTexts, APIAutoText_All);
+#endif
         for (const GS::UniString& projectInfoId : projectInfoIds) {
 #ifdef ServerMainVers_3000
-            (void) projectInfoId; // suppress unused variable warning
-            executionResults (CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "TODO: this function was not migrated to AC30 yet. Failed to delete project info field."));
+            if (autoTextsErr != NoError) {
+                executionResults (CreateFailedExecutionResult (autoTextsErr, "Failed to retrieve the project info fields."));
+                continue;
+            }
+
+            const GS::Optional<GS::UniString> fieldName = FindProjectInfoAutoTextName (autoTexts, projectInfoId);
+            if (!fieldName.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "No project info field has the given id."));
+                continue;
+            }
+
+            GS::Optional<API_Guid> fieldGuid;
+            const GSErrCode err = FindProjectInfoFieldByName (fieldName.Get (), fieldGuid);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to retrieve the fields of the Project Info groups."));
+                continue;
+            }
+            if (!fieldGuid.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID,
+                    "The project info field cannot be matched by its name to exactly one field of the Project Info groups; delete it by its projectInfoFieldId."));
+                continue;
+            }
+
+            executionResults (DeleteProjectInfoField (fieldGuid.Get ()));
 #else
             if (!projectInfoId.BeginsWith ("autotext-")) {
                 executionResults (CreateFailedExecutionResult (APIERR_BADPARS,
@@ -706,52 +930,254 @@ GS::ObjectState DeleteProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
             }
 #endif
         }
+
+        for (const GS::ObjectState& projectInfoFieldId : projectInfoFieldIds) {
+#ifdef ServerMainVers_3000
+            const API_Guid fieldGuid = GetGuidFromArrayItem ("projectInfoFieldId", projectInfoFieldId);
+            if (fieldGuid == APINULLGuid) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'projectInfoFieldId' parameter."));
+                continue;
+            }
+
+            executionResults (DeleteProjectInfoField (fieldGuid));
+#else
+            (void) projectInfoFieldId; // suppress unused variable warning
+            executionResults (CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "projectInfoFieldIds requires Archicad 30 or newer."));
+#endif
+        }
+
         return NoError;
     });
 
     return response;
 }
 
+RenameProjectInfoFieldsCommand::RenameProjectInfoFieldsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RenameProjectInfoFieldsCommand::GetName () const
+{
+    return "RenameProjectInfoFields";
+}
+
+GS::Optional<GS::UniString> RenameProjectInfoFieldsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "projectInfoFields": {
+                "type": "array",
+                "description": "The fields of the Project Info groups to rename, each with its new name. Fixed (built-in) fields cannot be renamed.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "projectInfoFieldId": {
+                            "$ref": "#/ProjectInfoFieldId"
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The new name of the field. It must not be used by another field.",
+                            "minLength": 1
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "projectInfoFieldId",
+                        "name"
+                    ]
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoFields"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> RenameProjectInfoFieldsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState RenameProjectInfoFieldsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
 #ifdef ServerMainVers_3000
-
-// Plain wording for the errors the ACAPI_ProjectInfo_* calls return (ACAPinc.h, "ProjectInfo
-// Group and Field Management", Archicad 30), so a caller sees why a change was refused without
-// an error table. APIERR_REFUSEDPAR means something else for every call, so its wording is the
-// caller's.
-static GS::ObjectState CreateProjectInfoErrorResponse (GSErrCode err, const GS::UniString& failedAction, const GS::UniString& refusedParReason = GS::UniString ())
-{
-    GS::UniString reason;
-    switch (err) {
-        case APIERR_BADID:           reason = "no Project Info group or field has the given id"; break;
-        case APIERR_NAMEALREADYUSED: reason = "the name is already used"; break;
-        case APIERR_NOACCESSRIGHT:   reason = "no access right: in Teamwork this needs the permission to modify Project Info"; break;
-        case APIERR_REFUSEDPAR:      reason = refusedParReason; break;
-        default:                     break;
+    GS::Array<GS::ObjectState> projectInfoFields;
+    if (!parameters.Get ("projectInfoFields", projectInfoFields) || projectInfoFields.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "projectInfoFields is missing or empty.");
     }
-    return CreateErrorResponse (err, reason.IsEmpty () ? failedAction + "." : failedAction + ": " + reason + ".");
-}
 
-// The autotext key of a project info field with the given name, the key GetProjectInfoFields
-// returns and SetProjectInfoField takes. The Project Info API identifies a field by a guid and
-// the autotext API by a key, and nothing in the DevKit maps one to the other, so the two are
-// matched by the name the field shows on the UI - only when exactly one project info autotext
-// has it, as a wrong key would change another field.
-static GS::Optional<GS::UniString> FindProjectInfoAutoTextKey (const GS::Array<GS::ArrayFB<GS::UniString, 3>>& autoTexts, const GS::UniString& fieldName)
-{
-    GS::Optional<GS::UniString> foundKey;
-    for (const auto& autoText : autoTexts) {
-        if (autoText[0] != fieldName || !IsProjectInfoAutoTextId (autoText[1])) {
-            continue;
-        }
-        if (foundKey.HasValue ()) {
-            return GS::NoValue;
-        }
-        foundKey = autoText[1];
-    }
-    return foundKey;
-}
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    ACAPI_CallUndoableCommand ("RenameProjectInfoFields", [&]() -> GSErrCode {
+        for (const GS::ObjectState& projectInfoField : projectInfoFields) {
+            const API_Guid fieldGuid = GetGuidFromArrayItem ("projectInfoFieldId", projectInfoField);
+            if (fieldGuid == APINULLGuid) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'projectInfoFieldId' parameter."));
+                continue;
+            }
+
+            GS::UniString name;
+            if (!projectInfoField.Get ("name", name) || name.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "name is missing or empty."));
+                continue;
+            }
+
+            const GSErrCode err = ACAPI_ProjectInfo_RenameField (fieldGuid, name);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to rename the project info field",
+                    "the field is a fixed (built-in) field and cannot be renamed")));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 30 or newer.");
 #endif
+}
+
+MoveProjectInfoFieldsCommand::MoveProjectInfoFieldsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String MoveProjectInfoFieldsCommand::GetName () const
+{
+    return "MoveProjectInfoFields";
+}
+
+GS::Optional<GS::UniString> MoveProjectInfoFieldsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "projectInfoFields": {
+                "type": "array",
+                "description": "The fields of the Project Info groups to move, in the order the moves are made. A subfield of a calculated field cannot be moved on its own, it moves with its parent field.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "projectInfoFieldId": {
+                            "$ref": "#/ProjectInfoFieldId"
+                        },
+                        "projectInfoGroupId": {
+                            "$ref": "#/ProjectInfoGroupId",
+                            "description": "The group to move the field to. To reorder a field within its group, give its current group."
+                        },
+                        "beforeProjectInfoFieldId": {
+                            "$ref": "#/ProjectInfoFieldId",
+                            "description": "The field of the target group to move the field before. When omitted, the field is moved to the end of the group."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "projectInfoFieldId",
+                        "projectInfoGroupId"
+                    ]
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoFields"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> MoveProjectInfoFieldsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState MoveProjectInfoFieldsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    GS::Array<GS::ObjectState> projectInfoFields;
+    if (!parameters.Get ("projectInfoFields", projectInfoFields) || projectInfoFields.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "projectInfoFields is missing or empty.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("MoveProjectInfoFields", [&]() -> GSErrCode {
+        for (const GS::ObjectState& projectInfoField : projectInfoFields) {
+            const API_Guid fieldGuid = GetGuidFromArrayItem ("projectInfoFieldId", projectInfoField);
+            if (fieldGuid == APINULLGuid) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'projectInfoFieldId' parameter."));
+                continue;
+            }
+
+            const API_Guid toGroupGuid = GetGuidFromArrayItem ("projectInfoGroupId", projectInfoField);
+            if (toGroupGuid == APINULLGuid) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'projectInfoGroupId' parameter."));
+                continue;
+            }
+
+            // No 'beforeProjectInfoFieldId' is "to the end of the group", which the API takes as
+            // std::nullopt; a given but invalid one is an error, not a silent move to the end.
+            std::optional<API_Guid> beforeFieldGuid;
+            if (projectInfoField.Contains ("beforeProjectInfoFieldId")) {
+                const API_Guid beforeGuid = GetGuidFromArrayItem ("beforeProjectInfoFieldId", projectInfoField);
+                if (beforeGuid == APINULLGuid) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Invalid 'beforeProjectInfoFieldId' parameter."));
+                    continue;
+                }
+                beforeFieldGuid = beforeGuid;
+            }
+
+            const GSErrCode err = ACAPI_ProjectInfo_MoveField (fieldGuid, toGroupGuid, beforeFieldGuid);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to move the project info field",
+                    "the field is a subfield, which moves with its parent field")));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 30 or newer.");
+#endif
+}
 
 GetProjectInfoGroupsCommand::GetProjectInfoGroupsCommand () :
     CommandBase (CommonSchema::Used)
