@@ -1793,7 +1793,8 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.4.0",
             "Creates Layouts and their backing master layouts. Archicad inserts a new layout at the first "
             "place of its subset, renumbering the sheets after it; previousNavigatorItemId or position "
-            "'last' places it after an existing sheet or at the end instead."
+            "'last' places it after an existing sheet or at the end instead. A custom layout number does "
+            "not leave the layout out of the numbering; layoutParameters.doNotIncludeInNumbering does."
         );
         err |= RegisterCommand<CreateLayoutSubsetCommand> (
             navigatorCommands, "1.4.0",
