@@ -1,0 +1,141 @@
+{
+  "title": "CreateShells makes extruded, revolved and ruled shells and refuses incomplete geometry",
+  "minTapir": "1.7.4",
+  "requiresEmpty": [ "Shell" ],
+  "steps": [
+    {
+      "id": "extruded vault with a hole, revolved dome, ruled shell",
+      "command": "CreateShells",
+      "params": {
+        "shellsData": [
+          {
+            "shellClass": "Extruded",
+            "floorIndex": 0,
+            "thickness": 0.2,
+            "structureType": "Basic",
+            "basePlane": { "origin": { "x": 900.0, "y": 900.0, "z": 0.0 } },
+            "profile": {
+              "coordinates": [ { "x": -3.0, "y": 0.0 }, { "x": 3.0, "y": 0.0 } ],
+              "arcs": [ { "begIndex": 0, "endIndex": 1, "arcAngle": -1.5707963267948966 } ]
+            },
+            "extrusionVector": { "x": 0.0, "y": 8.0, "z": 0.0 },
+            "holes": [
+              {
+                "coordinates": [ { "x": -1.0, "y": 3.0 }, { "x": 1.0, "y": 3.0 }, { "x": 1.0, "y": 5.0 }, { "x": -1.0, "y": 5.0 } ],
+                "depth": 10.0
+              }
+            ],
+            "begShapeEdgeTrim": { "trimType": "Vertical" },
+            "endShapeEdgeTrim": { "trimType": "CustomAngle", "angle": 1.2 }
+          },
+          {
+            "shellClass": "Revolved",
+            "floorIndex": 0,
+            "thickness": 0.15,
+            "basePlane": { "origin": { "x": 915.0, "y": 904.0, "z": 0.0 } },
+            "profile": {
+              "coordinates": [ { "x": 4.0, "y": 0.0 }, { "x": 0.0, "y": 4.0 } ],
+              "arcs": [ { "begIndex": 0, "endIndex": 1, "arcAngle": 1.5707963267948966 } ]
+            },
+            "segmentsByCircle": 24
+          },
+          {
+            "shellClass": "Ruled",
+            "floorIndex": 0,
+            "thickness": 0.1,
+            "basePlane": { "origin": { "x": 925.0, "y": 900.0, "z": 0.0 } },
+            "profile": {
+              "coordinates": [ { "x": 0.0, "y": 0.0 }, { "x": 6.0, "y": 0.0 } ]
+            },
+            "profilePlane": {
+              "xAxis": { "x": 1.0, "y": 0.0, "z": 0.0 },
+              "yAxis": { "x": 0.0, "y": 0.0, "z": 1.0 },
+              "zAxis": { "x": 0.0, "y": -1.0, "z": 0.0 }
+            },
+            "secondProfile": {
+              "coordinates": [ { "x": 0.0, "y": 3.0 }, { "x": 6.0, "y": 3.0 } ],
+              "arcs": [ { "begIndex": 0, "endIndex": 1, "arcAngle": -1.0471975511965976 } ]
+            },
+            "secondProfilePlane": {
+              "origin": { "x": 0.0, "y": 6.0, "z": 0.0 },
+              "xAxis": { "x": 1.0, "y": 0.0, "z": 0.0 },
+              "yAxis": { "x": 0.0, "y": 0.0, "z": 1.0 },
+              "zAxis": { "x": 0.0, "y": -1.0, "z": 0.0 }
+            },
+            "morphingRule": "Smooth"
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "extruded created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "revolved created" },
+        { "path": "elements[2].elementId.guid", "exists": true, "name": "ruled created" }
+      ]
+    },
+    {
+      "id": "the three shells are there",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": {
+        "elementType": "Shell"
+      },
+      "expect": [
+        { "path": "elements", "len": 3 }
+      ]
+    },
+    {
+      "id": "incomplete geometry",
+      "command": "CreateShells",
+      "params": {
+        "shellsData": [
+          {
+            "shellClass": "Extruded",
+            "profile": {
+              "coordinates": [ { "x": 0.0, "y": 0.0 }, { "x": 4.0, "y": 0.0 } ]
+            }
+          },
+          {
+            "shellClass": "Ruled",
+            "profile": {
+              "coordinates": [ { "x": 0.0, "y": 0.0 }, { "x": 4.0, "y": 0.0 } ]
+            },
+            "profilePlane": {}
+          },
+          {
+            "shellClass": "Extruded",
+            "basePlane": { "xAxis": { "x": 1.0, "y": 0.0, "z": 0.0 } },
+            "profile": {
+              "coordinates": [ { "x": 0.0, "y": 0.0 }, { "x": 4.0, "y": 0.0 } ]
+            },
+            "extrusionVector": { "x": 0.0, "y": 4.0, "z": 0.0 }
+          },
+          {
+            "shellClass": "Extruded",
+            "profile": {
+              "coordinates": [ { "x": 0.0, "y": 0.0 }, { "x": 4.0, "y": 0.0 } ],
+              "arcs": [ { "begIndex": 0, "endIndex": 5, "arcAngle": 1.0 } ]
+            },
+            "extrusionVector": { "x": 0.0, "y": 4.0, "z": 0.0 }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "extruded without extrusionVector" },
+        { "path": "elements[1].error.code", "exists": true, "name": "ruled without secondProfile" },
+        { "path": "elements[2].error.code", "exists": true, "name": "basePlane with one axis" },
+        { "path": "elements[3].error.code", "exists": true, "name": "arc index outside the profile" }
+      ]
+    },
+    {
+      "id": "nothing was created by the refused items",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": {
+        "elementType": "Shell"
+      },
+      "expect": [
+        { "path": "elements", "len": 3 }
+      ]
+    }
+  ]
+}
