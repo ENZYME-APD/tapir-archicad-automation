@@ -177,6 +177,16 @@ public:
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
 };
 
+// Railings along a 3D reference polyline with arc segments. Derived from CreateRailingsCommand for its
+// Execute, which creates each railing with its home story made active.
+class CreateRailingsFromPolylineCommand : public CreateRailingsCommand
+{
+public:
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+};
+
 class CreateLabelsCommand : public CreateElementsCommandBase
 {
 public:
