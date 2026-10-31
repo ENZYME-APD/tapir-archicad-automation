@@ -34,7 +34,7 @@ Parameters of the 555 used commands: 🟢 511 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 2 |  | 2 |  |  |  |  |  | 2 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-10-31 19:13 UTC.
+Updated 2026-10-31 20:17 UTC.
 
 | | Status |
 |---|---|
@@ -420,7 +420,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `ReloadLibraries` 🟢 0/0 parameters – `ReloadLibrariesComponent`
 - ✅ `AddFilesToEmbeddedLibrary` 🟢 2/2 parameters – `AddFilesToEmbeddedLibraryComponent`
 - ✅ `DeleteEmbeddedLibraryItems` 🟢 2/2 parameters – `DeleteEmbeddedLibraryItemsComponent`
-- 🔀 `CreateLibraryParts` 🟢 19/19 parameters – `CreateLibraryPartsComponent` — [#1023](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1023 "[2/2] Grasshopper: add the CreateLibraryParts component")
+- 🔀 `CreateLibraryParts` 🟢 19/19 parameters – `CreateLibraryPartsComponent`
 - 🔀 `CreateFolderInEmbeddedLibrary` 🟢 1/1 parameters – `CreateFolderInEmbeddedLibraryComponent`
 - 🔀 `CopyFilesIntoEmbeddedLibrary` 🟢 4/4 parameters – `CopyFilesIntoEmbeddedLibraryComponent`
 - ✅ `SetLibraries` 🟢 1/1 parameters – `SetLibrariesComponent`

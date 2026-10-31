@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-31 19:13 UTC",
+ "generatedAt": "2026-10-31 20:17 UTC",
  "counts": {
   "done": 303,
   "merged": 252,
@@ -9062,12 +9062,7 @@
     "overwriteExisting"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1023,
-     "title": "[2/2] Grasshopper: add the CreateLibraryParts component"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {

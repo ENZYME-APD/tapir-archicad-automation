@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-31 19:13 UTC",
+ "generatedAt": "2026-10-31 20:17 UTC",
  "versions": [
   25,
   26,
@@ -8708,6 +8708,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1714,
+     "title": "Curtain wall segments, frames and panels: homeStoryLevel, and say what their z is measured from"
+    },
     {
      "number": 1664,
      "title": "Shell structure in GetDetailsOfElements and a ModifyShells command"
@@ -37663,6 +37667,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1714,
+     "title": "Curtain wall segments, frames and panels: homeStoryLevel, and say what their z is measured from"
+    },
+    {
+     "number": 1713,
+     "title": "GetDetailsOfElements: read Elevation markers like sections"
+    },
+    {
      "number": 1706,
      "title": "UpdateZones: optional list of the Zones to update"
     },
@@ -53340,6 +53352,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1714,
+     "title": "Curtain wall segments, frames and panels: homeStoryLevel, and say what their z is measured from"
+    },
+    {
+     "number": 1713,
+     "title": "GetDetailsOfElements: read Elevation markers like sections"
+    },
+    {
      "number": 1706,
      "title": "UpdateZones: optional list of the Zones to update"
     },
@@ -57835,6 +57855,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1714,
+     "title": "Curtain wall segments, frames and panels: homeStoryLevel, and say what their z is measured from"
+    },
+    {
+     "number": 1713,
+     "title": "GetDetailsOfElements: read Elevation markers like sections"
+    },
     {
      "number": 1706,
      "title": "UpdateZones: optional list of the Zones to update"
