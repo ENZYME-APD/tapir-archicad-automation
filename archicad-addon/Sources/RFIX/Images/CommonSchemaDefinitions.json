@@ -2989,6 +2989,110 @@
             "z"
         ]
     },
+    "CoordinateSystem3D": {
+        "type": "object",
+        "description": "A coordinate system in 3D: an origin and three axes. What is left out keeps its default; give all three axes together or none.",
+        "properties": {
+            "origin": {
+                "$ref": "#/Coordinate3D",
+                "description": "The origin of the coordinate system."
+            },
+            "xAxis": {
+                "$ref": "#/Coordinate3D",
+                "description": "The X axis of the coordinate system."
+            },
+            "yAxis": {
+                "$ref": "#/Coordinate3D",
+                "description": "The Y axis of the coordinate system."
+            },
+            "zAxis": {
+                "$ref": "#/Coordinate3D",
+                "description": "The Z axis of the coordinate system."
+            }
+        },
+        "additionalProperties": false
+    },
+    "ShellEdgeTrim": {
+        "type": "object",
+        "description": "How a shell edge is cut.",
+        "properties": {
+            "trimType": {
+                "type": "string",
+                "enum": ["Vertical", "Perpendicular", "Horizontal", "CustomAngle"],
+                "description": "Vertical, Perpendicular or Horizontal to the shell, or at 'angle' (CustomAngle)."
+            },
+            "angle": {
+                "type": "number",
+                "description": "The trim angle in radians. Only CustomAngle uses it; pi/2 by default."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "trimType"
+        ]
+    },
+    "ShellProfile": {
+        "type": "object",
+        "description": "A profile polyline of a shell, in the XY plane of its coordinate system.",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "description": "The points of the polyline.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 2
+            },
+            "arcs": {
+                "type": "array",
+                "description": "Arc segments of the polyline, with indices into coordinates; index len(coordinates) is the first point again, which closes the polyline.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "closed": {
+                "type": "boolean",
+                "description": "Whether the segment from the last point back to the first one is part of the profile. False by default."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinates"
+        ]
+    },
+    "ShellCutPolygon": {
+        "type": "object",
+        "description": "A closed polygon cutting a shell: its clipping contour or a hole.",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "description": "The points of the polygon, in the XY plane of 'plane'.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 3
+            },
+            "arcs": {
+                "type": "array",
+                "description": "Arc segments of the polygon, with indices into coordinates.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "plane": {
+                "$ref": "#/CoordinateSystem3D",
+                "description": "The plane of the polygon, in the coordinates of the shell's base plane: a hole is extruded from it along its Z axis. The base plane itself by default."
+            },
+            "depth": {
+                "type": "number",
+                "description": "Holes only: how far the cutting body is extruded from the polygon's plane, along its Z axis (negative values cut downwards)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinates"
+        ]
+    },
     "PerspectiveProjectionParameters": {
         "type": "object",
         "description": "The parameters of a perspective projection of the 3D window.",
