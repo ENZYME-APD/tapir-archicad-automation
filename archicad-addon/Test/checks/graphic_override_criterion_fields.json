@@ -1,0 +1,398 @@
+{
+  "title": "Graphic override criterion: element types, enums, operators and renovation status",
+  "minTapir": "1.7.2",
+  "steps": [
+    {
+      "id": "elementType Window",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck field 0",
+            "ruleGroupName": "TapirCheck criterion fields",
+            "criterion": {
+              "elementType": "Window"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].graphicOverrideRuleId.guid",
+          "exists": true,
+          "name": "rule created"
+        }
+      ]
+    },
+    {
+      "id": "elementType Zone",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck field 1",
+            "ruleGroupName": "TapirCheck criterion fields",
+            "criterion": {
+              "elementType": "Zone"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].graphicOverrideRuleId.guid",
+          "exists": true,
+          "name": "rule created"
+        }
+      ]
+    },
+    {
+      "id": "elementType Object",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck field 2",
+            "ruleGroupName": "TapirCheck criterion fields",
+            "criterion": {
+              "elementType": "Object"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].graphicOverrideRuleId.guid",
+          "exists": true,
+          "name": "rule created"
+        }
+      ]
+    },
+    {
+      "id": "morphBodyType",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck field 3",
+            "ruleGroupName": "TapirCheck criterion fields",
+            "criterion": {
+              "morphBodyType": "Solid"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].graphicOverrideRuleId.guid",
+          "exists": true,
+          "name": "rule created"
+        }
+      ]
+    },
+    {
+      "id": "beamCrossSectionType",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck field 4",
+            "ruleGroupName": "TapirCheck criterion fields",
+            "criterion": {
+              "beamCrossSectionType": "Circular"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].graphicOverrideRuleId.guid",
+          "exists": true,
+          "name": "rule created"
+        }
+      ]
+    },
+    {
+      "id": "textStyle",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck field 5",
+            "ruleGroupName": "TapirCheck criterion fields",
+            "criterion": {
+              "textStyle": [
+                "Bold",
+                "Superscript"
+              ]
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].graphicOverrideRuleId.guid",
+          "exists": true,
+          "name": "rule created"
+        }
+      ]
+    },
+    {
+      "id": "textAlignment",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck field 6",
+            "ruleGroupName": "TapirCheck criterion fields",
+            "criterion": {
+              "textAlignment": "Justified"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].graphicOverrideRuleId.guid",
+          "exists": true,
+          "name": "rule created"
+        }
+      ]
+    },
+    {
+      "id": "hatchCategory",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck field 7",
+            "ruleGroupName": "TapirCheck criterion fields",
+            "criterion": {
+              "hatchCategory": "SurfaceTexture"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].graphicOverrideRuleId.guid",
+          "exists": true,
+          "name": "rule created"
+        }
+      ]
+    },
+    {
+      "id": "openingShape",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck field 8",
+            "ruleGroupName": "TapirCheck criterion fields",
+            "criterion": {
+              "openingShape": "Ellipse"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].graphicOverrideRuleId.guid",
+          "exists": true,
+          "name": "rule created"
+        }
+      ]
+    },
+    {
+      "id": "openingLimitsNot",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck field 9",
+            "ruleGroupName": "TapirCheck criterion fields",
+            "criterion": {
+              "openingLimitsNot": "Infinite"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].graphicOverrideRuleId.guid",
+          "exists": true,
+          "name": "rule created"
+        }
+      ]
+    },
+    {
+      "id": "renovationStatus",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck field 10",
+            "ruleGroupName": "TapirCheck criterion fields",
+            "criterion": {
+              "renovationStatus": "ToBeDemolished"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].graphicOverrideRuleId.guid",
+          "exists": true,
+          "name": "rule created"
+        }
+      ]
+    },
+    {
+      "id": "stairMaxRiserHeightLessOrEqual",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck field 11",
+            "ruleGroupName": "TapirCheck criterion fields",
+            "criterion": {
+              "stairMaxRiserHeightLessOrEqual": 0.18
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].graphicOverrideRuleId.guid",
+          "exists": true,
+          "name": "rule created"
+        }
+      ]
+    },
+    {
+      "id": "and: Door with renovation",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck field 13",
+            "ruleGroupName": "TapirCheck criterion fields",
+            "criterion": {
+              "and": [
+                {
+                  "elementType": "Door"
+                },
+                {
+                  "renovationStatus": "New"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].graphicOverrideRuleId.guid",
+          "exists": true,
+          "name": "rule created"
+        }
+      ]
+    },
+    {
+      "id": "unknown enum value",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck field 100",
+            "ruleGroupName": "TapirCheck criterion fields",
+            "criterion": {
+              "hatchCategory": "Solid"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].error.code",
+          "exists": true,
+          "name": "rejected"
+        }
+      ]
+    },
+    {
+      "id": "unknown text style",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck field 101",
+            "ruleGroupName": "TapirCheck criterion fields",
+            "criterion": {
+              "textStyle": [
+                "Bold",
+                "Wavy"
+              ]
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].error.code",
+          "exists": true,
+          "name": "rejected"
+        }
+      ]
+    },
+    {
+      "id": "empty classification item",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck field 102",
+            "ruleGroupName": "TapirCheck criterion fields",
+            "criterion": {
+              "classification": ""
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].error.code",
+          "exists": true,
+          "name": "rejected"
+        }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteGraphicOverrideRuleGroups",
+      "params": {
+        "ruleGroupNames": [
+          "TapirCheck criterion fields"
+        ],
+        "deleteRules": true
+      }
+    }
+  ]
+}
