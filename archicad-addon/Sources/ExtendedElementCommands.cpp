@@ -6,6 +6,7 @@
 #include "Model3D/MeshBody.hpp"
 
 #include "ExtendedElementCommands.hpp"
+#include "ElementGDLParameterCommands.hpp"
 
 #include "MigrationHelper.hpp"
 #include "NotificationCommands.hpp"
@@ -16,6 +17,7 @@
 #include	"ACAPI/Element/Opening/OpeningGeometry.hpp"
 #include	"ACAPI/Element/Opening/OpeningExtrusionParameters.hpp"
 #include	"ACAPI/Element/Opening/OpeningFloorPlanParameters.hpp"
+#include "GDLParamInterface.hpp"
 #include "Polygon2D.hpp"
 #endif
 
@@ -9789,6 +9791,305 @@ GS::ObjectState SetOpeningFloorPlanParametersCommand::Execute (const GS::ObjectS
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
     for (const GS::ObjectState& data : openingsWithFloorPlanParameters) {
         executionResults (SetOpeningFloorPlanParameters (data));
+    }
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
+GetOpeningSymbolParametersCommand::GetOpeningSymbolParametersCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetOpeningSymbolParametersCommand::GetName () const
+{
+    return "GetOpeningSymbolParameters";
+}
+
+GS::Optional<GS::UniString> GetOpeningSymbolParametersCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The Opening elements (made with the Opening tool) to read."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    })";
+}
+
+GS::Optional<GS::UniString> GetOpeningSymbolParametersCommand::GetRawResponseSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {
+            "openings": {
+                "type": "array",
+                "description": "The GDL parameters of the floor plan symbols of the openings, in the order of the given elements.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementId": { "$ref": "#/ElementId" },
+                                "cutSymbolParameters": )") + GDLParameterValuesSchema + R"(,
+                                "unCutSymbolParameters": )" + GDLParameterValuesSchema + R"(
+                            },
+                            "additionalProperties": false,
+                            "required": ["elementId"]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["openings"]
+    })";
+}
+
+#ifdef ServerMainVers_2900
+// The parameters of an opening's cut or uncut symbol, as the API returns them. GDL::Parameters is
+// implemented in the GDL module, which the DevKit has no import library or framework for: its
+// constructors, destructor and assignment operators cannot be linked, only its virtual functions
+// can be called. So the parameters are never copied: they stay where the API's getter put them,
+// are changed there, and are destroyed through the virtual destructor.
+class OpeningSymbolParameters
+{
+public:
+    enum class Symbol { Cut, UnCut };
+
+    OpeningSymbolParameters (const ACAPI::Element::OpeningFloorPlanParameters& floorPlanParameters, Symbol symbol)
+    {
+        if (symbol == Symbol::Cut) {
+            ::new (static_cast<void*> (&storage.symbolParameters)) std::optional<GDL::Parameters> (floorPlanParameters.GetCutSymbolParameters ());
+        } else {
+            ::new (static_cast<void*> (&storage.symbolParameters)) std::optional<GDL::Parameters> (floorPlanParameters.GetUnCutSymbolParameters ());
+        }
+    }
+
+    ~OpeningSymbolParameters ()
+    {
+        if (storage.symbolParameters.has_value ()) {
+            // Read through a volatile pointer, so the call cannot be resolved at compile time to
+            // GDL::Parameters::~Parameters, and the destructor of the GDL module runs.
+            GDL::ParameterGetter* volatile parameters = &*storage.symbolParameters;
+            parameters->~ParameterGetter ();
+        }
+    }
+
+    OpeningSymbolParameters (const OpeningSymbolParameters&) = delete;
+    OpeningSymbolParameters& operator= (const OpeningSymbolParameters&) = delete;
+
+    bool                    HasValue () const   { return storage.symbolParameters.has_value (); }
+    GDL::Parameters&        Get ()              { return *storage.symbolParameters; }
+    const GDL::Parameters&  Get () const        { return *storage.symbolParameters; }
+
+private:
+    // A union, so that the destructor of std::optional (which calls ~Parameters) is never used.
+    union Storage {
+        Storage () {}
+        ~Storage () {}
+        std::optional<GDL::Parameters> symbolParameters;
+    } storage;
+};
+
+static void AddSymbolParameters (GS::ObjectState& os, const char* key, const OpeningSymbolParameters& symbolParameters)
+{
+    if (!symbolParameters.HasValue ()) {
+        return;
+    }
+    const auto& parameterAdder = os.AddList<GS::ObjectState> (key);
+    for (const GS::ObjectState& parameter : GDLParametersToObjectStates (symbolParameters.Get ())) {
+        parameterAdder (parameter);
+    }
+}
+#endif
+
+GS::ObjectState GetOpeningSymbolParametersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& openings = response.AddList<GS::ObjectState> ("openings");
+    for (const GS::ObjectState& element : elements) {
+        const API_Guid openingGuid = GetGuidFromElementsArrayItem (element);
+        ACAPI::Result<ACAPI::Element::Opening> opening = ACAPI::Element::Opening::Get (ACAPI::UniqueID (APIGuid2GSGuid (openingGuid), ACAPI_GetToken ()));
+        if (opening.IsErr ()) {
+            openings (CreateErrorResponse (opening.UnwrapErr ().kind, "Failed to load opening: the element is missing or is not an Opening."));
+            continue;
+        }
+
+        // A symbol the opening does not have is left out.
+        const auto& floorPlanParameters = opening->GetFloorPlanParameters ();
+        GS::ObjectState details;
+        details.Add ("elementId", CreateGuidObjectState (openingGuid));
+        AddSymbolParameters (details, "cutSymbolParameters", OpeningSymbolParameters (floorPlanParameters, OpeningSymbolParameters::Symbol::Cut));
+        AddSymbolParameters (details, "unCutSymbolParameters", OpeningSymbolParameters (floorPlanParameters, OpeningSymbolParameters::Symbol::UnCut));
+        openings (details);
+    }
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
+SetOpeningSymbolParametersCommand::SetOpeningSymbolParametersCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetOpeningSymbolParametersCommand::GetName () const
+{
+    return "SetOpeningSymbolParameters";
+}
+
+GS::Optional<GS::UniString> SetOpeningSymbolParametersCommand::GetInputParametersSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "cutSymbolParameters": )") + SetGDLParameterValuesSchema + R"(,
+                        "unCutSymbolParameters": )" + SetGDLParameterValuesSchema + R"(
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    })";
+}
+
+GS::Optional<GS::UniString> SetOpeningSymbolParametersCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+#ifdef ServerMainVers_2900
+// Changes the given parameters of the symbol in symbolParameters (read from the opening) and sets
+// changed. Returns an error message when the opening has no such symbol or a parameter cannot be
+// set; then nothing is written.
+static GS::Optional<GS::UniString> GetChangedSymbolParameters (const GS::ObjectState& data, const char* key, const char* symbolName, OpeningSymbolParameters& symbolParameters, bool& changed, GSErrCode& error)
+{
+    GS::Array<GS::ObjectState> changes;
+    if (!data.Get (key, changes)) {
+        return GS::NoValue;
+    }
+    if (!symbolParameters.HasValue ()) {
+        error = APIERR_BADPARS;
+        return GS::UniString::Printf ("The opening has no %s symbol.", symbolName);
+    }
+    changed = true;
+    GS::UniString errMessage;
+    error = SetGDLParametersFromObjectStates (symbolParameters.Get (), changes, errMessage);
+    if (error != NoError) {
+        return GS::UniString::Printf ("The parameters of the %s symbol were not changed: ", symbolName) + errMessage;
+    }
+    return GS::NoValue;
+}
+
+static GS::ObjectState SetOpeningSymbolParameters (const GS::ObjectState& data)
+{
+    using ACAPI::Element::Opening;
+
+    const GS::ObjectState* elementId = data.Get ("elementId");
+    if (elementId == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'elementId' parameter.");
+    }
+
+    ACAPI::Result<Opening> opening = Opening::Get (ACAPI::UniqueID (APIGuid2GSGuid (GetGuidFromObjectState (*elementId)), ACAPI_GetToken ()));
+    if (opening.IsErr ()) {
+        return CreateFailedExecutionResult (opening.UnwrapErr ().kind, "Failed to load opening: the element is missing or is not an Opening.");
+    }
+
+    // Both symbols' parameters are read and changed, and checked before the opening is touched.
+    const auto& floorPlanParameters = opening->GetFloorPlanParameters ();
+    OpeningSymbolParameters cutSymbolParameters (floorPlanParameters, OpeningSymbolParameters::Symbol::Cut);
+    OpeningSymbolParameters unCutSymbolParameters (floorPlanParameters, OpeningSymbolParameters::Symbol::UnCut);
+    bool cutSymbolChanged = false;
+    bool unCutSymbolChanged = false;
+    GSErrCode inputError = NoError;
+    GS::Optional<GS::UniString> inputErrorMessage = GetChangedSymbolParameters (data, "cutSymbolParameters", "cut", cutSymbolParameters, cutSymbolChanged, inputError);
+    if (!inputErrorMessage.HasValue ()) {
+        inputErrorMessage = GetChangedSymbolParameters (data, "unCutSymbolParameters", "uncut", unCutSymbolParameters, unCutSymbolChanged, inputError);
+    }
+    if (inputErrorMessage.HasValue ()) {
+        return CreateFailedExecutionResult (inputError, inputErrorMessage.Get ());
+    }
+    if (!cutSymbolChanged && !unCutSymbolChanged) {
+        return CreateSuccessfulExecutionResult ();
+    }
+
+    GSErrCode failedError = NoError;
+    GS::Optional<GS::UniString> failedMessage;
+    ACAPI::Result<void> modifyResult = opening->Modify ([&] (Opening::Modifier& modifier) {
+        auto modifiableFloorPlanParameters = modifier.GetFloorPlanParameters ();
+        if (cutSymbolChanged) {
+            ACAPI::Result<void> result = modifiableFloorPlanParameters.SetCutSymbolParameters (cutSymbolParameters.Get ());
+            if (result.IsErr ()) {
+                failedError = result.UnwrapErr ().kind;
+                failedMessage = "Failed to set the parameters of the cut symbol: " + GS::UniString (result.UnwrapErr ().text.c_str ());
+                return;
+            }
+        }
+        if (unCutSymbolChanged) {
+            ACAPI::Result<void> result = modifiableFloorPlanParameters.SetUnCutSymbolParameters (unCutSymbolParameters.Get ());
+            if (result.IsErr ()) {
+                failedError = result.UnwrapErr ().kind;
+                failedMessage = GS::UniString (cutSymbolChanged ? "Failed to set the parameters of the uncut symbol (the cut symbol's were set): " : "Failed to set the parameters of the uncut symbol: ") + GS::UniString (result.UnwrapErr ().text.c_str ());
+            }
+        }
+    }, "Set Opening Symbol Parameters");
+
+    if (failedMessage.HasValue ()) {
+        return CreateFailedExecutionResult (failedError, failedMessage.Get ());
+    }
+    if (modifyResult.IsErr ()) {
+        return CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, "Failed to modify the opening: " + GS::UniString (modifyResult.UnwrapErr ().text.c_str ()));
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+#endif
+
+GS::ObjectState SetOpeningSymbolParametersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    for (const GS::ObjectState& data : elements) {
+        executionResults (SetOpeningSymbolParameters (data));
     }
     return response;
 #else
