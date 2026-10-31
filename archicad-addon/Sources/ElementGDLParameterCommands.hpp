@@ -95,6 +95,19 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+// The parameters of a curtain wall frame, panel, junction or accessory as Archicad calculated
+// them for its place in the curtain wall (ACAPI_CurtainWall_GetCWSubElemParams), which
+// GetGDLParametersOfElements, reading the parameters the sub-element was set up with, does not give.
+class GetCalculatedParametersOfCurtainWallSubElementsCommand : public CommandBase
+{
+public:
+    GetCalculatedParametersOfCurtainWallSubElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class RunParameterScriptOfElementsCommand : public CommandBase
 {
 public:
