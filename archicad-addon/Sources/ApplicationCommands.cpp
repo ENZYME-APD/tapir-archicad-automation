@@ -1085,6 +1085,93 @@ GS::ObjectState RebuildCurrentDatabaseCommand::Execute (const GS::ObjectState& /
 #endif
 }
 
+DeleteGhostRecordsCommand::DeleteGhostRecordsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeleteGhostRecordsCommand::GetName () const
+{
+    return "DeleteGhostRecords";
+}
+
+GS::Optional<GS::UniString> DeleteGhostRecordsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "databases": {
+                "$ref": "#/Databases",
+                "description": "The parent databases whose trace (ghost) record is deleted, as returned by GetDatabaseIdFromNavigatorItemId or GetContainingDatabases."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "databases"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteGhostRecordsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteGhostRecordsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> databases;
+    parameters.Get ("databases", databases);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& database : databases) {
+        const API_Guid databaseId = GetGuidFromDatabaseArrayItem (database);
+        if (databaseId == APINULLGuid) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "databaseId is corrupt or missing."));
+            continue;
+        }
+
+        API_DatabaseInfo dbInfo = DatabaseIdResolver::Instance ().GetDatabaseWithId (databaseId);
+        GSErrCode err = ACAPI_Window_GetDatabaseInfo (&dbInfo);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to resolve the database."));
+            continue;
+        }
+
+        API_GhostRecord ghostRecord {};
+        ghostRecord.parentDatabase = dbInfo.databaseUnId;
+        err = ACAPI_View_GetGhostRecord (&dbInfo.databaseUnId, &ghostRecord);
+        if (err == APIERR_WINDNOTEXIST) {
+            executionResults (CreateFailedExecutionResult (err, "The database has no trace reference."));
+            continue;
+        }
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to get the trace record of the database."));
+            continue;
+        }
+
+        // Deleting the ghost record is not undoable, so it is not wrapped in ACAPI_CallUndoableCommand.
+        err = ACAPI_View_DeleteGhostRecord (&ghostRecord);
+        executionResults (err == NoError
+            ? CreateSuccessfulExecutionResult ()
+            : CreateFailedExecutionResult (err, "Failed to delete the trace record of the database."));
+    }
+
+    return response;
+}
+
 
 
 ShowAlertCommand::ShowAlertCommand () :
