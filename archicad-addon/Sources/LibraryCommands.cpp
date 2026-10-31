@@ -43,10 +43,15 @@ static bool LibPartTypeIdFromString (const GS::UniString& typeStr, API_LibTypeID
 #ifdef ServerMainVers_2800
 #include "ACAPI/Result.hpp"
 #include "ACAPI/Library/LibraryManager.hpp"
+#include "ACAPI/Library/LibraryTreePath.hpp"
 #include "ACAPI/Library/LibPart.hpp"
 #include "ACAPI/Library/GSMObject.hpp"
 
 #include <functional>
+#include <optional>
+#include <vector>
+
+namespace ACLib = ACAPI::Library;
 
 using ACAPI::Library::GSMObject;
 
@@ -1845,6 +1850,856 @@ GS::ObjectState GetAvailableLibraryPartsCommand::Execute (const GS::ObjectState&
     response.Add ("skippedCount", skippedCount);
 
     return response;
+}
+
+#ifdef ServerMainVers_2800
+
+static GS::Array<GS::UniString> ToUniStringArray (const std::vector<GS::UniString>& strings)
+{
+    GS::Array<GS::UniString> result;
+    for (const GS::UniString& str : strings) {
+        result.Push (str);
+    }
+    return result;
+}
+
+static GS::ObjectState LibPartToObjectState (const ACLib::LibraryManager& libraryManager, const ACLib::LibPart& libPart)
+{
+    GS::ObjectState libPartData;
+    auto name = libPart.GetName ();
+    if (name.IsOk ()) {
+        libPartData.Add ("name", *name);
+    }
+    auto location = libPart.GetLocation ();
+    if (location.IsOk ()) {
+        libPartData.Add ("path", location->ToDisplayText ());
+    }
+    auto index = libraryManager.GetLibIndOfLibPart (libPart);
+    if (index.IsOk ()) {
+        libPartData.Add ("index", *index);
+    }
+    return libPartData;
+}
+
+static GS::ObjectState LibraryTreePathToObjectState (const ACLib::LibraryManager& libraryManager, const ACLib::LibraryTreePath& treePath)
+{
+    GS::ObjectState treePathData;
+    treePathData.Add ("parts", ToUniStringArray (treePath.GetParts ()));
+    treePathData.Add ("lastPart", treePath.GetLastPart ());
+    treePathData.Add ("isRoot", treePath.IsRoot ());
+    if (!treePath.IsRoot ()) {
+        treePathData.Add ("parentParts", ToUniStringArray (treePath.GetParent ().GetParts ()));
+    }
+    auto teamworkId = libraryManager.GetTWID (treePath);
+    if (teamworkId.IsOk ()) {
+        treePathData.Add ("teamworkId", teamworkId->ToUniString ());
+    }
+    return treePathData;
+}
+
+static GS::ObjectState LibraryToObjectState (const ACLib::Library& library)
+{
+    GS::ObjectState libraryData;
+    auto name = library.GetName ();
+    if (name.IsOk ()) {
+        libraryData.Add ("name", *name);
+    }
+#ifdef ServerMainVers_2900
+    auto localizedName = library.GetLocalizedName ();
+    if (localizedName.IsOk () && localizedName->HasValue ()) {
+        libraryData.Add ("localizedName", localizedName->Get ());
+    }
+#endif
+    auto location = library.GetLocation ();
+    if (location.IsOk ()) {
+        libraryData.Add ("path", location->ToDisplayText ());
+    }
+    auto isServer = library.IsServer ();
+    if (isServer.IsOk ()) {
+        libraryData.Add ("isServer", *isServer);
+        if (*isServer) {
+            auto twServerPath = library.GetTWServerPath ();
+            if (twServerPath.IsOk ()) {
+                libraryData.Add ("twServerPath", *twServerPath);
+            }
+            auto twServerUrl = library.GetTWServerUrl ();
+            if (twServerUrl.IsOk ()) {
+                libraryData.Add ("twServerUrl", *twServerUrl);
+            }
+        }
+    }
+    return libraryData;
+}
+
+static GS::ObjectState GSMObjectToObjectState (const ACLib::GSMObject& gsmObject, const std::optional<GS::UnID>& subTypeToCheck, bool includeScripts, const GS::UniString& password)
+{
+    GS::ObjectState gsmObjectData;
+
+    auto unId = gsmObject.GetUnID ();
+    if (unId.IsOk ()) {
+        gsmObjectData.Add ("guid", unId->GetMainGuid ().ToUniString ());
+    }
+    auto isSubType = gsmObject.IsSubType ();
+    if (isSubType.IsOk ()) {
+        gsmObjectData.Add ("isSubType", *isSubType);
+    }
+    auto subTypeUnId = gsmObject.GetSubTypeUnID ();
+    if (subTypeUnId.IsOk ()) {
+        gsmObjectData.Add ("subTypeGuid", subTypeUnId->GetMainGuid ().ToUniString ());
+    }
+    if (subTypeToCheck.has_value ()) {
+        auto isInSubType = gsmObject.IsInSubTypeOf (subTypeToCheck.value ());
+        if (isInSubType.IsOk ()) {
+            gsmObjectData.Add ("isInSubTypeOf", *isInSubType);
+        }
+    }
+    auto isUIDefault = gsmObject.IsUIDefault ();
+    if (isUIDefault.IsOk ()) {
+        gsmObjectData.Add ("isUIDefault", *isUIDefault);
+    }
+    auto license = gsmObject.GetLicense ();
+    if (license.IsOk ()) {
+        gsmObjectData.Add ("license", *license);
+    }
+    auto licenseVersion = gsmObject.GetLicenseVersion ();
+    if (licenseVersion.IsOk ()) {
+        gsmObjectData.Add ("licenseVersion", *licenseVersion);
+    }
+
+    GS::ObjectState contents;
+    contents.Add ("interfaceScript", gsmObject.HasInterfaceScript ());
+    contents.Add ("forwardMigrationScript", gsmObject.HasForwardMigrationScript ());
+    contents.Add ("backwardMigrationScript", gsmObject.HasBackwardMigrationScript ());
+    contents.Add ("2dVectorImage", gsmObject.Has2DVectorImage ());
+    contents.Add ("previewPicture", gsmObject.HasPreviewPicture ());
+    contents.Add ("gdlPictures", gsmObject.HasGDLPictures ());
+#ifdef ServerMainVers_2900
+    contents.Add ("darkPreviewPicture", gsmObject.HasDarkPreviewPicture ());
+    contents.Add ("darkGdlPictures", gsmObject.HasDarkGDLPictures ());
+#endif
+    gsmObjectData.Add ("contents", contents);
+
+    if (includeScripts) {
+        GS::ObjectState scripts;
+        if (gsmObject.HasInterfaceScript ()) {
+            auto script = gsmObject.GetInterfaceScript (password);
+            if (script.IsOk ()) {
+                scripts.Add ("interface", *script);
+            }
+        }
+        if (gsmObject.HasForwardMigrationScript ()) {
+            auto script = gsmObject.GetForwardMigrationScript (password);
+            if (script.IsOk ()) {
+                scripts.Add ("forwardMigration", *script);
+            }
+        }
+        if (gsmObject.HasBackwardMigrationScript ()) {
+            auto script = gsmObject.GetBackwardMigrationScript (password);
+            if (script.IsOk ()) {
+                scripts.Add ("backwardMigration", *script);
+            }
+        }
+        gsmObjectData.Add ("scripts", scripts);
+    }
+
+    return gsmObjectData;
+}
+
+#endif
+
+FindLibraryPartsCommand::FindLibraryPartsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String FindLibraryPartsCommand::GetName () const
+{
+    return "FindLibraryParts";
+}
+
+GS::Optional<GS::UniString> FindLibraryPartsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "kind": {
+                "type": "string",
+                "enum": [
+                    "All",
+                    "Object",
+                    "Image",
+                    "Text"
+                ],
+                "description": "Optional. Which library parts to find: all of them (default), GDL objects, images or text files, as selected by the Library Manager's own selectors."
+            },
+            "nameContains": {
+                "type": "string",
+                "description": "Optional. Only library parts whose name contains this text, ignoring case."
+            },
+            "firstOnly": {
+                "type": "boolean",
+                "description": "Optional. When true, only the first matching library part is returned. By default false."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> FindLibraryPartsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "description": "The matching library parts.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the library part."
+                        },
+                        "path": {
+                            "type": "string",
+                            "description": "The location of the library part file."
+                        },
+                        "index": {
+                            "type": "integer",
+                            "description": "The index of the library part in the loaded libraries."
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryParts"
+        ]
+    })";
+}
+
+GS::ObjectState FindLibraryPartsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::UniString kind ("All");
+    parameters.Get ("kind", kind);
+
+    std::function<bool (const ACLib::LibPart&)> kindSelector;
+    if (kind == "All") {
+        kindSelector = ACLib::SelectAllLibParts;
+    } else if (kind == "Object") {
+        kindSelector = ACLib::SelectObjectLibParts;
+    } else if (kind == "Image") {
+        kindSelector = ACLib::SelectImageLibParts;
+    } else if (kind == "Text") {
+        kindSelector = ACLib::SelectTextLibParts;
+    } else {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid 'kind' parameter: " + kind);
+    }
+
+    GS::UniString nameContains;
+    parameters.Get ("nameContains", nameContains);
+#ifdef ServerMainVers_3000
+    const GS::UniString nameFilter = nameContains.GetLowerCased ();
+#else
+    const GS::UniString nameFilter = nameContains.ToLowerCase ();
+#endif
+
+    bool firstOnly = false;
+    parameters.Get ("firstOnly", firstOnly);
+
+    auto libraryManager = ACLib::GetLibraryManager ();
+    if (libraryManager.IsErr ()) {
+        return CreateErrorResponse (libraryManager.UnwrapErr ().kind, "Failed to get the Library Manager.");
+    }
+
+    const std::function<bool (const ACLib::LibPart&)> selector = [&] (const ACLib::LibPart& libPart) -> bool {
+        if (!kindSelector (libPart)) {
+            return false;
+        }
+        if (nameFilter.IsEmpty ()) {
+            return true;
+        }
+        auto name = libPart.GetName ();
+#ifdef ServerMainVers_3000
+        return name.IsOk () && name->GetLowerCased ().Contains (nameFilter);
+#else
+        return name.IsOk () && name->ToLowerCase ().Contains (nameFilter);
+#endif
+    };
+
+    GS::ObjectState response;
+    const auto& libraryParts = response.AddList<GS::ObjectState> ("libraryParts");
+
+    if (firstOnly) {
+        auto libPart = libraryManager->FindLibPart (selector);
+        if (libPart.IsOk ()) {
+            libraryParts (LibPartToObjectState (*libraryManager, *libPart));
+        }
+    } else {
+        for (const ACLib::LibPart& libPart : libraryManager->FindLibParts (selector)) {
+            libraryParts (LibPartToObjectState (*libraryManager, libPart));
+        }
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
+}
+
+GetLibraryPartDetailsCommand::GetLibraryPartDetailsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetLibraryPartDetailsCommand::GetName () const
+{
+    return "GetLibraryPartDetails";
+}
+
+GS::Optional<GS::UniString> GetLibraryPartDetailsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "description": "The library parts to read, each by its name or by its index.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts or the name field of FindLibraryParts (e.g. 'Door 26.gsm')."
+                        },
+                        "index": {
+                            "type": "integer",
+                            "description": "The index of the library part, as returned by FindLibraryParts."
+                        },
+                        "password": {
+                            "type": "string",
+                            "description": "Optional. The password of a password protected library part, used to read its scripts."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "oneOf": [
+                        {
+                            "required": [
+                                "name"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "index"
+                            ]
+                        }
+                    ]
+                }
+            },
+            "subTypeOf": {
+                "type": "string",
+                "description": "Optional. The name of another loaded library part, e.g. a subtype template. When given, the isInSubTypeOf field of each library part tells whether it is in that subtype."
+            },
+            "includeScripts": {
+                "type": "boolean",
+                "description": "Optional. When true, the interface script and the forward and backward migration scripts are returned too. By default false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryParts"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetLibraryPartDetailsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "description": "The details of each given library part, or an error, in the order of the input. A field is omitted when Archicad cannot return it for that library part.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "The name of the library part."
+                                },
+                                "path": {
+                                    "type": "string",
+                                    "description": "The location of the library part file."
+                                },
+                                "index": {
+                                    "type": "integer",
+                                    "description": "The index of the library part in the loaded libraries."
+                                },
+                                "libraryTreePath": {
+                                    "type": "object",
+                                    "description": "The place of the library part in the library tree.",
+                                    "properties": {
+                                        "parts": {
+                                            "type": "array",
+                                            "description": "The names along the path, from the root.",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "lastPart": {
+                                            "type": "string",
+                                            "description": "The last name of the path."
+                                        },
+                                        "isRoot": {
+                                            "type": "boolean",
+                                            "description": "True if the path is the root of the library tree."
+                                        },
+                                        "parentParts": {
+                                            "type": "array",
+                                            "description": "The names along the path of the parent, from the root. Omitted for the root.",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "teamworkId": {
+                                            "type": "string",
+                                            "description": "The Teamwork identifier of the path. Omitted when Archicad has none for it, e.g. outside Teamwork."
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "parts",
+                                        "lastPart",
+                                        "isRoot"
+                                    ]
+                                },
+                                "library": {
+                                    "type": "object",
+                                    "description": "The library containing the library part.",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "The name of the library."
+                                        },
+                                        "localizedName": {
+                                            "type": "string",
+                                            "description": "The localized name of the library, when it has one. Archicad 29 or newer."
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "description": "The location of the library."
+                                        },
+                                        "isServer": {
+                                            "type": "boolean",
+                                            "description": "True if it is a Teamwork server library."
+                                        },
+                                        "twServerPath": {
+                                            "type": "string",
+                                            "description": "The path of the library on the Teamwork server. Only for server libraries."
+                                        },
+                                        "twServerUrl": {
+                                            "type": "string",
+                                            "description": "The URL of the Teamwork server. Only for server libraries."
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                },
+                                "gsmObject": {
+                                    "type": "object",
+                                    "description": "The GDL object data. Omitted for a library part that is not a GDL object, e.g. an image.",
+                                    "properties": {
+                                        "guid": {
+                                            "type": "string",
+                                            "description": "The main GUID of the library part, the guid field of GetAvailableLibraryParts."
+                                        },
+                                        "isSubType": {
+                                            "type": "boolean",
+                                            "description": "True if the library part is a subtype other library parts can be derived from."
+                                        },
+                                        "subTypeGuid": {
+                                            "type": "string",
+                                            "description": "The main GUID of the subtype (parent) of the library part."
+                                        },
+                                        "isInSubTypeOf": {
+                                            "type": "boolean",
+                                            "description": "True if the library part is in the subtype given by subTypeOf. Only when subTypeOf is given."
+                                        },
+                                        "isUIDefault": {
+                                            "type": "boolean",
+                                            "description": "True if the library part is marked as the default user interface (UI default)."
+                                        },
+                                        "license": {
+                                            "type": "string",
+                                            "description": "The license of the library part."
+                                        },
+                                        "licenseVersion": {
+                                            "type": "string",
+                                            "description": "The version of the license of the library part."
+                                        },
+                                        "contents": {
+                                            "type": "object",
+                                            "description": "Which sections the library part has.",
+                                            "properties": {
+                                                "interfaceScript": {
+                                                    "type": "boolean"
+                                                },
+                                                "forwardMigrationScript": {
+                                                    "type": "boolean"
+                                                },
+                                                "backwardMigrationScript": {
+                                                    "type": "boolean"
+                                                },
+                                                "2dVectorImage": {
+                                                    "type": "boolean"
+                                                },
+                                                "previewPicture": {
+                                                    "type": "boolean"
+                                                },
+                                                "gdlPictures": {
+                                                    "type": "boolean"
+                                                },
+                                                "darkPreviewPicture": {
+                                                    "type": "boolean",
+                                                    "description": "Archicad 29 or newer."
+                                                },
+                                                "darkGdlPictures": {
+                                                    "type": "boolean",
+                                                    "description": "Archicad 29 or newer."
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "required": [
+                                                "interfaceScript",
+                                                "forwardMigrationScript",
+                                                "backwardMigrationScript",
+                                                "2dVectorImage",
+                                                "previewPicture",
+                                                "gdlPictures"
+                                            ]
+                                        },
+                                        "scripts": {
+                                            "type": "object",
+                                            "description": "The scripts of the library part. Only when includeScripts is true. A script is omitted when the library part has none or it cannot be read, e.g. without the right password.",
+                                            "properties": {
+                                                "interface": {
+                                                    "type": "string"
+                                                },
+                                                "forwardMigration": {
+                                                    "type": "string"
+                                                },
+                                                "backwardMigration": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "contents"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryParts"
+        ]
+    })";
+}
+
+GS::ObjectState GetLibraryPartDetailsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::Array<GS::ObjectState> libraryParts;
+    if (!parameters.Get ("libraryParts", libraryParts)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'libraryParts' parameter.");
+    }
+
+    bool includeScripts = false;
+    parameters.Get ("includeScripts", includeScripts);
+
+    auto libraryManager = ACLib::GetLibraryManager ();
+    if (libraryManager.IsErr ()) {
+        return CreateErrorResponse (libraryManager.UnwrapErr ().kind, "Failed to get the Library Manager.");
+    }
+
+    std::optional<GS::UnID> subTypeToCheck;
+    GS::UniString subTypeOf;
+    if (parameters.Get ("subTypeOf", subTypeOf)) {
+        auto subTypeLibPart = libraryManager->GetLibPartByName (subTypeOf);
+        if (subTypeLibPart.IsErr ()) {
+            return CreateErrorResponse (subTypeLibPart.UnwrapErr ().kind, "No loaded library part with the name '" + subTypeOf + "' given in subTypeOf.");
+        }
+        auto subTypeGSMObject = libraryManager->GetGSMObjectOfLibPart (*subTypeLibPart);
+        if (subTypeGSMObject.IsErr ()) {
+            return CreateErrorResponse (subTypeGSMObject.UnwrapErr ().kind, "Failed to get the GSM object of the library part '" + subTypeOf + "' given in subTypeOf.");
+        }
+        auto subTypeUnId = subTypeGSMObject->GetUnID ();
+        if (subTypeUnId.IsErr ()) {
+            return CreateErrorResponse (subTypeUnId.UnwrapErr ().kind, "Failed to get the identifier of the library part '" + subTypeOf + "' given in subTypeOf.");
+        }
+        subTypeToCheck.emplace (*subTypeUnId);
+    }
+
+    GS::ObjectState response;
+    const auto& detailsAdder = response.AddList<GS::ObjectState> ("libraryParts");
+
+    for (const GS::ObjectState& libraryPart : libraryParts) {
+        GS::UniString name;
+        Int32 index = 0;
+        const bool hasName = libraryPart.Get ("name", name) && !name.IsEmpty ();
+        if (!hasName && !libraryPart.Get ("index", index)) {
+            detailsAdder (CreateErrorResponse (APIERR_BADPARS, "Missing 'name' or 'index' parameter."));
+            continue;
+        }
+
+        auto libPart = [&] () {
+            if (hasName) {
+                return libraryManager->GetLibPartByName (name);
+            }
+            return libraryManager->GetLibPartByLibInd (index);
+        } ();
+        if (libPart.IsErr ()) {
+            detailsAdder (CreateErrorResponse (libPart.UnwrapErr ().kind, hasName ?
+                "No loaded library part with the name '" + name + "'. Use the fileName (with extension) returned by GetAvailableLibraryParts." :
+                "No loaded library part with the index " + GS::ValueToUniString (index) + "."));
+            continue;
+        }
+
+        GS::ObjectState details = LibPartToObjectState (*libraryManager, *libPart);
+
+        auto treePath = libraryManager->GetLibraryTreePathOfLibPart (*libPart);
+        if (treePath.IsOk ()) {
+            details.Add ("libraryTreePath", LibraryTreePathToObjectState (*libraryManager, *treePath));
+        }
+
+        auto library = libraryManager->GetLibraryOfLibPart (*libPart);
+        if (library.IsOk ()) {
+            details.Add ("library", LibraryToObjectState (*library));
+        }
+
+        auto gsmObject = libraryManager->GetGSMObjectOfLibPart (*libPart);
+        if (gsmObject.IsOk ()) {
+            GS::UniString password;
+            libraryPart.Get ("password", password);
+            details.Add ("gsmObject", GSMObjectToObjectState (*gsmObject, subTypeToCheck, includeScripts, password));
+        }
+
+        detailsAdder (details);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
+}
+
+ModifyLibraryListCommand::ModifyLibraryListCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyLibraryListCommand::GetName () const
+{
+    return "ModifyLibraryList";
+}
+
+GS::Optional<GS::UniString> ModifyLibraryListCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "add": {
+                "type": "array",
+                "description": "Library folders or container files to add, by absolute path.",
+                "items": {
+                    "$ref": "#/LibraryLocation"
+                }
+            },
+            "remove": {
+                "type": "array",
+                "description": "Loaded libraries to remove, each by its name or by its path.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the library, as returned by GetLibraries."
+                        },
+                        "path": {
+                            "type": "string",
+                            "description": "The absolute path of the library, as returned by GetLibraries."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "oneOf": [
+                        {
+                            "required": [
+                                "name"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "path"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "minProperties": 1
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyLibraryListCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "addResults": {
+                "$ref": "#/ExecutionResults"
+            },
+            "removeResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "addResults",
+            "removeResults"
+        ]
+    })";
+}
+
+GS::ObjectState ModifyLibraryListCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::Array<GS::ObjectState> additions;
+    GS::Array<GS::ObjectState> removals;
+    parameters.Get ("add", additions);
+    parameters.Get ("remove", removals);
+    if (additions.IsEmpty () && removals.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "Nothing to add or remove.");
+    }
+
+    auto libraryManager = ACLib::GetLibraryManager ();
+    if (libraryManager.IsErr ()) {
+        return CreateErrorResponse (libraryManager.UnwrapErr ().kind, "Failed to get the Library Manager.");
+    }
+
+    // Every library to remove is looked up before the list changes; then one
+    // modification applies all additions and removals.
+    std::vector<std::optional<GS::UniString>> pathsToAdd;
+    std::vector<GS::ObjectState> addResults (additions.GetSize ());
+    for (UIndex i = 0; i < additions.GetSize (); ++i) {
+        GS::UniString path;
+        if (!additions[i].Get ("path", path) || path.IsEmpty ()) {
+            pathsToAdd.push_back (std::nullopt);
+            addResults[i] = CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'path' parameter.");
+            continue;
+        }
+        pathsToAdd.push_back (path);
+    }
+
+    std::vector<std::optional<ACLib::Library>> librariesToRemove;
+    std::vector<GS::ObjectState> removeResults (removals.GetSize ());
+    for (UIndex i = 0; i < removals.GetSize (); ++i) {
+        GS::UniString name;
+        GS::UniString path;
+        if (removals[i].Get ("name", name) && !name.IsEmpty ()) {
+            auto library = libraryManager->GetLibraryByName (name);
+            if (library.IsErr ()) {
+                librariesToRemove.push_back (std::nullopt);
+                removeResults[i] = CreateFailedExecutionResult (library.UnwrapErr ().kind, "No loaded library with the name '" + name + "'.");
+                continue;
+            }
+            librariesToRemove.push_back (*library);
+        } else if (removals[i].Get ("path", path) && !path.IsEmpty ()) {
+            const IO::Location location (path);
+            auto library = libraryManager->FindLibrary ([&] (const ACLib::Library& lib) -> bool {
+                auto libraryLocation = lib.GetLocation ();
+                return libraryLocation.IsOk () && SameLocation (*libraryLocation, location);
+            });
+            if (library.IsErr ()) {
+                librariesToRemove.push_back (std::nullopt);
+                removeResults[i] = CreateFailedExecutionResult (library.UnwrapErr ().kind, "No loaded library on the path '" + path + "'.");
+                continue;
+            }
+            librariesToRemove.push_back (*library);
+        } else {
+            librariesToRemove.push_back (std::nullopt);
+            removeResults[i] = CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'name' or 'path' parameter.");
+        }
+    }
+
+    std::vector<GSErrCode> addErrors (pathsToAdd.size (), NoError);
+    std::vector<GSErrCode> removeErrors (librariesToRemove.size (), NoError);
+    auto modifyResult = libraryManager->ModifyLibraryList ([&] (ACLib::LibraryManager::Modifier& modifier) -> GSErrCode {
+        for (size_t i = 0; i < pathsToAdd.size (); ++i) {
+            if (pathsToAdd[i].has_value ()) {
+                auto result = modifier.AddLibrary (IO::Location (pathsToAdd[i].value ()));
+                addErrors[i] = result.IsOk () ? NoError : result.UnwrapErr ().kind;
+            }
+        }
+        for (size_t i = 0; i < librariesToRemove.size (); ++i) {
+            if (librariesToRemove[i].has_value ()) {
+                auto result = modifier.RemoveLibrary (librariesToRemove[i].value ());
+                removeErrors[i] = result.IsOk () ? NoError : result.UnwrapErr ().kind;
+            }
+        }
+        return NoError;
+    });
+    const GSErrCode modifyError = modifyResult.IsOk () ? NoError : modifyResult.UnwrapErr ().kind;
+
+    GS::ObjectState response;
+    const auto& addResultsAdder = response.AddList<GS::ObjectState> ("addResults");
+    for (size_t i = 0; i < pathsToAdd.size (); ++i) {
+        if (!pathsToAdd[i].has_value ()) {
+            addResultsAdder (addResults[i]);
+        } else if (addErrors[i] != NoError) {
+            addResultsAdder (CreateFailedExecutionResult (addErrors[i], "Failed to add the library on the path '" + pathsToAdd[i].value () + "'."));
+        } else if (modifyError != NoError) {
+            addResultsAdder (CreateFailedExecutionResult (modifyError, "Failed to modify the library list."));
+        } else {
+            addResultsAdder (CreateSuccessfulExecutionResult ());
+        }
+    }
+    const auto& removeResultsAdder = response.AddList<GS::ObjectState> ("removeResults");
+    for (size_t i = 0; i < librariesToRemove.size (); ++i) {
+        if (!librariesToRemove[i].has_value ()) {
+            removeResultsAdder (removeResults[i]);
+        } else if (removeErrors[i] != NoError) {
+            removeResultsAdder (CreateFailedExecutionResult (removeErrors[i], "Failed to remove the library."));
+        } else if (modifyError != NoError) {
+            removeResultsAdder (CreateFailedExecutionResult (modifyError, "Failed to modify the library list."));
+        } else {
+            removeResultsAdder (CreateSuccessfulExecutionResult ());
+        }
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
 }
 
 IsUsableGDLStringCommand::IsUsableGDLStringCommand () :
