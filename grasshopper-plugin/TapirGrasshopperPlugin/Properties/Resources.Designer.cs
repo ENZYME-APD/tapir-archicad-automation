@@ -175,9 +175,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap Change3DStyles
         {
             get {
@@ -186,9 +183,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap ChangeAddOnViewpoints
         {
             get {
@@ -282,9 +276,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap Create3DStyles
         {
             get {
@@ -293,9 +284,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap CreateAddOnViewpoints
         {
             get {
@@ -482,9 +470,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap FindModelViewOption
         {
             get {
@@ -511,6 +496,14 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("GetElementsAttachedToAnIssue", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetElementsByClassification
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetElementsByClassification", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -779,9 +772,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap SetDocumentFrom3DDefaults
         {
             get {
@@ -864,6 +854,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap SetUserDataOfGroups
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetUserDataOfGroups", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -875,9 +873,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap SetZoom
         {
             get {
@@ -1031,9 +1026,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap GetDatabases
         {
             get {
@@ -1114,6 +1106,22 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap GetClassificationItemParents
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetClassificationItemParents", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetClassificationItemVisibility
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetClassificationItemVisibility", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap RebuildView
         {
             get {
@@ -1134,6 +1142,22 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("LockElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap MakePropertyAvailableForElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("MakePropertyAvailableForElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap MakePropertyUnavailableForElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("MakePropertyUnavailableForElements", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -1198,9 +1222,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap FitInWindow
         {
             get {
@@ -1209,9 +1230,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap Get3DCutPlanes
         {
             get {
@@ -1258,9 +1276,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap GetStructureDisplay
         {
             get {
@@ -1464,9 +1479,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap SetStructureDisplay
         {
             get {
@@ -1621,6 +1633,22 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap SetIFCAttributesOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetIFCAttributesOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetIFCClassificationReferencesOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetIFCClassificationReferencesOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap GetMarkerParametersOfElements
         {
             get {
@@ -1629,9 +1657,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap GetNavigatorItemTree
         {
             get {
@@ -1640,9 +1665,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap GetNavigatorParentItems
         {
             get {
@@ -1667,9 +1689,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap SetMasterLayoutContext
         {
             get {
@@ -1718,9 +1737,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap ResetZoom
         {
             get {
@@ -2129,6 +2145,22 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap GetPropertiesOfToolDefaults
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetPropertiesOfToolDefaults", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetPropertyDefinitionsOfAttributes
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetPropertyDefinitionsOfAttributes", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap GetComposites
         {
             get {
@@ -2433,6 +2465,22 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap GetElementSetData
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetElementSetData", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetElementSetsOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetElementSetsOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap GetIFCIdsOfElements
         {
             get {
@@ -2489,9 +2537,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap GetDrawingContentBoxes
         {
             get {
@@ -2500,9 +2545,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap GetDrawingNumberingGridLines
         {
             get {
@@ -2583,9 +2625,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap Get3DStyleDetails
         {
             get {
@@ -2594,9 +2633,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap Get3DWindowSettings
         {
             get {
@@ -2605,9 +2641,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap GetAddOnViewpointChildren
         {
             get {
@@ -2616,9 +2649,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap GetAddOnViewpointRoots
         {
             get {
@@ -2627,9 +2657,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap GetAddOnViewpoints
         {
             get {
@@ -2646,6 +2673,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap GetAllFavorites
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAllFavorites", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap Set3DProjectionSettings
         {
             get {
@@ -2654,9 +2689,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap Set3DWindowSettings
         {
             get {
@@ -2673,9 +2705,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap GetLayoutSubsetSettings
         {
             get {
@@ -2732,6 +2761,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap GetClassificationsOfToolDefaults
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetClassificationsOfToolDefaults", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap GetDimensionData
         {
             get {
@@ -2740,9 +2777,6 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap GetDocumentFrom3DDefaults
         {
             get {
@@ -2779,6 +2813,14 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("GetFavoritePreviewImage", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetFavoriteSettings
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetFavoriteSettings", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -3463,6 +3505,22 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap GetIFCAttributesOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetIFCAttributesOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetIFCClassificationReferencesOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetIFCClassificationReferencesOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap GetRelationsOfElements
         {
             get {
@@ -3523,6 +3581,14 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("GetTeamworkStatus", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetUserDataOfGroups
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetUserDataOfGroups", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -3628,6 +3694,14 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("ModifyObjects", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyPropertyValueOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyPropertyValueOfElements", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -3888,6 +3962,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap AddPropertyToAttributes
+        {
+            get {
+                object obj = ResourceManager.GetObject ("AddPropertyToAttributes", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap TrimElements
         {
             get {
@@ -3920,6 +4002,30 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap RemoveIFCClassificationReferencesOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("RemoveIFCClassificationReferencesOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap RemoveIFCPropertiesOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("RemoveIFCPropertiesOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap RemovePropertyFromAttributes
+        {
+            get {
+                object obj = ResourceManager.GetObject ("RemovePropertyFromAttributes", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap GetElementTrims
         {
             get {
@@ -3932,6 +4038,22 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("GetElementTypeNames", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetFavoriteDetails
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetFavoriteDetails", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetFavoriteFolders
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetFavoriteFolders", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -4116,6 +4238,14 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("CreateElectricalPanels", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateElementSets
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateElementSets", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
