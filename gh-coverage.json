@@ -1,15 +1,14 @@
 {
- "generatedAt": "2026-10-31 02:42 UTC",
+ "generatedAt": "2026-10-31 07:48 UTC",
  "counts": {
-  "done": 302,
-  "in progress": 236,
-  "merged": 15,
-  "open": 2,
+  "done": 303,
+  "in progress": 118,
+  "merged": 134,
   "not applicable": 1
  },
  "parameters": {
-  "all": 250,
-  "partial": 21,
+  "all": 384,
+  "partial": 7,
   "json": 46
  },
  "items": [
@@ -637,18 +636,19 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Retrieves the Project Info groups in their order, each with its fields: id, name, value and, when exactly one project info autotext has the name of the field, the autotext key that SetProjectInfoField takes. Available from Archicad 30.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetProjectInfoGroupsComponent",
+     "path": "Components/ProjectComponents/GetProjectInfoGroupsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [
-    {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
-    },
     {
      "number": 1012,
      "title": "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30"
@@ -661,18 +661,22 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Creates Project Info groups with the given names, at the end of the group list. Available from Archicad 30.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "CreateProjectInfoGroupsComponent",
+     "path": "Components/ProjectComponents/CreateProjectInfoGroupsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 2,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "projectInfoGroups",
+    "projectInfoGroups.name"
+   ],
    "missingParameters": [],
    "pullRequests": [
-    {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
-    },
     {
      "number": 1012,
      "title": "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30"
@@ -685,18 +689,23 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Renames Project Info groups. Available from Archicad 30.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "RenameProjectInfoGroupsComponent",
+     "path": "Components/ProjectComponents/RenameProjectInfoGroupsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 3,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "projectInfoGroups",
+    "projectInfoGroups.name",
+    "projectInfoGroups.projectInfoGroupId"
+   ],
    "missingParameters": [],
    "pullRequests": [
-    {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
-    },
     {
      "number": 1012,
      "title": "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30"
@@ -709,18 +718,21 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Deletes Project Info groups. A group that contains fixed (built-in) fields cannot be deleted. Available from Archicad 30.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "DeleteProjectInfoGroupsComponent",
+     "path": "Components/ProjectComponents/DeleteProjectInfoGroupsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 1,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "projectInfoGroups"
+   ],
    "missingParameters": [],
    "pullRequests": [
-    {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
-    },
     {
      "number": 1012,
      "title": "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30"
@@ -733,18 +745,23 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Moves Project Info groups before another group, or to the end of the group list when no other group is given. Available from Archicad 30.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "MoveProjectInfoGroupsComponent",
+     "path": "Components/ProjectComponents/MoveProjectInfoGroupsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 3,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "projectInfoGroups",
+    "projectInfoGroups.beforeProjectInfoGroupId",
+    "projectInfoGroups.projectInfoGroupId"
+   ],
    "missingParameters": [],
    "pullRequests": [
-    {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
-    },
     {
      "number": 1012,
      "title": "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30"
@@ -843,19 +860,21 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Retrieves the keywords of note autotexts (the autotexts of dimension, label and other element notes) by their numeric API_NoteAutotextID values. Available from Archicad 26.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
+     "name": "GetNoteAutoTextKeywordsComponent",
+     "path": "Components/ProjectComponents/GetNoteAutoTextKeywordsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "autoTextIds"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1000,19 +1019,21 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Tells for each element whether it comes from a hotlinked module, and returns the hotlink element that contains it and the hotlink instance it belongs to. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
+     "name": "GetHotlinkOwnersOfElementsComponent",
+     "path": "Components/ProjectComponents/GetHotlinkOwnersOfElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1020,19 +1041,21 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Maps the proxy elements of placed hotlink instances to the elements of the source file they were made from, so an element seen in a hotlinked module can be traced back to its source element.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
+     "name": "GetHotlinkProxyElementTableComponent",
+     "path": "Components/ProjectComponents/GetHotlinkProxyElementTableComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "hotlinkInstances"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1281,18 +1304,21 @@
    "group": "Project Commands",
    "version": "1.7.2",
    "brief": "Gets pages of the project preferences (Options > Project Preferences): the working units, the dimensions, the calculation units and the zones. Further pages may follow.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetProjectPreferencesComponent",
+     "path": "Components/ProjectComponents/GetProjectPreferencesComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 1,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "preferenceTypes"
+   ],
    "missingParameters": [],
    "pullRequests": [
-    {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
-    },
     {
      "number": 1030,
      "title": "[4/4] Add the GetProjectPreferences and SetProjectPreferences Grasshopper components"
@@ -1305,18 +1331,48 @@
    "group": "Project Commands",
    "version": "1.7.2",
    "brief": "Changes pages of the project preferences (Options > Project Preferences): the working units, the dimensions, the calculation units and the zones. Only the given fields change, the rest of each page keeps its value. In Teamwork the PreferencesDialog lockable object set has to be reserved first (ReserveLockableObjectSet). Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "SetProjectPreferencesComponent",
+     "path": "Components/ProjectComponents/SetProjectPreferencesComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 28,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "calculationUnits",
+    "dimensions",
+    "dimensions.dimensionStandardIndex",
+    "dimensions.doorWindow",
+    "dimensions.elevation",
+    "dimensions.level",
+    "dimensions.linear",
+    "dimensions.linear.hideZeroDecimals",
+    "dimensions.linear.showZeroInch",
+    "dimensions.linear.showZeroWhole",
+    "dimensions.parapet",
+    "dimensions.radial",
+    "workingUnits",
+    "workingUnits.angle",
+    "workingUnits.angle.accuracy",
+    "workingUnits.area",
+    "workingUnits.length",
+    "workingUnits.length.decimals",
+    "workingUnits.length.roundInch",
+    "workingUnits.length.unit",
+    "workingUnits.volume",
+    "zones",
+    "zones.lowCeilingAreaReduction",
+    "zones.lowCeilingAreaReduction.activeHeightLimits",
+    "zones.lowCeilingAreaReduction.heightLimits",
+    "zones.lowCeilingAreaReduction.heightLimits.height",
+    "zones.lowCeilingAreaReduction.heightLimits.reductionPercent",
+    "zones.lowCeilingAreaReduction.reductionPercentAboveHeightLimits"
+   ],
    "missingParameters": [],
    "pullRequests": [
-    {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
-    },
     {
      "number": 1030,
      "title": "[4/4] Add the GetProjectPreferences and SetProjectPreferences Grasshopper components"
@@ -1329,19 +1385,23 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Formats lengths, areas, volumes and angles (given in meters, square meters, cubic meters and radians) as Archicad shows them with the unit and rounding of the given Project Preference, returning the text, its extra accuracy decimals and the unit. The output is aligned with the input array of values. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
+     "name": "ConvertUnitValuesComponent",
+     "path": "Components/ProjectComponents/ConvertUnitValuesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "values",
+    "values.preference",
+    "values.value"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1349,19 +1409,19 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Gets the names the running Archicad shows for the renovation statuses Existing, New and Demolished (localized). Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetRenovationStatusNamesComponent",
+     "path": "Components/ProjectComponents/GetRenovationStatusNamesComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1389,19 +1449,19 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Gets the 3x4 matrix that transforms points from the Project Origin coordinate system into the Survey Point coordinate system, row by row, and its inverse when it is invertible. Read only. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetSurveyPointTransformationComponent",
+     "path": "Components/ProjectComponents/GetSurveyPointTransformationComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1432,19 +1492,19 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Gets the Project Notes of the project (File > Info > Project Notes): client, project name, company, address, architect, draftsmen, project status, date of issue, keywords and notes.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetProjectNotesComponent",
+     "path": "Components/ProjectComponents/GetProjectNotesComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1452,19 +1512,33 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Changes the Project Notes of the project (File > Info > Project Notes). Only the given fields are changed; texts longer than the field Archicad stores are truncated.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 13,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
+     "name": "SetProjectNotesComponent",
+     "path": "Components/ProjectComponents/SetProjectNotesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 13,
+   "coveredParameters": [
+    "architect",
+    "city",
+    "client",
+    "company",
+    "country",
+    "dateOfIssue",
+    "draftsmen",
+    "keywords",
+    "notes",
+    "postalCode",
+    "projectName",
+    "projectStatus",
+    "street"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1472,19 +1546,19 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Gets the project's date and time (Options > Project Preferences > Location Settings), the sun position Archicad calculates for them at the project location, and the sun and ambient light settings.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetSunSettingsComponent",
+     "path": "Components/ProjectComponents/GetSunSettingsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1492,19 +1566,22 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Calculates the sun position (azimuth and altitude in degrees) for a date and time, at the project location unless another one is given, without changing the project.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
+     "name": "CalculateSunPositionComponent",
+     "path": "Components/ProjectComponents/CalculateSunPositionComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "dateTime",
+    "location"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1559,19 +1636,19 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Gets whether Auto-Intersection (Options > Auto-Intersection) is on. It changes what the wall and beam creation commands produce: with it on, the new elements are joined at their intersections.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetAutoIntersectComponent",
+     "path": "Components/ProjectComponents/GetAutoIntersectComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1579,19 +1656,21 @@
    "group": "Project Commands",
    "version": "1.7.3",
    "brief": "Turns Auto-Intersection on or off. It is a setting of the running Archicad, not of the project; remember to restore the previous state afterwards.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
+     "name": "SetAutoIntersectComponent",
+     "path": "Components/ProjectComponents/SetAutoIntersectComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "isOn"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1714,19 +1793,21 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Gets the localized names of the given element types, as the running Archicad shows them (for example 'Wand' for Wall in German Archicad). The output is aligned with the input array of element types. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1685,
-     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+     "name": "GetElementTypeNamesComponent",
+     "path": "Components/ElementsComponents/GetElementTypeNamesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elementTypes"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1906,19 +1987,19 @@
    "group": "Element Commands",
    "version": "1.7.2",
    "brief": "Lists the element categories of the project (Structural Function, Position, Renovation Status, Renovation Filter and, in the German version, BRI) with their possible values. The names of the categories and values are localized: identify a category by its type and a value by its categoryValueId, never by name.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetElementCategoriesComponent",
+     "path": "Components/ElementsComponents/GetElementCategoriesComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1685,
-     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1926,19 +2007,22 @@
    "group": "Element Commands",
    "version": "1.7.2",
    "brief": "Gets the category values (Structural Function, Position, Renovation Status ...) of the given elements, optionally only for the given category types. An element that has none of the requested categories (an annotation, for example) gets an error item. The names are localized: use the type and the categoryValueId in scripts.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1685,
-     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+     "name": "GetCategoryValuesOfElementsComponent",
+     "path": "Components/ElementsComponents/GetCategoryValuesOfElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "categories",
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1946,19 +2030,22 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Gets the category values (Structural Function, Position, Renovation Status ...) of the tool defaults of the given element types, the values new elements of the type get, optionally only for the given category types. A category the default has no value in is listed without categoryValueId; an element type without any of the requested categories gets an error item. The names are localized: use the type and the categoryValueId in scripts.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1685,
-     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+     "name": "GetCategoryValuesOfDefaultsComponent",
+     "path": "Components/ElementsComponents/GetCategoryValuesOfDefaultsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "categories",
+    "elementTypes"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1966,19 +2053,24 @@
    "group": "Element Commands",
    "version": "1.7.2",
    "brief": "Sets the category values (Structural Function, Position, Renovation Status ...) of the given elements, one element and one category per item, in a single undoable step. The value must belong to the given category, as GetElementCategories lists them; an element without that category gets a failed execution result. The names are localized: use the type and the categoryValueId in scripts.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 4,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1685,
-     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+     "name": "SetCategoryValuesOfElementsComponent",
+     "path": "Components/ElementsComponents/SetCategoryValuesOfElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "elementCategoryValues",
+    "elementCategoryValues.categoryValueId",
+    "elementCategoryValues.elementId",
+    "elementCategoryValues.type"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2008,19 +2100,21 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Gets the placement transformation of library part instances (Window, Door, Object, Lamp, Zone) as Archicad computes it: the location, the rotation angle and the x/y scaling. The output is aligned with the input array of elements.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1685,
-     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+     "name": "GetLibPartTransformationsComponent",
+     "path": "Components/ElementsComponents/GetLibPartTransformationsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2028,19 +2122,24 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Converts the reveal depth offset of windows and doors placed in walls between the two references Archicad uses: measured from the core skin of a composite wall, or from the wall side. Give exactly one of coreOffset or sideOffset per opening; both values are returned. For walls with a basic structure the two values are equal. The output is aligned with the input array of openings. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 4,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1685,
-     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+     "name": "ConvertRevealOffsetsComponent",
+     "path": "Components/ElementsComponents/ConvertRevealOffsetsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "openings",
+    "openings.coreOffset",
+    "openings.elementId",
+    "openings.sideOffset"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2070,19 +2169,21 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Gets the connections among the given elements: each pair of touching elements once, with the polygons of the surface where they touch, in world coordinates. The 3D model of the elements is generated with separate components in a temporary sight, so the 3D window is not changed. Also returns, aligned with the input array of elements, whether each element was found. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1685,
-     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+     "name": "GetElementConnectionsComponent",
+     "path": "Components/ElementsComponents/GetElementConnectionsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2090,19 +2191,21 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Gets the building material of each body of the 3D model of the given elements. The 3D model is generated with separate components in a temporary sight, so a composite structure has one body per skin and the 3D window is not changed. The output is aligned with the input array of elements. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1685,
-     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+     "name": "GetBodyMaterialsOfElementsComponent",
+     "path": "Components/ElementsComponents/GetBodyMaterialsOfElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2110,19 +2213,26 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Cuts each body of the 3D model of the given elements with a plane and returns, for each body, its building material, the area of the cut surface and its polygons (outline and holes) in 2D coordinates of the plane. The 3D model is generated with separate components in a temporary sight, so a composite structure has one body per skin and the 3D window is not changed. The output is aligned with the input array of elements. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 6,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1685,
-     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+     "name": "GetCutPolygonsOfElementsComponent",
+     "path": "Components/ElementsComponents/GetCutPolygonsOfElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 6,
+   "coveredParameters": [
+    "cutPlane",
+    "cutPlane.axisX",
+    "cutPlane.axisY",
+    "cutPlane.axisZ",
+    "cutPlane.basePoint",
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2160,19 +2270,22 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Checks whether elements have a visible skin in a given Partial Structure Display mode (EntireStructure, CoreOnly, WithoutFinishes or StructureOnly), e.g. a finish-only slab has none in CoreOnly. The current window is not changed. The output is aligned with the input array of elements.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1685,
-     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+     "name": "GetVisibleSkinStatusComponent",
+     "path": "Components/ElementsComponents/GetVisibleSkinStatusComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "elements",
+    "structureDisplay"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2188,15 +2301,14 @@
      "path": "Components/ElementsComponents/GetQuantitiesOfElementsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 3,
    "coveredParameters": [
+    "calculateInOneCall",
     "elements",
     "minOpeningSize"
    ],
-   "missingParameters": [
-    "calculateInOneCall"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -2205,19 +2317,21 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Triangulates the plan polygon of the given elements, holes excluded, as Archicad does it: the outline of a Slab, Zone, Hatch or Mesh and the polygon of a Roof. Each triangle is given by the 2D coordinates of its three vertices. The output is aligned with the input array of elements; an element of another type gets an error item.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1685,
-     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+     "name": "TriangulatePolygonsOfElementsComponent",
+     "path": "Components/ElementsComponents/TriangulatePolygonsOfElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2225,19 +2339,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Gets the number of components of each type (bodies, polygons, polygon edges, edges, vertices, normal vectors, materials and lights) in the 3D model Archicad currently holds, as ACAPI_ModelAccess_GetNum counts them. A type that cannot be counted gets an error item. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "Get3DModelCountsComponent",
+     "path": "Components/ElementsComponents/Get3DModelCountsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1685,
-     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2295,19 +2409,22 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Gets the owner of each given element in its hierarchical element: the root (e.g. the Curtain Wall, Stair or Railing of a frame, tread or post) or the immediate parent. Also returns whether the given element is a main element, a subelement or not part of a hierarchical element.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1685,
-     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+     "name": "GetHierarchicalElementOwnersComponent",
+     "path": "Components/ElementsComponents/GetHierarchicalElementOwnersComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "elements",
+    "ownerMode"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2315,19 +2432,21 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Opens the given hierarchical element (Curtain Wall, Stair, Railing, Beam or Column) in its hierarchical 3D editing mode, as the Edit button of the element does. Fails when Archicad is already in an editing mode. Leave the mode with FinishHierarchicalEditing. Requires Archicad 27 or later.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1685,
-     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+     "name": "EditHierarchicalElementComponent",
+     "path": "Components/ElementsComponents/EditHierarchicalElementComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elementId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2335,19 +2454,21 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Finishes the current hierarchical editing mode (Curtain Wall, Stair, Railing, Beam or Column): accept true keeps the changes (OK), accept false discards them (Cancel). The accept parameter is required, so changes are never discarded silently. Fails when Archicad is not in such an editing mode. Requires Archicad 27 or later.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1685,
-     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+     "name": "FinishHierarchicalEditingComponent",
+     "path": "Components/ElementsComponents/FinishHierarchicalEditingComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "accept"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2378,19 +2499,23 @@
    "group": "Element Commands",
    "version": "1.7.2",
    "brief": "Returns the identifier of every element of the current database, or of the given databases, in Archicad's drawing order (the order set by Bring to Front and Send to Back), as ACAPI_DrawOrder_DrawOrderGetNext walks it. Use the optional elementType and filters parameters for filtering. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1685,
-     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+     "name": "GetElementsInDrawOrderComponent",
+     "path": "Components/ElementsComponents/GetElementsInDrawOrderComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "databases",
+    "elementType",
+    "filters"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2398,19 +2523,21 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Returns the 2D drawing primitives (points, lines, arcs, texts, polylines, triangles, polygons, pictures) Archicad draws each given floor plan element from, in drawing order, as ACAPI_DrawingPrimitive_ShapePrimsExt decomposes it on every story and unclipped. Control items (type Ctrl_*) mark the beginning and the end of sub-parts such as hatches and texts. The floor plan must be the current database. The output is aligned with the input array of elements.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1685,
-     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+     "name": "GetDrawingPrimitivesOfElementsComponent",
+     "path": "Components/ElementsComponents/GetDrawingPrimitivesOfElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2418,19 +2545,21 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Returns the 2D drawing primitives of the story levels (story lines and their markers) drawn in the given section, elevation or interior elevation database, as ACAPI_DrawingPrimitive_DrawStoryControl draws them, in the same format as GetDrawingPrimitivesOfElements. The databaseId can be obtained with GetDatabaseIdFromNavigatorItemId.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1685,
-     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+     "name": "GetStoryControlPrimitivesComponent",
+     "path": "Components/ElementsComponents/GetStoryControlPrimitivesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "databaseId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2483,18 +2612,21 @@
    "group": "Element Commands",
    "version": "1.7.2",
    "brief": "Creates persistent links between pairs of elements, each from one element to another, with an optional integer flags value per link. Scripts can record their own relations between elements this way (for example which label documents which column) instead of storing GUIDs in properties. The links are stored in the project and have no effect on geometry; they are independent from groups, hotlinks and solid element operations. A link is directional: it is returned by GetLinksOfElements for the element it starts from only, and removed by UnlinkElements. Undoable.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "LinkElementsComponent",
+     "path": "Components/ElementsComponents/LinkElementsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 1,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "links"
+   ],
    "missingParameters": [],
    "pullRequests": [
-    {
-     "number": 1685,
-     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
-    },
     {
      "number": 1033,
      "title": "[2/2] Grasshopper: add LinkElements, UnlinkElements and GetLinksOfElements components"
@@ -2507,18 +2639,21 @@
    "group": "Element Commands",
    "version": "1.7.2",
    "brief": "Removes the links created by LinkElements between the given pairs of elements. The direction matters: the link starting from fromElementId and pointing to toElementId is removed. Undoable.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "UnlinkElementsComponent",
+     "path": "Components/ElementsComponents/UnlinkElementsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 1,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "links"
+   ],
    "missingParameters": [],
    "pullRequests": [
-    {
-     "number": 1685,
-     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
-    },
     {
      "number": 1033,
      "title": "[2/2] Grasshopper: add LinkElements, UnlinkElements and GetLinksOfElements components"
@@ -2531,18 +2666,21 @@
    "group": "Element Commands",
    "version": "1.7.2",
    "brief": "Gets the links created by LinkElements that start from the given elements: the linked element and the flags of each link. Links pointing to an element are not returned; query the elements they start from. Returns an error item for an element that does not exist.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetLinksOfElementsComponent",
+     "path": "Components/ElementsComponents/GetLinksOfElementsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 1,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "elements"
+   ],
    "missingParameters": [],
    "pullRequests": [
-    {
-     "number": 1685,
-     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
-    },
     {
      "number": 1033,
      "title": "[2/2] Grasshopper: add LinkElements, UnlinkElements and GetLinksOfElements components"
@@ -2563,14 +2701,13 @@
      "path": "Components/ElementsComponents/GetZoneBoundariesComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
-    "zoneElementId"
-   ],
-   "missingParameters": [
+    "zoneElementId",
     "zones"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -2606,19 +2743,21 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Gets the property objects of the given elements: the library parts of the old listing system (used by projects migrated from older Archicad versions) linked to each element by criteria or individually, with the library part's index (the same as the index returned by GetAvailableLibraryParts), name and guid. The output is aligned with the input array of elements.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1685,
-     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+     "name": "GetPropertyObjectsOfElementsComponent",
+     "path": "Components/ElementsComponents/GetPropertyObjectsOfElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2626,19 +2765,21 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Gets the descriptors of the given elements: the listing descriptors in the property objects of each element, with the library part that declares them (index, name and guid), their listing database set and index, and their status (Normal, Deleted or Local). The output is aligned with the input array of elements.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1685,
-     "title": "Grasshopper: element categories, links, hierarchy, draw order, drawing primitives and more element commands"
+     "name": "GetDescriptorsOfElementsComponent",
+     "path": "Components/ElementsComponents/GetDescriptorsOfElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6737,19 +6878,22 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Reads the attributes of the given types from another project or template file without opening it, for example to compare them with the attributes of the open project. Nothing is imported into the open project. The names are the legacy 8-bit names, so non-ASCII characters may not come through. Archicad does not read Layer, Surface, BuildingMaterial and MEPSystem attributes from a file that is not open: these types get an error item instead of an empty list. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1677,
-     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
+     "name": "GetAttributesFromProjectComponent",
+     "path": "Components/AttributesComponents/GetAttributesFromProjectComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "attributeTypes",
+    "projectFilePath"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6781,19 +6925,19 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Gets the attributes in use, as Archicad reports them for the usedAttributes JSON query: parsed into usedAttributes when the report is a JSON object, otherwise as text in raw. Helps to find the attributes DeleteAttributes can remove before a handover. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetUsedAttributesComponent",
+     "path": "Components/AttributesComponents/GetUsedAttributesComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1677,
-     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6801,19 +6945,19 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Runs the Line Consolidation menu command of Archicad on the current window, as the menu does, and reports whether it ran together with what Archicad answered. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "ConsolidateLinesComponent",
+     "path": "Components/AttributesComponents/ConsolidateLinesComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1677,
-     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6821,19 +6965,19 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Runs the Fill Consolidation menu command of Archicad on the current window, as the menu does, and reports whether it ran together with what Archicad answered. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "ConsolidateFillsComponent",
+     "path": "Components/AttributesComponents/ConsolidateFillsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1677,
-     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6841,18 +6985,21 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Creates attribute folders, each given by attribute type and path (the folder names from the root folder down). Missing parent folders are created too; a folder that already exists is kept and reported as success. Available from Archicad 26.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "CreateAttributeFoldersComponent",
+     "path": "Components/AttributesComponents/CreateAttributeFoldersComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 1,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "attributeFolders"
+   ],
    "missingParameters": [],
    "pullRequests": [
-    {
-     "number": 1677,
-     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
-    },
     {
      "number": 1029,
      "title": "[4/4] Grasshopper components for the attribute folder commands"
@@ -6865,18 +7012,21 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Deletes attribute folders, each given by attribute type and path, together with all the subfolders and deletable attributes they contain (a folder holding an attribute that cannot be deleted is kept). The root folder cannot be deleted. Available from Archicad 26.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "DeleteAttributeFoldersComponent",
+     "path": "Components/AttributesComponents/DeleteAttributeFoldersComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 1,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "attributeFolders"
+   ],
    "missingParameters": [],
    "pullRequests": [
-    {
-     "number": 1677,
-     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
-    },
     {
      "number": 1029,
      "title": "[4/4] Grasshopper components for the attribute folder commands"
@@ -6889,18 +7039,24 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Renames attribute folders, each given by attribute type and path, to the given new names. The root folder cannot be renamed. Available from Archicad 26.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "RenameAttributeFoldersComponent",
+     "path": "Components/AttributesComponents/RenameAttributeFoldersComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 4,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "attributeFolders",
+    "attributeFolders.attributeType",
+    "attributeFolders.newName",
+    "attributeFolders.path"
+   ],
    "missingParameters": [],
    "pullRequests": [
-    {
-     "number": 1677,
-     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
-    },
     {
      "number": 1029,
      "title": "[4/4] Grasshopper components for the attribute folder commands"
@@ -6913,18 +7069,23 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Moves attributes and attribute folders (with their contents) into the target folder, which must be of the same attribute type; an empty target path is the root folder. Returns one execution result per attribute and per folder. Available from Archicad 26.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "MoveAttributesAndFoldersComponent",
+     "path": "Components/AttributesComponents/MoveAttributesAndFoldersComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 3,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "attributeFolders",
+    "attributeIds",
+    "targetFolder"
+   ],
    "missingParameters": [],
    "pullRequests": [
-    {
-     "number": 1677,
-     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
-    },
     {
      "number": 1029,
      "title": "[4/4] Grasshopper components for the attribute folder commands"
@@ -6949,11 +7110,12 @@
      "path": "Components/AttributesComponents/SetLayersComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 9,
    "coveredParameters": [
     "layerDataArray",
     "layerDataArray.attributeId",
+    "layerDataArray.index",
     "layerDataArray.intersectionGroupNr",
     "layerDataArray.isHidden",
     "layerDataArray.isLocked",
@@ -6961,9 +7123,7 @@
     "layerDataArray.name",
     "overwriteExisting"
    ],
-   "missingParameters": [
-    "layerDataArray.index"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -6980,18 +7140,17 @@
      "path": "Components/AttributesComponents/SetLayerCombinationsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 6,
    "coveredParameters": [
     "layerCombinationDataArray",
     "layerCombinationDataArray.attributeId",
+    "layerCombinationDataArray.index",
     "layerCombinationDataArray.layers",
     "layerCombinationDataArray.name",
     "overwriteExisting"
    ],
-   "missingParameters": [
-    "layerCombinationDataArray.index"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -7390,19 +7549,19 @@
    "group": "Attribute Commands",
    "version": "1.7.2",
    "brief": "Returns the layer combination in effect in the current window. No layer combination is returned when the current state of the layers matches none.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetCurrentLayerCombinationComponent",
+     "path": "Components/AttributesComponents/GetCurrentLayerCombinationComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1677,
-     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7418,14 +7577,13 @@
      "path": "Components/AttributesComponents/GetLinesComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
-    "attributeIds"
-   ],
-   "missingParameters": [
+    "attributeIds",
     "fields"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -7442,14 +7600,13 @@
      "path": "Components/AttributesComponents/GetFillsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
-    "attributeIds"
-   ],
-   "missingParameters": [
+    "attributeIds",
     "fields"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -7466,14 +7623,13 @@
      "path": "Components/AttributesComponents/GetZoneCategoriesComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
-    "attributeIds"
-   ],
-   "missingParameters": [
+    "attributeIds",
     "fields"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -7490,14 +7646,13 @@
      "path": "Components/AttributesComponents/GetMEPSystemsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
-    "attributeIds"
-   ],
-   "missingParameters": [
+    "attributeIds",
     "fields"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -7514,14 +7669,13 @@
      "path": "Components/AttributesComponents/GetPenTablesComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
-    "attributeIds"
-   ],
-   "missingParameters": [
+    "attributeIds",
     "fields"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -7530,19 +7684,19 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Returns the current Pen Table (its index, attribute identifier and name) and its number of pens. Pass the returned attributeId to GetPenTables to read the pens.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetCurrentPenTableComponent",
+     "path": "Components/AttributesComponents/GetCurrentPenTableComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1677,
-     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7558,14 +7712,13 @@
      "path": "Components/AttributesComponents/GetProfilesComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
-    "attributeIds"
-   ],
-   "missingParameters": [
+    "attributeIds",
     "fields"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -7582,14 +7735,13 @@
      "path": "Components/AttributesComponents/GetCompositesComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
-    "attributeIds"
-   ],
-   "missingParameters": [
+    "attributeIds",
     "fields"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -7606,14 +7758,13 @@
      "path": "Components/AttributesComponents/GetSurfacesComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
-    "attributeIds"
-   ],
-   "missingParameters": [
+    "attributeIds",
     "fields"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -7630,14 +7781,13 @@
      "path": "Components/AttributesComponents/GetLayersDetailsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
-    "attributeIds"
-   ],
-   "missingParameters": [
+    "attributeIds",
     "fields"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -7654,14 +7804,13 @@
      "path": "Components/AttributesComponents/GetBuildingMaterialsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
-    "attributeIds"
-   ],
-   "missingParameters": [
+    "attributeIds",
     "fields"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -7670,19 +7819,21 @@
    "group": "Attribute Commands",
    "version": "1.7.2",
    "brief": "Finds loaded fonts by name through Archicad's font search and returns their index (as Text and Label fields reference fonts in fontIndex) and name, or an error for a name no loaded font has.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1677,
-     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
+     "name": "GetFontsByNameComponent",
+     "path": "Components/AttributesComponents/GetFontsByNameComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "fontNames"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7690,19 +7841,19 @@
    "group": "Attribute Commands",
    "version": "1.7.2",
    "brief": "Gets all graphic override rules of the project, with their rule group, criterion and style. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetGraphicOverrideRulesComponent",
+     "path": "Components/AttributesComponents/GetGraphicOverrideRulesComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1676,
-     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7710,19 +7861,23 @@
    "group": "Attribute Commands",
    "version": "1.7.2",
    "brief": "Gets graphic override rules by name, with their rule group, criterion and style. The rule group narrows the search; without it the rule is searched in every rule group. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1676,
-     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+     "name": "GetGraphicOverrideRulesByNameComponent",
+     "path": "Components/AttributesComponents/GetGraphicOverrideRulesByNameComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "graphicOverrideRules",
+    "graphicOverrideRules.name",
+    "graphicOverrideRules.ruleGroupName"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7730,19 +7885,26 @@
    "group": "Attribute Commands",
    "version": "1.7.2",
    "brief": "Creates graphic override rules. The criterion is given as Archicad's criterion XML or as structured conditions. The rule group is created when no rule group has the given name. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 6,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1676,
-     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+     "name": "CreateGraphicOverrideRulesComponent",
+     "path": "Components/AttributesComponents/CreateGraphicOverrideRulesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 6,
+   "coveredParameters": [
+    "graphicOverrideRules",
+    "graphicOverrideRules.criterion",
+    "graphicOverrideRules.criterionXML",
+    "graphicOverrideRules.name",
+    "graphicOverrideRules.ruleGroupName",
+    "graphicOverrideRules.style"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7750,19 +7912,26 @@
    "group": "Attribute Commands",
    "version": "1.7.2",
    "brief": "Modifies the name, criterion or style of graphic override rules. The criterion is given as Archicad's criterion XML or as structured conditions. A given style replaces the whole style of the rule. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 6,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1676,
-     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+     "name": "ModifyGraphicOverrideRulesComponent",
+     "path": "Components/AttributesComponents/ModifyGraphicOverrideRulesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 6,
+   "coveredParameters": [
+    "graphicOverrideRules",
+    "graphicOverrideRules.criterion",
+    "graphicOverrideRules.criterionXML",
+    "graphicOverrideRules.graphicOverrideRuleId",
+    "graphicOverrideRules.name",
+    "graphicOverrideRules.style"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7770,19 +7939,21 @@
    "group": "Attribute Commands",
    "version": "1.7.2",
    "brief": "Deletes graphic override rules. They are also removed from the combinations that contain them. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1676,
-     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+     "name": "DeleteGraphicOverrideRulesComponent",
+     "path": "Components/AttributesComponents/DeleteGraphicOverrideRulesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "graphicOverrideRuleIds"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7790,19 +7961,19 @@
    "group": "Attribute Commands",
    "version": "1.7.2",
    "brief": "Gets all graphic override combinations of the project with the rules they contain. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetGraphicOverrideCombinationsComponent",
+     "path": "Components/AttributesComponents/GetGraphicOverrideCombinationsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1676,
-     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7810,19 +7981,23 @@
    "group": "Attribute Commands",
    "version": "1.7.2",
    "brief": "Creates graphic override combinations from existing rules. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1676,
-     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+     "name": "CreateGraphicOverrideCombinationsComponent",
+     "path": "Components/AttributesComponents/CreateGraphicOverrideCombinationsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "graphicOverrideCombinations",
+    "graphicOverrideCombinations.graphicOverrideRuleIds",
+    "graphicOverrideCombinations.name"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7830,19 +8005,24 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Modifies the name and/or the rules of graphic override combinations. Omitted fields are kept. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 4,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1676,
-     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+     "name": "ModifyGraphicOverrideCombinationsComponent",
+     "path": "Components/AttributesComponents/ModifyGraphicOverrideCombinationsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "graphicOverrideCombinations",
+    "graphicOverrideCombinations.graphicOverrideCombinationId",
+    "graphicOverrideCombinations.graphicOverrideRuleIds",
+    "graphicOverrideCombinations.name"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7850,19 +8030,21 @@
    "group": "Attribute Commands",
    "version": "1.7.2",
    "brief": "Deletes graphic override combinations. Their rules are kept. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1676,
-     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+     "name": "DeleteGraphicOverrideCombinationsComponent",
+     "path": "Components/AttributesComponents/DeleteGraphicOverrideCombinationsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "graphicOverrideCombinationIds"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7870,19 +8052,21 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Creates empty graphic override rule groups. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1676,
-     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+     "name": "CreateGraphicOverrideRuleGroupsComponent",
+     "path": "Components/AttributesComponents/CreateGraphicOverrideRuleGroupsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "ruleGroupNames"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7890,19 +8074,19 @@
    "group": "Attribute Commands",
    "version": "1.7.2",
    "brief": "Gets all graphic override rule groups of the project with the rules they contain, empty groups included. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetGraphicOverrideRuleGroupsComponent",
+     "path": "Components/AttributesComponents/GetGraphicOverrideRuleGroupsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1676,
-     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7910,19 +8094,23 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Sets the order of the rules in graphic override rule groups, found by name. The listed rules come first, in the given order; the other rules of the group keep their order after them. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1676,
-     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+     "name": "SetGraphicOverrideRuleOrderComponent",
+     "path": "Components/AttributesComponents/SetGraphicOverrideRuleOrderComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "graphicOverrideRuleGroups",
+    "graphicOverrideRuleGroups.graphicOverrideRuleIds",
+    "graphicOverrideRuleGroups.name"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7930,19 +8118,23 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Renames graphic override rule groups, found by name. Their rules are kept. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1676,
-     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+     "name": "RenameGraphicOverrideRuleGroupsComponent",
+     "path": "Components/AttributesComponents/RenameGraphicOverrideRuleGroupsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "ruleGroups",
+    "ruleGroups.name",
+    "ruleGroups.newName"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7950,19 +8142,23 @@
    "group": "Attribute Commands",
    "version": "1.7.2",
    "brief": "Deletes graphic override rule groups, found by name. A group that still contains rules is kept unless its rules are moved to another group or deleted with it. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1676,
-     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+     "name": "DeleteGraphicOverrideRuleGroupsComponent",
+     "path": "Components/AttributesComponents/DeleteGraphicOverrideRuleGroupsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "deleteRules",
+    "moveRulesToGroup",
+    "ruleGroupNames"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7970,19 +8166,24 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Moves graphic override rules to another rule group, or to another place in their own group. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 4,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1676,
-     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+     "name": "MoveGraphicOverrideRulesComponent",
+     "path": "Components/AttributesComponents/MoveGraphicOverrideRulesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "graphicOverrideRules",
+    "graphicOverrideRules.beforeGraphicOverrideRuleId",
+    "graphicOverrideRules.graphicOverrideRuleId",
+    "graphicOverrideRules.ruleGroupName"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7990,19 +8191,21 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Reads the key-value pairs stored on attributes by SetUserDataOfAttributes. An attribute without user data returns no pairs; one holding user data in another layout returns an error.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1677,
-     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
+     "name": "GetUserDataOfAttributesComponent",
+     "path": "Components/AttributesComponents/GetUserDataOfAttributesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "attributeIds"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8010,19 +8213,23 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Stores string values under keys in the user data of attributes, for scripts to keep their own state on an attribute. The given pairs are merged into what each attribute already holds: a key that exists gets the new value, other keys are left as they are, and the keys listed in keysToDelete are removed. Prefix the keys with the script's name so that scripts do not overwrite each other's data. User data in another layout is left unchanged and reported as an error. Archicad does not record this change as an undo step, so Undo does not revert it.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1677,
-     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
+     "name": "SetUserDataOfAttributesComponent",
+     "path": "Components/AttributesComponents/SetUserDataOfAttributesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "attributeIds",
+    "keysToDelete",
+    "pairs"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8030,19 +8237,21 @@
    "group": "Attribute Commands",
    "version": "1.7.3",
    "brief": "Removes the user data of attributes, every key at once. Archicad does not record this change as an undo step, so Undo does not revert it.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1677,
-     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
+     "name": "DeleteUserDataOfAttributesComponent",
+     "path": "Components/AttributesComponents/DeleteUserDataOfAttributesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "attributeIds"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8977,19 +9186,19 @@
    "group": "Teamwork Commands",
    "version": "1.7.3",
    "brief": "Returns whether the opened project is a Teamwork project and is online, the members of the shared project and who has reserved the Hotlink and XRef management. Works in a solo project too, then isShared and isOnline are false.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetTeamworkStatusComponent",
+     "path": "Components/TeamworkComponents/GetTeamworkStatusComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1676,
-     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8997,19 +9206,23 @@
    "group": "Teamwork Commands",
    "version": "1.7.3",
    "brief": "Uploads local library folders or container files (.lcf) to a folder of a BIMcloud or Teamwork server, as BIMcloud libraries. Returns a result per library. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1676,
-     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+     "name": "UploadLibrariesToBIMcloudComponent",
+     "path": "Components/TeamworkComponents/BIMcloudLibrariesComponents.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "libraryPaths",
+    "parentPath",
+    "serverUrl"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9017,19 +9230,23 @@
    "group": "Teamwork Commands",
    "version": "1.7.3",
    "brief": "Removes libraries, given by name, from a folder of a BIMcloud or Teamwork server. Returns a result per library. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1676,
-     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+     "name": "RemoveLibrariesFromBIMcloudComponent",
+     "path": "Components/TeamworkComponents/BIMcloudLibrariesComponents.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "libraryNames",
+    "parentPath",
+    "serverUrl"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9083,19 +9300,21 @@
    "group": "Navigator Commands",
    "version": "1.7.2",
    "brief": "Returns the full content box of the given Drawing elements, independent of their frames, as ACAPI_Drawing_GetFullDrawingContentBox reports it. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+     "name": "GetDrawingContentBoxesComponent",
+     "path": "Components/NavigatorComponents/GetDrawingContentBoxesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9129,19 +9348,21 @@
    "group": "Navigator Commands",
    "version": "1.7.2",
    "brief": "Lists every database of the given types (sections, elevations, interior elevations, details, worksheets, 3D documents, layouts, master layouts) with its database ID, name and reference ID, without walking the navigator trees.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+     "name": "GetDatabasesComponent",
+     "path": "Components/NavigatorComponents/GetDatabasesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "types"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9272,19 +9493,21 @@
    "group": "Navigator Commands",
    "version": "1.7.2",
    "brief": "Gets the settings of existing Layout Book subsets: the same fields CreateLayoutSubset accepts (name, ID prefix, numbering style, ...).",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+     "name": "GetLayoutSubsetSettingsComponent",
+     "path": "Components/NavigatorComponents/GetLayoutSubsetSettingsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "navigatorItemIds"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9433,19 +9656,19 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Gets the lines of the grid of the grid-based drawing numbering of the current layout (start and end point, pen index, line type index), for example to find which grid cell a drawing on the layout sits in. The current window must be a layout (see ChangeWindow), and only a layout that uses grid-based drawing numbering has such a grid.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetDrawingNumberingGridLinesComponent",
+     "path": "Components/NavigatorComponents/GetDrawingNumberingGridLinesComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9478,19 +9701,23 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Finds a model view option combination by id or by name and returns its index, id, name and flags. The index is the one Archicad uses to switch the model view options of a window to the combination. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+     "name": "FindModelViewOptionComponent",
+     "path": "Components/NavigatorComponents/FindModelViewOptionComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "modelViewOptionId",
+    "modelViewOptionId.guid",
+    "name"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9656,19 +9883,19 @@
    "group": "Navigator Commands",
    "version": "1.7.2",
    "brief": "Gets the Partial Structure Display (EntireStructure, CoreOnly, WithoutFinishes or StructureOnly) of the current window, and whether it is the 3D window. This is the setting of the window itself, not the one stored in a saved view (see GetViewSettings). Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetStructureDisplayComponent",
+     "path": "Components/NavigatorComponents/GetStructureDisplayComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9676,19 +9903,21 @@
    "group": "Navigator Commands",
    "version": "1.7.2",
    "brief": "Sets the Partial Structure Display (EntireStructure, CoreOnly, WithoutFinishes or StructureOnly) of the current window, e.g. the floor plan, a section or the 3D window. The change cannot be undone. The saved view is not changed (see SetViewSettings for that). Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+     "name": "SetStructureDisplayComponent",
+     "path": "Components/NavigatorComponents/SetStructureDisplayComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "structureDisplay"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9792,12 +10021,20 @@
    "group": "Navigator Commands",
    "version": "1.1.7",
    "brief": "Creates a new folder in the View Map.",
-   "status": "open",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "CreateViewMapFolderComponent",
+     "path": "Components/NavigatorComponents/CreateViewMapFolderComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 2,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "folderName",
+    "parentNavigatorItemId"
+   ],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -9833,19 +10070,19 @@
    "group": "Navigator Commands",
    "version": "1.7.2",
    "brief": "Gets whether the 3D cut planes are on and the cut planes (pa, pb, pc, pd) of the 3D window, in the form accepted by Set3DCutPlanes.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "Get3DCutPlanesComponent",
+     "path": "Components/NavigatorComponents/Get3DCutPlanesComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9853,19 +10090,21 @@
    "group": "Navigator Commands",
    "version": "1.7.2",
    "brief": "Gets the settings of 3D styles by name (an empty name or no names means the current 3D style): rendering engine, model type, monochrome and background colors, contours, shadows and hatching. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+     "name": "Get3DStyleDetailsComponent",
+     "path": "Components/NavigatorComponents/Get3DStyleDetailsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "names"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9873,19 +10112,43 @@
    "group": "Navigator Commands",
    "version": "1.7.2",
    "brief": "Creates 3D styles. Each new style starts from the current 3D style and differs from it only in the given fields. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 23,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+     "name": "Create3DStylesComponent",
+     "path": "Components/NavigatorComponents/Create3DStylesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 23,
+   "coveredParameters": [
+    "styles",
+    "styles.backgroundAsInRendering",
+    "styles.backgroundColor",
+    "styles.backgroundSkyColor",
+    "styles.castShadowPercent",
+    "styles.chainBackgroundColors",
+    "styles.contourThickness",
+    "styles.engineId",
+    "styles.model3D",
+    "styles.monochromeContourColor",
+    "styles.monochromeEnabled",
+    "styles.monochromeSurfaceColor",
+    "styles.name",
+    "styles.shadingContours",
+    "styles.shadingPercent",
+    "styles.shadowContourThickness",
+    "styles.shadowElevation",
+    "styles.show3DHotSpotsOnly",
+    "styles.silhouetteThickness",
+    "styles.transparency",
+    "styles.vectorialHatching",
+    "styles.vectorialHatchingThickness",
+    "styles.vectorialSunShadow"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9893,19 +10156,43 @@
    "group": "Navigator Commands",
    "version": "1.7.2",
    "brief": "Changes the given fields of existing 3D styles, identified by name. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 23,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+     "name": "Change3DStylesComponent",
+     "path": "Components/NavigatorComponents/Change3DStylesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 23,
+   "coveredParameters": [
+    "styles",
+    "styles.backgroundAsInRendering",
+    "styles.backgroundColor",
+    "styles.backgroundSkyColor",
+    "styles.castShadowPercent",
+    "styles.chainBackgroundColors",
+    "styles.contourThickness",
+    "styles.engineId",
+    "styles.model3D",
+    "styles.monochromeContourColor",
+    "styles.monochromeEnabled",
+    "styles.monochromeSurfaceColor",
+    "styles.name",
+    "styles.shadingContours",
+    "styles.shadingPercent",
+    "styles.shadowContourThickness",
+    "styles.shadowElevation",
+    "styles.show3DHotSpotsOnly",
+    "styles.silhouetteThickness",
+    "styles.transparency",
+    "styles.vectorialHatching",
+    "styles.vectorialHatchingThickness",
+    "styles.vectorialSunShadow"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9955,19 +10242,19 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Gets the defaults a newly created 3D Document starts with: name, reference ID, vectorial hatching and sun shadows, transparency, connection to the model, surfaces, boundary contours and the uniform cut, uncut, shadow and hidden edge attributes.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetDocumentFrom3DDefaultsComponent",
+     "path": "Components/NavigatorComponents/GetDocumentFrom3DDefaultsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9975,19 +10262,47 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Sets the defaults a newly created 3D Document starts with. Only the given fields are changed; existing 3D Documents are not affected. The fields are the ones returned by GetDocumentFrom3DDefaults.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 27,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+     "name": "SetDocumentFrom3DDefaultsComponent",
+     "path": "Components/NavigatorComponents/SetDocumentFrom3DDefaultsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 27,
+   "coveredParameters": [
+    "attributeOptions",
+    "attributeOptions.elemPen",
+    "attributeOptions.hiddenEdgeLinePen",
+    "attributeOptions.hiddenEdgeLineType",
+    "attributeOptions.shadContPen",
+    "attributeOptions.shadFill",
+    "attributeOptions.shadFillBkgPen",
+    "attributeOptions.shadFillPen",
+    "attributeOptions.shouldUseElemPen",
+    "attributeOptions.shouldUseUncutSurfaceFill",
+    "attributeOptions.shouldUseUniformCutAttributes",
+    "attributeOptions.uncutSurfaceBkgPen",
+    "attributeOptions.uniformFillBkgPen",
+    "attributeOptions.uniformFillPen",
+    "attributeOptions.uniformLineType",
+    "boundaryDisplay",
+    "boundaryLineType",
+    "boundaryPen",
+    "cMater",
+    "contureOff",
+    "intPlanConn",
+    "materialFrom3D",
+    "mustBeTransparent",
+    "name",
+    "refId",
+    "vect3DHatching",
+    "vectSunShadow"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9995,19 +10310,19 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Gets the 3D window settings: the pixel size of the 3D window and the zoom (scale and displacement) of its projection.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "Get3DWindowSettingsComponent",
+     "path": "Components/NavigatorComponents/Get3DWindowSettingsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10015,19 +10330,26 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Changes the pixel size of the 3D window and/or the zoom (scale and displacement) of its projection; the values not given are kept. Returns the settings read back after the change. Archicad may need a rebuild of the 3D window (RebuildView) before it shows the change, e.g. before SaveCurrentWindowAsImage.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 6,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+     "name": "Set3DWindowSettingsComponent",
+     "path": "Components/NavigatorComponents/Set3DWindowSettingsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 6,
+   "coveredParameters": [
+    "hSize",
+    "vSize",
+    "zoomDispX",
+    "zoomDispY",
+    "zoomScaleX",
+    "zoomScaleY"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10035,18 +10357,25 @@
    "group": "Navigator Commands",
    "version": "1.3.1",
    "brief": "Zooms to the given elements or fits everything in the window.",
-   "status": "in progress",
+   "status": "done",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "FitInWindowComponent",
+     "path": "Components/NavigatorComponents/FitInWindowComponent.cs"
+    },
+    {
+     "name": "ZoomToElementsComponent",
+     "path": "Components/ElementsComponents/ZoomToElementsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 1,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "elements"
+   ],
    "missingParameters": [],
    "pullRequests": [
-    {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
-    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -10059,12 +10388,20 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Zooms the current window, 2D or 3D, to the given elements: selects them, zooms to the selection and restores the previous selection unless keepSelection is false. Fails when none of the elements could be selected, e.g. all of them are on another story or on a hidden layer.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "ZoomToElementsComponent",
+     "path": "Components/ElementsComponents/ZoomToElementsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 2,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "elements",
+    "keepSelection"
+   ],
    "missingParameters": [],
    "pullRequests": [
     {
@@ -10079,19 +10416,21 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Zooms the current 2D window to the given box in model coordinates.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+     "name": "SetZoomComponent",
+     "path": "Components/NavigatorComponents/SetZoomComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "zoomBox"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10099,19 +10438,21 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Steps back in the zoom history of the current window, like Archicad's Zoom Back.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+     "name": "ResetZoomComponent",
+     "path": "Components/NavigatorComponents/ResetZoomComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "numberOfStepsBack"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10168,19 +10509,27 @@
    "group": "Navigator Commands",
    "version": "1.1.7",
    "brief": "Moves a navigator item to a new parent in the navigator tree, or to a new position within its current parent. Fails when Archicad does not put the item where it was asked to.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+     "name": "CreateViewMapFolderComponent",
+     "path": "Components/NavigatorComponents/CreateViewMapFolderComponent.cs"
+    },
+    {
+     "name": "MoveNavigatorItem",
+     "path": "Components/NavigatorComponents/MoveNavigatorItemComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "navigatorItemIdToMove",
+    "parentNavigatorItemId",
+    "previousNavigatorItemId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10213,12 +10562,19 @@
    "group": "Navigator Commands",
    "version": "1.1.7",
    "brief": "Deletes navigator items from the navigator tree: views and folders of the View Map, layouts and master layouts of the Layout Book, and independent worksheets and details of the Project Map. Layout subsets and marker-linked worksheets and details cannot be deleted. An item that Archicad refuses to delete (in a Teamwork project: it is not reserved or the user has no right to delete it) is reported as a failed execution result.",
-   "status": "open",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "DeleteNavigatorItem",
+     "path": "Components/NavigatorComponents/DeleteNavigatorItemsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 1,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "navigatorItemIds"
+   ],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -10228,19 +10584,23 @@
    "group": "Navigator Commands",
    "version": "1.1.7",
    "brief": "Returns the full navigator item tree for the specified map. With includeChildCount true every item also reports the number of its direct children.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+     "name": "GetNavigatorItemTreeComponent",
+     "path": "Components/NavigatorComponents/GetNavigatorItemTreeComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "includeChildCount",
+    "navigatorMapId",
+    "publisherSetName"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10248,19 +10608,25 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Returns the parent of each given navigator item: the folder, subset or layout book item it is in. The root of a map has no parent and gets an error.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+     "name": "CreateViewMapFolderComponent",
+     "path": "Components/NavigatorComponents/CreateViewMapFolderComponent.cs"
+    },
+    {
+     "name": "GetNavigatorParentItemsComponent",
+     "path": "Components/NavigatorComponents/GetNavigatorParentItemsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "navigatorItemIds"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10268,19 +10634,21 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Sets which layout's context the master layout of the current window is drawn in: its autotexts then show the values of the given layout. The current window must be a master layout, otherwise an error is returned. It does not assign a master layout to a layout. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+     "name": "SetMasterLayoutContextComponent",
+     "path": "Components/NavigatorComponents/SetMasterLayoutContextComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "layoutDatabaseId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10288,19 +10656,19 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Returns the roots of the add-on viewpoints: the Project Map items created through the Archicad API by an add-on, as Archicad lists them to Tapir. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetAddOnViewpointRootsComponent",
+     "path": "Components/NavigatorComponents/GetAddOnViewpointRootsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10308,19 +10676,22 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Returns the direct children of an add-on viewpoint root or group. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+     "name": "GetAddOnViewpointChildrenComponent",
+     "path": "Components/NavigatorComponents/GetAddOnViewpointChildrenComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "viewpointId",
+    "viewpointId.guid"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10328,19 +10699,23 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Returns the details of the given add-on viewpoint items: their parent, type (Root, Group or Leaf), ID, name, view settings flags and attached data (base64 encoded). The output is aligned with the input array; an item that cannot be read gets an error. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+     "name": "GetAddOnViewpointsComponent",
+     "path": "Components/NavigatorComponents/GetAddOnViewpointsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "viewpointIds",
+    "viewpointIds.viewpointId",
+    "viewpointIds.viewpointId.guid"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10348,19 +10723,28 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Creates add-on viewpoint roots, groups and leaf nodes in the Project Map, with their ID, name, view settings flags (leaf nodes only) and attached data (base64 encoded). A group or a leaf node is created in the given parent root or group. Returns the identifier of each new item, or an error for an item that could not be created. Roots and groups can't be created in a Teamwork project. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 8,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+     "name": "CreateAddOnViewpointsComponent",
+     "path": "Components/NavigatorComponents/CreateAddOnViewpointsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 8,
+   "coveredParameters": [
+    "viewpoints",
+    "viewpoints.data",
+    "viewpoints.displayId",
+    "viewpoints.displayName",
+    "viewpoints.itemType",
+    "viewpoints.parentViewpointId",
+    "viewpoints.parentViewpointId.guid",
+    "viewpoints.viewSettingsFlags"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10368,19 +10752,27 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Changes the ID, name, view settings flags or attached data (base64 encoded) of the given add-on viewpoint items; only the given fields are changed. Roots and groups can't be changed in a Teamwork project. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 7,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1682,
-     "title": "Grasshopper: navigator, 3D window, 3D style and add-on viewpoint commands"
+     "name": "ChangeAddOnViewpointsComponent",
+     "path": "Components/NavigatorComponents/ChangeAddOnViewpointsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 7,
+   "coveredParameters": [
+    "viewpoints",
+    "viewpoints.data",
+    "viewpoints.displayId",
+    "viewpoints.displayName",
+    "viewpoints.viewSettingsFlags",
+    "viewpoints.viewpointId",
+    "viewpoints.viewpointId.guid"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10388,19 +10780,29 @@
    "group": "Graphic Override Commands",
    "version": "1.7.2",
    "brief": "Creates or overwrites a graphic override rule in a rule group: name, criterion XML, surface color and line pen. Needs Archicad 27 or later.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 9,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1676,
-     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+     "name": "CreateGraphicalOverrideRuleComponent",
+     "path": "Components/AttributesComponents/CreateGraphicalOverrideRuleComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 9,
+   "coveredParameters": [
+    "criterionXML",
+    "linePenIndex",
+    "name",
+    "overrideContours",
+    "ruleGroupName",
+    "surfaceRGB",
+    "surfaceRGB.blue",
+    "surfaceRGB.green",
+    "surfaceRGB.red"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10408,19 +10810,19 @@
    "group": "Graphic Override Commands",
    "version": "1.7.2",
    "brief": "Returns every graphic override rule with its criterion XML. Needs Archicad 27 or later.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetGraphicalOverrideRulesComponent",
+     "path": "Components/AttributesComponents/GetGraphicalOverrideRulesComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1676,
-     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10428,19 +10830,22 @@
    "group": "Graphic Override Commands",
    "version": "1.7.2",
    "brief": "Creates a graphic override combination from rule names, or replaces the rules of an existing one. Needs Archicad 27 or later.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1676,
-     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+     "name": "CreateGraphicalOverrideCombinationComponent",
+     "path": "Components/AttributesComponents/CreateGraphicalOverrideCombinationComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "name",
+    "ruleNames"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11600,19 +12005,19 @@
    "group": "Project Data Commands",
    "version": "1.7.3",
    "brief": "Lists the project data stored by Tapir in the project: the names, the identifiers of the add-on objects that store them, whether they are kept on this client only and the Teamwork user who has reserved them. Project data is text (for example JSON) saved in the project file by scripts and Grasshopper definitions, such as their settings or the mapping of elements to an external system.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetProjectDataKeysComponent",
+     "path": "Components/ProjectComponents/GetProjectDataKeysComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11620,19 +12025,21 @@
    "group": "Project Data Commands",
    "version": "1.7.3",
    "brief": "Gets the content of the project data with the given names.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
+     "name": "GetProjectDataComponent",
+     "path": "Components/ProjectComponents/GetProjectDataComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "names"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11640,19 +12047,25 @@
    "group": "Project Data Commands",
    "version": "1.7.3",
    "brief": "Creates or overwrites project data: text (for example JSON) saved in the project under a name. New project data can be kept on this client only, or created as unique so that in Teamwork only one can exist with its name. Prefix the names with the name of your tool (for example 'my-tool/settings') so scripts do not overwrite each other's data.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 5,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
+     "name": "SetProjectDataComponent",
+     "path": "Components/ProjectComponents/SetProjectDataComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 5,
+   "coveredParameters": [
+    "values",
+    "values.clientOnly",
+    "values.content",
+    "values.name",
+    "values.unique"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11660,19 +12073,21 @@
    "group": "Project Data Commands",
    "version": "1.7.3",
    "brief": "Deletes the project data with the given names.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
+     "name": "DeleteProjectDataComponent",
+     "path": "Components/ProjectComponents/DeleteProjectDataComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "names"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11680,19 +12095,21 @@
    "group": "Project Data Commands",
    "version": "1.7.3",
    "brief": "Reserves the project data with the given names in Teamwork, so that other users cannot change it. Returns the users who have already reserved some of it.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
+     "name": "ReserveProjectDataComponent",
+     "path": "Components/ProjectComponents/ReserveProjectDataComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "names"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11700,19 +12117,21 @@
    "group": "Project Data Commands",
    "version": "1.7.3",
    "brief": "Releases the project data with the given names in Teamwork.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
+     "name": "ReleaseProjectDataComponent",
+     "path": "Components/ProjectComponents/ReleaseProjectDataComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "names"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11720,19 +12139,22 @@
    "group": "Project Data Commands",
    "version": "1.7.3",
    "brief": "Requests the project data with the given names in Teamwork from the users who have reserved it, with an optional message.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
+     "name": "RequestProjectDataComponent",
+     "path": "Components/ProjectComponents/RequestProjectDataComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "mailText",
+    "names"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11740,19 +12162,22 @@
    "group": "Project Data Commands",
    "version": "1.7.3",
    "brief": "Grants the project data with the given names, reserved by the current user, to another Teamwork user.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1679,
-     "title": "Grasshopper: project and project data commands"
+     "name": "GrantProjectDataComponent",
+     "path": "Components/ProjectComponents/GrantProjectDataComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "names",
+    "toUserId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13137,19 +13562,24 @@
    "group": "Solid Element Operation Commands",
    "version": "1.7.3",
    "brief": "Runs a solid operation (subtraction, intersection, addition) on two morphs and returns the resulting morphs, one item per operation. Unlike CreateSolidElementLinks this is not a link: the target and the operator morph are replaced by the result. Morphs only; the operations run in one undo step.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 4,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1676,
-     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+     "name": "CreateSolidOperationsComponent",
+     "path": "Components/SolidOperationComponents/CreateSolidOperationsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "operations",
+    "operations.operation",
+    "operations.operatorId",
+    "operations.targetId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13227,19 +13657,21 @@
    "group": "Solid Element Operation Commands",
    "version": "1.7.3",
    "brief": "Merges the given construction elements (the Merge command of Archicad, which cleans up the junctions of slabs, beams, walls and similar elements). Undoable. The element types are not filtered: Archicad reports the ones it cannot merge.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1676,
-     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+     "name": "MergeElementsComponent",
+     "path": "Components/SolidOperationComponents/MergeElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13247,19 +13679,23 @@
    "group": "Solid Element Operation Commands",
    "version": "1.7.3",
    "brief": "Removes the merge between the two elements of each given pair. Undoable; one execution result per pair.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1676,
-     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+     "name": "UnmergeElementsComponent",
+     "path": "Components/SolidOperationComponents/UnmergeElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "elementPairs",
+    "elementPairs.elementId1",
+    "elementPairs.elementId2"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13267,19 +13703,21 @@
    "group": "Solid Element Operation Commands",
    "version": "1.7.3",
    "brief": "Gets the elements each queried element is merged with, one item per queried element; an unknown element is an error item.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1676,
-     "title": "Grasshopper: graphic override, Teamwork and solid operation commands"
+     "name": "GetMergedElementsComponent",
+     "path": "Components/SolidOperationComponents/GetMergedElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {

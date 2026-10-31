@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-31 02:42 UTC",
+ "generatedAt": "2026-10-31 07:48 UTC",
  "versions": [
   25,
   26,
@@ -11394,6 +11394,10 @@
    "status": "not applicable",
    "reason": "memory management",
    "pullRequests": [
+    {
+     "number": 1660,
+     "title": "CreateViewsInViewMap: accept a View Map view as the source"
+    },
     {
      "number": 1508,
      "title": "[4/6] Add GetViewOptions and SetViewOptions"
@@ -24310,6 +24314,10 @@
     {
      "number": 1161,
      "title": "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"
+    },
+    {
+     "number": 1125,
+     "title": "Add GetModelExtent command (ACAPI_Element_GetExtent3D)"
     },
     {
      "number": 1123,
@@ -45139,10 +45147,6 @@
     {
      "number": 1686,
      "title": "Get3DBoundingBoxes: work for Slabs and Zones while a layout or a section is open"
-    },
-    {
-     "number": 1677,
-     "title": "Grasshopper: attribute commands (folders, user data, consolidation, field filters)"
     },
     {
      "number": 1675,
