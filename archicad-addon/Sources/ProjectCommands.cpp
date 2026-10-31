@@ -5608,6 +5608,21 @@ GS::Optional<GS::UniString> CreateHotlinkInstancesCommand::GetRawResponseSchema 
     })";
 }
 
+// Whether the project has a layer with this index. A tool default can still name a layer that
+// has been deleted since; Archicad then refuses the new element with APIERR_BADINDEX.
+static bool LayerExists (const API_AttributeIndex& layer)
+{
+    API_Attribute attribute = {};
+    attribute.header.typeID = API_LayerID;
+    attribute.header.index = layer;
+    return ACAPI_Attribute_Get (&attribute) == NoError;
+}
+
+static GS::UniString NotALayerMessage (Int32 layerIndex)
+{
+    return GS::UniString::Printf ("layerIndex %d is not a layer of the project.", layerIndex);
+}
+
 GS::ObjectState CreateHotlinkInstancesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> hotlinkInstances;
@@ -5645,6 +5660,14 @@ GS::ObjectState CreateHotlinkInstancesCommand::Execute (const GS::ObjectState& p
             Int32 layerIndex = 0;
             if (instanceData.Get ("layerIndex", layerIndex) && layerIndex > 0) {
                 element.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
+                if (!LayerExists (element.header.layer)) {
+                    elements (CreateErrorResponse (APIERR_BADINDEX, NotALayerMessage (layerIndex)));
+                    continue;
+                }
+            } else if (!LayerExists (element.header.layer)) {
+                // The hotlink tool's default layer was deleted: every placement failed with
+                // APIERR_BADINDEX. Use the built-in Archicad layer instead, which cannot be deleted.
+                element.header.layer = ACAPI_CreateAttributeIndex (1);
             }
             Int32 floorIndex;
             if (instanceData.Get ("floorIndex", floorIndex)) {
@@ -5831,6 +5854,10 @@ GS::ObjectState ChangeHotlinkInstancesCommand::Execute (const GS::ObjectState& p
             Int32 layerIndex = 0;
             if (instanceData.Get ("layerIndex", layerIndex) && layerIndex > 0) {
                 element.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
+                if (!LayerExists (element.header.layer)) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADINDEX, NotALayerMessage (layerIndex)));
+                    continue;
+                }
                 ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
             }
 
