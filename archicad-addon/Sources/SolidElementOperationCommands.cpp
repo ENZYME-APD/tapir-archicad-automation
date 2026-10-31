@@ -784,6 +784,13 @@ GS::ObjectState GetElementTrimsCommand::Execute (const GS::ObjectState& paramete
         const auto& trims = item.AddList<GS::ObjectState> ("trims");
         GS::Array<API_Guid> trimmed;
         err = ACAPI_Element_Trim_GetTrimmedElements (guid, &trimmed);
+        // Only roofs and shells trim other elements: for any other element the
+        // API answers APIERR_BADELEMENTTYPE, which means it trims nothing, so
+        // its trimmedBy list is kept with an empty trims list.
+        if (err == APIERR_BADELEMENTTYPE) {
+            items (item);
+            continue;
+        }
         if (err != NoError) {
             items (CreateErrorResponse (err, "Failed to read the elements this element trims."));
             continue;
