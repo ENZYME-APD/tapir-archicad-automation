@@ -8329,7 +8329,7 @@
             },
             "extrusionMaterial": {
                 "$ref": "#/OverriddenMaterial",
-                "description": "Available from Archicad 29."
+                "description": "Available from Archicad 28."
             },
             "materialsChained": {
                 "type": "boolean",
