@@ -3114,7 +3114,7 @@ static GS::HashTable<GS::UniString, GS::UniString> GetProjectInfoAutoTexts ()
     return values;
 }
 
-static void SetNameParts (const GS::UniString& person, const GS::HashTable<GS::UniString, GS::UniString>& before, const GS::Optional<GS::UniString>& newFullName)
+static GSErrCode SetNameParts (const GS::UniString& person, const GS::HashTable<GS::UniString, GS::UniString>& before, const GS::Optional<GS::UniString>& newFullName)
 {
     const GS::HashTable<GS::UniString, GS::UniString> current = GetProjectInfoAutoTexts ();
     for (const char* part : ProjectNotesNameParts) {
@@ -3128,9 +3128,13 @@ static void SetNameParts (const GS::UniString& person, const GS::HashTable<GS::U
         }
         if (current.Get (id) != value) {
             // An empty value is cleared with nullptr, see SetProjectInfoFieldCommand.
-            ACAPI_AutoText_SetAnAutoText (&id, value.IsEmpty () ? nullptr : &value);
+            const GSErrCode err = ACAPI_AutoText_SetAnAutoText (&id, value.IsEmpty () ? nullptr : &value);
+            if (err != NoError) {
+                return err;
+            }
         }
     }
+    return NoError;
 }
 
 GS::ObjectState SetProjectNotesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -3174,15 +3178,25 @@ GS::ObjectState SetProjectNotesCommand::Execute (const GS::ObjectState& paramete
     };
     const GS::Optional<GS::UniString> newArchitect = getNewFullName ("architect", notesBefore.architect, projectNotes.architect);
     const GS::Optional<GS::UniString> newDraftsmen = getNewFullName ("draftsmen", notesBefore.draftsmen, projectNotes.draftsmen);
+    // The name parts are set inside the same undoable command, so one Undo takes back the whole change.
+    bool namePartsFailed = false;
     err = ACAPI_CallUndoableCommand ("Change Project Notes", [&] () -> GSErrCode {
-        return ACAPI_ProjectSetting_ChangeProjectNotes (&projectNotes);
+        GSErrCode changeErr = ACAPI_ProjectSetting_ChangeProjectNotes (&projectNotes);
+        if (changeErr != NoError) {
+            return changeErr;
+        }
+        changeErr = SetNameParts ("CONTACT", autoTextsBefore, newArchitect);
+        if (changeErr == NoError) {
+            changeErr = SetNameParts ("CAD_TECHNICIAN", autoTextsBefore, newDraftsmen);
+        }
+        namePartsFailed = changeErr != NoError;
+        return changeErr;
     });
     if (err != NoError) {
-        return CreateFailedExecutionResult (err, "Failed to change the project notes.");
+        return CreateFailedExecutionResult (err, namePartsFailed ?
+            "Failed to set the name parts of the architect or the draftsmen in the project info." :
+            "Failed to change the project notes.");
     }
-
-    SetNameParts ("CONTACT", autoTextsBefore, newArchitect);
-    SetNameParts ("CAD_TECHNICIAN", autoTextsBefore, newDraftsmen);
 
     return CreateSuccessfulExecutionResult ();
 }
