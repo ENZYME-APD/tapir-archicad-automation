@@ -23,13 +23,12 @@ name: Claude PR Review
 # is never checked out or executed. The checkout below pins the base commit,
 # and the review reads the change through `gh pr diff` - text, not code.
 #
-# Decided and not open: this job deliberately does NOT download the Archicad
-# DevKits. They are gitignored build output, so the headers are absent here and
-# the prompt says so rather than claiming an authority it cannot consult.
-# Downloading them would make item 1 of the checklist real, at the cost of a
-# large download on every pull request and a third copy of the DevKit URLs to
-# keep in step. Revisit if reviews start getting the API wrong in ways that
-# matter.
+# The Archicad DevKit headers (every version in archicad-addon/devkits.json,
+# and the newest DevKit's Examples) are downloaded before the review by
+# .github/actions/download-devkits, so item 1 of the checklist is checked
+# against the API itself (#976). That action is loaded from a separate checkout
+# of this workflow's own commit, never from the pull request, and runs only jq,
+# curl and unzip. Of the pull request it reads only devkits.json, as data.
 #
 # Re-reviews. Every push re-runs the review (synchronize), and so does every
 # new human comment on the pull request - a conversation comment or a reply on
@@ -216,6 +215,40 @@ jobs:
           ref: ${{ steps.pr.outputs.base_sha }}
           fetch-depth: 0
 
+      # The DevKit headers (#976), with the action from this workflow's own
+      # commit, not the base commit above (which can predate the action).
+      - name: Checkout the DevKit download action
+        if: steps.pr.outputs.skip != 'true'
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: archicad-addon/Build/workflow-actions
+          sparse-checkout: |
+            .github/actions
+            archicad-addon/devkits.json
+          persist-credentials: false
+
+      # The pull request's DevKit list, so a pull request that adds an Archicad
+      # version is reviewed against its headers too. Only the JSON is read, as
+      # data, and the action accepts nothing but version and release numbers.
+      - name: Read the pull request's DevKit list
+        if: steps.pr.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+        run: |
+          gh api "repos/$REPO/contents/archicad-addon/devkits.json?ref=$HEAD_SHA" --jq '.content' \
+            | base64 -d > "$RUNNER_TEMP/pr-devkits.json" && jq -e '.devkits | length > 0' "$RUNNER_TEMP/pr-devkits.json" >/dev/null \
+            && echo "PR_DEVKITS=$RUNNER_TEMP/pr-devkits.json" >> "$GITHUB_ENV" \
+            || echo "The pull request has no readable DevKit list; using the base branch's."
+
+      - name: Download the DevKit headers
+        if: steps.pr.outputs.skip != 'true'
+        uses: ./archicad-addon/Build/workflow-actions/.github/actions/download-devkits
+        with:
+          devkits: ${{ env.PR_DEVKITS }}
+
       # What the earlier reviews said, and what started this run, as files the
       # review reads. Fetched here in shell so the model needs no GraphQL
       # access of its own. Everything in them was written by people and is data.
@@ -328,24 +361,28 @@ jobs:
 
             Look for, in this order of importance:
 
-            1. Correctness against the Archicad API. THE DEVKIT IS NOT ON THIS
-               RUNNER - archicad-addon/Build is gitignored build output, and
-               nothing here downloads it, so you cannot open a DevKit header or
-               its Examples folder. Do not pretend otherwise. Check instead
-               against how the same API is already used elsewhere in
-               archicad-addon/Sources, which is the best authority you have,
-               and mark every claim about a struct field, a memo layout or a
-               documented remark as needing a DevKit check by a maintainer.
-               Memory handling in the element creation paths still deserves the
-               most attention: memo handles reused across items, handles
-               overwritten without being disposed, polygon coordinate counts
-               that do not match their arrays - those are visible in the diff
-               and in the surrounding code without the headers.
+            1. Correctness against the Archicad API. THE DEVKIT HEADERS ARE ON
+               THIS RUNNER, under archicad-addon/Build/DevKits/AC<NN>/Support
+               (Inc/ and Modules/), one folder per Archicad version in
+               archicad-addon/devkits.json (the pull request's own list, so a
+               version it adds is there too), and the newest also has the
+               DevKit's Examples folder. The folder is gitignored, so a search
+               of the whole repository skips it: give Grep and Glob that path
+               explicitly. Look up every struct
+               member, function, API ID and enum value the change uses there,
+               and report one that does not exist, or has another name or type,
+               in a version the change builds it for - also when it compiles,
+               such as a wrong elevation field or a wrong version guard. Memory
+               handling in the element creation paths still deserves the most
+               attention: memo handles reused across items, handles overwritten
+               without being disposed, polygon coordinate counts that do not
+               match their arrays.
 
             2. Version gating. Anything version specific must be guarded with
                ServerMainVers_* or the AC_VERSION checks, because this builds
-               against AC25 through AC29. A field or function that only exists
-               in newer DevKits will break the older build checks.
+               against every version in archicad-addon/devkits.json. A field or
+               function that only exists in newer DevKits will break the older
+               build checks; the headers of each version above show which.
 
             3. Consistency across the three surfaces. A new or changed command
                should keep its input schema, its C++ implementation, its

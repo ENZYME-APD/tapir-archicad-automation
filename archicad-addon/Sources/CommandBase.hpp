@@ -112,6 +112,7 @@ void AddPolygonFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, co
 void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName, bool includeZCoords = false);
 bool GetHoleGeometry (const GS::ObjectState& holeOs, GS::Array<GS::ObjectState>& outCoords, GS::Array<GS::ObjectState>& outArcs);
 GS::Optional<GS::UniString> ValidateHoles (const GS::Array<GS::ObjectState>& holes);
+bool BuildHatchPolygonMemo (const GS::Array<GS::ObjectState>& coordinates, const GS::Array<GS::ObjectState>& arcs, const GS::Array<GS::ObjectState>& holes, API_Polygon& poly, API_ElementMemo& memo);
 void AddBeamHolesFromMemo (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& holesFieldName);
 void AddColumnSectionFromMemo (const API_Guid& elemGuid, GS::ObjectState& os);
 void AddBeamSectionFromMemo (const API_Guid& elemGuid, GS::ObjectState& os);
@@ -217,6 +218,10 @@ GSErrCode ExecuteActionForEachDatabase (
     const std::function<void ()>& actionSuccess,
     const std::function<void (GSErrCode, const GS::UniString&)>& actionFailure);
 
+// The Project Map item of an independent worksheet or detail database, found by its database;
+// NoValue for any other database type or when the Project Map has no such item.
+GS::Optional<API_Guid> FindProjectMapItemOfWorksheetOrDetail (const API_DatabaseInfo& database);
+
 template<std::size_t N>
 bool SetCharProperty (const GS::ObjectState* os, const char* propertyKey, char (&targetProperty)[N])
 {
@@ -274,6 +279,11 @@ GS::Optional<GS::UniString> BuildSlabMemoFromGeometry (
 // when the favorite belongs to a different element type. Defined in
 // ExtendedElementCommands.cpp, next to the Window/Door specific variant.
 GSErrCode ApplyFavoriteToElementDefaults (const GS::UniString& favoriteName, API_ElemTypeID expectedTypeId);
+
+// Makes the floor plan the current database (not the front window) and reports in `switched`
+// whether it had to; the caller puts `previousDatabase` back when it did. Defined in
+// ExtendedElementCommands.cpp.
+GSErrCode SwitchCurrentDatabaseToFloorPlan (API_DatabaseInfo& previousDatabase, bool& switched);
 
 bool LoadElementHeaderByGuid (const API_Guid& elementGuid, API_Elem_Head& elementHeader);
 bool DoesElementExist (const API_Guid& elementGuid, API_ElemTypeID expectedTypeId);

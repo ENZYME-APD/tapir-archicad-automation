@@ -71,6 +71,16 @@ namespace TapirGrasshopperPlugin.Types.Commands
             "conflictPolicy",
             NullValueHandling = NullValueHandling.Ignore)]
         public string ConflictPolicy;
+
+        [JsonProperty(
+            "format",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string Format;
+
+        [JsonProperty(
+            "fileNames",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public List<string> FileNames;
     }
 
     public class ExportFavoritesParameters
