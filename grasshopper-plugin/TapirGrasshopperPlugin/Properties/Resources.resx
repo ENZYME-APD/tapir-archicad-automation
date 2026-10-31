@@ -277,6 +277,9 @@
   <data name="ConsolidateLines" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ConsolidateLines.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="CopyFilesIntoEmbeddedLibrary" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CopyFilesIntoEmbeddedLibrary.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="CreateIssue" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateIssue.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -426,6 +429,9 @@
   </data>
   <data name="ChangeWindow" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ChangeWindow.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CheckMEPPortConnectability" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CheckMEPPortConnectability.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="CreateProjectInfoFields" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateProjectInfoFields.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -793,6 +799,12 @@
   <data name="GetLibraries" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetLibraries.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="GetLibraryPartCustomSection" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetLibraryPartCustomSection.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetLibraryPartPictures" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetLibraryPartPictures.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="ReloadLibraries" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ReloadLibraries.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -1030,6 +1042,9 @@
   <data name="CreateGraphicalOverrideRule" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateGraphicalOverrideRule.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="CreateFolderInEmbeddedLibrary" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateFolderInEmbeddedLibrary.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="CreateZoneCategories" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateZoneCategories.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -1071,6 +1086,12 @@
   </data>
   <data name="CreateLayoutSubset" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateLayoutSubset.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateLibraryPart" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateLibraryPart.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateLibraryParts" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateLibraryParts.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="CreateDrawings" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateDrawings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -1201,6 +1222,12 @@
   <data name="DeleteKeynoteItems" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\DeleteKeynoteItems.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="DeleteMEPPhysicalSystems" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DeleteMEPPhysicalSystems.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="DeleteMEPPreferenceTableRows" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DeleteMEPPreferenceTableRows.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="CreateKeynoteFolders" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateKeynoteFolders.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -1222,8 +1249,17 @@
   <data name="GetMEPPorts" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetMEPPorts.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="GetMEPPreferenceTableContainers" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetMEPPreferenceTableContainers.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetMEPPreferenceTableRows" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetMEPPreferenceTableRows.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="GetMEPDistributionSystems" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetMEPDistributionSystems.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetMEPElementDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetMEPElementDetails.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="CreateMEPRoutingElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateMEPRoutingElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -1231,8 +1267,14 @@
   <data name="CreateMEPElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateMEPElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="CreateMEPPreferenceTables" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateMEPPreferenceTables.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="ModifyMEPRoutingElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ModifyMEPRoutingElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ModifyMEPSystemGroups" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ModifyMEPSystemGroups.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="ConnectMEPElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ConnectMEPElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -1318,6 +1360,15 @@
   <data name="ModifyLamps" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ModifyLamps.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="ModifyMEPPhysicalSystems" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ModifyMEPPhysicalSystems.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ModifyMEPPorts" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ModifyMEPPorts.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ModifyMEPPreferenceTables" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ModifyMEPPreferenceTables.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="GetMEPPreferenceTables" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetMEPPreferenceTables.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -1375,8 +1426,26 @@
   <data name="SetLibraries" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SetLibraries.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="SetLibraryPartCustomSection" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetLibraryPartCustomSection.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SetLibraryPartMetadata" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetLibraryPartMetadata.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SetLibraryPartPictures" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetLibraryPartPictures.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SetLibraryPartScripts" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetLibraryPartScripts.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SetMEPPreferenceTableRows" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetMEPPreferenceTableRows.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="AddLibraries" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\AddLibraries.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="AddMEPPreferenceTableRows" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\AddMEPPreferenceTableRows.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="AddLoadCasesToLoadCombination" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\AddLoadCasesToLoadCombination.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -1437,6 +1506,9 @@
   </data>
   <data name="ImportPropertiesXml" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ImportPropertiesXml.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="IsUsableGDLString" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\IsUsableGDLString.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="ImportClassificationsXml" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ImportClassificationsXml.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
