@@ -7,8 +7,14 @@
 #include "VectorImageIterator.hpp"
 #include "FileSystem.hpp"
 #include "UserDataPairs.hpp"
+#include "OnExit.hpp"
 #ifdef ServerMainVers_2700
 #include "ADBAttributeIndex.hpp"
+#endif
+#ifdef ServerMainVers_2900
+#include "ACAPI/Element/Opening/Opening.hpp"
+#include "ACAPI/Element/Opening/OpeningDefault.hpp"
+#include "ACAPI/Element/Opening/OpeningFloorPlanParameters.hpp"
 #endif
 #ifdef ServerMainVers_3000
 #include <optional>
@@ -7707,7 +7713,9 @@ bool RewriteElementFields (API_Element& element, API_Element& mask, const Reinde
             REINDEX_FIELD (API_MaterialID,         API_BeamSegmentType, beamSegment, rightMaterial);
             REINDEX_FIELD (API_MaterialID,         API_BeamSegmentType, beamSegment, bottomMaterial);
             REINDEX_FIELD (API_MaterialID,         API_BeamSegmentType, beamSegment, endsMaterial);
+#ifdef ServerMainVers_2800
             REINDEX_FIELD (API_MaterialID,         API_BeamSegmentType, beamSegment, extrusionMaterial);
+#endif
             REINDEX_FIELD (API_BuildingMaterialID, API_BeamSegmentType, beamSegment, assemblySegmentData.buildingMaterial);
             break;
         case API_WindowID:
@@ -7868,6 +7876,16 @@ bool RewriteElementFields (API_Element& element, API_Element& mask, const Reinde
         case API_WorksheetID:
             REINDEX_FIELD (API_LinetypeID,         API_WorksheetType, worksheet, ltypeInd);
             break;
+#ifndef ServerMainVers_2900
+        // From Archicad 29 the Opening is not part of API_Element any more (see RewriteOpeningElement).
+        case API_OpeningID:
+            REINDEX_FIELD (API_LinetypeID,         API_OpeningType, opening, floorPlanParameters.cutSurfacesParameters.lineIndex);
+            REINDEX_FIELD (API_LinetypeID,         API_OpeningType, opening, floorPlanParameters.outlinesParameters.uncutLineIndex);
+            REINDEX_FIELD (API_LinetypeID,         API_OpeningType, opening, floorPlanParameters.outlinesParameters.overheadLineIndex);
+            REINDEX_FIELD (API_FilltypeID,         API_OpeningType, opening, floorPlanParameters.coverFillsParameters.coverFillIndex);
+            REINDEX_FIELD (API_LinetypeID,         API_OpeningType, opening, floorPlanParameters.referenceAxisParameters.referenceAxisLineTypeIndex);
+            break;
+#endif
         case API_StairID:
             REINDEX_FIELD (API_LinetypeID,         API_StairType, stair, fpdLayout.lineType);
             REINDEX_FIELD (API_FilltypeID,         API_StairType, stair, fpdLayout.symbolFill);
@@ -7982,15 +8000,21 @@ UInt64 GetMemoMaskToRewrite (API_ElemTypeID typeID, API_AttrTypeID attributeType
         case API_ZoneID:
             return APIMemoMask_AddPars;
         case API_WallID:
-        case API_ColumnID:
-        case API_BeamID:
             return surface ? APIMemoMask_Gables : 0;
+        case API_ColumnID:
+            return (surface ? APIMemoMask_Gables : 0) | APIMemoMask_ColumnSegment;
+        case API_BeamID:
+            return (surface ? APIMemoMask_Gables : 0) | APIMemoMask_BeamSegment;
+        case API_CurtainWallID:
+            return APIMemoMask_CWallFrames | APIMemoMask_CWallPanels | APIMemoMask_CWallFrameClasses | APIMemoMask_CWallPanelClasses;
+        case API_StairID:
+            return APIMemoMask_StairStructure;
         case API_SlabID:
             return surface ? APIMemoMask_SideMaterials : 0;
         case API_RoofID:
             return (surface || fill) ? APIMemoMask_All : 0;
         case API_MorphID:
-            return surface ? APIMemoMask_All : 0;
+            return surface ? APIMemoMask_All : 0;   // the face surfaces: the material map table comes with the body
         case API_InteriorElevationID:
             return APIMemoMask_AddPars;
         default:
@@ -7998,10 +8022,49 @@ UInt64 GetMemoMaskToRewrite (API_ElemTypeID typeID, API_AttrTypeID attributeType
     }
 }
 
+// A sub-element kept in a memo array (a column or beam segment, a curtain wall frame or panel, a stair
+// structure) has the fields of its own element type, so it is rewritten through the element field table.
+template <typename SubElement>
+bool RewriteMemoSubElements (SubElement* items, Int32 count, API_ElemTypeID typeID, SubElement API_Element::* member, const ReindexJob& job)
+{
+    bool changed = false;
+    for (Int32 i = 0; i < count && items != nullptr; ++i) {
+        API_Element element = {};
+        element.header.type = typeID;
+        element.*member = items[i];
+        API_Element mask = {};
+        ACAPI_ELEMENT_MASK_CLEAR (mask);
+        if (RewriteElementFields (element, mask, job)) {
+            items[i] = element.*member;
+            changed = true;
+        }
+    }
+    return changed;
+}
+
 bool RewriteMemo (const API_Element& element, API_ElementMemo& memo, const ReindexJob& job)
 {
     bool changed = false;
     const API_ElemTypeID typeID = GetElemTypeId (element.header);
+    switch (typeID) {
+        case API_ColumnID:
+            if (RewriteMemoSubElements (memo.columnSegments, static_cast<Int32> (element.column.nSegments), API_ColumnSegmentID, &API_Element::columnSegment, job)) changed = true;
+            break;
+        case API_BeamID:
+            if (RewriteMemoSubElements (memo.beamSegments, static_cast<Int32> (element.beam.nSegments), API_BeamSegmentID, &API_Element::beamSegment, job)) changed = true;
+            break;
+        case API_CurtainWallID:
+            if (RewriteMemoSubElements (memo.cWallFrames, static_cast<Int32> (element.curtainWall.nFrames), API_CurtainWallFrameID, &API_Element::cwFrame, job))                 changed = true;
+            if (RewriteMemoSubElements (memo.cWallFrameDefaults, static_cast<Int32> (element.curtainWall.nFrameDefaults), API_CurtainWallFrameID, &API_Element::cwFrame, job))  changed = true;
+            if (RewriteMemoSubElements (memo.cWallPanels, static_cast<Int32> (element.curtainWall.nPanels), API_CurtainWallPanelID, &API_Element::cwPanel, job))                 changed = true;
+            if (RewriteMemoSubElements (memo.cWallPanelDefaults, static_cast<Int32> (element.curtainWall.nPanelDefaults), API_CurtainWallPanelID, &API_Element::cwPanel, job))  changed = true;
+            break;
+        case API_StairID:
+            if (RewriteMemoSubElements (memo.stairStructures, GetMemoArrayCount (memo.stairStructures), API_StairStructureID, &API_Element::stairStructure, job)) changed = true;
+            break;
+        default:
+            break;
+    }
     if (RewriteAddPars (memo.params, job)) {
         changed = true;
     }
@@ -8044,9 +8107,73 @@ bool RewriteMemo (const API_Element& element, API_ElementMemo& memo, const Reind
     return changed;
 }
 
+#ifdef ServerMainVers_2900
+// From Archicad 29 the Opening element is not part of API_Element: its floor plan line types and cover fill are
+// read and written through ACAPI::Element::Opening, for the placed openings and for the Opening tool default.
+template <typename FloorPlanParameters>
+bool DoesOpeningFloorPlanReferTo (const FloorPlanParameters& floorPlan, const ReindexJob& job)
+{
+    if (job.type == API_LinetypeID) {
+        return floorPlan.GetCutSurfacesLineIndex () == job.from || floorPlan.GetOutlinesUncutLineIndex () == job.from ||
+               floorPlan.GetOutlinesOverheadLineIndex () == job.from || floorPlan.GetReferenceAxisLineTypeIndex () == job.from;
+    }
+    return job.type == API_FilltypeID && floorPlan.GetCoverFillsIndex () == job.from;
+}
+
+void RewriteOpeningFloorPlan (ACAPI::Element::ModifiableOpeningFloorPlanParameters& floorPlan, const ReindexJob& job)
+{
+    if (job.type == API_LinetypeID) {
+        if (floorPlan.GetCutSurfacesLineIndex () == job.from)         floorPlan.SetCutSurfacesLineIndex (job.to);
+        if (floorPlan.GetOutlinesUncutLineIndex () == job.from)       floorPlan.SetOutlinesUncutLineIndex (job.to);
+        if (floorPlan.GetOutlinesOverheadLineIndex () == job.from)    floorPlan.SetOutlinesOverheadLineIndex (job.to);
+        if (floorPlan.GetReferenceAxisLineTypeIndex () == job.from)   floorPlan.SetReferenceAxisLineTypeIndex (job.to);
+    } else if (job.type == API_FilltypeID && floorPlan.GetCoverFillsIndex () == job.from) {
+        floorPlan.SetCoverFillsIndex (job.to);
+    }
+}
+
+bool RewriteOpeningElement (const API_Guid& guid, const ReindexJob& job, bool apply, bool& ok)
+{
+    using ACAPI::Element::Opening;
+    ok = true;
+    ACAPI::Result<Opening> opening = Opening::Get (ACAPI::UniqueID (APIGuid2GSGuid (guid), ACAPI_GetToken ()));
+    if (opening.IsErr () || !DoesOpeningFloorPlanReferTo (opening->GetFloorPlanParameters (), job)) {
+        return false;
+    }
+    if (apply) {
+        const ACAPI::Result<void> result = opening->Modify ([&] (Opening::Modifier& modifier) {
+            auto floorPlan = modifier.GetFloorPlanParameters ();
+            RewriteOpeningFloorPlan (floorPlan, job);
+        }, "Reindex Attributes");
+        ok = !result.IsErr ();
+    }
+    return true;
+}
+
+bool RewriteOpeningDefault (const ReindexJob& job, bool apply, bool& ok)
+{
+    using ACAPI::Element::OpeningDefault;
+    ok = true;
+    ACAPI::Result<OpeningDefault> openingDefault = ACAPI::Element::CreateOpeningDefault ();
+    if (openingDefault.IsErr () || !DoesOpeningFloorPlanReferTo (openingDefault->GetFloorPlanParameters (), job)) {
+        return false;
+    }
+    if (apply) {
+        const ACAPI::Result<void> result = openingDefault->Modify ([&] (OpeningDefault::Modifier& modifier) {
+            auto floorPlan = modifier.GetFloorPlanParameters ();
+            RewriteOpeningFloorPlan (floorPlan, job);
+        });
+        ok = !result.IsErr ();
+    }
+    return true;
+}
+#endif
+
 struct ReferenceScan {
     GS::Array<ElementInDatabase> elements;         // rewritten, or to be rewritten with dryRun
     GS::Array<ElementInDatabase> failedElements;   // could not be changed
+    GS::Array<GS::UniString>     failureDetails;   // one line per failed element: what Archicad answered
+    GS::Array<API_AttributeIndex> layers;          // the layers of the elements, each once
     GS::Array<ElementInDatabase> hotlinkElements;  // from a hotlinked module: not changeable
     GS::Array<API_ElemTypeID>    toolDefaults;
     GS::Array<GS::UniString>     favorites;
@@ -8057,9 +8184,16 @@ struct ReferenceScan {
 
 // Rewrites one element in the current database. Returns whether the element referred to the attribute; writes
 // only when apply is set, and reports a failed write through ok.
-bool RewriteElement (const API_Guid& guid, const ReindexJob& job, bool apply, bool& ok)
+bool RewriteElement (const API_Guid& guid, API_ElemTypeID typeID, const ReindexJob& job, bool apply, bool& ok, GS::UniString& failure)
 {
     ok = true;
+#ifdef ServerMainVers_2900
+    if (typeID == API_OpeningID) {
+        return RewriteOpeningElement (guid, job, apply, ok);
+    }
+#else
+    UNUSED_PARAMETER (typeID);
+#endif
     API_Element element = {};
     element.header.guid = guid;
     if (ACAPI_Element_Get (&element) != NoError) {
@@ -8076,14 +8210,21 @@ bool RewriteElement (const API_Guid& guid, const ReindexJob& job, bool apply, bo
         memoChanged = RewriteMemo (element, memo, job);
     }
     if (apply && (fieldsChanged || memoChanged)) {
-        GSErrCode err = NoError;
-        if (fieldsChanged) {
-            err = ACAPI_Element_Change (&element, &mask, memoChanged ? &memo : nullptr, memoChanged ? memoMask : 0, true);
-        } else {
-            API_Guid elemGuid = guid;
-            err = ACAPI_Element_ChangeMemo (elemGuid, memoMask, &memo);
+        // Also for a change of the memo alone: ACAPI_Element_ChangeMemo only takes the polygon. A morph is written
+        // the way ModifyMorphs writes it: a memo that holds only the body and its material map table (tested on
+        // Archicad 29; the element's layer has to be shown, see ReindexAttribute).
+        API_ElementMemo morphMemo = {};
+        API_ElementMemo* memoToWrite = memoChanged ? &memo : nullptr;
+        if (memoChanged && GetElemTypeId (element.header) == API_MorphID) {
+            morphMemo.morphBody = memo.morphBody;
+            morphMemo.morphMaterialMapTable = memo.morphMaterialMapTable;
+            memoToWrite = &morphMemo;
         }
+        const GSErrCode err = ACAPI_Element_Change (&element, &mask, memoToWrite, memoChanged ? memoMask : 0, true);
         ok = (err == NoError);
+        if (!ok) {
+            failure = GS::UniString::Printf ("%T: ACAPI_Element_Change returned %d (%s)", APIGuidToString (guid).ToPrintf (), (int) err, memoChanged ? "fields and memo" : "fields");
+        }
     }
     ACAPI_DisposeElemMemoHdls (&memo);
     return fieldsChanged || memoChanged;
@@ -8108,16 +8249,36 @@ void ScanElements (const GS::Array<API_DatabaseInfo>& databases, const ReindexJo
             if (ACAPI_Element_GetHeader (&head) != NoError || GetElemTypeId (head.type) == API_SectElemID) {
                 continue;
             }
+            // Segments, frames, panels and stair structures are rewritten through their owner's memo (RewriteMemo), so
+            // they are not visited on their own: otherwise they would be counted twice.
+            switch (GetElemTypeId (head.type)) {
+                case API_ColumnSegmentID:
+                case API_BeamSegmentID:
+                case API_CurtainWallFrameID:
+                case API_CurtainWallPanelID:
+                case API_StairStructureID:
+                    continue;
+                default:
+                    break;
+            }
             if (head.hotlinkGuid != APINULLGuid) {
                 bool ok = true;
-                if (RewriteElement (guid, job, false, ok)) {
+                GS::UniString failure;
+                if (RewriteElement (guid, GetElemTypeId (head.type), job, false, ok, failure)) {
                     scan.hotlinkElements.Push ({ database, guid });
                 }
                 continue;
             }
             bool ok = true;
-            if (RewriteElement (guid, job, apply, ok)) {
+            GS::UniString failure;
+            if (RewriteElement (guid, GetElemTypeId (head.type), job, apply, ok, failure)) {
                 (ok ? scan.elements : scan.failedElements).Push ({ database, guid });
+                if (!ok) {
+                    scan.failureDetails.Push (failure);
+                }
+                if (!scan.layers.Contains (head.layer)) {
+                    scan.layers.Push (head.layer);
+                }
             }
         }
     }
@@ -8146,6 +8307,16 @@ void ScanToolDefaults (const ReindexJob& job, bool apply, ReferenceScan& scan)
         }
         ACAPI_DisposeElemMemoHdls (&memo);
     }
+#ifdef ServerMainVers_2900
+    bool ok = true;
+    if (RewriteOpeningDefault (job, apply, ok)) {
+        if (ok) {
+            scan.toolDefaults.Push (API_OpeningID);
+        } else {
+            scan.warnings.Push ("The tool default of Opening still refers to the old index.");
+        }
+    }
+#endif
 }
 
 void ScanFavorites (const ReindexJob& job, bool apply, ReferenceScan& scan)
@@ -8159,6 +8330,17 @@ void ScanFavorites (const ReindexJob& job, bool apply, ReferenceScan& scan)
         for (const GS::UniString& name : names) {
             API_Favorite favorite (name);
             favorite.memo.New ();
+            favorite.subElements.New ();   // a curtain wall's frame and panel classes, a stair's structures and markers
+            const GS::OnExit cleanup ([&favorite] () {
+                if (favorite.memo.HasValue ()) {
+                    ACAPI_DisposeElemMemoHdls (favorite.memo.GetPtr ());
+                }
+                if (favorite.subElements.HasValue ()) {
+                    for (API_SubElement& subElement : *favorite.subElements) {
+                        ACAPI_DisposeElemMemoHdls (&subElement.memo);
+                    }
+                }
+            });
             if (ACAPI_Favorite_Get (&favorite) != NoError) {
                 continue;
             }
@@ -8167,15 +8349,60 @@ void ScanFavorites (const ReindexJob& job, bool apply, ReferenceScan& scan)
             const bool fieldsChanged = RewriteElementFields (favorite.element, mask, job);
             const UInt64 memoMask = GetMemoMaskToRewrite (typeID, job.type);
             const bool memoChanged = memoMask != 0 && favorite.memo.HasValue () && RewriteMemo (favorite.element, favorite.memo.Get (), job);
-            if (fieldsChanged || memoChanged) {
-                if (!apply || ACAPI_Favorite_Change (favorite, &mask, memoChanged ? memoMask : 0) == NoError) {
-                    scan.favorites.Push (name);
-                } else {
-                    scan.warnings.Push (GS::UniString::Printf ("The Favorite '%T' still refers to the old index.", name.ToPrintf ()));
+            bool subElementsChanged = false;
+            if (favorite.subElements.HasValue ()) {
+                for (API_SubElement& subElement : *favorite.subElements) {
+                    API_Element subMask = {};
+                    ACAPI_ELEMENT_MASK_CLEAR (subMask);
+                    if (RewriteElementFields (subElement.subElem, subMask, job)) {
+                        subElement.mask = subMask;
+                        subElementsChanged = true;
+                    }
                 }
             }
-            if (favorite.memo.HasValue ()) {
-                ACAPI_DisposeElemMemoHdls (favorite.memo.GetPtr ());
+            if (!(fieldsChanged || memoChanged || subElementsChanged)) {
+                continue;
+            }
+            // A curtain wall Favorite keeps its frame and panel classes in the memo, and ACAPI_Favorite_Change does not
+            // take them (tested on Archicad 29: NoError, and the classes neither refer to the new nor to the old
+            // index afterwards), so such a Favorite is left as it is and named instead.
+            if (typeID == API_CurtainWallID && memoChanged) {
+                scan.warnings.Push (GS::UniString::Printf ("The curtain wall Favorite '%T' keeps the old index in its frame and panel classes: Archicad does not take them from ACAPI_Favorite_Change. Save the Favorite again from a curtain wall that uses the moved attribute.", name.ToPrintf ()));
+                continue;
+            }
+            if (!apply) {
+                scan.favorites.Push (name);
+                continue;
+            }
+            // ACAPI_Favorite_Change answers NoError but keeps some memo parts as they were (the frame and panel
+            // classes of a curtain wall Favorite, tested on Archicad 29), so the Favorite is read again to check.
+            bool written = (ACAPI_Favorite_Change (favorite, &mask, memoChanged ? APIMemoMask_All : 0) == NoError);
+            if (written) {
+                API_Favorite check (name);
+                check.memo.New ();
+                check.subElements.New ();
+                const GS::OnExit checkCleanup ([&check] () {
+                    if (check.memo.HasValue ()) {
+                        ACAPI_DisposeElemMemoHdls (check.memo.GetPtr ());
+                    }
+                    if (check.subElements.HasValue ()) {
+                        for (API_SubElement& subElement : *check.subElements) {
+                            ACAPI_DisposeElemMemoHdls (&subElement.memo);
+                        }
+                    }
+                });
+                if (ACAPI_Favorite_Get (&check) == NoError) {
+                    API_Element checkMask = {};
+                    ACAPI_ELEMENT_MASK_CLEAR (checkMask);
+                    if (RewriteElementFields (check.element, checkMask, job) || (memoMask != 0 && check.memo.HasValue () && RewriteMemo (check.element, check.memo.Get (), job))) {
+                        written = false;
+                    }
+                }
+            }
+            if (written) {
+                scan.favorites.Push (name);
+            } else {
+                scan.warnings.Push (GS::UniString::Printf ("The Favorite '%T' keeps the old index: Archicad did not take the change from ACAPI_Favorite_Change.", name.ToPrintf ()));
             }
         }
     }
@@ -8605,23 +8832,57 @@ GS::ObjectState ReindexAttribute (const GS::Array<API_DatabaseInfo>& databases, 
         return finish (CreateErrorResponse (err, GS::UniString::Printf ("The %T was not moved: %T", typeName.ToPrintf (), message.ToPrintf ())));
     }
 
-    // 2. Every reference goes to the new index. If an element cannot be changed, everything is put back.
+    // 2. Every reference goes to the new index. Elements on a hidden or locked layer cannot be changed, so those
+    // layers are shown and unlocked for the move and put back afterwards (Archicad keeps these flags per open
+    // window; they are read and written in the current one). If an element cannot be changed, everything is put back.
+    const ReindexJob back = { typeID, job.to, job.from };
+    // The layer flags belong to the floor plan window (the first of the databases), so they are read and written with it current.
+    GS::Array<GS::Pair<API_AttributeIndex, LayerFlags>> layerFlagsToRestore;
+    GS::Array<GS::ObjectState> layersShown;
+    const GS::Array<API_AttributeIndex> layersOfElements = ScanReferences (databases, job, false).layers;
+    API_DatabaseInfo floorPlan = databases[0];
+    ACAPI_Database_ChangeCurrentDatabase (&floorPlan);
+    for (const API_AttributeIndex& layerIndex : layersOfElements) {
+        GS::UniString layerName;
+        API_Attribute layer = {};
+        layer.header.index = layerIndex;
+        if (GetLayer (layer, layerName) != NoError || WithoutHiddenAndLocked (layer.header.flags) == layer.header.flags) {
+            continue;
+        }
+        if (SetLayerFlags (layerIndex, WithoutHiddenAndLocked (layer.header.flags)) == NoError) {
+            layerFlagsToRestore.Push ({ layerIndex, layer.header.flags });
+            layersShown.Push (CreateAttributeIdObjectState (layer.header.guid));
+        }
+    }
+    const auto restoreLayerFlags = [&] () {
+        ACAPI_Database_ChangeCurrentDatabase (&floorPlan);
+        for (const auto& layerAndFlags : layerFlagsToRestore) {
+            SetLayerFlags (layerAndFlags.first, layerAndFlags.second);
+        }
+        layerFlagsToRestore.Clear ();
+    };
     ReferenceScan scan = ScanReferences (databases, job, true);
     if (!scan.failedElements.IsEmpty ()) {
-        const ReindexJob back = { typeID, job.to, job.from };
         ScanReferences (databases, back, true);
+        restoreLayerFlags ();
         DeleteAttribute (typeID, copy.header.index);
-        return finish (CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf ("The %T was not moved: %u of the elements that use it could not be changed (they may be locked, or not reserved in Teamwork): %T.", typeName.ToPrintf (), scan.failedElements.GetSize (), ListElementGuids (scan.failedElements).ToPrintf ())));
+        GS::UniString details;
+        for (UIndex i = 0; i < scan.failureDetails.GetSize () && i < 5; ++i) {
+            details += (i == 0 ? " " : "; ") + scan.failureDetails[i];
+        }
+        return finish (CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf ("The %T was not moved: %u of the elements that use it could not be changed (they may be locked, or not reserved in Teamwork): %T.%T", typeName.ToPrintf (), scan.failedElements.GetSize (), ListElementGuids (scan.failedElements).ToPrintf (), details.ToPrintf ())));
     }
 
     // 3. The old attribute is deleted. From here on the attribute is moved; what fails is reported as a warning.
     err = DeleteAttribute (typeID, oldIndex);
     if (err != NoError) {
-        const ReindexJob back = { typeID, job.to, job.from };
         ScanReferences (databases, back, true);
+        restoreLayerFlags ();
         DeleteAttribute (typeID, copy.header.index);
         return finish (CreateErrorResponse (err, GS::UniString::Printf ("The %T was not moved: the old attribute could not be deleted.", typeName.ToPrintf ())));
     }
+
+    restoreLayerFlags ();
 
     // 4. The copy gets the real name: the old attribute's fields and definition are written again under it.
     const API_Guid finalGuid = copy.header.guid;
@@ -8639,6 +8900,7 @@ GS::ObjectState ReindexAttribute (const GS::Array<API_DatabaseInfo>& databases, 
 
     result.Add ("attributeId", CreateGuidObjectState (finalGuid));
     AddScanToResult (result, scan, false);
+    result.Add ("layersShown", layersShown);
     return finish (result);
 }
 
@@ -8785,6 +9047,13 @@ GS::Optional<GS::UniString> ReindexAttributesCommand::GetRawResponseSchema () co
                                     "description": "The names of the graphic override rules that refer to the attribute. Rewritten unless dryRun is true.",
                                     "items": {
                                         "type": "string"
+                                    }
+                                },
+                                "layersShown": {
+                                    "type": "array",
+                                    "description": "The hidden or locked layers of the elements that were shown and unlocked for the move and put back afterwards. Not present with dryRun.",
+                                    "items": {
+                                        "$ref": "#/AttributeIdArrayItem"
                                     }
                                 },
                                 "warnings": {
