@@ -398,6 +398,14 @@ GSErrCode Initialize (void)
             projectCommands, "1.7.1",
             "Repoints hotlink module nodes at other source files, as the Hotlink Manager's Relink button does. Follow it with UpdateHotlinks to re-read the content."
         );
+        err |= RegisterCommand<BreakHotlinkNodesCommand> (
+            projectCommands, "1.7.4",
+            "Breaks hotlink nodes, as the Hotlink Manager's Break Hotlink does: the elements of each node's placed instances stay in the project as ordinary elements, no longer tied to the source file."
+        );
+        err |= RegisterCommand<DeleteHotlinkNodesCommand> (
+            projectCommands, "1.7.4",
+            "Deletes hotlink nodes together with their placed instances, as the Hotlink Manager's Delete does."
+        );
         err |= RegisterCommand<GetHotlinkOwnersOfElementsCommand> (
             projectCommands, "1.7.3",
             "Tells for each element whether it comes from a hotlinked module, and returns the hotlink element that contains it and the hotlink instance it belongs to. Available from Archicad 27."

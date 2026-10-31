@@ -415,6 +415,19 @@ inline GSErrCode ACAPI_Hotlink_UpdateHotlinkCache (const API_Guid* hotlinkNodeGu
     return ACAPI_Database (APIDb_UpdateHotlinkCacheID, (void*) hotlinkNodeGuid);
 }
 
+// APIDb_BreakHotlinkNodeID and APIDb_DeleteHotlinkNodeID take the node guid as
+// par1 (APIdefs_Database.h), the same argument as AC27's
+// ACAPI_Hotlink_BreakHotlinkNode and ACAPI_Hotlink_DeleteHotlinkNode.
+inline GSErrCode ACAPI_Hotlink_BreakHotlinkNode (const API_Guid* hotlinkNodeGuid)
+{
+    return ACAPI_Database (APIDb_BreakHotlinkNodeID, (void*) hotlinkNodeGuid);
+}
+
+inline GSErrCode ACAPI_Hotlink_DeleteHotlinkNode (const API_Guid* hotlinkNodeGuid)
+{
+    return ACAPI_Database (APIDb_DeleteHotlinkNodeID, (void*) hotlinkNodeGuid);
+}
+
 // APIDb_GetHotlinkInstancesID (APIdefs_Database.h): par1 is the node guid,
 // par2 receives the API_HotlinkType elements placed from that node.
 inline GSErrCode ACAPI_Hotlink_GetHotlinkInstances (const API_Guid* hotlinkNodeGuid, GS::Array<API_Guid>* elementRefList)
