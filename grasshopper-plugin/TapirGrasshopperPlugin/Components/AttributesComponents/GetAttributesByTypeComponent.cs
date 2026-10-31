@@ -59,6 +59,9 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 "CreationTimes",
                 "Creation time of each attribute, in local time. Archicad 30 or later; null when unknown.",
                 GH_ParamAccess.list);
+            OutTexts(
+                "FolderPaths",
+                "Attribute folder of each attribute, the folder names joined with '/'; empty for the root folder (and always before Archicad 26).");
         }
 
         public override void AddedToDocument(
@@ -128,6 +131,12 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                     x => x.CreationInfo == null
                         ? (DateTime?)null
                         : DateTimeOffset.FromUnixTimeSeconds(x.CreationInfo.CreationTime).LocalDateTime));
+
+            // Appended after the creation outputs, so saved definitions keep their wiring. An add-on older than this output sends no folderPath; such an attribute reads as root.
+            da.SetDataList(
+                9,
+                response.Attributes.Select(
+                    x => x.FolderPath == null ? string.Empty : string.Join("/", x.FolderPath)));
         }
 
         protected override System.Drawing.Bitmap Icon =>
