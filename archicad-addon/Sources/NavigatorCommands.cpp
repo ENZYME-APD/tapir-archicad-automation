@@ -1036,6 +1036,26 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
             continue;
         }
 
+        // Archicad keeps the old dimension standard without an error when the name given is
+        // not one of the project, so the view is read back to report whether it was applied.
+        GS::UniString requestedDimensionStyle;
+        if (viewSettingsOS->Get ("dimensionStyle", requestedDimensionStyle) && !requestedDimensionStyle.IsEmpty ()) {
+            API_NavigatorView changedNavigatorView = {};
+            err = ACAPI_Navigator_GetNavigatorView (&navigatorItem, &changedNavigatorView);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "The view settings were written, but the view could not be read back to check the dimensionStyle."));
+                continue;
+            }
+
+            const GS::UniString appliedDimensionStyle (changedNavigatorView.dimName);
+            if (appliedDimensionStyle.Compare (GS::UniString (navigatorView.dimName), CaseInsensitive) != GS::UniString::Equal) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADNAME,
+                    "The dimensionStyle '" + requestedDimensionStyle + "' was not applied, the view still uses '" + appliedDimensionStyle +
+                    "'. Probably the project has no dimension standard with this name. The other view settings given were written."));
+                continue;
+            }
+        }
+
         executionResults (CreateSuccessfulExecutionResult ());
     }
 
