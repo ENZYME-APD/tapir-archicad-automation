@@ -2177,6 +2177,11 @@ GS::ObjectState ReadFavoritesFileCommand::Execute (const GS::ObjectState& parame
         if (favorite.memoMarker.HasValue ()) {
             ACAPI_DisposeElemMemoHdls (&favorite.memoMarker.Get ());
         }
+        if (favorite.subElements.HasValue ()) {
+            for (API_SubElement& subElement : *favorite.subElements) {
+                ACAPI_DisposeElemMemoHdls (&subElement.memo);
+            }
+        }
     }
 
     if (err != NoError) {
