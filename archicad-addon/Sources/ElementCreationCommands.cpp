@@ -735,6 +735,109 @@ GS::Optional<GS::UniString> ApplyZoneContourAndCoverFill (const GS::ObjectState&
     return {};
 }
 
+// The levels of a zone: its height, base offset, top link and floor (finish) thickness.
+// Applied by CreateZones (no mask) and, through ApplyZoneSettings, by ModifyZones and
+// SetDetailsOfElements. Same rule as for walls and columns: an explicit height unlinks
+// the top (relativeTopStory 0), and with a non-zero relativeTopStory Archicad computes
+// the height from the story levels and topOffset. When both are given, relativeTopStory
+// is applied last and wins.
+static GS::Optional<GS::ObjectState> ApplyZoneLevels (const GS::ObjectState& details, API_ZoneType& zone, API_Element* mask)
+{
+    double height = 0.0;
+    if (details.Get ("height", height)) {
+        if (height <= 0.0) {
+            return CreateErrorResponse (APIERR_BADPARS, "height must be greater than 0.");
+        }
+        zone.roomHeight = height;
+        zone.relativeTopStory = 0;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET ((*mask), API_ZoneType, roomHeight);
+            ACAPI_ELEMENT_MASK_SET ((*mask), API_ZoneType, relativeTopStory);
+        }
+    }
+
+    double bottomOffset = 0.0;
+    if (details.Get ("bottomOffset", bottomOffset)) {
+        zone.roomBaseLev = bottomOffset;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET ((*mask), API_ZoneType, roomBaseLev);
+        }
+    }
+
+    double topOffset = 0.0;
+    if (details.Get ("topOffset", topOffset)) {
+        zone.roomTopOffset = topOffset;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET ((*mask), API_ZoneType, roomTopOffset);
+        }
+    }
+
+    double relativeTopStory = 0.0;
+    if (details.Get ("relativeTopStory", relativeTopStory)) {
+        zone.relativeTopStory = static_cast<short> (relativeTopStory);
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET ((*mask), API_ZoneType, relativeTopStory);
+        }
+    }
+
+    double floorThickness = 0.0;
+    if (details.Get ("floorThickness", floorThickness)) {
+        if (floorThickness < 0.0) {
+            return CreateErrorResponse (APIERR_BADPARS, "floorThickness must not be negative.");
+        }
+        zone.roomFlThick = floorThickness;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET ((*mask), API_ZoneType, roomFlThick);
+        }
+    }
+
+    return {};
+}
+
+GS::Optional<GS::ObjectState> ApplyZoneSettings (const GS::ObjectState& details, API_Element& element, API_Element& mask)
+{
+    if (details.Contains ("name")) {
+        if (!SetUCharProperty (&details, "name", element.zone.roomName)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid name parameter.");
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, roomName);
+    }
+
+    if (details.Contains ("numberStr")) {
+        if (!SetUCharProperty (&details, "numberStr", element.zone.roomNoStr)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid numberStr parameter.");
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, roomNoStr);
+    }
+
+    const GS::ObjectState* categoryAttributeId = details.Get ("categoryAttributeId");
+    if (categoryAttributeId != nullptr) {
+        // Refused instead of silently setting an invalid category, as CreateZones would.
+        API_Attribute category = {};
+        category.header.typeID = API_ZoneCatID;
+        category.header.guid = GetGuidFromObjectState (*categoryAttributeId);
+        if (category.header.guid == APINULLGuid || ACAPI_Attribute_Get (&category) != NoError) {
+            return CreateErrorResponse (APIERR_BADPARS, "No Zone Category attribute was found for categoryAttributeId.");
+        }
+        element.zone.catInd = category.header.index;
+        ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, catInd);
+    }
+
+    const GS::ObjectState* stampPosition = details.Get ("stampPosition");
+    if (stampPosition != nullptr) {
+        element.zone.pos = Get2DCoordinateFromObjectState (*stampPosition);
+        ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, pos);
+    }
+    if (details.Get ("stampAngle", element.zone.stampAngle)) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, stampAngle);
+    }
+    if (details.Get ("fixedStampAngle", element.zone.fixedAngle)) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, fixedAngle);
+    }
+
+    return ApplyZoneLevels (details, element.zone, &mask);
+}
+
 CreateZonesCommand::CreateZonesCommand () :
     CreateElementsCommandBase ("CreateZones", API_ZoneID, "zonesData")
 {
@@ -906,6 +1009,28 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
                         "$ref": "#/ZoneCoverFill",
                         "description": "Optional cover fill of the zone. Fields that are left out keep the value of the favorite or of the Zone tool defaults."
                     },
+                    "height": {
+                        "type": "number",
+                        "exclusiveMinimum": 0.0,
+                        "description" : "Optional height of the zone from its bottom. Sets relativeTopStory to 0 (explicit height); when omitted, the height and top link of the favorite or of the Zone tool defaults are kept. Do not combine with relativeTopStory."
+                    },
+                    "bottomOffset": {
+                        "type": "number",
+                        "description" : "Optional base level of the zone relative to its home story level."
+                    },
+                    "topOffset": {
+                        "type": "number",
+                        "description" : "Optional offset of the top of the zone from the linked top story level. Only has an effect when relativeTopStory is non-zero."
+                    },
+                    "relativeTopStory": {
+                        "type": "number",
+                        "description" : "Optional top link: non-zero links the top of the zone to another story, relative to its home story (1 is the story above), instead of an explicit height. Do not combine with height."
+                    },
+                    "floorThickness": {
+                        "type": "number",
+                        "minimum": 0.0,
+                        "description" : "Optional thickness of the floor finish (subfloor thickness) of the zone."
+                    },
                     "geometry": {
                         "$ref": "#/ZoneCreationGeometry"
                     }
@@ -959,6 +1084,11 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
     const GS::Optional<GS::UniString> contourAndFillError = ApplyZoneContourAndCoverFill (parameters, element.zone, nullptr);
     if (contourAndFillError.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, *contourAndFillError);
+    }
+
+    auto levelsError = ApplyZoneLevels (parameters, element.zone, nullptr);
+    if (levelsError.HasValue ()) {
+        return levelsError;
     }
 
     GS::ObjectState referencePosition;
@@ -1035,6 +1165,113 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
     }
 
     return {};
+}
+
+ModifyZonesCommand::ModifyZonesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyZonesCommand::GetName () const
+{
+    return "ModifyZones";
+}
+
+GS::Optional<GS::UniString> ModifyZonesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "zonesWithDetails": {
+                "type": "array",
+                "description": "Array of Zone elements to modify, with the fields to change. Only the given fields are changed; the polygon and the omitted fields are kept. The same fields as the ZoneSettings of SetDetailsOfElements.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "name": { "type": "string", "description": "Name of the zone." },
+                        "numberStr": { "type": "string", "description": "Zone number." },
+                        "categoryAttributeId": { "$ref": "#/AttributeId", "description": "The identifier of the zone category attribute." },
+                        "stampPosition": { "$ref": "#/Coordinate2D", "description": "Position of the origin of the zone stamp." },
+                        "stampAngle": { "type": "number", "description": "Rotation angle of the zone stamp in radians." },
+                        "fixedStampAngle": { "type": "boolean", "description": "If true, the zone stamp angle remains fixed when the element is rotated." },
+                        "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Height of the zone from its bottom. Sets relativeTopStory to 0 (explicit height), so do not combine it with relativeTopStory in the same call: whichever is applied last wins." },
+                        "bottomOffset": { "type": "number", "description": "Base level of the zone relative to its home story level." },
+                        "topOffset": { "type": "number", "description": "Offset of the top of the zone from the linked top story level. Only has an effect when relativeTopStory is non-zero." },
+                        "relativeTopStory": { "type": "number", "description": "Non-zero links the top of the zone to another story, relative to its home story (1 is the story above), instead of an explicit height. Do not set together with height in the same call, see the note on height." },
+                        "floorThickness": { "type": "number", "minimum": 0.0, "description": "Thickness of the floor finish (subfloor thickness) of the zone." }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["zonesWithDetails"]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyZonesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": { "$ref": "#/ExecutionResults" }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+GS::ObjectState ModifyZonesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> zonesWithDetails;
+    parameters.Get ("zonesWithDetails", zonesWithDetails);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("ModifyZones", [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : zonesWithDetails) {
+            const GS::ObjectState* elementId = item.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*elementId);
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to find the element"));
+                continue;
+            }
+            if (GetElemTypeId (element.header) != API_ZoneID) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Element is not a Zone."));
+                continue;
+            }
+
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+            auto settingsError = ApplyZoneSettings (item, element, mask);
+            if (settingsError.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (*settingsError));
+                continue;
+            }
+
+            // No memo is passed, so the polygon is kept as it is.
+            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to modify the zone."));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
 }
 
 // Shared "line-family settings" properties for Line/PolyLine/Arc/Circle/Spline creation

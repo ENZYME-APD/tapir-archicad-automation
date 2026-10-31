@@ -8910,7 +8910,28 @@
                 "$ref": "#/Holes2D"
             },
             "zCoordinate": {
-                "type": "number"
+                "type": "number",
+                "description": "Absolute elevation of the bottom of the zone (the home story level plus bottomOffset)."
+            },
+            "height": {
+                "type": "number",
+                "description": "Height of the zone from its bottom. When relativeTopStory is non-zero, Archicad calculates it from the story levels and topOffset."
+            },
+            "bottomOffset": {
+                "type": "number",
+                "description": "Base level of the zone relative to its home story level."
+            },
+            "topOffset": {
+                "type": "number",
+                "description": "Offset of the top of the zone from the linked top story level. Only has an effect when relativeTopStory is non-zero."
+            },
+            "relativeTopStory": {
+                "type": "number",
+                "description": "The story the top of the zone is linked to, relative to its home story (1 is the story above). 0 means not linked: the top is set by height."
+            },
+            "floorThickness": {
+                "type": "number",
+                "description": "Thickness of the floor finish (subfloor thickness) of the zone."
             },
             "contourLine": {
                 "$ref": "#/ZoneContourLine"
@@ -8928,6 +8949,11 @@
             "isManual",
             "polygonOutline",
             "zCoordinate",
+            "height",
+            "bottomOffset",
+            "topOffset",
+            "relativeTopStory",
+            "floorThickness",
             "contourLine",
             "coverFill"
         ]
@@ -11167,8 +11193,20 @@
     },
     "ZoneSettings": {
         "type": "object",
-        "description": "Settings for modifying a zone.",
+        "description": "Settings for modifying a zone. Only the given fields are changed, the polygon is kept. Set height and bottomOffset with ModifyZones: in SetDetailsOfElements they would make a wall's settings ambiguous.",
         "properties": {
+            "name": {
+                "type": "string",
+                "description": "Name of the zone."
+            },
+            "numberStr": {
+                "type": "string",
+                "description": "Zone number."
+            },
+            "categoryAttributeId": {
+                "$ref": "#/AttributeId",
+                "description": "The identifier of the zone category attribute."
+            },
             "stampPosition": {
                 "$ref": "#/Coordinate2D",
                 "description": "Position of the origin of the zone stamp."
@@ -11180,6 +11218,19 @@
             "fixedStampAngle": {
                 "type": "boolean",
                 "description": "If true, the zone stamp angle remains fixed when the element is rotated."
+            },
+            "topOffset": {
+                "type": "number",
+                "description": "Offset of the top of the zone from the linked top story level. Only has an effect when relativeTopStory is non-zero."
+            },
+            "relativeTopStory": {
+                "type": "number",
+                "description": "Non-zero links the top of the zone to another story, relative to its home story (1 is the story above), instead of an explicit height. Do not set together with height (ModifyZones) in the same call: whichever is applied last wins."
+            },
+            "floorThickness": {
+                "type": "number",
+                "minimum": 0.0,
+                "description": "Thickness of the floor finish (subfloor thickness) of the zone."
             },
             "referencePosition": {
                 "$ref": "#/Coordinate2D",
