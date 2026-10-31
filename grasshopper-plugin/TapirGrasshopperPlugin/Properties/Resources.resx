@@ -265,6 +265,12 @@
   <data name="CreateAddOnViewpoints" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateAddOnViewpoints.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="ConsolidateFills" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ConsolidateFills.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ConsolidateLines" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ConsolidateLines.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="CreateIssue" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateIssue.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -306,6 +312,9 @@
   </data>
   <data name="SetTextDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SetTextDetails.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SetUserDataOfAttributes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetUserDataOfAttributes.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="SetUserDataOfGroups" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SetUserDataOfGroups.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -607,6 +616,9 @@
   <data name="GetFills" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetFills.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="GetFontsByName" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetFontsByName.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="GetZoneCategories" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetZoneCategories.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -628,6 +640,12 @@
   <data name="GetComposites" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetComposites.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="GetCurrentLayerCombination" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetCurrentLayerCombination.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetCurrentPenTable" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetCurrentPenTable.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="GetSurfaces" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetSurfaces.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -639,6 +657,9 @@
   </data>
   <data name="DeletePropertyGroups" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\DeletePropertyGroups.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="DeleteUserDataOfAttributes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DeleteUserDataOfAttributes.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="DeletePropertyDefinitions" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\DeletePropertyDefinitions.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -678,6 +699,9 @@
   </data>
   <data name="RemoveSolidElementLinks" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\RemoveSolidElementLinks.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="RenameAttributeFolders" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\RenameAttributeFolders.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="GetSolidElementLinks" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetSolidElementLinks.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -771,6 +795,9 @@
   </data>
   <data name="GetAddOnViewpoints" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetAddOnViewpoints.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetAttributesFromProject" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetAttributesFromProject.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="GetAllFavorites" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetAllFavorites.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -901,6 +928,9 @@
   <data name="CreateZones" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateZones.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="DeleteAttributeFolders" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DeleteAttributeFolders.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="CreatePolylines" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreatePolylines.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -940,6 +970,9 @@
   <data name="CreateAssociativeDimensionsOnSection" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateAssociativeDimensionsOnSection.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="CreateAttributeFolders" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateAttributeFolders.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="CreateWallThicknessDimensions" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateWallThicknessDimensions.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -957,6 +990,9 @@
   </data>
   <data name="ModifyWindows" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ModifyWindows.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="MoveAttributesAndFolders" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\MoveAttributesAndFolders.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="ModifyDoors" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ModifyDoors.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -1044,6 +1080,12 @@
   </data>
   <data name="GetSuspendGroupsMode" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetSuspendGroupsMode.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetUsedAttributes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetUsedAttributes.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetUserDataOfAttributes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetUserDataOfAttributes.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="GetUserDataOfGroups" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetUserDataOfGroups.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
