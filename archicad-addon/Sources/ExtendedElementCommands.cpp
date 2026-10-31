@@ -335,7 +335,7 @@ GSErrCode SwitchCurrentDatabaseToFloorPlan (API_DatabaseInfo& previousDatabase, 
 
 namespace {
 
-GSErrCode PrepareWindowOrDoorDefaults (API_ElemTypeID elemTypeId, API_Element& element, API_ElementMemo& memo, API_SubElement& marker)
+GSErrCode PrepareWindowOrDoorDefaultsWithMarker (API_ElemTypeID elemTypeId, API_Element& element, API_ElementMemo& memo, API_SubElement& marker)
 {
     element = {};
     marker = {};
@@ -403,6 +403,30 @@ GSErrCode PrepareWindowOrDoorDefaults (API_ElemTypeID elemTypeId, API_Element& e
     }
     marker.subElem.object.useObjPens = true;
     return NoError;
+}
+
+// With the tool's Dimension Marker set to "No Marker", or its marker library part missing from
+// the loaded libraries, the marker defaults cannot be read and every create failed. Archicad
+// itself places such a window or door without a marker, so fall back to the defaults without
+// one; `withMarker` tells the caller whether to create the element with the marker or without.
+GSErrCode PrepareWindowOrDoorDefaults (API_ElemTypeID elemTypeId, API_Element& element, API_ElementMemo& memo, API_SubElement& marker, bool& withMarker)
+{
+    withMarker = PrepareWindowOrDoorDefaultsWithMarker (elemTypeId, element, memo, marker) == NoError;
+    if (withMarker) {
+        return NoError;
+    }
+
+    ACAPI_DisposeElemMemoHdls (&memo);
+    ACAPI_DisposeElemMemoHdls (&marker.memo);
+    memo = {};
+    marker = {};
+    element = {};
+#ifdef ServerMainVers_2600
+    element.header.type = elemTypeId;
+#else
+    element.header.typeID = elemTypeId;
+#endif
+    return ACAPI_Element_GetDefaults (&element, &memo);
 }
 
 // Apply a named FAVORITE to the Door/Window tool defaults BEFORE
@@ -4770,7 +4794,8 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
                 continue;
             }
 
-            err = PrepareWindowOrDoorDefaults (API_WindowID, element, memo, marker);
+            bool withMarker = true;
+            err = PrepareWindowOrDoorDefaults (API_WindowID, element, memo, marker, withMarker);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to prepare window defaults."));
                 continue;
@@ -4805,7 +4830,9 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
                 element.window.openingBase.oSide = oSide;
             }
 
-            err = ACAPI_Element_CreateExt (&element, &memo, 1UL, &marker);
+            err = withMarker
+                ? ACAPI_Element_CreateExt (&element, &memo, 1UL, &marker)
+                : ACAPI_Element_Create (&element, &memo);
             if (err != NoError) {
                 // The switch above should have ruled this one out, but say what it means
                 // if Archicad still refuses the database - #532 was reported for a year as
@@ -4951,7 +4978,8 @@ GS::ObjectState CreateDoorsCommand::Execute (const GS::ObjectState& parameters, 
                 continue;
             }
 
-            err = PrepareWindowOrDoorDefaults (API_DoorID, element, memo, marker);
+            bool withMarker = true;
+            err = PrepareWindowOrDoorDefaults (API_DoorID, element, memo, marker, withMarker);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to prepare door defaults."));
                 continue;
@@ -4986,7 +5014,9 @@ GS::ObjectState CreateDoorsCommand::Execute (const GS::ObjectState& parameters, 
                 element.window.openingBase.oSide = oSide;
             }
 
-            err = ACAPI_Element_CreateExt (&element, &memo, 1UL, &marker);
+            err = withMarker
+                ? ACAPI_Element_CreateExt (&element, &memo, 1UL, &marker)
+                : ACAPI_Element_Create (&element, &memo);
             if (err != NoError) {
                 // See the same spot in CreateWindowsCommand::Execute.
                 GS::UniString errorMessage = "Failed to create door.";
