@@ -505,6 +505,9 @@
   <data name="UnmergeElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\UnmergeElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="UpdateAnalyticalModel" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\UpdateAnalyticalModel.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Layers" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Layers.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -691,6 +694,12 @@
   <data name="SetAutoIntersect" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SetAutoIntersect.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="SetAnalyticalGenerationSettingsToNoRule" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetAnalyticalGenerationSettingsToNoRule.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SetAnalyticalVisibilitySettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetAnalyticalVisibilitySettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="MoveElementsToDesignOptions" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\MoveElementsToDesignOptions.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -810,6 +819,9 @@
   </data>
   <data name="GetContainingDatabases" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetContainingDatabases.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetCurrentAnalyticalModel" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetCurrentAnalyticalModel.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="GetSurfaces" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetSurfaces.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -1015,6 +1027,30 @@
   <data name="GetArchicadReleaseInfo" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetArchicadReleaseInfo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="GetAnalyticalLoadCases" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetAnalyticalLoadCases.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetAnalyticalLoadCombinations" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetAnalyticalLoadCombinations.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetAnalyticalLoadGroups" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetAnalyticalLoadGroups.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetAnalyticalMemberTypesOfElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetAnalyticalMemberTypesOfElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetAnalyticalModel" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetAnalyticalModel.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetAnalyticalModelCheckTypeId" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetAnalyticalModelCheckTypeId.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetAnalyticalModelVariation" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetAnalyticalModelVariation.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetAnalyticalVisibilitySettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetAnalyticalVisibilitySettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Set3DProjectionSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Set3DProjectionSettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -1176,6 +1212,15 @@
   </data>
   <data name="DeactivateDesignOptionsInCombinations" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\DeactivateDesignOptionsInCombinations.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="DeleteAnalyticalLoadCases" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DeleteAnalyticalLoadCases.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="DeleteAnalyticalLoadCombinations" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DeleteAnalyticalLoadCombinations.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="DeleteAnalyticalLoadGroups" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DeleteAnalyticalLoadGroups.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="CreatePolylines" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreatePolylines.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -1528,6 +1573,9 @@
   <data name="AddPropertyToAttributes" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\AddPropertyToAttributes.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="AddLoadCasesToLoadCombination" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\AddLoadCasesToLoadCombination.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="TrimElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\TrimElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -1671,6 +1719,15 @@
   </data>
   <data name="ConvertUnitValues" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ConvertUnitValues.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateAnalyticalLoadCases" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateAnalyticalLoadCases.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateAnalyticalLoadCombinations" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateAnalyticalLoadCombinations.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateAnalyticalLoadGroups" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateAnalyticalLoadGroups.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="ModifyElectricalProjectSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ModifyElectricalProjectSettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
