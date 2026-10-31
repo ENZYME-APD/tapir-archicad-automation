@@ -1,6 +1,9 @@
 ﻿using Grasshopper.Kernel;
+using Newtonsoft.Json.Linq;
 using System;
+using System.Linq;
 using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Generic;
 using TapirGrasshopperPlugin.Types.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
@@ -12,7 +15,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         public CreateViewMapFolderComponent()
             : base(
                 "CreateViewMapFolderComponent",
-                "Creates a view folder item at the given position in the navigator tree.",
+                "Creates a new folder in the View Map, at the given position in the navigator tree.",
                 GroupNames.Navigator)
         {
         }
@@ -24,7 +27,8 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             InGeneric(
                 "ParentNavigatorItemId",
                 "The newly created folder will be placed under this parent item. " +
-                "If this parameter is not given the folder will be created as the first item in the View Map list.");
+                "If this parameter is not given the folder will be created under the root of the View Map " +
+                "(or under the parent of PreviousNavigatorItemId when that is given).");
 
             InGeneric(
                 "PreviousNavigatorItemId",
@@ -51,7 +55,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         {
             if (!da.TryGet(
                     0,
-                    out string name))
+                    out string folderName))
             {
                 return;
             }
@@ -67,32 +71,101 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                     2,
                     out NavigatorGuid previousNavigatorItemId))
             {
-                parentNavigatorItemId = null;
+                previousNavigatorItemId = null;
             }
 
-            if (!TryGetConvertedCadValues(
+            var parameters = new JObject { ["folderName"] = folderName };
+
+            if (parentNavigatorItemId != null)
+            {
+                parameters["parentNavigatorItemId"] =
+                    JObject.FromObject(parentNavigatorItemId);
+            }
+
+            if (!TryGetCadResponse(
                     CommandName,
-                    new
-                    {
-                        folderParameters = new { name },
-                        parentNavigatorItemId,
-                        previousNavigatorItemId
-                    },
-                    ToArchicad,
-                    JHelp.Deserialize<ViewMapFolderOutput>,
-                    out ViewMapFolderOutput response))
+                    parameters,
+                    ToAddOn,
+                    out JObject response))
             {
                 return;
             }
 
-            var wrapper = new NavigatorGuidWrapper
-            {
-                Id = response.CreatedFolderNavigatorItemId
-            };
+            var createdId = response["navigatorItemId"]?.ToObject<NavigatorGuid>();
 
             da.SetData(
                 0,
-                wrapper);
+                new NavigatorGuidWrapper { Id = createdId });
+
+            // The Tapir command creates the folder as the first item under its
+            // parent; MoveNavigatorItem puts it after the given sibling.
+            if (previousNavigatorItemId != null && createdId != null)
+            {
+                MoveAfter(
+                    createdId,
+                    parentNavigatorItemId,
+                    previousNavigatorItemId);
+            }
+        }
+
+        private void MoveAfter(
+            NavigatorGuid createdId,
+            NavigatorGuid parentId,
+            NavigatorGuid previousId)
+        {
+            if (parentId == null)
+            {
+                if (!TryGetCadResponse(
+                        "GetNavigatorParentItems",
+                        new JObject
+                        {
+                            ["navigatorItemIds"] = new JArray
+                            {
+                                new JObject { ["navigatorItemId"] = JObject.FromObject(previousId) }
+                            }
+                        },
+                        ToAddOn,
+                        out JObject parentResponse))
+                {
+                    return;
+                }
+
+                var parentItem = JsonOutputHelp.Items(
+                    parentResponse,
+                    "parentItems").FirstOrDefault();
+
+                if (parentItem == null || JsonOutputHelp.IsError(parentItem))
+                {
+                    this.AddError(
+                        "The folder was created, but the parent of PreviousNavigatorItemId cannot be read: " +
+                        JsonOutputHelp.ErrorMessage(parentItem));
+                    return;
+                }
+
+                parentId = parentItem["navigatorItemId"]?.ToObject<NavigatorGuid>();
+            }
+
+            if (!TryGetConvertedCadValues(
+                    "MoveNavigatorItem",
+                    new JObject
+                    {
+                        ["navigatorItemIdToMove"] = JObject.FromObject(createdId),
+                        ["parentNavigatorItemId"] = JObject.FromObject(parentId),
+                        ["previousNavigatorItemId"] = JObject.FromObject(previousId)
+                    },
+                    ToAddOn,
+                    ExecutionResult.Deserialize,
+                    out ExecutionResult moveResult))
+            {
+                return;
+            }
+
+            if (!moveResult.Success)
+            {
+                this.AddError(
+                    "The folder was created, but it cannot be placed after PreviousNavigatorItemId: " +
+                    moveResult.Message());
+            }
         }
 
         protected override System.Drawing.Bitmap Icon =>
