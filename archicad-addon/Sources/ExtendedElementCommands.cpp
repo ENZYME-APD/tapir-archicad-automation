@@ -1762,39 +1762,56 @@ GS::Optional<GS::UniString> ApplyWallStructure (
     return {};
 }
 
-GS::Optional<GS::UniString> ApplyRoofStructure (
-    API_Element& element,
-    API_Element* mask,
+// Roofs and shells share API_ShellBaseType, so CreateShells takes the same structure fields.
+GS::Optional<GS::UniString> ApplyShellBaseStructure (
+    API_ShellBaseType& shellBase,
     const GS::ObjectState& details,
-    bool& changed)
+    bool& applied)
 {
+    applied = false;
     StructureSelection selection;
     auto error = ParseStructureSelection (details, true, false, selection);
     if (error.HasValue ()) {
         return error;
     }
 
-    if (selection.kind == StructureSelectionKind::Unspecified) {
-        return {};
-    }
-
     switch (selection.kind) {
         case StructureSelectionKind::Basic:
-            element.roof.shellBase.modelElemStructureType = API_BasicStructure;
+            shellBase.modelElemStructureType = API_BasicStructure;
             if (selection.buildingMaterial != APIInvalidAttributeIndex) {
-                element.roof.shellBase.buildingMaterial = selection.buildingMaterial;
+                shellBase.buildingMaterial = selection.buildingMaterial;
             }
-            element.roof.shellBase.composite = APIInvalidAttributeIndex;
+            shellBase.composite = APIInvalidAttributeIndex;
             break;
         case StructureSelectionKind::Composite:
-            element.roof.shellBase.modelElemStructureType = API_CompositeStructure;
+            shellBase.modelElemStructureType = API_CompositeStructure;
             if (selection.composite != APIInvalidAttributeIndex) {
-                element.roof.shellBase.composite = selection.composite;
+                shellBase.composite = selection.composite;
             }
             break;
         case StructureSelectionKind::Profile:
         case StructureSelectionKind::Unspecified:
-            break;
+            return {};
+    }
+
+    applied = true;
+    return {};
+}
+
+GS::Optional<GS::UniString> ApplyRoofStructure (
+    API_Element& element,
+    API_Element* mask,
+    const GS::ObjectState& details,
+    bool& changed)
+{
+    bool applied = false;
+    auto error = ApplyShellBaseStructure (element.roof.shellBase, details, applied);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    if (!applied) {
+        return {};
     }
 
     if (mask != nullptr) {
