@@ -2952,6 +2952,58 @@ GS::ObjectState SetGeoLocationCommand::Execute (const GS::ObjectState& parameter
     return CreateSuccessfulExecutionResult ();
 }
 
+GetCoordinateOriginsCommand::GetCoordinateOriginsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetCoordinateOriginsCommand::GetName () const
+{
+    return "GetCoordinateOrigins";
+}
+
+GS::Optional<GS::UniString> GetCoordinateOriginsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "virtualOriginOffset": {
+                "$ref": "#/Coordinate2D",
+                "description": "The offset of the origin of the virtual coordinate system from the world origin. Archicad sets it after a project is opened when the model is far from the world origin. Missing when Archicad does not return it for the current window."
+            },
+            "userOrigin": {
+                "$ref": "#/Coordinate3D",
+                "description": "The user origin of the current database, relative to the origin of the virtual coordinate system. Missing when the current window has none (only floor plan, section, detail and 3D windows have one)."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::ObjectState GetCoordinateOriginsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GS::ObjectState response;
+
+    API_Coord offset = {};
+    const GSErrCode offsetErr = ACAPI_ProjectSetting_GetOffset (&offset);
+    if (offsetErr == NoError) {
+        response.Add ("virtualOriginOffset", Create2DCoordinateObjectState (offset));
+    }
+
+    API_Coord3D userOrigin = {};
+    const GSErrCode userOriginErr = ACAPI_Database_GetLocOrigo (&userOrigin);
+    if (userOriginErr == NoError) {
+        response.Add ("userOrigin", Create3DCoordinateObjectState (userOrigin));
+    }
+
+    if (offsetErr != NoError && userOriginErr != NoError) {
+        return CreateErrorResponse (offsetErr, "Failed to get the coordinate origins for the current window.");
+    }
+
+    return response;
+}
+
 // The fields of File > Info > Project Notes, in the order of API_ProjectNoteInfo.
 static const char* ProjectNotesPropertiesSchema = R"(
             "client": {
