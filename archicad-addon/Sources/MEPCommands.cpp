@@ -21,6 +21,7 @@
 #include "ACAPI/MEPFittingDefault.hpp"
 #include "ACAPI/MEPDistributionSystemsGraph.hpp"
 #include "ACAPI/MEPDistributionSystem.hpp"
+#include "ACAPI/MEPDistributionSystemsGraphTreeNode.hpp"
 #include "ACAPI/MEPPipeSegmentPreferenceTable.hpp"
 #include "ACAPI/MEPPipeSegmentPreferenceTableContainer.hpp"
 #include "ACAPI/MEPDuctCircularSegmentPreferenceTable.hpp"
@@ -38,11 +39,26 @@
 #include "ACAPI/MEPDuctBranchPreferenceTableContainer.hpp"
 #include "ACAPI/MEPPipeReferenceSet.hpp"
 #include "ACAPI/MEPDuctReferenceSet.hpp"
+#include "ACAPI/MEPRoutingNodeDefault.hpp"
+#include "ACAPI/MEPTransitionDefault.hpp"
+#include "ACAPI/MEPFlexibleSegmentDefault.hpp"
+#include "ACAPI/MEPPortDefaultBase.hpp"
+#include "ACAPI/MEPPipingPortDefault.hpp"
+#include "ACAPI/MEPVentilationPortDefault.hpp"
+#include "ACAPI/MEPCableCarrierPortDefault.hpp"
+#include "ACAPI/MEPTerminal.hpp"
+#include "ACAPI/MEPAccessory.hpp"
+#include "ACAPI/MEPEquipment.hpp"
+#include "ACAPI/MEPFitting.hpp"
 #include "ACAPI/MEPRigidSegment.hpp"
 #include "ACAPI/MEPFlexibleSegment.hpp"
 #include "ACAPI/MEPBranch.hpp"
+#include "ACAPI/MEPBranchDefault.hpp"
+#include "ACAPI/MEPTakeOff.hpp"
+#include "ACAPI/MEPTakeOffDefault.hpp"
 #include "ACAPI/MEPTransition.hpp"
 #ifdef ServerMainVers_2900
+#include "ACAPI/MEPElbowDefault.hpp"
 #include "ACAPI/MEPElbow.hpp"
 #include "ACAPI/MEPPipeTransitionPreferenceTable.hpp"
 #include "ACAPI/MEPPipeTransitionPreferenceTableContainer.hpp"
@@ -360,6 +376,9 @@ static GS::UniString GetMEPElementTypeName (const API_Guid& classId)
     if (IsElectricalDevice (classId)) {
         return "ElectricalDevice";
     }
+    if (IsElectricalCircuit (classId)) {
+        return "ElectricalCircuit";
+    }
 #endif
     return "";
 }
@@ -522,6 +541,17 @@ GS::ObjectState GetMEPElementsCommand::Execute (const GS::ObjectState& parameter
         }
     }
 #endif
+    // The MEP elements the MEP API knows of, in case some of them are not in the lists above.
+    GS::HashSet<API_Guid> listedGuids;
+    for (const API_Guid& elemGuid : elemList) {
+        listedGuids.Add (elemGuid);
+    }
+    for (const API_Guid& elemGuid : CollectAllMEPElements ()) {
+        if (!listedGuids.Contains (elemGuid)) {
+            listedGuids.Add (elemGuid);
+            elemList.Push (elemGuid);
+        }
+    }
 
     GS::ObjectState response;
     const auto& elements = response.AddList<GS::ObjectState> ("elements");
@@ -1100,6 +1130,68 @@ GS::ObjectState GetMEPElementDetailsCommand::Execute (const GS::ObjectState& par
 #endif
 }
 
+#ifdef ServerMainVers_2800
+
+static GS::ObjectState CreateDistributionSystemTreeNodeDetails (const DistributionSystemsGraphTreeNode& node)
+{
+    GS::ObjectState nodeOs;
+    nodeOs.Add ("elementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (node.GetElement ())));
+    nodeOs.Add ("depth", static_cast<Int32> (node.GetDepthFromRootNode ()));
+    const std::optional<ACAPI::MEP::UniqueID> previousElementId = node.GetPreviousElement ();
+    if (previousElementId.has_value ()) {
+        nodeOs.Add ("previousElementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (previousElementId.value ())));
+    }
+    const std::optional<ACAPI::MEP::UniqueID> portIdOfPreviousElement = node.GetConnectedPortFromPreviousElement ();
+    if (portIdOfPreviousElement.has_value ()) {
+        nodeOs.Add ("connectedPortIdOfPreviousElement", APIGuidToString (MEPUniqueIDToAPIGuid (portIdOfPreviousElement.value ())));
+    }
+    const std::optional<ACAPI::MEP::UniqueID> portIdOfThisElement = node.GetConnectedPortFromThisElement ();
+    if (portIdOfThisElement.has_value ()) {
+        nodeOs.Add ("connectedPortIdOfThisElement", APIGuidToString (MEPUniqueIDToAPIGuid (portIdOfThisElement.value ())));
+    }
+    const auto& nextElements = nodeOs.AddList<GS::ObjectState> ("nextElements");
+    for (const ACAPI::MEP::UniqueID& nextElementId : node.GetNextElements ()) {
+        nextElements (CreateElementIdObjectState (MEPUniqueIDToAPIGuid (nextElementId)));
+    }
+    return nodeOs;
+}
+
+// Adds the nodes of the system's tree in the order TraverseTree visits them, from the root element
+// on. Left out when the tree cannot be read. Whether the return value of the traversal function
+// continues or stops the traversal is not known here, so the tree is read with true first, and read
+// again with false when that stopped at the root although the root has next elements.
+static void AddDistributionSystemTree (GS::ObjectState& systemOs, const DistributionSystem& system)
+{
+    GS::Array<GS::ObjectState> nodes;
+    bool rootHasNextElements = false;
+    const auto readTree = [&] (bool returnValue) -> bool {
+        nodes.Clear ();
+        rootHasNextElements = false;
+        ACAPI::Result<void> result = system.TraverseTree ([&] (const DistributionSystemsGraphTreeNode& node) -> bool {
+            if (nodes.IsEmpty ()) {
+                rootHasNextElements = !node.GetNextElements ().empty ();
+            }
+            nodes.Push (CreateDistributionSystemTreeNodeDetails (node));
+            return returnValue;
+        });
+        return result.IsOk ();
+    };
+
+    bool isRead = readTree (true);
+    if (isRead && nodes.GetSize () == 1 && rootHasNextElements) {
+        isRead = readTree (false);
+    }
+    if (!isRead) {
+        return;
+    }
+    const auto& tree = systemOs.AddList<GS::ObjectState> ("tree");
+    for (const GS::ObjectState& nodeOs : nodes) {
+        tree (nodeOs);
+    }
+}
+
+#endif
+
 GetMEPDistributionSystemsCommand::GetMEPDistributionSystemsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -1108,6 +1200,21 @@ GetMEPDistributionSystemsCommand::GetMEPDistributionSystemsCommand () :
 GS::String GetMEPDistributionSystemsCommand::GetName () const
 {
     return "GetMEPDistributionSystems";
+}
+
+GS::Optional<GS::UniString> GetMEPDistributionSystemsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "includeTree": {
+                "type": "boolean",
+                "description": "Whether to return the tree of each system: its elements from the root element on, each with the element it is connected to on the way from the root. False when not given."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
 }
 
 GS::Optional<GS::UniString> GetMEPDistributionSystemsCommand::GetRawResponseSchema () const
@@ -1137,9 +1244,12 @@ GS::Optional<GS::UniString> GetMEPDistributionSystemsCommand::GetRawResponseSche
     })";
 }
 
-GS::ObjectState GetMEPDistributionSystemsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState GetMEPDistributionSystemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
+    bool includeTree = false;
+    parameters.Get ("includeTree", includeTree);
+
     ACAPI::Result<DistributionSystemsGraph> graph = CreateDistributionSystemsGraph ();
     if (graph.IsErr ()) {
         return CreateErrorResponse (graph.UnwrapErr ().kind, "Failed to create the distribution systems graph.");
@@ -1167,6 +1277,20 @@ GS::ObjectState GetMEPDistributionSystemsCommand::Execute (const GS::ObjectState
             }
         }
 
+#ifdef ServerMainVers_2900
+        ACAPI::Result<std::vector<ACAPI::MEP::UniqueID>> physicalSystemIds = system.GetPhysicalSystemIDs ();
+        if (physicalSystemIds.IsOk ()) {
+            const auto& physicalSystems = systemOs.AddList<GS::ObjectState> ("physicalSystemIds");
+            for (const ACAPI::MEP::UniqueID& physicalSystemId : physicalSystemIds.Unwrap ()) {
+                physicalSystems (CreateGuidObjectState (MEPUniqueIDToAPIGuid (physicalSystemId)));
+            }
+        }
+#endif
+
+        if (includeTree) {
+            AddDistributionSystemTree (systemOs, system);
+        }
+
         distributionSystems (systemOs);
     }
 
@@ -1177,6 +1301,7 @@ GS::ObjectState GetMEPDistributionSystemsCommand::Execute (const GS::ObjectState
 
     return response;
 #else
+    UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
 #endif
 }
@@ -6454,5 +6579,886 @@ GS::ObjectState DeleteMEPPhysicalSystemsCommand::Execute (const GS::ObjectState&
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, MEPSystemsRequireArchicad29);
+#endif
+}
+
+#ifdef ServerMainVers_2800
+
+// The getters of the MEP tool defaults return a value, an std::optional or an ACAPI::Result of it;
+// MEPValueOf gives the value when there is one.
+template <typename T>
+static std::optional<T> MEPValueOf (const T& value)
+{
+    return value;
+}
+
+template <typename T>
+static std::optional<T> MEPValueOf (const std::optional<T>& value)
+{
+    return value;
+}
+
+template <typename T>
+static std::optional<T> MEPValueOf (ACAPI::Result<T> value)
+{
+    if (value.IsErr ()) {
+        return std::nullopt;
+    }
+    return value.Unwrap ();
+}
+
+template <typename ValueT>
+static void AddMEPNumber (GS::ObjectState& os, const char* fieldName, ValueT&& value)
+{
+    const auto number = MEPValueOf (std::forward<ValueT> (value));
+    if (number.has_value ()) {
+        os.Add (fieldName, static_cast<double> (number.value ()));
+    }
+}
+
+template <typename ValueT>
+static void AddMEPTableId (GS::ObjectState& os, const char* fieldName, ValueT&& value)
+{
+    const auto tableId = MEPValueOf (std::forward<ValueT> (value));
+    if (tableId.has_value ()) {
+        os.Add (fieldName, tableId.value ().GetGuid ().ToUniString ());
+    }
+}
+
+static GS::ObjectState CreateRoutingSegmentDefaultDetails (const RoutingSegmentDefault& segmentDefault)
+{
+    GS::ObjectState segmentOs;
+    const auto shape = MEPValueOf (segmentDefault.GetCrossSectionShape ());
+    if (shape.has_value ()) {
+        segmentOs.Add ("crossSectionShape", ConnectorShapeToString (shape.value ()));
+    }
+    AddMEPNumber (segmentOs, "crossSectionWidth", segmentDefault.GetCrossSectionWidth ());
+    AddMEPNumber (segmentOs, "crossSectionHeight", segmentDefault.GetCrossSectionHeight ());
+    const auto referenceId = MEPValueOf (segmentDefault.GetCrossSectionReferenceId ());
+    if (referenceId.has_value ()) {
+        segmentOs.Add ("crossSectionReferenceId", static_cast<Int32> (referenceId.value ()));
+    }
+    AddMEPTableId (segmentOs, "preferenceTableId", segmentDefault.GetPreferenceTableId ());
+    const auto anchor = MEPValueOf (segmentDefault.GetAnchor ());
+    if (anchor.has_value ()) {
+        segmentOs.Add ("anchor", AnchorIdToString (anchor.value ()));
+    }
+    AddMEPNumber (segmentOs, "referenceLineOffsetX", segmentDefault.GetReferenceLineOffsetX ());
+    AddMEPNumber (segmentOs, "referenceLineOffsetY", segmentDefault.GetReferenceLineOffsetY ());
+    AddMEPNumber (segmentOs, "wallThickness", segmentDefault.GetWallThickness ());
+    AddMEPNumber (segmentOs, "flangeSize", segmentDefault.GetFlangeSize ());
+    AddMEPEnumName (segmentOs, "connectionStyle", ConnectionStyleNames, segmentDefault.GetConnectionStyle ());
+    return segmentOs;
+}
+
+static GS::ObjectState CreateRoutingNodeDefaultDetails (const RoutingNodeDefault& nodeDefault)
+{
+    GS::ObjectState nodeOs;
+    AddMEPEnumName (nodeOs, "preferredTransitionPlacement", PreferredTransitionPlacementNames, nodeDefault.GetPreferredTransitionPlacement ());
+#ifdef ServerMainVers_2900
+    // Archicad 28 calls the elbow default a bend default (RoutingNodeDefault::GetBendDefault); it is
+    // not returned there.
+    const ElbowDefault elbowDefault = nodeDefault.GetElbowDefault ();
+    GS::ObjectState elbowOs;
+    AddMEPNumber (elbowOs, "factorRadius", elbowDefault.GetFactorRadius ());
+    AddMEPTableId (elbowOs, "preferenceTableId", elbowDefault.GetPreferenceTable ());
+    nodeOs.Add ("elbow", elbowOs);
+#endif
+    const TransitionDefault transitionDefault = nodeDefault.GetTransitionDefault ();
+    GS::ObjectState transitionOs;
+    AddMEPNumber (transitionOs, "angle", transitionDefault.GetAngle ());
+    transitionOs.Add ("offsetY", transitionDefault.GetOffsetY ());
+    transitionOs.Add ("offsetZ", transitionDefault.GetOffsetZ ());
+#ifdef ServerMainVers_2900
+    AddMEPTableId (transitionOs, "preferenceTableId", transitionDefault.GetPreferenceTable ());
+#endif
+    nodeOs.Add ("transition", transitionOs);
+    return nodeOs;
+}
+
+static GS::ObjectState CreateRoutingElementDefaultDetails (const RoutingElementDefault& routingElementDefault)
+{
+    GS::ObjectState routingElementOs;
+    routingElementOs.Add ("mepSystemId", CreateMEPSystemIdObjectState (routingElementDefault.GetMEPSystem ()));
+    AddMEPTableId (routingElementOs, "branchPreferenceTableId", routingElementDefault.GetBranchPreferenceTableId ());
+#ifdef ServerMainVers_2900
+    AddMEPEnumName (routingElementOs, "cutPlanePosition", CutPlanePositionNames, routingElementDefault.GetCutPlanePosition ());
+    AddMEPEnumName (routingElementOs, "floorPlanDisplayOption", FloorPlanDisplayOptionNames, routingElementDefault.GetFloorPlanDisplayOption ());
+    AddMEPEnumName (routingElementOs, "showProjection", ShowProjectionNames, routingElementDefault.GetShowProjection ());
+    AddMEPEnumName (routingElementOs, "onStoryVisibility", OnStoryVisibilityNames, routingElementDefault.GetOnStoryVisibility ());
+#endif
+    routingElementOs.Add ("routingSegment", CreateRoutingSegmentDefaultDetails (routingElementDefault.GetRoutingSegmentDefault ()));
+    routingElementOs.Add ("routingNode", CreateRoutingNodeDefaultDetails (routingElementDefault.GetRoutingNodeDefault ()));
+    return routingElementOs;
+}
+
+// The settings every port default has (PortDefaultBase).
+template <typename PortDefaultT>
+static void AddPortDefaultBaseDetails (GS::ObjectState& portOs, const PortDefaultT& portDefault)
+{
+    portOs.Add ("name", portDefault.GetName ());
+    portOs.Add ("shape", ConnectorShapeToString (portDefault.GetShape ()));
+    portOs.Add ("width", portDefault.GetWidth ());
+    portOs.Add ("mepSystemId", CreateMEPSystemIdObjectState (portDefault.GetMEPSystem ()));
+#ifdef ServerMainVers_3000
+    AddMEPEnumName (portOs, "connectionStyle", ConnectionStyleNames, portDefault.GetConnectionStyle ());
+#endif
+}
+
+// The library part and the ports of a terminal, accessory, fitting or equipment default (ElementDefault).
+template <typename ElementDefaultT>
+static GS::ObjectState CreateMEPElementDefaultDetails (const ElementDefaultT& elementDefault)
+{
+    GS::ObjectState elementOs;
+    elementOs.Add ("libraryPartId", CreateGuidObjectState (elementDefault.GetObjectId ()));
+    const auto& ports = elementOs.AddList<GS::ObjectState> ("ports");
+    const uint32_t portCount = elementDefault.GetPortCount ();
+    for (uint32_t portIndex = 0; portIndex < portCount; ++portIndex) {
+        ACAPI::Result<Domain> portDomainResult = elementDefault.GetDomainOfPort (portIndex);
+        if (portDomainResult.IsErr ()) {
+            continue;
+        }
+        const Domain portDomain = portDomainResult.Unwrap ();
+
+        GS::ObjectState portOs;
+        portOs.Add ("index", static_cast<Int32> (portIndex));
+        portOs.Add ("domain", DomainToString (portDomain));
+        if (portDomain == Domain::Piping) {
+            ACAPI::Result<PipingPortDefault> portDefault = elementDefault.GetPipingPortDefault (portIndex);
+            if (portDefault.IsErr ()) {
+                continue;
+            }
+            AddPortDefaultBaseDetails (portOs, *portDefault);
+            portOs.Add ("diameter", portDefault->GetDiameter ());
+            portOs.Add ("wallThickness", portDefault->GetWallThickness ());
+            AddMEPEnumName (portOs, "flowDirection", FlowDirectionNames, portDefault->GetFlowDirection ());
+#ifdef ServerMainVers_3000
+            AddMEPNumber (portOs, "flangeSize", portDefault->GetFlangeSize ());
+#endif
+        } else if (portDomain == Domain::Ventilation) {
+            ACAPI::Result<VentilationPortDefault> portDefault = elementDefault.GetVentilationPortDefault (portIndex);
+            if (portDefault.IsErr ()) {
+                continue;
+            }
+            AddPortDefaultBaseDetails (portOs, *portDefault);
+            portOs.Add ("height", portDefault->GetHeight ());
+            portOs.Add ("wallThickness", portDefault->GetWallThickness ());
+            AddMEPEnumName (portOs, "flowDirection", FlowDirectionNames, portDefault->GetFlowDirection ());
+#ifdef ServerMainVers_3000
+            AddMEPNumber (portOs, "flangeSize", portDefault->GetFlangeSize ());
+#endif
+        } else {
+            ACAPI::Result<CableCarrierPortDefault> portDefault = elementDefault.GetCableCarrierPortDefault (portIndex);
+            if (portDefault.IsErr ()) {
+                continue;
+            }
+            AddPortDefaultBaseDetails (portOs, *portDefault);
+            portOs.Add ("height", portDefault->GetHeight ());
+        }
+        ports (portOs);
+    }
+    return elementOs;
+}
+
+// Adds the details of a tool default when Archicad gives one; a default that cannot be created is left out.
+template <typename DefaultT, typename CreateDetailsT>
+static void AddMEPToolDefault (GS::ObjectState& os, const char* fieldName, ACAPI::Result<DefaultT> toolDefault, CreateDetailsT&& createDetails)
+{
+    if (toolDefault.IsOk ()) {
+        os.Add (fieldName, createDetails (*toolDefault));
+    }
+}
+
+// The MEP element type name (as GetMEPElements gives it) and the domain name of an element; empty
+// for an element that does not exist or is not an MEP element.
+static GS::UniString GetMEPElementTypeNameOfElement (const API_Guid& elemGuid, GS::UniString& domainName)
+{
+    API_Elem_Head header = {};
+    header.guid = elemGuid;
+    if (ACAPI_Element_GetHeader (&header) != NoError) {
+        return "";
+    }
+    domainName = GetMEPElementDomainName (header.type.classID);
+    return GetMEPElementTypeName (header.type.classID);
+}
+
+// Picks up the settings of the source element and injects them into each target, each target in
+// its own undo step. Each target has to be of the type and domain of the source.
+template <typename ElementT>
+static GS::ObjectState TransferMEPSettingsOfType (const API_Guid& sourceGuid, const GS::UniString& typeName, const GS::UniString& domainName, const GS::Array<API_Guid>& targetGuids, const char* undoString)
+{
+    ACAPI::Result<ElementT> source = ElementT::Get (Adapter::UniqueID (sourceGuid));
+    if (source.IsErr ()) {
+        return CreateErrorResponse (source.UnwrapErr ().kind, "Failed to get the source element.");
+    }
+    const auto pickedUpDefault = source->PickUpDefault ();
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    for (const API_Guid& targetGuid : targetGuids) {
+        GS::UniString targetDomainName;
+        if (GetMEPElementTypeNameOfElement (targetGuid, targetDomainName) != typeName || targetDomainName != domainName) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The target element is not of the MEP element type and domain of the source element."));
+            continue;
+        }
+        ACAPI::Result<ElementT> target = ElementT::Get (Adapter::UniqueID (targetGuid));
+        if (target.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (target.UnwrapErr ().kind, "Failed to get the target element."));
+            continue;
+        }
+
+        std::optional<GSErrCode> injectError;
+        ACAPI::Result<void> modifyResult = target->Modify ([&](typename ElementT::Modifier& modifier) {
+            ACAPI::Result<void> injectResult = modifier.Inject (pickedUpDefault);
+            if (injectResult.IsErr ()) {
+                injectError = injectResult.UnwrapErr ().kind;
+            }
+        }, undoString);
+        if (injectError.has_value () || modifyResult.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (injectError.has_value () ? injectError.value () : modifyResult.UnwrapErr ().kind,
+                "Failed to inject the settings of the source element."));
+            continue;
+        }
+        executionResults (CreateSuccessfulExecutionResult ());
+    }
+    return response;
+}
+
+#endif
+
+GetMEPToolDefaultsCommand::GetMEPToolDefaultsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetMEPToolDefaultsCommand::GetName () const
+{
+    return "GetMEPToolDefaults";
+}
+
+GS::Optional<GS::UniString> GetMEPToolDefaultsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "domains": {
+                "type": "array",
+                "description": "The domains to return the tool defaults of. All three when not given.",
+                "items": {
+                    "$ref": "#/MEPDomain"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetMEPToolDefaultsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "toolDefaults": {
+                "type": "array",
+                "description": "The tool defaults of each requested domain, in the order requested.",
+                "items": {
+                    "$ref": "#/MEPDomainToolDefaults"
+                }
+            },
+            "equipment": {
+                "$ref": "#/MEPElementDefaultDetails",
+                "description": "The default of the Equipment tool, which has no domain. Left out when Archicad gives none."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "toolDefaults"
+        ]
+    })";
+}
+
+GS::ObjectState GetMEPToolDefaultsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::Array<GS::UniString> domainNames;
+    if (!parameters.Get ("domains", domainNames)) {
+        domainNames.Push ("Ventilation");
+        domainNames.Push ("Piping");
+        domainNames.Push ("CableCarrier");
+    }
+
+    // The domains are checked before anything is read.
+    std::vector<Domain> domains;
+    for (const GS::UniString& domainName : domainNames) {
+        const std::optional<Domain> domain = DomainFromString (domainName);
+        if (!domain.has_value ()) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid value in the 'domains' parameter.");
+        }
+        domains.push_back (domain.value ());
+    }
+
+    // Each Create*Default call gives a copy of the current settings of that tool; nothing is changed.
+    GS::ObjectState response;
+    const auto& toolDefaults = response.AddList<GS::ObjectState> ("toolDefaults");
+    for (const Domain domain : domains) {
+        GS::ObjectState domainOs;
+        domainOs.Add ("domain", DomainToString (domain));
+        AddMEPToolDefault (domainOs, "routingElement", CreateRoutingElementDefault (domain), [] (const RoutingElementDefault& d) {
+            return CreateRoutingElementDefaultDetails (d);
+        });
+        AddMEPToolDefault (domainOs, "flexibleSegment", CreateFlexibleSegmentDefault (domain), [] (const FlexibleSegmentDefault& d) {
+            GS::ObjectState flexibleSegmentOs;
+            flexibleSegmentOs.Add ("shape", ConnectorShapeToString (d.GetShape ()));
+            flexibleSegmentOs.Add ("width", d.GetWidth ());
+            flexibleSegmentOs.Add ("height", d.GetHeight ());
+            return flexibleSegmentOs;
+        });
+        AddMEPToolDefault (domainOs, "terminal", CreateTerminalDefault (domain), [] (const TerminalDefault& d) {
+            return CreateMEPElementDefaultDetails (d);
+        });
+        AddMEPToolDefault (domainOs, "accessory", CreateAccessoryDefault (domain), [] (const AccessoryDefault& d) {
+            return CreateMEPElementDefaultDetails (d);
+        });
+        AddMEPToolDefault (domainOs, "fitting", CreateFittingDefault (domain), [] (const FittingDefault& d) {
+            return CreateMEPElementDefaultDetails (d);
+        });
+        toolDefaults (domainOs);
+    }
+    AddMEPToolDefault (response, "equipment", CreateEquipmentDefault (), [] (const EquipmentDefault& d) {
+        return CreateMEPElementDefaultDetails (d);
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
+}
+
+TransferMEPSettingsCommand::TransferMEPSettingsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String TransferMEPSettingsCommand::GetName () const
+{
+    return "TransferMEPSettings";
+}
+
+GS::Optional<GS::UniString> TransferMEPSettingsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "sourceElementId": {
+                "$ref": "#/ElementId",
+                "description": "The MEP element to pick up the settings from: a routing element, terminal, accessory, equipment, fitting, flexible segment, branch, take-off, or (from Archicad 30) electrical panel or device."
+            },
+            "targetElements": {
+                "$ref": "#/Elements",
+                "description": "The MEP elements to inject the settings into. Each must be of the type and domain of the source element."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "sourceElementId",
+            "targetElements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> TransferMEPSettingsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState TransferMEPSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    const GS::ObjectState* sourceElementId = parameters.Get ("sourceElementId");
+    if (sourceElementId == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'sourceElementId' parameter.");
+    }
+    GS::Array<GS::ObjectState> targetElements;
+    if (!parameters.Get ("targetElements", targetElements)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'targetElements' parameter.");
+    }
+
+    const API_Guid sourceGuid = GetGuidFromObjectState (*sourceElementId);
+    GS::UniString domainName;
+    const GS::UniString typeName = GetMEPElementTypeNameOfElement (sourceGuid, domainName);
+    GS::Array<API_Guid> targetGuids;
+    for (const GS::ObjectState& targetElement : targetElements) {
+        targetGuids.Push (GetGuidFromElementsArrayItem (targetElement));
+    }
+
+    if (typeName == "RoutingElement") {
+        return TransferMEPSettingsOfType<ACAPI::MEP::RoutingElement> (sourceGuid, typeName, domainName, targetGuids, "Inject MEP Routing Element Settings");
+    }
+    if (typeName == "Terminal") {
+        return TransferMEPSettingsOfType<ACAPI::MEP::Terminal> (sourceGuid, typeName, domainName, targetGuids, "Inject MEP Terminal Settings");
+    }
+    if (typeName == "Accessory") {
+        return TransferMEPSettingsOfType<ACAPI::MEP::Accessory> (sourceGuid, typeName, domainName, targetGuids, "Inject MEP Accessory Settings");
+    }
+    if (typeName == "Equipment") {
+        return TransferMEPSettingsOfType<ACAPI::MEP::Equipment> (sourceGuid, typeName, domainName, targetGuids, "Inject MEP Equipment Settings");
+    }
+    if (typeName == "Fitting") {
+        return TransferMEPSettingsOfType<ACAPI::MEP::Fitting> (sourceGuid, typeName, domainName, targetGuids, "Inject MEP Fitting Settings");
+    }
+    if (typeName == "FlexibleSegment") {
+        return TransferMEPSettingsOfType<ACAPI::MEP::FlexibleSegment> (sourceGuid, typeName, domainName, targetGuids, "Inject MEP Flexible Segment Settings");
+    }
+    if (typeName == "Branch") {
+        return TransferMEPSettingsOfType<ACAPI::MEP::Branch> (sourceGuid, typeName, domainName, targetGuids, "Inject MEP Branch Settings");
+    }
+    if (typeName == "TakeOff") {
+        return TransferMEPSettingsOfType<ACAPI::MEP::TakeOff> (sourceGuid, typeName, domainName, targetGuids, "Inject MEP Take-Off Settings");
+    }
+#ifdef ServerMainVers_3000
+    if (typeName == "ElectricalPanel") {
+        return TransferMEPSettingsOfType<ACAPI::MEP::ElectricalPanel> (sourceGuid, typeName, domainName, targetGuids, "Inject Electrical Panel Settings");
+    }
+    if (typeName == "ElectricalDevice") {
+        return TransferMEPSettingsOfType<ACAPI::MEP::ElectricalDevice> (sourceGuid, typeName, domainName, targetGuids, "Inject Electrical Device Settings");
+    }
+#endif
+    // Rigid segments, elbows and transitions have PickUpDefault, but nothing can be injected into them.
+    return CreateErrorResponse (APIERR_BADPARS, "The 'sourceElementId' is not an MEP element whose settings can be transferred.");
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
+}
+
+GetMEPPhysicalSystemsOfElementsCommand::GetMEPPhysicalSystemsOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetMEPPhysicalSystemsOfElementsCommand::GetName () const
+{
+    return "GetMEPPhysicalSystemsOfElements";
+}
+
+GS::Optional<GS::UniString> GetMEPPhysicalSystemsOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetMEPPhysicalSystemsOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "physicalSystemsOfElements": {
+                "type": "array",
+                "description": "The physical systems of each given element, in the order of the elements.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "physicalSystemIds": {
+                            "type": "array",
+                            "description": "The physical systems the element is part of. Empty for an element of no physical system.",
+                            "items": {
+                                "$ref": "#/MEPPhysicalSystemId"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "physicalSystemIds"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "physicalSystemsOfElements"
+        ]
+    })";
+}
+
+GS::ObjectState GetMEPPhysicalSystemsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::ObjectState> elements;
+    if (!parameters.Get ("elements", elements)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'elements' parameter.");
+    }
+
+    std::vector<ACAPI::MEP::UniqueID> elementIds;
+    for (const GS::ObjectState& element : elements) {
+        elementIds.push_back (Adapter::UniqueID (GetGuidFromElementsArrayItem (element)));
+    }
+
+    ACAPI::Result<DistributionSystemsGraph> graph = CreateDistributionSystemsGraph ();
+    if (graph.IsErr ()) {
+        return CreateErrorResponse (graph.UnwrapErr ().kind, "Failed to create the distribution systems graph.");
+    }
+    const DistributionSystemsGraph& distributionGraph = *graph;
+    ACAPI::Result<std::vector<std::vector<ACAPI::MEP::UniqueID>>> systemIdsOfElements = PhysicalSystem::FindSystemIdsFromElementIds (elementIds, &distributionGraph);
+    if (systemIdsOfElements.IsErr ()) {
+        return CreateErrorResponse (systemIdsOfElements.UnwrapErr ().kind, "Failed to find the physical systems of the elements.");
+    }
+    const std::vector<std::vector<ACAPI::MEP::UniqueID>> systemIds = systemIdsOfElements.Unwrap ();
+    if (systemIds.size () != elementIds.size ()) {
+        return CreateErrorResponse (APIERR_GENERAL, "Archicad did not return the physical systems for each given element.");
+    }
+
+    GS::ObjectState response;
+    const auto& physicalSystemsOfElements = response.AddList<GS::ObjectState> ("physicalSystemsOfElements");
+    for (const std::vector<ACAPI::MEP::UniqueID>& systemIdsOfElement : systemIds) {
+        GS::ObjectState elementOs;
+        const auto& physicalSystemIds = elementOs.AddList<GS::ObjectState> ("physicalSystemIds");
+        for (const ACAPI::MEP::UniqueID& systemId : systemIdsOfElement) {
+            physicalSystemIds (CreateGuidObjectState (MEPUniqueIDToAPIGuid (systemId)));
+        }
+        physicalSystemsOfElements (elementOs);
+    }
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, MEPSystemsRequireArchicad29);
+#endif
+}
+
+#ifdef ServerMainVers_2800
+
+static API_Coord3D GetNormalizedMEPVector (const API_Coord3D& vector, const API_Coord3D& fallback)
+{
+    const double length = std::sqrt (vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
+    if (length < 1e-9) {
+        return fallback;
+    }
+    return API_Coord3D { vector.x / length, vector.y / length, vector.z / length };
+}
+
+// The orientation at one end of a flexible segment: the given one, or else the direction from the
+// point 'from' to the point 'to', with a horizontal rotation vector perpendicular to it (the
+// rotation (0, 1, 0) of the direction (1, 0, 0), as CreateMEPElements uses).
+static Orientation GetFlexibleSegmentEndOrientation (const GS::ObjectState* orientationOs, const API_Coord3D& from, const API_Coord3D& to)
+{
+    if (orientationOs != nullptr) {
+        Orientation orientation = { { 1.0, 0.0, 0.0 }, { 0.0, 1.0, 0.0 } };
+        const GS::ObjectState* directionOs = orientationOs->Get ("direction");
+        if (directionOs != nullptr) {
+            const API_Coord3D direction = Get3DCoordinateFromObjectState (*directionOs);
+            orientation.direction = { direction.x, direction.y, direction.z };
+        }
+        const GS::ObjectState* rotationOs = orientationOs->Get ("rotation");
+        if (rotationOs != nullptr) {
+            const API_Coord3D rotation = Get3DCoordinateFromObjectState (*rotationOs);
+            orientation.rotation = { rotation.x, rotation.y, rotation.z };
+        }
+        return orientation;
+    }
+
+    const API_Coord3D direction = GetNormalizedMEPVector (API_Coord3D { to.x - from.x, to.y - from.y, to.z - from.z }, API_Coord3D { 1.0, 0.0, 0.0 });
+    // The cross product of the up vector (0, 0, 1) and the direction.
+    const API_Coord3D rotation = GetNormalizedMEPVector (API_Coord3D { -direction.y, direction.x, 0.0 }, API_Coord3D { 0.0, 1.0, 0.0 });
+    return Orientation { { direction.x, direction.y, direction.z }, { rotation.x, rotation.y, rotation.z } };
+}
+
+#endif
+
+PlaceMEPFlexibleSegmentsCommand::PlaceMEPFlexibleSegmentsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String PlaceMEPFlexibleSegmentsCommand::GetName () const
+{
+    return "PlaceMEPFlexibleSegments";
+}
+
+GS::Optional<GS::UniString> PlaceMEPFlexibleSegmentsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "flexibleSegmentsData": {
+                "type": "array",
+                "description": "Array of data to place MEP flexible segments with the current settings of the Flexible Segment tool of their domain (see GetMEPToolDefaults).",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "domain": {
+                            "$ref": "#/MEPDomain"
+                        },
+                        "controlPoints": {
+                            "type": "array",
+                            "description": "The control points of the flexible segment, from its beginning to its end.",
+                            "items": {
+                                "$ref": "#/Coordinate3D"
+                            },
+                            "minItems": 2
+                        },
+                        "startOrientation": {
+                            "$ref": "#/MEPOrientation",
+                            "description": "Optional orientation at the beginning. Defaults to the direction from the first control point to the second one, with a horizontal rotation vector perpendicular to it."
+                        },
+                        "endOrientation": {
+                            "$ref": "#/MEPOrientation",
+                            "description": "Optional orientation at the end. Defaults to the direction from the last but one control point to the last one, with a horizontal rotation vector perpendicular to it."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "domain",
+                        "controlPoints"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "flexibleSegmentsData"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> PlaceMEPFlexibleSegmentsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::ObjectState PlaceMEPFlexibleSegmentsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::Array<GS::ObjectState> flexibleSegmentsData;
+    if (!parameters.Get ("flexibleSegmentsData", flexibleSegmentsData)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'flexibleSegmentsData' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+
+    ACAPI_CallUndoableCommand ("Place MEP Flexible Segments", [&]() -> GSErrCode {
+        for (const GS::ObjectState& flexibleSegmentData : flexibleSegmentsData) {
+            GS::UniString domainStr;
+            flexibleSegmentData.Get ("domain", domainStr);
+            const std::optional<Domain> domain = DomainFromString (domainStr);
+            if (!domain.has_value ()) {
+                elements (CreateErrorResponse (APIERR_BADPARS, "Invalid 'domain' parameter."));
+                continue;
+            }
+
+            GS::Array<GS::ObjectState> controlPointsData;
+            if (!flexibleSegmentData.Get ("controlPoints", controlPointsData) || controlPointsData.GetSize () < 2) {
+                elements (CreateErrorResponse (APIERR_BADPARS, "The 'controlPoints' parameter must contain at least 2 coordinates."));
+                continue;
+            }
+            std::vector<API_Coord3D> controlPoints;
+            for (const GS::ObjectState& controlPoint : controlPointsData) {
+                controlPoints.push_back (Get3DCoordinateFromObjectState (controlPoint));
+            }
+            const size_t last = controlPoints.size () - 1;
+            const Orientation startOrientation = GetFlexibleSegmentEndOrientation (flexibleSegmentData.Get ("startOrientation"), controlPoints[0], controlPoints[1]);
+            const Orientation endOrientation = GetFlexibleSegmentEndOrientation (flexibleSegmentData.Get ("endOrientation"), controlPoints[last - 1], controlPoints[last]);
+
+            ACAPI::Result<FlexibleSegmentDefault> flexibleSegmentDefault = CreateFlexibleSegmentDefault (domain.value ());
+            if (flexibleSegmentDefault.IsErr ()) {
+                elements (CreateErrorResponse (flexibleSegmentDefault.UnwrapErr ().kind, "Failed to create the flexible segment default."));
+                continue;
+            }
+            ACAPI::Result<ACAPI::MEP::UniqueID> newElementId = flexibleSegmentDefault->Place (controlPoints, startOrientation, endOrientation);
+            if (newElementId.IsErr ()) {
+                elements (CreateErrorResponse (newElementId.UnwrapErr ().kind, "Failed to place the flexible segment."));
+                continue;
+            }
+
+            elements (CreateElementIdObjectState (MEPUniqueIDToAPIGuid (newElementId.Unwrap ())));
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
+}
+
+PlaceMEPTakeOffsCommand::PlaceMEPTakeOffsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String PlaceMEPTakeOffsCommand::GetName () const
+{
+    return "PlaceMEPTakeOffs";
+}
+
+GS::Optional<GS::UniString> PlaceMEPTakeOffsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "takeOffsData": {
+                "type": "array",
+                "description": "Array of data to place MEP take-offs on routing segments with the current settings of the Take-Off tool of their domain.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "domain": {
+                            "$ref": "#/MEPDomain"
+                        },
+                        "segmentId": {
+                            "$ref": "#/ElementId",
+                            "description": "The routing segment to place the take-off on (one of the segments GetMEPRoutingElements returns)."
+                        },
+                        "distanceFromBeginning": {
+                            "type": "number",
+                            "description": "The distance of the take-off from the beginning of the segment.",
+                            "minimum": 0
+                        },
+                        "rotationAroundMainAxis": {
+                            "type": "number",
+                            "description": "Optional rotation of the take-off around the axis of the segment, in radians. Defaults to 0."
+                        },
+                        "length": {
+                            "type": "number",
+                            "description": "Optional length of the take-off, set after placing it. The length of the Take-Off tool when not given."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "domain",
+                        "segmentId",
+                        "distanceFromBeginning"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "takeOffsData"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> PlaceMEPTakeOffsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::ObjectState PlaceMEPTakeOffsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::Array<GS::ObjectState> takeOffsData;
+    if (!parameters.Get ("takeOffsData", takeOffsData)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'takeOffsData' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+
+    ACAPI_CallUndoableCommand ("Place MEP Take-Offs", [&]() -> GSErrCode {
+        for (const GS::ObjectState& takeOffData : takeOffsData) {
+            GS::UniString domainStr;
+            takeOffData.Get ("domain", domainStr);
+            const std::optional<Domain> domain = DomainFromString (domainStr);
+            if (!domain.has_value ()) {
+                elements (CreateErrorResponse (APIERR_BADPARS, "Invalid 'domain' parameter."));
+                continue;
+            }
+            const GS::ObjectState* segmentId = takeOffData.Get ("segmentId");
+            if (segmentId == nullptr) {
+                elements (CreateErrorResponse (APIERR_BADPARS, "Missing 'segmentId' parameter."));
+                continue;
+            }
+            double distanceFromBeginning = 0.0;
+            if (!takeOffData.Get ("distanceFromBeginning", distanceFromBeginning) || distanceFromBeginning < 0.0) {
+                elements (CreateErrorResponse (APIERR_BADPARS, "The 'distanceFromBeginning' parameter must be a number not less than 0."));
+                continue;
+            }
+            double rotationAroundMainAxis = 0.0;
+            takeOffData.Get ("rotationAroundMainAxis", rotationAroundMainAxis);
+            double length = 0.0;
+            const bool hasLength = takeOffData.Get ("length", length);
+
+            ACAPI::Result<TakeOffDefault> takeOffDefault = CreateTakeOffDefault (domain.value ());
+            if (takeOffDefault.IsErr ()) {
+                elements (CreateErrorResponse (takeOffDefault.UnwrapErr ().kind, "Failed to create the take-off default."));
+                continue;
+            }
+            ACAPI::Result<ACAPI::MEP::UniqueID> newElementId = takeOffDefault->Place (
+                Adapter::UniqueID (GetGuidFromObjectState (*segmentId)), distanceFromBeginning, rotationAroundMainAxis);
+            if (newElementId.IsErr ()) {
+                elements (CreateErrorResponse (newElementId.UnwrapErr ().kind, "Failed to place the take-off."));
+                continue;
+            }
+            const ACAPI::MEP::UniqueID placedId = newElementId.Unwrap ();
+
+            if (hasLength) {
+                ACAPI::Result<TakeOff> takeOff = TakeOff::Get (placedId);
+                ACAPI::Result<void> modifyResult = takeOff.IsErr () ? ACAPI::Result<void> (takeOff.UnwrapErr (), takeOff.Token ()) : takeOff->Modify ([&](TakeOff::Modifier& modifier) {
+                    modifier.SetLength (length);
+                }, "Set MEP Take-Off Length");
+                if (modifyResult.IsErr ()) {
+                    // The take-off stays placed, so its guid is given in the message to let the caller find it.
+                    elements (CreateErrorResponse (modifyResult.UnwrapErr ().kind, GS::UniString::Printf (
+                        "The take-off with guid %T was placed, but its length could not be set.",
+                        APIGuidToString (MEPUniqueIDToAPIGuid (placedId)).ToPrintf ())));
+                    continue;
+                }
+            }
+
+            elements (CreateElementIdObjectState (MEPUniqueIDToAPIGuid (placedId)));
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
 #endif
 }

@@ -3869,7 +3869,8 @@
             "FlexibleSegment",
             "TakeOff",
             "ElectricalPanel",
-            "ElectricalDevice"
+            "ElectricalDevice",
+            "ElectricalCircuit"
         ]
     },
     "DrawingNameType": {
@@ -3959,6 +3960,242 @@
         "enum": [
             "AllRelevantStories",
             "HomeStoryOnly"
+        ]
+    },
+    "MEPPortDefaultDetails": {
+        "type": "object",
+        "description": "The settings of one port of an MEP tool default. Each field is present only where the port's domain and the Archicad version have it.",
+        "properties": {
+            "index": {
+                "type": "integer",
+                "description": "The index of the port in the default."
+            },
+            "domain": {
+                "$ref": "#/MEPDomain"
+            },
+            "name": {
+                "type": "string"
+            },
+            "shape": {
+                "$ref": "#/MEPCrossSectionShape"
+            },
+            "width": {
+                "type": "number"
+            },
+            "height": {
+                "type": "number",
+                "description": "The height of a ventilation or cable carrier port."
+            },
+            "diameter": {
+                "type": "number",
+                "description": "The diameter of a piping port."
+            },
+            "wallThickness": {
+                "type": "number",
+                "description": "The wall thickness of a piping or ventilation port."
+            },
+            "flowDirection": {
+                "$ref": "#/MEPFlowDirection",
+                "description": "The flow direction of a piping or ventilation port."
+            },
+            "flangeSize": {
+                "type": "number",
+                "description": "The flange size of a piping or ventilation port, when it has flanges. Available from Archicad 30."
+            },
+            "connectionStyle": {
+                "$ref": "#/MEPConnectionStyle",
+                "description": "Available from Archicad 30."
+            },
+            "mepSystemId": {
+                "$ref": "#/AttributeId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "index",
+            "domain"
+        ]
+    },
+    "MEPElementDefaultDetails": {
+        "type": "object",
+        "description": "The settings of a terminal, accessory, fitting or equipment tool default.",
+        "properties": {
+            "libraryPartId": {
+                "$ref": "#/LibPartUnId",
+                "description": "The library part the tool places."
+            },
+            "ports": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/MEPPortDefaultDetails"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryPartId",
+            "ports"
+        ]
+    },
+    "MEPDomainToolDefaults": {
+        "type": "object",
+        "description": "The current settings of the MEP tools of one domain. A tool whose default Archicad does not give for the domain is left out; a setting is left out where the Archicad version does not have it.",
+        "properties": {
+            "domain": {
+                "$ref": "#/MEPDomain"
+            },
+            "routingElement": {
+                "type": "object",
+                "description": "The routing tool default.",
+                "properties": {
+                    "mepSystemId": {
+                        "$ref": "#/AttributeId"
+                    },
+                    "branchPreferenceTableId": {
+                        "$ref": "#/Guid"
+                    },
+                    "cutPlanePosition": {
+                        "$ref": "#/MEPCutPlanePosition"
+                    },
+                    "floorPlanDisplayOption": {
+                        "$ref": "#/MEPFloorPlanDisplayOption"
+                    },
+                    "showProjection": {
+                        "$ref": "#/MEPShowProjection"
+                    },
+                    "onStoryVisibility": {
+                        "$ref": "#/MEPOnStoryVisibility"
+                    },
+                    "routingSegment": {
+                        "type": "object",
+                        "description": "The segment default of the routing tool.",
+                        "properties": {
+                            "crossSectionShape": {
+                                "$ref": "#/MEPCrossSectionShape"
+                            },
+                            "crossSectionWidth": {
+                                "type": "number"
+                            },
+                            "crossSectionHeight": {
+                                "type": "number"
+                            },
+                            "crossSectionReferenceId": {
+                                "type": "integer"
+                            },
+                            "preferenceTableId": {
+                                "$ref": "#/Guid"
+                            },
+                            "anchor": {
+                                "type": "string",
+                                "description": "The anchor point of the cross section, with the values of GetMEPRoutingElements."
+                            },
+                            "referenceLineOffsetX": {
+                                "type": "number"
+                            },
+                            "referenceLineOffsetY": {
+                                "type": "number"
+                            },
+                            "wallThickness": {
+                                "type": "number"
+                            },
+                            "flangeSize": {
+                                "type": "number"
+                            },
+                            "connectionStyle": {
+                                "$ref": "#/MEPConnectionStyle"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": []
+                    },
+                    "routingNode": {
+                        "type": "object",
+                        "description": "The node default of the routing tool.",
+                        "properties": {
+                            "preferredTransitionPlacement": {
+                                "$ref": "#/MEPPreferredTransitionPlacement"
+                            },
+                            "elbow": {
+                                "type": "object",
+                                "description": "The elbow default. Available from Archicad 29.",
+                                "properties": {
+                                    "factorRadius": {
+                                        "type": "number"
+                                    },
+                                    "preferenceTableId": {
+                                        "$ref": "#/Guid"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": []
+                            },
+                            "transition": {
+                                "type": "object",
+                                "description": "The transition default.",
+                                "properties": {
+                                    "angle": {
+                                        "type": "number"
+                                    },
+                                    "offsetY": {
+                                        "type": "number"
+                                    },
+                                    "offsetZ": {
+                                        "type": "number"
+                                    },
+                                    "preferenceTableId": {
+                                        "$ref": "#/Guid",
+                                        "description": "Available from Archicad 29."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": []
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": []
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "mepSystemId",
+                    "routingSegment",
+                    "routingNode"
+                ]
+            },
+            "flexibleSegment": {
+                "type": "object",
+                "description": "The flexible segment tool default.",
+                "properties": {
+                    "shape": {
+                        "$ref": "#/MEPCrossSectionShape"
+                    },
+                    "width": {
+                        "type": "number"
+                    },
+                    "height": {
+                        "type": "number"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "shape",
+                    "width",
+                    "height"
+                ]
+            },
+            "terminal": {
+                "$ref": "#/MEPElementDefaultDetails"
+            },
+            "accessory": {
+                "$ref": "#/MEPElementDefaultDetails"
+            },
+            "fitting": {
+                "$ref": "#/MEPElementDefaultDetails"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "domain"
         ]
     },
     "MEPPreferenceTableDomain": {
@@ -7150,12 +7387,61 @@
             },
             "elements": {
                 "$ref": "#/Elements"
+            },
+            "physicalSystemIds": {
+                "type": "array",
+                "description": "The physical systems of the distribution system. From Archicad 29; missing when Archicad could not tell.",
+                "items": {
+                    "$ref": "#/MEPPhysicalSystemId"
+                }
+            },
+            "tree": {
+                "type": "array",
+                "description": "The elements of the system from its root element on, in the order Archicad traverses them. Only returned when includeTree is true, and missing when Archicad could not traverse the system.",
+                "items": {
+                    "$ref": "#/MEPDistributionSystemTreeNode"
+                }
             }
         },
         "additionalProperties": false,
         "required": [
             "domain",
             "elements"
+        ]
+    },
+    "MEPDistributionSystemTreeNode": {
+        "type": "object",
+        "description": "An element of a distribution system tree.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "depth": {
+                "type": "integer",
+                "description": "The number of steps from the root element; 0 for the root element."
+            },
+            "previousElementId": {
+                "$ref": "#/ElementId",
+                "description": "The element before this one on the way from the root element. Missing for the root element."
+            },
+            "connectedPortIdOfPreviousElement": {
+                "type": "string",
+                "description": "The port of the previous element this element is connected to (see GetMEPPorts). Missing when Archicad gives none."
+            },
+            "connectedPortIdOfThisElement": {
+                "type": "string",
+                "description": "The port of this element that is connected to the previous element (see GetMEPPorts). Missing when Archicad gives none."
+            },
+            "nextElements": {
+                "$ref": "#/Elements",
+                "description": "The elements after this one, away from the root element."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "depth",
+            "nextElements"
         ]
     },
     "MEPPreferenceTable": {
