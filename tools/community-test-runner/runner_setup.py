@@ -129,6 +129,10 @@ def run(config_path: Path | str, yes: bool, claude_skill: bool) -> int:
                       f"({', '.join(str(p) for p in swap)}); keep one and run setup again, or the others load next "
                       "to every test build.")
             archicads.append(entry)
+    hidden = ask_yes("Start Archicad on a desktop of its own while testing, so it never takes the focus "
+                     "or covers your work?", all(a.get("hidden", True) for a in archicads), yes)
+    for entry in archicads:
+        entry["hidden"] = hidden
     cfg["archicads"] = archicads
 
     login = token_step(cfg, yes)
