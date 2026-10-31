@@ -3,7 +3,7 @@ Finds what changed in the project since a captured moment, instead of re-reading
 
 CaptureElementState stores a state of the project in the add-on and returns a stateId.
 GetElementChangesSince lists the elements created, modified and deleted since that state
-(or between two stored states). The states live in the add-on's memory only: they are gone
+(or between two stored states). The states only last for the Archicad session: they are gone
 when the project is closed or Archicad restarts, so capture a new one after that, and
 release the ones you no longer need.
 """

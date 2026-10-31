@@ -4,10 +4,10 @@
 
 // Element change tracking on top of the element difference generator of the Archicad API
 // (ACAPI_DifferenceGenerator_GetState / ACAPI_DifferenceGenerator_GenerateDifference,
-// APIdefs_ElementDifferenceGenerator.h). CaptureElementState stores a generator state in the
-// add-on's memory under a stateId; GetElementChangesSince compares a stored state with another
-// stored state or with the current one. The states are dropped by ReleaseElementState, when the
-// project is closed and when Archicad quits - they are never written to disk.
+// APIdefs_ElementDifferenceGenerator.h). CaptureElementState has the generator write a state to a
+// file in the temporary folder and keeps it under a stateId; GetElementChangesSince compares a
+// stored state with another stored state or with the current project. The states (and their
+// files) are dropped by ReleaseElementState, when the project is closed and when Archicad quits.
 
 class CaptureElementStateCommand : public CommandBase
 {
@@ -41,6 +41,6 @@ public:
 
 // Called from AddOnMain.cpp: Initialize installs the project event handler that drops every stored
 // state when the project is closed or another one is opened; FreeData drops them when the add-on
-// unloads, so the generator handles never outlive Archicad's own environment.
+// unloads, so the state files never outlive the Archicad session.
 GSErrCode InstallElementStateProjectEventHandler ();
 void      ReleaseAllElementStates ();

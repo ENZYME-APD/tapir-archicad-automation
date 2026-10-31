@@ -1,40 +1,59 @@
 #include "ElementChangeTrackingCommands.hpp"
 #include "MigrationHelper.hpp"
 
-#include <memory>
+#include "FileSystem.hpp"
 
 namespace {
 
-// A state captured by CaptureElementState, with the generator type it was captured with:
-// ACAPI_DifferenceGenerator_GenerateDifference takes one type for both of its states, so two
-// states captured with different types cannot be compared.
-// API_ElemDifferenceGeneratorState is not copyable, so the states are stored through pointers.
+// A state captured by CaptureElementState: the generator type it was captured with and the file
+// the generator wrote it to. ACAPI_DifferenceGenerator_GenerateDifference takes one type for both
+// of its states, so two states captured with different types cannot be compared. The states are
+// kept in files (APIDiffState_InFile), as the DevKit's Plan_Dump example does for every type: the
+// modification stamp based generator "operates only with file" (APIdefs_ElementDifferenceGenerator.h).
 struct StoredElementState {
     API_ElemDifferenceGeneratorTypeID type = APIDiff_ModificationStampBased;
-    API_ElemDifferenceGeneratorState  state {};
+    IO::Location                      fileLocation;
 };
 
 // Keyed by the stateId handed out by CaptureElementState. Every command runs on the main thread
 // (CommandBase::GetExecutionPolicy) and so does the project event handler, so no lock is needed.
-GS::HashTable<API_Guid, std::shared_ptr<StoredElementState>>& StoredStates ()
+GS::HashTable<API_Guid, StoredElementState>& StoredStates ()
 {
-    static GS::HashTable<API_Guid, std::shared_ptr<StoredElementState>> states;
+    static GS::HashTable<API_Guid, StoredElementState> states;
     return states;
 }
 
-StoredElementState* FindStoredState (const API_Guid& stateId)
+const StoredElementState* FindStoredState (const API_Guid& stateId)
 {
-    const std::shared_ptr<StoredElementState>* stored = StoredStates ().GetPtr (stateId);
-    return stored == nullptr ? nullptr : stored->get ();
+    return StoredStates ().GetPtr (stateId);
 }
 
-// ACAPI_DifferenceGenerator_GetState allocates the state handle; the caller frees it.
-void FreeState (API_ElemDifferenceGeneratorState& state)
+// <temporary folder>/Tapir/ElementStates/<stateId>: the stateId is a new GUID, so the states of
+// other Archicad instances never share a file.
+GSErrCode GetStateFileLocation (const API_Guid& stateId, API_ElemDifferenceGeneratorTypeID type, IO::Location& fileLocation)
 {
-    if (state.stateHdl != nullptr) {
-        BMKillHandle (&state.stateHdl);
-        state.stateHdl = nullptr;
+    GSErrCode err = IO::fileSystem.GetSpecialLocation (IO::FileSystem::TemporaryFolder, &fileLocation);
+    if (err != NoError) {
+        return err;
     }
+    fileLocation.AppendToLocal (IO::Name ("Tapir"));
+    fileLocation.AppendToLocal (IO::Name ("ElementStates"));
+    err = IO::fileSystem.CreateFolderTree (fileLocation);
+    if (err != NoError) {
+        return err;
+    }
+    // The modification stamp based state is a project file (Plan_Dump names it ForCompare.pln).
+    GS::UniString fileName = APIGuidToString (stateId);
+    if (type == APIDiff_ModificationStampBased) {
+        fileName += ".pln";
+    }
+    fileLocation.AppendToLocal (IO::Name (fileName));
+    return NoError;
+}
+
+void DeleteStateFile (const StoredElementState& stored)
+{
+    IO::fileSystem.Delete (stored.fileLocation);
 }
 
 bool ParseStateType (const GS::UniString& str, API_ElemDifferenceGeneratorTypeID& type)
@@ -47,10 +66,6 @@ bool ParseStateType (const GS::UniString& str, API_ElemDifferenceGeneratorTypeID
         type = APIDiff_3DModelBased;
         return true;
     }
-    if (str == "Context") {
-        type = APIDiff_ContextBased;
-        return true;
-    }
     return false;
 }
 
@@ -58,7 +73,6 @@ GS::UniString StateTypeToString (API_ElemDifferenceGeneratorTypeID type)
 {
     switch (type) {
         case APIDiff_3DModelBased:  return "3DModel";
-        case APIDiff_ContextBased:  return "Context";
         default:
         case APIDiff_ModificationStampBased: return "ModificationStamp";
     }
@@ -104,8 +118,8 @@ GSErrCode InstallElementStateProjectEventHandler ()
 
 void ReleaseAllElementStates ()
 {
-    StoredStates ().EnumerateValues ([] (const std::shared_ptr<StoredElementState>& stored) {
-        FreeState (stored->state);
+    StoredStates ().EnumerateValues ([] (const StoredElementState& stored) {
+        DeleteStateFile (stored);
     });
     StoredStates ().Clear ();
 }
@@ -127,11 +141,10 @@ GS::Optional<GS::UniString> CaptureElementStateCommand::GetInputParametersSchema
         "properties": {
             "type": {
                 "type": "string",
-                "description": "How GetElementChangesSince finds the changed elements between this state and another one. ModificationStamp (the default) compares the modification stamps of the elements, so any change to an element counts. 3DModel compares the 3D model of the elements, so only a change that alters the 3D model counts, and capturing it generates the 3D model of the project. Context is the context based difference generator of the Archicad API. Two states can only be compared when they were captured with the same type.",
+                "description": "How GetElementChangesSince finds the changed elements between this state and another one. ModificationStamp (the default) compares the modification stamps of the elements, so any change to an element counts. 3DModel compares the 3D model of the elements, so only a change that alters the 3D model counts, and capturing it generates the 3D model of the project. Two states can only be compared when they were captured with the same type.",
                 "enum": [
                     "ModificationStamp",
-                    "3DModel",
-                    "Context"
+                    "3DModel"
                 ]
             }
         },
@@ -163,8 +176,7 @@ GS::Optional<GS::UniString> CaptureElementStateCommand::GetRawResponseSchema () 
                 "description": "The type the state was captured with.",
                 "enum": [
                     "ModificationStamp",
-                    "3DModel",
-                    "Context"
+                    "3DModel"
                 ]
             }
         },
@@ -181,26 +193,34 @@ GS::ObjectState CaptureElementStateCommand::Execute (const GS::ObjectState& para
     GS::UniString typeStr = "ModificationStamp";
     parameters.Get ("type", typeStr);
 
-    const std::shared_ptr<StoredElementState> stored = std::make_shared<StoredElementState> ();
-    if (!ParseStateType (typeStr, stored->type)) {
+    StoredElementState stored;
+    if (!ParseStateType (typeStr, stored.type)) {
         return CreateErrorResponse (APIERR_BADPARS,
-            GS::UniString::Printf ("Invalid type '%T'. Use ModificationStamp, 3DModel or Context.", typeStr.ToPrintf ()));
-    }
-
-    const GSErrCode err = ACAPI_DifferenceGenerator_GetState (stored->type, &stored->state);
-    if (err != NoError) {
-        FreeState (stored->state);
-        return CreateErrorResponse (err, GS::UniString::Printf ("Failed to capture the %T based element state.", StateTypeToString (stored->type).ToPrintf ()));
+            GS::UniString::Printf ("Invalid type '%T'. Use ModificationStamp or 3DModel.", typeStr.ToPrintf ()));
     }
 
     GS::Guid guid;
     guid.Generate ();
     const API_Guid stateId = GSGuid2APIGuid (guid);
+
+    GSErrCode err = GetStateFileLocation (stateId, stored.type, stored.fileLocation);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to create the folder of the element states in the temporary folder.");
+    }
+
+    API_ElemDifferenceGeneratorState state;
+    state.stateType = APIDiffState_InFile;
+    state.fileLocation = stored.fileLocation;
+    err = ACAPI_DifferenceGenerator_GetState (stored.type, &state);
+    if (err != NoError) {
+        DeleteStateFile (stored);
+        return CreateErrorResponse (err, GS::UniString::Printf ("Failed to capture the %T based element state.", StateTypeToString (stored.type).ToPrintf ()));
+    }
     StoredStates ().Add (stateId, stored);
 
     GS::ObjectState response;
     response.Add ("stateId", CreateGuidObjectState (stateId));
-    response.Add ("type", StateTypeToString (stored->type));
+    response.Add ("type", StateTypeToString (stored.type));
     return response;
 }
 
@@ -287,19 +307,23 @@ GS::ObjectState GetElementChangesSinceCommand::Execute (const GS::ObjectState& p
         return CreateErrorResponse (APIERR_BADPARS, "stateId is required.");
     }
     const API_Guid fromStateId = GetGuidFromObjectState (*stateIdOS);
-    StoredElementState* from = FindStoredState (fromStateId);
+    const StoredElementState* from = FindStoredState (fromStateId);
     if (from == nullptr) {
         return UnknownStateIdError ("stateId", fromStateId);
     }
 
-    // Without toStateId the comparison runs against the project as it is now: that state is
-    // captured here and freed right after, it is not stored.
-    StoredElementState currentState;
-    StoredElementState* to = nullptr;
+    API_ElemDifferenceGeneratorState fromState;
+    fromState.stateType = APIDiffState_InFile;
+    fromState.fileLocation = from->fileLocation;
+
+    // Without toStateId the comparison runs against the project as it is now
+    // (APIDiffState_CurrentProject, which needs no ACAPI_DifferenceGenerator_GetState call).
+    API_ElemDifferenceGeneratorState toState;
+    toState.stateType = APIDiffState_CurrentProject;
     const GS::ObjectState* toStateIdOS = parameters.Get ("toStateId");
     if (toStateIdOS != nullptr) {
         const API_Guid toStateId = GetGuidFromObjectState (*toStateIdOS);
-        to = FindStoredState (toStateId);
+        const StoredElementState* to = FindStoredState (toStateId);
         if (to == nullptr) {
             return UnknownStateIdError ("toStateId", toStateId);
         }
@@ -308,19 +332,12 @@ GS::ObjectState GetElementChangesSinceCommand::Execute (const GS::ObjectState& p
                 GS::UniString::Printf ("stateId was captured with type %T and toStateId with type %T; only states of the same type can be compared.",
                     StateTypeToString (from->type).ToPrintf (), StateTypeToString (to->type).ToPrintf ()));
         }
-    } else {
-        currentState.type = from->type;
-        const GSErrCode err = ACAPI_DifferenceGenerator_GetState (currentState.type, &currentState.state);
-        if (err != NoError) {
-            FreeState (currentState.state);
-            return CreateErrorResponse (err, GS::UniString::Printf ("Failed to capture the current %T based element state.", StateTypeToString (currentState.type).ToPrintf ()));
-        }
-        to = &currentState;
+        toState.stateType = APIDiffState_InFile;
+        toState.fileLocation = to->fileLocation;
     }
 
     API_ElemDifference difference {};
-    const GSErrCode err = ACAPI_DifferenceGenerator_GenerateDifference (from->type, &from->state, &to->state, difference);
-    FreeState (currentState.state);
+    const GSErrCode err = ACAPI_DifferenceGenerator_GenerateDifference (from->type, &fromState, &toState, difference);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to generate the difference between the two element states.");
     }
@@ -382,12 +399,12 @@ GS::ObjectState ReleaseElementStateCommand::Execute (const GS::ObjectState& para
         return CreateFailedExecutionResult (APIERR_BADPARS, "stateId is required.");
     }
     const API_Guid stateId = GetGuidFromObjectState (*stateIdOS);
-    StoredElementState* stored = FindStoredState (stateId);
+    const StoredElementState* stored = FindStoredState (stateId);
     if (stored == nullptr) {
         return CreateFailedExecutionResult (UnknownStateIdError ("stateId", stateId));
     }
 
-    FreeState (stored->state);
+    DeleteStateFile (*stored);
     StoredStates ().Delete (stateId);
     return CreateSuccessfulExecutionResult ();
 }
