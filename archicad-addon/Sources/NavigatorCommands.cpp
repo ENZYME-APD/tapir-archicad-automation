@@ -2146,7 +2146,7 @@ GS::Optional<GS::UniString> SetZoomCommand::GetInputParametersSchema () const
         "properties": {
             "zoomBox": {
                 "$ref": "#/Zoom",
-                "description": "The area to zoom the current 2D window to, in model coordinates (meters). The window keeps its aspect ratio, so the shown area may be larger than the box."
+                "description": "The area to zoom the current 2D window to, in model coordinates (meters). The window keeps its aspect ratio, so the shown area may be larger than the box. The rotation of the window is kept as it is."
             }
         },
         "additionalProperties": false,
@@ -2187,7 +2187,17 @@ GS::ObjectState SetZoomCommand::Execute (const GS::ObjectState& parameters, GS::
         return CreateFailedExecutionResult (APIERR_BADDATABASE, "The current window is the 3D window; SetZoom works only in 2D windows.");
     }
 
-    err = ACAPI_View_SetZoom (&zoomBox);
+    // Without a transformation matrix ACAPI_View_SetZoom resets the rotation of the
+    // window (for example of a rotated floor plan) to zero, so the current one is
+    // read and passed back to keep the rotation as it is (issue #1692).
+    API_Box     currentZoomBox = {};
+    API_Tranmat currentTranmat = {};
+    err = ACAPI_View_GetZoom (&currentZoomBox, &currentTranmat);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get the current zoom and rotation of the current window.");
+    }
+
+    err = ACAPI_View_SetZoom (&zoomBox, &currentTranmat);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to set the zoom of the current window.");
     }
