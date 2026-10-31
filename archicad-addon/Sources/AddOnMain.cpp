@@ -1690,6 +1690,10 @@ GSErrCode Initialize (void)
             libraryCommands, "1.7.3",
             "Creates a new library part file (.gsm) of the given loaded subtype, inheriting its parameters, and reports whether it is loaded with its index and names. Available from Archicad 28."
         );
+        err |= RegisterCommand<SetLibraryPartPictureImagesCommand> (
+            libraryCommands, "1.7.4",
+            "Sets the preview picture and the GDL pictures of a loaded library part from base64 encoded PNGs, and from Archicad 29 also their dark user interface variants. All pictures are set in one step; an invalid picture changes nothing. A library part that is not editable is refused and left unchanged. Available from Archicad 28."
+        );
         AddCommandGroup (libraryCommands);
     }
 
