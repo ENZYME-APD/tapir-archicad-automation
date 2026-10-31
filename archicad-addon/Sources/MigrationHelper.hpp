@@ -1027,6 +1027,27 @@ inline GSErrCode TAPIR_Element_SetPropertiesOfDefaultElem (const API_Elem_Head& 
 #endif
 }
 
+// The tool defaults of a plain element type (generic variation): since AC26 the API takes
+// an API_ElemType, which an API_ElemTypeID converts to; before that the typeID and the
+// variationID are separate arguments.
+inline GSErrCode TAPIR_Element_GetPropertyValuesOfDefaultElem (API_ElemTypeID typeID, const GS::Array<API_PropertyDefinition>& propertyDefinitions, GS::Array<API_Property>& properties)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_GetPropertyValuesOfDefaultElem (typeID, propertyDefinitions, properties);
+#else
+    return ACAPI_Element_GetPropertyValuesOfDefaultElem (typeID, APIVarId_Generic, propertyDefinitions, properties);
+#endif
+}
+
+inline GSErrCode TAPIR_Element_SetPropertyOfDefaultElem (API_ElemTypeID typeID, const API_Property& property)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_SetPropertyOfDefaultElem (typeID, property);
+#else
+    return ACAPI_Element_SetPropertyOfDefaultElem (typeID, APIVarId_Generic, property);
+#endif
+}
+
 // API_OverriddenAttribute accepts an API_AttributeIndex directly since AC27;
 // before that it is a plain struct { attributeIndex, overridden }.
 inline void SetOverriddenAttribute (API_OverriddenAttribute& target, const API_AttributeIndex& index)
