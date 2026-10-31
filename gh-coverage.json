@@ -1,13 +1,13 @@
 {
- "generatedAt": "2026-10-31 09:00 UTC",
+ "generatedAt": "2026-10-31 09:57 UTC",
  "counts": {
   "done": 303,
-  "merged": 208,
-  "in progress": 44,
+  "merged": 227,
+  "in progress": 25,
   "not applicable": 1
  },
  "parameters": {
-  "all": 464,
+  "all": 483,
   "partial": 1,
   "json": 46
  },
@@ -13445,19 +13445,19 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Retrieves the Structural Analytical Model created for the current view. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetCurrentAnalyticalModelComponent",
+     "path": "Components/AnalyticalComponents/GetCurrentAnalyticalModelComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1683,
-     "title": "Grasshopper: analytical model and load commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13465,19 +13465,21 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Triggers an update of the given Structural Analytical Model, or of the model of the current view when no model is given. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1683,
-     "title": "Grasshopper: analytical model and load commands"
+     "name": "UpdateAnalyticalModelComponent",
+     "path": "Components/AnalyticalComponents/UpdateAnalyticalModelComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "analyticalModelId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13485,19 +13487,19 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Sets the generation settings of the current Structural Analytical Model to no rules. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "SetAnalyticalGenerationSettingsToNoRuleComponent",
+     "path": "Components/AnalyticalComponents/SetAnalyticalGenerationSettingsToNoRuleComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1683,
-     "title": "Grasshopper: analytical model and load commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13505,19 +13507,19 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Retrieves the type identifier of the Structural Analytical Model check. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetAnalyticalModelCheckTypeIdComponent",
+     "path": "Components/AnalyticalComponents/GetAnalyticalModelCheckTypeIdComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1683,
-     "title": "Grasshopper: analytical model and load commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13525,19 +13527,21 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Retrieves the variation of the given Structural Analytical Model, or of the model of the current view when no model is given (the model is required before Archicad 27). The fields of the variation depend on the Archicad version.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1683,
-     "title": "Grasshopper: analytical model and load commands"
+     "name": "GetAnalyticalModelVariationComponent",
+     "path": "Components/AnalyticalComponents/GetAnalyticalModelVariationComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "analyticalModelId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13545,19 +13549,21 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Retrieves the Structural Analytical Model of the given variation, as returned by GetAnalyticalModelVariation.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1683,
-     "title": "Grasshopper: analytical model and load commands"
+     "name": "GetAnalyticalModelComponent",
+     "path": "Components/AnalyticalComponents/GetAnalyticalModelComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "variation"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13565,19 +13571,19 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Retrieves the visibility settings of the Structural Analytical Model. Available from Archicad 26.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetAnalyticalVisibilitySettingsComponent",
+     "path": "Components/AnalyticalComponents/GetAnalyticalVisibilitySettingsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1683,
-     "title": "Grasshopper: analytical model and load commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13585,19 +13591,21 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Changes the given fields of the Structural Analytical Model visibility settings; the others keep their value. Available from Archicad 26.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1683,
-     "title": "Grasshopper: analytical model and load commands"
+     "name": "SetAnalyticalVisibilitySettingsComponent",
+     "path": "Components/AnalyticalComponents/SetAnalyticalVisibilitySettingsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "visibilitySettings"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13605,19 +13613,21 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Retrieves the analytical member type (Beam, Column, Roof, Slab, Wall or Unknown) of the given elements.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1683,
-     "title": "Grasshopper: analytical model and load commands"
+     "name": "GetAnalyticalMemberTypesOfElementsComponent",
+     "path": "Components/AnalyticalComponents/GetAnalyticalMemberTypesOfElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13625,19 +13635,19 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Retrieves the structural analysis load groups of the project with all their fields.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetAnalyticalLoadGroupsComponent",
+     "path": "Components/AnalyticalComponents/GetAnalyticalLoadGroupsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1683,
-     "title": "Grasshopper: analytical model and load commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13645,19 +13655,21 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Retrieves the structural analysis load cases of the given load group, or of the project when no load group is given, with all their fields.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1683,
-     "title": "Grasshopper: analytical model and load commands"
+     "name": "GetAnalyticalLoadCasesComponent",
+     "path": "Components/AnalyticalComponents/GetAnalyticalLoadCasesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "loadGroupId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13665,19 +13677,19 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Retrieves the structural analysis load combinations of the project with all their fields and load factors.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetAnalyticalLoadCombinationsComponent",
+     "path": "Components/AnalyticalComponents/GetAnalyticalLoadCombinationsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1683,
-     "title": "Grasshopper: analytical model and load commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13685,19 +13697,25 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Creates structural analysis load groups in one undo step and returns their identifiers.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 5,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1683,
-     "title": "Grasshopper: analytical model and load commands"
+     "name": "CreateAnalyticalLoadGroupsComponent",
+     "path": "Components/AnalyticalComponents/CreateAnalyticalLoadGroupsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 5,
+   "coveredParameters": [
+    "loadGroups",
+    "loadGroups.groupType",
+    "loadGroups.loadType",
+    "loadGroups.name",
+    "loadGroups.relation"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13705,19 +13723,27 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Creates structural analysis load cases in the given load groups in one undo step and returns their identifiers.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 7,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1683,
-     "title": "Grasshopper: analytical model and load commands"
+     "name": "CreateAnalyticalLoadCasesComponent",
+     "path": "Components/AnalyticalComponents/CreateAnalyticalLoadCasesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 7,
+   "coveredParameters": [
+    "loadCases",
+    "loadCases.actionType",
+    "loadCases.description",
+    "loadCases.duration",
+    "loadCases.loadGroupId",
+    "loadCases.loadType",
+    "loadCases.name"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13725,19 +13751,27 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Creates structural analysis load combinations, optionally with their load factors, in one undo step and returns their identifiers. The combination type is available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 7,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1683,
-     "title": "Grasshopper: analytical model and load commands"
+     "name": "CreateAnalyticalLoadCombinationsComponent",
+     "path": "Components/AnalyticalComponents/CreateAnalyticalLoadCombinationsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 7,
+   "coveredParameters": [
+    "loadCombinations",
+    "loadCombinations.category",
+    "loadCombinations.description",
+    "loadCombinations.loadFactors",
+    "loadCombinations.name",
+    "loadCombinations.nationalStandard",
+    "loadCombinations.type"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13745,19 +13779,22 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Deletes the given structural analysis load groups in one undo step.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1683,
-     "title": "Grasshopper: analytical model and load commands"
+     "name": "DeleteAnalyticalLoadGroupsComponent",
+     "path": "Components/AnalyticalComponents/DeleteAnalyticalLoadGroupsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "loadGroupIds",
+    "loadGroupIds.loadGroupId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13765,19 +13802,22 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Deletes the given structural analysis load cases in one undo step.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1683,
-     "title": "Grasshopper: analytical model and load commands"
+     "name": "DeleteAnalyticalLoadCasesComponent",
+     "path": "Components/AnalyticalComponents/DeleteAnalyticalLoadCasesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "loadCaseIds",
+    "loadCaseIds.loadCaseId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13785,19 +13825,22 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Deletes the given structural analysis load combinations in one undo step.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1683,
-     "title": "Grasshopper: analytical model and load commands"
+     "name": "DeleteAnalyticalLoadCombinationsComponent",
+     "path": "Components/AnalyticalComponents/DeleteAnalyticalLoadCombinationsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "loadCombinationIds",
+    "loadCombinationIds.loadCombinationId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13805,19 +13848,22 @@
    "group": "Analytical Commands",
    "version": "1.7.3",
    "brief": "Adds load cases with their factors to the given structural analysis load combination in one undo step.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1683,
-     "title": "Grasshopper: analytical model and load commands"
+     "name": "AddLoadCasesToLoadCombinationComponent",
+     "path": "Components/AnalyticalComponents/AddLoadCasesToLoadCombinationComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "loadCombinationId",
+    "loadFactors"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {

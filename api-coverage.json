@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-31 09:00 UTC",
+ "generatedAt": "2026-10-31 09:57 UTC",
  "versions": [
   25,
   26,
@@ -13,8 +13,8 @@
   "done": 1099,
   "claimed": 53,
   "merged": 606,
-  "open": 93,
-  "in progress": 399,
+  "open": 94,
+  "in progress": 398,
   "skipped": 2
  },
  "items": [
@@ -4812,10 +4812,6 @@
     {
      "number": 956,
      "title": "Add BreakHotlinkNodes and DeleteHotlinkNodes, report hotlink source status"
-    },
-    {
-     "number": 954,
-     "title": "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"
     },
     {
      "number": 912,
@@ -23341,14 +23337,9 @@
    "olderNames": [
     "APIEnv_SetCurrent3DStyleID"
    ],
-   "status": "in progress",
+   "status": "open",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 954,
-     "title": "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31716,6 +31707,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1705,
+     "title": "GetAllFavorites: don't crash on analytical support favorites"
+    },
     {
      "number": 1542,
      "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
