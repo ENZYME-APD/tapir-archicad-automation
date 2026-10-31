@@ -650,6 +650,11 @@ inline GSErrCode ACAPI_LibraryPart_GetBuiltInLibpartUnId (short resId, char* unI
     return ACAPI_Goodies (APIAny_GetBuiltInLibpartUnIdID, (void*)(Int64)resId, unId);
 }
 
+inline GSErrCode ACAPI_LibraryPart_GetUnloadedLibpartName (const API_Guid* guid, GS::UniString* name)
+{
+    return ACAPI_Goodies (APIAny_GetUnloadedLibpartNameID, (void*) guid, name);
+}
+
 inline GSErrCode ACAPI_LibraryManagement_RunGDLParScript (const API_Elem_Head* elemHead, UInt32 mask = 0)
 {
     return ACAPI_Goodies (APIAny_RunGDLParScriptID, (void*) elemHead, (void*) (GS::IntPtr) mask);
