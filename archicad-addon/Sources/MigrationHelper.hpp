@@ -48,8 +48,8 @@
 #define ACAPI_Teamwork_GetHotlinkCacheManagementOwner ACAPI_TeamworkControl_GetHotlinkCacheManagementOwner
 #define ACAPI_Teamwork_HasConnection ACAPI_TeamworkControl_HasConnection
 #define ACAPI_Teamwork_ProjectSharing(par1) ACAPI_Environment (APIEnv_ProjectSharingID, par1)
-// par1 must be a variable: the old call takes the address of the right, the new one the right itself.
-#define ACAPI_Teamwork_GetTWAccessRight(par1, par2) ACAPI_Environment (APIEnv_GetTWAccessRightID, &par1, par2)
+// The old call takes the right itself in par1 (as in the AC27 ACAPI_MigrationHeader.hpp), cast to a pointer.
+#define ACAPI_Teamwork_GetTWAccessRight(par1, par2) ACAPI_Environment (APIEnv_GetTWAccessRightID, reinterpret_cast<void*> (static_cast<GS::IntPtr> (par1)), par2)
 
 #define ACAPI_UserInput_SetElementHighlight ACAPI_Interface_SetElementHighlight
 #define ACAPI_UserInput_ClearElementHighlight ACAPI_Interface_ClearElementHighlight
