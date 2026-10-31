@@ -6498,6 +6498,13 @@
                     "TableValue"
                 ]
             },
+            "enumerationReference": {
+                "type": "array",
+                "description": "For an enumerated value, the values of the enumeration it refers to (IfcPropertyEnumeration), each as a string. Available from Archicad 28; left out when the property has none.",
+                "items": {
+                    "type": "string"
+                }
+            },
             "source": {
                 "type": "string",
                 "description": "Where the property comes from: preview for the properties mapped by the preview IFC export translator, local for the IFC properties stored in the element. Available from Archicad 28.",
@@ -6512,6 +6519,32 @@
             "propertySetName",
             "name",
             "value"
+        ]
+    },
+    "IFCObject": {
+        "type": "object",
+        "description": "An object of the IFC model of the project, as the IFC API of Archicad 28 and later identifies it.",
+        "properties": {
+            "hashValue": {
+                "type": "integer",
+                "description": "The hash value of the IFC object identifier (ObjectID::GenerateHashValue), for matching the objects of one response to each other. It is not stable between sessions; use elementId or globalId to identify an object."
+            },
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "The element the IFC object belongs to. Left out when Archicad reports no element for it."
+            },
+            "ifcType": {
+                "type": "string",
+                "description": "The IFC entity type of the object, for example IfcWall. Left out when Archicad does not report it."
+            },
+            "globalId": {
+                "type": "string",
+                "description": "The IFC GlobalId of the object. Left out when Archicad does not report it."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hashValue"
         ]
     },
     "ElementIFCProperties": {
