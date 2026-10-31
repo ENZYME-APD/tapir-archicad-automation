@@ -540,6 +540,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.7.3",
             "Gets the localized names of the given element types, as the running Archicad shows them (for example 'Wand' for Wall in German Archicad). The output is aligned with the input array of element types. Available from Archicad 27."
         );
+        err |= RegisterCommand<GetElementsInCreationOrderCommand> (
+            elementCommands, "1.7.4",
+            "Returns the identifier of every element of the current database, or of the given databases, in the order the elements were created."
+        );
         err |= RegisterCommand<ChangeSelectionOfElementsCommand> (
             elementCommands, "1.0.7",
             "Adds/removes a number of elements to/from the current selection."
