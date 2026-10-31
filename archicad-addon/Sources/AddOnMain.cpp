@@ -1662,6 +1662,14 @@ GSErrCode Initialize (void)
             libraryCommands, "1.7.3",
             "Checks whether each of the given strings is usable in GDL, e.g. before writing it into a GDL parameter or script. Returns one boolean for each string."
         );
+        err |= RegisterCommand<CheckLibrariesCommand> (
+            libraryCommands, "1.7.4",
+            "Checks the loaded libraries with the Archicad API's library check. Returns the error the API reports, if any."
+        );
+        err |= RegisterCommand<ResetLibrariesCommand> (
+            libraryCommands, "1.7.4",
+            "Resets the loaded libraries with the Archicad API's library reset."
+        );
         err |= RegisterCommand<SetLibraryPartScriptsCommand> (
             libraryCommands, "1.7.3",
             "Sets and deletes the master, parameter, 2D, 3D, properties, interface and forward and backward migration scripts of loaded library parts. Only the given scripts are changed; an empty script makes the section empty, deleteScripts removes it. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. Available from Archicad 28."

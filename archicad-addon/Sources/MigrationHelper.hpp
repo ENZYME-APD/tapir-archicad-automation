@@ -497,6 +497,16 @@ inline GSErrCode ACAPI_LibraryManagement_SetLibraries (const GS::Array<API_Libra
     return ACAPI_Environment (APIEnv_SetLibrariesID, (void*) activeLibs);
 }
 
+inline GSErrCode ACAPI_LibraryManagement_CheckLibraries ()
+{
+    return ACAPI_Environment (APIEnv_CheckLibrariesID, nullptr);
+}
+
+inline GSErrCode ACAPI_LibraryManagement_ResetLibraries ()
+{
+    return ACAPI_Environment (APIEnv_ResetLibrariesID, nullptr);
+}
+
 inline GSErrCode ACAPI_LibraryManagement_CreateFolderInLibrary (const IO::Location* newFolderLocationInLibrary)
 {
     return ACAPI_Environment (APIEnv_CreateFolderInLibraryID, (void*) newFolderLocationInLibrary);
