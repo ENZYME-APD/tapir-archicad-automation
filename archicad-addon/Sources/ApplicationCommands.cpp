@@ -2318,6 +2318,38 @@ GS::ObjectState GetElementFromUserCommand::Execute (const GS::ObjectState& param
     }
 }
 
+GetDialogAutoCloseCommand::GetDialogAutoCloseCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetDialogAutoCloseCommand::GetName () const
+{
+    return "GetDialogAutoClose";
+}
+
+GS::Optional<GS::UniString> GetDialogAutoCloseCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "enabled": {
+                "type": "boolean",
+                "description": "Whether the dialog auto close is on: true while Archicad closes the dialogs it would show with their default button instead of waiting for the user. This is the same state SetDialogAutoClose writes."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "enabled"
+        ]
+    })";
+}
+
+GS::ObjectState GetDialogAutoCloseCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    return GS::ObjectState ("enabled", DGIsAutoCloseEnabled ());
+}
+
 SetDialogAutoCloseCommand::SetDialogAutoCloseCommand () :
     CommandBase (CommonSchema::Used)
 {
