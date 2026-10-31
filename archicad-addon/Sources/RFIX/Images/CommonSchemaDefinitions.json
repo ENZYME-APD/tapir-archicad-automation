@@ -11865,7 +11865,7 @@
                 },
                 "folderPath": {
                     "type": "array",
-                    "description": "The names of the attribute folders from the root folder of the attribute type down to the folder holding the attribute, the root folder itself not included. An empty array is the root folder. Attribute folders exist from Archicad 26, so before that the array is always empty.",
+                    "description": "The names of the attribute folders from the root folder of the attribute type down to the folder holding the attribute, the root folder itself not included. An empty array is the root folder. Attribute folders exist from Archicad 26, so before that the array is always empty. GetAttributesByType always returns it; GetAttributesFromProject, which reads another file, does not.",
                     "items": {
                         "type": "string"
                     }
@@ -11883,7 +11883,6 @@
                 "attributeId",
                 "index",
                 "name",
-                "folderPath",
                 "modificationTime"
             ]
 
