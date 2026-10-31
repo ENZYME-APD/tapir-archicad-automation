@@ -1,3 +1,13 @@
+// GDLDefs.h MUST be included before LibraryCommands.hpp/ACAPinc.h: included afterward it fails to
+// parse ("no member named 'GS' in namespace 'GS'"), as ExtendedElementCommands.cpp notes for MeshBody.hpp.
+// The standard headers come first: GSRoot.hpp, pulled in by GDLDefs.h, redefines realloc as GS_realloc,
+// which breaks libc++'s <locale> (reached through <functional>) when it is parsed afterward (AC27 Mac).
+#include <functional>
+#include <locale>
+#include <vector>
+
+#include "GDLDefs.h"
+
 #include "LibraryCommands.hpp"
 #include "ObjectState.hpp"
 #include "MigrationHelper.hpp"
@@ -45,8 +55,7 @@ static bool LibPartTypeIdFromString (const GS::UniString& typeStr, API_LibTypeID
 #include "ACAPI/Library/LibraryManager.hpp"
 #include "ACAPI/Library/LibPart.hpp"
 #include "ACAPI/Library/GSMObject.hpp"
-
-#include <functional>
+#include "GDLParamInterface.hpp"
 
 using ACAPI::Library::GSMObject;
 
@@ -2304,6 +2313,341 @@ GS::ObjectState SetLibraryPartMetadataCommand::Execute (const GS::ObjectState& p
         }
         return NoError;
     });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
+}
+
+#ifdef ServerMainVers_2800
+
+namespace {
+
+// Which getter of GDL::Parameters reads a value of the type, and its JSON form.
+enum class LibPartParameterValueKind {
+    None,
+    Integer,
+    Number,
+    OnOff,
+    Boolean,
+    String
+};
+
+}
+
+// The type name is the one GetGDLParametersOfElements uses.
+static LibPartParameterValueKind GetLibPartParameterValueKind (short type, const char** typeName)
+{
+    // GetVarType returns the ParT_ codes of GDLDefs.h, which differ from API_AddParID.
+    switch (type) {
+        case ParT_Integer:          *typeName = "Integer";          return LibPartParameterValueKind::Integer;
+        case ParT_Length:           *typeName = "Length";           return LibPartParameterValueKind::Number;
+        case ParT_Angle:            *typeName = "Angle";            return LibPartParameterValueKind::Number;
+        case ParT_RealNum:          *typeName = "RealNumber";       return LibPartParameterValueKind::Number;
+        case ParT_LightSw:          *typeName = "LightSwitch";      return LibPartParameterValueKind::OnOff;
+        case ParT_ColRGB:           *typeName = "RGBColor";         return LibPartParameterValueKind::Number;
+        case ParT_Intens:           *typeName = "Intensity";        return LibPartParameterValueKind::Number;
+        case ParT_LineTyp:          *typeName = "LineType";         return LibPartParameterValueKind::Integer;
+        case ParT_Mater:            *typeName = "Material";         return LibPartParameterValueKind::Integer;
+        case ParT_FillPat:          *typeName = "FillPattern";      return LibPartParameterValueKind::Integer;
+        case ParT_PenCol:           *typeName = "PenColor";         return LibPartParameterValueKind::Integer;
+        case ParT_CString:          *typeName = "String";           return LibPartParameterValueKind::String;
+        case ParT_Boolean:          *typeName = "Boolean";          return LibPartParameterValueKind::Boolean;
+        case ParT_BuildingMaterial: *typeName = "BuildingMaterial"; return LibPartParameterValueKind::Integer;
+        case ParT_Profile:          *typeName = "Profile";          return LibPartParameterValueKind::Integer;
+        default:                    *typeName = nullptr;            return LibPartParameterValueKind::None;
+    }
+}
+
+// The parameters of the list in the format of GetGDLParametersOfElements: name, type, value and,
+// for an array, dimension1 and dimension2 with its items as a flat list, the first index outer.
+// Separators, titles and dictionaries have no value read this way, so they are left out.
+// The description is the one of the same index in `descriptions`, when there is one.
+static GS::Array<GS::ObjectState> LibPartParametersToObjectStates (const GDL::Parameters& gdlParameters, const std::vector<GS::UniString>& descriptions)
+{
+    GS::Array<GS::ObjectState> result;
+    const Int32 varNumber = gdlParameters.GetVarNumber ();
+    for (Int32 index = 0; index < varNumber; ++index) {
+        bool isArray = false;
+        Int32 dim1 = 0;
+        Int32 dim2 = 0;
+        const short type = gdlParameters.GetVarType (index, &isArray, &dim1, &dim2);
+        const char* typeName = nullptr;
+        const LibPartParameterValueKind kind = GetLibPartParameterValueKind (type, &typeName);
+        const char* name = gdlParameters.GetVarNameRef (index);
+        if (kind == LibPartParameterValueKind::None || name == nullptr) {
+            continue;
+        }
+
+        GS::ObjectState parameter;
+        parameter.Add ("name", GS::String (name));
+        parameter.Add ("type", GS::String (typeName));
+
+        if (!isArray) {
+            switch (kind) {
+                case LibPartParameterValueKind::Integer:
+                    parameter.Add ("value", gdlParameters.GetIntVar (index));
+                    break;
+                case LibPartParameterValueKind::Number:
+                    parameter.Add ("value", gdlParameters.GetNumVar (index));
+                    break;
+                case LibPartParameterValueKind::OnOff:
+                    parameter.Add ("value", GS::String (gdlParameters.GetNumVar (index) == 0.0 ? "Off" : "On"));
+                    break;
+                case LibPartParameterValueKind::Boolean:
+                    parameter.Add ("value", gdlParameters.GetBoolVar (index));
+                    break;
+                case LibPartParameterValueKind::String: {
+                    GS::UniString value;
+                    gdlParameters.GetUStrVar (index, value);
+                    parameter.Add ("value", value);
+                    break;
+                }
+                default:
+                    break;
+            }
+        } else {
+            // A one-dimensional array has no second dimension; its items are read as the first column.
+            const Int32 columns = dim2 > 0 ? dim2 : 1;
+            parameter.Add ("dimension1", dim1);
+            parameter.Add ("dimension2", columns);
+            switch (kind) {
+                case LibPartParameterValueKind::Integer: {
+                    const auto& itemAdder = parameter.AddList<Int32> ("value");
+                    for (Int32 i1 = 1; i1 <= dim1; ++i1) {
+                        for (Int32 i2 = 1; i2 <= columns; ++i2) {
+                            itemAdder (gdlParameters.GetIntArrayVal (index, i1, i2));
+                        }
+                    }
+                    break;
+                }
+                case LibPartParameterValueKind::Number: {
+                    const auto& itemAdder = parameter.AddList<double> ("value");
+                    for (Int32 i1 = 1; i1 <= dim1; ++i1) {
+                        for (Int32 i2 = 1; i2 <= columns; ++i2) {
+                            itemAdder (gdlParameters.GetNumArrayVal (index, i1, i2));
+                        }
+                    }
+                    break;
+                }
+                case LibPartParameterValueKind::OnOff: {
+                    const auto& itemAdder = parameter.AddList<GS::String> ("value");
+                    for (Int32 i1 = 1; i1 <= dim1; ++i1) {
+                        for (Int32 i2 = 1; i2 <= columns; ++i2) {
+                            itemAdder (GS::String (gdlParameters.GetNumArrayVal (index, i1, i2) == 0.0 ? "Off" : "On"));
+                        }
+                    }
+                    break;
+                }
+                case LibPartParameterValueKind::Boolean: {
+                    const auto& itemAdder = parameter.AddList<bool> ("value");
+                    for (Int32 i1 = 1; i1 <= dim1; ++i1) {
+                        for (Int32 i2 = 1; i2 <= columns; ++i2) {
+                            itemAdder (gdlParameters.GetBoolArrayVal (index, i1, i2));
+                        }
+                    }
+                    break;
+                }
+                case LibPartParameterValueKind::String: {
+                    const auto& itemAdder = parameter.AddList<GS::UniString> ("value");
+                    for (Int32 i1 = 1; i1 <= dim1; ++i1) {
+                        for (Int32 i2 = 1; i2 <= columns; ++i2) {
+                            GS::UniString value;
+                            gdlParameters.GetUStrArrayVal (index, i1, i2, value);
+                            itemAdder (value);
+                        }
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+
+        if (static_cast<size_t> (index) < descriptions.size ()) {
+            parameter.Add ("description", descriptions[static_cast<size_t> (index)]);
+        }
+        result.Push (parameter);
+    }
+    return result;
+}
+
+#endif
+
+GetLibraryPartParameterValuesCommand::GetLibraryPartParameterValuesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetLibraryPartParameterValuesCommand::GetName () const
+{
+    return "GetLibraryPartParameterValues";
+}
+
+GS::Optional<GS::UniString> GetLibraryPartParameterValuesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "description": "The library parts to read.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm')."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryParts"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetLibraryPartParameterValuesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "description": "The default parameters of each given library part, in the order of the input, or an error for a library part that could not be read.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "The name of the library part, as given."
+                                },
+                                "parameters": {
+                                    "type": "array",
+                                    "description": "The parameters of the library part with their default values, in the format of GetGDLParametersOfElements. Separators, titles and dictionary parameters have no value here and are left out.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "description": "The name of the parameter."
+                                            },
+                                            "type": {
+                                                "type": "string",
+                                                "enum": ["Integer", "Length", "Angle", "RealNumber", "LightSwitch", "RGBColor", "Intensity", "LineType", "Material", "FillPattern", "PenColor", "String", "Boolean", "BuildingMaterial", "Profile"],
+                                                "description": "The type of the parameter."
+                                            },
+                                            "dimension1": {
+                                                "type": "integer",
+                                                "description": "The 1st dimension of an array parameter."
+                                            },
+                                            "dimension2": {
+                                                "type": "integer",
+                                                "description": "The 2nd dimension of an array parameter, 1 for a one-dimensional array."
+                                            },
+                                            "value": {
+                                                "description": "The default value of the parameter: a number, a boolean, a string, or 'On' or 'Off' for a LightSwitch. Angles are in radians. For an array parameter, a list of its dimension1 x dimension2 items, the first index outer."
+                                            },
+                                            "description": {
+                                                "type": "string",
+                                                "description": "The description of the parameter, the text shown for it in the settings dialog. Missing when Archicad gives no description for it."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "name",
+                                            "type",
+                                            "value"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "name",
+                                "parameters"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryParts"
+        ]
+    })";
+}
+
+GS::ObjectState GetLibraryPartParameterValuesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::Array<GS::ObjectState> libraryParts;
+    if (!parameters.Get ("libraryParts", libraryParts)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'libraryParts' parameter.");
+    }
+
+    auto libraryManager = ACAPI::Library::GetLibraryManager ();
+    if (libraryManager.IsErr ()) {
+        return CreateErrorResponse (libraryManager.UnwrapErr ().kind, "Failed to get the Library Manager.");
+    }
+
+    GS::ObjectState response;
+    const auto& libraryPartsAdder = response.AddList<GS::ObjectState> ("libraryParts");
+    for (const GS::ObjectState& libraryPart : libraryParts) {
+        GS::UniString name;
+        if (!libraryPart.Get ("name", name) || name.IsEmpty ()) {
+            libraryPartsAdder (CreateErrorResponse (APIERR_BADPARS, "Missing 'name' parameter."));
+            continue;
+        }
+
+        auto libPart = libraryManager->GetLibPartByName (name);
+        if (libPart.IsErr ()) {
+            libraryPartsAdder (CreateErrorResponse (libPart.UnwrapErr ().kind, "No loaded library part with the name '" + name + "'. Use the fileName (with extension) returned by GetAvailableLibraryParts."));
+            continue;
+        }
+
+        auto gsmObject = libraryManager->GetGSMObjectOfLibPart (libPart.Unwrap ());
+        if (gsmObject.IsErr ()) {
+            libraryPartsAdder (CreateErrorResponse (gsmObject.UnwrapErr ().kind, "Failed to get the GSM object of the library part '" + name + "'."));
+            continue;
+        }
+
+        auto gdlParameters = gsmObject->GetParameters ();
+        if (gdlParameters.IsErr ()) {
+            libraryPartsAdder (CreateErrorResponse (gdlParameters.UnwrapErr ().kind, "Failed to get the parameters of the library part '" + name + "'."));
+            continue;
+        }
+
+        // The parameters are still returned when their descriptions cannot be read, only without them.
+        std::vector<GS::UniString> descriptions;
+        auto parameterDescriptions = gsmObject->GetParameterDescriptions ();
+        if (parameterDescriptions.IsOk ()) {
+            descriptions = parameterDescriptions.Unwrap ();
+        }
+
+        GS::ObjectState libraryPartOs ("name", name);
+        const auto& parametersAdder = libraryPartOs.AddList<GS::ObjectState> ("parameters");
+        for (const GS::ObjectState& parameter : LibPartParametersToObjectStates (gdlParameters.Unwrap (), descriptions)) {
+            parametersAdder (parameter);
+        }
+        libraryPartsAdder (libraryPartOs);
+    }
 
     return response;
 #else

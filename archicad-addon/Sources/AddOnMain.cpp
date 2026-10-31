@@ -1180,6 +1180,17 @@ GSErrCode Initialize (void)
             "Moves a folder of the Favorites palette, with its Favorites and subfolders, into another folder. Folders are "
             "given as their path of folder names from the root. Returns the new path of the folder. Available from Archicad 29."
         );
+        err |= RegisterCommand<GetFavoriteContentsCommand> (
+            favoritesCommands, "1.7.4",
+            "Returns the Favorites of a folder of the Favorites palette and of its subfolders (every Favorite when no folder "
+            "is given), each with its folder path, classifications, element category values and property values, read through "
+            "the Favorite manager. Available from Archicad 29."
+        );
+        err |= RegisterCommand<DeleteFavoritesWithManagerCommand> (
+            favoritesCommands, "1.7.4",
+            "Deletes the given Favorites through the Favorite manager, each found by name, optionally only in the given folder. "
+            "One execution result for each. Available from Archicad 29."
+        );
         AddCommandGroup (favoritesCommands);
     }
 
@@ -1689,6 +1700,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateLibraryPartCommand> (
             libraryCommands, "1.7.3",
             "Creates a new library part file (.gsm) of the given loaded subtype, inheriting its parameters, and reports whether it is loaded with its index and names. Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetLibraryPartParameterValuesCommand> (
+            libraryCommands, "1.7.4",
+            "Returns the parameters of loaded library parts with their default values and descriptions, in the format of GetGDLParametersOfElements. Available from Archicad 28."
         );
         AddCommandGroup (libraryCommands);
     }
