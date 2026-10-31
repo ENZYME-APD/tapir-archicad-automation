@@ -83,7 +83,7 @@ static void AddStairBaseLineFromMemo (const API_Guid& guid, const API_Coord& ori
     }
 }
 
-// The section line and the depth line of a Section (CutPlane) live in the memo's
+// The section line and the depth line of a Section (CutPlane), or of an Elevation, live in the memo's
 // sectionSegmentMainCoords and sectionSegmentDepthCoords, 0-based pointers with
 // cutPlane.segment.nMainCoord and nDepthCoord points: the very ones CreateSectionsCommand
 // fills in to place one (#1607). The counts are checked against the pointer sizes. depth and
@@ -2098,6 +2098,14 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("name", GS::UniString (elem.cutPlane.segment.cutPlName));
                 typeSpecificDetails.Add ("idStr", GS::UniString (elem.cutPlane.segment.cutPlIdStr));
                 AddSectionLinesFromMemo (elem.header.guid, static_cast<GSSize> (elem.cutPlane.segment.nMainCoord), static_cast<GSSize> (elem.cutPlane.segment.nDepthCoord), typeSpecificDetails);
+            } break;
+
+            case API_ElevationID: {
+                // API_ElevationType is API_CutPlaneType, and an elevation keeps its lines in the
+                // same memo fields as a section, so the section reader applies as it is.
+                typeSpecificDetails.Add ("name", GS::UniString (elem.elevation.segment.cutPlName));
+                typeSpecificDetails.Add ("idStr", GS::UniString (elem.elevation.segment.cutPlIdStr));
+                AddSectionLinesFromMemo (elem.header.guid, static_cast<GSSize> (elem.elevation.segment.nMainCoord), static_cast<GSSize> (elem.elevation.segment.nDepthCoord), typeSpecificDetails);
             } break;
 
             default:
