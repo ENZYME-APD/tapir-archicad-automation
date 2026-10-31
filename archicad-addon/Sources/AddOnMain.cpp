@@ -1690,6 +1690,10 @@ GSErrCode Initialize (void)
             libraryCommands, "1.7.3",
             "Creates a new library part file (.gsm) of the given loaded subtype, inheriting its parameters, and reports whether it is loaded with its index and names. Available from Archicad 28."
         );
+        err |= RegisterCommand<OpenLibraryPartInEditorCommand> (
+            libraryCommands, "1.7.4",
+            "Opens a loaded library part, given by its fileName or documentName as returned by GetAvailableLibraryParts, in Archicad's library part editor. Available from Archicad 27."
+        );
         AddCommandGroup (libraryCommands);
     }
 
