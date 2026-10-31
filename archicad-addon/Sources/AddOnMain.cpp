@@ -702,7 +702,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<UpdateZonesCommand> (
             elementCommands, "1.5.4",
-            "Updates all Zones (recalculates their geometry, updates their Zone Stamps and the connected elements)."
+            "Updates Zones (recalculates their geometry, updates their Zone Stamps and the connected elements): the selected Zones, every Zone when nothing is selected, or the Zones given in zones. Archicad runs the update right after the command has returned, on the Zones selected at that moment, so the new geometry can only be read with a later command."
         );
         err |= RegisterCommand<SetZoneLabelingSettingsCommand> (
             elementCommands, "1.7.3",
