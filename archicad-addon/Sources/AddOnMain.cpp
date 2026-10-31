@@ -556,6 +556,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.0.7",
             "Sets the details of the given elements (floor, layer, order, Element ID etc)."
         );
+        err |= RegisterCommand<SetElementInfoStringsCommand> (
+            elementCommands, "1.7.4",
+            "Sets the info string of the given elements: the Element ID shown in the Info Box, which GetDetailsOfElements returns as id. Returns one execution result per element."
+        );
         err |= RegisterCommand<GetElementCategoriesCommand> (
             elementCommands, "1.7.2",
             "Lists the element categories of the project (Structural Function, Position, Renovation Status, Renovation Filter and, in the German version, BRI) with their possible values. The names of the categories and values are localized: identify a category by its type and a value by its categoryValueId, never by name."
@@ -1205,6 +1209,10 @@ GSErrCode Initialize (void)
             propertyCommands, "1.1.8",
             "Sets the property values of attributes."
         );
+        err |= RegisterCommand<SetBuiltInPropertyValuesOfAttributesCommand> (
+            propertyCommands, "1.7.4",
+            "Sets built-in property values of attributes, writing the values of each attribute together. Custom properties are refused; set them with SetPropertyValuesOfAttributes. Returns one execution result per value."
+        );
         err |= RegisterCommand<GetPropertyDefinitionsOfAttributesCommand> (
             propertyCommands, "1.7.3",
             "Returns the property definitions of the given attributes (for example Building Materials): the user defined, the fundamental built-in, or all of them."
@@ -1286,6 +1294,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SetClassificationsOfAttributesCommand> (
             classificationCommands, "1.7.3",
             "Sets the classifications of attributes (building materials, composites, surfaces, etc.). The given item replaces the attribute's current item in the same classification system. In order to set the classification of an attribute to unclassified in a system, omit the classificationItemId field."
+        );
+        err |= RegisterCommand<GetClassificationOfAttributesInSystemCommand> (
+            classificationCommands, "1.7.4",
+            "Returns the classification of the given attributes (for example Building Materials) in the given classification system. classificationItemId is omitted for an unclassified attribute."
         );
         err |= RegisterCommand<GetClassificationsOfElementDefaultsCommand> (
             classificationCommands, "1.7.3",
@@ -1459,6 +1471,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetCurrentPenTableCommand> (
             attributeCommands, "1.7.3",
             "Returns the current Pen Table (its index, attribute identifier and name) and its number of pens. Pass the returned attributeId to GetPenTables to read the pens."
+        );
+        err |= RegisterCommand<GetPensCommand> (
+            attributeCommands, "1.7.4",
+            "Returns the given pens, or all of them, in effect in the current window: index, color, width and description. It also works when the pens in effect are not a Pen Table attribute. Available from Archicad 27."
         );
         err |= RegisterCommand<GetProfilesCommand> (
             attributeCommands, "1.5.4",
