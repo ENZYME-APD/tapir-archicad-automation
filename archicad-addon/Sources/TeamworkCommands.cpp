@@ -917,6 +917,84 @@ GS::ObjectState GetTeamworkStatusCommand::Execute (const GS::ObjectState& /*para
     return response;
 }
 
+GetTeamworkOwnersOfDatabasesCommand::GetTeamworkOwnersOfDatabasesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetTeamworkOwnersOfDatabasesCommand::GetName () const
+{
+    return "GetTeamworkOwnersOfDatabases";
+}
+
+GS::Optional<GS::UniString> GetTeamworkOwnersOfDatabasesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "databases": {
+                "$ref": "#/Databases"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "databases"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetTeamworkOwnersOfDatabasesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "owners": {
+                "type": "array",
+                "description": "The Teamwork owner of each given database, in the order of the input. userId is 0 when nobody owns the database.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "$ref": "#/User"
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "owners"
+        ]
+    })";
+}
+
+GS::ObjectState GetTeamworkOwnersOfDatabasesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> databases;
+    parameters.Get ("databases", databases);
+    const GS::Array<API_Guid> databaseIds = databases.Transform<API_Guid> (GetGuidFromDatabaseArrayItem);
+
+    GS::ObjectState response;
+    const auto& owners = response.AddList<GS::ObjectState> ("owners");
+
+    for (const API_Guid& databaseId : databaseIds) {
+        API_DatabaseUnId databaseUnId = DatabaseIdResolver::Instance ().GetDatabaseWithId (databaseId).databaseUnId;
+        short userId = 0;
+        const GSErrCode err = ACAPI_Teamwork_GetTWOwner (&databaseUnId, &userId);
+        if (err != NoError) {
+            owners (CreateErrorResponse (err, "Failed to get the Teamwork owner of the database."));
+            continue;
+        }
+
+        owners (CreateTeamworkUserObjectState (userId));
+    }
+
+    return response;
+}
+
 static GS::UniString BuildBIMcloudLibrariesInputParametersSchema (const char* librariesKey, const char* librariesDescription)
 {
     return GS::UniString::Printf (R"({
