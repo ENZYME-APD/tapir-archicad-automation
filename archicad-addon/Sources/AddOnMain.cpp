@@ -2008,6 +2008,10 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.7.3",
             "Changes the ID, name, view settings flags or attached data (base64 encoded) of the given add-on viewpoint items; only the given fields are changed. Roots and groups can't be changed in a Teamwork project. Available from Archicad 27."
         );
+        err |= RegisterCommand<ReorderNavigatorItemsCommand> (
+            navigatorCommands, "1.7.3",
+            "Reorders the children of a navigator item to match the given order. Works around MoveNavigatorItem being unable to reposition an item within its current parent, by bouncing it through a sibling."
+        );
         AddCommandGroup (navigatorCommands);
     }
 
