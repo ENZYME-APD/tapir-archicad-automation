@@ -4322,6 +4322,133 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
     return {};
 }
 
+CreateSkylightsCommand::CreateSkylightsCommand () :
+    CreateElementsCommandBase ("CreateSkylights", API_SkylightID, "skylightsData")
+{
+}
+
+GS::Optional<GS::UniString> CreateSkylightsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "skylightsData": {
+            "type": "array",
+            "description": "Array of data to create Skylights.",
+            "items": {
+                "type": "object",
+                "description": "The parameters of the new Skylight.",
+                "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a Skylight favorite to base the new element on."
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element. When omitted the element gets the next automatic ID of its tool."
+                    },
+                    "ownerId": {
+                        "$ref": "#/ElementId",
+                        "description": "The roof (single- or multi-plane) or shell the skylight is placed in."
+                    },
+                    "anchorPosition": {
+                        "$ref": "#/Coordinate2D",
+                        "description": "Floor plan position of the skylight's anchor point. The skylight is placed on the owner's surface above it and turned to its slope; in a multi-plane roof that is the roof plane over this position."
+                    },
+                    "anchorPoint": {
+                        "type": "string",
+                        "enum": ["BottomCenter", "BottomLeft", "BottomRight", "TopCenter", "TopLeft", "TopRight"],
+                        "description": "Which point of the skylight anchorPosition places. The tool default's by default."
+                    },
+                    "width": {
+                        "type": "number",
+                        "exclusiveMinimum": 0.0,
+                        "description": "Optional width of the skylight. The tool default's by default."
+                    },
+                    "height": {
+                        "type": "number",
+                        "exclusiveMinimum": 0.0,
+                        "description": "Optional height of the skylight. The tool default's by default."
+                    },
+                    "libraryPartName": {
+                        "type": "string",
+                        "description": "Optional localized name of a skylight library part to place instead of the tool default's."
+                    }
+                },
+                "additionalProperties": false,
+                "required": ["ownerId", "anchorPosition"]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": ["skylightsData"]
+})";
+}
+
+GS::Optional<GS::ObjectState> CreateSkylightsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& /*stories*/, const GS::ObjectState& parameters) const
+{
+    const GS::ObjectState* ownerId = parameters.Get ("ownerId");
+    const API_Guid ownerGuid = ownerId != nullptr ? GetGuidFromObjectState (*ownerId) : APINULLGuid;
+    if (!DoesElementExist (ownerGuid, API_RoofID) && !DoesElementExist (ownerGuid, API_ShellID)) {
+        return CreateErrorResponse (APIERR_BADID, "'ownerId' is not a roof or a shell.");
+    }
+    element.skylight.owner = ownerGuid;
+
+    const auto anchorPosition = GetOptionalCoordinate2D (parameters, "anchorPosition");
+    if (anchorPosition.HasValue ()) {
+        element.skylight.anchorPosition = anchorPosition.Get ();
+    }
+
+    GS::UniString anchorPoint;
+    if (parameters.Get ("anchorPoint", anchorPoint)) {
+        static const std::pair<const char*, API_SkylightAnchorID> anchors[] = {
+            { "BottomCenter", APISkylightAnchor_BC }, { "BottomLeft", APISkylightAnchor_BL }, { "BottomRight", APISkylightAnchor_BR },
+            { "TopCenter", APISkylightAnchor_TC }, { "TopLeft", APISkylightAnchor_TL }, { "TopRight", APISkylightAnchor_TR }
+        };
+        for (const auto& anchor : anchors) {
+            if (anchorPoint == anchor.first) {
+                element.skylight.anchorPoint = anchor.second;
+            }
+        }
+    }
+
+    const auto width = GetOptionalDouble (parameters, "width");
+    if (width.HasValue ()) {
+        element.skylight.openingBase.width = width.Get ();
+    }
+    const auto height = GetOptionalDouble (parameters, "height");
+    if (height.HasValue ()) {
+        element.skylight.openingBase.height = height.Get ();
+    }
+
+    GS::UniString libraryPartName;
+    if (parameters.Get ("libraryPartName", libraryPartName) && !libraryPartName.IsEmpty ()) {
+        API_LibPart libPart = {};
+        libPart.typeID = APILib_SkylightID;
+        GS::ucscpy (libPart.docu_UName, libraryPartName.ToUStr ());
+        GSErrCode err = ACAPI_LibraryPart_Search (&libPart, false, true);
+        delete libPart.location;
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to resolve 'libraryPartName': no skylight library part with that name.");
+        }
+        double a = 0.0;
+        double b = 0.0;
+        Int32 addParNum = 0;
+        API_AddParType** addPars = nullptr;
+        err = ACAPI_LibraryPart_GetParams (libPart.index, &a, &b, &addParNum, &addPars);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to read the parameters of 'libraryPartName'.");
+        }
+        if (memo.params != nullptr) {
+            ACAPI_DisposeAddParHdl (&memo.params);
+        }
+        memo.params = addPars;
+        element.skylight.openingBase.libInd = libPart.index;
+    }
+
+    return {};
+}
+
 SolveStairBaselineCommand::SolveStairBaselineCommand () :
     CommandBase (CommonSchema::Used)
 {
