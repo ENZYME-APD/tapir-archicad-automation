@@ -1,0 +1,185 @@
+{
+  "title": "CreateSkylights places skylights in single- and multi-plane roofs and refuses other owners",
+  "minTapir": "1.7.4",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "single-plane roof",
+      "command": "CreateRoofs",
+      "params": {
+        "roofsData": [
+          {
+            "level": 3.0,
+            "polygonCoordinates": [
+              { "x": 1000, "y": 1000 },
+              { "x": 1008, "y": 1000 },
+              { "x": 1008, "y": 1008 },
+              { "x": 1000, "y": 1008 }
+            ],
+            "pivotLine": {
+              "begCoordinate": { "x": 1000, "y": 1000 },
+              "endCoordinate": { "x": 1008, "y": 1000 }
+            },
+            "angle": 0.5
+          }
+        ]
+      },
+      "save": {
+        "r1": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "multi-plane roof",
+      "command": "CreateRoofs",
+      "params": {
+        "roofsData": [
+          {
+            "level": 3.0,
+            "polygonCoordinates": [
+              { "x": 1012, "y": 1000 },
+              { "x": 1022, "y": 1000 },
+              { "x": 1022, "y": 1010 },
+              { "x": 1012, "y": 1010 }
+            ],
+            "levels": [
+              {
+                "levelHeight": 0.0,
+                "levelAngle": 0.6
+              }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "r2": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "wall, not an owner of skylights",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": { "x": 1000, "y": 1020 },
+            "endCoordinate": { "x": 1004, "y": 1020 },
+            "zCoordinate": 0,
+            "height": 2.5,
+            "thickness": 0.2
+          }
+        ]
+      },
+      "save": {
+        "w1": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "one skylight in the single-plane roof, two in planes of the multi-plane roof",
+      "command": "CreateSkylights",
+      "params": {
+        "skylightsData": [
+          {
+            "ownerId": { "guid": "${r1}" },
+            "anchorPosition": { "x": 1004, "y": 1003 }
+          },
+          {
+            "ownerId": { "guid": "${r2}" },
+            "anchorPosition": { "x": 1017, "y": 1002 },
+            "width": 0.8,
+            "height": 1.2
+          },
+          {
+            "ownerId": { "guid": "${r2}" },
+            "anchorPosition": { "x": 1017, "y": 1008 },
+            "anchorPoint": "TopCenter"
+          }
+        ]
+      },
+      "save": {
+        "s1": "elements[0].elementId.guid",
+        "s2": "elements[1].elementId.guid",
+        "s3": "elements[2].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "skylight in the single-plane roof"
+        },
+        {
+          "path": "elements[1].elementId.guid",
+          "exists": true,
+          "name": "first skylight in the multi-plane roof"
+        },
+        {
+          "path": "elements[2].elementId.guid",
+          "exists": true,
+          "name": "second skylight in the multi-plane roof"
+        }
+      ]
+    },
+    {
+      "id": "a wall as owner",
+      "command": "CreateSkylights",
+      "creates": false,
+      "params": {
+        "skylightsData": [
+          {
+            "ownerId": { "guid": "${w1}" },
+            "anchorPosition": { "x": 1002, "y": 1020 }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "elements[0].error.message",
+          "contains": "not a roof or a shell",
+          "name": "refused"
+        }
+      ]
+    },
+    {
+      "id": "skylights in the project",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": {
+        "elementType": "Skylight"
+      },
+      "expect": [
+        {
+          "path": "elements",
+          "len": 3,
+          "name": "the three skylights, none for the wall"
+        }
+      ]
+    },
+    {
+      "id": "placement on the roof slopes",
+      "command": "GetOpeningTransformations",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${s1}" } },
+          { "elementId": { "guid": "${s2}" } },
+          { "elementId": { "guid": "${s3}" } }
+        ]
+      },
+      "expect": [
+        {
+          "path": "openingTransformations[0].origin.z",
+          "gt": 3.0,
+          "name": "single-plane: above the pivot line's level"
+        },
+        {
+          "path": "openingTransformations[1].origin.z",
+          "gt": 3.0,
+          "name": "multi-plane, first: above the eaves' level"
+        },
+        {
+          "path": "openingTransformations[2].origin.z",
+          "gt": 3.0,
+          "name": "multi-plane, second: above the eaves' level"
+        }
+      ]
+    }
+  ]
+}
