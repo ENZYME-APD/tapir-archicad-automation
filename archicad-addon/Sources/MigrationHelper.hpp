@@ -313,16 +313,10 @@ inline GSErrCode ACAPI_View_ShowAllIn3D ()
     return ACAPI_Automate (APIDo_ShowAllIn3DID);
 }
 
-// 3D styles (APIdefs_Environment.h): par1 the style names, par2 the current one;
-// APIEnv_SetCurrent3DStyleID takes the name of the style to make current as par1.
+// 3D styles (APIdefs_Environment.h): par1 the style names, par2 the current one.
 inline GSErrCode ACAPI_View_Get3DStyleList (GS::Array<GS::UniString>* styles, GS::UniString* current)
 {
     return ACAPI_Environment (APIEnv_Get3DStyleListID, (void*) styles, (void*) current);
-}
-
-inline GSErrCode ACAPI_View_SetCurrent3DStyle (GS::UniString* name)
-{
-    return ACAPI_Environment (APIEnv_SetCurrent3DStyleID, (void*) name);
 }
 
 // APIDo_ZoomToSelectedID takes no parameters (APIdefs_Automate.h: "par1: --- par2: ---").

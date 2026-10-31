@@ -250,57 +250,6 @@ GS::ObjectState Get3DStylesCommand::Execute (const GS::ObjectState& /*parameters
     return response;
 }
 
-SetCurrent3DStyleCommand::SetCurrent3DStyleCommand () :
-    CommandBase (CommonSchema::Used)
-{}
-
-GS::String SetCurrent3DStyleCommand::GetName () const
-{
-    return "SetCurrent3DStyle";
-}
-
-GS::Optional<GS::UniString> SetCurrent3DStyleCommand::GetInputParametersSchema () const
-{
-    return R"({
-    "type": "object",
-    "properties": {
-        "name": {
-            "type": "string",
-            "description": "The name of the 3D style to make current, one of the names Get3DStyles returns."
-        }
-    },
-    "additionalProperties": false,
-    "required": [
-        "name"
-    ]
-})";
-}
-
-GS::Optional<GS::UniString> SetCurrent3DStyleCommand::GetRawResponseSchema () const
-{
-    return R"({
-        "$ref": "#/ExecutionResult"
-    })";
-}
-
-GS::ObjectState SetCurrent3DStyleCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
-{
-    GS::UniString name;
-    if (!parameters.Get ("name", name) || name.IsEmpty ()) {
-        return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: name.");
-    }
-
-    // The 3D style is a setting of the 3D window, like the projection: it is changed
-    // in an undoable command the same way Set3DProjectionSettings does.
-    const GSErrCode err = ACAPI_CallUndoableCommand ("SetCurrent3DStyleCommand", [&]() -> GSErrCode {
-        return ACAPI_View_SetCurrent3DStyle (&name);
-    });
-
-    return err == NoError
-        ? CreateSuccessfulExecutionResult ()
-        : CreateFailedExecutionResult (err, "Failed to set the current 3D style. Is the name one of the styles Get3DStyles returns?");
-}
-
 ShowElementsIn3DCommand::ShowElementsIn3DCommand () :
     CommandBase (CommonSchema::Used)
 {}

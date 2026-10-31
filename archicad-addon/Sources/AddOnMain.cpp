@@ -1928,10 +1928,6 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.7.4",
             "Gets the names of the 3D styles of the project and the name of the current one, which the 3D window uses."
         );
-        err |= RegisterCommand<SetCurrent3DStyleCommand> (
-            navigatorCommands, "1.7.4",
-            "Sets the current 3D style of the 3D window by name, one of the names Get3DStyles returns."
-        );
         err |= RegisterCommand<ShowElementsIn3DCommand> (
             navigatorCommands, "1.7.4",
             "Opens the 3D window on the given elements, as Show Selection in 3D does: they become the selection and only they are shown. Without elements it shows every element, as Show All in 3D does."
