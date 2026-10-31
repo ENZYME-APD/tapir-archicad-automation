@@ -127,6 +127,13 @@ inline GSErrCode ACAPI_HierarchicalEditing_GetHierarchicalElementOwner (const AP
 
 #define ACAPI_ModelAccess_Get3DInfo ACAPI_Element_Get3DInfo
 #define ACAPI_ModelAccess_GetComponent ACAPI_3D_GetComponent
+#define ACAPI_ModelAccess_DecomposePgon ACAPI_3D_DecomposePgon
+
+// APIAny_GetTextureCoordID: par1 the API_TexCoordPars, par2 the API_UVCoord result.
+inline GSErrCode ACAPI_ModelAccess_GetTextureCoord (API_TexCoordPars* texCoordPars, API_UVCoord* uvCoord)
+{
+    return ACAPI_Goodies (APIAny_GetTextureCoordID, texCoordPars, uvCoord);
+}
 
 #define ACAPI_View_Get3DCuttingPlanes(par1) ACAPI_Environment (APIEnv_Get3DCuttingPlanesID, par1)
 #define ACAPI_View_Change3DCuttingPlanes(par1) ACAPI_Environment (APIEnv_Change3DCuttingPlanesID, par1)
