@@ -1746,6 +1746,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, elem.hatch.buildingMaterial)));
                 typeSpecificDetails.Add ("roomSpecial", (Int32) elem.hatch.roomSpecial);
                 typeSpecificDetails.Add ("showArea", elem.hatch.showArea);
+                typeSpecificDetails.Add ("fillOrientation", CreateHatchOrientationObjectState (elem.hatch.hatchOrientation));
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
             } break;
 
@@ -2940,6 +2941,23 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
                 if (typeSpecificDetails->Get ("showArea", elem.hatch.showArea)) {
                     ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, showArea);
+                    hasElementChanges = true;
+                }
+                GS::ObjectState fillOrientationOs;
+                if (typeSpecificDetails->Get ("fillOrientation", fillOrientationOs)) {
+                    API_HatchOrientation& orientation = elem.hatch.hatchOrientation;
+                    orientation = GetHatchOrientationFromObjectState (fillOrientationOs, orientation);
+                    GS::UniString typeStr;
+                    if (fillOrientationOs.Get ("origin") != nullptr) {
+                        // Archicad ignores the origin while the fill is snapped to the project origin (the
+                        // GlobalOrigo flag, set on every Global fill), so a given origin unsnaps it and turns
+                        // a Global fill into a Rotated one unless a type was sent as well.
+                        if (!fillOrientationOs.Get ("type", typeStr) && orientation.type == API_HatchGlobal) {
+                            orientation.type = API_HatchRotated;
+                        }
+                        orientation.flags &= ~APIHatchOrinFlag_GlobalOrigo;
+                    }
+                    TAPIR_MASK_SET_HATCH_ORIENTATION (mask, API_HatchType, hatchOrientation);
                     hasElementChanges = true;
                 }
             }
