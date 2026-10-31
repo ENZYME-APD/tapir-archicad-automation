@@ -2525,6 +2525,66 @@ GSErrCode Initialize (void)
             analyticalCommands, "1.7.3",
             "Adds load cases with their factors to the given structural analysis load combination in one undo step."
         );
+        err |= RegisterCommand<GetAnalyticalMembersCommand> (
+            analyticalCommands, "1.7.4",
+            "Lists the elements of the curve and surface members of the given Structural Analytical Model, or of the model of the current view when no model is given (the model is required before Archicad 27)."
+        );
+        err |= RegisterCommand<GetAnalyticalMemberDetailsCommand> (
+            analyticalCommands, "1.7.4",
+            "Retrieves the curve, surface or segmented surface member of the given elements in a Structural Analytical Model, with their connections. Cross sections, curves, nodes and surfaces are returned with every field the Archicad version has."
+        );
+        err |= RegisterCommand<GetAnalyticalReleasesCommand> (
+            analyticalCommands, "1.7.4",
+            "Retrieves the releases of the given analytical members. Available from Archicad 26."
+        );
+        err |= RegisterCommand<SetAnalyticalReleasesCommand> (
+            analyticalCommands, "1.7.4",
+            "Replaces the releases of the given analytical members, in one undo step. Available from Archicad 26."
+        );
+        err |= RegisterCommand<GetCustomCurveMemberStretchCommand> (
+            analyticalCommands, "1.7.4",
+            "Retrieves the lengths added to the start and end of the given curve members. Available from Archicad 29."
+        );
+        err |= RegisterCommand<SetCustomCurveMemberStretchCommand> (
+            analyticalCommands, "1.7.4",
+            "Sets the lengths added to the start and end of the given curve members, in one undo step. Available from Archicad 29."
+        );
+        err |= RegisterCommand<GetLCSOfAnalyticalMembersCommand> (
+            analyticalCommands, "1.7.4",
+            "Retrieves the local coordinate system of the given analytical member parts, optionally in their intersection with another member part. Available from Archicad 26."
+        );
+        err |= RegisterCommand<GetAnalyticalMemberPartGeometriesCommand> (
+            analyticalCommands, "1.7.4",
+            "Retrieves the node of the given analytical member vertices and the curve of the given member edges. Available from Archicad 26."
+        );
+        err |= RegisterCommand<GetAnalyticalSupportsCommand> (
+            analyticalCommands, "1.7.4",
+            "Retrieves the settings, the supported member part and the geometry of the given analytical supports. Available from Archicad 26."
+        );
+        err |= RegisterCommand<GetAnalyticalLinksCommand> (
+            analyticalCommands, "1.7.4",
+            "Retrieves the settings, the connected member parts and the geometry of the given analytical links. Available from Archicad 26."
+        );
+        err |= RegisterCommand<CreateAnalyticalSupportsCommand> (
+            analyticalCommands, "1.7.4",
+            "Creates analytical supports from their settings and supported member part, as GetAnalyticalSupports returns them, in one undo step. Available from Archicad 26."
+        );
+        err |= RegisterCommand<CreateAnalyticalLinksCommand> (
+            analyticalCommands, "1.7.4",
+            "Creates analytical links from their settings and connected member parts, as GetAnalyticalLinks returns them, in one undo step. Available from Archicad 26."
+        );
+        err |= RegisterCommand<ConvertAnalyticalLinksToNonShortestCommand> (
+            analyticalCommands, "1.7.4",
+            "Converts the given shortest analytical links (associative to a curve member or a surface member edge) to links connected to a fixed coordinate, in one undo step, and returns the converted links. Available from Archicad 26."
+        );
+        err |= RegisterCommand<GetAnalyticalLoadsCommand> (
+            analyticalCommands, "1.7.4",
+            "Retrieves the settings, the loaded member part, the custom data (the curve of an edge load, the contour of a surface load) and the geometry of the given analytical point, edge and surface loads. Available from Archicad 26."
+        );
+        err |= RegisterCommand<CreateAnalyticalLoadsCommand> (
+            analyticalCommands, "1.7.4",
+            "Creates analytical point, edge and surface loads from their settings, loaded member part and custom data, as GetAnalyticalLoads returns them, in one undo step. Available from Archicad 26."
+        );
         AddCommandGroup (analyticalCommands);
     }
 
