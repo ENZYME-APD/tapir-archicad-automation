@@ -1408,6 +1408,10 @@ GSErrCode Initialize (void)
             attributeCommands, "1.5.4",
             "Creates or overwrites Pen Table attributes based on the given parameters."
         );
+        err |= RegisterCommand<ModifyPensCommand> (
+            attributeCommands, "1.7.2",
+            "Changes the color, width and description of single pens of the Pen Table in effect for the model views (the default) or the layouts, keeping every other pen as it is. Only the given fields of a listed pen are changed. In a Teamwork project the PenTables lockable object set must be reserved first (see ReserveLockableObjectSet)."
+        );
         err |= RegisterCommand<CreateProfilesCommand> (
             attributeCommands, "1.5.4",
             "Creates or overwrites Profile attributes as a copy of an existing Profile's geometry, based on the given parameters."
