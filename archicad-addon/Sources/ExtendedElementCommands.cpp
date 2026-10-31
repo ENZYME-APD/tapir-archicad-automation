@@ -3995,8 +3995,8 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
                         "floorIndex": { "type": "integer", "description": "Optional floor index. If omitted, derived from zCoordinate." },
-                        "zCoordinate": { "type": "number" },
-                        "offset": { "type": "number" },
+                        "zCoordinate": { "type": "number", "description": "Absolute Z of the beam's reference line. Which point of the cross section lies on the reference line is set by anchorPoint: with a Top anchor the beam hangs below zCoordinate, so zCoordinate 10 and height 0.1 span 9.9 to 10; MiddleLeft, Center and MiddleRight center it on zCoordinate; Bottom anchors stand it on top. The home story is derived from it unless floorIndex is given." },
+                        "offset": { "type": "number", "description": "Horizontal distance of the beam from its reference line, in meters; positive moves the beam to the left of the line, looking from begCoordinate to endCoordinate." },
                         "slantAngle": {
                             "type": "number",
                             "description": "Slant angle in radians. A non-zero value also switches the beam to slanted, unless isSlanted is given explicitly."
@@ -4022,7 +4022,8 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                             "exclusiveMinimum": 0.0
                         },
                         "anchorPoint": {
-                            "$ref": "#/BeamAnchorPoint"
+                            "$ref": "#/BeamAnchorPoint",
+                            "description": "The point of the cross section that lies on the reference line (begCoordinate to endCoordinate at zCoordinate). Top anchors hang the beam below zCoordinate, Bottom anchors stand it on top, MiddleLeft, Center and MiddleRight center it. Left and Right anchors put the line on the beam's left or right edge, looking from begCoordinate to endCoordinate; TopCenter, Center and BottomCenter keep it on the beam's axis."
                         },
                         "circleBased": {
                             "type": "boolean",
@@ -4181,7 +4182,7 @@ GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () con
                         },
                         "baseLinePoints": {
                             "type": "array",
-                            "description": "2D coordinates defining the stair baseline polyline. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.",
+                            "description": "2D coordinates of the stair baseline polyline. Whether the baseline runs along the left edge, the right edge or the center of the flight is the Stair tool's baseline position, taken from the tool defaults or favoriteName: with the baseline on the left edge, the flight lies to the right of it, looking from the first point to the last. The first point is kept; the length of the flight comes from the riser count and going, so the flight does not necessarily end at the last point given. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.",
                             "items": { "$ref": "#/Coordinate2D" },
                             "minItems": 2
                         },
@@ -4346,7 +4347,7 @@ GS::Optional<GS::UniString> SolveStairBaselineCommand::GetInputParametersSchema 
                     "properties": {
                         "baseLinePoints": {
                             "type": "array",
-                            "description": "2D coordinates defining the stair baseline polyline. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.",
+                            "description": "2D coordinates of the stair baseline polyline. Whether the baseline runs along the left edge, the right edge or the center of the flight is the Stair tool's baseline position, taken from the Stair tool defaults: with the baseline on the left edge, the flight lies to the right of it, looking from the first point to the last. The first point is kept; the length of the flight comes from the riser count and going, so the flight does not necessarily end at the last point given. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.",
                             "items": { "$ref": "#/Coordinate2D" },
                             "minItems": 2
                         },
