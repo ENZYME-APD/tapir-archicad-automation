@@ -603,7 +603,32 @@ GS::Optional<GS::UniString> CreateLayoutCommand::GetInputParametersSchema () con
 
 GS::Optional<GS::UniString> CreateLayoutCommand::GetRawResponseSchema () const
 {
-    return R"({"type":"object","properties":{"databases":{"$ref":"#/DatabaseIdsOrErrors"}},"additionalProperties":false,"required":["databases"]})";
+    return R"({
+        "type": "object",
+        "properties": {
+            "databases": {
+                "type": "array",
+                "items": {
+                    "oneOf": [
+                        { "$ref": "#/DatabaseIdArrayItem" },
+                        { "$ref": "#/ErrorItem" },
+                        {
+                            "type": "object",
+                            "description": "The layout was created, but it could not be moved to the place asked for by previousNavigatorItemId or position: it stays where Archicad put it.",
+                            "properties": {
+                                "databaseId": { "$ref": "#/DatabaseId" },
+                                "error":      { "$ref": "#/Error" }
+                            },
+                            "additionalProperties": false,
+                            "required": ["databaseId", "error"]
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["databases"]
+    })";
 }
 
 GS::ObjectState CreateLayoutCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -748,7 +773,11 @@ GS::ObjectState CreateLayoutCommand::Execute (const GS::ObjectState& parameters,
             GS::UniString placeErrorMessage;
             const GSErrCode placeErr = PlaceNewLayout (newLayoutGuid.Get (), parentNavGuid, previousOS, position, placeErrorMessage);
             if (placeErr != NoError) {
-                databases.Push (CreateErrorResponse (placeErr, placeErrorMessage));
+                // The layout exists, so its id is returned with the error: without it the
+                // caller could only find it by name (#1586)
+                GS::ObjectState placedWithError = CreateErrorResponse (placeErr, placeErrorMessage);
+                placedWithError.Add ("databaseId", CreateGuidObjectState (newLayoutGuid.Get ()));
+                databases.Push (placedWithError);
                 continue;
             }
         }
