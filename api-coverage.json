@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-30 23:13 UTC",
+ "generatedAt": "2026-10-31 02:42 UTC",
  "versions": [
   25,
   26,
@@ -7018,7 +7018,12 @@
    ],
    "status": "not applicable",
    "reason": "memory management (#1159)",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1161,
+     "title": "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"
+    }
+   ],
    "issues": []
   },
   {
@@ -7125,7 +7130,12 @@
    ],
    "status": "not applicable",
    "reason": "builds an internal table, only useful inside the command that reads it (#1072)",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1161,
+     "title": "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"
+    }
+   ],
    "issues": []
   },
   {

@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 58 % | 80 | 39 | 8 | 13 | 1 | 19 | 2 | 57 |
 | C++ API (ACAPI::, IFCAPI::) | 80 % | 1435 | 679 | 476 | 244 | 35 | 1 |  | 392 |
 
-Archicad 25–30 DevKits; updated 2026-10-30 23:13 UTC.
+Archicad 25–30 DevKits; updated 2026-10-31 02:42 UTC.
 
 | | Status |
 |---|---|
@@ -1173,11 +1173,11 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 ## DrawOrder
 
 - 🚧 `ACAPI_DrawOrder_CreationOrderGetNext` – Returns the next element's GUID from the previously initialized creation order table. <sub>(was `APIDb_CreationOrderGetNextID`)</sub> — [#1161](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1161 "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"), [#1548](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1548 "GetElementsInDrawOrder crashes Archicad (AC26 and AC28), even without parameters")
-- ➖ `ACAPI_DrawOrder_DisposeCreationOrderTable` – Disposes of the previously allocated creation order table. <sub>(was `APIDb_DisposeCreationOrderTableID`)</sub> *(memory management (#1159))*
+- ➖ `ACAPI_DrawOrder_DisposeCreationOrderTable` – Disposes of the previously allocated creation order table. <sub>(was `APIDb_DisposeCreationOrderTableID`)</sub> — [#1161](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1161 "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)") *(memory management (#1159))*
 - ✅ `ACAPI_DrawOrder_DrawOrderGetNext` – Returns a reference to the next element of the current database in the order specified by the BTF/STB system. <sub>(was `APIDb_DrawOrderGetNextID`)</sub> — [#1571](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1571 "Fix the GetElementsInDrawOrder crash: walk between DrawOrderInit and DrawOrderTerm")
 - ➖ `ACAPI_DrawOrder_DrawOrderInit` – Initializes a loop on the current database to get the elements in the order specified by the BTF/STB system. <sub>(was `APIDb_DrawOrderInitID`)</sub> — [#1571](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1571 "Fix the GetElementsInDrawOrder crash: walk between DrawOrderInit and DrawOrderTerm") *(starts an internal draw order loop, only useful inside the command that walks it (#1074))*
 - ➖ `ACAPI_DrawOrder_DrawOrderTerm` – Signals the end of a draw order loop. <sub>(was `APIDb_DrawOrderTermID`)</sub> — [#1571](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1571 "Fix the GetElementsInDrawOrder crash: walk between DrawOrderInit and DrawOrderTerm") *(ends an internal draw order loop, only useful inside the command that walks it (#1073))*
-- ➖ `ACAPI_DrawOrder_InitCreationOrderTable` – Initializes an internal table for fast access to the next element in creation order. <sub>(was `APIDb_InitCreationOrderTableID`)</sub> *(builds an internal table, only useful inside the command that reads it (#1072))*
+- ➖ `ACAPI_DrawOrder_InitCreationOrderTable` – Initializes an internal table for fast access to the next element in creation order. <sub>(was `APIDb_InitCreationOrderTableID`)</sub> — [#1161](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1161 "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)") *(builds an internal table, only useful inside the command that reads it (#1072))*
 
 ## ElementLink
 
