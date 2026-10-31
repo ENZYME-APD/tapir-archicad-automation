@@ -1,15 +1,13 @@
 {
- "generatedAt": "2026-10-31 15:51 UTC",
+ "generatedAt": "2026-10-31 19:13 UTC",
  "counts": {
   "done": 303,
-  "merged": 227,
-  "in progress": 25,
+  "merged": 252,
   "not applicable": 1
  },
  "parameters": {
-  "all": 483,
-  "partial": 1,
-  "json": 46
+  "all": 511,
+  "json": 44
  },
  "items": [
   {
@@ -1943,6 +1941,14 @@
      "path": "Components/ElementsComponents/GetDetailsOfElementsComponent.cs"
     },
     {
+     "name": "LevelDimensionsComponent",
+     "path": "Components/DocumentToolsComponents/LevelDimensionsComponent.cs"
+    },
+    {
+     "name": "RailingsComponent",
+     "path": "Components/DesignToolsComponents/RailingsComponent.cs"
+    },
+    {
      "name": "WallsApiComponent",
      "path": "Components/DesignToolsComponents/WallsComponent.cs"
     },
@@ -1979,6 +1985,14 @@
    "status": "done",
    "reason": "",
    "components": [
+    {
+     "name": "LevelDimensionsComponent",
+     "path": "Components/DocumentToolsComponents/LevelDimensionsComponent.cs"
+    },
+    {
+     "name": "RailingsComponent",
+     "path": "Components/DesignToolsComponents/RailingsComponent.cs"
+    },
     {
      "name": "SetDetailsOfTextsComponent",
      "path": "Components/ElementsComponents/SetDetailsOfElementsComponent.cs"
@@ -2822,19 +2836,22 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Gets how property objects (the library parts of the old listing system) are linked to the given elements, or to the element defaults of the given element types: whether the property objects matching their criteria are linked, which of them match, and which one is assigned individually, each with the library part's index (the same as the index returned by GetAvailableLibraryParts), name and guid. The output is aligned with the input array of elements.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1684,
-     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+     "name": "GetLinkedPropertyObjectsOfElementsComponent",
+     "path": "Components/ElementsComponents/GetLinkedPropertyObjectsOfElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "elements",
+    "elements.elementType"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2842,19 +2859,25 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Sets how property objects (the library parts of the old listing system) are linked to the given elements, or to the element defaults of the given element types: whether the property objects matching their criteria are linked, and which one is assigned individually (0 removes the individual assignment). A link that is not given stays unchanged. All changes are made in one undoable step.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 5,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1684,
-     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+     "name": "SetLinkedPropertyObjectsOfElementsComponent",
+     "path": "Components/ElementsComponents/SetLinkedPropertyObjectsOfElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 5,
+   "coveredParameters": [
+    "elementsWithLinkedPropertyObjects",
+    "elementsWithLinkedPropertyObjects.elementId",
+    "elementsWithLinkedPropertyObjects.elementType",
+    "elementsWithLinkedPropertyObjects.individualLibraryPartIndex",
+    "elementsWithLinkedPropertyObjects.linkByCriteria"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2886,19 +2909,22 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Turns the automatic labeling of Zones on or off and selects the Label Favorite it places. Only the given settings are changed. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1684,
-     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+     "name": "SetZoneLabelingSettingsComponent",
+     "path": "Components/ElementsComponents/SetZoneLabelingSettingsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "automaticLabeling",
+    "favoriteName"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2906,19 +2932,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Returns whether the automatic labeling of Zones is on and the name of the Label Favorite it places. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetZoneLabelingSettingsComponent",
+     "path": "Components/ElementsComponents/GetZoneLabelingSettingsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1684,
-     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3097,19 +3123,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Deletes the currently selected elements in one undo step, the same as pressing the Delete key.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "DeleteSelectedElementsComponent",
+     "path": "Components/ElementsComponents/DeleteSelectedElementsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1684,
-     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3161,19 +3187,22 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Refreshes (rebuilds) the given elements, for example placed Objects, Windows and Doors that still show the old geometry after their library part's script or embedded file changed. Set force to true to run the parameter script of GDL-based elements too. The elements are looked up in the current database (floor plan, section or detail window). Returns an execution result for each input element. The refresh cannot be undone.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1684,
-     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+     "name": "RefreshElementsComponent",
+     "path": "Components/ElementsComponents/RefreshElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "elements",
+    "force"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3262,18 +3291,17 @@
      "path": "Components/ElementsComponents/SetMarkerParametersComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 6,
    "coveredParameters": [
     "elementsWithMarkerParameters",
     "elementsWithMarkerParameters.elementId",
     "elementsWithMarkerParameters.markerParameters",
+    "elementsWithMarkerParameters.markerParameters.index",
     "elementsWithMarkerParameters.markerParameters.name",
     "elementsWithMarkerParameters.markerParameters.value"
    ],
-   "missingParameters": [
-    "elementsWithMarkerParameters.markerParameters.index"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -3282,19 +3310,28 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Changes the library part of the given Object, Lamp, Window, Door, Skylight, Zone and symbol Label elements to another library part of the same type, given by name, index or guid, e.g. to replace missing library parts with ones from the loaded libraries. The elements themselves (guid, properties, classifications) are kept. Components of stairs and railings are not supported, even when they are reported as Objects. Optionally keeps the values of the GDL parameters with the same name and type, and the size (A and B).",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 8,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1684,
-     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+     "name": "ChangeLibraryPartOfElementsComponent",
+     "path": "Components/ElementsComponents/ChangeLibraryPartOfElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 8,
+   "coveredParameters": [
+    "elementsWithLibraryPart",
+    "elementsWithLibraryPart.elementId",
+    "elementsWithLibraryPart.keepParameters",
+    "elementsWithLibraryPart.keepSize",
+    "elementsWithLibraryPart.libraryPart",
+    "elementsWithLibraryPart.libraryPart.guid",
+    "elementsWithLibraryPart.libraryPart.index",
+    "elementsWithLibraryPart.libraryPart.name"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3302,19 +3339,21 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Runs the parameter script of the library part of the given elements (objects, lamps, windows, doors, etc.), so that parameter values that depend on other parameters are updated, e.g. after SetGDLParametersOfElements.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1684,
-     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+     "name": "RunParameterScriptOfElementsComponent",
+     "path": "Components/ElementsComponents/RunParameterScriptOfElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3371,47 +3410,54 @@
     {
      "name": "CreateWallsComponent",
      "path": "Components/ElementsComponents/CreateWallsComponent.cs"
+    },
+    {
+     "name": "WallsApiComponent",
+     "path": "Components/DesignToolsComponents/WallsComponent.cs"
+    },
+    {
+     "name": "WallsComponent",
+     "path": "Components/DesignToolsComponents/WallsComponent.cs"
     }
    ],
-   "parameters": "json",
+   "parameters": "all",
    "parameterCount": 33,
    "coveredParameters": [
     "wallsData",
-    "wallsData.arcAngle",
-    "wallsData.begCoordinate",
-    "wallsData.buildingMaterialId",
-    "wallsData.compositeId",
-    "wallsData.endCoordinate",
-    "wallsData.favoriteName",
-    "wallsData.floorIndex",
-    "wallsData.height",
-    "wallsData.offset",
-    "wallsData.profileId",
-    "wallsData.referenceLineLocation",
-    "wallsData.structureType",
-    "wallsData.thickness",
-    "wallsData.zCoordinate"
-   ],
-   "missingParameters": [
     "wallsData.aboveViewLinePen",
     "wallsData.aboveViewLineTypeId",
     "wallsData.alignTexture",
+    "wallsData.arcAngle",
+    "wallsData.begCoordinate",
     "wallsData.belowViewLineTypeId",
+    "wallsData.buildingMaterialId",
+    "wallsData.compositeId",
     "wallsData.contourLineTypeId",
     "wallsData.contourPen",
     "wallsData.contourPen3D",
     "wallsData.displayOption",
+    "wallsData.endCoordinate",
+    "wallsData.favoriteName",
     "wallsData.flipped",
+    "wallsData.floorIndex",
+    "wallsData.height",
     "wallsData.id",
     "wallsData.inheritEndSurface",
     "wallsData.layerIndex",
     "wallsData.linkToSettings",
     "wallsData.logHeight",
     "wallsData.materialsChained",
+    "wallsData.offset",
     "wallsData.polyCanChange",
+    "wallsData.profileId",
+    "wallsData.referenceLineLocation",
+    "wallsData.structureType",
+    "wallsData.thickness",
     "wallsData.useCompositePriority",
-    "wallsData.viewDepthLimitation"
+    "wallsData.viewDepthLimitation",
+    "wallsData.zCoordinate"
    ],
+   "missingParameters": [],
    "pullRequests": [
     {
      "number": 1011,
@@ -3502,19 +3548,30 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Runs the Archicad stair solver on the given Stair baselines and parameters without creating any element. Returns for each one whether the baseline was already correct, could be solved or could not be solved, with the baseline and the main stair settings after solving. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 10,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1684,
-     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+     "name": "SolveStairBaselineComponent",
+     "path": "Components/ElementsComponents/SolveStairBaselineComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 10,
+   "coveredParameters": [
+    "stairsData",
+    "stairsData.baseLinePoints",
+    "stairsData.finishVisible",
+    "stairsData.flightWidth",
+    "stairsData.floorIndex",
+    "stairsData.riserHeight",
+    "stairsData.stepNum",
+    "stairsData.totalHeight",
+    "stairsData.treadDepth",
+    "stairsData.zCoordinate"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3650,19 +3707,19 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Returns the settings of the Opening tool defaults: the extrusion parameters (as GetOpeningDetails returns them) and the floor plan parameters (as GetOpeningFloorPlanParameters returns them). Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetOpeningDefaultComponent",
+     "path": "Components/ElementsComponents/GetOpeningDefaultComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1684,
-     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3670,19 +3727,63 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Changes the settings of the Opening tool defaults, with the names GetOpeningDefault returns. Only the given settings change. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 43,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1684,
-     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+     "name": "SetOpeningDefaultComponent",
+     "path": "Components/ElementsComponents/SetOpeningDefaultComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 43,
+   "coveredParameters": [
+    "extrusionParameters",
+    "extrusionParameters.anchor",
+    "extrusionParameters.anchorAltitude",
+    "extrusionParameters.areOverriddenSurfacesLinked",
+    "extrusionParameters.constraint",
+    "extrusionParameters.endSurfaceId",
+    "extrusionParameters.extrusionStartOffset",
+    "extrusionParameters.extrusionSurfaceId",
+    "extrusionParameters.finiteBodyLength",
+    "extrusionParameters.height",
+    "extrusionParameters.isEndSurfaceOverridden",
+    "extrusionParameters.isExtrusionSurfaceOverridden",
+    "extrusionParameters.limitType",
+    "extrusionParameters.linkedStatus",
+    "extrusionParameters.shapeType",
+    "extrusionParameters.width",
+    "floorPlanParameters",
+    "floorPlanParameters.clearCutSymbol",
+    "floorPlanParameters.clearUnCutSymbol",
+    "floorPlanParameters.coverFillBackgroundPen",
+    "floorPlanParameters.coverFillId",
+    "floorPlanParameters.coverFillOrientation",
+    "floorPlanParameters.coverFillPen",
+    "floorPlanParameters.coverFillTransformation",
+    "floorPlanParameters.coverFillsUseFillsOfCutElements",
+    "floorPlanParameters.cutSurfacesLinePen",
+    "floorPlanParameters.cutSurfacesLineTypeId",
+    "floorPlanParameters.cutSurfacesUseLineOfCutElements",
+    "floorPlanParameters.cutSymbolLibPartId",
+    "floorPlanParameters.dividedOpeningMode",
+    "floorPlanParameters.floorPlanDisplayMode",
+    "floorPlanParameters.openEdgeStyle",
+    "floorPlanParameters.outlinesOverheadLinePen",
+    "floorPlanParameters.outlinesOverheadLineTypeId",
+    "floorPlanParameters.outlinesUncutLinePen",
+    "floorPlanParameters.outlinesUncutLineTypeId",
+    "floorPlanParameters.outlinesUseLineOfCutElements",
+    "floorPlanParameters.referenceAxisLineTypeId",
+    "floorPlanParameters.referenceAxisOverhang",
+    "floorPlanParameters.referenceAxisPen",
+    "floorPlanParameters.showReferenceAxis",
+    "floorPlanParameters.unCutSymbolLibPartId",
+    "floorPlanParameters.useCoverFills"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3690,19 +3791,66 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Places openings with the Opening tool settings at points of their parent elements. A point off the parent element's surface is moved to the closest point of the surface. Each opening can be given its own extrusion and floor plan settings, which change only that opening and not the tool's settings. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 46,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1684,
-     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+     "name": "PlaceOpeningsComponent",
+     "path": "Components/ElementsComponents/PlaceOpeningsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 46,
+   "coveredParameters": [
+    "openingsData",
+    "openingsData.extrusionParameters",
+    "openingsData.extrusionParameters.anchor",
+    "openingsData.extrusionParameters.anchorAltitude",
+    "openingsData.extrusionParameters.areOverriddenSurfacesLinked",
+    "openingsData.extrusionParameters.constraint",
+    "openingsData.extrusionParameters.endSurfaceId",
+    "openingsData.extrusionParameters.extrusionStartOffset",
+    "openingsData.extrusionParameters.extrusionSurfaceId",
+    "openingsData.extrusionParameters.finiteBodyLength",
+    "openingsData.extrusionParameters.height",
+    "openingsData.extrusionParameters.isEndSurfaceOverridden",
+    "openingsData.extrusionParameters.isExtrusionSurfaceOverridden",
+    "openingsData.extrusionParameters.limitType",
+    "openingsData.extrusionParameters.linkedStatus",
+    "openingsData.extrusionParameters.shapeType",
+    "openingsData.extrusionParameters.width",
+    "openingsData.floorPlanParameters",
+    "openingsData.floorPlanParameters.clearCutSymbol",
+    "openingsData.floorPlanParameters.clearUnCutSymbol",
+    "openingsData.floorPlanParameters.coverFillBackgroundPen",
+    "openingsData.floorPlanParameters.coverFillId",
+    "openingsData.floorPlanParameters.coverFillOrientation",
+    "openingsData.floorPlanParameters.coverFillPen",
+    "openingsData.floorPlanParameters.coverFillTransformation",
+    "openingsData.floorPlanParameters.coverFillsUseFillsOfCutElements",
+    "openingsData.floorPlanParameters.cutSurfacesLinePen",
+    "openingsData.floorPlanParameters.cutSurfacesLineTypeId",
+    "openingsData.floorPlanParameters.cutSurfacesUseLineOfCutElements",
+    "openingsData.floorPlanParameters.cutSymbolLibPartId",
+    "openingsData.floorPlanParameters.dividedOpeningMode",
+    "openingsData.floorPlanParameters.floorPlanDisplayMode",
+    "openingsData.floorPlanParameters.openEdgeStyle",
+    "openingsData.floorPlanParameters.outlinesOverheadLinePen",
+    "openingsData.floorPlanParameters.outlinesOverheadLineTypeId",
+    "openingsData.floorPlanParameters.outlinesUncutLinePen",
+    "openingsData.floorPlanParameters.outlinesUncutLineTypeId",
+    "openingsData.floorPlanParameters.outlinesUseLineOfCutElements",
+    "openingsData.floorPlanParameters.referenceAxisLineTypeId",
+    "openingsData.floorPlanParameters.referenceAxisOverhang",
+    "openingsData.floorPlanParameters.referenceAxisPen",
+    "openingsData.floorPlanParameters.showReferenceAxis",
+    "openingsData.floorPlanParameters.unCutSymbolLibPartId",
+    "openingsData.floorPlanParameters.useCoverFills",
+    "openingsData.parentElementId",
+    "openingsData.point"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3710,19 +3858,21 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Returns the floor plan parameters of Opening elements: the floor plan display mode, the divided opening mode, the open edge style, the reference axis, the cut surface and outline lines, the cover fills and the cut and uncut symbols. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1684,
-     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+     "name": "GetOpeningFloorPlanParametersComponent",
+     "path": "Components/ElementsComponents/GetOpeningFloorPlanParametersComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3730,19 +3880,49 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Changes the floor plan parameters of Opening elements returned by GetOpeningFloorPlanParameters, and sets or removes their cut and uncut symbols. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 29,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1684,
-     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+     "name": "SetOpeningFloorPlanParametersComponent",
+     "path": "Components/ElementsComponents/SetOpeningFloorPlanParametersComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 29,
+   "coveredParameters": [
+    "openingsWithFloorPlanParameters",
+    "openingsWithFloorPlanParameters.elementId",
+    "openingsWithFloorPlanParameters.floorPlanParameters",
+    "openingsWithFloorPlanParameters.floorPlanParameters.clearCutSymbol",
+    "openingsWithFloorPlanParameters.floorPlanParameters.clearUnCutSymbol",
+    "openingsWithFloorPlanParameters.floorPlanParameters.coverFillBackgroundPen",
+    "openingsWithFloorPlanParameters.floorPlanParameters.coverFillId",
+    "openingsWithFloorPlanParameters.floorPlanParameters.coverFillOrientation",
+    "openingsWithFloorPlanParameters.floorPlanParameters.coverFillPen",
+    "openingsWithFloorPlanParameters.floorPlanParameters.coverFillTransformation",
+    "openingsWithFloorPlanParameters.floorPlanParameters.coverFillsUseFillsOfCutElements",
+    "openingsWithFloorPlanParameters.floorPlanParameters.cutSurfacesLinePen",
+    "openingsWithFloorPlanParameters.floorPlanParameters.cutSurfacesLineTypeId",
+    "openingsWithFloorPlanParameters.floorPlanParameters.cutSurfacesUseLineOfCutElements",
+    "openingsWithFloorPlanParameters.floorPlanParameters.cutSymbolLibPartId",
+    "openingsWithFloorPlanParameters.floorPlanParameters.dividedOpeningMode",
+    "openingsWithFloorPlanParameters.floorPlanParameters.floorPlanDisplayMode",
+    "openingsWithFloorPlanParameters.floorPlanParameters.openEdgeStyle",
+    "openingsWithFloorPlanParameters.floorPlanParameters.outlinesOverheadLinePen",
+    "openingsWithFloorPlanParameters.floorPlanParameters.outlinesOverheadLineTypeId",
+    "openingsWithFloorPlanParameters.floorPlanParameters.outlinesUncutLinePen",
+    "openingsWithFloorPlanParameters.floorPlanParameters.outlinesUncutLineTypeId",
+    "openingsWithFloorPlanParameters.floorPlanParameters.outlinesUseLineOfCutElements",
+    "openingsWithFloorPlanParameters.floorPlanParameters.referenceAxisLineTypeId",
+    "openingsWithFloorPlanParameters.floorPlanParameters.referenceAxisOverhang",
+    "openingsWithFloorPlanParameters.floorPlanParameters.referenceAxisPen",
+    "openingsWithFloorPlanParameters.floorPlanParameters.showReferenceAxis",
+    "openingsWithFloorPlanParameters.floorPlanParameters.unCutSymbolLibPartId",
+    "openingsWithFloorPlanParameters.floorPlanParameters.useCoverFills"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3750,19 +3930,21 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Returns the details of Opening elements: whether they exist, the parent element, the cut and connected elements, the geometry (anchor point, extrusion direction, axes, polygon) and the extrusion parameters (constraint, limit type, linked status, shape type, size, anchor, offsets, surface overrides). Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1684,
-     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+     "name": "GetOpeningDetailsComponent",
+     "path": "Components/ElementsComponents/GetOpeningDetailsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3770,19 +3952,43 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Changes the details of Opening elements: the parent element, the cut elements, the polygon, a transformation of the geometry and the extrusion parameters (constraint, limit type, linked status, shape type, size, anchor, offsets, surface overrides) returned by GetOpeningDetails. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 23,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1684,
-     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+     "name": "SetOpeningDetailsComponent",
+     "path": "Components/ElementsComponents/SetOpeningDetailsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 23,
+   "coveredParameters": [
+    "openingsWithDetails",
+    "openingsWithDetails.addCutElements",
+    "openingsWithDetails.elementId",
+    "openingsWithDetails.extrusionParameters",
+    "openingsWithDetails.extrusionParameters.anchor",
+    "openingsWithDetails.extrusionParameters.anchorAltitude",
+    "openingsWithDetails.extrusionParameters.areOverriddenSurfacesLinked",
+    "openingsWithDetails.extrusionParameters.constraint",
+    "openingsWithDetails.extrusionParameters.endSurfaceId",
+    "openingsWithDetails.extrusionParameters.extrusionStartOffset",
+    "openingsWithDetails.extrusionParameters.extrusionSurfaceId",
+    "openingsWithDetails.extrusionParameters.finiteBodyLength",
+    "openingsWithDetails.extrusionParameters.height",
+    "openingsWithDetails.extrusionParameters.isEndSurfaceOverridden",
+    "openingsWithDetails.extrusionParameters.isExtrusionSurfaceOverridden",
+    "openingsWithDetails.extrusionParameters.limitType",
+    "openingsWithDetails.extrusionParameters.linkedStatus",
+    "openingsWithDetails.extrusionParameters.shapeType",
+    "openingsWithDetails.extrusionParameters.width",
+    "openingsWithDetails.parentElementId",
+    "openingsWithDetails.polygon",
+    "openingsWithDetails.removeCutElements",
+    "openingsWithDetails.transformation"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3885,19 +4091,27 @@
    "group": "Element Commands",
    "version": "1.7.4",
    "brief": "Creates Railing elements along a reference polyline. Posts, rails, handrails, toprails, panels and balusters come from the favorite or from the Railing tool defaults; Archicad generates one node per vertex and one segment per pair of consecutive vertices.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 7,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1684,
-     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+     "name": "RailingsComponent",
+     "path": "Components/DesignToolsComponents/RailingsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 7,
+   "coveredParameters": [
+    "railingsData",
+    "railingsData.bottomOffset",
+    "railingsData.coordinates",
+    "railingsData.favoriteName",
+    "railingsData.floorIndex",
+    "railingsData.height",
+    "railingsData.id"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4054,19 +4268,21 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Gets the placement of Opening elements, Windows, Doors and Skylights without changing them: a global-to-local transformation matrix, its inverse, and the origin and axes in world coordinates derived from the inverse. For Windows, Doors and Skylights the local-to-global matrix is the one Archicad returns, and mirrored ones give a left-handed matrix (isMirrored). For Opening elements it is built from the opening geometry (Archicad 29 and later): origin at the anchor point, the X and Y axes of the opening and Z = X × Y, which points against the extrusion direction. Needs Archicad 27 or later.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1684,
-     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+     "name": "GetOpeningTransformationsComponent",
+     "path": "Components/ElementsComponents/GetOpeningTransformationsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4639,19 +4855,36 @@
    "group": "Element Commands",
    "version": "1.7.2",
    "brief": "Creates Level Dimension elements (the Level Dimension tool) based on the given parameters. With a parentElementId the dimension is associative: it shows the height of the parent element (Mesh, Slab, Roof ...) at its position and follows the element when it changes.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 16,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1684,
-     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+     "name": "LevelDimensionsComponent",
+     "path": "Components/DocumentToolsComponents/LevelDimensionsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 16,
+   "coveredParameters": [
+    "levelDimensionsData",
+    "levelDimensionsData.angle",
+    "levelDimensionsData.dimForm",
+    "levelDimensionsData.favoriteName",
+    "levelDimensionsData.floorIndex",
+    "levelDimensionsData.id",
+    "levelDimensionsData.layerIndex",
+    "levelDimensionsData.level",
+    "levelDimensionsData.markerSize",
+    "levelDimensionsData.needPlus",
+    "levelDimensionsData.origin",
+    "levelDimensionsData.parentElementId",
+    "levelDimensionsData.pen",
+    "levelDimensionsData.position",
+    "levelDimensionsData.textHeight",
+    "levelDimensionsData.textPen"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4665,58 +4898,65 @@
     {
      "name": "ModifyWallsComponent",
      "path": "Components/ElementsComponents/ModifyWallsComponent.cs"
+    },
+    {
+     "name": "WallsApiComponent",
+     "path": "Components/DesignToolsComponents/WallsComponent.cs"
+    },
+    {
+     "name": "WallsComponent",
+     "path": "Components/DesignToolsComponents/WallsComponent.cs"
     }
    ],
-   "parameters": "json",
+   "parameters": "all",
    "parameterCount": 44,
    "coveredParameters": [
     "wallsWithDetails",
-    "wallsWithDetails.arcAngle",
-    "wallsWithDetails.begCoordinate",
-    "wallsWithDetails.bottomOffset",
-    "wallsWithDetails.buildingMaterialId",
-    "wallsWithDetails.compositeId",
-    "wallsWithDetails.elementId",
-    "wallsWithDetails.endCoordinate",
-    "wallsWithDetails.geometryType",
-    "wallsWithDetails.height",
-    "wallsWithDetails.offset",
-    "wallsWithDetails.profileId",
-    "wallsWithDetails.referenceLineLocation",
-    "wallsWithDetails.structureType",
-    "wallsWithDetails.thickness"
-   ],
-   "missingParameters": [
     "wallsWithDetails.aboveViewLinePen",
     "wallsWithDetails.aboveViewLineTypeId",
     "wallsWithDetails.alignTexture",
+    "wallsWithDetails.arcAngle",
+    "wallsWithDetails.begCoordinate",
     "wallsWithDetails.belowViewLineTypeId",
+    "wallsWithDetails.bottomOffset",
+    "wallsWithDetails.buildingMaterialId",
+    "wallsWithDetails.compositeId",
     "wallsWithDetails.contourLineTypeId",
     "wallsWithDetails.contourPen",
     "wallsWithDetails.contourPen3D",
     "wallsWithDetails.cutFillBackgroundPen",
     "wallsWithDetails.cutFillPen",
     "wallsWithDetails.displayOption",
+    "wallsWithDetails.elementId",
+    "wallsWithDetails.endCoordinate",
     "wallsWithDetails.flipped",
+    "wallsWithDetails.geometryType",
+    "wallsWithDetails.height",
     "wallsWithDetails.inheritEndSurface",
     "wallsWithDetails.isAutoOnStoryVisibility",
     "wallsWithDetails.linkToSettings",
     "wallsWithDetails.logHeight",
     "wallsWithDetails.materialsChained",
+    "wallsWithDetails.offset",
     "wallsWithDetails.oppositeMaterial",
     "wallsWithDetails.polyCanChange",
+    "wallsWithDetails.profileId",
     "wallsWithDetails.profileType",
+    "wallsWithDetails.referenceLineLocation",
     "wallsWithDetails.referenceMaterial",
     "wallsWithDetails.relativeTopStory",
     "wallsWithDetails.sideMaterial",
     "wallsWithDetails.slantAlpha",
     "wallsWithDetails.slantBeta",
+    "wallsWithDetails.structureType",
+    "wallsWithDetails.thickness",
     "wallsWithDetails.topOffset",
     "wallsWithDetails.useCompositePriority",
     "wallsWithDetails.viewDepthLimitation",
     "wallsWithDetails.visibility",
     "wallsWithDetails.zoneRel"
    ],
+   "missingParameters": [],
    "pullRequests": [
     {
      "number": 1011,
@@ -5195,19 +5435,25 @@
    "group": "Element Commands",
    "version": "1.7.3",
    "brief": "Replaces a range of the content of Text elements and text Labels, keeping the styles of the runs and the autotexts in the rest of the content.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 5,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1684,
-     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+     "name": "ChangeTextContentComponent",
+     "path": "Components/ElementsComponents/ChangeTextContentComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 5,
+   "coveredParameters": [
+    "contentChanges",
+    "contentChanges.content",
+    "contentChanges.elementId",
+    "contentChanges.from",
+    "contentChanges.range"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5215,19 +5461,30 @@
    "group": "Element Commands",
    "version": "1.7.2",
    "brief": "Measures texts before placing them: the length of every line for a given font, style and height, on paper in millimetres or in the model at the current drawing scale, and the font's capital size factor. Creates nothing.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 10,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1684,
-     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+     "name": "MeasureTextsComponent",
+     "path": "Components/ElementsComponents/MeasureTextsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 10,
+   "coveredParameters": [
+    "texts",
+    "texts.bold",
+    "texts.fontIndex",
+    "texts.fontName",
+    "texts.height",
+    "texts.inModelUnits",
+    "texts.italic",
+    "texts.slant",
+    "texts.text",
+    "texts.underline"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5289,19 +5546,25 @@
    "group": "Element Commands",
    "version": "1.2.8",
    "brief": "Sets up a new notification client to receive element events.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 5,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1684,
-     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+     "name": "SetElementNotificationClientComponent",
+     "path": "Components/ElementsComponents/SetElementNotificationClientComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 5,
+   "coveredParameters": [
+    "host",
+    "notifyOnModificationOfAnElement",
+    "notifyOnNewElement",
+    "notifyOnReservationChanges",
+    "port"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5309,19 +5572,22 @@
    "group": "Element Commands",
    "version": "1.2.8",
    "brief": "Removes an element notification client.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1684,
-     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+     "name": "RemoveElementNotificationClientComponent",
+     "path": "Components/ElementsComponents/RemoveElementNotificationClientComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "host",
+    "port"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5329,19 +5595,25 @@
    "group": "Element Commands",
    "version": "1.7.2",
    "brief": "Regularizes polygons with Archicad's own polygon regularization, before they are used to create slabs, zones or fills: removes duplicate points, fixes the orientation, resolves self-intersections and touching holes. Each input polygon gives 0, 1 or more valid polygons in the format of CreateSlabs, optionally with the input vertex and edge each result vertex and edge came from. Changes nothing in the project.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 5,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1684,
-     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+     "name": "RegularizePolygonsComponent",
+     "path": "Components/ElementsComponents/RegularizePolygonsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 5,
+   "coveredParameters": [
+    "polygons",
+    "polygons.holes",
+    "polygons.polygonArcs",
+    "polygons.polygonCoordinates",
+    "withAncestry"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5349,19 +5621,24 @@
    "group": "Element Commands",
    "version": "1.7.2",
    "brief": "Regularizes polylines with Archicad's own polyline regularization: removes repeated consecutive points. The result is in the format of CreatePolylines and may be empty, optionally with the input point and segment each result point and segment came from. Changes nothing in the project.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 4,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1684,
-     "title": "Grasshopper: openings, texts, zone labels, Railings and Level Dimensions tool components, more element commands"
+     "name": "RegularizePolylinesComponent",
+     "path": "Components/ElementsComponents/RegularizePolylinesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "polylines",
+    "polylines.arcs",
+    "polylines.coordinates",
+    "withAncestry"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6132,6 +6409,14 @@
     {
      "name": "ElementMetadata",
      "path": "Components/ElementMetadata.cs"
+    },
+    {
+     "name": "LevelDimensionsComponent",
+     "path": "Components/DocumentToolsComponents/LevelDimensionsComponent.cs"
+    },
+    {
+     "name": "RailingsComponent",
+     "path": "Components/DesignToolsComponents/RailingsComponent.cs"
     },
     {
      "name": "SetPropertyValuesOfElementsComponent",

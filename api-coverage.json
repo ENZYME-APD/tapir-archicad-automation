@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-31 15:51 UTC",
+ "generatedAt": "2026-10-31 19:13 UTC",
  "versions": [
   25,
   26,
@@ -10,11 +10,11 @@
  ],
  "counts": {
   "not applicable": 627,
-  "done": 1099,
+  "done": 1098,
   "claimed": 53,
-  "merged": 606,
+  "merged": 608,
   "open": 94,
-  "in progress": 398,
+  "in progress": 397,
   "skipped": 2
  },
  "items": [
@@ -3028,10 +3028,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
-    {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     }
@@ -3083,10 +3079,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
-    {
      "number": 1622,
      "title": "CreateFills: keep the percent of a Solid fill (isPercentFill)"
     },
@@ -3136,10 +3128,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
     {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
@@ -3227,10 +3215,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
-    {
      "number": 1670,
      "title": "CreateHotlinkInstances: place on the Archicad layer when the default layer was deleted"
     },
@@ -3294,10 +3278,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
     {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
@@ -3471,10 +3451,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
-    {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     }
@@ -3500,10 +3476,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
     {
      "number": 975,
      "title": "Add ModifyPens: change single pens of the active pen table"
@@ -3549,10 +3521,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
-    {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     },
@@ -3593,10 +3561,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
     {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
@@ -3912,10 +3876,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
-    {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     }
@@ -3941,10 +3901,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
     {
      "number": 1619,
      "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
@@ -4021,10 +3977,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
     {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
@@ -4697,10 +4649,6 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
     {
      "number": 1666,
      "title": "Fix PlaceOpenings crash in Archicad 30: run Place inside an undoable command"
@@ -5667,10 +5615,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
-    {
      "number": 1686,
      "title": "Get3DBoundingBoxes: work for Slabs and Zones while a layout or a section is open"
     },
@@ -5757,10 +5701,6 @@
     {
      "number": 1418,
      "title": "View Map: DeleteNavigatorItems rejects folders/TOC items, and item ordering within a folder is unreliable"
-    },
-    {
-     "number": 690,
-     "title": "DeleteNavigatorItems fails on Project Map viewpoints (schedules): uses DeleteNavigatorView, which only handles View Map items"
     }
    ]
   },
@@ -5852,10 +5792,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
     {
      "number": 1687,
      "title": "CreateAssociativeDimensionsOnSection: OpeningEdges preset for Opening tool elements"
@@ -5993,10 +5929,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
-    {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     }
@@ -6025,10 +5957,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
-    {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     }
@@ -6056,10 +5984,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
     {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
@@ -6112,10 +6036,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
-    {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     }
@@ -6143,10 +6063,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
     {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
@@ -6209,10 +6125,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
-    {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     }
@@ -6246,10 +6158,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
-    {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     }
@@ -6277,10 +6185,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
     {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
@@ -6863,10 +6767,6 @@
    "reason": "memory management",
    "pullRequests": [
     {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
-    {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     }
@@ -6892,10 +6792,6 @@
    "status": "not applicable",
    "reason": "memory management",
    "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
     {
      "number": 1619,
      "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
@@ -6968,10 +6864,6 @@
    "status": "not applicable",
    "reason": "memory management",
    "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
     {
      "number": 1702,
      "title": "Add CreateShells: extruded, revolved and ruled shells"
@@ -8102,10 +7994,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
-    {
      "number": 1698,
      "title": "SetGDLParametersOfElements: report written parameters Archicad did not keep"
     },
@@ -8228,10 +8116,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
     {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
@@ -8360,10 +8244,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -8829,10 +8709,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
-    {
      "number": 1664,
      "title": "Shell structure in GetDetailsOfElements and a ModifyShells command"
     },
@@ -9163,10 +9039,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
-    {
      "number": 1702,
      "title": "Add CreateShells: extruded, revolved and ruled shells"
     },
@@ -9294,10 +9166,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
     {
      "number": 1640,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
@@ -9536,10 +9404,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
-    {
      "number": 1711,
      "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
     },
@@ -9659,10 +9523,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
     {
      "number": 1673,
      "title": "GetDetailsOfElements: surface overrides of Roofs, Beams and Columns"
@@ -11355,10 +11215,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -11393,10 +11249,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -12007,12 +11859,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 561,
@@ -12303,12 +12150,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12398,12 +12240,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16738,20 +16575,10 @@
    "olderNames": [
     "APINavigator_DeleteNavigatorVPItemID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 691,
-     "title": "Fix DeleteNavigatorItems for Project Map viewpoints (schedules)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 690,
-     "title": "DeleteNavigatorItems fails on Project Map viewpoints (schedules): uses DeleteNavigatorView, which only handles View Map items"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_DeleteNavigatorView",
@@ -16791,10 +16618,6 @@
     {
      "number": 1418,
      "title": "View Map: DeleteNavigatorItems rejects folders/TOC items, and item ordering within a folder is unreliable"
-    },
-    {
-     "number": 690,
-     "title": "DeleteNavigatorItems fails on Project Map viewpoints (schedules): uses DeleteNavigatorView, which only handles View Map items"
     }
    ]
   },
@@ -23960,10 +23783,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
-    {
      "number": 1699,
      "title": "SetLayoutSettings: apply layoutName by renaming the layout database"
     },
@@ -26167,12 +25986,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 691,
-     "title": "Fix DeleteNavigatorItems for Project Map viewpoints (schedules)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 876,
@@ -31974,13 +31788,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1705,
-     "title": "GetAllFavorites: don't crash on analytical support favorites"
-    },
     {
      "number": 1542,
      "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
@@ -32052,10 +31862,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
     {
      "number": 1686,
      "title": "Get3DBoundingBoxes: work for Slabs and Zones while a layout or a section is open"
@@ -32159,7 +31965,7 @@
     30
    ],
    "olderNames": [],
-   "status": "done",
+   "status": "in progress",
    "reason": "",
    "pullRequests": [
     {
@@ -35952,10 +35758,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
     {
      "number": 1642,
      "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
@@ -45517,10 +45319,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
     {
      "number": 1711,
      "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
@@ -65251,10 +65049,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
     {
      "number": 1641,
      "title": "SetPropertyValueOfAttributes, clearer results of SetPropertyValuesOfAttributes (replaces #1365)"
