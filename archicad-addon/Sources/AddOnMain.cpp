@@ -616,6 +616,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.7.3",
             "Triangulates the plan polygon of the given elements, holes excluded, as Archicad does it: the outline of a Slab, Zone, Hatch or Mesh and the polygon of a Roof. Each triangle is given by the 2D coordinates of its three vertices. The output is aligned with the input array of elements; an element of another type gets an error item."
         );
+        err |= RegisterCommand<GetSurfaceTypesOfElementsCommand> (
+            elementCommands, "1.7.4",
+            "Gets the surface type of every polygon of the 3D model of the given elements, as ACAPI_Polygon_PolygonId2SurfaceType returns it: for each element its polygons with their body index, polygon index, polygon id and the numeric API_SurfaceTypeID value. The model is generated with separate components in a temporary sight, so the 3D window is not changed. The output is aligned with the input array of elements. Available from Archicad 28."
+        );
         err |= RegisterCommand<Get3DModelCountsCommand> (
             elementCommands, "1.7.3",
             "Gets the number of components of each type (bodies, polygons, polygon edges, edges, vertices, normal vectors, materials and lights) in the 3D model Archicad currently holds, as ACAPI_ModelAccess_GetNum counts them. A type that cannot be counted gets an error item. Available from Archicad 27."
