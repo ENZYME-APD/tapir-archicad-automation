@@ -1549,7 +1549,7 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
             },
             "applySettings": {
                 "type": "boolean",
-                "description": "Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc. - never geometry; the element stays on its own home story). For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. A Dimension's text size, text pen and text frame are not changed (tested in Archicad 28): the dimension creation commands take textHeight and textPen for them. Default is true."
+                "description": "Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc. - never geometry; the element stays on its own home story). For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. A Dimension's text size, text pen and text frame are not changed (tested in Archicad 28): the dimension creation commands take textHeight, textPen and textFrame for them. Default is true."
             },
             "applyClassifications": {
                 "type": "boolean",
