@@ -6968,3 +6968,2006 @@ GS::ObjectState DeleteUserDataOfAttributesCommand::Execute (const GS::ObjectStat
 
     return response;
 }
+
+ReindexLayersCommand::ReindexLayersCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ReindexLayersCommand::GetName () const
+{
+    return "ReindexLayers";
+}
+
+GS::Optional<GS::UniString> ReindexLayersCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "layers": {
+                "type": "array",
+                "description": "The layers to move to a new index, handled in the given order.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "attributeId": {
+                            "$ref": "#/AttributeId",
+                            "description": "The layer to move."
+                        },
+                        "newIndex": {
+                            "type": "integer",
+                            "description": "The index the layer gets. It must not be used by another layer. Index 1 (the Archicad Layer) cannot be used or moved.",
+                            "minimum": 2
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "attributeId",
+                        "newIndex"
+                    ]
+                }
+            },
+            "dryRun": {
+                "type": "boolean",
+                "description": "Only list what would change (the elements on each layer, the tools whose default layer it is, the elements that block the move) without changing anything. The default is false."
+            },
+            "maxPlaceholders": {
+                "type": "integer",
+                "description": "Every free index below newIndex is filled with a temporary layer first (about 20 ms each), so a newIndex far above the highest index in use takes long. A layer that needs more temporary layers than this is not moved. The default is 1000.",
+                "minimum": 0
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "layers"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ReindexLayersCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "layers": {
+                "type": "array",
+                "description": "One item per requested layer, in the same order.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "attributeId": {
+                                    "$ref": "#/AttributeId",
+                                    "description": "The layer at its new index. Archicad cannot renumber an attribute in place, so this is a new attribute with a new id; with dryRun it is the layer's current id."
+                                },
+                                "oldIndex": {
+                                    "type": "integer"
+                                },
+                                "newIndex": {
+                                    "type": "integer"
+                                },
+                                "elements": {
+                                    "$ref": "#/Elements",
+                                    "description": "The elements on the layer, in the floor plan and in every section, elevation, interior elevation, detail, worksheet, 3D document, layout and master layout. Moved to the new layer unless dryRun is true. The model elements that sections, elevations, interior elevations and 3D documents show are not listed (see viewsToRebuild)."
+                                },
+                                "blockedElements": {
+                                    "$ref": "#/Elements",
+                                    "description": "Only with dryRun: elements on the layer that cannot be moved, because they come from a hotlinked module. Without dryRun such a layer is not moved."
+                                },
+                                "toolDefaults": {
+                                    "type": "array",
+                                    "description": "The element types whose tool default is on this layer. They are set to the new layer unless dryRun is true.",
+                                    "items": {
+                                        "$ref": "#/ElementType"
+                                    }
+                                },
+                                "placeholders": {
+                                    "type": "integer",
+                                    "description": "The number of temporary layers needed for the free indices below newIndex."
+                                },
+                                "warnings": {
+                                    "type": "array",
+                                    "description": "What did not work after the layer was moved: its name and flags, or the move into its attribute folder.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "viewsToRebuild": {
+                                    "$ref": "#/Databases",
+                                    "description": "The sections, elevations, interior elevations and 3D documents that show elements of the layer. The model elements they show are deleted with the old layer and come back on the new layer when the view is rebuilt: Archicad does that when the view is opened, unless it is set to be rebuilt manually. To rebuild one at once, call ChangeWindow with its databaseId and then RebuildCurrentDatabase."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "attributeId",
+                                "oldIndex",
+                                "newIndex",
+                                "elements",
+                                "toolDefaults",
+                                "placeholders",
+                                "viewsToRebuild"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "layers"
+        ]
+    })";
+}
+
+#ifdef ServerMainVers_2700
+
+namespace {
+
+struct ElementInDatabase {
+    API_DatabaseInfo database;
+    API_Guid         guid;
+};
+
+// The floor plan and every database of the views and layouts: together they hold every element that has a layer.
+GSErrCode GetElementDatabases (GS::Array<API_DatabaseInfo>& databases)
+{
+    API_DatabaseInfo floorPlan = {};
+    floorPlan.typeID = APIWind_FloorPlanID;
+    GSErrCode err = ACAPI_Window_GetDatabaseInfo (&floorPlan);
+    if (err != NoError) {
+        return err;
+    }
+    databases.Push (floorPlan);
+
+    const struct {
+        API_WindowTypeID typeID;
+        GSErrCode (*getDatabases) (API_DatabaseUnId**, GS::Array<API_DatabaseUnId>*);
+    } databaseTypes[] = {
+        { APIWind_SectionID,           ACAPI_Database_GetSectionDatabases },
+        { APIWind_ElevationID,         ACAPI_Database_GetElevationDatabases },
+        { APIWind_InteriorElevationID, ACAPI_Database_GetInteriorElevationDatabases },
+        { APIWind_DetailID,            ACAPI_Database_GetDetailDatabases },
+        { APIWind_WorksheetID,         ACAPI_Database_GetWorksheetDatabases },
+        { APIWind_DocumentFrom3DID,    ACAPI_Database_GetDocumentFrom3DDatabases },
+        { APIWind_LayoutID,            ACAPI_Database_GetLayoutDatabases },
+        { APIWind_MasterLayoutID,      ACAPI_Database_GetMasterLayoutDatabases }
+    };
+    for (const auto& databaseType : databaseTypes) {
+        GS::Array<API_DatabaseUnId> databaseUnIds;
+        err = databaseType.getDatabases (nullptr, &databaseUnIds);
+        if (err != NoError) {
+            return err;
+        }
+        for (const API_DatabaseUnId& databaseUnId : databaseUnIds) {
+            API_DatabaseInfo database = {};
+            database.typeID = databaseType.typeID;
+            database.databaseUnId = databaseUnId;
+            err = ACAPI_Window_GetDatabaseInfo (&database);
+            if (err != NoError) {
+                return err;
+            }
+            databases.Push (database);
+        }
+    }
+    return NoError;
+}
+
+void AddDatabaseOnce (GS::Array<API_DatabaseInfo>& databases, const API_DatabaseInfo& database)
+{
+    for (const API_DatabaseInfo& listed : databases) {
+        if (listed.databaseUnId.elemSetId == database.databaseUnId.elemSetId) {
+            return;
+        }
+    }
+    databases.Push (database);
+}
+
+// Lists the elements on the layer in every database. Any database that cannot be read fails the whole scan,
+// because the scan decides whether the layer may be deleted, and deleting a layer deletes its elements.
+// The model elements shown in a section, elevation, interior elevation or 3D document (API_SectElemID) are not
+// listed: changing their layer reports success but keeps it, and a rebuild of their view recreates them from the
+// element they show, on that element's layer (tested on Archicad 29). Their views are added to sectionElementViews.
+GSErrCode CollectElementsOnLayer (const GS::Array<API_DatabaseInfo>& databases, const API_AttributeIndex& layer, GS::Array<ElementInDatabase>& elements, GS::Array<API_DatabaseInfo>* sectionElementViews = nullptr)
+{
+    elements.Clear ();
+    for (const API_DatabaseInfo& database : databases) {
+        API_DatabaseInfo current = database;
+        GSErrCode err = ACAPI_Database_ChangeCurrentDatabase (&current);
+        if (err != NoError) {
+            return err;
+        }
+        GS::Array<API_Guid> guids;
+        err = ACAPI_Element_GetElemList (API_ZombieElemID, &guids);
+        if (err != NoError) {
+            return err;
+        }
+        for (const API_Guid& guid : guids) {
+            API_Elem_Head head = {};
+            head.guid = guid;
+            if (ACAPI_Element_GetHeader (&head) != NoError || head.layer != layer) {
+                continue;
+            }
+            if (GetElemTypeId (head.type) == API_SectElemID) {
+                if (sectionElementViews != nullptr) {
+                    AddDatabaseOnce (*sectionElementViews, database);
+                }
+                continue;
+            }
+            elements.Push ({ database, guid });
+        }
+    }
+    return NoError;
+}
+
+GSErrCode SetLayerOfElementInDatabase (const ElementInDatabase& element, const API_AttributeIndex& layer)
+{
+    API_DatabaseInfo database = element.database;
+    GSErrCode err = ACAPI_Database_ChangeCurrentDatabase (&database);
+    if (err != NoError) {
+        return err;
+    }
+    API_Element elem = {};
+    elem.header.guid = element.guid;
+    err = ACAPI_Element_Get (&elem);
+    if (err != NoError) {
+        return err;
+    }
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
+    elem.header.layer = layer;
+    return ACAPI_Element_Change (&elem, &mask, nullptr, 0, true);
+}
+
+// Reads a layer with its Unicode name (see GetAttributeName for why the name needs uniStringNamePtr).
+GSErrCode GetLayer (API_Attribute& layer, GS::UniString& name)
+{
+    layer.header.typeID = API_LayerID;
+    layer.header.uniStringNamePtr = &name;
+    return ACAPI_Attribute_Get (&layer);
+}
+
+// The type of API_Attr_Head::flags: short before Archicad 29, GSFlags from 29.
+using LayerFlags = decltype (API_Attr_Head::flags);
+
+LayerFlags WithoutHiddenAndLocked (LayerFlags flags)
+{
+    return static_cast<LayerFlags> (flags & ~(APILay_Hidden | APILay_Locked));
+}
+
+GSErrCode SetLayerFlags (const API_AttributeIndex& index, LayerFlags flags)
+{
+    GS::UniString name;
+    API_Attribute layer = {};
+    layer.header.index = index;
+    GSErrCode err = GetLayer (layer, name);
+    if (err != NoError) {
+        return err;
+    }
+    layer.header.flags = flags;
+    return ACAPI_Attribute_Modify (&layer, nullptr);
+}
+
+GSErrCode DeleteLayer (const API_AttributeIndex& index)
+{
+    API_Attr_Head head = {};
+    head.typeID = API_LayerID;
+    head.index = index;
+    return ACAPI_Attribute_Delete (head);
+}
+
+// A name no layer has, for the placeholders and for the copy until the old layer is gone.
+GS::UniString GetTemporaryLayerName (const GS::UniString& prefix)
+{
+    GS::Guid guid;
+    guid.Generate ();
+    return prefix + " " + guid.ToUniString ();
+}
+
+// Every layer combination gets the same state (hidden, locked, wireframe, intersection group) for the new layer as for the old one.
+GSErrCode CopyLayerStateInCombinations (const API_AttributeIndex& from, const API_AttributeIndex& to)
+{
+    GS::Array<API_Attribute> combinations;
+    GSErrCode err = ACAPI_Attribute_GetAttributesByType (API_LayerCombID, combinations);
+    if (err != NoError) {
+        return err;
+    }
+    for (API_Attribute& listed : combinations) {
+        const API_AttributeIndex combinationIndex = listed.header.index;
+        DisposeAttribute (listed);
+
+        GS::UniString name;
+        API_Attribute combination = {};
+        combination.header.typeID = API_LayerCombID;
+        combination.header.index = combinationIndex;
+        combination.header.uniStringNamePtr = &name;
+        err = ACAPI_Attribute_Get (&combination);
+        if (err != NoError) {
+            return err;
+        }
+        API_AttributeDef def = {};
+        err = ACAPI_Attribute_GetDef (API_LayerCombID, combinationIndex, &def);
+        if (err == NoError && def.layer_statItems != nullptr && def.layer_statItems->ContainsKey (from)) {
+            def.layer_statItems->Put (to, def.layer_statItems->Get (from));
+            combination.layerComb.lNumb = static_cast<Int32> (def.layer_statItems->GetSize ());
+            err = ACAPI_Attribute_Modify (&combination, &def);
+        }
+        ACAPI_DisposeAttrDefsHdls (&def);
+        if (err != NoError) {
+            return err;
+        }
+    }
+    return NoError;
+}
+
+// The element types whose tool default is on the layer. With a new layer, those defaults are set to it.
+GS::Array<API_ElemTypeID> UpdateToolDefaultsOnLayer (const API_AttributeIndex& layer, const GS::Optional<API_AttributeIndex>& newLayer)
+{
+    GS::Array<API_ElemTypeID> types;
+    for (Int32 type = API_FirstElemType; type <= API_LastElemType; ++type) {
+        const API_ElemTypeID typeID = static_cast<API_ElemTypeID> (type);
+        API_Element defaults = {};
+        defaults.header.type = typeID;
+        if (ACAPI_Element_GetDefaults (&defaults, nullptr) != NoError || defaults.header.layer != layer) {
+            continue;
+        }
+        if (newLayer.HasValue ()) {
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+            ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
+            defaults.header.layer = newLayer.Get ();
+            if (ACAPI_Element_ChangeDefaults (&defaults, nullptr, &mask) != NoError) {
+                continue;
+            }
+        }
+        types.Push (typeID);
+    }
+    return types;
+}
+
+// The attribute folder that holds the layer, or no value for the root folder (where a new layer is created).
+GS::Optional<API_AttributeFolder> FindFolderOfLayer (const API_AttributeFolder& folder, const GS::Guid& layerGuid, bool isRoot)
+{
+    API_AttributeFolderContent content;
+    if (ACAPI_Attribute_GetFolderContent (folder, content) != NoError) {
+        return GS::NoValue;
+    }
+    if (content.attributeIds.Contains (layerGuid)) {
+        return isRoot ? GS::Optional<API_AttributeFolder> () : GS::Optional<API_AttributeFolder> (folder);
+    }
+    for (const API_AttributeFolder& subFolder : content.subFolders) {
+        GS::Optional<API_AttributeFolder> found = FindFolderOfLayer (subFolder, layerGuid, false);
+        if (found.HasValue ()) {
+            return found;
+        }
+    }
+    return GS::NoValue;
+}
+
+GS::Array<GS::ObjectState> GetElementIds (const GS::Array<ElementInDatabase>& elements)
+{
+    GS::Array<GS::ObjectState> ids;
+    for (const ElementInDatabase& element : elements) {
+        ids.Push (CreateElementIdObjectState (element.guid));
+    }
+    return ids;
+}
+
+GS::Array<GS::ObjectState> GetDatabaseIds (const GS::Array<API_DatabaseInfo>& databases)
+{
+    GS::Array<GS::ObjectState> ids;
+    for (const API_DatabaseInfo& database : databases) {
+        ids.Push (CreateDatabaseIdObjectState (DatabaseIdResolver::Instance ().GetIdOfDatabase (database)));
+    }
+    return ids;
+}
+
+GS::UniString ListElementGuids (const GS::Array<ElementInDatabase>& elements)
+{
+    GS::UniString list;
+    for (UIndex i = 0; i < elements.GetSize () && i < 5; ++i) {
+        list += (i == 0 ? "" : ", ") + APIGuidToString (elements[i].guid);
+    }
+    if (elements.GetSize () > 5) {
+        list += GS::UniString::Printf (" and %u more", elements.GetSize () - 5);
+    }
+    return list;
+}
+
+// Moves one layer to newIndex, as described in the command's registration. On any failure, everything done so far
+// for this layer is undone, and the old layer with its elements is kept.
+GS::ObjectState ReindexLayer (const GS::Array<API_DatabaseInfo>& databases, const API_Guid& layerGuid, Int32 newIndexValue, bool dryRun, Int32 maxPlaceholders)
+{
+    GS::UniString name;
+    API_Attribute oldLayer = {};
+    oldLayer.header.guid = layerGuid;
+    if (GetLayer (oldLayer, name) != NoError) {
+        return CreateErrorResponse (APIERR_BADID, "The layer was not found.");
+    }
+    const API_AttributeIndex oldIndex = oldLayer.header.index;
+    const API_AttributeIndex newIndex = ACAPI_CreateAttributeIndex (newIndexValue);
+    if (GetAttributeIndex (oldIndex) == 1) {
+        return CreateErrorResponse (APIERR_BADPARS, "The Archicad Layer (index 1) cannot be moved.");
+    }
+    if (newIndexValue < 2) {
+        return CreateErrorResponse (APIERR_BADPARS, "newIndex must be 2 or higher: index 1 is the Archicad Layer.");
+    }
+
+    // Archicad gives a new layer the lowest free index, so every free index below newIndex gets a placeholder first.
+    GS::Array<API_Attribute> layers;
+    GSErrCode err = ACAPI_Attribute_GetAttributesByType (API_LayerID, layers);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to list the layers.");
+    }
+    GS::HashSet<Int32> usedIndices;
+    for (API_Attribute& layer : layers) {
+        usedIndices.Add (GetAttributeIndex (layer.header.index));
+        DisposeAttribute (layer);
+    }
+    if (oldIndex != newIndex && usedIndices.Contains (newIndexValue)) {
+        API_Attribute other = {};
+        other.header.index = newIndex;
+        GS::UniString otherName;
+        GetLayer (other, otherName);
+        return CreateErrorResponse (APIERR_ATTREXIST, GS::UniString::Printf ("Index %d is used by the layer '%T'. Move that layer first.", newIndexValue, otherName.ToPrintf ()));
+    }
+
+    GS::Array<ElementInDatabase> elements;
+    GS::Array<API_DatabaseInfo> sectionElementViews;
+    err = CollectElementsOnLayer (databases, oldIndex, elements, &sectionElementViews);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to read the elements of every view and layout, so the layer was not moved.");
+    }
+    GS::Array<ElementInDatabase> blocked;
+    for (const ElementInDatabase& element : elements) {
+        API_DatabaseInfo database = element.database;
+        ACAPI_Database_ChangeCurrentDatabase (&database);
+        API_Elem_Head head = {};
+        head.guid = element.guid;
+        if (ACAPI_Element_GetHeader (&head) == NoError && head.hotlinkGuid != APINULLGuid) {
+            blocked.Push (element);
+        }
+    }
+
+    Int32 placeholderCount = 0;
+    for (Int32 index = 1; index < newIndexValue && oldIndex != newIndex; ++index) {
+        if (!usedIndices.Contains (index)) {
+            ++placeholderCount;
+        }
+    }
+
+    GS::ObjectState result;
+    result.Add ("oldIndex", GetAttributeIndex (oldIndex));
+    result.Add ("newIndex", newIndexValue);
+    result.Add ("placeholders", placeholderCount);
+
+    if (dryRun || oldIndex == newIndex) {
+        result.Add ("attributeId", CreateGuidObjectState (layerGuid));
+        result.Add ("elements", GetElementIds (elements));
+        if (dryRun) {
+            result.Add ("blockedElements", GetElementIds (blocked));
+        }
+        result.Add ("viewsToRebuild", GetDatabaseIds (dryRun ? sectionElementViews : GS::Array<API_DatabaseInfo> ()));
+        const auto& toolDefaults = result.AddList<GS::UniString> ("toolDefaults");
+        for (API_ElemTypeID typeID : UpdateToolDefaultsOnLayer (oldIndex, GS::NoValue)) {
+            toolDefaults (GetElementTypeNonLocalizedName (typeID));
+        }
+        return result;
+    }
+    if (placeholderCount > maxPlaceholders) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("The layer was not moved: index %d needs %d temporary layers for the free indices below it, more than maxPlaceholders (%d). Give a larger maxPlaceholders if this index is intended.", newIndexValue, placeholderCount, maxPlaceholders));
+    }
+    if (!blocked.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf ("The layer was not moved: %u of its elements come from a hotlinked module and cannot be moved (%T).", blocked.GetSize (), ListElementGuids (blocked).ToPrintf ()));
+    }
+
+    // Elements on a hidden or locked layer cannot be changed, so the old layer is shown and unlocked while its
+    // elements are moved. Its own flags are put back on every path that keeps it. Archicad keeps these flags per
+    // open window: they are read and written in the current one.
+    const LayerFlags oldFlags = oldLayer.header.flags;
+    err = SetLayerFlags (oldIndex, WithoutHiddenAndLocked (oldFlags));
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to show and unlock the layer for the move.");
+    }
+
+    GS::Array<API_AttributeIndex> placeholders;
+    const auto deletePlaceholders = [&] () {
+        for (const API_AttributeIndex& placeholder : placeholders) {
+            DeleteLayer (placeholder);
+        }
+        placeholders.Clear ();
+    };
+    const auto fail = [&] (GSErrCode failErr, const GS::UniString& message) {
+        deletePlaceholders ();
+        SetLayerFlags (oldIndex, oldFlags);
+        return CreateErrorResponse (failErr, message);
+    };
+
+    for (Int32 index = 1; index < newIndexValue; ++index) {
+        if (usedIndices.Contains (index)) {
+            continue;
+        }
+        GS::UniString placeholderName = GetTemporaryLayerName ("Tapir ReindexLayers placeholder");
+        API_Attribute placeholder = {};
+        placeholder.header.typeID = API_LayerID;
+        placeholder.header.uniStringNamePtr = &placeholderName;
+        err = ACAPI_Attribute_Create (&placeholder, nullptr);
+        if (err != NoError) {
+            return fail (err, "Failed to create a placeholder layer for a free index below newIndex.");
+        }
+        placeholders.Push (placeholder.header.index);
+    }
+
+    GS::UniString copyName = GetTemporaryLayerName (name);
+    API_Attribute copy = oldLayer;
+    copy.header.guid = APINULLGuid;
+    copy.header.index = APIInvalidAttributeIndex;
+    copy.header.flags = WithoutHiddenAndLocked (oldFlags);
+    copy.header.uniStringNamePtr = &copyName;
+    err = ACAPI_Attribute_Create (&copy, nullptr);
+    if (err != NoError) {
+        return fail (err, "Failed to create the layer at the new index.");
+    }
+    deletePlaceholders ();
+    if (copy.header.index != newIndex) {
+        DeleteLayer (copy.header.index);
+        return fail (APIERR_GENERAL, GS::UniString::Printf ("Archicad created the new layer at index %d instead of %d, so the layer was not moved.", GetAttributeIndex (copy.header.index), newIndexValue));
+    }
+    const auto failAndDeleteCopy = [&] (GSErrCode failErr, const GS::UniString& message) {
+        // The copy is only deleted when it holds no element, since deleting a layer deletes its elements.
+        GS::Array<ElementInDatabase> onCopy;
+        if (CollectElementsOnLayer (databases, newIndex, onCopy) == NoError && onCopy.IsEmpty ()) {
+            DeleteLayer (newIndex);
+        }
+        return fail (failErr, message);
+    };
+
+    err = CopyLayerStateInCombinations (oldIndex, newIndex);
+    if (err != NoError) {
+        return failAndDeleteCopy (err, "Failed to copy the layer's state into the layer combinations.");
+    }
+
+    GS::Array<ElementInDatabase> moved;
+    GS::Array<ElementInDatabase> notMoved;
+    for (const ElementInDatabase& element : elements) {
+        if (SetLayerOfElementInDatabase (element, newIndex) == NoError) {
+            moved.Push (element);
+        } else {
+            notMoved.Push (element);
+        }
+    }
+    GS::Array<ElementInDatabase> left;
+    err = notMoved.IsEmpty () ? CollectElementsOnLayer (databases, oldIndex, left) : NoError;
+    if (!notMoved.IsEmpty () || err != NoError || !left.IsEmpty ()) {
+        for (const ElementInDatabase& element : moved) {
+            SetLayerOfElementInDatabase (element, oldIndex);
+        }
+        if (!notMoved.IsEmpty ()) {
+            return failAndDeleteCopy (APIERR_GENERAL, GS::UniString::Printf ("The layer was not moved: %u of its elements could not be moved to the new layer (they may be locked, or not reserved in Teamwork): %T.", notMoved.GetSize (), ListElementGuids (notMoved).ToPrintf ()));
+        }
+        if (err != NoError) {
+            return failAndDeleteCopy (err, "The layer was not moved: the views and layouts could not be read again to check that the old layer is empty.");
+        }
+        return failAndDeleteCopy (APIERR_GENERAL, GS::UniString::Printf ("The layer was not moved: %u elements were still on the old layer after the move: %T.", left.GetSize (), ListElementGuids (left).ToPrintf ()));
+    }
+
+    const GS::Array<API_ElemTypeID> toolDefaults = UpdateToolDefaultsOnLayer (oldIndex, newIndex);
+
+    // The folder is looked up before the old layer is deleted; the copy is moved there afterwards.
+    API_AttributeFolder root = {};
+    root.typeID = API_LayerID;
+    GS::Optional<API_AttributeFolder> folder;
+    if (ACAPI_Attribute_GetFolder (root) == NoError) {
+        folder = FindFolderOfLayer (root, APIGuid2GSGuid (layerGuid), true);
+    }
+
+    // Only now, with the old layer empty in every view and layout, is it deleted.
+    err = DeleteLayer (oldIndex);
+    if (err != NoError) {
+        UpdateToolDefaultsOnLayer (newIndex, oldIndex);
+        for (const ElementInDatabase& element : moved) {
+            SetLayerOfElementInDatabase (element, oldIndex);
+        }
+        return failAndDeleteCopy (err, "Failed to delete the old layer, so the layer was not moved.");
+    }
+
+    GS::UniString finalName = name;
+    API_Attribute finalLayer = {};
+    finalLayer.header.index = newIndex;
+    GS::UniString readName;
+    GetLayer (finalLayer, readName);
+    finalLayer.header.uniStringNamePtr = &finalName;
+    finalLayer.header.flags = oldFlags;
+    // The layer is moved at this point, so what fails from here on is reported as a warning with the result.
+    GS::Array<GS::UniString> warnings;
+    if (ACAPI_Attribute_Modify (&finalLayer, nullptr) != NoError) {
+        warnings.Push (GS::UniString::Printf ("Its name and flags could not be set back; it is called '%T'.", copyName.ToPrintf ()));
+    }
+    if (folder.HasValue () && ACAPI_Attribute_Move ({}, { APIGuid2GSGuid (finalLayer.header.guid) }, folder.Get ()) != NoError) {
+        warnings.Push ("It could not be moved into the attribute folder of the old layer, so it is in the root folder.");
+    }
+
+    result.Add ("attributeId", CreateGuidObjectState (finalLayer.header.guid));
+    result.Add ("elements", GetElementIds (moved));
+    result.Add ("viewsToRebuild", GetDatabaseIds (sectionElementViews));
+    const auto& toolDefaultNames = result.AddList<GS::UniString> ("toolDefaults");
+    for (API_ElemTypeID typeID : toolDefaults) {
+        toolDefaultNames (GetElementTypeNonLocalizedName (typeID));
+    }
+    if (!warnings.IsEmpty ()) {
+        result.Add ("warnings", warnings);
+    }
+    return result;
+}
+
+}
+
+#endif
+
+GS::ObjectState ReindexLayersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> layers;
+    parameters.Get ("layers", layers);
+    bool dryRun = false;
+    parameters.Get ("dryRun", dryRun);
+    Int32 maxPlaceholders = 1000;
+    parameters.Get ("maxPlaceholders", maxPlaceholders);
+
+    API_DatabaseInfo startingDatabase = {};
+    GSErrCode err = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the current database.");
+    }
+    GS::Array<API_DatabaseInfo> databases;
+    err = GetElementDatabases (databases);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to list the views and layouts.");
+    }
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("layers");
+    const auto reindexAll = [&] () -> GSErrCode {
+        for (const GS::ObjectState& layer : layers) {
+            Int32 newIndex = 0;
+            layer.Get ("newIndex", newIndex);
+            results (ReindexLayer (databases, GetGuidFromAttributesArrayItem (layer), newIndex, dryRun, maxPlaceholders));
+        }
+        return NoError;
+    };
+    if (dryRun) {
+        reindexAll ();
+    } else {
+        ACAPI_CallUndoableCommand ("Reindex Layers", reindexAll);
+    }
+    ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "ReindexLayers requires Archicad 27 or newer.");
+#endif
+}
+
+#ifdef ServerMainVers_2700
+namespace {
+
+// ReindexAttributes: fills, line types, surfaces and building materials. Archicad cannot renumber an attribute,
+// so the attribute is recreated at the new index and every reference to the old index is rewritten (see the
+// command's registration). The references are found and rewritten by the same code, once without writing
+// (the dry run and the count before the move) and once writing.
+
+struct ReindexJob {
+    API_AttrTypeID     type;
+    API_AttributeIndex from;
+    API_AttributeIndex to;
+};
+
+API_AttrTypeID GetReindexableAttributeType (const GS::UniString& typeStr)
+{
+    if (typeStr == "Fill")             return API_FilltypeID;
+    if (typeStr == "Line")             return API_LinetypeID;
+    if (typeStr == "Surface")          return API_MaterialID;
+    if (typeStr == "BuildingMaterial") return API_BuildingMaterialID;
+    return API_ZombieAttrID;
+}
+
+bool Rewrite (API_AttributeIndex& field, const ReindexJob& job)
+{
+    if (field != job.from) {
+        return false;
+    }
+    field = job.to;
+    return true;
+}
+
+bool Rewrite (API_OverriddenAttribute& field, const ReindexJob& job)
+{
+    return field.hasValue && Rewrite (field.value, job);
+}
+
+// Pre-27 the plain index of a hatch, profile item or edge is a GSAttributeIndex; from 27 an ADB::AttributeIndex.
+// The attribute index of the job is compared and written through its plain value.
+bool RewritePlain (Int32 plainIndex, const ReindexJob& job, Int32& newPlainIndex)
+{
+    if (plainIndex != GetAttributeIndex (job.from)) {
+        return false;
+    }
+    newPlainIndex = GetAttributeIndex (job.to);
+    return true;
+}
+
+// The fields of the element itself (not the memo) that hold an attribute of the job's type. The mask gets every
+// field that is rewritten. The table follows API_Element in APIdefs_Elements.h; a field is listed under the
+// attribute type it holds.
+#define REINDEX_FIELD(attrType, Struct, member, field) \
+    if (job.type == attrType && Rewrite (element.member.field, job)) { ACAPI_ELEMENT_MASK_SET (mask, Struct, field); changed = true; }
+
+bool RewriteOpeningBaseFields (API_Element& element, API_Element& mask, const ReindexJob& job, API_ElemTypeID typeID)
+{
+    bool changed = false;
+    switch (typeID) {
+        case API_WindowID:
+            REINDEX_FIELD (API_LinetypeID,  API_WindowType, window, openingBase.ltypeInd);
+            REINDEX_FIELD (API_LinetypeID,  API_WindowType, window, openingBase.cutLineType);
+            REINDEX_FIELD (API_LinetypeID,  API_WindowType, window, openingBase.aboveViewLineType);
+            REINDEX_FIELD (API_LinetypeID,  API_WindowType, window, openingBase.belowViewLineType);
+            REINDEX_FIELD (API_MaterialID,  API_WindowType, window, openingBase.mat);
+            REINDEX_FIELD (API_FilltypeID,  API_WindowType, window, openingBase.sectFill);
+            break;
+        case API_DoorID:
+            REINDEX_FIELD (API_LinetypeID,  API_DoorType, door, openingBase.ltypeInd);
+            REINDEX_FIELD (API_LinetypeID,  API_DoorType, door, openingBase.cutLineType);
+            REINDEX_FIELD (API_LinetypeID,  API_DoorType, door, openingBase.aboveViewLineType);
+            REINDEX_FIELD (API_LinetypeID,  API_DoorType, door, openingBase.belowViewLineType);
+            REINDEX_FIELD (API_MaterialID,  API_DoorType, door, openingBase.mat);
+            REINDEX_FIELD (API_FilltypeID,  API_DoorType, door, openingBase.sectFill);
+            break;
+        case API_SkylightID:
+            REINDEX_FIELD (API_LinetypeID,  API_SkylightType, skylight, openingBase.ltypeInd);
+            REINDEX_FIELD (API_LinetypeID,  API_SkylightType, skylight, openingBase.cutLineType);
+            REINDEX_FIELD (API_LinetypeID,  API_SkylightType, skylight, openingBase.aboveViewLineType);
+            REINDEX_FIELD (API_LinetypeID,  API_SkylightType, skylight, openingBase.belowViewLineType);
+            REINDEX_FIELD (API_MaterialID,  API_SkylightType, skylight, openingBase.mat);
+            REINDEX_FIELD (API_FilltypeID,  API_SkylightType, skylight, openingBase.sectFill);
+            break;
+        default:
+            break;
+    }
+    return changed;
+}
+
+bool RewriteElementFields (API_Element& element, API_Element& mask, const ReindexJob& job)
+{
+    bool changed = false;
+    const API_ElemTypeID typeID = GetElemTypeId (element.header);
+    switch (typeID) {
+        case API_WallID:
+            REINDEX_FIELD (API_LinetypeID,         API_WallType, wall, contLtype);
+            REINDEX_FIELD (API_LinetypeID,         API_WallType, wall, belowViewLineType);
+            REINDEX_FIELD (API_LinetypeID,         API_WallType, wall, aboveViewLineType);
+            REINDEX_FIELD (API_BuildingMaterialID, API_WallType, wall, buildingMaterial);
+            REINDEX_FIELD (API_MaterialID,         API_WallType, wall, refMat);
+            REINDEX_FIELD (API_MaterialID,         API_WallType, wall, oppMat);
+            REINDEX_FIELD (API_MaterialID,         API_WallType, wall, sidMat);
+            break;
+        case API_CurtainWallID:
+            REINDEX_FIELD (API_LinetypeID,         API_CurtainWallType, curtainWall, overheadLineType);
+            REINDEX_FIELD (API_LinetypeID,         API_CurtainWallType, curtainWall, uncutLineType);
+            REINDEX_FIELD (API_LinetypeID,         API_CurtainWallType, curtainWall, frameCutLineType);
+            REINDEX_FIELD (API_LinetypeID,         API_CurtainWallType, curtainWall, panelCutLineType);
+            REINDEX_FIELD (API_MaterialID,         API_CurtainWallType, curtainWall, cornerFrameData.material);
+            REINDEX_FIELD (API_BuildingMaterialID, API_CurtainWallType, curtainWall, cornerFrameData.buildingMaterial);
+            REINDEX_FIELD (API_LinetypeID,         API_CurtainWallType, curtainWall, cornerFrameData.cutLineType);
+            REINDEX_FIELD (API_MaterialID,         API_CurtainWallType, curtainWall, boundaryFrameData.material);
+            REINDEX_FIELD (API_BuildingMaterialID, API_CurtainWallType, curtainWall, boundaryFrameData.buildingMaterial);
+            REINDEX_FIELD (API_LinetypeID,         API_CurtainWallType, curtainWall, boundaryFrameData.cutLineType);
+            break;
+        case API_CurtainWallFrameID:
+            REINDEX_FIELD (API_MaterialID,         API_CWFrameType, cwFrame, material);
+            REINDEX_FIELD (API_BuildingMaterialID, API_CWFrameType, cwFrame, buildingMaterial);
+            REINDEX_FIELD (API_LinetypeID,         API_CWFrameType, cwFrame, cutLineType);
+            break;
+        case API_CurtainWallPanelID:
+            REINDEX_FIELD (API_MaterialID,         API_CWPanelType, cwPanel, outerSurfaceMaterial);
+            REINDEX_FIELD (API_MaterialID,         API_CWPanelType, cwPanel, innerSurfaceMaterial);
+            REINDEX_FIELD (API_MaterialID,         API_CWPanelType, cwPanel, cutSurfaceMaterial);
+            REINDEX_FIELD (API_BuildingMaterialID, API_CWPanelType, cwPanel, buildingMaterial);
+            REINDEX_FIELD (API_LinetypeID,         API_CWPanelType, cwPanel, cutLineType);
+            break;
+        case API_ColumnID:
+            REINDEX_FIELD (API_LinetypeID,         API_ColumnType, column, belowViewLineType);
+            REINDEX_FIELD (API_LinetypeID,         API_ColumnType, column, contLtype);
+            REINDEX_FIELD (API_LinetypeID,         API_ColumnType, column, venLineType);
+            REINDEX_FIELD (API_LinetypeID,         API_ColumnType, column, hiddenLineType);
+            REINDEX_FIELD (API_LinetypeID,         API_ColumnType, column, aboveViewLineType);
+            REINDEX_FIELD (API_FilltypeID,         API_ColumnType, column, coverFillType);
+            break;
+        case API_ColumnSegmentID:
+            REINDEX_FIELD (API_MaterialID,         API_ColumnSegmentType, columnSegment, extrusionSurfaceMaterial);
+            REINDEX_FIELD (API_MaterialID,         API_ColumnSegmentType, columnSegment, endsMaterial);
+            REINDEX_FIELD (API_BuildingMaterialID, API_ColumnSegmentType, columnSegment, venBuildingMaterial);
+            REINDEX_FIELD (API_BuildingMaterialID, API_ColumnSegmentType, columnSegment, assemblySegmentData.buildingMaterial);
+            break;
+        case API_BeamID:
+            REINDEX_FIELD (API_LinetypeID,         API_BeamType, beam, aboveViewLineType);
+            REINDEX_FIELD (API_LinetypeID,         API_BeamType, beam, refLtype);
+            REINDEX_FIELD (API_LinetypeID,         API_BeamType, beam, cutContourLineType);
+            REINDEX_FIELD (API_LinetypeID,         API_BeamType, beam, hiddenLineType);
+            REINDEX_FIELD (API_LinetypeID,         API_BeamType, beam, belowViewLineType);
+            REINDEX_FIELD (API_FilltypeID,         API_BeamType, beam, coverFillType);
+            break;
+        case API_BeamSegmentID:
+            REINDEX_FIELD (API_MaterialID,         API_BeamSegmentType, beamSegment, leftMaterial);
+            REINDEX_FIELD (API_MaterialID,         API_BeamSegmentType, beamSegment, topMaterial);
+            REINDEX_FIELD (API_MaterialID,         API_BeamSegmentType, beamSegment, rightMaterial);
+            REINDEX_FIELD (API_MaterialID,         API_BeamSegmentType, beamSegment, bottomMaterial);
+            REINDEX_FIELD (API_MaterialID,         API_BeamSegmentType, beamSegment, endsMaterial);
+            REINDEX_FIELD (API_MaterialID,         API_BeamSegmentType, beamSegment, extrusionMaterial);
+            REINDEX_FIELD (API_BuildingMaterialID, API_BeamSegmentType, beamSegment, assemblySegmentData.buildingMaterial);
+            break;
+        case API_WindowID:
+        case API_DoorID:
+        case API_SkylightID:
+            changed = RewriteOpeningBaseFields (element, mask, job, typeID);
+            break;
+        case API_ObjectID:
+            REINDEX_FIELD (API_LinetypeID,         API_ObjectType, object, ltypeInd);
+            REINDEX_FIELD (API_MaterialID,         API_ObjectType, object, mat);
+            REINDEX_FIELD (API_FilltypeID,         API_ObjectType, object, sectFill);
+            break;
+        case API_LampID:
+            REINDEX_FIELD (API_LinetypeID,         API_LampType, lamp, ltypeInd);
+            REINDEX_FIELD (API_MaterialID,         API_LampType, lamp, mat);
+            REINDEX_FIELD (API_FilltypeID,         API_LampType, lamp, sectFill);
+            break;
+        case API_SlabID:
+            REINDEX_FIELD (API_LinetypeID,         API_SlabType, slab, ltypeInd);
+            REINDEX_FIELD (API_LinetypeID,         API_SlabType, slab, hiddenContourLineType);
+            REINDEX_FIELD (API_LinetypeID,         API_SlabType, slab, sectContLtype);
+            REINDEX_FIELD (API_BuildingMaterialID, API_SlabType, slab, buildingMaterial);
+            REINDEX_FIELD (API_MaterialID,         API_SlabType, slab, topMat);
+            REINDEX_FIELD (API_MaterialID,         API_SlabType, slab, sideMat);
+            REINDEX_FIELD (API_MaterialID,         API_SlabType, slab, botMat);
+            REINDEX_FIELD (API_FilltypeID,         API_SlabType, slab, floorFillInd);
+            break;
+        case API_RoofID:
+            REINDEX_FIELD (API_LinetypeID,         API_RoofType, roof, shellBase.ltypeInd);
+            REINDEX_FIELD (API_LinetypeID,         API_RoofType, roof, shellBase.sectContLtype);
+            REINDEX_FIELD (API_LinetypeID,         API_RoofType, roof, shellBase.aboveViewLineType);
+            REINDEX_FIELD (API_BuildingMaterialID, API_RoofType, roof, shellBase.buildingMaterial);
+            REINDEX_FIELD (API_FilltypeID,         API_RoofType, roof, shellBase.floorFillInd);
+            REINDEX_FIELD (API_MaterialID,         API_RoofType, roof, shellBase.topMat);
+            REINDEX_FIELD (API_MaterialID,         API_RoofType, roof, shellBase.sidMat);
+            REINDEX_FIELD (API_MaterialID,         API_RoofType, roof, shellBase.botMat);
+            break;
+        case API_ShellID:
+            REINDEX_FIELD (API_LinetypeID,         API_ShellType, shell, shellBase.ltypeInd);
+            REINDEX_FIELD (API_LinetypeID,         API_ShellType, shell, shellBase.sectContLtype);
+            REINDEX_FIELD (API_LinetypeID,         API_ShellType, shell, shellBase.aboveViewLineType);
+            REINDEX_FIELD (API_BuildingMaterialID, API_ShellType, shell, shellBase.buildingMaterial);
+            REINDEX_FIELD (API_FilltypeID,         API_ShellType, shell, shellBase.floorFillInd);
+            REINDEX_FIELD (API_MaterialID,         API_ShellType, shell, shellBase.topMat);
+            REINDEX_FIELD (API_MaterialID,         API_ShellType, shell, shellBase.sidMat);
+            REINDEX_FIELD (API_MaterialID,         API_ShellType, shell, shellBase.botMat);
+            switch (element.shell.shellClass) {
+                case API_ExtrudedShellID:
+                    REINDEX_FIELD (API_MaterialID, API_ShellType, shell, u.extrudedShell.begShapeEdgeData.sideMaterial);
+                    REINDEX_FIELD (API_MaterialID, API_ShellType, shell, u.extrudedShell.endShapeEdgeData.sideMaterial);
+                    REINDEX_FIELD (API_MaterialID, API_ShellType, shell, u.extrudedShell.extrudedEdgeDatas[0].sideMaterial);
+                    REINDEX_FIELD (API_MaterialID, API_ShellType, shell, u.extrudedShell.extrudedEdgeDatas[1].sideMaterial);
+                    break;
+                case API_RevolvedShellID:
+                    REINDEX_FIELD (API_MaterialID, API_ShellType, shell, u.revolvedShell.begShapeEdgeData.sideMaterial);
+                    REINDEX_FIELD (API_MaterialID, API_ShellType, shell, u.revolvedShell.endShapeEdgeData.sideMaterial);
+                    REINDEX_FIELD (API_MaterialID, API_ShellType, shell, u.revolvedShell.revolvedEdgeDatas[0].sideMaterial);
+                    REINDEX_FIELD (API_MaterialID, API_ShellType, shell, u.revolvedShell.revolvedEdgeDatas[1].sideMaterial);
+                    break;
+                case API_RuledShellID:
+                    REINDEX_FIELD (API_MaterialID, API_ShellType, shell, u.ruledShell.begShapeEdgeData.sideMaterial);
+                    REINDEX_FIELD (API_MaterialID, API_ShellType, shell, u.ruledShell.endShapeEdgeData.sideMaterial);
+                    REINDEX_FIELD (API_MaterialID, API_ShellType, shell, u.ruledShell.ruledEdgeDatas[0].sideMaterial);
+                    REINDEX_FIELD (API_MaterialID, API_ShellType, shell, u.ruledShell.ruledEdgeDatas[1].sideMaterial);
+                    break;
+                default:
+                    break;
+            }
+            break;
+        case API_MorphID:
+            REINDEX_FIELD (API_BuildingMaterialID, API_MorphType, morph, buildingMaterial);
+            REINDEX_FIELD (API_LinetypeID,         API_MorphType, morph, cutLineType);
+            REINDEX_FIELD (API_LinetypeID,         API_MorphType, morph, uncutLineType);
+            REINDEX_FIELD (API_LinetypeID,         API_MorphType, morph, overheadLineType);
+            REINDEX_FIELD (API_FilltypeID,         API_MorphType, morph, coverFillType);
+            REINDEX_FIELD (API_MaterialID,         API_MorphType, morph, material);
+            break;
+        case API_MeshID:
+            REINDEX_FIELD (API_LinetypeID,         API_MeshType, mesh, ltypeInd);
+            REINDEX_FIELD (API_BuildingMaterialID, API_MeshType, mesh, buildingMaterial);
+            REINDEX_FIELD (API_MaterialID,         API_MeshType, mesh, topMat);
+            REINDEX_FIELD (API_MaterialID,         API_MeshType, mesh, sideMat);
+            REINDEX_FIELD (API_MaterialID,         API_MeshType, mesh, botMat);
+            REINDEX_FIELD (API_FilltypeID,         API_MeshType, mesh, floorFillInd);
+            break;
+        case API_LabelID:
+            REINDEX_FIELD (API_LinetypeID,         API_LabelType, label, ltypeInd);
+            REINDEX_FIELD (API_LinetypeID,         API_LabelType, label, u.symbol.ltypeInd);
+            REINDEX_FIELD (API_MaterialID,         API_LabelType, label, u.symbol.mat);
+            REINDEX_FIELD (API_FilltypeID,         API_LabelType, label, u.symbol.sectFill);
+            break;
+        case API_ZoneID:
+            REINDEX_FIELD (API_MaterialID,         API_ZoneType, zone, material);
+            REINDEX_FIELD (API_FilltypeID,         API_ZoneType, zone, floorFillInd);
+            REINDEX_FIELD (API_LinetypeID,         API_ZoneType, zone, floorContLType);
+            break;
+        case API_HatchID:
+            REINDEX_FIELD (API_FilltypeID,         API_HatchType, hatch, fillInd);
+            REINDEX_FIELD (API_BuildingMaterialID, API_HatchType, hatch, buildingMaterial);
+            REINDEX_FIELD (API_LinetypeID,         API_HatchType, hatch, ltypeInd);
+            REINDEX_FIELD (API_LinetypeID,         API_HatchType, hatch, note.leaderLineType);
+            break;
+        case API_LineID:
+            REINDEX_FIELD (API_LinetypeID,         API_LineType, line, ltypeInd);
+            break;
+        case API_PolyLineID:
+            REINDEX_FIELD (API_LinetypeID,         API_PolyLineType, polyLine, ltypeInd);
+            break;
+        case API_ArcID:
+            REINDEX_FIELD (API_LinetypeID,         API_ArcType, arc, ltypeInd);
+            break;
+        case API_SplineID:
+            REINDEX_FIELD (API_LinetypeID,         API_SplineType, spline, ltypeInd);
+            break;
+        case API_DimensionID:
+            REINDEX_FIELD (API_LinetypeID,         API_DimensionType, dimension, defNote.leaderLineType);
+            break;
+        case API_RadialDimensionID:
+            REINDEX_FIELD (API_LinetypeID,         API_RadialDimensionType, radialDimension, note.leaderLineType);
+            break;
+        case API_LevelDimensionID:
+            REINDEX_FIELD (API_LinetypeID,         API_LevelDimensionType, levelDimension, note1.leaderLineType);
+            REINDEX_FIELD (API_LinetypeID,         API_LevelDimensionType, levelDimension, note2.leaderLineType);
+            break;
+        case API_AngleDimensionID:
+            REINDEX_FIELD (API_LinetypeID,         API_AngleDimensionType, angleDimension, note.leaderLineType);
+            break;
+        case API_CutPlaneID:
+            REINDEX_FIELD (API_LinetypeID,         API_CutPlaneType, cutPlane, segment.ltypeInd);
+            REINDEX_FIELD (API_LinetypeID,         API_CutPlaneType, cutPlane, segment.limitLtypeInd);
+            REINDEX_FIELD (API_LinetypeID,         API_CutPlaneType, cutPlane, segment.shLineType);
+            REINDEX_FIELD (API_LinetypeID,         API_CutPlaneType, cutPlane, segment.boundaryLineType);
+            REINDEX_FIELD (API_FilltypeID,         API_CutPlaneType, cutPlane, segment.shadFill);
+            REINDEX_FIELD (API_FilltypeID,         API_CutPlaneType, cutPlane, segment.distAreaShadFill);
+            break;
+        case API_ElevationID:
+            REINDEX_FIELD (API_LinetypeID,         API_ElevationType, elevation, segment.ltypeInd);
+            REINDEX_FIELD (API_LinetypeID,         API_ElevationType, elevation, segment.limitLtypeInd);
+            REINDEX_FIELD (API_LinetypeID,         API_ElevationType, elevation, segment.shLineType);
+            REINDEX_FIELD (API_LinetypeID,         API_ElevationType, elevation, segment.boundaryLineType);
+            REINDEX_FIELD (API_FilltypeID,         API_ElevationType, elevation, segment.shadFill);
+            REINDEX_FIELD (API_FilltypeID,         API_ElevationType, elevation, segment.distAreaShadFill);
+            break;
+        case API_InteriorElevationID:
+            REINDEX_FIELD (API_LinetypeID,         API_InteriorElevationType, interiorElevation, segment.ltypeInd);
+            REINDEX_FIELD (API_LinetypeID,         API_InteriorElevationType, interiorElevation, segment.limitLtypeInd);
+            REINDEX_FIELD (API_LinetypeID,         API_InteriorElevationType, interiorElevation, segment.shLineType);
+            REINDEX_FIELD (API_LinetypeID,         API_InteriorElevationType, interiorElevation, segment.boundaryLineType);
+            REINDEX_FIELD (API_FilltypeID,         API_InteriorElevationType, interiorElevation, segment.shadFill);
+            REINDEX_FIELD (API_FilltypeID,         API_InteriorElevationType, interiorElevation, segment.distAreaShadFill);
+            break;
+        case API_DrawingID:
+            REINDEX_FIELD (API_LinetypeID,         API_DrawingType, drawing, borderLineType);
+            break;
+        case API_DetailID:
+            REINDEX_FIELD (API_LinetypeID,         API_DetailType, detail, ltypeInd);
+            break;
+        case API_WorksheetID:
+            REINDEX_FIELD (API_LinetypeID,         API_WorksheetType, worksheet, ltypeInd);
+            break;
+        case API_StairID:
+            REINDEX_FIELD (API_LinetypeID,         API_StairType, stair, fpdLayout.lineType);
+            REINDEX_FIELD (API_FilltypeID,         API_StairType, stair, fpdLayout.symbolFill);
+            REINDEX_FIELD (API_LinetypeID,         API_StairType, stair, rcpdLayout.lineType);
+            REINDEX_FIELD (API_FilltypeID,         API_StairType, stair, rcpdLayout.symbolFill);
+            for (Int32 i = 0; i < API_StairStructSymbTypeNum; ++i) {
+                for (Int32 j = 0; j < API_StairStructSymbViewNum; ++j) {
+                    REINDEX_FIELD (API_LinetypeID, API_StairType, stair, structSymbData[i][j].visibleLineType);
+                    REINDEX_FIELD (API_LinetypeID, API_StairType, stair, structSymbData[i][j].hiddenLineType);
+                    REINDEX_FIELD (API_FilltypeID, API_StairType, stair, structSymbData[i][j].visibleFillType);
+                    REINDEX_FIELD (API_FilltypeID, API_StairType, stair, structSymbData[i][j].hiddenFillType);
+                }
+            }
+            for (Int32 i = 0; i < API_StairStructSymbViewNum; ++i) {
+                for (Int32 j = 0; j < API_StairStructSymbPartNum; ++j) {
+                    REINDEX_FIELD (API_LinetypeID, API_StairType, stair, monolithStructureSymbolData[i][j].goingLineType);
+                    REINDEX_FIELD (API_LinetypeID, API_StairType, stair, monolithStructureSymbolData[i][j].goingNosingLineType);
+                    REINDEX_FIELD (API_LinetypeID, API_StairType, stair, monolithStructureSymbolData[i][j].connectionLineType);
+                    REINDEX_FIELD (API_LinetypeID, API_StairType, stair, monolithStructureSymbolData[i][j].connectionDetailLineType);
+                    REINDEX_FIELD (API_LinetypeID, API_StairType, stair, monolithStructureSymbolData[i][j].contourLineType);
+                    REINDEX_FIELD (API_FilltypeID, API_StairType, stair, monolithStructureSymbolData[i][j].drainingFillType);
+                }
+            }
+            break;
+        case API_StairStructureID:
+            if (element.stairStructure.structType == APIST_Monolith) {
+                REINDEX_FIELD (API_FilltypeID,         API_StairStructureType, stairStructure, data.monolith.sideFill);
+                REINDEX_FIELD (API_BuildingMaterialID, API_StairStructureType, stairStructure, data.monolith.buildingMaterial);
+                REINDEX_FIELD (API_MaterialID,         API_StairStructureType, stairStructure, data.monolith.topMaterial);
+                REINDEX_FIELD (API_MaterialID,         API_StairStructureType, stairStructure, data.monolith.leftMaterial);
+                REINDEX_FIELD (API_MaterialID,         API_StairStructureType, stairStructure, data.monolith.rightMaterial);
+                REINDEX_FIELD (API_MaterialID,         API_StairStructureType, stairStructure, data.monolith.bottomMaterial);
+                REINDEX_FIELD (API_MaterialID,         API_StairStructureType, stairStructure, data.monolith.surfaceMaterial);
+                REINDEX_FIELD (API_LinetypeID,         API_StairStructureType, stairStructure, data.monolith.cutLineType);
+                REINDEX_FIELD (API_LinetypeID,         API_StairStructureType, stairStructure, data.monolith.lineType);
+                for (Int32 i = 0; i < API_StairDrainSideNum; ++i) {
+                    REINDEX_FIELD (API_MaterialID,     API_StairStructureType, stairStructure, data.monolith.draining[i].material);
+                }
+            }
+            break;
+        default:
+            break;
+    }
+    return changed;
+}
+
+#undef REINDEX_FIELD
+
+// Counts the items of a memo array allocated with the memory manager.
+template <typename T>
+Int32 GetMemoArrayCount (const T* array)
+{
+    return array == nullptr ? 0 : static_cast<Int32> (BMGetPtrSize (reinterpret_cast<GSConstPtr> (array)) / sizeof (T));
+}
+
+// The library part parameters whose type is the job's attribute type (a fill, surface, line type or building
+// material parameter), as single values and as arrays.
+bool RewriteAddPars (API_AddParType** params, const ReindexJob& job)
+{
+    if (params == nullptr) {
+        return false;
+    }
+    API_AddParID wantedType = APIParT_Integer;
+    switch (job.type) {
+        case API_FilltypeID:         wantedType = APIParT_FillPat; break;
+        case API_LinetypeID:         wantedType = APIParT_LineTyp; break;
+        case API_MaterialID:         wantedType = APIParT_Mater; break;
+        case API_BuildingMaterialID: wantedType = APIParT_BuildingMaterial; break;
+        default: return false;
+    }
+    const double from = GetAttributeIndex (job.from);
+    const double to = GetAttributeIndex (job.to);
+    bool changed = false;
+    const Int32 count = static_cast<Int32> (BMGetHandleSize (reinterpret_cast<GSHandle> (params)) / sizeof (API_AddParType));
+    for (Int32 i = 0; i < count; ++i) {
+        API_AddParType& param = (*params)[i];
+        if (param.typeID != wantedType) {
+            continue;
+        }
+        if (param.typeMod == API_ParSimple) {
+            if (param.value.real == from) {
+                param.value.real = to;
+                changed = true;
+            }
+        } else if (param.value.array != nullptr) {
+            double* values = reinterpret_cast<double*> (*param.value.array);
+            const Int32 valueCount = param.dim1 * param.dim2;
+            for (Int32 v = 0; v < valueCount; ++v) {
+                if (values[v] == from) {
+                    values[v] = to;
+                    changed = true;
+                }
+            }
+        }
+    }
+    return changed;
+}
+
+// The memo parts an element of this type may hold a reference of the job's type in; 0 when none. These are
+// read before the element is rewritten and written back with ACAPI_Element_ChangeMemo.
+UInt64 GetMemoMaskToRewrite (API_ElemTypeID typeID, API_AttrTypeID attributeType)
+{
+    const bool surface = attributeType == API_MaterialID;
+    const bool fill = attributeType == API_FilltypeID;
+    switch (typeID) {
+        case API_ObjectID:
+        case API_LampID:
+        case API_WindowID:
+        case API_DoorID:
+        case API_SkylightID:
+        case API_LabelID:
+        case API_ZoneID:
+            return APIMemoMask_AddPars;
+        case API_WallID:
+        case API_ColumnID:
+        case API_BeamID:
+            return surface ? APIMemoMask_Gables : 0;
+        case API_SlabID:
+            return surface ? APIMemoMask_SideMaterials : 0;
+        case API_RoofID:
+            return (surface || fill) ? APIMemoMask_All : 0;
+        case API_MorphID:
+            return surface ? APIMemoMask_All : 0;
+        case API_InteriorElevationID:
+            return APIMemoMask_AddPars;
+        default:
+            return 0;
+    }
+}
+
+bool RewriteMemo (const API_Element& element, API_ElementMemo& memo, const ReindexJob& job)
+{
+    bool changed = false;
+    const API_ElemTypeID typeID = GetElemTypeId (element.header);
+    if (RewriteAddPars (memo.params, job)) {
+        changed = true;
+    }
+    if (job.type == API_MaterialID && memo.gables != nullptr) {
+        const Int32 count = static_cast<Int32> (BMGetHandleSize (reinterpret_cast<GSHandle> (memo.gables)) / sizeof (API_Gable));
+        for (Int32 i = 0; i < count; ++i) {
+            if (Rewrite ((*memo.gables)[i].material, job)) {
+                changed = true;
+            }
+        }
+    }
+    if (job.type == API_MaterialID && memo.sideMaterials != nullptr) {
+        const Int32 count = GetMemoArrayCount (memo.sideMaterials);
+        for (Int32 i = 0; i < count; ++i) {
+            if (Rewrite (memo.sideMaterials[i], job)) {
+                changed = true;
+            }
+        }
+    }
+    if (typeID == API_RoofID && element.roof.roofClass == API_PolyRoofID && memo.pivotPolyEdges != nullptr) {
+        const Int32 edgeCount = GetMemoArrayCount (memo.pivotPolyEdges);
+        for (Int32 i = 0; i < edgeCount; ++i) {
+            API_PivotPolyEdgeData& edge = memo.pivotPolyEdges[i];
+            for (Int32 l = 0; l < edge.nLevelEdgeData && edge.levelEdgeData != nullptr; ++l) {
+                API_RoofSegmentData& segment = edge.levelEdgeData[l];
+                if (job.type == API_MaterialID && Rewrite (segment.topMaterial, job))    changed = true;
+                if (job.type == API_MaterialID && Rewrite (segment.bottomMaterial, job)) changed = true;
+                if (job.type == API_FilltypeID && Rewrite (segment.coverFillType, job))  changed = true;
+            }
+        }
+    }
+    if (typeID == API_MorphID && job.type == API_MaterialID && memo.morphMaterialMapTable != nullptr) {
+        const Int32 count = GetMemoArrayCount (memo.morphMaterialMapTable);
+        for (Int32 i = 0; i < count; ++i) {
+            if (Rewrite (memo.morphMaterialMapTable[i], job)) {
+                changed = true;
+            }
+        }
+    }
+    return changed;
+}
+
+struct ReferenceScan {
+    GS::Array<ElementInDatabase> elements;         // rewritten, or to be rewritten with dryRun
+    GS::Array<ElementInDatabase> failedElements;   // could not be changed
+    GS::Array<ElementInDatabase> hotlinkElements;  // from a hotlinked module: not changeable
+    GS::Array<API_ElemTypeID>    toolDefaults;
+    GS::Array<GS::UniString>     favorites;
+    GS::Array<GS::ObjectState>   attributes;
+    GS::Array<GS::UniString>     overrideRules;
+    GS::Array<GS::UniString>     warnings;
+};
+
+// Rewrites one element in the current database. Returns whether the element referred to the attribute; writes
+// only when apply is set, and reports a failed write through ok.
+bool RewriteElement (const API_Guid& guid, const ReindexJob& job, bool apply, bool& ok)
+{
+    ok = true;
+    API_Element element = {};
+    element.header.guid = guid;
+    if (ACAPI_Element_Get (&element) != NoError) {
+        return false;
+    }
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    const bool fieldsChanged = RewriteElementFields (element, mask, job);
+
+    API_ElementMemo memo = {};
+    bool memoChanged = false;
+    const UInt64 memoMask = GetMemoMaskToRewrite (GetElemTypeId (element.header), job.type);
+    if (memoMask != 0 && ACAPI_Element_GetMemo (guid, &memo, memoMask) == NoError) {
+        memoChanged = RewriteMemo (element, memo, job);
+    }
+    if (apply && (fieldsChanged || memoChanged)) {
+        GSErrCode err = NoError;
+        if (fieldsChanged) {
+            err = ACAPI_Element_Change (&element, &mask, memoChanged ? &memo : nullptr, memoChanged ? memoMask : 0, true);
+        } else {
+            API_Guid elemGuid = guid;
+            err = ACAPI_Element_ChangeMemo (elemGuid, memoMask, &memo);
+        }
+        ok = (err == NoError);
+    }
+    ACAPI_DisposeElemMemoHdls (&memo);
+    return fieldsChanged || memoChanged;
+}
+
+void ScanElements (const GS::Array<API_DatabaseInfo>& databases, const ReindexJob& job, bool apply, ReferenceScan& scan)
+{
+    for (const API_DatabaseInfo& database : databases) {
+        API_DatabaseInfo current = database;
+        if (ACAPI_Database_ChangeCurrentDatabase (&current) != NoError) {
+            scan.warnings.Push ("A view or layout database could not be opened, so its elements were not checked.");
+            continue;
+        }
+        GS::Array<API_Guid> guids;
+        if (ACAPI_Element_GetElemList (API_ZombieElemID, &guids) != NoError) {
+            scan.warnings.Push ("The elements of a view or layout database could not be listed.");
+            continue;
+        }
+        for (const API_Guid& guid : guids) {
+            API_Elem_Head head = {};
+            head.guid = guid;
+            if (ACAPI_Element_GetHeader (&head) != NoError || GetElemTypeId (head.type) == API_SectElemID) {
+                continue;
+            }
+            if (head.hotlinkGuid != APINULLGuid) {
+                bool ok = true;
+                if (RewriteElement (guid, job, false, ok)) {
+                    scan.hotlinkElements.Push ({ database, guid });
+                }
+                continue;
+            }
+            bool ok = true;
+            if (RewriteElement (guid, job, apply, ok)) {
+                (ok ? scan.elements : scan.failedElements).Push ({ database, guid });
+            }
+        }
+    }
+}
+
+void ScanToolDefaults (const ReindexJob& job, bool apply, ReferenceScan& scan)
+{
+    for (Int32 type = API_FirstElemType; type <= API_LastElemType; ++type) {
+        const API_ElemTypeID typeID = static_cast<API_ElemTypeID> (type);
+        API_Element element = {};
+        API_ElementMemo memo = {};
+        element.header.type = typeID;
+        if (ACAPI_Element_GetDefaults (&element, &memo) != NoError) {
+            continue;
+        }
+        API_Element mask = {};
+        ACAPI_ELEMENT_MASK_CLEAR (mask);
+        const bool fieldsChanged = RewriteElementFields (element, mask, job);
+        const bool memoChanged = GetMemoMaskToRewrite (typeID, job.type) != 0 && RewriteMemo (element, memo, job);
+        if (fieldsChanged || memoChanged) {
+            if (!apply || ACAPI_Element_ChangeDefaults (&element, memoChanged ? &memo : nullptr, &mask) == NoError) {
+                scan.toolDefaults.Push (typeID);
+            } else {
+                scan.warnings.Push (GS::UniString::Printf ("The tool default of %T still refers to the old index.", GetElementTypeNonLocalizedName (typeID).ToPrintf ()));
+            }
+        }
+        ACAPI_DisposeElemMemoHdls (&memo);
+    }
+}
+
+void ScanFavorites (const ReindexJob& job, bool apply, ReferenceScan& scan)
+{
+    for (Int32 type = API_FirstElemType; type <= API_LastElemType; ++type) {
+        const API_ElemTypeID typeID = static_cast<API_ElemTypeID> (type);
+        GS::Array<GS::UniString> names;
+        if (ACAPI_Favorite_GetNum (typeID, nullptr, nullptr, &names) != NoError) {
+            continue;
+        }
+        for (const GS::UniString& name : names) {
+            API_Favorite favorite (name);
+            favorite.memo.New ();
+            if (ACAPI_Favorite_Get (&favorite) != NoError) {
+                continue;
+            }
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+            const bool fieldsChanged = RewriteElementFields (favorite.element, mask, job);
+            const UInt64 memoMask = GetMemoMaskToRewrite (typeID, job.type);
+            const bool memoChanged = memoMask != 0 && favorite.memo.HasValue () && RewriteMemo (favorite.element, favorite.memo.Get (), job);
+            if (fieldsChanged || memoChanged) {
+                if (!apply || ACAPI_Favorite_Change (favorite, &mask, memoChanged ? memoMask : 0) == NoError) {
+                    scan.favorites.Push (name);
+                } else {
+                    scan.warnings.Push (GS::UniString::Printf ("The Favorite '%T' still refers to the old index.", name.ToPrintf ()));
+                }
+            }
+            if (favorite.memo.HasValue ()) {
+                ACAPI_DisposeElemMemoHdls (favorite.memo.GetPtr ());
+            }
+        }
+    }
+}
+
+void AddAttributeReference (ReferenceScan& scan, const API_Attribute& attribute, const GS::UniString& typeName)
+{
+    GS::ObjectState reference;
+    reference.Add ("attributeType", typeName);
+    reference.Add ("attributeId", CreateGuidObjectState (attribute.header.guid));
+    reference.Add ("name", GetAttributeName (attribute.header));
+    scan.attributes.Push (reference);
+}
+
+void ScanAttributes (const ReindexJob& job, bool apply, ReferenceScan& scan)
+{
+    // Composites: the building material and the line type of every skin, and the line type of every separator.
+    GS::Array<API_Attribute> attributes;
+    if (ACAPI_Attribute_GetAttributesByType (API_CompWallID, attributes) == NoError) {
+        for (API_Attribute& listed : attributes) {
+            API_Attribute composite = {};
+            composite.header.typeID = API_CompWallID;
+            composite.header.index = listed.header.index;
+            DisposeAttribute (listed);
+            API_AttributeDefExt defs = {};
+            if (ACAPI_Attribute_Get (&composite) != NoError || ACAPI_Attribute_GetDefExt (API_CompWallID, composite.header.index, &defs) != NoError) {
+                continue;
+            }
+            bool changed = false;
+            const Int32 skinCount = composite.compWall.nComps;
+            for (Int32 i = 0; i < skinCount && defs.cwall_compItems != nullptr; ++i) {
+                API_CWallComponent& skin = (*defs.cwall_compItems)[i];
+                if (job.type == API_BuildingMaterialID && Rewrite (skin.buildingMaterial, job)) {
+                    changed = true;
+                }
+            }
+            for (Int32 i = 0; i <= skinCount && defs.cwall_compLItems != nullptr && job.type == API_LinetypeID; ++i) {
+                if (Rewrite ((*defs.cwall_compLItems)[i].ltypeInd, job)) {
+                    changed = true;
+                }
+            }
+            if (changed) {
+                if (!apply || ACAPI_Attribute_ModifyExt (&composite, &defs) == NoError) {
+                    AddAttributeReference (scan, composite, "Composite");
+                } else {
+                    scan.warnings.Push (GS::UniString::Printf ("The composite '%T' still refers to the old index.", GetAttributeName (composite.header).ToPrintf ()));
+                }
+            }
+            ACAPI_DisposeAttrDefsHdlsExt (&defs);
+            DisposeAttribute (composite);
+        }
+    }
+    // Building materials: cut fill and cut surface.
+    attributes.Clear ();
+    if ((job.type == API_FilltypeID || job.type == API_MaterialID) && ACAPI_Attribute_GetAttributesByType (API_BuildingMaterialID, attributes) == NoError) {
+        for (API_Attribute& listed : attributes) {
+            API_Attribute buildingMaterial = {};
+            buildingMaterial.header.typeID = API_BuildingMaterialID;
+            buildingMaterial.header.index = listed.header.index;
+            DisposeAttribute (listed);
+            if (ACAPI_Attribute_Get (&buildingMaterial) != NoError) {
+                continue;
+            }
+            bool changed = false;
+            if (job.type == API_FilltypeID && Rewrite (buildingMaterial.buildingMaterial.cutFill, job))     changed = true;
+            if (job.type == API_MaterialID && Rewrite (buildingMaterial.buildingMaterial.cutMaterial, job)) changed = true;
+            if (changed) {
+                if (!apply || ACAPI_Attribute_Modify (&buildingMaterial, nullptr) == NoError) {
+                    AddAttributeReference (scan, buildingMaterial, "BuildingMaterial");
+                } else {
+                    scan.warnings.Push (GS::UniString::Printf ("The building material '%T' still refers to the old index.", GetAttributeName (buildingMaterial.header).ToPrintf ()));
+                }
+            }
+            DisposeAttribute (buildingMaterial);
+        }
+    }
+    // Surfaces: the vectorial hatching fill.
+    attributes.Clear ();
+    if (job.type == API_FilltypeID && ACAPI_Attribute_GetAttributesByType (API_MaterialID, attributes) == NoError) {
+        for (API_Attribute& listed : attributes) {
+            API_Attribute surface = {};
+            surface.header.typeID = API_MaterialID;
+            surface.header.index = listed.header.index;
+            DisposeAttribute (listed);
+            if (ACAPI_Attribute_Get (&surface) != NoError) {
+                continue;
+            }
+            if (Rewrite (surface.material.ifill, job)) {
+                if (!apply || ACAPI_Attribute_Modify (&surface, nullptr) == NoError) {
+                    AddAttributeReference (scan, surface, "Surface");
+                } else {
+                    scan.warnings.Push (GS::UniString::Printf ("The surface '%T' still refers to the old index.", GetAttributeName (surface.header).ToPrintf ()));
+                }
+            }
+            DisposeAttribute (surface);
+        }
+    }
+    // MEP systems: the fill.
+    attributes.Clear ();
+    if (job.type == API_FilltypeID && ACAPI_Attribute_GetAttributesByType (API_MEPSystemID, attributes) == NoError) {
+        for (API_Attribute& listed : attributes) {
+            API_Attribute mepSystem = {};
+            mepSystem.header.typeID = API_MEPSystemID;
+            mepSystem.header.index = listed.header.index;
+            DisposeAttribute (listed);
+            if (ACAPI_Attribute_Get (&mepSystem) != NoError) {
+                continue;
+            }
+            if (Rewrite (mepSystem.mepSystem.fillInd, job)) {
+                if (!apply || ACAPI_Attribute_Modify (&mepSystem, nullptr) == NoError) {
+                    AddAttributeReference (scan, mepSystem, "MEPSystem");
+                } else {
+                    scan.warnings.Push (GS::UniString::Printf ("The MEP system '%T' still refers to the old index.", GetAttributeName (mepSystem.header).ToPrintf ()));
+                }
+            }
+            DisposeAttribute (mepSystem);
+        }
+    }
+    // Profiles: the building material, surface, fill and contour line type of every skin, the cut end line type
+    // of a profile skin and the building material and line type of its edges.
+    attributes.Clear ();
+    if (ACAPI_Attribute_GetAttributesByType (API_ProfileID, attributes) == NoError) {
+        for (API_Attribute& listed : attributes) {
+            API_Attribute profile = {};
+            profile.header.typeID = API_ProfileID;
+            profile.header.index = listed.header.index;
+            DisposeAttribute (listed);
+            API_AttributeDefExt defs = {};
+            if (ACAPI_Attribute_Get (&profile) != NoError || ACAPI_Attribute_GetDefExt (API_ProfileID, profile.header.index, &defs) != NoError) {
+                continue;
+            }
+            bool changed = false;
+            if (defs.profile_vectorImageItems != nullptr) {
+                ProfileVectorImage& pvi = *defs.profile_vectorImageItems;
+                VectorImageAccessGuard guard (&pvi);
+                VectorImage& vi = guard;
+                for (VectorImageIterator it (vi); !it.IsEOI (); ++it) {
+                    if (it->item_Typ != SyHatch) {
+                        continue;
+                    }
+                    Sy_HatchType* hatchRec = it;
+                    HatchObject& hatch = pvi.GetHatchObject (*hatchRec);
+                    Int32 newPlain = 0;
+                    if (job.type == API_BuildingMaterialID && RewritePlain (ToPlainAttrIndex (hatch.GetBuildMatIdx ()), job, newPlain)) {
+                        hatch.SetBuildMatIdx (FromPlainAttrIndex (newPlain));
+                        changed = true;
+                    }
+                    if (job.type == API_MaterialID && RewritePlain (ToPlainAttrIndex (hatch.GetSurfaceIdx ()), job, newPlain)) {
+                        hatch.SetSurfaceIdx (FromPlainAttrIndex (newPlain));
+                        changed = true;
+                    }
+                    if (job.type == API_FilltypeID && RewritePlain (ToPlainAttrIndex (hatch.GetFillIdx ()), job, newPlain)) {
+                        hatch.SetFillIdx (FromPlainAttrIndex (newPlain));
+                        changed = true;
+                    }
+                    if (job.type == API_LinetypeID && RewritePlain (ToPlainAttrIndex (hatch.GetContLType ()), job, newPlain)) {
+                        hatch.SetContLType (FromPlainAttrIndex (newPlain));
+                        changed = true;
+                    }
+                    ProfileItem* profileItem = GetHatchProfileItemNonConst (hatch);
+                    if (profileItem != nullptr && job.type == API_LinetypeID && RewritePlain (ToPlainAttrIndex (profileItem->GetCutEndLineType ()), job, newPlain)) {
+                        profileItem->SetCutEndLineType (FromPlainAttrIndex (newPlain));
+                        changed = true;
+                    }
+                    if (profileItem != nullptr && (job.type == API_LinetypeID || job.type == API_BuildingMaterialID)) {
+                        const UIndex edgeCount = hatch.GetCoords ().GetSize ();
+                        for (UIndex e = 0; e < edgeCount; ++e) {
+                            ProfileEdgeData* edgeData = hatch.GetProfileEdgeData (e);
+                            if (edgeData == nullptr) {
+                                continue;
+                            }
+                            if (job.type == API_LinetypeID && RewritePlain (ToPlainAttrIndex (edgeData->GetLineType ()), job, newPlain)) {
+                                edgeData->SetLineType (FromPlainAttrIndex (newPlain));
+                                changed = true;
+                            }
+                            if (job.type == API_BuildingMaterialID && RewritePlain (ToPlainAttrIndex (edgeData->GetMaterial ()), job, newPlain)) {
+                                edgeData->SetMaterial (FromPlainAttrIndex (newPlain));
+                                changed = true;
+                            }
+                        }
+                    }
+                }
+            }
+            if (changed) {
+                if (!apply || ACAPI_Attribute_ModifyExt (&profile, &defs) == NoError) {
+                    AddAttributeReference (scan, profile, "Profile");
+                } else {
+                    scan.warnings.Push (GS::UniString::Printf ("The profile '%T' still refers to the old index.", GetAttributeName (profile.header).ToPrintf ()));
+                }
+            }
+            ACAPI_DisposeAttrDefsHdlsExt (&defs);
+            DisposeAttribute (profile);
+        }
+    }
+}
+
+void ScanOverrideRules (const ReindexJob& job, bool apply, ReferenceScan& scan)
+{
+    GS::Array<API_Guid> ruleIds;
+    if (ACAPI_GraphicalOverride_GetOverrideRuleList (ruleIds) != NoError) {
+        return;
+    }
+    for (const API_Guid& ruleId : ruleIds) {
+        API_OverrideRule rule = {};
+        rule.guid = ruleId;
+        if (ACAPI_GraphicalOverride_GetOverrideRuleById (rule) != NoError) {
+            continue;
+        }
+        bool changed = false;
+        if (job.type == API_LinetypeID && Rewrite (rule.style.lineType, job))     changed = true;
+        if (job.type == API_FilltypeID && Rewrite (rule.style.fillOverride, job)) changed = true;
+        if (job.type == API_MaterialID && rule.style.surfaceOverride.hasValue && rule.style.surfaceOverride.value.IsType<API_AttributeIndex> ()) {
+            API_AttributeIndex surface = rule.style.surfaceOverride.value.Get<API_AttributeIndex> ();
+            if (Rewrite (surface, job)) {
+                rule.style.surfaceOverride.value = surface;
+                changed = true;
+            }
+        }
+        if (changed) {
+            if (!apply || ACAPI_GraphicalOverride_ChangeOverrideRule (rule) == NoError) {
+                scan.overrideRules.Push (rule.name);
+            } else {
+                scan.warnings.Push (GS::UniString::Printf ("The graphic override rule '%T' still refers to the old index.", rule.name.ToPrintf ()));
+            }
+        }
+    }
+}
+
+// Every reference to job.from in the project: rewritten to job.to when apply is set, only listed otherwise.
+ReferenceScan ScanReferences (const GS::Array<API_DatabaseInfo>& databases, const ReindexJob& job, bool apply)
+{
+    ReferenceScan scan;
+    ScanElements (databases, job, apply, scan);
+    ScanToolDefaults (job, apply, scan);
+    ScanFavorites (job, apply, scan);
+    ScanAttributes (job, apply, scan);
+    ScanOverrideRules (job, apply, scan);
+    return scan;
+}
+
+// Reads an attribute of the given type by guid or index, with its name and its extended definition.
+GSErrCode GetAttributeWithDefs (API_Attribute& attribute, GS::UniString& name, API_AttributeDefExt& defs)
+{
+    attribute.header.uniStringNamePtr = &name;
+    GSErrCode err = ACAPI_Attribute_Get (&attribute);
+    if (err != NoError) {
+        return err;
+    }
+    err = ACAPI_Attribute_GetDefExt (attribute.header.typeID, attribute.header.index, &defs);
+    if (err == APIERR_BADID || err == APIERR_BADPARS || err == APIERR_NOTSUPPORTED) {
+        err = NoError;   // the type has no extended definition
+    }
+    return err;
+}
+
+// Creates a copy of the attribute (its header, fields and extended definition) with the given name. Archicad gives
+// it the lowest free index, returned in created.header.index, and a new guid (a given guid is not kept; tested on
+// Archicad 29).
+GSErrCode CreateAttributeCopy (const API_Attribute& source, API_AttributeDefExt* defs, const GS::UniString& name, API_Attribute& created)
+{
+    created = source;
+    created.header.index = APIInvalidAttributeIndex;
+    created.header.guid = APINULLGuid;
+    GS::UniString copyName = name;
+    created.header.uniStringNamePtr = &copyName;
+    return ACAPI_Attribute_CreateExt (&created, defs);
+}
+
+GS::Array<Int32> GetUsedIndices (API_AttrTypeID typeID)
+{
+    GS::Array<Int32> used;
+    GS::Array<API_Attribute> attributes;
+    if (ACAPI_Attribute_GetAttributesByType (typeID, attributes) == NoError) {
+        for (API_Attribute& attribute : attributes) {
+            used.Push (GetAttributeIndex (attribute.header.index));
+            DisposeAttribute (attribute);
+        }
+    }
+    return used;
+}
+
+// Creates a copy of the attribute exactly at targetIndex: every free index below it is filled with a temporary
+// copy first, which is deleted again. On failure nothing is left behind and the message says why.
+GSErrCode CreateAttributeCopyAtIndex (const API_Attribute& source, API_AttributeDefExt* defs, const GS::UniString& name, Int32 targetIndex, API_Attribute& created, GS::UniString& message)
+{
+    const GS::Array<Int32> used = GetUsedIndices (source.header.typeID);
+    GS::Array<API_AttributeIndex> placeholders;
+    const auto deletePlaceholders = [&] () {
+        for (const API_AttributeIndex& placeholder : placeholders) {
+            DeleteAttribute (source.header.typeID, placeholder);
+        }
+        placeholders.Clear ();
+    };
+    for (Int32 index = 1; index < targetIndex; ++index) {
+        if (used.Contains (index)) {
+            continue;
+        }
+        API_Attribute placeholder = {};
+        const GSErrCode err = CreateAttributeCopy (source, defs, GetTemporaryLayerName ("Tapir ReindexAttributes placeholder"), placeholder);
+        if (err != NoError) {
+            deletePlaceholders ();
+            message = GS::UniString::Printf ("Failed to create a temporary attribute for the free index %d.", index);
+            return err;
+        }
+        placeholders.Push (placeholder.header.index);
+        if (GetAttributeIndex (placeholder.header.index) != index) {
+            deletePlaceholders ();
+            message = GS::UniString::Printf ("Archicad created a temporary attribute at index %d instead of %d.", GetAttributeIndex (placeholder.header.index), index);
+            return APIERR_GENERAL;
+        }
+    }
+    GSErrCode err = CreateAttributeCopy (source, defs, name, created);
+    deletePlaceholders ();
+    if (err != NoError) {
+        message = "Failed to create the attribute at the new index.";
+        return err;
+    }
+    if (GetAttributeIndex (created.header.index) != targetIndex) {
+        DeleteAttribute (source.header.typeID, created.header.index);
+        message = GS::UniString::Printf ("Archicad created the attribute at index %d instead of %d.", GetAttributeIndex (created.header.index), targetIndex);
+        return APIERR_GENERAL;
+    }
+    return NoError;
+}
+
+GS::UniString GetReindexableAttributeTypeName (API_AttrTypeID typeID)
+{
+    switch (typeID) {
+        case API_FilltypeID:         return "fill";
+        case API_LinetypeID:         return "line type";
+        case API_MaterialID:         return "surface";
+        case API_BuildingMaterialID: return "building material";
+        default:                     return "attribute";
+    }
+}
+
+void AddScanToResult (GS::ObjectState& result, const ReferenceScan& scan, bool dryRun)
+{
+    result.Add ("elements", GetElementIds (scan.elements));
+    result.Add ("hotlinkElements", GetElementIds (scan.hotlinkElements));
+    const auto& toolDefaults = result.AddList<GS::UniString> ("toolDefaults");
+    for (API_ElemTypeID typeID : scan.toolDefaults) {
+        toolDefaults (GetElementTypeNonLocalizedName (typeID));
+    }
+    result.Add ("favorites", scan.favorites);
+    result.Add ("attributes", scan.attributes);
+    result.Add ("overrideRules", scan.overrideRules);
+    GS::Array<GS::UniString> warnings = scan.warnings;
+    if (!scan.hotlinkElements.IsEmpty ()) {
+        warnings.Push (GS::UniString::Printf ("%u elements come from hotlinked modules and %s the old index; reindex the module files themselves.", scan.hotlinkElements.GetSize (), dryRun ? "would keep" : "keep"));
+    }
+    if (!warnings.IsEmpty ()) {
+        result.Add ("warnings", warnings);
+    }
+}
+
+// Moves one attribute to newIndex, as described in the command's registration. On any failure before the old
+// attribute is deleted, everything done so far is undone and the old attribute is kept.
+GS::ObjectState ReindexAttribute (const GS::Array<API_DatabaseInfo>& databases, API_AttrTypeID typeID, const API_Guid& attributeGuid, Int32 newIndexValue, bool dryRun, Int32 maxPlaceholders)
+{
+    const GS::UniString typeName = GetReindexableAttributeTypeName (typeID);
+    GS::UniString name;
+    API_Attribute oldAttribute = {};
+    API_AttributeDefExt oldDefs = {};
+    oldAttribute.header.typeID = typeID;
+    oldAttribute.header.guid = attributeGuid;
+    if (GetAttributeWithDefs (oldAttribute, name, oldDefs) != NoError) {
+        return CreateErrorResponse (APIERR_BADID, GS::UniString::Printf ("The %T was not found.", typeName.ToPrintf ()));
+    }
+    const auto finish = [&] (const GS::ObjectState& response) {
+        ACAPI_DisposeAttrDefsHdlsExt (&oldDefs);
+        DisposeAttribute (oldAttribute);
+        return response;
+    };
+    const API_AttributeIndex oldIndex = oldAttribute.header.index;
+    const Int32 oldIndexValue = GetAttributeIndex (oldIndex);
+    if (newIndexValue < 1) {
+        return finish (CreateErrorResponse (APIERR_BADPARS, "newIndex must be 1 or higher."));
+    }
+    const GS::Array<Int32> used = GetUsedIndices (typeID);
+    if (newIndexValue != oldIndexValue && used.Contains (newIndexValue)) {
+        API_Attribute other = {};
+        other.header.typeID = typeID;
+        other.header.index = ACAPI_CreateAttributeIndex (newIndexValue);
+        GS::UniString otherName;
+        if (ACAPI_Attribute_Get (&other) == NoError) {
+            otherName = GetAttributeName (other.header);
+            DisposeAttribute (other);
+        }
+        return finish (CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("Index %d is used by the %T '%T'.", newIndexValue, typeName.ToPrintf (), otherName.ToPrintf ())));
+    }
+
+    // The copy is created while the old attribute still exists, so only the free indices below newIndex need a placeholder.
+    Int32 placeholderCount = 0;
+    for (Int32 index = 1; index < newIndexValue && newIndexValue != oldIndexValue; ++index) {
+        if (!used.Contains (index)) {
+            ++placeholderCount;
+        }
+    }
+    const ReindexJob job = { typeID, oldIndex, ACAPI_CreateAttributeIndex (newIndexValue) };
+
+    GS::ObjectState result;
+    result.Add ("oldIndex", oldIndexValue);
+    result.Add ("newIndex", newIndexValue);
+    result.Add ("placeholders", placeholderCount);
+    if (dryRun || newIndexValue == oldIndexValue) {
+        result.Add ("attributeId", CreateGuidObjectState (attributeGuid));
+        AddScanToResult (result, ScanReferences (databases, job, false), true);
+        return finish (result);
+    }
+    if (placeholderCount > maxPlaceholders) {
+        return finish (CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("The %T was not moved: index %d needs %d temporary attributes for the free indices below it, more than maxPlaceholders (%d). Give a larger maxPlaceholders if this index is intended.", typeName.ToPrintf (), newIndexValue, placeholderCount, maxPlaceholders)));
+    }
+    // The attribute folder is looked up before the old attribute is deleted; the new one is moved there afterwards.
+    API_AttributeFolder root = {};
+    root.typeID = typeID;
+    GS::Optional<API_AttributeFolder> folder;
+    if (ACAPI_Attribute_GetFolder (root) == NoError) {
+        folder = FindFolderOfLayer (root, APIGuid2GSGuid (attributeGuid), true);
+    }
+
+    // 1. A copy at the new index, under a temporary name while the old attribute still has the real one.
+    API_Attribute copy = {};
+    GS::UniString message;
+    GSErrCode err = CreateAttributeCopyAtIndex (oldAttribute, &oldDefs, GetTemporaryLayerName (name), newIndexValue, copy, message);
+    if (err != NoError) {
+        return finish (CreateErrorResponse (err, GS::UniString::Printf ("The %T was not moved: %T", typeName.ToPrintf (), message.ToPrintf ())));
+    }
+
+    // 2. Every reference goes to the new index. If an element cannot be changed, everything is put back.
+    ReferenceScan scan = ScanReferences (databases, job, true);
+    if (!scan.failedElements.IsEmpty ()) {
+        const ReindexJob back = { typeID, job.to, job.from };
+        ScanReferences (databases, back, true);
+        DeleteAttribute (typeID, copy.header.index);
+        return finish (CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf ("The %T was not moved: %u of the elements that use it could not be changed (they may be locked, or not reserved in Teamwork): %T.", typeName.ToPrintf (), scan.failedElements.GetSize (), ListElementGuids (scan.failedElements).ToPrintf ())));
+    }
+
+    // 3. The old attribute is deleted. From here on the attribute is moved; what fails is reported as a warning.
+    err = DeleteAttribute (typeID, oldIndex);
+    if (err != NoError) {
+        const ReindexJob back = { typeID, job.to, job.from };
+        ScanReferences (databases, back, true);
+        DeleteAttribute (typeID, copy.header.index);
+        return finish (CreateErrorResponse (err, GS::UniString::Printf ("The %T was not moved: the old attribute could not be deleted.", typeName.ToPrintf ())));
+    }
+
+    // 4. The copy gets the real name: the old attribute's fields and definition are written again under it.
+    const API_Guid finalGuid = copy.header.guid;
+    API_Attribute renamed = oldAttribute;
+    renamed.header.index = copy.header.index;
+    renamed.header.guid = copy.header.guid;
+    GS::UniString finalName = name;
+    renamed.header.uniStringNamePtr = &finalName;
+    if (ACAPI_Attribute_ModifyExt (&renamed, &oldDefs) != NoError) {
+        scan.warnings.Push (GS::UniString::Printf ("Its name could not be set back; it is called '%T'.", GetAttributeName (copy.header).ToPrintf ()));
+    }
+    if (folder.HasValue () && ACAPI_Attribute_Move ({}, { APIGuid2GSGuid (finalGuid) }, folder.Get ()) != NoError) {
+        scan.warnings.Push ("It could not be moved into the attribute folder of the old attribute, so it is in the root folder.");
+    }
+
+    result.Add ("attributeId", CreateGuidObjectState (finalGuid));
+    AddScanToResult (result, scan, false);
+    return finish (result);
+}
+
+}
+
+#endif
+
+ReindexAttributesCommand::ReindexAttributesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ReindexAttributesCommand::GetName () const
+{
+    return "ReindexAttributes";
+}
+
+GS::Optional<GS::UniString> ReindexAttributesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeType": {
+                "type": "string",
+                "enum": ["Fill", "Line", "Surface", "BuildingMaterial"],
+                "description": "The type of the attributes to move. Layers are moved by ReindexLayers; pens and the other attribute types cannot be moved."
+            },
+            "attributes": {
+                "type": "array",
+                "description": "The attributes to move to a new index, handled in the given order.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "attributeId": {
+                            "$ref": "#/AttributeId",
+                            "description": "The attribute to move."
+                        },
+                        "newIndex": {
+                            "type": "integer",
+                            "description": "The index the attribute gets. It must not be used by another attribute of the type.",
+                            "minimum": 1
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "attributeId",
+                        "newIndex"
+                    ]
+                }
+            },
+            "dryRun": {
+                "type": "boolean",
+                "description": "Only list every reference to each attribute (elements, tool defaults, Favorites, other attributes, graphic override rules, elements from hotlinked modules) without changing anything. The default is false."
+            },
+            "maxPlaceholders": {
+                "type": "integer",
+                "description": "Every free index below newIndex is filled with a temporary attribute first, so a newIndex far above the highest index in use takes long. An attribute that needs more temporary attributes than this is not moved. The default is 1000.",
+                "minimum": 0
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeType",
+            "attributes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ReindexAttributesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributes": {
+                "type": "array",
+                "description": "One item per requested attribute, in the same order.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "attributeId": {
+                                    "$ref": "#/AttributeId",
+                                    "description": "The attribute at its new index. Archicad cannot renumber an attribute in place, so this is a new attribute with a new id; with dryRun it is the attribute's current id."
+                                },
+                                "oldIndex": {
+                                    "type": "integer"
+                                },
+                                "newIndex": {
+                                    "type": "integer"
+                                },
+                                "placeholders": {
+                                    "type": "integer",
+                                    "description": "The number of temporary attributes needed for the free indices below newIndex."
+                                },
+                                "elements": {
+                                    "$ref": "#/Elements",
+                                    "description": "The elements that refer to the attribute, in the floor plan and in every section, elevation, interior elevation, detail, worksheet, 3D document, layout and master layout: in their own fields, their library part parameters or their memo data (side surfaces, roof levels, morph faces, cutting planes). Rewritten to the new index unless dryRun is true."
+                                },
+                                "hotlinkElements": {
+                                    "$ref": "#/Elements",
+                                    "description": "Elements from hotlinked modules that refer to the attribute. They cannot be changed and keep the old index until their module file is reindexed."
+                                },
+                                "toolDefaults": {
+                                    "type": "array",
+                                    "description": "The element types whose tool default refers to the attribute. Rewritten unless dryRun is true.",
+                                    "items": {
+                                        "$ref": "#/ElementType"
+                                    }
+                                },
+                                "favorites": {
+                                    "type": "array",
+                                    "description": "The names of the Favorites that refer to the attribute. Rewritten unless dryRun is true.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "attributes": {
+                                    "type": "array",
+                                    "description": "The other attributes that refer to the attribute: composites (skins and separators), building materials (cut fill, cut surface), surfaces (hatching fill), MEP systems (fill) and profiles (skins and edges). Rewritten unless dryRun is true.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "attributeType": {
+                                                "type": "string"
+                                            },
+                                            "attributeId": {
+                                                "$ref": "#/AttributeId"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "attributeType",
+                                            "attributeId",
+                                            "name"
+                                        ]
+                                    }
+                                },
+                                "overrideRules": {
+                                    "type": "array",
+                                    "description": "The names of the graphic override rules that refer to the attribute. Rewritten unless dryRun is true.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "warnings": {
+                                    "type": "array",
+                                    "description": "What keeps the old index or did not work after the attribute was moved: elements from hotlinked modules, a tool default, Favorite, attribute or rule that could not be written, the name or the attribute folder.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "attributeId",
+                                "oldIndex",
+                                "newIndex",
+                                "placeholders",
+                                "elements",
+                                "hotlinkElements",
+                                "toolDefaults",
+                                "favorites",
+                                "attributes",
+                                "overrideRules"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributes"
+        ]
+    })";
+}
+
+GS::ObjectState ReindexAttributesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::UniString typeStr;
+    parameters.Get ("attributeType", typeStr);
+    const API_AttrTypeID typeID = GetReindexableAttributeType (typeStr);
+    if (typeID == API_ZombieAttrID) {
+        return CreateErrorResponse (APIERR_BADPARS, "attributeType must be Fill, Line, Surface or BuildingMaterial. Layers are moved by ReindexLayers.");
+    }
+    GS::Array<GS::ObjectState> attributes;
+    parameters.Get ("attributes", attributes);
+    bool dryRun = false;
+    parameters.Get ("dryRun", dryRun);
+    Int32 maxPlaceholders = 1000;
+    parameters.Get ("maxPlaceholders", maxPlaceholders);
+
+    API_DatabaseInfo startingDatabase = {};
+    GSErrCode err = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the current database.");
+    }
+    GS::Array<API_DatabaseInfo> databases;
+    err = GetElementDatabases (databases);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to list the views and layouts.");
+    }
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("attributes");
+    const auto reindexAll = [&] () -> GSErrCode {
+        for (const GS::ObjectState& attribute : attributes) {
+            Int32 newIndex = 0;
+            attribute.Get ("newIndex", newIndex);
+            results (ReindexAttribute (databases, typeID, GetGuidFromAttributesArrayItem (attribute), newIndex, dryRun, maxPlaceholders));
+        }
+        return NoError;
+    };
+    if (dryRun) {
+        reindexAll ();
+    } else {
+        ACAPI_CallUndoableCommand ("Reindex Attributes", reindexAll);
+    }
+    ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "ReindexAttributes requires Archicad 27 or newer.");
+#endif
+}
