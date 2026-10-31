@@ -814,31 +814,36 @@ GS::ObjectState GetElementTypeNamesCommand::Execute (const GS::ObjectState& para
 #endif
 }
 
-// ACAPI_DrawOrder_CreationOrderGetNext replaces the given guid with the next one in creation
-// order, starting from the first for APINULLGuid. It signals the end with an error code or
-// APINULLGuid, so that ends the list instead of failing it. Errors saying the table cannot be
-// read in the current database fail it. The seen set guards against a sequence that would not end.
+// ACAPI_DrawOrder_CreationOrderGetNext reads the table set up by ACAPI_DrawOrder_InitCreationOrderTable
+// (a nullptr filter keeps every element type), which must be disposed afterwards. It replaces the given
+// guid with the next one in creation order, starting from the first for APINULLGuid, and signals the end
+// with APIERR_NOMORE or APINULLGuid; any other error fails the list. The seen set guards against a
+// sequence that would not end.
 template <typename ListProxyType>
 static GSErrCode GetElementsInCreationOrderFromCurrentDatabase (ListProxyType& elementsListProxy)
 {
+    GSErrCode err = ACAPI_DrawOrder_InitCreationOrderTable (nullptr);
+    if (err != NoError) {
+        return err;
+    }
+
     GS::HashSet<API_Guid> seenGuids;
     API_Guid guid = APINULLGuid;
     while (true) {
-        const GSErrCode err = ACAPI_DrawOrder_CreationOrderGetNext (&guid);
-        if (err == APIERR_BADDATABASE || err == APIERR_NOTSUPPORTED || err == APIERR_NOPLAN || err == APIERR_BADPARS) {
-            return err;
-        }
-        if (err != NoError || guid == APINULLGuid) {
+        err = ACAPI_DrawOrder_CreationOrderGetNext (&guid);
+        if (err == APIERR_NOMORE) {
+            err = NoError;
             break;
         }
-        if (seenGuids.Contains (guid)) {
+        if (err != NoError || guid == APINULLGuid || seenGuids.Contains (guid)) {
             break;
         }
         seenGuids.Add (guid);
         elementsListProxy (CreateElementIdObjectState (guid));
     }
 
-    return NoError;
+    ACAPI_DrawOrder_DisposeCreationOrderTable ();
+    return err;
 }
 
 GetElementsInCreationOrderCommand::GetElementsInCreationOrderCommand () :
