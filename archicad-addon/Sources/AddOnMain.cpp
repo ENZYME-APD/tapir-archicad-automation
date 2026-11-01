@@ -1346,7 +1346,7 @@ GSErrCode Initialize (void)
         CommandGroup attributeCommands ("Attribute Commands");
         err |= RegisterCommand<GetAttributesByTypeCommand> (
             attributeCommands, "1.1.3",
-            "Returns the details of every attribute of the given type. From Archicad 30 an attribute that Archicad keeps a creation record of also carries creationInfo: how (method), from where (source), by whom and when it was created."
+            "Returns the details of every attribute of the given type, including the path of the attribute folder holding it (Archicad 26 and newer). From Archicad 30 an attribute that Archicad keeps a creation record of also carries creationInfo: how (method), from where (source), by whom and when it was created."
         );
         err |= RegisterCommand<GetAttributesFromProjectCommand> (
             attributeCommands, "1.7.3",
