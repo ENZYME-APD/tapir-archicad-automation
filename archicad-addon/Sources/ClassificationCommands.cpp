@@ -1074,11 +1074,16 @@ GS::Optional<GS::UniString> CreateClassificationSystemsCommand::GetRawResponseSc
         "properties": {
             "executionResults": {
                 "$ref": "#/ExecutionResults"
+            },
+            "classificationSystemIds": {
+                "$ref": "#/ClassificationSystemIdsOrErrors",
+                "description": "The identifiers of the new classification systems, in the order of the input. A system that could not be created is an error item. A system whose items failed is still listed, because it was created; its execution result has the error."
             }
         },
         "additionalProperties": false,
         "required": [
-            "executionResults"
+            "executionResults",
+            "classificationSystemIds"
         ]
     })";
 }
@@ -1097,7 +1102,10 @@ GSErrCode CreateClassificationItemsRecursively (const GS::Array<GS::ObjectState>
         }
         GS::Array<GS::ObjectState> childItems;
         if (classificationItem.Get ("children", childItems) && childItems.GetSize() > 0) {
-            CreateClassificationItemsRecursively(childItems, classificationSystemGuid, apiClassificationItem.guid);
+            err = CreateClassificationItemsRecursively(childItems, classificationSystemGuid, apiClassificationItem.guid);
+            if (err != NoError) {
+                return err;
+            }
         }
     }
 
@@ -1111,12 +1119,19 @@ GS::ObjectState CreateClassificationSystemsCommand::Execute (const GS::ObjectSta
 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    const auto& classificationSystemIds = response.AddList<GS::ObjectState> ("classificationSystemIds");
+
+    // One execution result and one id (or error item) per input system, in input order.
+    const auto PushFailed = [&] (GSErrCode err, const char* message) {
+        executionResults (CreateFailedExecutionResult (err, message));
+        classificationSystemIds (CreateErrorResponse (err, message));
+    };
 
     ACAPI_CallUndoableCommand ("CreateClassificationSystemsCommand", [&] () -> GSErrCode {
         for (const GS::ObjectState& classificationSystemWithItems : classificationSystemsWithItems) {
             GS::ObjectState classificationSystem;
             if (!classificationSystemWithItems.Get ("classificationSystem", classificationSystem)) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Failed to get classification system details"));
+                PushFailed (APIERR_BADPARS, "Failed to get classification system details");
                 continue;
             }
 
@@ -1138,16 +1153,15 @@ GS::ObjectState CreateClassificationSystemsCommand::Execute (const GS::ObjectSta
 
             GSErrCode err = ACAPI_Classification_CreateClassificationSystem (apiClassificationSystem);
             if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (err, "Failed to create classification system"));
+                PushFailed (err, "Failed to create classification system");
                 continue;
             }
+            classificationSystemIds (GS::ObjectState ("classificationSystemId", CreateGuidObjectState (apiClassificationSystem.guid)));
 
             GS::Array<GS::ObjectState> classificationItems;
-            if (!classificationSystemWithItems.Get ("classificationItems", classificationItems) || classificationItems.GetSize() == 0) {
-                continue;
+            if (classificationSystemWithItems.Get ("classificationItems", classificationItems) && classificationItems.GetSize () > 0) {
+                err = CreateClassificationItemsRecursively (classificationItems, apiClassificationSystem.guid, APINULLGuid);
             }
-
-            err = CreateClassificationItemsRecursively(classificationItems, apiClassificationSystem.guid, APINULLGuid);
             if (err == NoError) {
                 executionResults (CreateSuccessfulExecutionResult ());
             } else {
@@ -1194,11 +1208,16 @@ GS::Optional<GS::UniString> CreateClassificationItemsCommand::GetRawResponseSche
         "properties": {
             "executionResults": {
                 "$ref": "#/ExecutionResults"
+            },
+            "classificationItemIds": {
+                "$ref": "#/ClassificationItemIdsOrErrors",
+                "description": "The identifiers of the new classification items, in the order of the input. An item that could not be created is an error item. An item whose children failed is still listed, because it was created; its execution result has the error."
             }
         },
         "additionalProperties": false,
         "required": [
-            "executionResults"
+            "executionResults",
+            "classificationItemIds"
         ]
     })";
 }
@@ -1212,18 +1231,25 @@ GS::ObjectState CreateClassificationItemsCommand::Execute (const GS::ObjectState
 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    const auto& classificationItemIds = response.AddList<GS::ObjectState> ("classificationItemIds");
+
+    // One execution result and one id (or error item) per input item, in input order.
+    const auto PushFailed = [&] (GSErrCode err, const char* message) {
+        executionResults (CreateFailedExecutionResult (err, message));
+        classificationItemIds (CreateErrorResponse (err, message));
+    };
 
     ACAPI_CallUndoableCommand ("CreateClassificationItemsCommand", [&] () -> GSErrCode {
         for (const GS::ObjectState& newClassificationItem : newClassificationItems) {
             GS::ObjectState classificationItemDetails;
             if (!newClassificationItem.Get ("classificationItemDetails", classificationItemDetails)) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Failed to get classification item details"));
+                PushFailed (APIERR_BADPARS, "Failed to get classification item details");
                 continue;
             }
 
             const GS::ObjectState* classificationSystemId = newClassificationItem.Get ("classificationSystemId");
             if (classificationSystemId == nullptr) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "classificationSystemId is missing"));
+                PushFailed (APIERR_BADPARS, "classificationSystemId is missing");
                 continue;
             }
 
@@ -1241,12 +1267,19 @@ GS::ObjectState CreateClassificationItemsCommand::Execute (const GS::ObjectState
             classificationItemDetails.Get ("id", apiClassificationItem.id);
             GSErrCode err = ACAPI_Classification_CreateClassificationItem(apiClassificationItem, classificationSystemGuid, currentParentGuid, nextClassificationGuid);
             if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (err, "Failed to create classification item"));
+                PushFailed (err, "Failed to create classification item");
                 continue;
             }
+            classificationItemIds (GS::ObjectState ("classificationItemId", CreateGuidObjectState (apiClassificationItem.guid)));
+
             GS::Array<GS::ObjectState> childItems;
-            if (classificationItemDetails.Get ("children", childItems) && childItems.GetSize() > 0) {
-                CreateClassificationItemsRecursively(childItems, classificationSystemGuid, apiClassificationItem.guid);
+            if (classificationItemDetails.Get ("children", childItems) && childItems.GetSize () > 0) {
+                err = CreateClassificationItemsRecursively (childItems, classificationSystemGuid, apiClassificationItem.guid);
+            }
+            if (err == NoError) {
+                executionResults (CreateSuccessfulExecutionResult ());
+            } else {
+                executionResults (CreateFailedExecutionResult (err, "Failed to create child classification items"));
             }
         }
 
