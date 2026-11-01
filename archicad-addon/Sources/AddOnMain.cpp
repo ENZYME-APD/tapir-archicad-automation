@@ -2192,6 +2192,14 @@ GSErrCode Initialize (void)
             designOptionsCommands, "1.7.1",
             "Deletes the given design option combinations. Available from Archicad 29."
         );
+        err |= RegisterCommand<GetHotlinkDesignOptionTablesCommand> (
+            designOptionsCommands, "1.7.4",
+            "Retrieves the design option table of the given hotlink nodes and placed hotlink instances: the filter mode (main model only, by options or by combination), the design option sets, options and combinations of the hotlinked module and which of them are active. Available from Archicad 29."
+        );
+        err |= RegisterCommand<SetHotlinkDesignOptionTablesCommand> (
+            designOptionsCommands, "1.7.4",
+            "Sets the filter mode, the active combination and the active option of sets in the design option table of the given placed hotlink instances. Available from Archicad 29."
+        );
         err |= RegisterCommand<SetDefaultDesignOptionCommand> (
             designOptionsCommands, "1.7.3",
             "Sets the given design option as the default, or the Main Model when no design option is given. Available from Archicad 29."

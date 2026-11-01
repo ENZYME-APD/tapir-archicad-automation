@@ -2202,6 +2202,518 @@ GS::ObjectState DeleteDesignOptionCombinationsCommand::Execute (const GS::Object
 #endif
 }
 
+// A hotlink node, and each instance placed from it, carries a design option
+// table: which of the source file's sets, options and combinations it shows,
+// and whether it filters by them at all. Elements the filter hides are as
+// invisible to a script as elements of an inactive design option.
+
+#ifdef ServerMainVers_2900
+// The filter mode's numeric values are fixed by the DevKit (MainModelOnly = 0,
+// FilterByOptions = 1, FilterByCombination = 2); the enum's own type is taken
+// from the getter so this does not depend on where the enum is declared.
+static const char* const HotlinkFilterModeNames[] = { "MainModelOnly", "FilterByOptions", "FilterByCombination" };
+static const int HotlinkFilterModeCount = 3;
+
+template <typename TableT>
+static GS::UniString GetHotlinkFilterModeName (const TableT& table)
+{
+    const int filterMode = static_cast<int> (table.GetFilterMode ());
+    if (filterMode < 0 || filterMode >= HotlinkFilterModeCount) {
+        return "Unknown";
+    }
+    return GS::UniString (HotlinkFilterModeNames[filterMode]);
+}
+
+static GS::Optional<int> GetHotlinkFilterModeValue (const GS::UniString& name)
+{
+    for (int filterMode = 0; filterMode < HotlinkFilterModeCount; ++filterMode) {
+        if (name == GS::UniString (HotlinkFilterModeNames[filterMode])) {
+            return filterMode;
+        }
+    }
+    return GS::NoValue;
+}
+
+template <typename TableT>
+static GS::ObjectState CreateHotlinkDesignOptionTableObjectState (const TableT& table)
+{
+    GS::ObjectState tableOS;
+    tableOS.Add ("hotlinkNodeId", CreateGuidObjectState (table.GetNodeGuid ()));
+    tableOS.Add ("filterMode", GetHotlinkFilterModeName (table));
+
+    const auto& combinations = tableOS.AddList<GS::UniString> ("designOptionCombinations");
+    for (const GS::UniString& combinationName : table.GetCombinationsNames ()) {
+        combinations (combinationName);
+    }
+    const std::optional<GS::UniString> activeCombination = table.GetActiveCombination ();
+    if (activeCombination.has_value ()) {
+        tableOS.Add ("activeDesignOptionCombination", *activeCombination);
+    }
+
+    const auto& sets = tableOS.AddList<GS::ObjectState> ("designOptionSets");
+    for (const GS::UniString& setName : table.GetSetsNames ()) {
+        GS::ObjectState setOS;
+        setOS.Add ("name", setName);
+        const auto& options = setOS.AddList<GS::UniString> ("designOptions");
+        for (const GS::UniString& optionName : table.GetOptionsNamesOfSet (setName)) {
+            options (optionName);
+        }
+        const std::optional<GS::UniString> activeOption = table.GetActiveOptionInSet (setName);
+        if (activeOption.has_value ()) {
+            setOS.Add ("activeDesignOption", *activeOption);
+        }
+        sets (setOS);
+    }
+
+    return tableOS;
+}
+
+// Reads a placed hotlink instance; APIERR_BADELEMENTTYPE when the element is
+// something else.
+static GSErrCode GetHotlinkInstance (const GS::ObjectState& elementId, API_Element& element)
+{
+    element = {};
+    element.header.guid = GetGuidFromObjectState (elementId);
+    const GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+    return GetElemTypeId (element.header) == API_HotlinkID ? NoError : APIERR_BADELEMENTTYPE;
+}
+
+static GS::UniString GetHotlinkInstanceErrorMessage (GSErrCode err)
+{
+    return err == APIERR_BADELEMENTTYPE ? "The element is not a hotlink instance" : "Failed to get the element";
+}
+#endif
+
+GetHotlinkDesignOptionTablesCommand::GetHotlinkDesignOptionTablesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetHotlinkDesignOptionTablesCommand::GetName () const
+{
+    return "GetHotlinkDesignOptionTables";
+}
+
+GS::Optional<GS::UniString> GetHotlinkDesignOptionTablesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinks": {
+                "type": "array",
+                "description": "The hotlink nodes (hotlinkNodeId from GetHotlinks) and placed hotlink instances (elementId of a Hotlink element) to read the design option table of.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "properties": {
+                                "hotlinkNodeId": {
+                                    "$ref": "#/HotlinkNodeId"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "hotlinkNodeId"
+                            ]
+                        },
+                        {
+                            "properties": {
+                                "elementId": {
+                                    "$ref": "#/ElementId"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementId"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinks"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetHotlinkDesignOptionTablesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkDesignOptionTables": {
+                "type": "array",
+                "description": "The design option tables, in the order of the given hotlinks.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "hotlinkNodeId": {
+                                    "$ref": "#/HotlinkNodeId",
+                                    "description": "The hotlink node the table belongs to; for an instance, the node it is placed from."
+                                },
+                                "filterMode": {
+                                    "type": "string",
+                                    "enum": [
+                                        "MainModelOnly",
+                                        "FilterByOptions",
+                                        "FilterByCombination",
+                                        "Unknown"
+                                    ],
+                                    "description": "Which elements of the hotlinked module are shown: only its main model, the main model and the active option of each set, or the main model and the options of the active combination."
+                                },
+                                "designOptionCombinations": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "The names of the design option combinations of the hotlinked module."
+                                },
+                                "activeDesignOptionCombination": {
+                                    "type": "string",
+                                    "description": "The name of the active combination. Missing when no combination is active."
+                                },
+                                "designOptionSets": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "designOptions": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                },
+                                                "description": "The names of the design options in the set."
+                                            },
+                                            "activeDesignOption": {
+                                                "type": "string",
+                                                "description": "The name of the active design option of the set. Missing when no option of the set is active."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "name",
+                                            "designOptions"
+                                        ]
+                                    },
+                                    "description": "The design option sets of the hotlinked module."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "hotlinkNodeId",
+                                "filterMode",
+                                "designOptionCombinations",
+                                "designOptionSets"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkDesignOptionTables"
+        ]
+    })";
+}
+
+GS::ObjectState GetHotlinkDesignOptionTablesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
+    if (manager.IsErr ()) {
+        return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to retrieve design options.");
+    }
+
+    GS::Array<GS::ObjectState> hotlinks;
+    if (!parameters.Get ("hotlinks", hotlinks)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'hotlinks' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& tables = response.AddList<GS::ObjectState> ("hotlinkDesignOptionTables");
+
+    for (const GS::ObjectState& hotlink : hotlinks) {
+        const GS::ObjectState* hotlinkNodeId = hotlink.Get ("hotlinkNodeId");
+        const GS::ObjectState* elementId = hotlink.Get ("elementId");
+        if (hotlinkNodeId != nullptr) {
+            API_HotlinkNode node = {};
+            node.guid = GetGuidFromObjectState (*hotlinkNodeId);
+            bool enableUnplaced = true;     // the node may have been created and not placed yet
+            if (ACAPI_Hotlink_GetHotlinkNode (&node, &enableUnplaced) != NoError) {
+                tables (CreateErrorResponse (APIERR_BADID, "hotlinkNodeId is not a hotlink node"));
+                continue;
+            }
+            auto table = manager->GetHotlinkDesignOptionTable (node);
+            if (table.IsErr ()) {
+                tables (CreateErrorResponse (table.UnwrapErr ().kind, "Failed to get the design option table of the hotlink node."));
+                continue;
+            }
+            tables (CreateHotlinkDesignOptionTableObjectState (*table));
+        } else if (elementId != nullptr) {
+            API_Element element;
+            const GSErrCode err = GetHotlinkInstance (*elementId, element);
+            if (err != NoError) {
+                tables (CreateErrorResponse (err, GetHotlinkInstanceErrorMessage (err)));
+                continue;
+            }
+            auto table = manager->GetHotlinkInstanceDesignOptionTable (element.hotlink);
+            if (table.IsErr ()) {
+                tables (CreateErrorResponse (table.UnwrapErr ().kind, "Failed to get the design option table of the hotlink instance."));
+                continue;
+            }
+            tables (CreateHotlinkDesignOptionTableObjectState (*table));
+        } else {
+            tables (CreateErrorResponse (APIERR_BADPARS, "Either 'hotlinkNodeId' or 'elementId' is required"));
+        }
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
+SetHotlinkDesignOptionTablesCommand::SetHotlinkDesignOptionTablesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetHotlinkDesignOptionTablesCommand::GetName () const
+{
+    return "SetHotlinkDesignOptionTables";
+}
+
+GS::Optional<GS::UniString> SetHotlinkDesignOptionTablesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkInstances": {
+                "type": "array",
+                "description": "The placed hotlink instances to change the design option table of. Every field but elementId is optional; what is omitted keeps its current value. The changes are applied in the order filterMode, activeDesignOptionCombination, activeDesignOptions.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "filterMode": {
+                            "type": "string",
+                            "enum": [
+                                "MainModelOnly",
+                                "FilterByOptions",
+                                "FilterByCombination"
+                            ],
+                            "description": "Which elements of the hotlinked module are shown: only its main model, the main model and the active option of each set, or the main model and the options of the active combination."
+                        },
+                        "activeDesignOptionCombination": {
+                            "type": "string",
+                            "description": "The name of the combination to activate, one of designOptionCombinations from GetHotlinkDesignOptionTables. An empty string deactivates the active combination."
+                        },
+                        "activeDesignOptions": {
+                            "type": "array",
+                            "description": "The option to activate in each given set; the previously active option of the set is deactivated. Sets that are not listed keep their active option.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "setName": {
+                                        "type": "string"
+                                    },
+                                    "designOptionName": {
+                                        "type": "string",
+                                        "description": "The name of the option to activate in the set. An empty string deactivates every option of the set."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "setName",
+                                    "designOptionName"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkInstances"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetHotlinkDesignOptionTablesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetHotlinkDesignOptionTablesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
+    if (manager.IsErr ()) {
+        return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to modify design options.");
+    }
+
+    GS::Array<GS::ObjectState> hotlinkInstances;
+    if (!parameters.Get ("hotlinkInstances", hotlinkInstances)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'hotlinkInstances' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("Set Hotlink Design Option Tables", [&]() -> GSErrCode {
+        for (const GS::ObjectState& instanceData : hotlinkInstances) {
+            const GS::ObjectState* elementId = instanceData.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'elementId' parameter"));
+                continue;
+            }
+            API_Element element;
+            GSErrCode err = GetHotlinkInstance (*elementId, element);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, GetHotlinkInstanceErrorMessage (err)));
+                continue;
+            }
+            auto table = manager->GetHotlinkInstanceDesignOptionTable (element.hotlink);
+            if (table.IsErr ()) {
+                executionResults (CreateFailedExecutionResult (table.UnwrapErr ().kind, "Failed to get the design option table of the hotlink instance."));
+                continue;
+            }
+
+            GS::UniString filterModeName;
+            GS::Optional<int> filterMode;
+            if (instanceData.Get ("filterMode", filterModeName)) {
+                filterMode = GetHotlinkFilterModeValue (filterModeName);
+                if (!filterMode.HasValue ()) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Invalid 'filterMode' parameter: " + filterModeName));
+                    continue;
+                }
+                table->SetFilterMode (static_cast<decltype (table->GetFilterMode ())> (filterMode.Get ()));
+            }
+
+            GS::Optional<GS::UniString> failure;
+            GS::UniString combinationName;
+            const bool hasCombination = instanceData.Get ("activeDesignOptionCombination", combinationName);
+            if (hasCombination) {
+                if (combinationName.IsEmpty ()) {
+                    table->DeactivateCombination ();
+                } else {
+                    const auto result = table->ActivateCombination (combinationName);
+                    if (result.IsErr ()) {
+                        err = result.UnwrapErr ().kind;
+                        failure = "Failed to activate the design option combination " + combinationName;
+                    }
+                }
+            }
+
+            GS::Array<GS::ObjectState> activeDesignOptions;
+            GS::HashTable<GS::UniString, GS::UniString> requestedOptionOfSet;
+            if (!failure.HasValue () && instanceData.Get ("activeDesignOptions", activeDesignOptions)) {
+                for (const GS::ObjectState& activeDesignOption : activeDesignOptions) {
+                    GS::UniString setName;
+                    GS::UniString optionName;
+                    if (!activeDesignOption.Get ("setName", setName) || !activeDesignOption.Get ("designOptionName", optionName)) {
+                        err = APIERR_BADPARS;
+                        failure = GS::UniString ("Missing 'setName' or 'designOptionName' parameter");
+                        break;
+                    }
+                    const auto result = optionName.IsEmpty () ? table->DeactivateOptionsInSet (setName) : table->ActivateOptionInSet (setName, optionName);
+                    if (result.IsErr ()) {
+                        err = result.UnwrapErr ().kind;
+                        failure = "Failed to change the active design option of the set " + setName;
+                        break;
+                    }
+                    requestedOptionOfSet.Put (setName, optionName);
+                }
+            }
+            if (failure.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (err, failure.Get ()));
+                continue;
+            }
+
+            const auto result = manager->SetHotlinkDesignOptionTable (element.hotlink, *table);
+            if (result.IsErr ()) {
+                executionResults (CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to set the design option table of the hotlink instance."));
+                continue;
+            }
+
+            // Read the instance back, so a table that was not stored is
+            // reported instead of claimed as done.
+            API_Element storedElement;
+            err = GetHotlinkInstance (*elementId, storedElement);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to read back the hotlink instance."));
+                continue;
+            }
+            auto stored = manager->GetHotlinkInstanceDesignOptionTable (storedElement.hotlink);
+            if (stored.IsErr ()) {
+                executionResults (CreateFailedExecutionResult (stored.UnwrapErr ().kind, "Failed to read back the design option table of the hotlink instance."));
+                continue;
+            }
+            if (filterMode.HasValue () && static_cast<int> (stored->GetFilterMode ()) != filterMode.Get ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "The filter mode of the hotlink instance did not change."));
+                continue;
+            }
+            if (hasCombination && stored->GetActiveCombination ().value_or (GS::UniString ()) != combinationName) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "The active design option combination of the hotlink instance did not change."));
+                continue;
+            }
+            for (const GS::ObjectState& activeDesignOption : activeDesignOptions) {
+                GS::UniString setName;
+                activeDesignOption.Get ("setName", setName);
+                if (stored->GetActiveOptionInSet (setName).value_or (GS::UniString ()) != requestedOptionOfSet[setName]) {
+                    failure = "The active design option of the set " + setName + " did not change.";
+                    break;
+                }
+            }
+            if (failure.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, failure.Get ()));
+                continue;
+            }
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
 SetDefaultDesignOptionCommand::SetDefaultDesignOptionCommand () :
     CommandBase (CommonSchema::Used)
 {
