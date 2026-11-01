@@ -250,7 +250,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetCurrentWindowTypeCommand> (
             applicationCommands, "1.0.7",
-            "Returns the type of the current (active) window."
+            "Returns the type of the current (active) window and, when it has one, the databaseId of the database it shows, which ChangeWindow takes to bring the window back after a script switched to another one. The saved view (View Map item) the window was opened from is not returned, as Archicad does not tell which one it was."
         );
         err |= RegisterCommand<GetCurrentWindowDrawingScaleCommand> (
             applicationCommands, "1.7.2",
