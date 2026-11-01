@@ -11974,6 +11974,30 @@
             "Unknown"
         ]
     },
+    "LibraryPartIdentifier": {
+        "type": "object",
+        "description": "Identifies a loaded library part by exactly one of: its index, its name or its unique ID.",
+        "properties": {
+            "index": {
+                "type": "integer",
+                "description": "The index of the library part, as GetAvailableLibraryParts returns it. Indices may change when the libraries are reloaded."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the library part, as GetAvailableLibraryParts returns it in documentName and GetDetailsOfElements in libPart.name."
+            },
+            "unId": {
+                "type": "string",
+                "description": "The full unique ID of the library part: main and revision GUID in the form '{MAIN-GUID}-{REVISION-GUID}', as GetLibraryPartDetails returns it."
+            }
+        },
+        "additionalProperties": false,
+        "oneOf": [
+            { "required": [ "index" ] },
+            { "required": [ "name" ] },
+            { "required": [ "unId" ] }
+        ]
+    },
     "ElementsWithExecutionResults": {
         "type": "object",
         "description": "The response of the GetElementsByType command.",
