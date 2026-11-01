@@ -1,10 +1,9 @@
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.Types.GuidObjects;
-using TapirGrasshopperPlugin.Types.Project;
 
 namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
@@ -15,7 +14,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         public RenameProjectInfoGroupsComponent()
             : base(
                 "RenameProjectInfoGroups",
-                "Change the name of the given Project Info groups. Available from Archicad 30.",
+                "Renames Project Info groups. Available from Archicad 30.",
                 GroupNames.Project)
         {
         }
@@ -23,18 +22,18 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         protected override void AddInputs()
         {
             InGenerics(
-                "GroupGuids",
-                "Identifiers of the Project Info groups to rename.");
+                "ProjectInfoGroupIds",
+                "Identifiers of the groups to rename (from GetProjectInfoGroups or CreateProjectInfoGroups).");
 
             InTexts(
                 "Names",
-                "New name of each Project Info group. A name must not be used by another group.");
+                "New name of each group. A name must not be used by another group.");
         }
 
         protected override void AddOutputs()
         {
             OutErrorMessages(
-                "Error message of each Project Info group (empty when it succeeded).");
+                "Error message of each group (empty when it was renamed).");
         }
 
         protected override void Solve(
@@ -42,7 +41,11 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         {
             if (!da.TryGetList(
                     0,
-                    out List<GH_ObjectWrapper> groupWrappers))
+                    out List<GH_ObjectWrapper> wrappers) ||
+                !this.TryGetProjectInfoGroupIds(
+                    wrappers,
+                    "ProjectInfoGroupIds",
+                    out var ids))
             {
                 return;
             }
@@ -54,47 +57,27 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 return;
             }
 
-            if (names.Count != groupWrappers.Count)
+            if (names.Count != ids.Count)
             {
                 this.AddError(
-                    "The size of the inputs GroupGuids and Names must be equal.");
+                    "The size of the input Names must be equal to the size of the input ProjectInfoGroupIds.");
                 return;
             }
 
-            var input = new RenameProjectInfoGroupsParameters
+            var projectInfoGroups = new JArray();
+            for (var i = 0; i < ids.Count; i++)
             {
-                ProjectInfoGroups = new List<RenameProjectInfoGroupParameter>()
-            };
-
-            for (var i = 0; i < groupWrappers.Count; i++)
-            {
-                var groupId =
-                    GuidObject<ProjectInfoGroupGuid>.CreateFromWrapper(groupWrappers[i]);
-                if (groupId == null)
-                {
-                    this.AddError(
-                        "Invalid Project Info group identifier in the GroupGuids input.");
-                    return;
-                }
-
-                if (string.IsNullOrEmpty(names[i]))
-                {
-                    this.AddError(
-                        "Every item of the Names input needs a name.");
-                    return;
-                }
-
-                input.ProjectInfoGroups.Add(
-                    new RenameProjectInfoGroupParameter
+                projectInfoGroups.Add(
+                    new JObject
                     {
-                        ProjectInfoGroupId = groupId,
-                        Name = names[i]
+                        ["projectInfoGroupId"] = JObject.FromObject(ids[i].Id),
+                        ["name"] = names[i]
                     });
             }
 
             SetCadValuesWithErrorMessages(
                 CommandName,
-                input,
+                new JObject { ["projectInfoGroups"] = projectInfoGroups },
                 ToAddOn,
                 da);
         }
@@ -103,6 +86,6 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             Properties.Resources.RenameProjectInfoGroups;
 
         public override Guid ComponentGuid =>
-            new Guid("c4e19f72-8b3a-4d15-b6c7-2f9e0a1d3b58");
+            new Guid("16d86a84-0a16-4fcb-8386-da6834e610c4");
     }
 }

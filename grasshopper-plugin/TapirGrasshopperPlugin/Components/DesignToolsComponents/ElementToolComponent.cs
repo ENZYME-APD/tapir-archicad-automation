@@ -139,13 +139,16 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             return string.Concat(words) + "_JSON";
         }
 
+        // The group is the one Graphisoft puts the tool in: Design Tools by
+        // default, Document Tools for the documentation tools.
         protected ElementToolComponent(
             string name,
-            string description)
+            string description,
+            string subCategory = null)
             : base(
                 name,
                 description,
-                GroupNames.DesignTools)
+                subCategory ?? GroupNames.DesignTools)
         {
             CapsuleButtonTexts = new List<string> { "Refresh", "Execute", "Create" };
         }

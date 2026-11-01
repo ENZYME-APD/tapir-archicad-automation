@@ -1,5 +1,6 @@
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
@@ -15,7 +16,8 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         public MoveProjectInfoGroupsComponent()
             : base(
                 "MoveProjectInfoGroups",
-                "Move the given Project Info groups before another group, or to the end of the group list. Available from Archicad 30.",
+                "Moves Project Info groups before another group, or to the end of the group list when no other " +
+                "group is given. Available from Archicad 30.",
                 GroupNames.Project)
         {
         }
@@ -23,12 +25,13 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         protected override void AddInputs()
         {
             InGenerics(
-                "GroupGuids",
-                "Identifiers of the Project Info groups to move, in the order the moves are made.");
+                "ProjectInfoGroupIds",
+                "Identifiers of the groups to move, in the order the moves are made.");
 
             InGenerics(
-                "BeforeGroupGuids",
-                "Identifier of the group to move each group before (input only 1 to move all before the same group). Leave empty, or give a null item, to move to the end of the group list.");
+                "BeforeProjectInfoGroupIds",
+                "The group to move each group before (input only 1 to use the same group for all). " +
+                "Leave it empty, or give an empty item, to move the group to the end of the group list.");
 
             SetOptionality(1);
         }
@@ -36,7 +39,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         protected override void AddOutputs()
         {
             OutErrorMessages(
-                "Error message of each Project Info group (empty when it was moved successfully).");
+                "Error message of each move (empty when it succeeded).");
         }
 
         protected override void Solve(
@@ -44,7 +47,11 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         {
             if (!da.TryGetList(
                     0,
-                    out List<GH_ObjectWrapper> groupWrappers))
+                    out List<GH_ObjectWrapper> wrappers) ||
+                !this.TryGetProjectInfoGroupIds(
+                    wrappers,
+                    "ProjectInfoGroupIds",
+                    out var ids))
             {
                 return;
             }
@@ -52,60 +59,65 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             da.TryGetList(
                 1,
                 out List<GH_ObjectWrapper> beforeWrappers);
-            beforeWrappers = beforeWrappers ?? new List<GH_ObjectWrapper>();
 
-            if (beforeWrappers.Count > 1 &&
-                beforeWrappers.Count != groupWrappers.Count)
+            // An empty item moves its group to the end of the list, so the
+            // targets are read one by one instead of all being required.
+            var beforeIds = new List<ProjectInfoGroupGuid>();
+            foreach (var wrapper in beforeWrappers)
             {
-                this.AddError(
-                    "The size of the input BeforeGroupGuids must be 0, 1 or equal to the size of the input GroupGuids.");
-                return;
-            }
+                if (wrapper == null ||
+                    wrapper.Value == null ||
+                    (wrapper.Value is GH_String text && string.IsNullOrWhiteSpace(text.Value)))
+                {
+                    beforeIds.Add(null);
+                    continue;
+                }
 
-            var input = new MoveProjectInfoGroupsParameters
-            {
-                ProjectInfoGroups = new List<MoveProjectInfoGroupParameter>()
-            };
-
-            for (var i = 0; i < groupWrappers.Count; i++)
-            {
-                var groupId =
-                    GuidObject<ProjectInfoGroupGuid>.CreateFromWrapper(groupWrappers[i]);
-                if (groupId == null)
+                var beforeId = GuidObject<ProjectInfoGroupGuid>.CreateFromWrapper(wrapper);
+                if (beforeId == null)
                 {
                     this.AddError(
-                        "Invalid Project Info group identifier in the GroupGuids input.");
+                        "Invalid Project Info group identifier in the BeforeProjectInfoGroupIds input.");
                     return;
                 }
 
-                // No item, or a null item, means the end of the group list.
-                ProjectInfoGroupGuid beforeGroupId = null;
-                var beforeWrapper = beforeWrappers.Count == 0
-                    ? null
-                    : beforeWrappers[beforeWrappers.Count == 1 ? 0 : i];
-                if (beforeWrapper != null && beforeWrapper.Value != null)
+                beforeIds.Add(beforeId);
+            }
+
+            if (beforeIds.Count > 0)
+            {
+                beforeIds = this.ExpandToCount(
+                    beforeIds,
+                    ids.Count,
+                    "BeforeProjectInfoGroupIds",
+                    "ProjectInfoGroupIds");
+                if (beforeIds == null)
                 {
-                    beforeGroupId =
-                        GuidObject<ProjectInfoGroupGuid>.CreateFromWrapper(beforeWrapper);
-                    if (beforeGroupId == null)
-                    {
-                        this.AddError(
-                            "Invalid Project Info group identifier in the BeforeGroupGuids input.");
-                        return;
-                    }
+                    return;
+                }
+            }
+
+            var projectInfoGroups = new JArray();
+            for (var i = 0; i < ids.Count; i++)
+            {
+                var projectInfoGroup = new JObject
+                {
+                    ["projectInfoGroupId"] = JObject.FromObject(ids[i].Id)
+                };
+
+                if (beforeIds.Count > 0 &&
+                    beforeIds[i] != null)
+                {
+                    projectInfoGroup["beforeProjectInfoGroupId"] =
+                        JObject.FromObject(beforeIds[i]);
                 }
 
-                input.ProjectInfoGroups.Add(
-                    new MoveProjectInfoGroupParameter
-                    {
-                        ProjectInfoGroupId = groupId,
-                        BeforeProjectInfoGroupId = beforeGroupId
-                    });
+                projectInfoGroups.Add(projectInfoGroup);
             }
 
             SetCadValuesWithErrorMessages(
                 CommandName,
-                input,
+                new JObject { ["projectInfoGroups"] = projectInfoGroups },
                 ToAddOn,
                 da);
         }
@@ -114,6 +126,6 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             Properties.Resources.MoveProjectInfoGroups;
 
         public override Guid ComponentGuid =>
-            new Guid("e92b6d13-4a7c-4e58-a3f1-5b8d2c7e9a46");
+            new Guid("0022c3ff-55e8-475d-b8d5-55e8ef5957a8");
     }
 }

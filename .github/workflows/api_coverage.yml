@@ -4,11 +4,14 @@
 # DevKits of every supported version (C functions with their older names and
 # AC25/26 command ids, and the C++ API) and marks what archicad-addon/Sources
 # uses, what an open pull request adds and what an open issue claims. This
-# workflow reruns it within minutes of any change to those:
-#   - a push to main, a published release,
-#   - a pull request opened, updated, closed or reopened,
-#   - an issue opened, edited, closed, reopened or deleted,
-#   - hourly, in case an event was missed, and by hand.
+# workflow reruns it:
+#   - on a push to main and a published release,
+#   - when an issue is opened, edited, closed, reopened or deleted,
+#   - hourly, which also picks up pull requests opened, updated or closed
+#     since the last run, and by hand.
+# It does not run on pull request events: as a check on a pull request it
+# tested nothing of the change, and it cancels itself on every newer event,
+# so its cancelled check kept pull requests from showing green.
 # A newer run cancels an older one, so a burst of events costs one run.
 #
 # The same run also writes the Grasshopper coverage of the Tapir commands
@@ -27,10 +30,10 @@
 #   - the summary in the body of the tracking issue whose number is in the
 #     API_COVERAGE_ISSUE repository variable, when it is set.
 #
-# Security: pull_request_target runs this file from main with a write token,
-# so it must never check out or run code from the pull request. It reads a
-# pull request only through the API (its title and the lines its diff adds)
-# and treats that as text. API_COVERAGE=false turns the workflow off.
+# Security: it runs with a write token, so it must never check out or run
+# code from a pull request. It reads pull requests only through the API
+# (their titles and the lines their diffs add) and treats that as text.
+# API_COVERAGE=false turns the workflow off.
 
 name: API Coverage
 
@@ -39,8 +42,6 @@ on:
     branches: [main]
   release:
     types: [published]
-  pull_request_target:
-    types: [opened, synchronize, reopened, closed, edited]
   issues:
     types: [opened, edited, closed, reopened, deleted]
   schedule:

@@ -1,4 +1,5 @@
 using Grasshopper.Kernel;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
@@ -13,7 +14,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         public CreateProjectInfoGroupsComponent()
             : base(
                 "CreateProjectInfoGroups",
-                "Create Project Info groups with the given names, at the end of the group list. Available from Archicad 30.",
+                "Creates Project Info groups with the given names, at the end of the group list. Available from Archicad 30.",
                 GroupNames.Project)
         {
         }
@@ -22,17 +23,17 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         {
             InTexts(
                 "Names",
-                "Names of the Project Info groups to create. A name must not be used by another group.");
+                "Name of each new group, in order. A name must not be used by another group.");
         }
 
         protected override void AddOutputs()
         {
             OutGenerics(
-                "GroupGuids",
-                "Identifier of each created Project Info group.");
+                "ProjectInfoGroupIds",
+                "Identifier of each created group (null where the creation failed).");
 
             OutErrorMessages(
-                "Error message of each Project Info group (empty when it was created successfully).");
+                "Error message of each group (empty when it was created).");
         }
 
         protected override void Solve(
@@ -45,30 +46,16 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 return;
             }
 
-            var input = new CreateProjectInfoGroupsParameters
-            {
-                ProjectInfoGroups = new List<ProjectInfoGroupToCreate>()
-            };
-
+            var projectInfoGroups = new JArray();
             foreach (var name in names)
             {
-                if (string.IsNullOrEmpty(name))
-                {
-                    this.AddError(
-                        "Every item of the Names input needs a name.");
-                    return;
-                }
-
-                input.ProjectInfoGroups.Add(
-                    new ProjectInfoGroupToCreate
-                    {
-                        Name = name
-                    });
+                projectInfoGroups.Add(
+                    new JObject { ["name"] = name });
             }
 
             SetCadValuesWithCreatedIds<ProjectInfoGroupGuid>(
                 CommandName,
-                input,
+                new JObject { ["projectInfoGroups"] = projectInfoGroups },
                 ToAddOn,
                 da,
                 "projectInfoGroupIdsOrErrors",
@@ -79,6 +66,6 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             Properties.Resources.CreateProjectInfoGroups;
 
         public override Guid ComponentGuid =>
-            new Guid("7b3d2a41-5c6e-4f80-9a2b-1d4e6f8a0c23");
+            new Guid("f736941f-dd3c-4d53-9409-c2c863c942c2");
     }
 }

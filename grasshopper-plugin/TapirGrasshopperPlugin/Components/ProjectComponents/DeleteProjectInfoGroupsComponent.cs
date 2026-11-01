@@ -1,9 +1,9 @@
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.Types.Project;
 
 namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
@@ -14,7 +14,8 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         public DeleteProjectInfoGroupsComponent()
             : base(
                 "DeleteProjectInfoGroups",
-                "Delete the given Project Info groups. A group that contains fixed (built-in) fields cannot be deleted. Available from Archicad 30.",
+                "Deletes Project Info groups. A group that contains fixed (built-in) fields cannot be deleted. " +
+                "Available from Archicad 30.",
                 GroupNames.Project)
         {
         }
@@ -22,14 +23,14 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         protected override void AddInputs()
         {
             InGenerics(
-                "GroupGuids",
-                "Identifiers of the Project Info groups to delete.");
+                "ProjectInfoGroupIds",
+                "Identifiers of the groups to delete (from GetProjectInfoGroups or CreateProjectInfoGroups).");
         }
 
         protected override void AddOutputs()
         {
             OutErrorMessages(
-                "Error message of each Project Info group (empty when it was deleted successfully).");
+                "Error message of each group (empty when it was deleted).");
         }
 
         protected override void Solve(
@@ -37,22 +38,18 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         {
             if (!da.TryGetList(
                     0,
-                    out List<GH_ObjectWrapper> wrappers))
+                    out List<GH_ObjectWrapper> wrappers) ||
+                !this.TryGetProjectInfoGroupIds(
+                    wrappers,
+                    "ProjectInfoGroupIds",
+                    out var ids))
             {
-                return;
-            }
-
-            var input = ProjectInfoGroupsObject.ConvertFrom(wrappers);
-            if (input == null)
-            {
-                this.AddError(
-                    "Invalid Project Info group identifier in the GroupGuids input.");
                 return;
             }
 
             SetCadValuesWithErrorMessages(
                 CommandName,
-                input,
+                new JObject { ["projectInfoGroups"] = JArray.FromObject(ids) },
                 ToAddOn,
                 da);
         }
@@ -61,6 +58,6 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             Properties.Resources.DeleteProjectInfoGroups;
 
         public override Guid ComponentGuid =>
-            new Guid("5a7f3c84-d2e1-4b96-8e4d-7c1b9a2f6e05");
+            new Guid("0f9abdc2-dcdf-483b-ba02-599752931453");
     }
 }

@@ -1,9 +1,9 @@
+using Grasshopper;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
-using Grasshopper.Kernel.Types;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Project;
 
@@ -16,7 +16,9 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         public GetProjectInfoGroupsComponent()
             : base(
                 "GetProjectInfoGroups",
-                "Get the Project Info groups in their order, each with its fields. Available from Archicad 30.",
+                "Retrieves the Project Info groups in their order, each with its fields: id, name, value and, " +
+                "when exactly one project info autotext has the name of the field, the autotext key that " +
+                "SetProjectInfoField takes. Available from Archicad 30.",
                 GroupNames.Project)
         {
         }
@@ -24,93 +26,105 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         protected override void AddOutputs()
         {
             OutGenerics(
-                "GroupGuids",
-                "Identifiers of the Project Info groups.");
+                "ProjectInfoGroupIds",
+                "Identifier of each Project Info group, in the order of the Project Info dialog.");
 
             OutTexts(
                 "GroupNames",
-                "Names of the Project Info groups.");
-
-            OutGenericTree(
-                "FieldGuids",
-                "Identifiers of the fields of each group (one branch per group), including the subfields of calculated fields.");
-
-            OutTextTree(
-                "FieldNames",
-                "Names of the fields of each group (one branch per group).");
-
-            OutTextTree(
-                "FieldValues",
-                "Values of the fields of each group (one branch per group).");
+                "Name of each group.");
 
             OutTextTree(
                 "FieldIds",
-                "Autotext key of each field, the id the SetProjectInfoFields component takes (one branch per group); empty when more than one project info autotext has the field's name.");
+                "Identifier (guid) of each field of the group (one branch per group), including the subfields of calculated fields.");
+
+            OutTextTree(
+                "FieldNames",
+                "Name of each field as the Project Info dialog shows it (one branch per group).");
+
+            OutTextTree(
+                "FieldValues",
+                "Value of each field (one branch per group).");
+
+            OutTextTree(
+                "ProjectInfoIds",
+                "Autotext key of each field, as GetProjectInfoFields returns it and SetProjectInfoField takes it " +
+                "(one branch per group). Null when no single project info autotext has the name of the field.");
         }
 
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!TryGetConvertedCadValues(
+            if (!TryGetCadResponse(
                     CommandName,
-                    null,
+                    new JObject(),
                     ToAddOn,
-                    JHelp.Deserialize<GetProjectInfoGroupsResponse>,
-                    out GetProjectInfoGroupsResponse response))
+                    out var response))
             {
                 return;
             }
 
-            var groups = response.ProjectInfoGroups ?? new List<ProjectInfoGroupDetails>();
+            var groupIds = new List<ProjectInfoGroupGuid>();
+            var groupNames = new List<string>();
+            var fieldIds = new DataTree<string>();
+            var fieldNames = new DataTree<string>();
+            var fieldValues = new DataTree<string>();
+            var projectInfoIds = new DataTree<string>();
 
-            da.SetDataList(
-                0,
-                groups.Select(g => g.ProjectInfoGroupId));
-
-            da.SetDataList(
-                1,
-                groups.Select(g => g.Name));
-
-            var fieldGuids = new GH_Structure<GH_ObjectWrapper>();
-            var fieldNames = new GH_Structure<GH_String>();
-            var fieldValues = new GH_Structure<GH_String>();
-            var fieldIds = new GH_Structure<GH_String>();
-
+            var groups = JsonOutputHelp.Items(
+                response,
+                "projectInfoGroups");
             for (var i = 0; i < groups.Count; i++)
             {
+                var group = groups[i];
                 var path = new GH_Path(i);
-                fieldGuids.EnsurePath(path);
+                fieldIds.EnsurePath(path);
                 fieldNames.EnsurePath(path);
                 fieldValues.EnsurePath(path);
-                fieldIds.EnsurePath(path);
+                projectInfoIds.EnsurePath(path);
 
-                foreach (var field in groups[i].Fields ?? new List<ProjectInfoGroupField>())
+                groupIds.Add(
+                    ProjectInfoGroupGuid.FromString(
+                        JsonOutputHelp.WrappedGuidOf(
+                            group,
+                            "projectInfoGroupId")));
+                groupNames.Add(group["name"]?.ToString());
+
+                if (!(group["fields"] is JArray fields))
                 {
-                    fieldGuids.Append(
-                        new GH_ObjectWrapper(field.ProjectInfoFieldId),
+                    continue;
+                }
+
+                foreach (var field in fields)
+                {
+                    fieldIds.Add(
+                        JsonOutputHelp.WrappedGuidOf(
+                            field,
+                            "projectInfoFieldId"),
                         path);
-                    fieldNames.Append(
-                        new GH_String(field.Name ?? ""),
+                    fieldNames.Add(
+                        field["name"]?.ToString(),
                         path);
-                    fieldValues.Append(
-                        new GH_String(field.Value ?? ""),
+                    fieldValues.Add(
+                        field["value"]?.ToString(),
                         path);
-                    fieldIds.Append(
-                        new GH_String(field.ProjectInfoId ?? ""),
+                    projectInfoIds.Add(
+                        field["projectInfoId"]?.ToString(),
                         path);
                 }
             }
 
-            da.SetDataTree(2, fieldGuids);
+            da.SetDataList(0, groupIds);
+            da.SetDataList(1, groupNames);
+            da.SetDataTree(2, fieldIds);
             da.SetDataTree(3, fieldNames);
             da.SetDataTree(4, fieldValues);
-            da.SetDataTree(5, fieldIds);
+            da.SetDataTree(5, projectInfoIds);
         }
 
         protected override System.Drawing.Bitmap Icon =>
             Properties.Resources.GetProjectInfoGroups;
 
         public override Guid ComponentGuid =>
-            new Guid("26c8fe00-287a-4694-9118-e8294d18f27b");
+            new Guid("82b3f866-5845-4f35-9f21-5929da3fc895");
     }
 }
