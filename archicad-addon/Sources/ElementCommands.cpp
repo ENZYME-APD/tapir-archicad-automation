@@ -4826,6 +4826,10 @@ GS::Optional<GS::UniString> UpdateZonesCommand::GetInputParametersSchema () cons
             "undoBottomTrim": {
                 "type": "boolean",
                 "description": "Undo the trimming of the bottom of the Zones. The default is false."
+            },
+            "zones": {
+                "$ref": "#/Elements",
+                "description": "Optional list of the Zones to update, on any story. They are selected instead of the current selection and stay selected: Archicad updates the selected Zones right after the command has returned, not during it, and clears the selection when it is done. So do not change the selection until then, and read the new geometry with a later command. Every Zone is checked first; if one cannot be updated (not a Zone, listed twice, hidden or locked layer, not editable), nothing is selected or updated. An empty list updates nothing. Without the list the current selection is updated, or every Zone when nothing is selected."
             }
         },
         "additionalProperties": false,
@@ -4841,12 +4845,99 @@ GS::Optional<GS::UniString> UpdateZonesCommand::GetRawResponseSchema () const
     })";
 }
 
+static GS::Optional<GS::ObjectState> GetFailedExecutionResultIfNotEditable (const API_Guid& elemGuid, const char* operation);
+
+// APIInternal_UpdateRoomsID updates the Zones that are selected when Archicad gets to it, which is
+// after the command has returned (measured on Archicad 29: about 0.3 s later, whether it is called
+// inside an undoable command, outside one, or from the main event loop). With an empty selection it
+// updates every Zone (#894). So the listed Zones are checked, made the selection and left selected;
+// Archicad clears the selection after the update. Putting the previous selection back here would make
+// the deferred update work on that selection instead (#900).
+static GS::Optional<GS::ObjectState> SelectZonesToUpdate (const GS::Array<GS::ObjectState>& zones)
+{
+    GS::Array<API_Neig> neigs;
+    GS::HashSet<API_Guid> listed;
+    GS::UniString errors;
+    for (const GS::ObjectState& zone : zones) {
+        const GS::ObjectState* elementId = zone.Get ("elementId");
+        if (elementId == nullptr) {
+            errors += "An item has no elementId. ";
+            continue;
+        }
+        const API_Guid guid = GetGuidFromObjectState (*elementId);
+        const GS::UniString guidString = APIGuidToString (guid);
+        API_Elem_Head head = {};
+        head.guid = guid;
+        if (ACAPI_Element_GetHeader (&head) != NoError) {
+            errors += guidString + ": the element does not exist. ";
+            continue;
+        }
+        if (GetElemTypeId (head) != API_ZoneID) {
+            errors += guidString + ": the element is not a Zone. ";
+            continue;
+        }
+        if (listed.Contains (guid)) {
+            errors += guidString + ": the Zone is listed twice. ";
+            continue;
+        }
+        listed.Add (guid);
+        const GS::Optional<GS::ObjectState> notEditable = GetFailedExecutionResultIfNotEditable (guid, "updated");
+        if (notEditable.HasValue ()) {
+            GS::UniString message;
+            const GS::ObjectState* error = notEditable->Get ("error");
+            if (error != nullptr) {
+                error->Get ("message", message);
+            }
+            errors += guidString + ": " + message + " ";
+            continue;
+        }
+        neigs.Push (API_Neig (guid));
+    }
+    if (!errors.IsEmpty ()) {
+        errors.Trim ();
+        return CreateFailedExecutionResult (APIERR_BADPARS, "No Zone was selected or updated. " + errors);
+    }
+
+    GSErrCode err = ACAPI_Selection_DeselectAll ();
+    if (err == NoError) {
+        err = ACAPI_Selection_Select (neigs, true);
+    }
+    // The update works on whatever is selected, so it may only go ahead when the selection is exactly
+    // the listed Zones.
+    API_SelectionInfo selectionInfo = {};
+    GS::Array<API_Neig> selected;
+    if (err == NoError) {
+        err = ACAPI_Selection_Get (&selectionInfo, &selected, false);
+        BMKillHandle ((GSHandle*) &selectionInfo.marquee.coords);
+    }
+    bool exact = err == NoError && selected.GetSize () == neigs.GetSize ();
+    for (UIndex i = 0; exact && i < selected.GetSize (); ++i) {
+        exact = listed.Contains (selected[i].guid);
+    }
+    if (!exact) {
+        ACAPI_Selection_DeselectAll ();
+        return CreateFailedExecutionResult (err != NoError ? err : APIERR_GENERAL, "Failed to select exactly the listed Zones, so none was updated.");
+    }
+    return GS::NoValue;
+}
+
 GS::ObjectState UpdateZonesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     API_RoomUpdateParams roomUpdateParams;
     parameters.Get ("keepStampPosition", roomUpdateParams.keepStampPos);
     parameters.Get ("undoTopTrim", roomUpdateParams.undoTopTrim);
     parameters.Get ("undoBottomTrim", roomUpdateParams.undoBotTrim);
+
+    GS::Array<GS::ObjectState> zones;
+    if (parameters.Get ("zones", zones)) {
+        if (zones.IsEmpty ()) {
+            return CreateSuccessfulExecutionResult ();
+        }
+        const GS::Optional<GS::ObjectState> selectError = SelectZonesToUpdate (zones);
+        if (selectError.HasValue ()) {
+            return selectError.Get ();
+        }
+    }
 
     GSErrCode err = NoError;
 

@@ -1,6 +1,8 @@
 using Grasshopper.Kernel;
 using Newtonsoft.Json.Linq;
 using System;
+using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -11,7 +13,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public UpdateZonesComponent()
             : base(
                 "UpdateZones",
-                "Update all Zones: recalculate their geometry, Zone Stamps and connected elements.",
+                "Update Zones: recalculate their geometry, Zone Stamps and connected elements. Updates the given Zones; without them the selected Zones, or every Zone when nothing is selected.",
                 GroupNames.Elements)
         {
         }
@@ -30,7 +32,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "UndoBottomTrim",
                 "Undo the trimming of the bottom of the Zones. Defaults to false. Optional.");
 
-            SetOptionality(new[] { 0, 1, 2 });
+            InGenerics(
+                "Zones",
+                "Zones to update, on any story. They stay selected until Archicad has updated them, after the command has returned. If one of them cannot be updated, none is. An empty list updates nothing. Without this input the selected Zones are updated, or every Zone when nothing is selected. Optional.");
+
+            SetOptionality(new[] { 0, 1, 2, 3 });
         }
 
         protected override void Solve(
@@ -54,6 +60,21 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (da.GetData(2, ref undoBottomTrim))
             {
                 parameters["undoBottomTrim"] = undoBottomTrim;
+            }
+
+            // A connected input never falls back to the selection or every Zone, also when its list
+            // is empty.
+            var zonesInput = Params.Input[3];
+            if (zonesInput.SourceCount > 0 || zonesInput.VolatileDataCount > 0)
+            {
+                if (!da.TryCreateFromList(
+                        3,
+                        out ElementsObject zones))
+                {
+                    return;
+                }
+
+                parameters["zones"] = JArray.FromObject(zones.Elements);
             }
 
             TryGetCadResponse(
