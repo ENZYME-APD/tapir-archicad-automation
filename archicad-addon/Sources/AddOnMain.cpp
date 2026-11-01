@@ -790,7 +790,8 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateStairsCommand> (
             elementCommands, "1.5.0",
-            "Creates Stair elements based on the given baseline and parameters."
+            "Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge "
+            "and the turn at each baseline point (landings and winders)."
         );
         err |= RegisterCommand<SolveStairBaselineCommand> (
             elementCommands, "1.7.3",

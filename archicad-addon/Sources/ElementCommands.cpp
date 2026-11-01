@@ -40,6 +40,56 @@ static void AddPivotPolygonFromMemo (const API_Guid& guid, GS::ObjectState& os)
     ACAPI_DisposeElemMemoHdls (&memo);
 }
 
+static const char* StairSegmentTypeToString (API_StairSegmentTypeID type)
+{
+    switch (type) {
+        case APIST_StepsSegment:          return "Flight";
+        case APIST_LandingSegment:        return "Landing";
+        case APIST_DividedLandingSegment: return "DividedLanding";
+        default:                          return "Unknown";
+    }
+}
+
+static const char* StairTurnTypeToString (API_StairTurnTypeID type)
+{
+    switch (type) {
+        case APIST_NoTurn:             return "None";
+        case APIST_LandingTurn:        return "Landing";
+        case APIST_WinderTurn:         return "Winder";
+        case APIST_DividedLandingTurn: return "DividedLanding";
+        default:                       return "Unknown";
+    }
+}
+
+// The segment type of each baseline edge and the turn of each baseline vertex (memo
+// stairBaseLine.edgeData and vertexData, plain pointers). The DevKit does not state their size;
+// on Archicad 29 both hold nPoints + 1 entries with slot 0 unused, like the coords (#1628): entry i
+// belongs to point i, and edge i runs from point i to point i + 1. They are reported without
+// slot 0, so they line up with baseLinePoints.
+static void AddStairBaseLineSegmentsFromMemo (const API_StairPolylineData& baseLine, GSIndex nPoints, GS::ObjectState& os)
+{
+    if (baseLine.edgeData != nullptr) {
+        const GSSize nEdgeData = BMGetPtrSize (reinterpret_cast<GSPtr> (baseLine.edgeData)) / sizeof (API_StairPolylineEdgeData);
+        const auto& edges = os.AddList<GS::ObjectState> ("baseLineEdges");
+        for (GSIndex i = 1; i < nPoints && i < nEdgeData; ++i) {
+            edges (GS::ObjectState ("segmentType", StairSegmentTypeToString (baseLine.edgeData[i].segmentType)));
+        }
+    }
+    if (baseLine.vertexData != nullptr) {
+        const GSSize nVertexData = BMGetPtrSize (reinterpret_cast<GSPtr> (baseLine.vertexData)) / sizeof (API_StairPolylineVertexData);
+        const auto& vertices = os.AddList<GS::ObjectState> ("baseLineVertices");
+        for (GSIndex i = 1; i <= nPoints && i < nVertexData; ++i) {
+            const API_StairPolylineVertexData& vertex = baseLine.vertexData[i];
+            vertices (GS::ObjectState (
+                "turnType", StairTurnTypeToString (vertex.turnType),
+                "landingStartEdgeOffset", vertex.currLandingStartEdgeOffset,
+                "landingEndEdgeOffset", vertex.currLandingEndEdgeOffset,
+                "minLandingStartEdgeOffset", vertex.minLandingStartEdgeOffset,
+                "minLandingEndEdgeOffset", vertex.minLandingEndEdgeOffset));
+        }
+    }
+}
+
 // The baseline of a Stair is a polyline, not a polygon: it lives in the memo's stairBaseLine
 // (the very handle CreateStairsCommand::SetTypeSpecificParameters fills in to place one),
 // 1-based like the other memo polygons, with no closing vertex. Read with APIMemoMask_All,
@@ -69,6 +119,8 @@ static void AddStairBaseLineFromMemo (const API_Guid& guid, const API_Coord& ori
         const API_Coord& coord = (*baseLine.coords)[i];
         coords (Create2DCoordinateObjectState ({ coord.x + origin.x, coord.y + origin.y }));
     }
+
+    AddStairBaseLineSegmentsFromMemo (baseLine, last < nCoords ? last : nCoords - 1, os);
 
     if (baseLine.parcs == nullptr) {
         return;
