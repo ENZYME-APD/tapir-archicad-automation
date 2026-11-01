@@ -16065,5 +16065,824 @@
             "name",
             "loadFactors"
         ]
+    },
+    "AnalyticalNode": {
+        "type": "object",
+        "description": "A node of the Structural Analytical Model.",
+        "properties": {
+            "nodeId": {
+                "type": "integer",
+                "description": "The identifier of the node."
+            },
+            "coord": {
+                "$ref": "#/Coordinate3D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "nodeId",
+            "coord"
+        ]
+    },
+    "AnalyticalCurve": {
+        "type": "object",
+        "description": "A curve of the Structural Analytical Model.",
+        "properties": {
+            "type": {
+                "type": "string",
+                "description": "The type of the curve. Bezier exists from Archicad 26.",
+                "enum": [
+                    "Line",
+                    "Arc",
+                    "Spline",
+                    "Bezier",
+                    "Ellipse"
+                ]
+            },
+            "begNode": {
+                "$ref": "#/AnalyticalNode"
+            },
+            "endNode": {
+                "$ref": "#/AnalyticalNode"
+            },
+            "midCoords": {
+                "type": "array",
+                "description": "The points between the start and the end of the curve.",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "begNode",
+            "endNode",
+            "midCoords"
+        ]
+    },
+    "AnalyticalCrossSection": {
+        "type": "object",
+        "description": "The cross section of a curve member. The profile image of Archicad 26 and newer is not returned.",
+        "properties": {
+            "crossSectionType": {
+                "type": "string",
+                "enum": [
+                    "Rectangle",
+                    "Circle",
+                    "Attribute",
+                    "Custom"
+                ]
+            },
+            "width": {
+                "type": "number"
+            },
+            "height": {
+                "type": "number"
+            },
+            "veneerThickness": {
+                "type": "number"
+            },
+            "profileAttrIndex": {
+                "type": "integer",
+                "description": "The attribute index of the profile."
+            },
+            "materialAttrIndices": {
+                "type": "array",
+                "description": "The attribute indices of the materials of the cross section.",
+                "items": {
+                    "type": "integer"
+                }
+            },
+            "profileParameters": {
+                "type": "array",
+                "description": "The parameters of the profile.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "parameterId": {
+                            "$ref": "#/GuidId"
+                        },
+                        "value": {
+                            "type": "number"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "parameterId",
+                        "value"
+                    ]
+                }
+            },
+            "alignment": {
+                "type": "string",
+                "description": "The alignment of the cross section. Archicad 26 and newer.",
+                "enum": [
+                    "TopLeft",
+                    "Top",
+                    "TopRight",
+                    "Left",
+                    "Center",
+                    "Right",
+                    "BottomLeft",
+                    "Bottom",
+                    "BottomRight",
+                    "None"
+                ]
+            }
+        },
+        "additionalProperties": false
+    },
+    "AnalyticalCurveMember": {
+        "type": "object",
+        "description": "A curve member (beam, column) of the Structural Analytical Model.",
+        "properties": {
+            "analyticalMemberType": {
+                "$ref": "#/AnalyticalMemberType"
+            },
+            "elemGuid": {
+                "$ref": "#/GuidId"
+            },
+            "crossSection": {
+                "$ref": "#/AnalyticalCrossSection"
+            },
+            "curve": {
+                "$ref": "#/AnalyticalCurve"
+            },
+            "internalNodes": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/AnalyticalNode"
+                }
+            },
+            "rotationAngle": {
+                "type": "number"
+            },
+            "ey": {
+                "type": "number"
+            },
+            "eyVector": {
+                "$ref": "#/Coordinate3D"
+            },
+            "ez": {
+                "type": "number"
+            },
+            "ezVector": {
+                "$ref": "#/Coordinate3D"
+            },
+            "layerAttrIndex": {
+                "type": "integer",
+                "description": "The attribute index of the layer."
+            },
+            "FEMType": {
+                "type": "string",
+                "enum": [
+                    "Standard",
+                    "AxialForceOnly",
+                    "CompressionOnly",
+                    "TensionOnly"
+                ]
+            },
+            "varyingSegmentList": {
+                "type": "array",
+                "description": "The segments of a member with varying cross section. Archicad 26 and newer.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "begProfile": {
+                            "$ref": "#/AnalyticalCrossSection"
+                        },
+                        "endProfile": {
+                            "$ref": "#/AnalyticalCrossSection",
+                            "description": "Only for a tapered segment."
+                        },
+                        "span": {
+                            "type": "number"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "begProfile",
+                        "span"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false
+    },
+    "AnalyticalSurfaceMember": {
+        "type": "object",
+        "description": "A surface member (wall, slab, roof) or a segment of one of the Structural Analytical Model.",
+        "properties": {
+            "analyticalMemberType": {
+                "$ref": "#/AnalyticalMemberType"
+            },
+            "elemGuid": {
+                "$ref": "#/GuidId"
+            },
+            "surface": {
+                "type": "object",
+                "properties": {
+                    "surfaceType": {
+                        "type": "string",
+                        "enum": [
+                            "Plane",
+                            "Cylinder"
+                        ]
+                    },
+                    "planeSurface": {
+                        "type": "object",
+                        "properties": {
+                            "basePoint": {
+                                "$ref": "#/Coordinate3D"
+                            },
+                            "normalVector": {
+                                "$ref": "#/Coordinate3D"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "cylinderSurface": {
+                        "type": "object",
+                        "properties": {
+                            "basePoint": {
+                                "$ref": "#/Coordinate3D"
+                            },
+                            "axisDirection": {
+                                "$ref": "#/Coordinate3D"
+                            },
+                            "referenceRay": {
+                                "$ref": "#/Coordinate3D"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false
+            },
+            "contour": {
+                "type": "array",
+                "description": "The curves of the outer contour.",
+                "items": {
+                    "$ref": "#/AnalyticalCurve"
+                }
+            },
+            "holeContours": {
+                "type": "array",
+                "description": "The contours of the holes.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "contour": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/AnalyticalCurve"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "contour"
+                    ]
+                }
+            },
+            "internalNodes": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/AnalyticalNode"
+                }
+            },
+            "thickness": {
+                "type": "number"
+            },
+            "lcsXVector": {
+                "$ref": "#/Coordinate3D",
+                "description": "The X axis of the local coordinate system. Archicad 26 and newer."
+            },
+            "ez": {
+                "type": "number"
+            },
+            "ezVector": {
+                "$ref": "#/Coordinate3D"
+            },
+            "materialAttrIndex": {
+                "type": "integer",
+                "description": "The attribute index of the material."
+            },
+            "layerAttrIndex": {
+                "type": "integer",
+                "description": "The attribute index of the layer."
+            },
+            "FEMType": {
+                "type": "string",
+                "enum": [
+                    "Plate",
+                    "Wall",
+                    "Shell"
+                ]
+            },
+            "groupId": {
+                "$ref": "#/GuidId"
+            }
+        },
+        "additionalProperties": false
+    },
+    "AnalyticalMemberConnections": {
+        "type": "array",
+        "description": "The identifiers of the connections of the analytical member.",
+        "items": {
+            "$ref": "#/GuidId"
+        }
+    },
+    "AnalyticalInternalMemberPartId": {
+        "type": "object",
+        "description": "Identifies a part of an analytical member by its contour, edge or vertex and edge fragment.",
+        "properties": {
+            "contourIdx": {
+                "type": "integer"
+            },
+            "edgeOrVertexIdx": {
+                "type": "integer"
+            },
+            "edgeFragmentIndex": {
+                "type": "integer"
+            }
+        },
+        "additionalProperties": false
+    },
+    "AnalyticalExportMappingTable": {
+        "type": "object",
+        "properties": {
+            "items": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "partId": {
+                            "$ref": "#/AnalyticalInternalMemberPartId"
+                        },
+                        "elemPartIds": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "memberGuid": {
+                                        "$ref": "#/GuidId"
+                                    },
+                                    "contourIndex": {
+                                        "type": "integer"
+                                    },
+                                    "edgeOrVertexIndex": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "memberGuid",
+                                    "contourIndex",
+                                    "edgeOrVertexIndex"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "partId",
+                        "elemPartIds"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "items"
+        ]
+    },
+    "AnalyticalExportIdMapping": {
+        "type": "object",
+        "description": "Maps the edges and vertices of a surface member to the parts of the exported members. Archicad 26 and newer.",
+        "properties": {
+            "edges": {
+                "$ref": "#/AnalyticalExportMappingTable"
+            },
+            "vertices": {
+                "$ref": "#/AnalyticalExportMappingTable"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "edges",
+            "vertices"
+        ]
+    },
+    "AnalyticalMemberPartRef": {
+        "type": "object",
+        "description": "A reference to a part (vertex, edge or surface) of an analytical member. partId, customVertexData and ratioEdgeData are zero when left out.",
+        "properties": {
+            "elemGuid": {
+                "$ref": "#/GuidId",
+                "description": "The element of the analytical member."
+            },
+            "partRefType": {
+                "type": "string",
+                "enum": [
+                    "BegVertex",
+                    "EndVertex",
+                    "CustomVertex",
+                    "Edge",
+                    "RatioEdge",
+                    "Surface",
+                    "CustomSurface",
+                    "CustomEdge"
+                ]
+            },
+            "partId": {
+                "$ref": "#/AnalyticalInternalMemberPartId"
+            },
+            "customVertexData": {
+                "type": "object",
+                "description": "The point of a CustomVertex.",
+                "properties": {
+                    "customVertexCoord": {
+                        "$ref": "#/Coordinate3D"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "ratioEdgeData": {
+                "type": "object",
+                "description": "The part of the edge of a RatioEdge.",
+                "properties": {
+                    "ratioStart": {
+                        "type": "number"
+                    },
+                    "ratioEnd": {
+                        "type": "number"
+                    }
+                },
+                "additionalProperties": false
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elemGuid",
+            "partRefType"
+        ]
+    },
+    "AnalyticalRigidityType": {
+        "type": "string",
+        "description": "The rigidity of a degree of freedom of a release.",
+        "enum": [
+            "Free",
+            "Rigid",
+            "Custom",
+            "RigidCompressionOnly",
+            "RigidTensionOnly",
+            "CustomCompressionOnly",
+            "CustomTensionOnly"
+        ]
+    },
+    "AnalyticalRelease": {
+        "type": "object",
+        "description": "The release of an analytical member.",
+        "properties": {
+            "guid": {
+                "$ref": "#/GuidId",
+                "description": "The identifier of the release."
+            },
+            "releaseDescriptions": {
+                "type": "array",
+                "description": "The releases of the member parts. Each needs all six rigidities; a stiffness left out is 0.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "ux": {
+                            "$ref": "#/AnalyticalRigidityType"
+                        },
+                        "stiffnessX": {
+                            "type": "number"
+                        },
+                        "uy": {
+                            "$ref": "#/AnalyticalRigidityType"
+                        },
+                        "stiffnessY": {
+                            "type": "number"
+                        },
+                        "uz": {
+                            "$ref": "#/AnalyticalRigidityType"
+                        },
+                        "stiffnessZ": {
+                            "type": "number"
+                        },
+                        "fix": {
+                            "$ref": "#/AnalyticalRigidityType"
+                        },
+                        "stiffnessFix": {
+                            "type": "number"
+                        },
+                        "fiy": {
+                            "$ref": "#/AnalyticalRigidityType"
+                        },
+                        "stiffnessFiy": {
+                            "type": "number"
+                        },
+                        "fiz": {
+                            "$ref": "#/AnalyticalRigidityType"
+                        },
+                        "stiffnessFiz": {
+                            "type": "number"
+                        },
+                        "amPartRef": {
+                            "$ref": "#/AnalyticalMemberPartRef"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "ux",
+                        "uy",
+                        "uz",
+                        "fix",
+                        "fiy",
+                        "fiz",
+                        "amPartRef"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid",
+            "releaseDescriptions"
+        ]
+    },
+    "AnalyticalCoordinateSystem": {
+        "type": "object",
+        "description": "A local coordinate system, given by its X and Y axes.",
+        "properties": {
+            "xVector": {
+                "$ref": "#/Coordinate3D"
+            },
+            "yVector": {
+                "$ref": "#/Coordinate3D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "xVector",
+            "yVector"
+        ]
+    },
+    "AnalyticalCoordSysDirection": {
+        "type": "string",
+        "description": "Whether the values are in the global or in the local coordinate system.",
+        "enum": [
+            "Global",
+            "Local"
+        ]
+    },
+    "AnalyticalSupport": {
+        "type": "object",
+        "description": "An analytical support: its settings and the member part it supports. Every rigidity type is required; a value left out is 0.",
+        "properties": {
+            "supportSettings": {
+                "type": "object",
+                "properties": {
+                    "supportType": {
+                        "type": "string",
+                        "enum": [
+                            "SimplePoint",
+                            "SingleLine",
+                            "Surface"
+                        ]
+                    },
+                    "supportValues": {
+                        "type": "object",
+                        "description": "The rigidity and the value of the three translations and the three rotations.",
+                        "properties": {
+                            "xType": { "$ref": "#/AnalyticalRigidityType" },
+                            "xValue": { "type": "number" },
+                            "yType": { "$ref": "#/AnalyticalRigidityType" },
+                            "yValue": { "type": "number" },
+                            "zType": { "$ref": "#/AnalyticalRigidityType" },
+                            "zValue": { "type": "number" },
+                            "rxType": { "$ref": "#/AnalyticalRigidityType" },
+                            "rxValue": { "type": "number" },
+                            "ryType": { "$ref": "#/AnalyticalRigidityType" },
+                            "ryValue": { "type": "number" },
+                            "rzType": { "$ref": "#/AnalyticalRigidityType" },
+                            "rzValue": { "type": "number" }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "xType",
+                            "yType",
+                            "zType",
+                            "rxType",
+                            "ryType",
+                            "rzType"
+                        ]
+                    },
+                    "coordinateSystem": {
+                        "$ref": "#/AnalyticalCoordSysDirection"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "supportType",
+                    "supportValues",
+                    "coordinateSystem"
+                ]
+            },
+            "supportedMemberPartRef": {
+                "$ref": "#/AnalyticalMemberPartRef"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "supportSettings",
+            "supportedMemberPartRef"
+        ]
+    },
+    "AnalyticalSupportGeometry": {
+        "type": "object",
+        "description": "The geometry of an analytical support in a Structural Analytical Model.",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                }
+            },
+            "translationStiffnessVector": {
+                "$ref": "#/Coordinate3D"
+            },
+            "rotationStiffnessVector": {
+                "$ref": "#/Coordinate3D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinates",
+            "translationStiffnessVector",
+            "rotationStiffnessVector"
+        ]
+    },
+    "AnalyticalLink": {
+        "type": "object",
+        "description": "An analytical link: its settings and the member parts it connects. The rigid and the spring settings are both required, whichever type the link has. Every rigidity type is required; a value left out is 0 and a resistance left out is false.",
+        "properties": {
+            "linkSettings": {
+                "type": "object",
+                "properties": {
+                    "geometry": {
+                        "type": "string",
+                        "enum": [
+                            "Link1D",
+                            "Link2D"
+                        ]
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "Rigid",
+                            "Spring"
+                        ]
+                    },
+                    "rigidSettings": {
+                        "type": "object",
+                        "properties": {
+                            "startConnectionType": {
+                                "type": "string",
+                                "enum": [
+                                    "RigidConnection",
+                                    "HingeConnection"
+                                ]
+                            },
+                            "endConnectionType": {
+                                "type": "string",
+                                "enum": [
+                                    "RigidConnection",
+                                    "HingeConnection"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "startConnectionType",
+                            "endConnectionType"
+                        ]
+                    },
+                    "springSettings": {
+                        "type": "object",
+                        "properties": {
+                            "direction": {
+                                "$ref": "#/AnalyticalCoordSysDirection"
+                            },
+                            "translation": {
+                                "type": "object",
+                                "properties": {
+                                    "kxType": { "$ref": "#/AnalyticalRigidityType" },
+                                    "kxValue": { "type": "number" },
+                                    "kyType": { "$ref": "#/AnalyticalRigidityType" },
+                                    "kyValue": { "type": "number" },
+                                    "kzType": { "$ref": "#/AnalyticalRigidityType" },
+                                    "kzValue": { "type": "number" },
+                                    "resistanceFx": { "type": "boolean" },
+                                    "fxValue": { "type": "number" },
+                                    "resistanceFy": { "type": "boolean" },
+                                    "fyValue": { "type": "number" },
+                                    "resistanceFz": { "type": "boolean" },
+                                    "fzValue": { "type": "number" }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "kxType",
+                                    "kyType",
+                                    "kzType"
+                                ]
+                            },
+                            "rotation": {
+                                "type": "object",
+                                "properties": {
+                                    "kxxType": { "$ref": "#/AnalyticalRigidityType" },
+                                    "kxxValue": { "type": "number" },
+                                    "kyyType": { "$ref": "#/AnalyticalRigidityType" },
+                                    "kyyValue": { "type": "number" },
+                                    "kzzType": { "$ref": "#/AnalyticalRigidityType" },
+                                    "kzzValue": { "type": "number" },
+                                    "resistanceMx": { "type": "boolean" },
+                                    "mxValue": { "type": "number" },
+                                    "resistanceMy": { "type": "boolean" },
+                                    "myValue": { "type": "number" },
+                                    "resistanceMz": { "type": "boolean" },
+                                    "mzValue": { "type": "number" }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "kxxType",
+                                    "kyyType",
+                                    "kzzType"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "direction",
+                            "translation",
+                            "rotation"
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "geometry",
+                    "type",
+                    "rigidSettings",
+                    "springSettings"
+                ]
+            },
+            "startElementPartRef": {
+                "$ref": "#/AnalyticalMemberPartRef"
+            },
+            "endElementPartRef": {
+                "$ref": "#/AnalyticalMemberPartRef"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "linkSettings",
+            "startElementPartRef",
+            "endElementPartRef"
+        ]
+    },
+    "AnalyticalLinkGeometry": {
+        "type": "object",
+        "description": "The geometry of an analytical link in a Structural Analytical Model.",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                }
+            },
+            "translationStiffnessVector": {
+                "$ref": "#/Coordinate3D"
+            },
+            "rotationStiffnessVector": {
+                "$ref": "#/Coordinate3D"
+            },
+            "curves": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/AnalyticalCurve"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinates",
+            "translationStiffnessVector",
+            "rotationStiffnessVector",
+            "curves"
+        ]
     }
 }
