@@ -2771,6 +2771,141 @@ GS::ObjectState ModifyPropertyValueOfElementsCommand::Execute (const GS::ObjectS
 #endif
 }
 
+CheckPropertyValuesCommand::CheckPropertyValuesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CheckPropertyValuesCommand::GetName () const
+{
+    return "CheckPropertyValues";
+}
+
+GS::Optional<GS::UniString> CheckPropertyValuesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "propertyValues": {
+                "type": "array",
+                "description": "The values to check, each with the property definition it is checked against.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyId": {
+                            "$ref": "#/PropertyId"
+                        },
+                        "propertyValue": {
+                            "$ref": "#/PropertyValue"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "propertyId",
+                        "propertyValue"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyValues"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CheckPropertyValuesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "results": {
+                "type": "array",
+                "description": "One item for each value, in the order of the input: whether it is acceptable, or an error if the property was not found.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "isValid": {
+                                    "type": "boolean",
+                                    "description": "True if the value can be converted to the type of the property and Archicad accepts it for the property definition."
+                                },
+                                "error": {
+                                    "$ref": "#/Error"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "isValid"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "results"
+        ]
+    })";
+}
+
+GS::ObjectState CheckPropertyValuesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> propertyValues;
+    parameters.Get ("propertyValues", propertyValues);
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("results");
+
+    PropertyConversionUtils conversionUtils;
+
+    for (const GS::ObjectState& item : propertyValues) {
+        const GS::ObjectState* propertyId = item.Get ("propertyId");
+        if (propertyId == nullptr) {
+            results (CreateErrorResponse (APIERR_BADPARS, "propertyId is missing"));
+            continue;
+        }
+
+        const GS::ObjectState* propertyValue = item.Get ("propertyValue");
+        GS::UniString propertyValueDisplayString;
+        if (propertyValue == nullptr || !propertyValue->Get ("value", propertyValueDisplayString)) {
+            results (CreateErrorResponse (APIERR_BADPARS, "value is missing from propertyValue"));
+            continue;
+        }
+
+        API_PropertyDefinition definition;
+        definition.guid = GetGuidFromObjectState (*propertyId);
+        GSErrCode err = ACAPI_Property_GetPropertyDefinition (definition);
+        if (err != NoError) {
+            results (CreateErrorResponse (err, "property not found"));
+            continue;
+        }
+
+        API_Property property;
+        property.definition = definition;
+        property.isDefault = false;
+        property.status = API_Property_HasValue;
+        property.value.variantStatus = API_VariantStatusNormal;
+
+        err = ACAPI_Property_SetPropertyValueFromString (propertyValueDisplayString, conversionUtils, &property);
+        if (err != NoError) {
+            GS::ObjectState result = CreateErrorResponse (err, "the value cannot be converted to the type of the property");
+            result.Add ("isValid", false);
+            results (result);
+            continue;
+        }
+
+        results (GS::ObjectState ("isValid", ACAPI_Property_IsValidValue (property.value, property.definition)));
+    }
+
+    return response;
+}
+
 #if defined (ServerMainVers_2700) && !defined (ServerMainVers_2800)
 static bool GetPropertyAvailabilityParameters (const GS::ObjectState& parameters, GS::Array<API_Guid>& elemGuids, API_PropertyDefinition& definition, GS::ObjectState& failedResult)
 {
