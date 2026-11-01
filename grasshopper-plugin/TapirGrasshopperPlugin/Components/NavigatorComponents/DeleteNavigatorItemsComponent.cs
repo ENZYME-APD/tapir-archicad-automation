@@ -12,7 +12,11 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         public DeleteNavigatorItem()
             : base(
                 "DeleteNavigatorItems",
-                "Deletes items from the NavigatorTree.",
+                "Deletes navigator items from the navigator tree: views and folders of the View Map, layouts and " +
+                "master layouts of the Layout Book, and independent worksheets and details of the Project Map. " +
+                "Layout subsets and marker-linked worksheets and details cannot be deleted. An item that Archicad " +
+                "refuses to delete (in a Teamwork project: it is not reserved or the user has no right to delete " +
+                "it) is reported as a failed execution result.",
                 GroupNames.Navigator)
         {
         }
@@ -43,7 +47,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             SetCadValuesWithErrorMessages(
                 CommandName,
                 input,
-                ToArchicad,
+                ToAddOn,
                 da);
         }
 

@@ -167,9 +167,11 @@ GS::ObjectState GetAllFavoritesCommand::Execute (const GS::ObjectState& paramete
         }
 
         GS::ObjectState favoriteOs ("name", favoriteName.Unwrap ());
-        const auto element = favorite.GetOldElementDefault ();
-        if (element.IsOk ()) {
-            favoriteOs.Add ("elementType", GetElementTypeNonLocalizedName (GetElemTypeId (element.Unwrap ().header)));
+        // GetElementType reads the type without building the element default;
+        // GetOldElementDefault throws inside Archicad for analytical support favorites.
+        const auto elemType = favorite.GetElementType ();
+        if (elemType.IsOk ()) {
+            favoriteOs.Add ("elementType", GetElementTypeNonLocalizedName (GetElemTypeId (elemType.Unwrap ())));
         }
         favoritesList (favoriteOs);
     }
