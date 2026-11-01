@@ -291,7 +291,9 @@ r = aclib.RunTapirCommand('CreateFills', {'fillDataArray': [{
     'subType': 'Symbol',
     'symbolLines': [{'begin': {'x': 0.0, 'y': 0.0}, 'end': {'x': 1.0, 'y': 1.0}}],
     'symbolArcs': [{'begin': {'x': 0.0, 'y': 0.0}, 'origin': {'x': 0.5, 'y': 0.5}, 'angle': 1.5708}],
-    'symbolHotspots': [{'x': 0.2, 'y': 0.2}, {'x': 0.8, 'y': 0.8}]
+    'symbolHotspots': [{'x': 0.2, 'y': 0.2}, {'x': 0.8, 'y': 0.8}],
+    'symbolOffset1': {'x': 1.0, 'y': 0.0},
+    'symbolOffset2': {'x': 0.5, 'y': 1.0}
 }]}, debug=False)
 check("Fill (Symbol) create succeeded", 'attributeId' in r['attributeIds'][0], str(r))
 symbol_fill_id = r['attributeIds'][0]['attributeId']
@@ -300,6 +302,8 @@ check("Fill (Symbol) subType matches", g.get('subType') == 'Symbol', str(g))
 check("Fill (Symbol) symbolLines count matches", len(g.get('symbolLines', [])) == 1, str(g))
 check("Fill (Symbol) symbolArcs count matches", len(g.get('symbolArcs', [])) == 1, str(g))
 check("Fill (Symbol) symbolHotspots count matches", len(g.get('symbolHotspots', [])) == 2, str(g))
+check("Fill (Symbol) symbolOffset1 matches", close(g.get('symbolOffset1', {}).get('x', -1), 1.0) and close(g.get('symbolOffset1', {}).get('y', -1), 0.0), str(g))
+check("Fill (Symbol) symbolOffset2 matches", close(g.get('symbolOffset2', {}).get('x', -1), 0.5) and close(g.get('symbolOffset2', {}).get('y', -1), 1.0), str(g))
 
 print("\n=== FILL (LinearGradient) - left visible ===")
 gradient_fill_name = EXTRA_VISIBLE['Fill'][1]
