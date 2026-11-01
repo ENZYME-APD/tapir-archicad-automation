@@ -6226,6 +6226,19 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                 }
             }
 
+#ifdef ServerMainVers_2900
+            // ACAPI_Element_ChangeMorphEdgeType refuses a morph on a hidden layer (APIERR_BADID),
+            // and the morph would then exist with no guid in the reply, so check the layer first.
+            if (requestedEdgeType.HasValue ()) {
+                GS::UniString layerReason;
+                err = GetLayerChangeError (element.header.layer, layerReason);
+                if (err != NoError) {
+                    elements.Push (CreateErrorResponse (err, GS::UniString::Printf ("The morph was not created, because %T, so its edge type cannot be set.", layerReason.ToPrintf ())));
+                    continue;
+                }
+            }
+#endif
+
             err = ACAPI_Element_Create (&element, &memo);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to create morph."));
@@ -8340,6 +8353,13 @@ GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters,
             GSErrCode err = ACAPI_Element_Get (&element);
             if (err != NoError) {
                 results.Push (CreateFailedExecutionResult (err, "Failed to load morph."));
+                continue;
+            }
+
+            GS::UniString layerReason;
+            err = GetLayerChangeError (element.header.layer, layerReason);
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, GS::UniString::Printf ("The morph was not modified, because %T.", layerReason.ToPrintf ())));
                 continue;
             }
 

@@ -284,6 +284,11 @@ GSErrCode SwitchCurrentDatabaseToFloorPlan (API_DatabaseInfo& previousDatabase, 
 bool LoadElementHeaderByGuid (const API_Guid& elementGuid, API_Elem_Head& elementHeader);
 bool DoesElementExist (const API_Guid& elementGuid, API_ElemTypeID expectedTypeId);
 
+// Why an element on this layer cannot be created or changed: APIERR_LOCKEDLAY with the reason
+// "its layer is locked", APIERR_HIDDENLAY with "its layer is hidden", or NoError when the layer
+// is shown and unlocked.
+GSErrCode GetLayerChangeError (const API_AttributeIndex& layer, GS::UniString& reason);
+
 // Writes the Element ID of an existing element: the elemInfoString memo part, which
 // GetDetailsOfElements reads back as "id" (APIMemoMask_ElemInfoString). Must be called
 // inside an undoable command. Defined in CommandBase.cpp.

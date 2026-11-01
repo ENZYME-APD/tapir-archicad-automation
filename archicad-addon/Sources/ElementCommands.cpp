@@ -5267,16 +5267,10 @@ static GS::Optional<GS::ObjectState> GetFailedExecutionResultIfNotEditable (cons
         return CreateFailedExecutionResult (APIERR_BADID, "Element does not exist.");
     }
 
-    API_Attribute layerAttr = {};
-    layerAttr.header.typeID = API_LayerID;
-    layerAttr.header.index = elemHead.layer;
-    if (ACAPI_Attribute_Get (&layerAttr) == NoError) {
-        if ((layerAttr.header.flags & APILay_Locked) != 0) {
-            return CreateFailedExecutionResult (APIERR_LOCKEDLAY, GS::UniString::Printf ("The element was not %s, because its layer is locked.", operation));
-        }
-        if ((layerAttr.header.flags & APILay_Hidden) != 0) {
-            return CreateFailedExecutionResult (APIERR_HIDDENLAY, GS::UniString::Printf ("The element was not %s, because its layer is hidden.", operation));
-        }
+    GS::UniString layerReason;
+    const GSErrCode layerError = GetLayerChangeError (elemHead.layer, layerReason);
+    if (layerError != NoError) {
+        return CreateFailedExecutionResult (layerError, GS::UniString::Printf ("The element was not %s, because %T.", operation, layerReason.ToPrintf ()));
     }
 
     if (!ACAPI_Element_Filter (elemGuid, APIFilt_IsEditable)) {
