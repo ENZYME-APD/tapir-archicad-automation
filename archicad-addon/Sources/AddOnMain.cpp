@@ -1751,6 +1751,10 @@ GSErrCode Initialize (void)
             teamworkCommands, "1.7.3",
             "Returns whether the opened project is a Teamwork project and is online, the members of the shared project and who has reserved the Hotlink and XRef management. Works in a solo project too, then isShared and isOnline are false."
         );
+        err |= RegisterCommand<GetTeamworkOwnersOfDatabasesCommand> (
+            teamworkCommands, "1.7.4",
+            "Returns the Teamwork owner (user id and name) of each given database, e.g. of a layout or a view database. The user id is 0 when nobody owns the database."
+        );
         err |= RegisterCommand<UploadLibrariesToBIMcloudCommand> (
             teamworkCommands, "1.7.3",
             "Uploads local library folders or container files (.lcf) to a folder of a BIMcloud or Teamwork server, as BIMcloud libraries. Returns a result per library. Available from Archicad 29."
