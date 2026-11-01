@@ -7,6 +7,25 @@
 constexpr const char* ParameterValueFieldName = "value";
 constexpr USize MaxStrValueLength = 512;
 
+static Int32 GetLibIndOfElement (const API_Element& apiElement)
+{
+    switch (GetElemTypeId (apiElement.header)) {
+        case API_ObjectID:                return apiElement.object.libInd;
+        case API_LampID:                  return apiElement.lamp.libInd;
+        case API_WindowID:                return apiElement.window.openingBase.libInd;
+        case API_DoorID:                  return apiElement.door.openingBase.libInd;
+        case API_SkylightID:              return apiElement.skylight.openingBase.libInd;
+        case API_ZoneID:                  return apiElement.zone.libInd;
+        case API_LabelID:                 return apiElement.label.u.symbol.libInd;
+        case API_DrawingID:               return apiElement.drawing.title.libInd;
+        case API_CurtainWallFrameID:      return apiElement.cwFrame.libInd;
+        case API_CurtainWallPanelID:      return apiElement.cwPanel.libInd;
+        case API_CurtainWallJunctionID:   return apiElement.cwJunction.libInd;
+        case API_CurtainWallAccessoryID:  return apiElement.cwAccessory.libInd;
+        default:                          return -1;
+    }
+}
+
 static GS::UniString ConvertAddParIDToString (API_AddParID addParID)
 {
     switch (addParID) {
@@ -585,32 +604,7 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
             continue;
         }
 
-        Int32 libInd = -1;
-        if (GetElemTypeId (apiElement.header) == API_ObjectID) {
-            libInd = apiElement.object.libInd;
-        } else if (GetElemTypeId (apiElement.header) == API_LampID) {
-            libInd = apiElement.lamp.libInd;
-        } else if (GetElemTypeId (apiElement.header) == API_WindowID) {
-            libInd = apiElement.window.openingBase.libInd;
-        } else if (GetElemTypeId (apiElement.header) == API_DoorID) {
-            libInd = apiElement.door.openingBase.libInd;
-        } else if (GetElemTypeId (apiElement.header) == API_SkylightID) {
-            libInd = apiElement.skylight.openingBase.libInd;
-        } else if (GetElemTypeId (apiElement.header) == API_ZoneID) {
-            libInd = apiElement.zone.libInd;
-        } else if (GetElemTypeId (apiElement.header) == API_LabelID) {
-            libInd = apiElement.label.u.symbol.libInd;
-        } else if (GetElemTypeId (apiElement.header) == API_DrawingID) {
-            libInd = apiElement.drawing.title.libInd;
-        } else if (GetElemTypeId (apiElement.header) == API_CurtainWallFrameID) {
-            libInd = apiElement.cwFrame.libInd;
-        } else if (GetElemTypeId (apiElement.header) == API_CurtainWallPanelID) {
-            libInd = apiElement.cwPanel.libInd;
-        } else if (GetElemTypeId (apiElement.header) == API_CurtainWallJunctionID) {
-            libInd = apiElement.cwJunction.libInd;
-        } else if (GetElemTypeId (apiElement.header) == API_CurtainWallAccessoryID) {
-            libInd = apiElement.cwAccessory.libInd;
-        }
+        const Int32 libInd = GetLibIndOfElement (apiElement);
 
         double a;
         double b;
@@ -2433,6 +2427,127 @@ GS::ObjectState ChangeLibraryPartOfElementsCommand::Execute (const GS::ObjectSta
 
         return NoError;
     });
+
+    return response;
+}
+
+GetHotspotsOfElementsCommand::GetHotspotsOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetHotspotsOfElementsCommand::GetName () const
+{
+    return "GetHotspotsOfElements";
+}
+
+GS::Optional<GS::UniString> GetHotspotsOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "elements": {
+            "$ref": "#/Elements"
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "elements"
+    ]
+})";
+}
+
+GS::Optional<GS::UniString> GetHotspotsOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "hotspotsOfElements": {
+            "type": "array",
+            "description": "The hotspots of the given library part instances, in the order of the input.",
+            "items": {
+                "type": "object",
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "properties": {
+                            "hotspots": {
+                                "type": "array",
+                                "description": "The 2D hotspots of the placed library part instance, as Archicad returns them.",
+                                "items": {
+                                    "$ref": "#/Coordinate2D"
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "hotspots"
+                        ]
+                    },
+                    {
+                        "$ref": "#/ErrorItem"
+                    }
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "hotspotsOfElements"
+    ]
+})";
+}
+
+GS::ObjectState GetHotspotsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& hotspotsOfElementsAdder = response.AddList<GS::ObjectState> ("hotspotsOfElements");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            hotspotsOfElementsAdder (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Element apiElement = {};
+        apiElement.header.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_Get (&apiElement);
+        if (err != NoError) {
+            const GS::UniString errorMsg = GS::UniString::Printf ("Not found element with guid %T!", APIGuidToString (apiElement.header.guid).ToPrintf ());
+            hotspotsOfElementsAdder (CreateErrorResponse (err, errorMsg));
+            continue;
+        }
+
+        const Int32 libInd = GetLibIndOfElement (apiElement);
+        if (libInd <= 0) {
+            const GS::UniString errorMsg = GS::UniString::Printf ("The element with guid %T is not a library part instance!", APIGuidToString (apiElement.header.guid).ToPrintf ());
+            hotspotsOfElementsAdder (CreateErrorResponse (APIERR_BADPARS, errorMsg));
+            continue;
+        }
+
+        Int32 nHotspots = 0;
+        API_PrimHotspot** hotspots = nullptr;
+        err = ACAPI_LibraryPart_GetHotspots (libInd, apiElement.header.guid, &nHotspots, &hotspots);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle*> (&hotspots));
+            const GS::UniString errorMsg = GS::UniString::Printf ("Failed to get the hotspots of element with guid %T!", APIGuidToString (apiElement.header.guid).ToPrintf ());
+            hotspotsOfElementsAdder (CreateErrorResponse (err, errorMsg));
+            continue;
+        }
+
+        GS::ObjectState hotspotsOfElement;
+        const auto& hotspotsAdder = hotspotsOfElement.AddList<GS::ObjectState> ("hotspots");
+        for (Int32 i = 0; i < nHotspots && hotspots != nullptr; ++i) {
+            hotspotsAdder (Create2DCoordinateObjectState ((*hotspots)[i].loc));
+        }
+        BMKillHandle (reinterpret_cast<GSHandle*> (&hotspots));
+
+        hotspotsOfElementsAdder (hotspotsOfElement);
+    }
 
     return response;
 }
