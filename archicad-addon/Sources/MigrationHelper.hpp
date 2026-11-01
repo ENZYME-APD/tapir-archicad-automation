@@ -31,6 +31,9 @@
 
 #define ACAPI_Element_NeigIDToElemType ACAPI_Goodies_NeigIDToElemType
 
+// Archicad 26 only, before that there is no such function.
+#define ACAPI_AutoText_GetNoteAutotexts ACAPI_Element_GetNoteAutotexts
+
 #define ACAPI_Command_GetHttpConnectionPort(par1) ACAPI_Goodies (APIAny_GetHttpConnectionPortID, par1)
 
 #define ACAPI_Teamwork_ReceiveChanges ACAPI_TeamworkControl_ReceiveChanges
