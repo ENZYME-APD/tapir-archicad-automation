@@ -1694,6 +1694,18 @@ GSErrCode Initialize (void)
             libraryCommands, "1.7.3",
             "Creates a new library part file (.gsm) of the given loaded subtype, inheriting its parameters, and reports whether it is loaded with its index and names. Available from Archicad 28."
         );
+        err |= RegisterCommand<GetLibraryPartIdentitiesCommand> (
+            libraryCommands, "1.7.4",
+            "Gets the unique ID (main and revision GUID), the reference GUID and the Teamwork lock status of library parts given by index or file path, and whether they are in a server library."
+        );
+        err |= RegisterCommand<CompareLibraryPartUnIdsCommand> (
+            libraryCommands, "1.7.4",
+            "Compares two library part unique IDs with Archicad's own comparison and tells whether their main and revision GUIDs are the same."
+        );
+        err |= RegisterCommand<SearchLibraryPartsCommand> (
+            libraryCommands, "1.7.4",
+            "Finds the loaded library parts derived from an ancestor library part (by its unique ID) whose name matches a pattern with * wildcards. Archicad returns at most 50 of them."
+        );
         AddCommandGroup (libraryCommands);
     }
 
