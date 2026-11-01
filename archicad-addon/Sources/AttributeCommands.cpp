@@ -5754,6 +5754,172 @@ GS::ObjectState CreatePenTablesCommand::Execute (const GS::ObjectState& paramete
 }
 #endif
 
+ModifyPensCommand::ModifyPensCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyPensCommand::GetName () const
+{
+    return "ModifyPens";
+}
+
+GS::Optional<GS::UniString> ModifyPensCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "pens": {
+                "type": "array",
+                "description": "The pens to change in the active Pen Table. Only the given fields (color, width, description) of a listed pen are changed; every other pen of the table is left as it is.",
+                "items": {
+                    "$ref": "#/PenData"
+                }
+            },
+            "target": {
+                "type": "string",
+                "description": "Which active Pen Table to change: the one in effect for the model views (the default) or the one in effect for the layouts. The two can be the same Pen Table.",
+                "enum": [
+                    "model",
+                    "layout"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "pens"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyPensCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+// The pens of a Pen Table can only be written as a whole (ACAPI_Attribute_ModifyExt with the full pen array,
+// the way CreatePenTables overwrites a table), so the current array is read with ACAPI_Attribute_GetDefExt,
+// the given pens are patched in memory and the table is written back once. Before AC27 the array is an
+// old-style handle of API_PenType elements instead of a GS::Array<API_Pen>; the fields used here (rgb, width,
+// description) have the same names in both, so only the element count needs a version-specific line.
+// Which table is active is read from inEffectForModel/inEffectForLayout, as GetPenTables reports them.
+GS::ObjectState ModifyPensCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> pens;
+    parameters.Get ("pens", pens);
+
+    GS::UniString target = "model";
+    parameters.Get ("target", target);
+    const bool forLayout = (target == "layout");
+
+    GS::UniString penTableName;
+    API_Attribute penTable = {};
+    bool found = false;
+    GS::Array<API_Attribute> penTables;
+    ACAPI_Attribute_GetAttributesByType (API_PenTableID, penTables);
+    for (API_Attribute& candidate : penTables) {
+        if (!found) {
+            API_Attribute attr = {};
+            attr.header.typeID = API_PenTableID;
+            attr.header.index = candidate.header.index;
+            attr.header.uniStringNamePtr = &penTableName;
+            if (ACAPI_Attribute_Get (&attr) == NoError &&
+                (forLayout ? attr.penTable.inEffectForLayout : attr.penTable.inEffectForModel)) {
+                penTable = attr;
+                found = true;
+            }
+        }
+        DisposeAttribute (candidate);
+    }
+
+    if (!found) {
+        return CreateErrorResponse (APIERR_BADID, forLayout
+            ? "No Pen Table is active for the layouts."
+            : "No Pen Table is active for the model views.");
+    }
+
+    API_AttributeDefExt penTableDefs = {};
+    GSErrCode err = ACAPI_Attribute_GetDefExt (API_PenTableID, penTable.header.index, &penTableDefs);
+    if (err != NoError || penTableDefs.penTable_Items == nullptr) {
+        ACAPI_DisposeAttrDefsHdlsExt (&penTableDefs);
+        return CreateErrorResponse (err != NoError ? err : APIERR_GENERAL, "Failed to read the pens of the active Pen Table.");
+    }
+
+#ifdef ServerMainVers_2700
+    const Int32 penCount = (Int32) penTableDefs.penTable_Items->GetSize ();
+#else
+    const Int32 penCount = (Int32) (BMGetHandleSize ((GSHandle) penTableDefs.penTable_Items) / sizeof (API_PenType));
+#endif
+
+    struct PenResult {
+        bool          failed = false;
+        GSErrCode     errorCode = NoError;
+        GS::UniString errorMessage;
+    };
+    std::vector<PenResult> penResults;
+    bool anyPenChanged = false;
+
+    for (const GS::ObjectState& penData : pens) {
+        PenResult result;
+
+        Int32 penIndex = 0;
+        if (!penData.Get ("index", penIndex) || penIndex < 1 || penIndex > penCount) {
+            result.failed = true;
+            result.errorCode = APIERR_BADINDEX;
+            result.errorMessage = GS::UniString::Printf ("index must be between 1 and %d.", penCount);
+            penResults.push_back (result);
+            continue;
+        }
+
+        double width = 0.0;
+        if (penData.Get ("width", width) && width < 0.0) {
+            result.failed = true;
+            result.errorCode = APIERR_BADPARS;
+            result.errorMessage = "width must not be negative.";
+            penResults.push_back (result);
+            continue;
+        }
+
+        auto& pen = (*penTableDefs.penTable_Items)[penIndex - 1];
+        GetColor (penData, "color", pen.rgb);
+        penData.Get ("width", pen.width);
+        SetCharProperty (&penData, "description", pen.description);
+        anyPenChanged = true;
+        penResults.push_back (result);
+    }
+
+    GSErrCode modifyErr = NoError;
+    if (anyPenChanged) {
+        modifyErr = ACAPI_Attribute_ModifyExt (&penTable, &penTableDefs);
+    }
+    ACAPI_DisposeAttrDefsHdlsExt (&penTableDefs);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    for (const PenResult& result : penResults) {
+        if (result.failed) {
+            executionResults (CreateFailedExecutionResult (result.errorCode, result.errorMessage));
+        } else if (modifyErr != NoError) {
+            executionResults (CreateFailedExecutionResult (modifyErr, "Failed to modify the active Pen Table. In a Teamwork project the PenTables lockable object set must be reserved first (see ReserveLockableObjectSet)."));
+        } else {
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+    }
+
+    return response;
+}
+
 CreateProfilesCommand::CreateProfilesCommand () :
     CommandBase (CommonSchema::Used)
 {
