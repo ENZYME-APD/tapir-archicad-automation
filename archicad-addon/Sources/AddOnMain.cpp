@@ -328,11 +328,19 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateProjectInfoFieldsCommand> (
             projectCommands, "1.5.2",
-            "Creates one or more custom project info fields."
+            "Creates one or more custom project info fields. From Archicad 30 the Project Info group of each field can be given; without it the field goes to the first group."
         );
         err |= RegisterCommand<DeleteProjectInfoFieldsCommand> (
             projectCommands, "1.5.4",
-            "Deletes one or more custom project info fields. Hardcoded fields cannot be deleted."
+            "Deletes one or more custom project info fields, by their autotext keys or, from Archicad 30, by the ids of the fields of the Project Info groups. Hardcoded fields cannot be deleted."
+        );
+        err |= RegisterCommand<RenameProjectInfoFieldsCommand> (
+            projectCommands, "1.7.4",
+            "Renames custom fields of the Project Info groups. Fixed (built-in) fields cannot be renamed. Available from Archicad 30."
+        );
+        err |= RegisterCommand<MoveProjectInfoFieldsCommand> (
+            projectCommands, "1.7.4",
+            "Moves fields of the Project Info groups to a group, before another field of it or to its end. A subfield of a calculated field moves with its parent field. Available from Archicad 30."
         );
         err |= RegisterCommand<GetProjectInfoGroupsCommand> (
             projectCommands, "1.7.3",
