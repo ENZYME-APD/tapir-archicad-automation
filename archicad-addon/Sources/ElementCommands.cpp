@@ -1,6 +1,7 @@
 #include "ElementCommands.hpp"
 
 #include "ElementCreationCommands.hpp"
+#include "ExtendedElementCommands.hpp"
 #include "MigrationHelper.hpp"
 #include "GSUnID.hpp"
 #include "Plane.hpp"
@@ -17,6 +18,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 // The pivot polygon of a multi-plane roof lives in the memo's additional polygon
 // (APIMemoMask_AdditionalPolygon); the first sub-polygon is the outline. Arcs are
@@ -6013,6 +6015,110 @@ static GSErrCode CalculateSolidBodyBounds (const API_Elem_Head& elemHead, API_Bo
     return NoError;
 }
 
+#ifdef ServerMainVers_2900
+static API_Coord3D TransformBodyVertex (const API_Tranmat& tranmat, double x, double y, double z);
+
+// Widens [extentMin, extentMax] to the extent of the element's solid bodies along `direction`, measured
+// from `origin`: unlike their bounding box, the vertices give the thickness of a diagonal wall.
+static void AccumulateSolidBodyExtent (const API_Elem_Head& elemHead, const API_Coord3D& origin, const API_Vector3D& direction, double& extentMin, double& extentMax, bool& foundSolidBody)
+{
+    API_ElemInfo3D info3D = {};
+    if (ACAPI_ModelAccess_Get3DInfo (elemHead, &info3D) != NoError) {
+        return;
+    }
+
+    for (Int32 iBody = info3D.fbody; iBody <= info3D.lbody; ++iBody) {
+        API_Component3D component = {};
+        component.header.typeID = API_BodyID;
+        component.header.index = iBody;
+        if (ACAPI_ModelAccess_GetComponent (&component) != NoError || component.body.nPgon == 0) {
+            continue;
+        }
+
+        const API_BodyType body = component.body;
+        for (Int32 iVert = 1; iVert <= body.nVert; ++iVert) {
+            component.header.typeID = API_VertID;
+            component.header.index = iVert;
+            if (ACAPI_ModelAccess_GetComponent (&component) != NoError) {
+                continue;
+            }
+            const API_Coord3D vertex = TransformBodyVertex (body.tranmat, component.vert.x, component.vert.y, component.vert.z);
+            const double t = (vertex.x - origin.x) * direction.x + (vertex.y - origin.y) * direction.y + (vertex.z - origin.z) * direction.z;
+            extentMin = std::min (extentMin, t);
+            extentMax = std::max (extentMax, t);
+            foundSolidBody = true;
+        }
+    }
+}
+
+// An Opening element only cuts other elements, and ACAPI_Element_CalcBounds answers with
+// zMin == zMax == 0 for it. So the bounds are those of the
+// opening's outline extruded along its extrusion direction. An extrusion that is infinite at one or
+// both ends is limited to the extent of the solid bodies of the elements the opening cuts, and the
+// box to their bounding box, since the opening has no effect beyond them.
+static GSErrCode CalculateOpeningBounds (const API_Guid& openingGuid, API_Box3D& outBounds)
+{
+    OpeningExtrusionBody body;
+    GSErrCode err = GetOpeningExtrusionBody (openingGuid, body);
+    if (err != NoError) {
+        return err;
+    }
+
+    const API_Coord3D& anchor = body.anchorPoint;
+    const API_Vector3D& e = body.extrusionDirection;
+    const bool isInfinite = std::isinf (body.extrusionStart) || std::isinf (body.extrusionEnd);
+    API_Box3D cutBounds = {};
+    if (isInfinite) {
+        InitializeEmptyBounds (cutBounds);
+        double cutStart = std::numeric_limits<double>::infinity ();
+        double cutEnd = -cutStart;
+        bool foundSolidBody = false;
+        for (const API_Guid& cutElementGuid : body.cutElements) {
+            API_Elem_Head cutElemHead = {};
+            cutElemHead.guid = cutElementGuid;
+            if (ACAPI_Element_GetHeader (&cutElemHead) == NoError) {
+                AccumulateSolidBodyBounds (cutElemHead, cutBounds, foundSolidBody);
+                AccumulateSolidBodyExtent (cutElemHead, anchor, e, cutStart, cutEnd, foundSolidBody);
+            }
+        }
+        if (!foundSolidBody) {
+            return APIERR_GENERAL;
+        }
+        body.extrusionStart = std::max (body.extrusionStart, cutStart);
+        body.extrusionEnd = std::min (body.extrusionEnd, cutEnd);
+        if (body.extrusionStart > body.extrusionEnd) {
+            return APIERR_GENERAL;
+        }
+    }
+
+    InitializeEmptyBounds (outBounds);
+    for (const double u : { body.profileXMin, body.profileXMax }) {
+        for (const double v : { body.profileYMin, body.profileYMax }) {
+            for (const double t : { body.extrusionStart, body.extrusionEnd }) {
+                UpdateGlobalBoundsWithPoint (outBounds, API_Coord3D {
+                    anchor.x + u * body.xAxis.x + v * body.yAxis.x + t * e.x,
+                    anchor.y + u * body.xAxis.y + v * body.yAxis.y + t * e.y,
+                    anchor.z + u * body.xAxis.z + v * body.yAxis.z + t * e.z
+                });
+            }
+        }
+    }
+
+    if (isInfinite) {
+        outBounds.xMin = std::max (outBounds.xMin, cutBounds.xMin);
+        outBounds.yMin = std::max (outBounds.yMin, cutBounds.yMin);
+        outBounds.zMin = std::max (outBounds.zMin, cutBounds.zMin);
+        outBounds.xMax = std::min (outBounds.xMax, cutBounds.xMax);
+        outBounds.yMax = std::min (outBounds.yMax, cutBounds.yMax);
+        outBounds.zMax = std::min (outBounds.zMax, cutBounds.zMax);
+        if (outBounds.xMin > outBounds.xMax || outBounds.yMin > outBounds.yMax || outBounds.zMin > outBounds.zMax) {
+            return APIERR_GENERAL;
+        }
+    }
+    return NoError;
+}
+#endif
+
 template<typename APIElemType>
 static void AccumulateSubelementBounds (APIElemType* subelemArray, API_Box3D& bounds, bool& foundSolidBody)
 {
@@ -6144,6 +6250,10 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
             if (err != NoError) {
                 err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
             }
+#ifdef ServerMainVers_2900
+        } else if (typeID == API_OpeningID) {
+            err = CalculateOpeningBounds (elemHead.guid, box3D);
+#endif
         } else {
             err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
         }

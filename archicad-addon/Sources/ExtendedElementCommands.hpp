@@ -25,6 +25,26 @@ GS::Optional<GS::UniString> ApplySlabStructure (
     const GS::ObjectState& details,
     bool& changed);
 
+// The extrusion body of an Opening element, in world coordinates: the outline lies in the plane through
+// anchorPoint spanned by xAxis and yAxis, as a box from profileXMin to profileXMax along xAxis and from
+// profileYMin to profileYMax along yAxis, and is extruded along extrusionDirection from extrusionStart to
+// extrusionEnd (either may be infinite). Archicad 29 and later; used by Get3DBoundingBoxes.
+struct OpeningExtrusionBody {
+    API_Coord3D anchorPoint;
+    API_Vector3D xAxis;
+    API_Vector3D yAxis;
+    API_Vector3D extrusionDirection;
+    double profileXMin;
+    double profileXMax;
+    double profileYMin;
+    double profileYMax;
+    double extrusionStart;
+    double extrusionEnd;
+    GS::Array<API_Guid> cutElements;
+};
+
+GSErrCode GetOpeningExtrusionBody (const API_Guid& openingGuid, OpeningExtrusionBody& body);
+
 class CreateWallsCommand : public CreateElementsCommandBase
 {
 public:
