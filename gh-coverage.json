@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-01 20:07 UTC",
+ "generatedAt": "2026-11-01 23:04 UTC",
  "counts": {
   "done": 303,
   "merged": 252,
@@ -672,12 +672,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1012,
-     "title": "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -700,12 +695,7 @@
     "projectInfoGroups.name"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1012,
-     "title": "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -729,12 +719,7 @@
     "projectInfoGroups.projectInfoGroupId"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1012,
-     "title": "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -756,12 +741,7 @@
     "projectInfoGroups"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1012,
-     "title": "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -785,12 +765,7 @@
     "projectInfoGroups.projectInfoGroupId"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1012,
-     "title": "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {

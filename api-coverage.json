@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-01 20:07 UTC",
+ "generatedAt": "2026-11-01 23:04 UTC",
  "versions": [
   25,
   26,
@@ -11,10 +11,10 @@
  "counts": {
   "not applicable": 627,
   "done": 1098,
-  "claimed": 53,
+  "claimed": 55,
   "merged": 609,
   "open": 92,
-  "in progress": 398,
+  "in progress": 396,
   "skipped": 2
  },
  "items": [
@@ -9487,7 +9487,7 @@
     },
     {
      "number": 954,
-     "title": "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"
+     "title": "Add Get3DStyles and ShowElementsIn3D commands"
     }
    ],
    "issues": []
@@ -20639,7 +20639,7 @@
     },
     {
      "number": 954,
-     "title": "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"
+     "title": "Add Get3DStyles and ShowElementsIn3D commands"
     }
    ],
    "issues": []
@@ -20737,7 +20737,7 @@
     },
     {
      "number": 954,
-     "title": "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"
+     "title": "Add Get3DStyles and ShowElementsIn3D commands"
     },
     {
      "number": 900,
@@ -22919,7 +22919,7 @@
    "pullRequests": [
     {
      "number": 954,
-     "title": "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"
+     "title": "Add Get3DStyles and ShowElementsIn3D commands"
     }
    ],
    "issues": []
@@ -23461,7 +23461,7 @@
    "pullRequests": [
     {
      "number": 954,
-     "title": "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"
+     "title": "Add Get3DStyles and ShowElementsIn3D commands"
     }
    ],
    "issues": []
@@ -23490,7 +23490,7 @@
    "pullRequests": [
     {
      "number": 954,
-     "title": "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"
+     "title": "Add Get3DStyles and ShowElementsIn3D commands"
     }
    ],
    "issues": []
@@ -24320,7 +24320,7 @@
     },
     {
      "number": 954,
-     "title": "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"
+     "title": "Add Get3DStyles and ShowElementsIn3D commands"
     },
     {
      "number": 943,
@@ -25076,7 +25076,7 @@
     },
     {
      "number": 954,
-     "title": "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"
+     "title": "Add Get3DStyles and ShowElementsIn3D commands"
     },
     {
      "number": 943,
@@ -31902,12 +31902,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -32085,10 +32080,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    },
-    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -32129,14 +32120,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "claimed",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -32651,10 +32637,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    },
-    {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
@@ -32845,14 +32827,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "claimed",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -32910,10 +32887,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    },
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
@@ -45809,7 +45782,7 @@
     },
     {
      "number": 954,
-     "title": "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"
+     "title": "Add Get3DStyles and ShowElementsIn3D commands"
     },
     {
      "number": 940,

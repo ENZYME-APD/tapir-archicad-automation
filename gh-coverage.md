@@ -34,7 +34,7 @@ Parameters of the 555 used commands: 🟢 511 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 2 |  | 2 |  |  |  |  |  | 2 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-01 20:07 UTC.
+Updated 2026-11-01 23:04 UTC.
 
 | | Status |
 |---|---|
@@ -86,11 +86,11 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `SetProjectInfoField` 🟢 2/2 parameters – `SetProjectInfoFieldsComponent`
 - ✅ `CreateProjectInfoFields` 🟢 1/1 parameters – `CreateProjectInfoFieldsComponent`
 - ✅ `DeleteProjectInfoFields` 🟢 1/1 parameters – `DeleteProjectInfoFieldsComponent`
-- 🔀 `GetProjectInfoGroups` 🟢 0/0 parameters – `GetProjectInfoGroupsComponent` — [#1012](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1012 "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30")
-- 🔀 `CreateProjectInfoGroups` 🟢 2/2 parameters – `CreateProjectInfoGroupsComponent` — [#1012](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1012 "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30")
-- 🔀 `RenameProjectInfoGroups` 🟢 3/3 parameters – `RenameProjectInfoGroupsComponent` — [#1012](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1012 "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30")
-- 🔀 `DeleteProjectInfoGroups` 🟢 1/1 parameters – `DeleteProjectInfoGroupsComponent` — [#1012](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1012 "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30")
-- 🔀 `MoveProjectInfoGroups` 🟢 3/3 parameters – `MoveProjectInfoGroupsComponent` — [#1012](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1012 "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30")
+- 🔀 `GetProjectInfoGroups` 🟢 0/0 parameters – `GetProjectInfoGroupsComponent`
+- 🔀 `CreateProjectInfoGroups` 🟢 2/2 parameters – `CreateProjectInfoGroupsComponent`
+- 🔀 `RenameProjectInfoGroups` 🟢 3/3 parameters – `RenameProjectInfoGroupsComponent`
+- 🔀 `DeleteProjectInfoGroups` 🟢 1/1 parameters – `DeleteProjectInfoGroupsComponent`
+- 🔀 `MoveProjectInfoGroups` 🟢 3/3 parameters – `MoveProjectInfoGroupsComponent`
 - ✅ `GetStories` 🟢 0/0 parameters – `GetStoriesComponent`
 - ✅ `SetStories` 🟢 1/1 parameters – `SetStoriesComponent`
 - ✅ `GetAutoTextKeys` 🟢 1/1 parameters – `GetAutoTextKeysComponent`
