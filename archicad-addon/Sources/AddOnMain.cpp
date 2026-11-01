@@ -834,6 +834,14 @@ GSErrCode Initialize (void)
             elementCommands, "1.7.3",
             "Changes the floor plan parameters of Opening elements returned by GetOpeningFloorPlanParameters, and sets or removes their cut and uncut symbols. Available from Archicad 29."
         );
+        err |= RegisterCommand<GetOpeningSymbolParametersCommand> (
+            elementCommands, "1.7.4",
+            "Returns the GDL parameters of the cut and uncut floor plan symbols of Opening elements, in the format of GetGDLParametersOfElements. A symbol the opening does not have is left out. Available from Archicad 29."
+        );
+        err |= RegisterCommand<SetOpeningSymbolParametersCommand> (
+            elementCommands, "1.7.4",
+            "Changes the GDL parameters of the cut and uncut floor plan symbols of Opening elements, in the format of SetGDLParametersOfElements. Only the given parameters are changed. Available from Archicad 29."
+        );
         err |= RegisterCommand<GetOpeningDetailsCommand> (
             elementCommands, "1.7.3",
             "Returns the details of Opening elements: whether they exist, the parent element, the cut and connected elements, the geometry (anchor point, extrusion direction, axes, polygon) and the extrusion parameters (constraint, limit type, linked status, shape type, size, anchor, offsets, surface overrides). Available from Archicad 29."
@@ -1693,6 +1701,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateLibraryPartCommand> (
             libraryCommands, "1.7.3",
             "Creates a new library part file (.gsm) of the given loaded subtype, inheriting its parameters, and reports whether it is loaded with its index and names. Available from Archicad 28."
+        );
+        err |= RegisterCommand<SetLibraryPartParametersCommand> (
+            libraryCommands, "1.7.4",
+            "Sets the parameter values, and optionally the parameter descriptions, of loaded library parts, in the format of SetGDLParametersOfElements. Only the given parameters are changed; with merge, the changed list is merged into the parameters of the part instead of replacing them. A library part that is not editable, or with an invalid value given, is left unchanged. Available from Archicad 28."
         );
         AddCommandGroup (libraryCommands);
     }
