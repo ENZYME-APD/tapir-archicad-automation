@@ -89,6 +89,10 @@ inline GS::ObjectState CreateAttributeIdObjectState (const API_Guid& guid) { ret
 inline GS::ObjectState CreateIssueIdObjectState (const API_Guid& guid)     { return CreateIdObjectState ("issueId", guid); }
 inline GS::ObjectState CreateDatabaseIdObjectState (const API_Guid& guid)  { return CreateIdObjectState ("databaseId", guid); }
 
+// Inverts the affine transformation of a 3x4 API_Tranmat (rotation/scale part plus translation).
+// Returns false, leaving inverse unchanged, when the 3x3 part is singular.
+bool InvertTranmat (const API_Tranmat& tranmat, API_Tranmat& inverse);
+
 // A hotlink instance is placed by an API_Tranmat. Every caller of this add-on
 // thinks in an origin, a rotation and a mirror flag, so the two directions of
 // that conversion live here, shared by the hotlink commands and by

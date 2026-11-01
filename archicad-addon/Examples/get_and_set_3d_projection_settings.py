@@ -14,3 +14,11 @@ if settings['isPersp']:
     # Restore the original settings.
     perspective['cameraPosition']['z'] -= 1.0
     aclib.RunTapirCommand ('Set3DProjectionSettings', {'perspective': perspective})
+else:
+    # Turn the axonometry to an isometric view from the south-east; only the given values change.
+    axonometric = settings['axonometric']
+    aclib.RunTapirCommand ('Set3DProjectionSettings', {'axonometry': {'projectionType': 'Isometric', 'azimuth': 270.0}})
+    aclib.RunTapirCommand ('RebuildView')
+
+    # Restore the original settings: the matrix keeps the exact view.
+    aclib.RunTapirCommand ('Set3DProjectionSettings', {'axonometry': axonometric})

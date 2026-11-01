@@ -7846,30 +7846,6 @@ static double GetTranmatDeterminant (const API_Tranmat& m)
          - t[1] * (t[4] * t[10] - t[6] * t[8])
          + t[2] * (t[4] * t[9]  - t[5] * t[8]);
 }
-
-// The inverse of the affine map x' = A * x + b is x = A^-1 * x' - A^-1 * b.
-static API_Tranmat InvertTranmat (const API_Tranmat& m, double det)
-{
-    const double* t = m.tmx;
-    API_Tranmat inverse = {};
-    double* r = inverse.tmx;
-
-    r[0]  = (t[5] * t[10] - t[6] * t[9]) / det;
-    r[1]  = (t[2] * t[9]  - t[1] * t[10]) / det;
-    r[2]  = (t[1] * t[6]  - t[2] * t[5]) / det;
-    r[4]  = (t[6] * t[8]  - t[4] * t[10]) / det;
-    r[5]  = (t[0] * t[10] - t[2] * t[8]) / det;
-    r[6]  = (t[2] * t[4]  - t[0] * t[6]) / det;
-    r[8]  = (t[4] * t[9]  - t[5] * t[8]) / det;
-    r[9]  = (t[1] * t[8]  - t[0] * t[9]) / det;
-    r[10] = (t[0] * t[5]  - t[1] * t[4]) / det;
-
-    r[3]  = -(r[0] * t[3] + r[1] * t[7] + r[2]  * t[11]);
-    r[7]  = -(r[4] * t[3] + r[5] * t[7] + r[6]  * t[11]);
-    r[11] = -(r[8] * t[3] + r[9] * t[7] + r[10] * t[11]);
-
-    return inverse;
-}
 #endif
 
 GS::ObjectState GetOpeningTransformationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -7927,11 +7903,11 @@ GS::ObjectState GetOpeningTransformationsCommand::Execute (const GS::ObjectState
         }
 
         const double det = GetTranmatDeterminant (localToGlobal);
-        if (std::abs (det) <= 1e-12) {
+        API_Tranmat globalToLocal = {};
+        if (!InvertTranmat (localToGlobal, globalToLocal)) {
             openingTransformations (CreateErrorResponse (APIERR_GENERAL, "The transformation of the opening cannot be inverted"));
             continue;
         }
-        const API_Tranmat globalToLocal = InvertTranmat (localToGlobal, det);
 
         GS::ObjectState transformation;
         transformation.Add ("elementId", CreateGuidObjectState (elemGuid));

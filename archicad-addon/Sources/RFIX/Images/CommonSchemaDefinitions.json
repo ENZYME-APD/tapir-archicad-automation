@@ -2989,6 +2989,27 @@
             "z"
         ]
     },
+    "AxonometryProjectionType": {
+        "type": "string",
+        "description": "The projection type of an axonometric 3D projection, the projMod of the Archicad API. Archicad works out the transformation matrix of every type but Custom from the type and the azimuth. XY is the top view and Bottom the view from below. YZ and XZ are both the side view (an elevation), looking from the azimuth. Frontal, Monometric, Isometric and Dimetric are the predefined axonometries, and FrontalBottom, MonometricBottom, IsometricBottom and DimetricBottom the same seen from below; an Isometric at azimuth 270 is the isometric from the south-east (X axis at -30 degrees, Y at 30, Z at 90). Custom keeps the transformation matrix as given. Parallel cannot be set: Archicad makes it Custom.",
+        "enum": [
+            "YZ",
+            "XZ",
+            "XY",
+            "Frontal",
+            "Monometric",
+            "Isometric",
+            "Dimetric",
+            "Bottom",
+            "FrontalBottom",
+            "MonometricBottom",
+            "IsometricBottom",
+            "DimetricBottom",
+            "Parallel",
+            "Custom",
+            "Unknown"
+        ]
+    },
     "PerspectiveProjectionParameters": {
         "type": "object",
         "description": "The parameters of a perspective projection of the 3D window.",
@@ -3007,11 +3028,11 @@
             },
             "azimuth": {
                 "type": "number",
-                "description": "The azimuth angle of the camera."
+                "description": "The azimuth of the camera in degrees: the direction from the target to the camera, counterclockwise from the X axis. Archicad works it out from the camera and target positions, so a set value is replaced by that."
             },
             "viewCone": {
                 "type": "number",
-                "description": "The view cone angle of the camera."
+                "description": "The view cone angle of the camera in degrees."
             },
             "rollAngle": {
                 "type": "number",

@@ -1,0 +1,100 @@
+{
+  "title": "Set3DProjectionSettings sets an isometric, a side view and a custom axonometry, and refuses a singular matrix",
+  "minTapir": "1.7.4",
+  "steps": [
+    {
+      "id": "3D window",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "3DModel"
+      }
+    },
+    {
+      "id": "isometric from the south-east",
+      "command": "Set3DProjectionSettings",
+      "creates": false,
+      "params": {
+        "axonometry": { "projectionType": "Isometric", "azimuth": 270 }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the isometric",
+      "command": "Get3DProjectionSettings",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "isPersp", "eq": false },
+        { "path": "axonometric.projectionType", "eq": "Isometric" },
+        { "path": "axonometric.azimuth", "approx": 270, "tol": 1e-6 },
+        { "path": "axonometric.transformationMatrix[0]", "approx": 0.866025, "tol": 1e-4, "name": "X axis at -30 degrees" },
+        { "path": "axonometric.transformationMatrix[4]", "approx": -0.5, "tol": 1e-4 },
+        { "path": "axonometric.transformationMatrix[1]", "approx": 0.866025, "tol": 1e-4, "name": "Y axis at 30 degrees" },
+        { "path": "axonometric.transformationMatrix[5]", "approx": 0.5, "tol": 1e-4 },
+        { "path": "axonometric.transformationMatrix[6]", "approx": 1, "tol": 1e-4, "name": "Z axis up" }
+      ]
+    },
+    {
+      "id": "side view from the east",
+      "command": "Set3DProjectionSettings",
+      "creates": false,
+      "params": {
+        "axonometry": { "projectionType": "YZ", "azimuth": 0 }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the side view",
+      "command": "Get3DProjectionSettings",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "axonometric.projectionType", "eq": "YZ" },
+        { "path": "axonometric.transformationMatrix[0]", "approx": 0, "tol": 1e-4, "name": "screen X is model Y" },
+        { "path": "axonometric.transformationMatrix[1]", "approx": 1, "tol": 1e-4 },
+        { "path": "axonometric.transformationMatrix[6]", "approx": 1, "tol": 1e-4, "name": "screen Y is model Z" }
+      ]
+    },
+    {
+      "id": "custom matrix",
+      "command": "Set3DProjectionSettings",
+      "creates": false,
+      "params": {
+        "axonometry": {
+          "projectionType": "Custom",
+          "transformationMatrix": [0.595277702, 0.878529295, 0, 0, -0.665785451, 0.451461737, 0.547894192, 0, 0.451203822, -0.305728649, 0.80020875, 0]
+        }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the custom matrix",
+      "command": "Get3DProjectionSettings",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "axonometric.projectionType", "eq": "Custom" },
+        { "path": "axonometric.transformationMatrix[0]", "approx": 0.595277702, "tol": 1e-6 },
+        { "path": "axonometric.transformationMatrix[6]", "approx": 0.547894192, "tol": 1e-6 }
+      ]
+    },
+    {
+      "id": "singular matrix",
+      "command": "Set3DProjectionSettings",
+      "creates": false,
+      "params": {
+        "axonometry": { "transformationMatrix": [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0] }
+      },
+      "expect": [
+        { "path": "success", "eq": false, "name": "refused" }
+      ]
+    }
+  ]
+}
