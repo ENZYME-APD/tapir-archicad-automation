@@ -1,0 +1,104 @@
+{
+  "title": "CreateRailingsFromPolyline: per-node elevations, arcs and the home story",
+  "minTapir": "1.7.4",
+  "steps": [
+    {
+      "id": "railings on story 0, story 1, and with an arc",
+      "command": "CreateRailingsFromPolyline",
+      "params": {
+        "railingsData": [
+          {
+            "polylineCoordinates": [
+              { "x": 500.0, "y": 500.0, "z": 0.5 },
+              { "x": 504.0, "y": 500.0, "z": 0.5 },
+              { "x": 504.0, "y": 503.0, "z": 0.5 }
+            ],
+            "floorIndex": 0,
+            "height": 1.1
+          },
+          {
+            "polylineCoordinates": [
+              { "x": 500.0, "y": 510.0, "z": 0.5 },
+              { "x": 504.0, "y": 510.0, "z": 0.5 },
+              { "x": 504.0, "y": 513.0, "z": 0.5 }
+            ],
+            "floorIndex": 1,
+            "height": 1.1
+          },
+          {
+            "polylineCoordinates": [
+              { "x": 500.0, "y": 520.0, "z": 0.0 },
+              { "x": 504.0, "y": 520.0, "z": 0.0 },
+              { "x": 506.0, "y": 522.0, "z": 0.0 }
+            ],
+            "polylineArcs": [
+              { "begIndex": 1, "endIndex": 2, "arcAngle": 1.5707963267948966 }
+            ],
+            "floorIndex": 0
+          }
+        ]
+      },
+      "save": {
+        "r0": "elements[0].elementId.guid",
+        "r1": "elements[1].elementId.guid",
+        "r2": "elements[2].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "story 0 railing created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "story 1 railing created" },
+        { "path": "elements[2].elementId.guid", "exists": true, "name": "arc railing created" }
+      ]
+    },
+    {
+      "id": "read them back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${r0}" } },
+          { "elementId": { "guid": "${r1}" } },
+          { "elementId": { "guid": "${r2}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "story 0 railing homed on story 0" },
+        { "path": "detailsOfElements[1].floorIndex", "eq": 1, "name": "story 1 railing homed on story 1" },
+        { "path": "detailsOfElements[0].details.referenceLine", "len": 3, "name": "one node per point" },
+        { "path": "detailsOfElements[0].details.segmentHeights", "len": 2, "name": "one segment per pair of points" },
+        { "path": "detailsOfElements[0].details.segmentHeights[0]", "approx": 1.1, "name": "height applied" },
+        { "path": "detailsOfElements[0].details.bottomOffset", "approx": 0.5, "name": "z is relative to story 0" },
+        { "path": "detailsOfElements[1].details.bottomOffset", "approx": 0.5, "name": "z is relative to story 1, not absolute" },
+        { "path": "detailsOfElements[1].details.referenceLine[2].y", "approx": 513.0, "name": "reference line kept" },
+        { "path": "detailsOfElements[2].details.segmentHeights", "len": 2, "name": "arc railing has two segments" }
+      ]
+    },
+    {
+      "id": "invalid input",
+      "command": "CreateRailingsFromPolyline",
+      "params": {
+        "railingsData": [
+          {
+            "polylineCoordinates": [
+              { "x": 500.0, "y": 530.0, "z": 0.0 },
+              { "x": 504.0, "y": 530.0, "z": 0.0 },
+              { "x": 504.0, "y": 533.0, "z": 0.0 }
+            ],
+            "polylineArcs": [
+              { "begIndex": 0, "endIndex": 2, "arcAngle": 1.0 }
+            ]
+          },
+          {
+            "polylineCoordinates": [
+              { "x": 500.0, "y": 540.0, "z": 0.0 },
+              { "x": 500.0, "y": 540.0, "z": 1.0 }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "arc between non-consecutive points refused" },
+        { "path": "elements[1].error.code", "exists": true, "name": "zero-length segment refused" }
+      ]
+    }
+  ]
+}
