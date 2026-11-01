@@ -2202,6 +2202,310 @@ GS::ObjectState DeleteDesignOptionCombinationsCommand::Execute (const GS::Object
 #endif
 }
 
+GetDesignOptionCombinationOfViewsCommand::GetDesignOptionCombinationOfViewsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetDesignOptionCombinationOfViewsCommand::GetName () const
+{
+    return "GetDesignOptionCombinationOfViews";
+}
+
+GS::Optional<GS::UniString> GetDesignOptionCombinationOfViewsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "navigatorItemIds": {
+                "$ref": "#/NavigatorItemIds",
+                "description": "The navigator items of the views (View Map items)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "navigatorItemIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetDesignOptionCombinationOfViewsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "designOptionCombinationOfViews": {
+                "type": "array",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "navigatorItemId": {
+                                    "$ref": "#/NavigatorItemId"
+                                },
+                                "status": {
+                                    "type": "string",
+                                    "enum": [
+                                        "MainModelOnly",
+                                        "Standard",
+                                        "Custom",
+                                        "Missing"
+                                    ],
+                                    "description": "MainModelOnly: the view shows only the main model, no design option. Standard: the view shows a design option combination. Custom: the view shows a set of design options modified by the user, without a name. Missing: the combination of the view was deleted."
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "description": "The name of the design option combination settings of the view, as Archicad reports it."
+                                },
+                                "designOptionCombinationId": {
+                                    "$ref": "#/DesignOptionCombinationId",
+                                    "description": "The design option combination the view shows. Given only for the Standard status, when exactly one combination has the name of the view's settings."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "navigatorItemId",
+                                "status",
+                                "name"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionCombinationOfViews"
+        ]
+    })";
+}
+
+GS::ObjectState GetDesignOptionCombinationOfViewsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
+    if (manager.IsErr ()) {
+        return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to retrieve design option combinations.");
+    }
+
+    GS::Array<GS::ObjectState> navigatorItemIds;
+    if (!parameters.Get ("navigatorItemIds", navigatorItemIds)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'navigatorItemIds' parameter.");
+    }
+
+    auto allDesignOptionCombinations = manager->GetDesignOptionCombinations ();
+    if (allDesignOptionCombinations.IsErr ()) {
+        return CreateErrorResponse (allDesignOptionCombinations.UnwrapErr ().kind, "Unable to retrieve design option combinations.");
+    }
+
+    GS::ObjectState response;
+    const auto& designOptionCombinationOfViews = response.AddList<GS::ObjectState> ("designOptionCombinationOfViews");
+
+    for (const GS::ObjectState& navigatorItemIdArrayItem : navigatorItemIds) {
+        const API_Guid navigatorItemGuid = GetGuidFromNavigatorItemIdArrayItem (navigatorItemIdArrayItem);
+        if (navigatorItemGuid == APINULLGuid) {
+            designOptionCombinationOfViews (CreateErrorResponse (APIERR_BADPARS, "Missing or invalid 'navigatorItemId' parameter"));
+            continue;
+        }
+
+        auto view = ACAPI::ModelViews::FindViewByGuid (navigatorItemGuid);
+        if (view.IsErr ()) {
+            designOptionCombinationOfViews (CreateErrorResponse (view.UnwrapErr ().kind, "Not found view with the given 'navigatorItemId' parameter, probably it's not a view"));
+            continue;
+        }
+
+        auto settings = manager->GetDesignOptionCombinationSettingsOf (*view);
+        if (settings.IsErr ()) {
+            designOptionCombinationOfViews (CreateErrorResponse (settings.UnwrapErr ().kind, "Unable to retrieve the design option combination settings of the view."));
+            continue;
+        }
+
+        auto status = settings->GetStatus ();
+        if (status.IsErr ()) {
+            designOptionCombinationOfViews (CreateErrorResponse (status.UnwrapErr ().kind, "Unable to retrieve the design option combination status of the view."));
+            continue;
+        }
+
+        const GS::UniString name = settings->GetName ();
+        GS::ObjectState combinationOfView;
+        combinationOfView.Add ("navigatorItemId", CreateGuidObjectState (navigatorItemGuid));
+        if (std::holds_alternative<DesignOptionCombinationViewSettings::MainModelOnly> (*status)) {
+            combinationOfView.Add ("status", "MainModelOnly");
+        } else if (std::holds_alternative<DesignOptionCombinationViewSettings::Standard> (*status)) {
+            combinationOfView.Add ("status", "Standard");
+            const DesignOptionCombination* combinationPtr = nullptr;
+            bool isAmbiguous = false;
+            for (const auto& combination : *allDesignOptionCombinations) {
+                if (combination.GetName () == name) {
+                    isAmbiguous = (combinationPtr != nullptr);
+                    combinationPtr = &combination;
+                    if (isAmbiguous) {
+                        break;
+                    }
+                }
+            }
+            if (combinationPtr != nullptr && !isAmbiguous) {
+                combinationOfView.Add ("designOptionCombinationId", CreateGuidObjectState (combinationPtr->GetGuid ()));
+            }
+        } else if (std::holds_alternative<DesignOptionCombinationViewSettings::Custom> (*status)) {
+            combinationOfView.Add ("status", "Custom");
+        } else {
+            combinationOfView.Add ("status", "Missing");
+        }
+        combinationOfView.Add ("name", name);
+        designOptionCombinationOfViews (combinationOfView);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
+SetDesignOptionCombinationOfViewsCommand::SetDesignOptionCombinationOfViewsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetDesignOptionCombinationOfViewsCommand::GetName () const
+{
+    return "SetDesignOptionCombinationOfViews";
+}
+
+GS::Optional<GS::UniString> SetDesignOptionCombinationOfViewsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "navigatorItemIdsWithCombination": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "navigatorItemId": {
+                            "$ref": "#/NavigatorItemId"
+                        },
+                        "designOptionCombinationId": {
+                            "$ref": "#/DesignOptionCombinationId",
+                            "description": "The design option combination the view should show."
+                        },
+                        "mainModelOnly": {
+                            "type": "boolean",
+                            "description": "Set it to true to make the view show only the main model, without any design option."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "navigatorItemId"
+                    ]
+                },
+                "description": "The views (View Map navigator items), each with either a 'designOptionCombinationId' or 'mainModelOnly': true."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "navigatorItemIdsWithCombination"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetDesignOptionCombinationOfViewsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetDesignOptionCombinationOfViewsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
+    if (manager.IsErr ()) {
+        return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to modify the design option combination of views.");
+    }
+
+    GS::Array<GS::ObjectState> navigatorItemIdsWithCombination;
+    if (!parameters.Get ("navigatorItemIdsWithCombination", navigatorItemIdsWithCombination)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'navigatorItemIdsWithCombination' parameter.");
+    }
+
+    auto allDesignOptionCombinations = manager->GetDesignOptionCombinations ();
+    if (allDesignOptionCombinations.IsErr ()) {
+        return CreateErrorResponse (allDesignOptionCombinations.UnwrapErr ().kind, "Unable to modify the design option combination of views.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("Set Design Option Combination of Views", [&]() -> GSErrCode {
+        for (auto&& navigatorItemIdWithCombination : navigatorItemIdsWithCombination) {
+            const API_Guid navigatorItemGuid = GetGuidFromNavigatorItemIdArrayItem (navigatorItemIdWithCombination);
+            if (navigatorItemGuid == APINULLGuid) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'navigatorItemId' parameter"));
+                continue;
+            }
+
+            bool mainModelOnly = false;
+            navigatorItemIdWithCombination.Get ("mainModelOnly", mainModelOnly);
+            const bool hasCombination = navigatorItemIdWithCombination.Contains ("designOptionCombinationId");
+            if (mainModelOnly == hasCombination) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Exactly one of 'designOptionCombinationId' and 'mainModelOnly': true is required"));
+                continue;
+            }
+
+            DesignOptionCombination* combinationPtr = nullptr;
+            if (hasCombination) {
+                GS::Guid combinationGuid = APIGuid2GSGuid (GetGuidFromArrayItem ("designOptionCombinationId", navigatorItemIdWithCombination));
+                if (combinationGuid.IsNull ()) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'designOptionCombinationId' parameter"));
+                    continue;
+                }
+                combinationPtr = FindDesignOptionItemByGuid (*allDesignOptionCombinations, combinationGuid);
+                if (combinationPtr == nullptr) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADID, "Not found design option combination with the given 'designOptionCombinationId' parameter"));
+                    continue;
+                }
+            }
+
+            auto view = ACAPI::ModelViews::FindViewByGuid (navigatorItemGuid);
+            if (view.IsErr ()) {
+                executionResults (CreateFailedExecutionResult (view.UnwrapErr ().kind, "Not found view with the given 'navigatorItemId' parameter, probably it's not a view"));
+                continue;
+            }
+
+            auto settings = manager->GetDesignOptionCombinationSettingsOf (*view);
+            if (settings.IsErr ()) {
+                executionResults (CreateFailedExecutionResult (settings.UnwrapErr ().kind, "Unable to retrieve the design option combination settings of the view."));
+                continue;
+            }
+
+            auto result = (combinationPtr == nullptr) ? settings->SetMainModelOnly () : settings->SetStandardCombination (*combinationPtr);
+            executionResults (result.IsOk () ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to set the design option combination of the view."));
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
 SetDefaultDesignOptionCommand::SetDefaultDesignOptionCommand () :
     CommandBase (CommonSchema::Used)
 {
