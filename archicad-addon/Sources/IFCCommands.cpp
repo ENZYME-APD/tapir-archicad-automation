@@ -3,6 +3,7 @@
 #include "StringConversion.hpp"
 
 #ifdef ServerMainVers_2800
+#include "ACAPI/IFCAssignments.hpp"
 #include "ACAPI/IFCAttribute.hpp"
 #include "ACAPI/IFCClassificationReference.hpp"
 #include "ACAPI/IFCObjectAccessor.hpp"
@@ -528,6 +529,17 @@ static GS::ObjectState CreateIFCPropertyObjectState (const IFCAPI::Property& pro
 	const GS::UniString valueType = GetPropertyValueType (property);
 	if (!valueType.IsEmpty ())
 		ifcProperty.Add ("valueType", valueType);
+
+	auto propertyVariant = property.GetTyped ();
+	if (std::holds_alternative<IFCAPI::PropertyEnumeratedValue> (propertyVariant)) {
+		const auto& propertyCast = std::get<IFCAPI::PropertyEnumeratedValue> (propertyVariant);
+		const std::vector<IFCAPI::Value> enumerationReference = propertyCast.GetEnumerationReference ();
+		if (!enumerationReference.empty ()) {
+			const auto& referenceAdder = ifcProperty.AddList<GS::UniString> ("enumerationReference");
+			for (const auto& value : enumerationReference)
+				referenceAdder (PropertyValueToString (value));
+		}
+	}
 	return ifcProperty;
 }
 #else
@@ -1994,5 +2006,285 @@ GS::ObjectState RemoveIFCClassificationReferencesOfElementsCommand::Execute (con
     }
 
     return response;
+#endif
+}
+
+#ifdef ServerMainVers_2800
+// An IFC object as the IFC object accessor identifies it: the hash value of its identifier,
+// and the element, the IFC type and the GlobalId where the accessor reports them.
+static GS::ObjectState CreateIFCObjectObjectState (IFCAPI::ObjectAccessor& accessor, const IFCAPI::ObjectID& objectID)
+{
+    GS::ObjectState ifcObject ("hashValue", static_cast<Int64> (objectID.GenerateHashValue ()));
+
+    auto elementId = accessor.GetAPIElementID (objectID);
+    if (elementId.IsOk ()) {
+        ifcObject.Add ("elementId", CreateGuidObjectState (elementId.Unwrap ()));
+    }
+    auto ifcType = accessor.GetIFCType (objectID);
+    if (ifcType.IsOk ()) {
+        ifcObject.Add ("ifcType", ifcType.Unwrap ());
+    }
+    auto globalId = accessor.GetGlobalId (objectID);
+    if (globalId.IsOk ()) {
+        ifcObject.Add ("globalId", globalId.Unwrap ());
+    }
+
+    return ifcObject;
+}
+#endif
+
+GetIFCSpatialStructureCommand::GetIFCSpatialStructureCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetIFCSpatialStructureCommand::GetName () const
+{
+    return "GetIFCSpatialStructure";
+}
+
+GS::Optional<GS::UniString> GetIFCSpatialStructureCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "Elements to get the IFC story index of. Optional."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> GetIFCSpatialStructureCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "project": {
+                "$ref": "#/IFCObject",
+                "description": "The IfcProject object. Left out when Archicad does not report it."
+            },
+            "site": {
+                "$ref": "#/IFCObject",
+                "description": "The IfcSite object. Left out when Archicad does not report it."
+            },
+            "building": {
+                "$ref": "#/IFCObject",
+                "description": "The IfcBuilding object. Left out when Archicad does not report it."
+            },
+            "elements": {
+                "type": "array",
+                "description": "The story of each given element in the IFC model, in the order of the input. Left out when no elements were given.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementId": {
+                                    "$ref": "#/ElementId"
+                                },
+                                "storyIndex": {
+                                    "type": "integer",
+                                    "description": "The index of the story the element is assigned to in the IFC model."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementId",
+                                "storyIndex"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::ObjectState GetIFCSpatialStructureCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    auto accessor = IFCAPI::GetObjectAccessor ();
+
+    GS::ObjectState response;
+    auto projectID = accessor.CreateIfcProjectObjectID ();
+    if (projectID.IsOk ()) {
+        response.Add ("project", CreateIFCObjectObjectState (accessor, projectID.Unwrap ()));
+    }
+    auto siteID = accessor.CreateIfcSiteObjectID ();
+    if (siteID.IsOk ()) {
+        response.Add ("site", CreateIFCObjectObjectState (accessor, siteID.Unwrap ()));
+    }
+    auto buildingID = accessor.CreateIfcBuildingObjectID ();
+    if (buildingID.IsOk ()) {
+        response.Add ("building", CreateIFCObjectObjectState (accessor, buildingID.Unwrap ()));
+    }
+
+    GS::Array<GS::ObjectState> elements;
+    if (parameters.Get ("elements", elements)) {
+        const auto& elementStories = response.AddList<GS::ObjectState> ("elements");
+        for (const GS::ObjectState& element : elements) {
+            const GS::ObjectState* elementId = element.Get ("elementId");
+            if (elementId == nullptr) {
+                elementStories (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+            API_Elem_Head elemHeader;
+            if (!LoadElementHeaderByGuid (elemGuid, elemHeader)) {
+                elementStories (CreateErrorResponse (APIERR_BADPARS, "The given element was not found"));
+                continue;
+            }
+
+            auto objectID = accessor.CreateElementObjectID (elemHeader);
+            if (objectID.IsErr ()) {
+                elementStories (CreateErrorResponse (objectID.UnwrapErr ().kind, "Failed to get IFC accessor for the element"));
+                continue;
+            }
+
+            auto storyIndex = accessor.GetStoryIndex (objectID.Unwrap ());
+            if (storyIndex.IsErr ()) {
+                elementStories (CreateErrorResponse (storyIndex.UnwrapErr ().kind, "Failed to get the IFC story of the element"));
+                continue;
+            }
+
+            GS::ObjectState elementStory = CreateElementIdObjectState (elemGuid);
+            elementStory.Add ("storyIndex", storyIndex.Unwrap ());
+            elementStories (elementStory);
+        }
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
+}
+
+GetIFCAssignmentsCommand::GetIFCAssignmentsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetIFCAssignmentsCommand::GetName () const
+{
+    return "GetIFCAssignments";
+}
+
+GS::Optional<GS::UniString> GetIFCAssignmentsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "rootGroups": {
+                "type": "array",
+                "description": "The IFC groups (e.g. IfcGroup, IfcZone, IfcSystem) that are not assigned to another group.",
+                "items": {
+                    "$ref": "#/IFCObject"
+                }
+            },
+            "childObjects": {
+                "type": "array",
+                "description": "Each IFC object that has objects assigned to it, with those objects.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "object": {
+                            "$ref": "#/IFCObject"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/IFCObject"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "object",
+                        "children"
+                    ]
+                }
+            },
+            "parentObjects": {
+                "type": "array",
+                "description": "Each IFC object that is assigned to other objects, with those objects.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "object": {
+                            "$ref": "#/IFCObject"
+                        },
+                        "parents": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/IFCObject"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "object",
+                        "parents"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "rootGroups",
+            "childObjects",
+            "parentObjects"
+        ]
+    })";
+}
+
+GS::ObjectState GetIFCAssignmentsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    auto accessor = IFCAPI::GetObjectAccessor ();
+    auto assignments = accessor.GetAssignments ();
+    if (assignments.IsErr ()) {
+        return CreateErrorResponse (assignments.UnwrapErr ().kind, "Failed to get the IFC assignments of the project");
+    }
+    const IFCAPI::Assignments unWrappedAssignments = assignments.Unwrap ();
+
+    GS::ObjectState response;
+    const auto& rootGroups = response.AddList<GS::ObjectState> ("rootGroups");
+    for (const IFCAPI::ObjectID& objectID : unWrappedAssignments.GetRootGroups ()) {
+        rootGroups (CreateIFCObjectObjectState (accessor, objectID));
+    }
+
+    const auto& childObjects = response.AddList<GS::ObjectState> ("childObjects");
+    for (const auto& [objectID, children] : unWrappedAssignments.GetChildObjectTable ()) {
+        GS::ObjectState childObject ("object", CreateIFCObjectObjectState (accessor, objectID));
+        const auto& childList = childObject.AddList<GS::ObjectState> ("children");
+        for (const IFCAPI::ObjectID& childID : children) {
+            childList (CreateIFCObjectObjectState (accessor, childID));
+        }
+        childObjects (childObject);
+    }
+
+    const auto& parentObjects = response.AddList<GS::ObjectState> ("parentObjects");
+    for (const auto& [objectID, parents] : unWrappedAssignments.GetParentObjectTable ()) {
+        GS::ObjectState parentObject ("object", CreateIFCObjectObjectState (accessor, objectID));
+        const auto& parentList = parentObject.AddList<GS::ObjectState> ("parents");
+        for (const IFCAPI::ObjectID& parentID : parents) {
+            parentList (CreateIFCObjectObjectState (accessor, parentID));
+        }
+        parentObjects (parentObject);
+    }
+
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
 #endif
 }
