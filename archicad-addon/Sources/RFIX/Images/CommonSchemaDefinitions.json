@@ -4474,6 +4474,18 @@
             "nodeId": {
                 "type": "number",
                 "description": "Polygon vertex id of the base element, from its memo's vertexIDs, for elements with a polygon."
+            },
+            "textHeight": {
+                "type": "number",
+                "description": "Character height of the dimension text in mm, as the creation commands take it."
+            },
+            "textPen": {
+                "type": "integer",
+                "description": "Pen index of the dimension text."
+            },
+            "textFrame": {
+                "type": "boolean",
+                "description": "Whether the dimension text has a frame."
             }
         }
     },
@@ -12355,6 +12367,36 @@
                 "items": {
                     "$ref": "#/CoordinateWitnessPoint"
                 }
+            },
+            "linePen": {
+                "type": "integer",
+                "description": "The pen of the dimension and witness lines."
+            },
+            "marker": {
+                "type": "object",
+                "description": "The marker at the witness points. Its size is not returned: the value the API reports did not match the marker size in the Dimension Settings for linear dimensions.",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "description": "The marker type, named after API_MarkerID.",
+                        "enum": ["CrossLine", "EmptyCircle", "SlashLine60", "OpenArrow30", "ClosedArrow30", "FullArrow30", "SlashLine45", "CrossCircle", "OpenArrow90", "ClosedArrow90", "FullArrow90", "FullCircle", "PepitaCircle", "BandArrow", "OpenArrow60", "ClosedArrow60", "FullArrow60", "SlashLine75"]
+                    },
+                    "pen": {
+                        "type": "integer",
+                        "description": "The pen of the marker."
+                    }
+                },
+                "additionalProperties": false,
+                "required": ["type", "pen"]
+            },
+            "defaultWitnessForm": {
+                "type": "string",
+                "description": "The witness line form of the dimension's settings (None, Small, Large or Fix); each witness point has its own witnessForm.",
+                "enum": ["None", "Small", "Large", "Fix", "Unknown"]
+            },
+            "defaultWitnessVal": {
+                "type": "number",
+                "description": "The value that goes with defaultWitnessForm, in meters. For Fix it is the length of the witness lines (the custom witness line length of the Dimension Settings). Each witness point has its own witnessVal."
             }
         }
     },

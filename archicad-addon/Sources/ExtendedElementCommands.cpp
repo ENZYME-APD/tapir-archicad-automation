@@ -550,15 +550,16 @@ void FillDimensionDefaults (API_Element& element, const API_Coord& referencePoin
 }
 
 // Reads the Dimension tool defaults into element and memo, with the item's optional
-// "favoriteName" applied to them first (#1390), then the item's optional "textHeight" and
-// "textPen" applied to defNote, which both creation paths copy into every witness point.
+// "favoriteName" applied to them first (#1390), then the item's optional "textHeight",
+// "textPen" and "textFrame" (#1592) applied to defNote, which both creation paths copy into
+// every witness point.
 // Favorites can only be applied through the tool defaults, which are global, so they are
 // snapshotted first and restored when this object goes out of scope, leaving the user's next
 // manual placement as it was. Keep it alive until the dimension is created, as
 // CreateElementsCommandBase does. A favorite gave the new dimension its layer, line pen and
 // markers but not its text size, text pen or text frame (tested in AC28, also with defNote and
 // the first witness point's note taken straight from the favorite), so the text is set with
-// textHeight and textPen instead.
+// textHeight, textPen and textFrame instead.
 class DimensionDefaults {
 public:
     DimensionDefaults () = default;
@@ -602,6 +603,11 @@ GS::Optional<GS::ObjectState> DimensionDefaults::Read (const GS::ObjectState& da
     Int32 textPen = 0;
     if (data.Get ("textPen", textPen) && textPen > 0) {
         element.dimension.defNote.notePen = static_cast<short> (textPen);
+    }
+
+    bool textFrame = false;
+    if (data.Get ("textFrame", textFrame)) {
+        element.dimension.defNote.frame = textFrame;
     }
 
     return {};
@@ -6464,7 +6470,7 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsCommand::GetInputParamete
                     "properties": {
                         "favoriteName": {
                             "type": "string",
-                            "description": "Optional name of a Dimension favorite to base the new dimension on, e.g. for its layer, line pen and markers. Its settings are applied first, then the command sets the geometry and its usual text placement. The favorite's text size, text pen and text frame are not applied (tested in Archicad 28): use textHeight and textPen for the texts. The Dimension tool defaults are left as they were."
+                            "description": "Optional name of a Dimension favorite to base the new dimension on, e.g. for its layer, line pen and markers. Its settings are applied first, then the command sets the geometry and its usual text placement. The favorite's text size, text pen and text frame are not applied (tested in Archicad 28): use textHeight, textPen and textFrame for the texts. The Dimension tool defaults are left as they were."
                         },
                         "textHeight": {
                             "type": "number",
@@ -6473,6 +6479,10 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsCommand::GetInputParamete
                         "textPen": {
                             "type": "integer",
                             "description": "Optional pen index of the dimension texts, applied to every witness point after favoriteName."
+                        },
+                        "textFrame": {
+                            "type": "boolean",
+                            "description": "Optional frame around the dimension texts (true: framed, false: not framed), applied to every witness point after favoriteName. Without it the Dimension tool's setting is used."
                         },
                         "referencePoint": { "$ref": "#/Coordinate2D" },
                         "direction": { "$ref": "#/Coordinate2D" },
@@ -6623,7 +6633,7 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsOnSectionCommand::GetInpu
                     "properties": {
                         "favoriteName": {
                             "type": "string",
-                            "description": "Optional name of a Dimension favorite to base the new dimension on, e.g. for its layer, line pen and markers. Its settings are applied first, then the command sets the geometry and its usual text placement. The favorite's text size, text pen and text frame are not applied (tested in Archicad 28): use textHeight and textPen for the texts. The Dimension tool defaults are left as they were."
+                            "description": "Optional name of a Dimension favorite to base the new dimension on, e.g. for its layer, line pen and markers. Its settings are applied first, then the command sets the geometry and its usual text placement. The favorite's text size, text pen and text frame are not applied (tested in Archicad 28): use textHeight, textPen and textFrame for the texts. The Dimension tool defaults are left as they were."
                         },
                         "textHeight": {
                             "type": "number",
@@ -6632,6 +6642,10 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsOnSectionCommand::GetInpu
                         "textPen": {
                             "type": "integer",
                             "description": "Optional pen index of the dimension texts, applied to every witness point after favoriteName."
+                        },
+                        "textFrame": {
+                            "type": "boolean",
+                            "description": "Optional frame around the dimension texts (true: framed, false: not framed), applied to every witness point after favoriteName. Without it the Dimension tool's setting is used."
                         },
                         "sectionElementId": {
                             "$ref": "#/ElementId",
@@ -6795,7 +6809,7 @@ GS::Optional<GS::UniString> CreateWallThicknessDimensionsCommand::GetInputParame
                     "properties": {
                         "favoriteName": {
                             "type": "string",
-                            "description": "Optional name of a Dimension favorite to base the new dimension on, e.g. for its layer, line pen and markers. Its settings are applied first, then the command sets the geometry and its usual text placement. The favorite's text size, text pen and text frame are not applied (tested in Archicad 28): use textHeight and textPen for the texts. The Dimension tool defaults are left as they were."
+                            "description": "Optional name of a Dimension favorite to base the new dimension on, e.g. for its layer, line pen and markers. Its settings are applied first, then the command sets the geometry and its usual text placement. The favorite's text size, text pen and text frame are not applied (tested in Archicad 28): use textHeight, textPen and textFrame for the texts. The Dimension tool defaults are left as they were."
                         },
                         "textHeight": {
                             "type": "number",
@@ -6804,6 +6818,10 @@ GS::Optional<GS::UniString> CreateWallThicknessDimensionsCommand::GetInputParame
                         "textPen": {
                             "type": "integer",
                             "description": "Optional pen index of the dimension texts, applied to every witness point after favoriteName."
+                        },
+                        "textFrame": {
+                            "type": "boolean",
+                            "description": "Optional frame around the dimension texts (true: framed, false: not framed), applied to every witness point after favoriteName. Without it the Dimension tool's setting is used."
                         },
                         "wallId": { "$ref": "#/ElementId" },
                         "referencePoint": { "$ref": "#/Coordinate2D" },
@@ -7650,6 +7668,30 @@ static GS::UniString WitnessFormToString (API_WitnessID witnessForm)
     }
 }
 
+static GS::UniString DimensionMarkerName (API_MarkerID markerType)
+{
+    switch (markerType) {
+        case APIMark_CrossLine:     return "CrossLine";
+        case APIMark_EmptyCirc:     return "EmptyCircle";
+        case APIMark_SlashLine:     return "SlashLine60";
+        case APIMark_OpenArrow30:   return "OpenArrow30";
+        case APIMark_ClosArrow30:   return "ClosedArrow30";
+        case APIMark_FullArrow30:   return "FullArrow30";
+        case APIMark_SlashLine45:   return "SlashLine45";
+        case APIMark_CrossCirc:     return "CrossCircle";
+        case APIMark_OpenArrow90:   return "OpenArrow90";
+        case APIMark_ClosArrow90:   return "ClosedArrow90";
+        case APIMark_FullArrow90:   return "FullArrow90";
+        case APIMark_FullCirc:      return "FullCircle";
+        case APIMark_PepitaCirc:    return "PepitaCircle";
+        case APIMark_BandArrow:     return "BandArrow";
+        case APIMark_OpenArrow60:   return "OpenArrow60";
+        case APIMark_ClosArrow60:   return "ClosedArrow60";
+        case APIMark_FullArrow60:   return "FullArrow60";
+        default:                    return "SlashLine75";
+    }
+}
+
 GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elements;
@@ -7706,6 +7748,9 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
                 witnessPoint.Add ("dimensionValue", dimElem.dimVal);
                 witnessPoint.Add ("witnessForm", WitnessFormToString (dimElem.witnessForm));
                 witnessPoint.Add ("witnessVal", dimElem.witnessVal);
+                witnessPoint.Add ("textHeight", dimElem.note.noteSize);
+                witnessPoint.Add ("textPen", static_cast<Int32> (dimElem.note.notePen));
+                witnessPoint.Add ("textFrame", dimElem.note.frame);
 
                 // The witness parameters, as CreateAssociativeDimensions takes them, so a dimension
                 // placed by hand can be read back to learn what an element type needs (#633).
@@ -7724,6 +7769,17 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
                 witnessPoints (witnessPoint);
             }
         }
+
+        // The look of the dimension line, so a dimension can be redrawn or recreated as it is.
+        // markerData.markerSize is left out on purpose: on Archicad 29 it read 2.5 mm for linear
+        // dimensions whose settings dialog shows a marker size of 1.0 mm (it only matched for an
+        // elevation dimension), so it is not the size a user sets.
+        dimensionData.Add ("linePen", static_cast<Int32> (element.dimension.linPen));
+        dimensionData.Add ("marker", GS::ObjectState (
+            "type", DimensionMarkerName (element.dimension.markerData.markerType),
+            "pen", static_cast<Int32> (element.dimension.markerData.markerPen)));
+        dimensionData.Add ("defaultWitnessForm", WitnessFormToString (element.dimension.defWitnessForm));
+        dimensionData.Add ("defaultWitnessVal", element.dimension.defWitnessVal);
 
         dimensionsData (dimensionData);
     }

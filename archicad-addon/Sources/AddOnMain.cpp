@@ -872,7 +872,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetDimensionDataCommand> (
             elementCommands, "1.5.0",
-            "Gets witness point data (coordinates, measured values) from existing dimension chains."
+            "Gets the data of existing dimension chains: the line pen, the marker type and pen and the default witness line, and per witness point the coordinates, measured value, witness line and the text height, pen and frame."
         );
         err |= RegisterCommand<GetOpeningTransformationsCommand> (
             elementCommands, "1.7.3",

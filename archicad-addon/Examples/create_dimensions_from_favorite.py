@@ -3,10 +3,11 @@ Example for issue #1390: CreateAssociativeDimensions, CreateAssociativeDimension
 CreateWallThicknessDimensions take an optional 'favoriteName', so a dimension is created with
 the settings of a saved Dimension favorite - its layer, line pen, markers and so on. The
 favorite's text size, text pen and text frame are not applied (tested in Archicad 28), so the
-same commands take an optional 'textHeight' (mm) and 'textPen' for the dimension texts.
+same commands take an optional 'textHeight' (mm), 'textPen' and 'textFrame' (#1592) for the
+dimension texts.
 
 The script places two walls and a dimension between them, saves that dimension as a favorite,
-then dimensions the walls again from the favorite, once with a larger text in pen 20, tries a
+then dimensions the walls again from the favorite, once with a larger framed text in pen 20, tries a
 favorite that does not exist, and cleans up after itself. In Archicad, save a favorite with
 other markers or pens and pass its name instead to see its settings on the new dimensions.
 The texts are not read back (GetDetailsOfElements does not support dimensions), so check
@@ -83,14 +84,15 @@ check ('dimension without favorite created', True, 'elementId' in response['elem
 created += [e for e in response['elements'] if 'elementId' in e]
 
 # --- 2. a wall thickness dimension from the favorite ----------------------------------
-print ('CreateWallThicknessDimensions with favoriteName, textHeight and textPen')
+print ('CreateWallThicknessDimensions with favoriteName, textHeight, textPen and textFrame')
 response = run ('CreateWallThicknessDimensions', {'dimensionsData': [{
     'wallId': wallIds[0],
     'referencePoint': {'x': 2.0, 'y': -79.0},
     'direction': {'x': 0.0, 'y': 1.0},
     'favoriteName': favoriteName,
     'textHeight': 5.0,
-    'textPen': 20
+    'textPen': 20,
+    'textFrame': True
 }]})
 check ('wall thickness dimension created', True, 'elementId' in response['elements'][0])
 created += [e for e in response['elements'] if 'elementId' in e]
