@@ -89,6 +89,18 @@ GS::ObjectState CreateSuccessfulExecutionResult ()
         "success", true);
 }
 
+const char* LockableStatusToString (API_LockableStatus status)
+{
+    switch (status) {
+        case APILockableStatus_Free:         return "Free";
+        case APILockableStatus_Editable:     return "Editable";
+        case APILockableStatus_Locked:       return "Locked";
+        case APILockableStatus_NotAvailable: return "NotAvailable";
+        case APILockableStatus_NotExist:
+        default:                             return "NotExist";
+    }
+}
+
 // Plain wording for the errors the Change* / Import property and classification calls
 // return, so a caller sees why a definition edit was refused without an error table.
 GS::UniString DescribeDefinitionChangeError (GSErrCode err)
