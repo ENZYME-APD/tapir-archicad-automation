@@ -9964,45 +9964,45 @@
     },
     "SectionDetails": {
         "type": "object",
-        "description": "The geometry of a Section (CutPlane) marker on the floor plan, the fields CreateSections takes.",
+        "description": "The geometry of a Section (CutPlane) or Elevation marker on the floor plan; for sections the fields CreateSections takes. Archicad stores both the same way.",
         "properties": {
             "name": {
                 "type": "string",
-                "description": "The name of the section."
+                "description": "The name of the section or elevation."
             },
             "idStr": {
                 "type": "string",
-                "description": "The reference ID of the section."
+                "description": "The reference ID of the section or elevation."
             },
             "mainCoordinates": {
                 "type": "array",
-                "description": "The points of the section line, from start to end. More than two for a broken section line. Empty when the line cannot be read.",
+                "description": "The points of the section or elevation line, from start to end. More than two for a broken section line. Empty when the line cannot be read.",
                 "items": {
                     "$ref": "#/Coordinate2D"
                 }
             },
             "depthCoordinates": {
                 "type": "array",
-                "description": "The points of the depth line, the far boundary of the section. Empty when it cannot be read.",
+                "description": "The points of the depth line, the far boundary of the section or elevation. Empty when it cannot be read.",
                 "items": {
                     "$ref": "#/Coordinate2D"
                 }
             },
             "startCoordinate": {
                 "$ref": "#/Coordinate2D",
-                "description": "The first point of the section line (startCoordinate of CreateSections)."
+                "description": "The first point of the section or elevation line (startCoordinate of CreateSections)."
             },
             "endCoordinate": {
                 "$ref": "#/Coordinate2D",
-                "description": "The last point of the section line (endCoordinate of CreateSections)."
+                "description": "The last point of the section or elevation line (endCoordinate of CreateSections)."
             },
             "depth": {
                 "type": "number",
-                "description": "The distance of the first depth point from the first segment of the section line (depth of CreateSections)."
+                "description": "The distance of the first depth point from the first segment of the section or elevation line (depth of CreateSections)."
             },
             "viewDirection": {
                 "$ref": "#/Coordinate2D",
-                "description": "The unit vector perpendicular to the first segment of the section line, pointing to the side of the depth line: the direction the section looks in. CreateSections puts it to the left of the start to end direction."
+                "description": "The unit vector perpendicular to the first segment of the section or elevation line, pointing to the side of the depth line: the direction the section or elevation looks in. CreateSections puts it to the left of the start to end direction."
             }
         },
         "additionalProperties": false,
