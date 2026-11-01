@@ -3263,6 +3263,8 @@ static bool IsProjectMapWorksheetOrDetail (const API_Guid& guid, const API_Navig
     return false;
 }
 
+static GS::UniString NavigatorItemTypeToString (API_NavigatorItemTypeID t);
+
 GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     // Flush any pending navigator state from a preceding Create/Rename before walking the
@@ -3322,8 +3324,24 @@ GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& par
             err = ACAPI_Navigator_DeleteNavigatorView (&guid, &silentMode);
         }
 
+        // APIERR_NOTSUPPORTED is not only for layout subsets (#1418): ACAPI_Navigator_DeleteNavigatorView
+        // returns it for a View Map folder that still holds items, while it deletes an empty one, and the
+        // Project Map items other than independent worksheets and details fail with another error (tested
+        // on Archicad 29). So the message says what was refused and why.
+        if (err == APIERR_NOTSUPPORTED && navItem.itemType == API_FolderNavItem) {
+            executionResults (CreateFailedExecutionResult (err, "Archicad deletes a View Map folder only when it is empty: delete or move the views and folders in it first."));
+            continue;
+        }
         if (err == APIERR_NOTSUPPORTED) {
-            executionResults (CreateFailedExecutionResult (err, "Deleting layout subsets is not supported by the ArchiCAD API."));
+            executionResults (CreateFailedExecutionResult (err, GS::UniString::Printf (
+                "Archicad does not support deleting this type of navigator item (%T) through its API.",
+                NavigatorItemTypeToString (navItem.itemType).ToPrintf ())));
+            continue;
+        }
+        if (err != NoError && IsProjectMapItem (guid) && !IsProjectMapWorksheetOrDetail (guid, navItem)) {
+            executionResults (CreateFailedExecutionResult (err, GS::UniString::Printf (
+                "Project Map items cannot be deleted (%T); only independent worksheets and details can.",
+                NavigatorItemTypeToString (navItem.itemType).ToPrintf ())));
             continue;
         }
         if (err != NoError) {
