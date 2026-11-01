@@ -5050,7 +5050,6 @@ GS::Optional<GS::UniString> CreateOpeningsCommand::GetRawResponseSchema () const
     })";
 }
 
-#ifndef ServerMainVers_2900
 // How far above the opening's bottom edge its anchor point sits. anchorAltitude is
 // measured to the anchor, so placing the bottom at a requested altitude means adding
 // this back - APIAnc_?T anchors sit a full height above the bottom, APIAnc_?M half of
@@ -5071,6 +5070,56 @@ static double GetAnchorHeightOffset (API_AnchorID anchor, double height)
             return 0.0;
     }
 }
+
+#ifdef ServerMainVers_2900
+// PlacePolygonal does not put the bottom edge on the given point on every Archicad 29 build: the
+// builds measured for #533 hung the polygon below it, with the bottom at z - height, while build
+// 3000 puts the bottom on z, as Archicad 30 does (#848). So the opening is placed at the requested
+// point, read back, and its anchor altitude is corrected when the bottom is not at the requested Z.
+// An opening whose constraint has no anchor altitude (ForcedVertical, Free) is left as placed.
+static GS::Optional<GS::UniString> PutOpeningBottomAt (const API_Guid& openingGuid, double bottomZ, double height, const Stories& stories, GSErrCode& error)
+{
+    using ACAPI::Element::Opening;
+
+    ACAPI::Result<Opening> opening = Opening::Get (ACAPI::UniqueID (APIGuid2GSGuid (openingGuid), ACAPI_GetToken ()));
+    if (opening.IsErr ()) {
+        error = opening.UnwrapErr ().kind;
+        return GS::UniString ("Failed to read back the created opening.");
+    }
+    const auto extrusionParameters = opening->GetExtrusionParameters ();
+    const std::optional<double> anchorAltitude = extrusionParameters.GetAnchorAltitude ();
+    if (!anchorAltitude.has_value ()) {
+        return {};
+    }
+
+    API_Elem_Head header = {};
+    header.guid = openingGuid;
+    error = ACAPI_Element_GetHeader (&header);
+    if (error != NoError) {
+        return GS::UniString ("Failed to read the story of the created opening.");
+    }
+    const double requestedAltitude = bottomZ - GetZPos (header.floorInd, 0.0, stories) + GetAnchorHeightOffset (extrusionParameters.GetAnchor (), height);
+    if (std::abs (*anchorAltitude - requestedAltitude) < EPS) {
+        return {};
+    }
+
+    GS::Optional<GS::UniString> failure;
+    ACAPI::Result<void> modifyResult = opening->Modify ([&] (Opening::Modifier& modifier) {
+        ACAPI::Result<void> setResult = modifier.GetExtrusionParameters ().SetAnchorAltitude (requestedAltitude);
+        if (setResult.IsErr ()) {
+            error = setResult.UnwrapErr ().kind;
+            failure = GS::UniString ("Failed to put the opening at the requested height: ") + GS::UniString (setResult.UnwrapErr ().text.c_str ());
+        }
+    }, "Create Openings");
+    if (failure.HasValue ()) {
+        return failure;
+    }
+    if (modifyResult.IsErr ()) {
+        error = modifyResult.UnwrapErr ().kind;
+        return GS::UniString ("Failed to put the opening at the requested height: ") + GS::UniString (modifyResult.UnwrapErr ().text.c_str ());
+    }
+    return {};
+}
 #endif
 
 GS::ObjectState CreateOpeningsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -5081,9 +5130,7 @@ GS::ObjectState CreateOpeningsCommand::Execute (const GS::ObjectState& parameter
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
-#ifndef ServerMainVers_2900
     const Stories stories = GetStories ();
-#endif
 
     return ExecuteCreateWithElements ("Create Openings", [&](GS::Array<GS::ObjectState>& elements) {
         for (const auto& data : openingsData) {
@@ -5157,34 +5204,25 @@ GS::ObjectState CreateOpeningsCommand::Execute (const GS::ObjectState& parameter
             GS::Array<Point2D> polygonCorners { {0, 0}, {width, 0}, {width, height}, {0, height} };
             Geometry::Polygon2D polygon = Geometry::Polygon2D::Create (polygonCorners, 0 /*Geometry::PolyCreateFlags*/).PopLargest ();
 
-            // On AC29 PlacePolygonal hangs the base polygon BELOW the point it is given, so the
-            // point ends up on the opening's top edge rather than its bottom one - measured on
-            // AC29, the created opening's sill came back at exactly basePoint.z - height for
-            // every height tried (0.5, 0.8, 1.0, 1.5, 2.0, 2.5). Raising the placement point by
-            // the height puts the bottom edge on the requested Z, which is what basePoint means
-            // in every other creation command and what the pre-AC29 branch now produces (#533).
-            //
-            // The correction is applied to the point rather than to the polygon because the
-            // polygon's own offset is ignored: building the corners over -height..0 instead of
-            // 0..height changed nothing at all, so PlacePolygonal evidently normalizes the
-            // polygon and keeps only its extents.
-            //
-            // AC30 no longer needs it: there PlacePolygonal already puts the sill on the given
-            // Z, so the raised point lifted every opening by its own height - measured on AC30
-            // with collision probes, basePoint.z 2.0 / height 1.0 came back at 3.0..4.0 and
-            // basePoint.z 1.0 / height 0.6 at 1.6..2.2 (#848). So the correction is AC29 only.
-            API_Coord3D placementPoint = basePoint;
-#ifndef ServerMainVers_3000
-            placementPoint.z += height;
-#endif
-
+            // basePoint is the bottom edge, as in every other creation command; PutOpeningBottomAt
+            // makes sure the placed opening has it there on every Archicad 29 and 30 build.
             ACAPI::UniqueID parentElemId (APIGuid2GSGuid (GetGuidFromObjectState (*data.Get ("ownerElementId"))), ACAPI_GetToken ());
-            ACAPI::Result<ACAPI::UniqueID> resultId = openingDefault->PlacePolygonal (parentElemId, placementPoint, polygon);
+            ACAPI::Result<ACAPI::UniqueID> resultId = openingDefault->PlacePolygonal (parentElemId, basePoint, polygon);
             if (resultId.IsErr ()) {
                 elements.Push (CreateErrorResponse (resultId.UnwrapErr ().kind, GS::UniString (resultId.UnwrapErr ().text.c_str())));
                 continue;
             }
-            elements.Push (CreateElementIdObjectState (GSGuid2APIGuid (resultId.Unwrap ().GetGuid ())));
+            const API_Guid openingGuid = GSGuid2APIGuid (resultId.Unwrap ().GetGuid ());
+            GSErrCode heightError = NoError;
+            const GS::Optional<GS::UniString> heightFailure = PutOpeningBottomAt (openingGuid, basePoint.z, height, stories, heightError);
+            if (heightFailure.HasValue ()) {
+                // An opening at the wrong height is not what was asked for, so it is removed again.
+                GS::Array<API_Guid> createdOpening = { openingGuid };
+                ACAPI_Element_Delete (createdOpening);
+                elements.Push (CreateErrorResponse (heightError != NoError ? heightError : APIERR_GENERAL, heightFailure.Get ()));
+                continue;
+            }
+            elements.Push (CreateElementIdObjectState (openingGuid));
 #endif
         }
     });
