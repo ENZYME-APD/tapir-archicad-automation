@@ -1318,6 +1318,12 @@
                 "items": {
                     "$ref": "#/Coordinate2D"
                 }
+            },
+            "symbolSolidFills": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/FillSymbolSolidFill"
+                }
             }
         },
         "additionalProperties": false,
@@ -1409,6 +1415,36 @@
             "begin",
             "origin",
             "angle"
+        ]
+    },
+    "FillSymbolSolidFill": {
+        "type": "object",
+        "description": "A filled polygon of a symbol fill's pattern (sfill_SolidFills with sfill_FillCoords, sfill_SubPolys and sfill_PolyArcs), in the same form as other polygons in Tapir: closed contours, the first point repeated at the end of each contour.",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "subPolygons": {
+                "type": "array",
+                "description": "1-based index of the last coordinate of each contour (the outline first, then the holes).",
+                "items": {
+                    "type": "integer"
+                }
+            },
+            "arcs": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinates",
+            "subPolygons"
         ]
     },
     "ZoneCategoryAttribute": {
@@ -3448,7 +3484,8 @@
             "lineItems",
             "symbolLines",
             "symbolArcs",
-            "symbolHotspots"
+            "symbolHotspots",
+            "symbolSolidFills"
         ]
     },
     "ZoneCategoryAttributeField": {
