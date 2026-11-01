@@ -35,6 +35,14 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             InGenerics(
                 "AttributeGuids",
                 "Identifiers of the attributes to query.");
+
+            InTexts(
+                "Fields",
+                "Names of the response fields to return for each attribute (see the fields " +
+                "parameter of the command in the Tapir documentation). Optional; every field " +
+                "is returned when empty. The outputs of the fields not requested stay null.");
+
+            SetOptionality(1);
         }
 
         protected override void Solve(
@@ -47,9 +55,20 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 return;
             }
 
+            var parameters = JObject.FromObject(input);
+
+            // Only sent when given: without it every field is returned.
+            da.TryGetList(
+                1,
+                out List<string> fields);
+            if (fields.Count > 0)
+            {
+                parameters["fields"] = new JArray(fields);
+            }
+
             if (!TryGetCadResponse(
                     CommandName,
-                    JObject.FromObject(input),
+                    parameters,
                     ToAddOn,
                     out JObject response))
             {
