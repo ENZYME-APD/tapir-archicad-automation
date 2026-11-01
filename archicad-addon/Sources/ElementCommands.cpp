@@ -2441,6 +2441,9 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 executionResults (CreateFailedExecutionResult (err, "Failed to find the element"));
                 continue;
             }
+            // The header before the details are applied: a refusal is explained from the layer the
+            // element is on, and from the requested layerIndex only as the target.
+            const API_Elem_Head currentHead = elem.header;
 
             const GS::ObjectState* details = elementWithDetails.Get ("details");
             if (details == nullptr) {
@@ -2954,7 +2957,8 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 err = ChangeElementId (elem.header.guid, id);
                 if (err != NoError) {
                     ACAPI_DisposeElemMemoHdls (&clipMemo);
-                    executionResults (CreateFailedExecutionResult (err, "Failed to set the id of the element, no other details were changed"));
+                    const GS::UniString refusal = DescribeElementEditRefusal (err, currentHead);
+                    executionResults (CreateFailedExecutionResult (err, refusal.IsEmpty () ? GS::UniString ("Failed to set the id of the element, no other details were changed") : "Failed to set the id of the element, because " + refusal + "; no other details were changed"));
                     continue;
                 }
             }
@@ -2966,7 +2970,15 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                                             memoMask, withDel);
                 ACAPI_DisposeElemMemoHdls (&clipMemo);
                 if (err != NoError) {
-                    executionResults (CreateFailedExecutionResult (err, hasId ? "Failed to change element, only its id was set" : "Failed to change element"));
+                    GS::UniString message = "Failed to change element";
+                    const GS::UniString refusal = DescribeElementEditRefusal (err, currentHead, elem.header.layer);
+                    if (!refusal.IsEmpty ()) {
+                        message += ", because " + refusal;
+                    }
+                    if (hasId) {
+                        message += refusal.IsEmpty () ? ", only its id was set" : "; only its id was set";
+                    }
+                    executionResults (CreateFailedExecutionResult (err, message));
                     continue;
                 }
             }

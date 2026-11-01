@@ -103,6 +103,57 @@ GS::UniString DescribeDefinitionChangeError (GSErrCode err)
     }
 }
 
+static GSFlags GetLayerFlags (const API_AttributeIndex& layer)
+{
+    API_Attribute layerAttr = {};
+    layerAttr.header.typeID = API_LayerID;
+    layerAttr.header.index = layer;
+    return ACAPI_Attribute_Get (&layerAttr) == NoError ? layerAttr.header.flags : 0;
+}
+
+// ACAPI_Element_Change refuses an element on a hidden or locked layer, locked with Edit > Locking,
+// or in Teamwork not reserved by the user with a bare error code. Only these codes are explained:
+// any other error (bad parameters, for example) keeps its plain message even when the element
+// happens to be on a hidden layer. The layer flags are read because the code does not always name
+// the layer (an element locked by Edit > Locking can come back as a general error).
+GS::UniString DescribeElementEditRefusal (GSErrCode err, const API_Elem_Head& elemHead, const GS::Optional<API_AttributeIndex>& targetLayer)
+{
+    if (err != APIERR_HIDDENLAY && err != APIERR_LOCKEDLAY && err != APIERR_NOTMINE &&
+        err != APIERR_NOACCESSRIGHT && err != APIERR_GENERAL) {
+        return {};
+    }
+
+    const GSFlags layerFlags = GetLayerFlags (elemHead.layer);
+    if ((layerFlags & APILay_Hidden) != 0) {
+        return "its layer is hidden";
+    }
+    if ((layerFlags & APILay_Locked) != 0) {
+        return "its layer is locked";
+    }
+    if (targetLayer.HasValue () && targetLayer.Get () != elemHead.layer) {
+        const GSFlags targetFlags = GetLayerFlags (targetLayer.Get ());
+        if ((targetFlags & APILay_Hidden) != 0) {
+            return "the layer given by layerIndex is hidden";
+        }
+        if ((targetFlags & APILay_Locked) != 0) {
+            return "the layer given by layerIndex is locked";
+        }
+    }
+    if (err == APIERR_HIDDENLAY) {
+        return "its layer is hidden";
+    }
+    if (err == APIERR_LOCKEDLAY) {
+        return "its layer is locked";
+    }
+    if (err == APIERR_NOTMINE || err == APIERR_NOACCESSRIGHT) {
+        return "it is not reserved by you in the Teamwork project";
+    }
+    if (!ACAPI_Element_Filter (elemHead.guid, APIFilt_IsEditable)) {
+        return "it is not editable (locked with Edit > Locking, or not reserved by you in a Teamwork project)";
+    }
+    return {};
+}
+
 API_Guid GetGuidFromObjectState (const GS::ObjectState& os)
 {
     GS::String guid;
