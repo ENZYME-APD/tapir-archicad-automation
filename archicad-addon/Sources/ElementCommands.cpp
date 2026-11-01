@@ -7646,6 +7646,89 @@ static bool HasTriangulablePolygon (API_ElemTypeID typeId)
     }
 }
 
+// The convex polygons of the faces of the element's own 3D model. The bodies are walked like
+// CollectSolidBodies does; fetching a body makes it the active body, whose polygons
+// ACAPI_ModelAccess_DecomposePgon decomposes. The handle it returns holds
+//   -n, -m1, i1 .. i(m1), -m2, j1 .. j(m2), ...
+// n being the number of convex polygons (0 for a degenerate face), mi the number of vertices of
+// the next one and i1.. its 1-based vertex indices within the body; the caller disposes it.
+static GSErrCode CollectConvexPolygons (const API_Elem_Head& elemHead, GS::Array<GS::ObjectState>& convexPolygons)
+{
+    API_ElemInfo3D info3D = {};
+    GSErrCode err = ACAPI_ModelAccess_Get3DInfo (elemHead, &info3D);
+    if (err != NoError) {
+        return err;
+    }
+
+    for (Int32 iBody = info3D.fbody; iBody <= info3D.lbody; ++iBody) {
+        API_Component3D component = {};
+        component.header.typeID = API_BodyID;
+        component.header.index = iBody;
+        if (ACAPI_ModelAccess_GetComponent (&component) != NoError) {
+            continue;
+        }
+        if (component.body.nPgon == 0) { // Skip non-solid bodies
+            continue;
+        }
+
+        const API_BodyType body = component.body;
+
+        GS::Array<API_Coord3D> vertices;
+        for (Int32 iVert = 1; iVert <= body.nVert; ++iVert) {
+            component.header.typeID = API_VertID;
+            component.header.index = iVert;
+            API_Coord3D vertex = { 0.0, 0.0, 0.0 };
+            if (ACAPI_ModelAccess_GetComponent (&component) == NoError) {
+                vertex = TransformBodyVertex (body.tranmat, component.vert.x, component.vert.y, component.vert.z);
+            }
+            vertices.Push (vertex);
+        }
+
+        for (Int32 iPgon = 1; iPgon <= body.nPgon; ++iPgon) {
+            Int32** cpoly = nullptr;
+            err = ACAPI_ModelAccess_DecomposePgon (iPgon, &cpoly);
+            const GS::OnExit cpolyGuard ([&cpoly] () {
+                if (cpoly != nullptr) {
+                    BMKillHandle (reinterpret_cast<GSHandle*> (&cpoly));
+                }
+            });
+            if (err != NoError || cpoly == nullptr) {
+                continue;
+            }
+
+            const GSSize nItems = BMhGetSize (reinterpret_cast<GSHandle> (cpoly)) / sizeof (Int32);
+            if (nItems < 1) {
+                continue;
+            }
+            const Int32 nSubpolygons = -(*cpoly)[0];
+            GSSize i = 1;
+            for (Int32 iSub = 0; iSub < nSubpolygons && i < nItems; ++iSub) {
+                const Int32 nSubVertices = -(*cpoly)[i++];
+                if (nSubVertices <= 0 || i + nSubVertices > nItems) {
+                    break;
+                }
+                GS::ObjectState polygonOS;
+                const auto& polygonVertices = polygonOS.AddList<GS::ObjectState> ("vertices");
+                bool valid = true;
+                for (Int32 j = 0; j < nSubVertices; ++j) {
+                    const Int32 vertexIndex = (*cpoly)[i + j];
+                    if (vertexIndex < 1 || vertexIndex > static_cast<Int32> (vertices.GetSize ())) {
+                        valid = false;
+                        break;
+                    }
+                    polygonVertices (Create3DCoordinateObjectState (vertices[vertexIndex - 1]));
+                }
+                i += nSubVertices;
+                if (valid && nSubVertices >= 3) {
+                    convexPolygons.Push (polygonOS);
+                }
+            }
+        }
+    }
+
+    return NoError;
+}
+
 TriangulatePolygonsOfElementsCommand::TriangulatePolygonsOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -7663,6 +7746,10 @@ GS::Optional<GS::UniString> TriangulatePolygonsOfElementsCommand::GetInputParame
         "properties": {
             "elements": {
                 "$ref": "#/Elements"
+            },
+            "convex": {
+                "type": "boolean",
+                "description": "Optional. When true, the faces of the 3D model of each element (its own bodies, any element type) are decomposed into convex polygons instead, as Archicad does it, and returned as convexPolygons. Default value is false."
             }
         },
         "additionalProperties": false,
@@ -7679,7 +7766,7 @@ GS::Optional<GS::UniString> TriangulatePolygonsOfElementsCommand::GetRawResponse
         "properties": {
             "triangulations": {
                 "type": "array",
-                "description": "The triangulation of the polygon of each element, aligned with the input: its triangles, or an error (for example for an element type that has no polygon).",
+                "description": "The triangulation of the polygon of each element, aligned with the input: its triangles (or with convex: true its convex polygons), or an error (for example for an element type that has no polygon).",
                 "items": {
                     "oneOf": [
                         {
@@ -7714,6 +7801,36 @@ GS::Optional<GS::UniString> TriangulatePolygonsOfElementsCommand::GetRawResponse
                             ]
                         },
                         {
+                            "type": "object",
+                            "properties": {
+                                "convexPolygons": {
+                                    "type": "array",
+                                    "description": "With convex: true, the convex polygons the faces of the element's 3D model are decomposed into, body by body and face by face. Empty (or an error item instead) when the element has no solid 3D model of its own (the bodies of a Stair, Railing or Curtain Wall, and of the segments of a Column or Beam, belong to their subelements, which can be given instead).",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "vertices": {
+                                                "type": "array",
+                                                "description": "The 3D world coordinates of the vertices of the convex polygon, in order.",
+                                                "items": {
+                                                    "$ref": "#/Coordinate3D"
+                                                },
+                                                "minItems": 3
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "vertices"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "convexPolygons"
+                            ]
+                        },
+                        {
                             "$ref": "#/ErrorItem"
                         }
                     ]
@@ -7731,6 +7848,8 @@ GS::ObjectState TriangulatePolygonsOfElementsCommand::Execute (const GS::ObjectS
 {
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
+    bool convex = false;
+    parameters.Get ("convex", convex);
 
     GS::ObjectState response;
     const auto& triangulations = response.AddList<GS::ObjectState> ("triangulations");
@@ -7749,6 +7868,23 @@ GS::ObjectState TriangulatePolygonsOfElementsCommand::Execute (const GS::ObjectS
             triangulations (CreateErrorResponse (err, "Failed to find element in Archicad"));
             continue;
         }
+
+        if (convex) {
+            GS::Array<GS::ObjectState> convexPolygons;
+            err = CollectConvexPolygons (elemHead, convexPolygons);
+            if (err != NoError) {
+                triangulations (CreateErrorResponse (err, "Failed to get the 3D model of the element"));
+                continue;
+            }
+            GS::ObjectState decomposition;
+            const auto& convexPolygonsList = decomposition.AddList<GS::ObjectState> ("convexPolygons");
+            for (const GS::ObjectState& convexPolygon : convexPolygons) {
+                convexPolygonsList (convexPolygon);
+            }
+            triangulations (decomposition);
+            continue;
+        }
+
         if (!HasTriangulablePolygon (GetElemTypeId (elemHead))) {
             triangulations (CreateErrorResponse (APIERR_BADPARS, "The element has no polygon to triangulate. Supported types: Slab, Zone, Hatch, Mesh, Roof."));
             continue;
@@ -7889,6 +8025,259 @@ GS::ObjectState Get3DModelCountsCommand::Execute (const GS::ObjectState& /*param
 #else
     return CreateErrorResponse (APIERR_GENERAL, "Get3DModelCounts is available from Archicad 27.");
 #endif
+}
+
+// GetTextureCoordinates
+
+// The texture coordinates of the faces of the element's own 3D model, one body after the other
+// like CollectSolidBodies walks them. ACAPI_ModelAccess_GetTextureCoord identifies a body by the
+// 0-based element and body indices of its header, so a body whose header has none has no texture
+// information. The coordinates are taken at the first vertex of each face, the start of the
+// first edge of its outer contour.
+static GSErrCode CollectTextureCoordinates (const API_Elem_Head& elemHead, GS::Array<GS::ObjectState>& bodies)
+{
+    API_ElemInfo3D info3D = {};
+    GSErrCode err = ACAPI_ModelAccess_Get3DInfo (elemHead, &info3D);
+    if (err != NoError) {
+        return err;
+    }
+
+    for (Int32 iBody = info3D.fbody; iBody <= info3D.lbody; ++iBody) {
+        API_Component3D component = {};
+        component.header.typeID = API_BodyID;
+        component.header.index = iBody;
+        if (ACAPI_ModelAccess_GetComponent (&component) != NoError) {
+            continue;
+        }
+        if (component.body.nPgon == 0) { // Skip non-solid bodies
+            continue;
+        }
+
+        const API_BodyType body = component.body;
+        const Int32 elemIdx = static_cast<Int32> (body.head.elemIndex) - 1;
+        const Int32 bodyIdx = static_cast<Int32> (body.head.bodyIndex) - 1;
+        if (elemIdx < 0 || bodyIdx < 0) {
+            bodies.Push (CreateErrorResponse (APIERR_GENERAL, "The body has no texture information."));
+            continue;
+        }
+
+        GS::ObjectState bodyOS;
+        const auto& polygons = bodyOS.AddList<GS::ObjectState> ("polygons");
+        for (Int32 iPgon = 1; iPgon <= body.nPgon; ++iPgon) {
+            component.header.typeID = API_PgonID;
+            component.header.index = iPgon;
+            err = ACAPI_ModelAccess_GetComponent (&component);
+            if (err != NoError) {
+                polygons (CreateErrorResponse (err, "Failed to get the face."));
+                continue;
+            }
+            const API_PgonType pgon = component.pgon;
+
+            component.header.typeID = API_PedgID;
+            component.header.index = pgon.fpedg;
+            err = ACAPI_ModelAccess_GetComponent (&component);
+            const Int32 pedg = component.pedg.pedg;
+            if (err != NoError || pedg == 0) {
+                polygons (CreateErrorResponse (err != NoError ? err : APIERR_GENERAL, "Failed to get the first edge of the face."));
+                continue;
+            }
+            component.header.typeID = API_EdgeID;
+            component.header.index = pedg > 0 ? pedg : -pedg;
+            err = ACAPI_ModelAccess_GetComponent (&component);
+            if (err != NoError) {
+                polygons (CreateErrorResponse (err, "Failed to get the first edge of the face."));
+                continue;
+            }
+            const Int32 vertexIndex = pedg > 0 ? component.edge.vert1 : component.edge.vert2;
+            component.header.typeID = API_VertID;
+            component.header.index = vertexIndex > 0 ? vertexIndex : -vertexIndex;
+            err = ACAPI_ModelAccess_GetComponent (&component);
+            if (err != NoError) {
+                polygons (CreateErrorResponse (err, "Failed to get the first vertex of the face."));
+                continue;
+            }
+            // The body's own coordinates, as the DevKit's 3D_Test example passes them.
+            const API_Coord3D vert = { component.vert.x, component.vert.y, component.vert.z };
+
+            API_TexCoordPars texCoordPars = {};
+            texCoordPars.elemIdx = static_cast<UInt32> (elemIdx);
+            texCoordPars.bodyIdx = static_cast<UInt32> (bodyIdx);
+            texCoordPars.pgonIndex = static_cast<UInt32> (iPgon);
+            texCoordPars.surfacePoint.x = vert.x;
+            texCoordPars.surfacePoint.y = vert.y;
+            texCoordPars.surfacePoint.z = vert.z;
+            API_UVCoord uvCoord = {};
+            err = ACAPI_ModelAccess_GetTextureCoord (&texCoordPars, &uvCoord);
+            if (err != NoError) {
+                polygons (CreateErrorResponse (err, "Failed to get the texture coordinates of the face."));
+                continue;
+            }
+
+            GS::ObjectState polygonOS;
+            polygonOS.Add ("point", Create3DCoordinateObjectState (TransformBodyVertex (body.tranmat, vert.x, vert.y, vert.z)));
+            polygonOS.Add ("u", uvCoord.u);
+            polygonOS.Add ("v", uvCoord.v);
+            polygons (polygonOS);
+        }
+
+        bodies.Push (bodyOS);
+    }
+
+    return NoError;
+}
+
+GetTextureCoordinatesCommand::GetTextureCoordinatesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetTextureCoordinatesCommand::GetName () const
+{
+    return "GetTextureCoordinates";
+}
+
+GS::Optional<GS::UniString> GetTextureCoordinatesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetTextureCoordinatesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "textureCoordinates": {
+                "type": "array",
+                "description": "The texture coordinates of each element, aligned with the input: per solid body of its 3D model, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "bodies": {
+                                    "type": "array",
+                                    "description": "The solid bodies of the element's own 3D model, in Archicad's order, or an error for a body without texture information. Empty (or an error item instead) when the element has no solid 3D model of its own (the bodies of a Stair, Railing or Curtain Wall, and of the segments of a Column or Beam, belong to their subelements, which can be given instead).",
+                                    "items": {
+                                        "oneOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "polygons": {
+                                                        "type": "array",
+                                                        "description": "One item per face of the body, in Archicad's order: the texture coordinates at the first vertex of the face, or an error.",
+                                                        "items": {
+                                                            "oneOf": [
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "point": {
+                                                                            "$ref": "#/Coordinate3D",
+                                                                            "description": "The first vertex of the face, in world coordinates."
+                                                                        },
+                                                                        "u": {
+                                                                            "type": "number",
+                                                                            "description": "The u texture coordinate at the point."
+                                                                        },
+                                                                        "v": {
+                                                                            "type": "number",
+                                                                            "description": "The v texture coordinate at the point."
+                                                                        }
+                                                                    },
+                                                                    "additionalProperties": false,
+                                                                    "required": [
+                                                                        "point",
+                                                                        "u",
+                                                                        "v"
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "$ref": "#/ErrorItem"
+                                                                }
+                                                            ]
+                                                        }
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "polygons"
+                                                ]
+                                            },
+                                            {
+                                                "$ref": "#/ErrorItem"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "bodies"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "textureCoordinates"
+        ]
+    })";
+}
+
+GS::ObjectState GetTextureCoordinatesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& textureCoordinates = response.AddList<GS::ObjectState> ("textureCoordinates");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            textureCoordinates (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            textureCoordinates (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+
+        GS::Array<GS::ObjectState> bodies;
+        err = CollectTextureCoordinates (elemHead, bodies);
+        if (err != NoError) {
+            textureCoordinates (CreateErrorResponse (err, "Failed to get the 3D model of the element"));
+            continue;
+        }
+
+        GS::ObjectState textureCoordinatesOfElement;
+        const auto& bodiesList = textureCoordinatesOfElement.AddList<GS::ObjectState> ("bodies");
+        for (const GS::ObjectState& body : bodies) {
+            bodiesList (body);
+        }
+        textureCoordinates (textureCoordinatesOfElement);
+    }
+
+    return response;
 }
 
 
