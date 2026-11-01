@@ -490,6 +490,10 @@ GSErrCode Initialize (void)
             projectCommands, "1.7.3",
             "Calculates the sun position (azimuth and altitude in degrees) for a date and time, at the project location unless another one is given, without changing the project."
         );
+        err |= RegisterCommand<GetCoordinateOriginsCommand> (
+            projectCommands, "1.7.4",
+            "Gets the offset of the virtual coordinate system origin from the world origin, and the user origin of the current database. Use it to tell which origin the coordinates of different sources (elements, views, survey point) are relative to."
+        );
         err |= RegisterCommand<PrintViewCommand> (
             projectCommands, "1.3.1",
             "Prints from the current view."
