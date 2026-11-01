@@ -11865,6 +11865,25 @@
             "projectInfoValue"
         ]
     },
+    "ProjectInfoFieldOrError": {
+        "type": "object",
+        "description": "A project info field or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ProjectInfoField"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ProjectInfoFieldsOrErrors": {
+        "type": "array",
+        "description": "A list of project info fields or errors.",
+        "items": {
+            "$ref": "#/ProjectInfoFieldOrError"
+        }
+    },
     "ProjectInfoGroups": {
         "type": "array",
         "description": "The Project Info groups in their order in the Project Info dialog. Available from Archicad 30.",
