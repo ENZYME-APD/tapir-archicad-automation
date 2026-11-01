@@ -130,6 +130,13 @@ namespace TapirGrasshopperPlugin.Types.Project
 
         [JsonProperty("geoReferencingParameters")]
         public GeoReferencingParameters GeoReferencingParams;
+
+        [JsonProperty("isVisible", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? IsVisible;
+
+        // Available from Archicad 26; older versions leave it out of GetGeoLocation.
+        [JsonProperty("isLocked", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? IsLocked;
     }
 
     public class ProjectLocation

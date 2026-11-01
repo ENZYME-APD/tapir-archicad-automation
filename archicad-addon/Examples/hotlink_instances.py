@@ -7,8 +7,9 @@ import aclib
 #
 # A hotlink module is a NODE (the reference to the source file) plus any
 # number of placed INSTANCES. This example lists the nodes, places an instance
-# of the first one, reads its placement back, moves and mirrors it with
-# ChangeHotlinkInstances, then deletes the instance again.
+# of the first one, finds it again in the node's instances in GetHotlinks,
+# reads its placement back, moves and mirrors it with ChangeHotlinkInstances,
+# then deletes the instance again.
 #
 # Set TAPIR_HOTLINK_SOURCE to the absolute path of a .mod or .pln to have the
 # example create a node first; without it the example works with whatever
@@ -45,6 +46,20 @@ else:
     instances = [e for e in created if 'elementId' in e]
     if not instances:
         print ('Placement failed: {}'.format (created))
+        sys.exit (1)
+
+    # Each node in GetHotlinks lists the instances placed from it, so a script
+    # can find the elements to move or delete without having placed them itself.
+    def CollectNodes (hotlinks):
+        for hotlink in hotlinks:
+            yield hotlink
+            yield from CollectNodes (hotlink.get ('children', []))
+
+    hotlinks = aclib.RunTapirCommand ('GetHotlinks')['hotlinks']
+    node = next ((n for n in CollectNodes (hotlinks) if n['hotlinkNodeId']['guid'].lower () == nodeId['guid'].lower ()), None)
+    placedGuids = [i['elementId']['guid'].lower () for i in node.get ('instances', [])] if node else []
+    if instances[0]['elementId']['guid'].lower () not in placedGuids:
+        print ('The new instance is not listed under its node: {}'.format (placedGuids))
         sys.exit (1)
 
     aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': instances})
