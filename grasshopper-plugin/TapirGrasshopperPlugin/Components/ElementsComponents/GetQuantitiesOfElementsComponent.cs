@@ -21,7 +21,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "etc.), together with the volume and projected area per building material (one item per skin " +
                 "of composite and complex profile elements, one item for basic elements). Supported types: " +
                 "Wall, Column, Beam, Slab, Roof, Shell, Morph, Zone, ColumnSegment, BeamSegment. Lengths are " +
-                "in meters, areas in square meters and volumes in cubic meters.",
+                "in meters, areas in square meters and volumes in cubic meters. Use CalculateInOneCall to calculate all the " +
+                "elements in one Archicad call.",
                 GroupNames.ElementDetails)
         {
         }
@@ -42,6 +43,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "it for walls. Optional, every opening is subtracted by default.",
                 GH_ParamAccess.item);
             SetOptionality(1);
+
+            InBoolean(
+                "CalculateInOneCall",
+                "Optional. When true, Archicad calculates the quantities of all the supported elements in " +
+                "one call instead of one call per element, which can be faster for many elements. If that " +
+                "one call fails, every supported element gets the same error. Default is false.");
+            SetOptionality(2);
         }
 
         protected override void AddOutputs()
@@ -112,6 +120,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     return;
                 }
                 parameters["minOpeningSize"] = minOpeningSize;
+            }
+
+            var calculateInOneCall = false;
+            if (da.GetData(
+                    2,
+                    ref calculateInOneCall) &&
+                calculateInOneCall)
+            {
+                parameters["calculateInOneCall"] = true;
             }
 
             if (!TryGetCadResponse(

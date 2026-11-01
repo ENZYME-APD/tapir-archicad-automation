@@ -1,0 +1,86 @@
+{
+  "tool": "Railing",
+  "elementType": "Railing",
+  "archicadVersion": 29,
+  "commands": {
+    "get": "GetDetailsOfElements",
+    "getSchema": "RailingDetails",
+    "create": "CreateRailingsCommand"
+  },
+  "plainKeys": [
+    "favoriteName",
+    "id"
+  ],
+  "sources": {
+    "help": [
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-204.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-211.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-212.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-213.htm"
+    ],
+    "devkit": "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/tag/29.3000"
+  },
+  "fields": [
+    {
+      "get": "referenceLine",
+      "set": "coordinates",
+      "apiMember": "API_ElementMemo::coords",
+      "apiDescription": "The 2D coordinates of the reference line of the railing, one per vertex (drawn in Archicad).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "floorIndex",
+      "set": "floorIndex",
+      "getFrom": "element",
+      "apiMember": "API_Elem_Head::floorInd",
+      "apiDescription": "The story the element is placed on (home story).",
+      "label": "Home Story",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-212.htm (heading \"Railing Geometry and Positioning\": \"Home Story\")",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "bottomOffset",
+      "set": "bottomOffset",
+      "apiMember": "API_RailingType::bottomOffset",
+      "apiDescription": "TBase height of the Railing relative to the floor level.",
+      "label": "Offset Railing from Home Story",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-212.htm (heading \"Railing Geometry and Positioning\": \"Offset Railing from Home Story\")",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "zCoordinate",
+      "set": null,
+      "apiMember": null,
+      "apiDescription": "Absolute elevation of the base of the railing (derived from the home story and bottomOffset).",
+      "label": "Bottom Elevation",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-212.htm (heading \"Railing Geometry and Positioning\": \"Bottom Elevation [to Reference level]\")",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "height",
+      "set": "height",
+      "apiMember": "API_RailingType::defSegment (API_RailingSegmentType::height)",
+      "apiDescription": "The height of the Railing Segment.",
+      "label": "Segment Height",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-211.htm (text \"A Segment has its own settings, which include the Railing Pattern and Segment Height\")",
+      "group": "Segment Settings",
+      "subgroup": null
+    },
+    {
+      "get": "segmentHeights",
+      "set": null,
+      "apiMember": "API_RailingSegmentType::height",
+      "apiDescription": "The height of the Railing Segment (one per segment of the railing).",
+      "label": null,
+      "labelSource": null,
+      "group": "Segment Settings",
+      "subgroup": null
+    }
+  ]
+}

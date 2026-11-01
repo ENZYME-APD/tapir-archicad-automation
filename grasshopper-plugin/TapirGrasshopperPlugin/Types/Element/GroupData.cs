@@ -20,4 +20,24 @@ namespace TapirGrasshopperPlugin.Types.Element
             set => GroupId = value;
         }
     }
+
+    // An element set: a hidden, persistent collection of elements that
+    // add-ons create to link elements together.
+    public class ElementSetGuid : GuidObject<ElementSetGuid>
+    {
+    }
+
+    public class ElementSetGuidWrapper
+        : GuidWrapper<ElementSetGuid, ElementSetGuidWrapper>
+    {
+        [JsonProperty("elementSetId")]
+        public ElementSetGuid ElementSetId;
+
+        [JsonIgnore]
+        public override ElementSetGuid Id
+        {
+            get => ElementSetId;
+            set => ElementSetId = value;
+        }
+    }
 }
