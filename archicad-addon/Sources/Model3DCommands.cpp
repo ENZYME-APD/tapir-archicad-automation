@@ -82,7 +82,7 @@ static GSErrCode CreateBodyMaterialObjectState (Int32 elemIdx, UInt32 bodyIdx, G
     attr.header.index = materialIdx;
     attr.header.uniStringNamePtr = &name;
     if (ACAPI_Attribute_Get (&attr) == NoError) {
-        bodyOS.Add ("buildingMaterialId", CreateAttributeIdObjectState (attr.header.guid));
+        bodyOS.Add ("buildingMaterialId", CreateGuidObjectState (attr.header.guid));
         bodyOS.Add ("buildingMaterialName", name);
     }
     DisposeAttribute (attr);
