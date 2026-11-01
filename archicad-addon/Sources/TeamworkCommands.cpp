@@ -1081,3 +1081,97 @@ GS::ObjectState RemoveLibrariesFromBIMcloudCommand::Execute (const GS::ObjectSta
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "RemoveLibrariesFromBIMcloud requires Archicad 29 or newer.");
 #endif
 }
+
+GetTeamworkRightsOfObjectsCommand::GetTeamworkRightsOfObjectsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetTeamworkRightsOfObjectsCommand::GetName () const
+{
+    return "GetTeamworkRightsOfObjects";
+}
+
+GS::Optional<GS::UniString> GetTeamworkRightsOfObjectsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "objectIds": {
+                "type": "array",
+                "description": "The objects to check, by guid, for example element guids.",
+                "items": {
+                    "$ref": "#/GuidId"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "objectIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetTeamworkRightsOfObjectsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "rights": {
+                "type": "array",
+                "description": "One item per input object, in the same order.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "canCreate": {
+                                    "type": "boolean",
+                                    "description": "Whether the current user has the right to create objects of this kind."
+                                },
+                                "canDeleteModify": {
+                                    "type": "boolean",
+                                    "description": "Whether the current user has the right to delete or modify the object."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "canCreate",
+                                "canDeleteModify"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "rights"
+        ]
+    })";
+}
+
+GS::ObjectState GetTeamworkRightsOfObjectsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> objectIds;
+    parameters.Get ("objectIds", objectIds);
+
+    GS::ObjectState response;
+    const auto& rights = response.AddList<GS::ObjectState> ("rights");
+
+    for (const GS::ObjectState& objectId : objectIds) {
+        const API_Guid guid = GetGuidFromObjectState (objectId);
+        if (guid == APINULLGuid) {
+            rights (CreateErrorResponse (APIERR_BADPARS, "The guid is missing or not valid."));
+            continue;
+        }
+
+        rights (GS::ObjectState ("canCreate", ACAPI_Teamwork_HasCreateRight (guid),
+                                 "canDeleteModify", ACAPI_Teamwork_HasDeleteModifyRight (guid)));
+    }
+
+    return response;
+}
