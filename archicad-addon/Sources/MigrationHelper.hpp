@@ -734,6 +734,29 @@ inline GSErrCode ACAPI_Navigator_GetLayoutBook (API_LayoutBook* book)
     return ACAPI_Database (APIDb_GetLayoutBookID, book);
 }
 
+// The renovation filter functions of ACAPI_Renovation.h (AC27+) are the
+// APIDb_*RenovationFilter* database functions (APIdefs_Database.h) and the
+// APIAny_GetRenovationFilterNameID goodie before that; the parameters are the same.
+inline GSErrCode ACAPI_Renovation_GetRenovationFilters (GS::Array<API_Guid>* renovationFilters)
+{
+    return ACAPI_Database (APIDb_GetRenovationFiltersID, (void*) renovationFilters);
+}
+
+inline GSErrCode ACAPI_Renovation_GetRenovationFilterName (const API_Guid* renovationFilterGuid, GS::UniString* name)
+{
+    return ACAPI_Goodies (APIAny_GetRenovationFilterNameID, (void*) renovationFilterGuid, (void*) name);
+}
+
+inline GSErrCode ACAPI_Renovation_GetActualRenovationFilter (API_Guid* renovationFilterGuid)
+{
+    return ACAPI_Database (APIDb_GetActualRenovationFilterID, (void*) renovationFilterGuid);
+}
+
+inline GSErrCode ACAPI_Renovation_SetActualRenovationFilter (const API_Guid* renovationFilterGuid)
+{
+    return ACAPI_Database (APIDb_SetActualRenovationFilterID, (void*) renovationFilterGuid);
+}
+
 // The ghost story settings of the floor plan (APIEnv_GetGhostStorySettingsID) and the
 // ghost record of a database: before AC27 all four are ACAPI_Environment functions
 // (APIEnv_GetGhostRecordID and its change/create pair).
