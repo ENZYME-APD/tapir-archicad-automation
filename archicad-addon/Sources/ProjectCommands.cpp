@@ -423,6 +423,192 @@ GS::ObjectState GetAutoTextNameCommand::Execute (const GS::ObjectState& paramete
     return response;
 }
 
+GetAllAutoTextKeysCommand::GetAllAutoTextKeysCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetAllAutoTextKeysCommand::GetName () const
+{
+    return "GetAllAutoTextKeys";
+}
+
+GS::Optional<GS::UniString> GetAllAutoTextKeysCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "autoTexts": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "key": {
+                            "type": "string",
+                            "description": "The autotext's key. To embed it in the content of a Text or Label element, surround it with '<' and '>'."
+                        },
+                        "value": {
+                            "type": "string",
+                            "description": "The autotext's current value, as Archicad resolves it without an element context."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "key",
+                        "value"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "autoTexts"
+        ]
+    })";
+}
+
+GS::ObjectState GetAllAutoTextKeysCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    // Per the DevKit documentation both arrays are allocated by Archicad as BM pointers, one
+    // char* per autotext, and the caller disposes every string and then the arrays themselves.
+    char** keys = nullptr;
+    char** values = nullptr;
+    GSErrCode err = ACAPI_AutoText_GetAutoTextKeys (&keys, &values);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve the autotext keys.");
+    }
+
+    GS::ObjectState response;
+    const auto& listAdder = response.AddList<GS::ObjectState> ("autoTexts");
+
+    const GSSize nKeys = (keys != nullptr) ? BMGetPtrSize (reinterpret_cast<GSPtr> (keys)) / sizeof (char*) : 0;
+    const GSSize nValues = (values != nullptr) ? BMGetPtrSize (reinterpret_cast<GSPtr> (values)) / sizeof (char*) : 0;
+    for (GSSize i = 0; i < nKeys; ++i) {
+        if (keys[i] != nullptr) {
+            GS::ObjectState autoTextData;
+            autoTextData.Add ("key", GS::UniString (keys[i], CC_UTF8));
+            autoTextData.Add ("value", (i < nValues && values[i] != nullptr) ? GS::UniString (values[i], CC_UTF8) : GS::UniString ());
+            listAdder (autoTextData);
+        }
+        BMKillPtr (&keys[i]);
+    }
+    for (GSSize i = 0; i < nValues; ++i) {
+        BMKillPtr (&values[i]);
+    }
+    BMKillPtr (reinterpret_cast<GSPtr*> (&keys));
+    BMKillPtr (reinterpret_cast<GSPtr*> (&values));
+
+    return response;
+}
+
+InterpretAutoTextsCommand::InterpretAutoTextsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String InterpretAutoTextsCommand::GetName () const
+{
+    return "InterpretAutoTexts";
+}
+
+GS::Optional<GS::UniString> InterpretAutoTextsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "autoTexts": {
+                "type": "array",
+                "description": "The autotexts to resolve, either as they are written in the content of a Text or Label element, e.g. '<LAYOUTID>' or '<PROPERTY-69A58F6F-DD3B-478D-B5EF-09A16BD0C548>', or as bare keys without the surrounding '<' and '>', e.g. 'LAYOUTID'.",
+                "items": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "minItems": 1
+            },
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "Optional. The element in whose context the autotexts are resolved, e.g. a Text on a layout for layout autotexts. When omitted, they are resolved without an element context."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "autoTexts"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> InterpretAutoTextsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "values": {
+                "type": "array",
+                "description": "One result per input autotext, in the same order.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "value": {
+                                    "type": "string",
+                                    "description": "The resolved value of the autotext."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "value"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "values"
+        ]
+    })";
+}
+
+GS::ObjectState InterpretAutoTextsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> autoTexts;
+    if (!parameters.Get ("autoTexts", autoTexts) || autoTexts.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing 'autoTexts' parameter.");
+    }
+
+    const GS::ObjectState* elementIdOS = parameters.Get ("elementId");
+    const API_Guid guid = (elementIdOS != nullptr) ? GetGuidFromObjectState (*elementIdOS) : APINULLGuid;
+    if (elementIdOS != nullptr && guid == APINULLGuid) {
+        // A given but unparseable guid must not fall back to the context free resolution.
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid elementId.");
+    }
+
+    GS::ObjectState response;
+    const auto& listAdder = response.AddList<GS::ObjectState> ("values");
+    for (const GS::UniString& autoText : autoTexts) {
+        // Archicad takes the key without the surrounding '<' and '>' (ACAPI_AutoText_InterpretAutoText),
+        // so the form written in a Text is unwrapped; a bare key is passed on as it is.
+        GS::UniString key = autoText;
+        if (key.GetLength () >= 2 && key.BeginsWith (GS::UniChar ('<')) && key.EndsWith (GS::UniChar ('>'))) {
+            key = GS::UniString (key.GetSubstring (1, key.GetLength () - 2));
+        }
+        GS::UniString value;
+        const GSErrCode err = ACAPI_AutoText_InterpretAutoText (&key, &guid, &value);
+        if (err != NoError) {
+            listAdder (CreateErrorResponse (err, "Failed to interpret the autotext."));
+        } else {
+            listAdder (GS::ObjectState ("value", value));
+        }
+    }
+
+    return response;
+}
+
 GetNoteAutoTextKeywordsCommand::GetNoteAutoTextKeywordsCommand () :
     CommandBase (CommonSchema::Used)
 {
