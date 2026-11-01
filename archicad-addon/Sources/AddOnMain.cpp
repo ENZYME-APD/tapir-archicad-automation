@@ -31,6 +31,7 @@
 #include "ExtendedElementCommands.hpp"
 #include "Model3DCommands.hpp"
 #include "ElementGroupingCommands.hpp"
+#include "RenderingCommands.hpp"
 #include "AttributeCommands.hpp"
 #include "TeamworkCommands.hpp"
 #include "IssueCommands.hpp"
@@ -429,6 +430,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SaveProjectAsArchiveCommand> (
             projectCommands, "1.6.0",
             "Saves the open project as an archive (.pla) file, with the library parts it uses inside."
+        );
+        err |= RegisterCommand<GetRenderingScenesCommand> (
+            projectCommands, "1.7.4",
+            "Gets the names of the rendering scenes of the project (the Scene list of the PhotoRendering Settings palette), the most recently used first, and the name of the current scene."
+        );
+        err |= RegisterCommand<SetCurrentRenderingSceneCommand> (
+            projectCommands, "1.7.4",
+            "Makes the given rendering scene the current one, as selecting it in the PhotoRendering Settings palette does."
+        );
+        err |= RegisterCommand<PhotoRenderCommand> (
+            projectCommands, "1.7.4",
+            "Renders the 3D model with the current rendering scene, or with the given one, as Document > Creative Imaging > PhotoRender Projection does, and saves the image to a file (png, jpg, bmp, tiff or gif). The image size, resolution and quality come from the scene; a width, height or resolution given here is used for this render only, the scene is not changed."
         );
         err |= RegisterCommand<SaveCurrentWindowAsImageCommand> (
             projectCommands, "1.7.1",
