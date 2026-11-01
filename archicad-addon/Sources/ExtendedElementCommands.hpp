@@ -49,6 +49,14 @@ public:
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
 };
 
+class CreateSkylightsCommand : public CreateElementsCommandBase
+{
+public:
+    CreateSkylightsCommand ();
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+};
+
 class SolveStairBaselineCommand : public CommandBase
 {
 public:
