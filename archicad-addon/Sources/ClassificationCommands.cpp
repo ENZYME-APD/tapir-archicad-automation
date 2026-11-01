@@ -943,6 +943,104 @@ GS::ObjectState GetClassificationsOfToolDefaultsCommand::Execute (const GS::Obje
     return response;
 }
 
+GetAllClassificationSystemsCommand::GetAllClassificationSystemsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetAllClassificationSystemsCommand::GetName () const
+{
+    return "GetAllClassificationSystems";
+}
+
+GS::Optional<GS::UniString> GetAllClassificationSystemsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "classificationSystems": {
+                "type": "array",
+                "description": "The classification systems of the project.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "classificationSystemId": {
+                            "$ref": "#/ClassificationSystemId"
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The display name of the classification system."
+                        },
+                        "description": {
+                            "type": "string",
+                            "description": "The description of the classification system."
+                        },
+                        "source": {
+                            "type": "string",
+                            "description": "The source of the classification system (e.g. URL to a classification system standard)."
+                        },
+                        "version": {
+                            "type": "string",
+                            "description": "The version of the classification system."
+                        },
+                        "date": {
+                            "$ref": "#/Date",
+                            "description": "The release date of the classification system's current version."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "classificationSystemId",
+                        "name",
+                        "description",
+                        "source",
+                        "version",
+                        "date"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationSystems"
+        ]
+    })";
+}
+
+static GS::UniString ClassificationSystemDateToString (const API_ClassificationSystem& system)
+{
+#ifdef ServerMainVers_2900
+    return GS::UniString::Printf ("%04d-%02u-%02u",
+        (int) system.editionDate.year (), (unsigned) system.editionDate.month (), (unsigned) system.editionDate.day ());
+#else
+    return GS::UniString::Printf ("%04u-%02u-%02u",
+        (unsigned) system.editionDate.year, (unsigned) system.editionDate.month, (unsigned) system.editionDate.day);
+#endif
+}
+
+GS::ObjectState GetAllClassificationSystemsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<API_ClassificationSystem> systems;
+    const GSErrCode err = ACAPI_Classification_GetClassificationSystems (systems);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the classification systems");
+    }
+
+    GS::ObjectState response;
+    const auto& classificationSystems = response.AddList<GS::ObjectState> ("classificationSystems");
+    for (const API_ClassificationSystem& system : systems) {
+        GS::ObjectState classificationSystem ("classificationSystemId", CreateGuidObjectState (system.guid));
+        classificationSystem.Add ("name", system.name);
+        classificationSystem.Add ("description", system.description);
+        classificationSystem.Add ("source", system.source);
+        classificationSystem.Add ("version", system.editionVersion);
+        classificationSystem.Add ("date", ClassificationSystemDateToString (system));
+        classificationSystems (classificationSystem);
+    }
+
+    return response;
+}
+
 CreateClassificationSystemsCommand::CreateClassificationSystemsCommand () :
     CommandBase (CommonSchema::Used)
 {
