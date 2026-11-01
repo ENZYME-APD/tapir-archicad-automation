@@ -1759,6 +1759,10 @@ GSErrCode Initialize (void)
             teamworkCommands, "1.7.3",
             "Removes libraries, given by name, from a folder of a BIMcloud or Teamwork server. Returns a result per library. Available from Archicad 29."
         );
+        err |= RegisterCommand<GetTeamworkAccessRightsCommand> (
+            teamworkCommands, "1.7.4",
+            "Returns whether the role of the current user has the given Teamwork access rights (API_TWAccessRights names without the API prefix, e.g. LayersCreate), all of them when no names are given."
+        );
         AddCommandGroup (teamworkCommands);
     }
 
