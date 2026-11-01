@@ -835,11 +835,20 @@ GS::ObjectState GetMEPPortsCommand::Execute (const GS::ObjectState& parameters, 
 #ifdef ServerMainVers_3000
                     portOs.Add ("nominalSize", pipingPort->GetNominalSize ());
 #endif
+                    AddNumberIfAvailable (portOs, "outerDiameter", pipingPort->GetOuterDiameter ());
+                    AddNumberIfAvailable (portOs, "wallThickness", pipingPort->GetWallThickness ());
+#ifdef ServerMainVers_3000
+                    AddNumberIfAvailable (portOs, "flangeSize", pipingPort->GetFlangeSize ());
+#endif
                 }
             } else if (portDomain == Domain::Ventilation) {
                 ACAPI::Result<VentilationPort> ventilationPort = VentilationPort::Get (portId);
                 if (ventilationPort.IsOk ()) {
                     AddMEPEnumName (portOs, "flowDirection", FlowDirectionNames, ventilationPort->GetFlowDirection ());
+                    AddNumberIfAvailable (portOs, "wallThickness", ventilationPort->GetWallThickness ());
+#ifdef ServerMainVers_3000
+                    AddNumberIfAvailable (portOs, "flangeSize", ventilationPort->GetFlangeSize ());
+#endif
                 }
             }
 

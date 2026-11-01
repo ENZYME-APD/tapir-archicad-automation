@@ -376,6 +376,18 @@
                 "type": "string",
                 "description": "The nominal size of a piping port. Available from Archicad 30."
             },
+            "outerDiameter": {
+                "type": "number",
+                "description": "The outer diameter of a piping port."
+            },
+            "wallThickness": {
+                "type": "number",
+                "description": "The wall thickness of a piping or ventilation port."
+            },
+            "flangeSize": {
+                "type": "number",
+                "description": "The flange size of a piping or ventilation port. Available from Archicad 30."
+            },
             "connectedPortId": {
                 "$ref": "#/Guid"
             },
