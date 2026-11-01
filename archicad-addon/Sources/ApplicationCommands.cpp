@@ -2190,6 +2190,229 @@ GS::ObjectState GetPolygonFromUserCommand::Execute (const GS::ObjectState& param
 
 
 // ---------------------------------------------------------------------------
+// ModelToScreen / ScreenToModel
+// ---------------------------------------------------------------------------
+
+ModelToScreenCommand::ModelToScreenCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModelToScreenCommand::GetName () const
+{
+    return "ModelToScreen";
+}
+
+GS::Optional<GS::UniString> ModelToScreenCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "description": "Model coordinates in the current database (meters). In a 3D window they are projected with the current camera; in other windows z is disregarded.",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinates"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ModelToScreenCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "screenPoints": {
+                "type": "array",
+                "description": "One item per input coordinate, in the same order: the pixel position local to the current Archicad view window (not global desktop coordinates), or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "h": {
+                                    "type": "integer",
+                                    "description": "Horizontal pixel position from the left edge of the view window."
+                                },
+                                "v": {
+                                    "type": "integer",
+                                    "description": "Vertical pixel position from the top edge of the view window."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "h",
+                                "v"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "screenPoints"
+        ]
+    })";
+}
+
+GS::ObjectState ModelToScreenCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    // The documented route: ACAPI_View_ModelToScreen projects the model point into
+    // the current view, then ACAPI_View_CoordToPoint turns it into a pixel position.
+    // Both depend on the current window, its size, drawing scale and zoom.
+    GS::Array<GS::ObjectState> coordinates;
+    parameters.Get ("coordinates", coordinates);
+
+    GS::ObjectState response;
+    const auto& screenPoints = response.AddList<GS::ObjectState> ("screenPoints");
+    for (const GS::ObjectState& coordinateOS : coordinates) {
+        const API_Coord3D coord3D = Get3DCoordinateFromObjectState (coordinateOS);
+        API_Coord coord = {};
+        GSErrCode err = ACAPI_View_ModelToScreen (coord3D, coord);
+        if (err != NoError) {
+            screenPoints (CreateErrorResponse (err, "Failed to project the coordinate to the current view."));
+            continue;
+        }
+
+        API_Point point = {};
+        err = ACAPI_View_CoordToPoint (&coord, &point);
+        if (err != NoError) {
+            screenPoints (CreateErrorResponse (err, "Failed to convert the coordinate to a screen point."));
+            continue;
+        }
+
+        screenPoints (GS::ObjectState ("h", (Int32) point.h, "v", (Int32) point.v));
+    }
+
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Available from Archicad 29.");
+#endif
+}
+
+ScreenToModelCommand::ScreenToModelCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ScreenToModelCommand::GetName () const
+{
+    return "ScreenToModel";
+}
+
+GS::Optional<GS::UniString> ScreenToModelCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "screenPoints": {
+                "type": "array",
+                "description": "Pixel positions local to the current Archicad view window (not global desktop coordinates).",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "h": {
+                            "type": "integer",
+                            "description": "Horizontal pixel position from the left edge of the view window.",
+                            "minimum": -32768,
+                            "maximum": 32767
+                        },
+                        "v": {
+                            "type": "integer",
+                            "description": "Vertical pixel position from the top edge of the view window.",
+                            "minimum": -32768,
+                            "maximum": 32767
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "h",
+                        "v"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "screenPoints"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ScreenToModelCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "description": "One item per input screen point, in the same order: the 2D model coordinate in the current database (meters), or an error. This is a 2D mapping: it does not reconstruct a 3D point, and in a 3D window the result is not a point of the model.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "$ref": "#/Coordinate2D"
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinates"
+        ]
+    })";
+}
+
+GS::ObjectState ScreenToModelCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    // Depends on the current window, its size, drawing scale and zoom; several
+    // model coordinates can map to the same pixel.
+    GS::Array<GS::ObjectState> screenPointOSs;
+    parameters.Get ("screenPoints", screenPointOSs);
+
+    GS::ObjectState response;
+    const auto& coordinates = response.AddList<GS::ObjectState> ("coordinates");
+    for (const GS::ObjectState& screenPointOS : screenPointOSs) {
+        Int32 h = 0;
+        Int32 v = 0;
+        if (!screenPointOS.Get ("h", h) || !screenPointOS.Get ("v", v) ||
+            h < -32768 || h > 32767 || v < -32768 || v > 32767) {
+            coordinates (CreateErrorResponse (APIERR_BADPARS, "The screen point must have integer h and v between -32768 and 32767."));
+            continue;
+        }
+
+        API_Point point = {};
+        point.h = (short) h;
+        point.v = (short) v;
+        API_Coord coord = {};
+        const GSErrCode err = ACAPI_View_PointToCoord (&point, &coord);
+        if (err != NoError) {
+            coordinates (CreateErrorResponse (err, "Failed to convert the screen point to a model coordinate."));
+            continue;
+        }
+
+        coordinates (Create2DCoordinateObjectState (coord));
+    }
+
+    return response;
+}
+
+// ---------------------------------------------------------------------------
 // GetElementFromUser
 // ---------------------------------------------------------------------------
 
