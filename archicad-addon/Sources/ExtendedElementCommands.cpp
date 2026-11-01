@@ -7560,6 +7560,30 @@ static GS::UniString WitnessFormToString (API_WitnessID witnessForm)
     }
 }
 
+static GS::UniString DimensionMarkerName (API_MarkerID markerType)
+{
+    switch (markerType) {
+        case APIMark_CrossLine:     return "CrossLine";
+        case APIMark_EmptyCirc:     return "EmptyCircle";
+        case APIMark_SlashLine:     return "SlashLine60";
+        case APIMark_OpenArrow30:   return "OpenArrow30";
+        case APIMark_ClosArrow30:   return "ClosedArrow30";
+        case APIMark_FullArrow30:   return "FullArrow30";
+        case APIMark_SlashLine45:   return "SlashLine45";
+        case APIMark_CrossCirc:     return "CrossCircle";
+        case APIMark_OpenArrow90:   return "OpenArrow90";
+        case APIMark_ClosArrow90:   return "ClosedArrow90";
+        case APIMark_FullArrow90:   return "FullArrow90";
+        case APIMark_FullCirc:      return "FullCircle";
+        case APIMark_PepitaCirc:    return "PepitaCircle";
+        case APIMark_BandArrow:     return "BandArrow";
+        case APIMark_OpenArrow60:   return "OpenArrow60";
+        case APIMark_ClosArrow60:   return "ClosedArrow60";
+        case APIMark_FullArrow60:   return "FullArrow60";
+        default:                    return "SlashLine75";
+    }
+}
+
 GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elements;
@@ -7637,6 +7661,17 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
                 witnessPoints (witnessPoint);
             }
         }
+
+        // The look of the dimension line, so a dimension can be redrawn or recreated as it is.
+        // markerData.markerSize is left out on purpose: on Archicad 29 it read 2.5 mm for linear
+        // dimensions whose settings dialog shows a marker size of 1.0 mm (it only matched for an
+        // elevation dimension), so it is not the size a user sets.
+        dimensionData.Add ("linePen", static_cast<Int32> (element.dimension.linPen));
+        dimensionData.Add ("marker", GS::ObjectState (
+            "type", DimensionMarkerName (element.dimension.markerData.markerType),
+            "pen", static_cast<Int32> (element.dimension.markerData.markerPen)));
+        dimensionData.Add ("defaultWitnessForm", WitnessFormToString (element.dimension.defWitnessForm));
+        dimensionData.Add ("defaultWitnessVal", element.dimension.defWitnessVal);
 
         dimensionsData (dimensionData);
     }

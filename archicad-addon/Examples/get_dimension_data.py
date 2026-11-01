@@ -44,6 +44,8 @@ def Rounded (coordinate):
 def PrintDimensionData (dimensionId):
     data = aclib.RunTapirCommand ('GetDimensionData', {'elements': [dimensionId]}, debug = False)['dimensionsData'][0]
     print ('direction={} witness points={}'.format (Rounded (data['direction']), len (data['witnessPoints'])))
+    print ('line pen {}, marker {} pen {}, witness lines {} {}'.format (
+        data['linePen'], data['marker']['type'], data['marker']['pen'], data['defaultWitnessForm'], round (data['defaultWitnessVal'], 6)))
     for p in data['witnessPoints']:
         # baseElementId is missing when the witness point is not attached to any element.
         baseElementId = p.get ('baseElementId')
