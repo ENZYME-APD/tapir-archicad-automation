@@ -262,7 +262,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ChangeWindowCommand> (
             applicationCommands, "1.3.1",
-            "Changes the current (active) window to the given window. A databaseId on its own is enough; the window type is taken from the database. The databaseId of a worksheet or detail whose window was never opened opens its Project Map item instead (from Archicad 27). With windowType 'FloorPlan' and a storyIndex it also activates that story on the floor plan."
+            "Changes the current (active) window to the given window. A databaseId on its own is enough; the window type is taken from the database. The databaseId of a worksheet or detail whose window was never opened opens its Project Map item instead (from Archicad 27). With windowType 'FloorPlan' and a storyIndex it also activates that story on the floor plan. windowType 'Report' on its own opens the Session Report window (from Archicad 26); its text cannot be read through the Archicad API."
         );
         err |= RegisterCommand<GetContainingDatabasesCommand> (
             applicationCommands, "1.7.2",
