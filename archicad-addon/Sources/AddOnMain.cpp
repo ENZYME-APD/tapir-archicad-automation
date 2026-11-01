@@ -292,6 +292,22 @@ GSErrCode Initialize (void)
             applicationCommands, "1.7.3",
             "Tells whether Archicad is in a hierarchical editing mode (curtain wall, stair, beam or column editing), and which element is being edited. Read only: it never enters, leaves or cancels an editing mode. Commands that modify the project can fail while such a mode is active. The overall inEditMode flag requires Archicad 29 or later; the command requires Archicad 27 or later."
         );
+        err |= RegisterCommand<GetArchicadVisibilityCommand> (
+            applicationCommands, "1.7.4",
+            "Returns whether the Archicad application is shown or hidden. Supported on Windows only; on macOS it returns an error."
+        );
+        err |= RegisterCommand<SetArchicadVisibilityCommand> (
+            applicationCommands, "1.7.4",
+            "Hides or shows the Archicad application, e.g. to keep it out of the way while a batch runs. A script that hides Archicad must show it again, also when the script fails (e.g. in a finally block). Supported on Windows only; on macOS it returns an error."
+        );
+        err |= RegisterCommand<RunActionCenterChecksCommand> (
+            applicationCommands, "1.7.4",
+            "Runs the given checks of the Action Center (by default the hotlink check). A successful result means the check ran, not that nothing was found: Archicad does not report the outcome to the caller, it shows the Action Center tab when the check found an issue."
+        );
+        err |= RegisterCommand<RedrawCurrentDatabaseCommand> (
+            applicationCommands, "1.7.4",
+            "Redraws the current database, even when its window is in the background. Only the visible region of its window is updated."
+        );
         err |= RegisterCommand<GetProductVersionInfoCommand> (
             applicationCommands, "1.7.3",
             "Retrieves the version information of the running Archicad: build number, language code, product family and version text, plus the product name, product type, main/update/hotfix versions, the available domains (Architecture, MEP) and the CEIP project identifier of the open project from Archicad 29. Requires Archicad 28 or later."
