@@ -1,8 +1,9 @@
 {
- "generatedAt": "2026-11-01 19:11 UTC",
+ "generatedAt": "2026-11-01 20:07 UTC",
  "counts": {
   "done": 303,
   "merged": 252,
+  "open": 1,
   "not applicable": 1
  },
  "parameters": {
@@ -7015,6 +7016,21 @@
    "coveredParameters": [
     "elementTypes"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetAllClassificationSystems",
+   "group": "Classification Commands",
+   "version": "1.7.4",
+   "brief": "Returns the classification systems of the project with their guid, name, description, source, version and date. Same output as the official GetAllClassificationSystems command, so scripts can rely on Tapir commands only.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []

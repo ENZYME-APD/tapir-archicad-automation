@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-01 19:11 UTC",
+ "generatedAt": "2026-11-01 20:07 UTC",
  "versions": [
   25,
   26,
@@ -12,9 +12,9 @@
   "not applicable": 627,
   "done": 1098,
   "claimed": 53,
-  "merged": 608,
+  "merged": 609,
   "open": 92,
-  "in progress": 399,
+  "in progress": 398,
   "skipped": 2
  },
  "items": [
@@ -5293,10 +5293,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1637,
-     "title": "Add GetAllClassificationSystems Tapir command"
-    },
-    {
      "number": 1636,
      "title": "Add GetClassificationSystems command"
     },
@@ -6354,13 +6350,9 @@
    "olderNames": [
     "APIDb_RedrawCurrentDatabaseID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1429,
-     "title": "Flush navigator state around Create/Rename/Delete to avoid a crash (#1428)"
-    },
     {
      "number": 1417,
      "title": "Application: hide/show Archicad, run the Action Center hotlink check, redraw the current database"
@@ -65390,10 +65382,6 @@
      "title": "SetPropertyValueOfAttributes, clearer results of SetPropertyValuesOfAttributes (replaces #1365)"
     },
     {
-     "number": 1637,
-     "title": "Add GetAllClassificationSystems Tapir command"
-    },
-    {
      "number": 1636,
      "title": "Add GetClassificationSystems command"
     },
@@ -65629,10 +65617,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1637,
-     "title": "Add GetAllClassificationSystems Tapir command"
-    },
     {
      "number": 1636,
      "title": "Add GetClassificationSystems command"

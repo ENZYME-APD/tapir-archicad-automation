@@ -1,4 +1,4 @@
-**555 of 555** applicable Tapir commands have a Grasshopper component (100 %): ✅ 303 done, 🔀 252 merged, ➖ 1 not applicable.
+**555 of 556** applicable Tapir commands have a Grasshopper component (99 %): ✅ 303 done, 🔀 252 merged, ⬜ 1 open, ➖ 1 not applicable.
 
 Parameters of the 555 used commands: 🟢 511 every parameter has an input, 🟡 44 the rest through a JSON input, 🟠 0 some parameters missing.
 
@@ -11,7 +11,7 @@ Parameters of the 555 used commands: 🟢 511 every parameter has an input, 🟡
 | Element grouping Commands | 100 % | 11 | 6 | 5 |  |  |  |  |  | 11 |  |  |
 | Favorites Commands | 100 % | 18 | 10 | 8 |  |  |  |  |  | 18 |  |  |
 | Property Commands | 100 % | 19 | 12 | 7 |  |  |  |  |  | 19 |  |  |
-| Classification Commands | 100 % | 17 | 11 | 6 |  |  |  |  |  | 17 |  |  |
+| Classification Commands | 94 % | 18 | 11 | 6 |  |  | 1 |  |  | 17 |  |  |
 | Attribute Commands | 100 % | 54 | 25 | 29 |  |  |  |  |  | 45 | 9 |  |
 | IFC Commands | 100 % | 13 | 7 | 6 |  |  |  |  |  | 13 |  |  |
 | Library Commands | 100 % | 18 | 7 | 11 |  |  |  |  |  | 18 |  |  |
@@ -30,4 +30,4 @@ Parameters of the 555 used commands: 🟢 511 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 2 |  | 2 |  |  |  |  |  | 2 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-01 19:11 UTC.
+Updated 2026-11-01 20:07 UTC.
