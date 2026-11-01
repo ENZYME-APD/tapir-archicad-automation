@@ -7335,6 +7335,56 @@ GS::Optional<GS::UniString> ModifySlabsCommand::GetRawResponseSchema () const
     return ModifyWallsCommand ().GetRawResponseSchema ();
 }
 
+// ACAPI_Element_Change applies only the type of a Slab's cover fill orientation: Archicad resets the origin
+// and the distortion matrix and still returns NoError (tested live on Archicad 29 with every mask, flag and
+// orientation type, #662). The slab is read back after the change, so a given origin or matrix that did not
+// stick is reported instead of a silent success.
+static GS::Optional<GS::UniString> GetIgnoredSlabFillOrientation (const API_Guid& slabGuid, const GS::ObjectState& item)
+{
+    GS::ObjectState floorFillOs;
+    GS::ObjectState orientationOs;
+    if (!item.Get ("floorFill", floorFillOs) || !floorFillOs.Get ("orientation", orientationOs)) {
+        return GS::NoValue;
+    }
+
+    API_Element changed = {};
+    changed.header.guid = slabGuid;
+    if (ACAPI_Element_Get (&changed) != NoError) {
+        return GS::NoValue;
+    }
+    const API_HatchOrientation& orientation = changed.slab.hatchOrientation;
+
+    GS::Array<GS::UniString> ignored;
+    GS::ObjectState originOs;
+    if (orientationOs.Get ("origin", originOs)) {
+        API_Coord requested = orientation.origo;
+        originOs.Get ("x", requested.x);
+        originOs.Get ("y", requested.y);
+        if (!IsSame2DCoordinate (requested, orientation.origo)) {
+            ignored.Push (GS::UniString::Printf ("origin (it stayed %g, %g)", orientation.origo.x, orientation.origo.y));
+        }
+    }
+    const std::pair<const char*, double> matrix[] = {
+        { "matrix00", orientation.matrix00 }, { "matrix10", orientation.matrix10 },
+        { "matrix01", orientation.matrix01 }, { "matrix11", orientation.matrix11 }
+    };
+    for (const auto& entry : matrix) {
+        double requested = entry.second;
+        if (orientationOs.Get (entry.first, requested) && GS::Abs (requested - entry.second) > 1e-9) {
+            ignored.Push (GS::UniString::Printf ("%s (it stayed %g)", entry.first, entry.second));
+        }
+    }
+    if (ignored.IsEmpty ()) {
+        return GS::NoValue;
+    }
+
+    GS::UniString list;
+    for (UIndex i = 0; i < ignored.GetSize (); ++i) {
+        list += (i == 0 ? "" : ", ") + ignored[i];
+    }
+    return GS::UniString::Printf ("Archicad did not apply floorFill.orientation %T: on a Slab it applies only the orientation type through the API. The other details given were applied.", list.ToPrintf ());
+}
+
 GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> items;
@@ -7420,7 +7470,12 @@ GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, 
 
                 API_Guid slabGuid = element.header.guid;
                 err = ACAPI_Element_ChangeMemo (slabGuid, APIMemoMask_Polygon | APIMemoMask_SideMaterials | APIMemoMask_EdgeTrims, &memo);
-                results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify slab geometry."));
+                if (err != NoError) {
+                    results.Push (CreateFailedExecutionResult (err, "Failed to modify slab geometry."));
+                    continue;
+                }
+                const GS::Optional<GS::UniString> ignoredOrientation = GetIgnoredSlabFillOrientation (slabGuid, item);
+                results.Push (ignoredOrientation.HasValue () ? CreateFailedExecutionResult (APIERR_GENERAL, *ignoredOrientation) : CreateSuccessfulExecutionResult ());
                 continue;
             }
 
@@ -7430,7 +7485,12 @@ GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, 
             }
 
             err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
-            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify slab."));
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to modify slab."));
+                continue;
+            }
+            const GS::Optional<GS::UniString> ignoredOrientation = GetIgnoredSlabFillOrientation (element.header.guid, item);
+            results.Push (ignoredOrientation.HasValue () ? CreateFailedExecutionResult (APIERR_GENERAL, *ignoredOrientation) : CreateSuccessfulExecutionResult ());
         }
     });
 }
