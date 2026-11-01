@@ -1180,6 +1180,21 @@ GSErrCode Initialize (void)
             "Moves a folder of the Favorites palette, with its Favorites and subfolders, into another folder. Folders are "
             "given as their path of folder names from the root. Returns the new path of the folder. Available from Archicad 29."
         );
+        err |= RegisterCommand<CreateFavoriteFolderCommand> (
+            favoritesCommands, "1.7.4",
+            "Creates a folder in the Favorites palette, in the parent folder given by its path. Returns the new folder. "
+            "Available from Archicad 29."
+        );
+        err |= RegisterCommand<RenameFavoriteFolderCommand> (
+            favoritesCommands, "1.7.4",
+            "Renames a folder of the Favorites palette given by its path. The root folder cannot be renamed. Returns the renamed folder. "
+            "Available from Archicad 29."
+        );
+        err |= RegisterCommand<MoveFavoritesCommand> (
+            favoritesCommands, "1.7.4",
+            "Moves Favorites given by their names into a folder of the Favorites palette given by its path. "
+            "Returns an execution result for each Favorite. Available from Archicad 29."
+        );
         AddCommandGroup (favoritesCommands);
     }
 
