@@ -5449,6 +5449,88 @@ static GSErrCode GetOpeningElementLocalToGlobal (const API_Guid& openingGuid, AP
     return NoError;
 }
 
+// Where the anchor point sits on a side of the opening's size, measured from the low end of that side:
+// APIAnc_R? and APIAnc_?T anchors at the high end, APIAnc_M? and APIAnc_?M in the middle, the rest at the low end.
+static double GetAnchorOffset (API_AnchorID anchor, double size, bool alongHeight)
+{
+    switch (anchor) {
+        case APIAnc_LT: return alongHeight ? size : 0.0;
+        case APIAnc_MT: return alongHeight ? size : size / 2.0;
+        case APIAnc_RT: return size;
+        case APIAnc_LM: return alongHeight ? size / 2.0 : 0.0;
+        case APIAnc_MM: return size / 2.0;
+        case APIAnc_RM: return alongHeight ? size / 2.0 : size;
+        case APIAnc_MB: return alongHeight ? 0.0 : size / 2.0;
+        case APIAnc_RB: return alongHeight ? 0.0 : size;
+        default:        return 0.0;
+    }
+}
+
+GSErrCode GetOpeningExtrusionBody (const API_Guid& openingGuid, OpeningExtrusionBody& body)
+{
+    using ACAPI::Element::Opening;
+
+    ACAPI::Result<Opening> opening = Opening::Get (ACAPI::UniqueID (APIGuid2GSGuid (openingGuid), ACAPI_GetToken ()));
+    if (opening.IsErr ()) {
+        return opening.UnwrapErr ().kind;
+    }
+    const auto geometry = opening->GetOpeningGeometry ();
+    const auto extrusionParameters = opening->GetExtrusionParameters ();
+
+    body.anchorPoint = geometry.GetAnchorPoint ();
+    const OpeningAxes axes = GetOpeningAxes (geometry);
+    body.xAxis = axes.xAxis;
+    body.yAxis = axes.yAxis;
+    body.extrusionDirection = axes.extrusionDirection;
+
+    // The anchor point sits on the box around the opening's outline, where its anchor says. Only the size
+    // of a polygonal opening's polygon counts for that: measured live, a polygon around the origin is still
+    // placed with, for example, its bottom edge on the anchor point of a BottomCenter anchor.
+    double width = 0.0;
+    double height = 0.0;
+    const std::optional<Geometry::Polygon2D> polygon = geometry.GetPolygon ();
+    if (polygon.has_value ()) {
+        const Box2DData& box = polygon->GetBoundBox ();
+        width = box.xMax - box.xMin;
+        height = box.yMax - box.yMin;
+    } else {
+        const std::optional<double> givenWidth = extrusionParameters.GetWidth ();
+        if (!givenWidth.has_value ()) {
+            return APIERR_GENERAL;
+        }
+        width = *givenWidth;
+        height = extrusionParameters.GetHeight ().value_or (width);
+    }
+    const API_AnchorID anchor = extrusionParameters.GetAnchor ();
+    body.profileXMin = -GetAnchorOffset (anchor, width, false);
+    body.profileXMax = body.profileXMin + width;
+    body.profileYMin = -GetAnchorOffset (anchor, height, true);
+    body.profileYMax = body.profileYMin + height;
+
+    const double infinity = std::numeric_limits<double>::infinity ();
+    const double startOffset = extrusionParameters.GetExtrusionStartOffset ().value_or (0.0);
+    switch (extrusionParameters.GetLimitType ()) {
+        case OpeningLimitType::Finite:
+            body.extrusionStart = startOffset;
+            body.extrusionEnd = startOffset + extrusionParameters.GetFiniteBodyLength ().value_or (0.0);
+            break;
+        case OpeningLimitType::HalfInfinite:
+            body.extrusionStart = startOffset;
+            body.extrusionEnd = infinity;
+            break;
+        default:
+            body.extrusionStart = -infinity;
+            body.extrusionEnd = infinity;
+            break;
+    }
+
+    body.cutElements.Clear ();
+    for (const ACAPI::UniqueID& cutElementId : opening->GetCutElements ()) {
+        body.cutElements.Push (GSGuid2APIGuid (cutElementId.GetGuid ()));
+    }
+    return NoError;
+}
+
 static GS::ObjectState GetOpeningDetails (const API_Guid& openingGuid)
 {
     using ACAPI::Element::Opening;
