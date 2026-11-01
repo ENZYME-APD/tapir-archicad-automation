@@ -729,6 +729,11 @@ inline GSErrCode ACAPI_Element_GetExtent (API_Box* extent, API_DatabaseUnId* dat
     return ACAPI_Database (APIDb_GetExtentID, extent, databaseUnId);
 }
 
+inline GSErrCode ACAPI_Element_GetExtent3D (API_Box3D* extent3D)
+{
+    return ACAPI_Database (APIDb_GetExtent3DID, extent3D);
+}
+
 inline GSErrCode ACAPI_Navigator_GetLayoutBook (API_LayoutBook* book)
 {
     return ACAPI_Database (APIDb_GetLayoutBookID, book);

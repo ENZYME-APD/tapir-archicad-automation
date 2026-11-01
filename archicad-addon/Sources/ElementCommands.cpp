@@ -7891,6 +7891,42 @@ GS::ObjectState Get3DModelCountsCommand::Execute (const GS::ObjectState& /*param
 #endif
 }
 
+// GetModelExtent
+
+GetModelExtentCommand::GetModelExtentCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetModelExtentCommand::GetName () const
+{
+    return "GetModelExtent";
+}
+
+GS::Optional<GS::UniString> GetModelExtentCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/BoundingBox3D"
+    })";
+}
+
+GS::ObjectState GetModelExtentCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    // The region Fit in Window would show in the current database, vertical range included.
+    API_Box3D extent3D = {};
+    const GSErrCode err = ACAPI_Element_GetExtent3D (&extent3D);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the model extent");
+    }
+
+    return GS::ObjectState ("xMin", extent3D.xMin,
+                            "xMax", extent3D.xMax,
+                            "yMin", extent3D.yMin,
+                            "yMax", extent3D.yMax,
+                            "zMin", extent3D.zMin,
+                            "zMax", extent3D.zMax);
+}
+
 
 // GetQuantitiesOfElements
 
