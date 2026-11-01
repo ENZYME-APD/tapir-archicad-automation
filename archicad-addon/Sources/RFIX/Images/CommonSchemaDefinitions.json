@@ -9647,6 +9647,10 @@
                 "type": "boolean",
                 "description": "Whether the drawing is included in the automatic drawing numbering sequence."
             },
+            "isScaleIncludedInAutotextAndIndex": {
+                "type": "boolean",
+                "description": "The 'Include scale in Autotext and index' checkbox of Drawing Settings (API_DrawingType::includeInAutoTextsAndIES): whether the drawing's scale is included in the 'Drawing Scale' and 'Original Scale' Autotexts and in indexes."
+            },
             "hasBorderLine": {
                 "type": "boolean",
                 "description": "Whether the drawing shows a printable border (Drawing Settings > Frame > Add Printable Border)."
@@ -9685,6 +9689,7 @@
             "nameType",
             "numberingType",
             "isInNumbering",
+            "isScaleIncludedInAutotextAndIndex",
             "hasBorderLine",
             "borderLineTypeIndex",
             "borderPenIndex",
@@ -11478,6 +11483,10 @@
             "isInNumbering": {
                 "type": "boolean",
                 "description": "Whether the drawing is included in the automatic drawing numbering sequence."
+            },
+            "isScaleIncludedInAutotextAndIndex": {
+                "type": "boolean",
+                "description": "The 'Include scale in Autotext and index' checkbox of Drawing Settings (API_DrawingType::includeInAutoTextsAndIES): whether the drawing's scale is included in the 'Drawing Scale' and 'Original Scale' Autotexts and in indexes. Set it to false on e.g. a 1:1 schedule drawing placed next to a 1:200 plan so that the layout's scale Autotext shows only 1:200."
             },
             "hasBorderLine": {
                 "type": "boolean",

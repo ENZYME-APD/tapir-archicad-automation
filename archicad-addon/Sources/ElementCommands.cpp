@@ -1999,6 +1999,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     typeSpecificDetails.Add ("customNumber", GS::UniString (elem.drawing.customNumber));
                 }
                 typeSpecificDetails.Add ("isInNumbering", elem.drawing.isInNumbering);
+                // Drawing Settings > "Include scale in Autotext and index" (#817)
+                typeSpecificDetails.Add ("isScaleIncludedInAutotextAndIndex", elem.drawing.includeInAutoTextsAndIES);
                 typeSpecificDetails.Add ("hasBorderLine",       elem.drawing.hasBorderLine);
                 typeSpecificDetails.Add ("borderLineTypeIndex", GetAttributeIndex (elem.drawing.borderLineType));
                 typeSpecificDetails.Add ("borderPenIndex",      (Int32)elem.drawing.borderPen);
@@ -2666,6 +2668,9 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         }
                         if (typeSpecificDetails->Get ("isInNumbering", elem.drawing.isInNumbering)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, isInNumbering);
+                        }
+                        if (typeSpecificDetails->Get ("isScaleIncludedInAutotextAndIndex", elem.drawing.includeInAutoTextsAndIES)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, includeInAutoTextsAndIES);
                         }
                         if (typeSpecificDetails->Get ("hasBorderLine", elem.drawing.hasBorderLine)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, hasBorderLine);
