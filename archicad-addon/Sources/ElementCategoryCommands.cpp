@@ -7,7 +7,7 @@
 // and of their values are localized, so the commands identify a category by its
 // API_ElemCategoryID, carried as one of the strings below (the ElementCategoryType schema),
 // and a value by its guid. The names are returned for display only.
-static const char* CategoryTypeToString (API_ElemCategoryID categoryID)
+const char* CategoryTypeToString (API_ElemCategoryID categoryID)
 {
     switch (categoryID) {
         case API_ElemCategory_StructuralFunction: return "StructuralFunction";

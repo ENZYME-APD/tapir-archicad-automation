@@ -1,6 +1,7 @@
 #include "FavoritesCommands.hpp"
 #include "PropertyCommands.hpp"
 #include "ElementGDLParameterCommands.hpp"
+#include "ElementCategoryCommands.hpp"
 #include "MigrationHelper.hpp"
 #include "NativeImage.hpp"
 #include "MemoryOChannel32.hpp"
@@ -2800,6 +2801,410 @@ GS::ObjectState MoveFavoriteFolderCommand::Execute (const GS::ObjectState& param
     for (const GS::UniString& folderName : newPath) {
         folderAdder (folderName);
     }
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
+// ============================================================================
+// GetFavoriteContents / DeleteFavoritesWithManager — the Favorites and their
+// folders through ACAPI::Favorite::FavoriteManager (Archicad 29 and newer).
+// ============================================================================
+
+#ifdef ServerMainVers_2900
+
+// The name, folder path, classifications, category values and properties of the
+// Favorite, or an error item when one of them cannot be read.
+static GS::ObjectState GetFavoriteContentObjectState (const ACAPI::Favorite::Favorite& favorite, const std::vector<GS::UniString>& folderPath)
+{
+    const auto favoriteName = favorite.GetName ();
+    if (favoriteName.IsErr ()) {
+        return CreateErrorResponse (favoriteName.UnwrapErr ().kind, "Failed to get the name of a Favorite.");
+    }
+    const GS::UniString name = favoriteName.Unwrap ();
+
+    const auto classifications = favorite.GetClassifications ();
+    if (classifications.IsErr ()) {
+        return CreateErrorResponse (classifications.UnwrapErr ().kind, GS::UniString::Printf ("Failed to get the classifications of the Favorite '%T'.", name.ToPrintf ()));
+    }
+    const auto categoryValues = favorite.GetElemCategoryValues ();
+    if (categoryValues.IsErr ()) {
+        return CreateErrorResponse (categoryValues.UnwrapErr ().kind, GS::UniString::Printf ("Failed to get the category values of the Favorite '%T'.", name.ToPrintf ()));
+    }
+    const auto properties = favorite.GetProperties ();
+    if (properties.IsErr ()) {
+        return CreateErrorResponse (properties.UnwrapErr ().kind, GS::UniString::Printf ("Failed to get the properties of the Favorite '%T'.", name.ToPrintf ()));
+    }
+
+    GS::ObjectState favoriteOs ("name", name);
+
+    const auto& folderPathAdder = favoriteOs.AddList<GS::UniString> ("folderPath");
+    for (const GS::UniString& folderName : folderPath) {
+        folderPathAdder (folderName);
+    }
+
+    // The pairs are (classification system, classification item), as ACAPI_Element_GetClassificationItems gives them.
+    const auto& classificationsAdder = favoriteOs.AddList<GS::ObjectState> ("classifications");
+    for (const GS::Pair<API_Guid, API_Guid>& pair : classifications.Unwrap ()) {
+        GS::ObjectState classificationId ("classificationSystemId", CreateGuidObjectState (pair.first));
+        if (pair.second != APINULLGuid) {
+            classificationId.Add ("classificationItemId", CreateGuidObjectState (pair.second));
+        }
+        classificationsAdder (GS::ObjectState ("classificationId", classificationId));
+    }
+
+    const auto& categoryValuesAdder = favoriteOs.AddList<GS::ObjectState> ("categoryValues");
+    for (const API_ElemCategoryValue& value : categoryValues.Unwrap ()) {
+        const char* type = CategoryTypeToString (value.category.categoryID);
+        if (type == nullptr) {
+            continue;
+        }
+        categoryValuesAdder (GS::ObjectState (
+            "type", GS::UniString (type),
+            "categoryId", CreateGuidObjectState (value.category.guid),
+            "categoryValueId", CreateGuidObjectState (value.guid),
+            "name", GS::UniString (value.name)));
+    }
+
+    const auto& propertiesAdder = favoriteOs.AddList<GS::ObjectState> ("properties");
+    for (const API_Property& property : properties.Unwrap ()) {
+        GS::ObjectState propertyOs ("propertyId", CreateGuidObjectState (property.definition.guid));
+        if (property.status == API_Property_NotAvailable || property.status == API_Property_NotEvaluated) {
+            propertyOs.Add ("error", GS::ObjectState ("code", APIERR_BADPROPERTY, "message", GS::UniString ("Not available or not evaluated property.")));
+            propertiesAdder (propertyOs);
+            continue;
+        }
+        GS::UniString valueString;
+        const GSErrCode err = ACAPI_Property_GetPropertyValueString (property, &valueString);
+        if (err == NoError) {
+            propertyOs.Add ("propertyValue", GS::ObjectState ("value", valueString));
+        } else {
+            propertyOs.Add ("error", GS::ObjectState ("code", err, "message", GS::UniString ("Failed to get property value as string.")));
+        }
+        propertiesAdder (propertyOs);
+    }
+
+    return favoriteOs;
+}
+
+// Collects the Favorites of the folder and of its subfolders, recursively.
+static void CollectFavoriteContentsOfFolder (const ACAPI::Favorite::FavoriteFolder& folder, GS::Array<GS::ObjectState>& favorites)
+{
+    const std::vector<GS::UniString> folderPath = folder.GetPath ();
+    for (const ACAPI::Favorite::Favorite& favorite : folder.GetFavorites ()) {
+        if (!favorite.IsValid ()) {
+            continue;
+        }
+        favorites.Push (GetFavoriteContentObjectState (favorite, folderPath));
+    }
+    for (const ACAPI::Favorite::FavoriteFolder& subFolder : folder.GetSubFolders ()) {
+        CollectFavoriteContentsOfFolder (subFolder, favorites);
+    }
+}
+
+#endif
+
+GetFavoriteContentsCommand::GetFavoriteContentsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetFavoriteContentsCommand::GetName () const
+{
+    return "GetFavoriteContents";
+}
+
+GS::Optional<GS::UniString> GetFavoriteContentsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "folderPath": {
+                "type": "array",
+                "description": "The folder to read, the folder names from the root of the Favorites palette down. The Favorites of its subfolders are returned too. Omit it or leave it empty for every Favorite.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> GetFavoriteContentsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "favorites": {
+                "type": "array",
+                "description": "The Favorites of the folder and of its subfolders, or an error for a Favorite that could not be read.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "The name of the Favorite."
+                                },
+                                "folderPath": {
+                                    "type": "array",
+                                    "description": "The path of the folder the Favorite is in, as Archicad gives it. Empty for the root folder.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "classifications": {
+                                    "$ref": "#/ClassificationIdsOrErrors",
+                                    "description": "The classifications stored with the Favorite, in the format of GetClassificationsOfElements."
+                                },
+                                "categoryValues": {
+                                    "type": "array",
+                                    "description": "The element category values stored with the Favorite, in the format of GetCategoryValuesOfElements.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "$ref": "#/ElementCategoryType"
+                                            },
+                                            "categoryId": {
+                                                "$ref": "#/ElementCategoryId"
+                                            },
+                                            "categoryValueId": {
+                                                "$ref": "#/ElementCategoryValueId"
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "description": "The localized name of the value, for display only."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "type",
+                                            "categoryId",
+                                            "categoryValueId",
+                                            "name"
+                                        ]
+                                    }
+                                },
+                                "properties": {
+                                    "type": "array",
+                                    "description": "The property values stored with the Favorite. Each has propertyValue, in the format of GetPropertyValuesOfElements, or an error when its value cannot be read.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "propertyId": {
+                                                "$ref": "#/PropertyId"
+                                            },
+                                            "propertyValue": {
+                                                "$ref": "#/PropertyValue"
+                                            },
+                                            "error": {
+                                                "$ref": "#/Error"
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "propertyId"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "name",
+                                "folderPath",
+                                "classifications",
+                                "categoryValues",
+                                "properties"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favorites"
+        ]
+    })";
+}
+
+GS::ObjectState GetFavoriteContentsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::UniString> folderPath;
+    parameters.Get ("folderPath", folderPath);
+
+    const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
+    std::optional<ACAPI::Favorite::FavoriteFolder> folder;
+    GS::UniString errorMessage;
+    const GSErrCode err = FindFavoriteFolderOfPath (manager, folderPath, folder, errorMessage);
+    if (err != NoError) {
+        return CreateErrorResponse (err, errorMessage);
+    }
+
+    GS::Array<GS::ObjectState> favorites;
+    CollectFavoriteContentsOfFolder (*folder, favorites);
+
+    GS::ObjectState response;
+    const auto& favoritesAdder = response.AddList<GS::ObjectState> ("favorites");
+    for (const GS::ObjectState& favoriteOs : favorites) {
+        favoritesAdder (favoriteOs);
+    }
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
+#ifdef ServerMainVers_2900
+
+// Finds the Favorite by name, in the folder at folderPath when it is given
+// (only directly in that folder, not in its subfolders), anywhere otherwise.
+static GSErrCode FindFavoriteToDelete (const ACAPI::Favorite::FavoriteManager& manager, const GS::UniString& name, const GS::Array<GS::UniString>* folderPath, std::optional<ACAPI::Favorite::Favorite>& favorite, GS::UniString& errorMessage)
+{
+    if (folderPath == nullptr) {
+        const auto found = manager.GetFavoriteByName (name);
+        if (found.IsErr ()) {
+            errorMessage = GS::UniString::Printf ("Favorite '%T' not found.", name.ToPrintf ());
+            return found.UnwrapErr ().kind;
+        }
+        favorite.emplace (found.Unwrap ());
+        return NoError;
+    }
+
+    std::optional<ACAPI::Favorite::FavoriteFolder> folder;
+    const GSErrCode err = FindFavoriteFolderOfPath (manager, *folderPath, folder, errorMessage);
+    if (err != NoError) {
+        return err;
+    }
+    for (const ACAPI::Favorite::Favorite& candidate : folder->GetFavorites ()) {
+        const auto candidateName = candidate.GetName ();
+        if (candidateName.IsOk () && candidateName.Unwrap () == name) {
+            favorite.emplace (candidate);
+            return NoError;
+        }
+    }
+    errorMessage = GS::UniString::Printf ("Favorite '%T' not found in the given folder.", name.ToPrintf ());
+    return APIERR_BADNAME;
+}
+
+#endif
+
+DeleteFavoritesWithManagerCommand::DeleteFavoritesWithManagerCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeleteFavoritesWithManagerCommand::GetName () const
+{
+    return "DeleteFavoritesWithManager";
+}
+
+GS::Optional<GS::UniString> DeleteFavoritesWithManagerCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "favorites": {
+                "type": "array",
+                "description": "The Favorites to delete.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the Favorite."
+                        },
+                        "folderPath": {
+                            "type": "array",
+                            "description": "The folder the Favorite is in, the folder names from the root of the Favorites palette down, in the format GetFavoriteContents returns. When given, the Favorite is only looked for directly in that folder. Omit it to find the Favorite by name anywhere.",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favorites"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteFavoritesWithManagerCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteFavoritesWithManagerCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::ObjectState> favorites;
+    parameters.Get ("favorites", favorites);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    // One undoable command for the whole call, as DeleteFavorites does.
+    ACAPI_CallUndoableCommand ("DeleteFavoritesWithManager", [&]() -> GSErrCode {
+        const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
+        for (const GS::ObjectState& item : favorites) {
+            GS::UniString name;
+            if (!item.Get ("name", name) || name.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The name of the Favorite is missing."));
+                continue;
+            }
+
+            GS::Array<GS::UniString> folderPath;
+            const bool hasFolderPath = item.Get ("folderPath", folderPath);
+
+            std::optional<ACAPI::Favorite::Favorite> favorite;
+            GS::UniString errorMessage;
+            const GSErrCode err = FindFavoriteToDelete (manager, name, hasFolderPath ? &folderPath : nullptr, favorite, errorMessage);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, errorMessage));
+                continue;
+            }
+
+            const auto deleteResult = manager.DeleteFavorite (*favorite);
+            if (deleteResult.IsErr ()) {
+                executionResults (CreateFailedExecutionResult (deleteResult.UnwrapErr ().kind, GS::UniString::Printf ("Failed to delete the Favorite '%T'.", name.ToPrintf ())));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+
+        return NoError;
+    });
+
     return response;
 #else
     UNUSED_PARAMETER (parameters);
