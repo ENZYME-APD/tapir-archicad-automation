@@ -7,6 +7,7 @@
 #include "VectorImageIterator.hpp"
 #include "FileSystem.hpp"
 #include "UserDataPairs.hpp"
+#include <set>
 #ifdef ServerMainVers_2700
 #include "ADBAttributeIndex.hpp"
 #endif
@@ -409,6 +410,163 @@ GS::ObjectState GetAttributesFromProjectCommand::Execute (const GS::ObjectState&
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_GENERAL, "GetAttributesFromProject needs Archicad 27 or later.");
+#endif
+}
+
+GetAttributeIndexesCommand::GetAttributeIndexesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetAttributeIndexesCommand::GetName () const
+{
+    return "GetAttributeIndexes";
+}
+
+GS::Optional<GS::UniString> GetAttributeIndexesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeTypes": {
+                "type": "array",
+                "description": "The attribute types to report the indexes of.",
+                "items": {
+                    "$ref": "#/AttributeType"
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeTypes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetAttributeIndexesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "oneOf": [
+            {
+                "type": "object",
+                "properties": {
+                    "attributeIndexes": {
+                        "type": "array",
+                        "description": "One item per requested attribute type, in the order of attributeTypes.",
+                        "items": {
+                            "type": "object",
+                            "oneOf": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "attributeType": {
+                                            "$ref": "#/AttributeType"
+                                        },
+                                        "count": {
+                                            "type": "integer",
+                                            "description": "The number of attributes of the type."
+                                        },
+                                        "firstIndex": {
+                                            "type": "integer",
+                                            "description": "The index of the first valid attribute of the type, as Archicad reports it. Left out when the type has no attribute."
+                                        },
+                                        "lastIndex": {
+                                            "type": "integer",
+                                            "description": "The highest index in use. Left out when the type has no attribute."
+                                        },
+                                        "freeIndexes": {
+                                            "type": "array",
+                                            "description": "The indexes between firstIndex and lastIndex that no attribute uses, for example those of deleted attributes, in ascending order. Archicad 29 gives a new Layer the lowest free index.",
+                                            "items": {
+                                                "type": "integer"
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "attributeType",
+                                        "count",
+                                        "freeIndexes"
+                                    ]
+                                },
+                                {
+                                    "$ref": "#/ErrorItem"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "attributeIndexes"
+                ]
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    })";
+}
+
+GS::ObjectState GetAttributeIndexesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::UniString> attributeTypes;
+    parameters.Get ("attributeTypes", attributeTypes);
+
+    GS::ObjectState response;
+    const auto& attributeIndexes = response.AddList<GS::ObjectState> ("attributeIndexes");
+
+    for (const GS::UniString& typeStr : attributeTypes) {
+        const API_AttrTypeID typeID = ConvertAttributeTypeStringToID (typeStr);
+        if (typeID == API_ZombieAttrID) {
+            attributeIndexes (CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid attributeType '%T'.", typeStr.ToPrintf ())));
+            continue;
+        }
+
+        // Only the indexes are kept. The texture location of a Surface is the one member allocated
+        // for the caller (see DisposeAttribute); it is freed and cleared here, so it is released
+        // once whether or not the enumeration frees it after the processor.
+        std::set<Int32> usedIndexes;
+        const GSErrCode err = ACAPI_Attribute_EnumerateAttributesByType (typeID, [&usedIndexes] (API_Attribute& attr) {
+            usedIndexes.insert (GetAttributeIndex (attr.header.index));
+            if (attr.header.typeID == API_MaterialID) {
+                DisposeAttribute (attr);
+                attr.material.texture.fileLoc = nullptr;
+            }
+        });
+        if (err != NoError) {
+            attributeIndexes (CreateErrorResponse (err,
+                GS::UniString::Printf ("Failed to enumerate the %T attributes.", typeStr.ToPrintf ())));
+            continue;
+        }
+
+        GS::ObjectState typeResult;
+        typeResult.Add ("attributeType", typeStr);
+        typeResult.Add ("count", (Int32) usedIndexes.size ());
+        const auto& freeIndexes = typeResult.AddList<Int32> ("freeIndexes");
+        if (!usedIndexes.empty ()) {
+            const API_AttributeIndex firstValid = ACAPI_Attribute_GetFirstValidAttribute (typeID);
+            const Int32 firstIndex = firstValid != APIInvalidAttributeIndex ? GetAttributeIndex (firstValid) : *usedIndexes.begin ();
+            const Int32 lastIndex = *usedIndexes.rbegin ();
+            typeResult.Add ("firstIndex", firstIndex);
+            typeResult.Add ("lastIndex", lastIndex);
+            for (Int32 index = firstIndex; index < lastIndex; ++index) {
+                if (usedIndexes.find (index) == usedIndexes.end ()) {
+                    freeIndexes (index);
+                }
+            }
+        }
+        attributeIndexes (typeResult);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetAttributeIndexes needs Archicad 27 or later.");
 #endif
 }
 
