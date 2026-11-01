@@ -18,7 +18,8 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         public GetPropertyValuesOfElementsComponent()
             : base(
                 "GetPropertyValues",
-                "Get property values of elements.",
+                "Get property values of elements. It works for subelements of hierarchical elements also. " +
+                "With IncludeAvailability it also tells whether each property is available for the element.",
                 GroupNames.Properties)
         {
         }
@@ -32,6 +33,13 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             InGenerics(
                 "ElementGuids",
                 "Elements Guids to get the value for.");
+
+            InBoolean(
+                "IncludeAvailability",
+                "Also tell whether each property is available for the element (for example by its " +
+                "classification), in the IsAvailable output. Default is false.");
+
+            SetOptionality(2);
         }
 
         protected override void AddOutputs()
@@ -43,6 +51,11 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             OutTextTree(
                 "Values",
                 "The property values of the elements.");
+
+            OutBooleanTree(
+                "IsAvailable",
+                "Whether the property is available for the element, in the structure of the Values output. " +
+                "Only filled when IncludeAvailability is true.");
         }
 
         protected override void Solve(
@@ -62,13 +75,23 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 return;
             }
 
+            da.TryGet(
+                2,
+                out bool includeAvailability);
+
+            var parameters = new JObject
+            {
+                ["elements"] = JArray.FromObject(elements.Elements),
+                ["properties"] = JArray.FromObject(properties.Properties)
+            };
+            if (includeAvailability)
+            {
+                parameters["includeAvailability"] = true;
+            }
+
             if (!TryGetConvertedCadValues(
                     CommandName,
-                    new
-                    {
-                        elements = elements.Elements,
-                        properties = properties.Properties
-                    },
+                    parameters,
                     ToAddOn,
                     JHelp.Deserialize<PropertyValuesForElements>,
                     out PropertyValuesForElements response))
@@ -78,6 +101,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
             var elementIds = new DataTree<ElementGuidWrapper>();
             var values = new DataTree<string>();
+            var isAvailable = new DataTree<object>();
 
             for (var i = 0; i < response.PropertyValuesOrErrors.Count; i++)
             {
@@ -104,6 +128,13 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                     values.Add(
                         valueOrError.PropertyValue?.Value,
                         path);
+
+                    if (includeAvailability)
+                    {
+                        isAvailable.Add(
+                            valueOrError.IsAvailable,
+                            path);
+                    }
                 }
             }
 
@@ -114,6 +145,10 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             da.SetDataTree(
                 1,
                 values);
+
+            da.SetDataTree(
+                2,
+                isAvailable);
         }
 
         protected override System.Drawing.Bitmap Icon =>
