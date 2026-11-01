@@ -308,6 +308,10 @@ GSErrCode Initialize (void)
             applicationCommands, "1.7.3",
             "Turns the dialog auto close on or off. While it is on, Archicad closes the dialogs it would show with their default button instead of waiting for the user, so automation is not blocked by them. To have it on already while Archicad opens a project (before any command can be sent), set the TAPIR_DIALOG_AUTOCLOSE environment variable to true for the Archicad process before starting it."
         );
+        err |= RegisterCommand<GetDialogAutoCloseCommand> (
+            applicationCommands, "1.7.4",
+            "Tells whether the dialog auto close is on, the same state SetDialogAutoClose writes, so a script can restore it afterwards. The state belongs to the running Archicad process: it is off when Archicad starts (unless the TAPIR_DIALOG_AUTOCLOSE environment variable is true), it stays as last set until Archicad quits, and it is shared by every add-on and script in that Archicad."
+        );
 
         AddCommandGroup (applicationCommands);
     }
