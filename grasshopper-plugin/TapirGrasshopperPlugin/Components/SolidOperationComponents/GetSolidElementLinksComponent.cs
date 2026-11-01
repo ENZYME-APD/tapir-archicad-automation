@@ -57,6 +57,14 @@ namespace TapirGrasshopperPlugin.Components.SolidOperationComponents
             OutBooleanTree(
                 "OperatorSkipPolygonHoles",
                 "True if the link skips polygon holes (queried element is the operator).");
+
+            OutTextTree(
+                "TargetLinkTimes",
+                "When each link was made, where the queried element is the target (null if Archicad does not report it).");
+
+            OutTextTree(
+                "OperatorLinkTimes",
+                "When each link was made, where the queried element is the operator (null if Archicad does not report it).");
         }
 
         private static ElementGuidWrapper ElementIdFromGuidObject(
@@ -85,6 +93,8 @@ namespace TapirGrasshopperPlugin.Components.SolidOperationComponents
             var operatorOperations = new DataTree<object>();
             var operatorInheritAttributes = new DataTree<object>();
             var operatorSkipPolygonHoles = new DataTree<object>();
+            var targetLinkTimes = new DataTree<object>();
+            var operatorLinkTimes = new DataTree<object>();
 
             for (var i = 0; i < items.Count; i++)
             {
@@ -98,6 +108,8 @@ namespace TapirGrasshopperPlugin.Components.SolidOperationComponents
                 operatorOperations.EnsurePath(path);
                 operatorInheritAttributes.EnsurePath(path);
                 operatorSkipPolygonHoles.EnsurePath(path);
+                targetLinkTimes.EnsurePath(path);
+                operatorLinkTimes.EnsurePath(path);
 
                 if (item["solidLinksWithTheGivenTarget"] is JArray targetLinks)
                 {
@@ -114,6 +126,9 @@ namespace TapirGrasshopperPlugin.Components.SolidOperationComponents
                             path);
                         targetSkipPolygonHoles.Add(
                             JsonOutputHelp.Scalar(link["linkFlags"], "skipPolygonHoles"),
+                            path);
+                        targetLinkTimes.Add(
+                            JsonOutputHelp.Scalar(link, "linkTime"),
                             path);
                     }
                 }
@@ -134,6 +149,9 @@ namespace TapirGrasshopperPlugin.Components.SolidOperationComponents
                         operatorSkipPolygonHoles.Add(
                             JsonOutputHelp.Scalar(link["linkFlags"], "skipPolygonHoles"),
                             path);
+                        operatorLinkTimes.Add(
+                            JsonOutputHelp.Scalar(link, "linkTime"),
+                            path);
                     }
                 }
             }
@@ -146,6 +164,8 @@ namespace TapirGrasshopperPlugin.Components.SolidOperationComponents
             da.SetDataTree(5, operatorOperations);
             da.SetDataTree(6, operatorInheritAttributes);
             da.SetDataTree(7, operatorSkipPolygonHoles);
+            da.SetDataTree(8, targetLinkTimes);
+            da.SetDataTree(9, operatorLinkTimes);
         }
 
         protected override System.Drawing.Bitmap Icon =>

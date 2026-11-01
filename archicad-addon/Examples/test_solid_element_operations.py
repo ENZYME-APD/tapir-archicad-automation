@@ -197,6 +197,11 @@ for lk in solid_links:
     found_op = link_index.get((a_guid, b_guid))
     check(f'  lien {op} {a_guid[:6]}->{b_guid[:6]}', op, found_op)
 
+# Chaque lien indique quand il a ete cree (linkTime)
+for entry in entries:
+    for lk in entry.get('solidLinksWithTheGivenTarget', []) + entry.get('solidLinksWithTheGivenOperator', []):
+        check(f'  linkTime {lk.get("linkTime")}', True, bool(lk.get('linkTime')))
+
 # ---------------------------------------------------------------------------
 # STEP 4 — RemoveSolidElementLinks (teste sur la paire Subtraction)
 # ---------------------------------------------------------------------------
