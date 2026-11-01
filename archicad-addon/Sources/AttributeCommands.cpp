@@ -949,7 +949,9 @@ GS::ObjectState GetFillsCommand::Execute (const GS::ObjectState& parameters, GS:
         if (wantsField.Wants ("angle")) {
             fill.Add ("angle", attr.filltype.hAngle);
         }
-        if (wantsField.Wants ("bitPattern") && attr.filltype.subType == APIFill_Vector) {
+        // A percent fill (a Solid fill below 100 %) has a bitmap pattern too, so it is returned for Solid
+        // fills as well and a fill read here can be passed to CreateFills unchanged.
+        if (wantsField.Wants ("bitPattern") && (attr.filltype.subType == APIFill_Vector || attr.filltype.subType == APIFill_Solid)) {
             fill.Add ("bitPattern", GetBitPatternHex (attr.filltype.bitPat));
         }
         bool isGradient = (attr.filltype.subType == APIFill_LinearGradient || attr.filltype.subType == APIFill_RadialGradient);
@@ -4475,7 +4477,7 @@ GS::Optional<GS::UniString> CreateFillsCommand::GetInputParametersSchema () cons
                         },
                         "percent": {
                             "type": "number",
-                            "description": "Translucency percentage [0..1] (gradient and some Solid fills)."
+                            "description": "Translucency percentage [0..1] (gradient and Solid fills). A Solid fill with a percent below 1 is created as a percent fill (like the 25 % fill), 1 makes it a full Solid fill."
                         },
                         "texture": {
                             "description": "Used for Image and gradient fills. Only name, rotationAngle, xSize, ySize, mirrorX, and mirrorY are used for Fills.",
@@ -4671,7 +4673,13 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
         data.Get ("horizontalSpacing", fill.filltype.hXSpac);
         data.Get ("verticalSpacing", fill.filltype.hYSpac);
         data.Get ("angle", fill.filltype.hAngle);
-        data.Get ("percent", fill.filltype.percent);
+        // Archicad keeps the percent of a Solid fill only when isPercentFill is set. The DevKit documents
+        // it as output-only, but ACAPI_Attribute_CreateExt and ModifyExt read it: without it the fill
+        // comes out as a full Solid fill with percent 1 (#1613). It is only set when percent is given, so
+        // a Solid fill created or overwritten without percent stays as before.
+        if (data.Get ("percent", fill.filltype.percent) && fill.filltype.subType == APIFill_Solid) {
+            fill.filltype.isPercentFill = fill.filltype.percent < 1.0;
+        }
 
         GS::UniString bitPattern;
         if (data.Get ("bitPattern", bitPattern)) {
