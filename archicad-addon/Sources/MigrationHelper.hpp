@@ -650,6 +650,41 @@ inline GSErrCode ACAPI_LibraryPart_GetBuiltInLibpartUnId (short resId, char* unI
     return ACAPI_Goodies (APIAny_GetBuiltInLibpartUnIdID, (void*)(Int64)resId, unId);
 }
 
+inline GSErrCode ACAPI_LibraryPart_GetLibPartUnIDStr (const IO::Location* location, char* libPartUnId)
+{
+    return ACAPI_Environment (APIEnv_GetLibPartUnIDStrID, (void*) location, libPartUnId);
+}
+
+inline GSErrCode ACAPI_LibraryPart_GetLibPartRefGuid (const IO::Location* location, API_Guid* guid)
+{
+    return ACAPI_Environment (APIEnv_GetLibPartRefGuidID, (void*) location, guid);
+}
+
+inline GSErrCode ACAPI_LibraryPart_GetLibPartLockStatus (const IO::Location* location, API_LockableStatus* status, IO::Location* userCacheLibPartLocation = nullptr)
+{
+    return ACAPI_Environment (APIEnv_GetLibPartLockStatusID, (void*) location, status, userCacheLibPartLocation);
+}
+
+inline GSErrCode ACAPI_LibraryPart_CompareLibPartUnIds (const char* unIDStr1, const char* unIDStr2)
+{
+    return ACAPI_Goodies (APIAny_CompareLibPartUnIdsID, (void*) unIDStr1, (void*) unIDStr2);
+}
+
+inline bool ACAPI_Teamwork_IsServerLibPart (const IO::Location& location)
+{
+    return ACAPI_TeamworkControl_IsServerLibPart (location);
+}
+
+inline GSErrCode ACAPI_LibraryPart_GetSectionList (Int32 libInd, Int32* nSection, API_LibPartSection*** sections)
+{
+    return ACAPI_LibPart_GetSectionList (libInd, nSection, sections);
+}
+
+inline GSErrCode ACAPI_LibraryPart_GetSection (Int32 libInd, API_LibPartSection* section, GSHandle* sectionHdl, GS::UniString* sectionStr, GS::UniString* password = nullptr)
+{
+    return ACAPI_LibPart_GetSection (libInd, section, sectionHdl, sectionStr, password);
+}
+
 inline GSErrCode ACAPI_LibraryManagement_RunGDLParScript (const API_Elem_Head* elemHead, UInt32 mask = 0)
 {
     return ACAPI_Goodies (APIAny_RunGDLParScriptID, (void*) elemHead, (void*) (GS::IntPtr) mask);
