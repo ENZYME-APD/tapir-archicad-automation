@@ -781,6 +781,18 @@ inline GSErrCode ACAPI_IFC_GetIFCExportTranslatorsList (GS::Array<API_IFCTransla
     return ACAPI_Goodies (APIAny_GetIFCExportTranslatorsListID, &ifcExportTranslators);
 }
 
+// Before AC26 the IFC GlobalId conversions are the APIAny_APIGuidToIFCGuidID and
+// APIAny_IFCGuidToAPIGuidID goodies (APIdefs_Goodies.h): par1 is the input, par2 the output.
+inline GSErrCode ACAPI_IFC_APIGuidToIFCGuid (const API_Guid& apiGuid, GS::UniString& ifcGuid)
+{
+    return ACAPI_Goodies (APIAny_APIGuidToIFCGuidID, (void*) &apiGuid, &ifcGuid);
+}
+
+inline GSErrCode ACAPI_IFC_IFCGuidToAPIGuid (const GS::UniString& ifcGuid, API_Guid& apiGuid)
+{
+    return ACAPI_Goodies (APIAny_IFCGuidToAPIGuidID, (void*) &ifcGuid, &apiGuid);
+}
+
 inline GSErrCode ACAPI_MarkUp_ExportToBCF (const IO::Location& bcfFileLoc, const GS::Array<API_Guid>& issueIds, const bool useExternalId, const bool alignBySurveyPoint)
 {
     (void) alignBySurveyPoint;
