@@ -446,6 +446,18 @@ GSErrCode Initialize (void)
             projectCommands, "1.7.3",
             "Gets the dimension standards of the project (Options > Project Preferences > Dimensions) with their name and the unit, decimals and rounding of each dimension type, optionally only the one with the given name. Read-only. Available from Archicad 27."
         );
+        err |= RegisterCommand<GetExportToleranceCommand> (
+            projectCommands, "1.7.4",
+            "Gets the export tolerance: the largest distance allowed between an arc and the straight segments that replace it when curves are segmented for export."
+        );
+        err |= RegisterCommand<GetLast3DDefaultLevelsCommand> (
+            projectCommands, "1.7.4",
+            "Gets the last 3D default levels of the given element types' defaults."
+        );
+        err |= RegisterCommand<SetLast3DDefaultLevelsCommand> (
+            projectCommands, "1.7.4",
+            "Sets the last 3D default levels of the given element types' defaults."
+        );
         err |= RegisterCommand<GetProjectPreferencesCommand> (
             projectCommands, "1.7.2",
             "Gets pages of the project preferences (Options > Project Preferences): the working units, the dimensions, the calculation units and the zones. Further pages may follow."
