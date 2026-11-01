@@ -197,6 +197,133 @@ GS::ObjectState Set3DProjectionSettingsCommand::Execute (const GS::ObjectState& 
         : CreateFailedExecutionResult (err, "Failed to set the 3D projection settings.");
 }
 
+Get3DStylesCommand::Get3DStylesCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{}
+
+GS::String Get3DStylesCommand::GetName () const
+{
+    return "Get3DStyles";
+}
+
+GS::Optional<GS::UniString> Get3DStylesCommand::GetRawResponseSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "styleNames": {
+            "type": "array",
+            "description": "The names of the 3D styles of the project.",
+            "items": {
+                "type": "string"
+            }
+        },
+        "currentStyleName": {
+            "type": "string",
+            "description": "The name of the current 3D style, the one the 3D window uses."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "styleNames",
+        "currentStyleName"
+    ]
+})";
+}
+
+GS::ObjectState Get3DStylesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> styles;
+    GS::UniString current;
+    const GSErrCode err = ACAPI_View_Get3DStyleList (&styles, &current);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the 3D styles.");
+    }
+
+    GS::ObjectState response;
+    const auto& styleNames = response.AddList<GS::UniString> ("styleNames");
+    for (const GS::UniString& style : styles) {
+        styleNames (style);
+    }
+    response.Add ("currentStyleName", current);
+
+    return response;
+}
+
+ShowElementsIn3DCommand::ShowElementsIn3DCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String ShowElementsIn3DCommand::GetName () const
+{
+    return "ShowElementsIn3D";
+}
+
+GS::Optional<GS::UniString> ShowElementsIn3DCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "elements": {
+            "$ref": "#/Elements",
+            "description": "The elements to show in 3D. They become the selection, replacing the current one. Missing or empty: every element is shown, as Show All in 3D does."
+        }
+    },
+    "additionalProperties": false,
+    "required": []
+})";
+}
+
+GS::Optional<GS::UniString> ShowElementsIn3DCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState ShowElementsIn3DCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    if (!parameters.Get ("elements", elements) || elements.IsEmpty ()) {
+        const GSErrCode err = ACAPI_View_ShowAllIn3D ();
+        return err == NoError
+            ? CreateSuccessfulExecutionResult ()
+            : CreateFailedExecutionResult (err, "Failed to show all elements in 3D.");
+    }
+
+    // Show Selection in 3D shows exactly the selected elements, so the given ones
+    // replace the current selection instead of being added to it.
+    GS::Array<API_Neig> neigs;
+    for (const GS::ObjectState& element : elements) {
+        const API_Guid guid = GetGuidFromElementsArrayItem (element);
+        if (guid == APINULLGuid) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: elementId is missing or invalid.");
+        }
+        // Checked before the selection is cleared, so a wrong guid keeps the user's selection.
+        API_Elem_Head head = {};
+        head.guid = guid;
+        if (ACAPI_Element_GetHeader (&head) != NoError) {
+            return CreateFailedExecutionResult (APIERR_BADID, "Element not found.");
+        }
+        neigs.Push (API_Neig (guid));
+    }
+
+    GSErrCode err = ACAPI_Selection_DeselectAll ();
+    if (err != NoError && err != APIERR_NOSEL) {
+        return CreateFailedExecutionResult (err, "Failed to clear the selection.");
+    }
+
+    err = ACAPI_Selection_Select (neigs, true);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to select the elements.");
+    }
+
+    err = ACAPI_View_ShowSelectionIn3D ();
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to show the selected elements in 3D.");
+}
+
 // Both commands mirror API_3DWindowInfo: the pixel size of the 3D window (hSize, vSize) and
 // the zoom of its projection (zoomScaleX/Y, zoomDispX/Y). Archicad applies the size only
 // when setWindowSize is true and the zoom only when setZoom is true.
