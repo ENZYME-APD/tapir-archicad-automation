@@ -22,6 +22,17 @@ Command: IFCFileOperation
 Parameters:
 {
     "ifcFilePath": "<PATH>filename.ifc",
+    "method": "merge",
+    "storyIndex": 0
+}
+Response:
+{
+    "success": true
+}
+Command: IFCFileOperation
+Parameters:
+{
+    "ifcFilePath": "<PATH>filename.ifc",
     "method": "open"
 }
 Response:

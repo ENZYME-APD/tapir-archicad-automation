@@ -14,6 +14,13 @@ aclib.RunTapirCommand ('IFCFileOperation', {
     'method': 'merge'
 })
 
+# The first storey of the IFC file goes to story 0, whichever story is active.
+aclib.RunTapirCommand ('IFCFileOperation', {
+    'ifcFilePath': ifcFilePath,
+    'method': 'merge',
+    'storyIndex': 0
+})
+
 aclib.RunTapirCommand ('IFCFileOperation', {
     'ifcFilePath': ifcFilePath,
     'method': 'open'

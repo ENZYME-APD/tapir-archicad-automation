@@ -5037,6 +5037,10 @@ GS::Optional<GS::UniString> IFCFileOperationCommand::GetInputParametersSchema ()
             "elementsToExport": {
                 "$ref": "#/IFCElementsToExport",
                 "description": "Only for the save method, and only together with translatorName. The default is VisibleElementsOnAllStories."
+            },
+            "storyIndex": {
+                "type": "integer",
+                "description": "Only for the merge method: the story the first storey of the IFC file is placed on, the IFC's other storeys follow on the stories above it. Without it Archicad uses the active story of the floor plan. The active story and the current window are restored after the merge. See GetStories for the valid story indices."
             }
         },
         "additionalProperties": false,
@@ -5111,6 +5115,68 @@ GS::ObjectState IFCFileOperationCommand::Execute (const GS::ObjectState& paramet
         // The add-on path below has no element filter, so a filter without a translator
         // would be dropped without a word.
         return CreateFailedExecutionResult (APIERR_BADPARS, "elementsToExport is only valid together with translatorName");
+    }
+
+    // Without a dialog, a merge puts the first storey of the IFC file on the active story of
+    // the floor plan and the next storeys on the stories above it (#1616, tested on Archicad 29).
+    // So the requested story is made the active one for the merge, the same way ChangeWindow
+    // does it, and the previous story and window are restored afterwards.
+    Int32 storyIndex = 0;
+    const bool hasStoryIndex = parameters.Get ("storyIndex", storyIndex);
+    API_WindowInfo previousWindow = {};
+    bool windowSwitched = false;
+    short previousStory = 0;
+    bool storyChanged = false;
+    const GS::OnExit restoreStoryAndWindow ([&] () {
+        if (storyChanged) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = previousStory;
+            ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        }
+        if (windowSwitched) {
+            ACAPI_Window_ChangeWindow (&previousWindow);
+        }
+    });
+    if (hasStoryIndex) {
+        if (ioParams.method != IO_MERGE) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "storyIndex is only valid with the merge method");
+        }
+
+        API_StoryInfo storyInfo = {};
+        GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+        BMKillHandle (reinterpret_cast<GSHandle*> (&storyInfo.data));
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to retrieve stories info.");
+        }
+        if (storyIndex < storyInfo.firstStory || storyIndex > storyInfo.lastStory) {
+            return CreateFailedExecutionResult (APIERR_BADINDEX, "storyIndex is out of range; see GetStories for the valid story indices.");
+        }
+
+        if (ACAPI_Window_GetCurrentWindow (&previousWindow) == NoError && previousWindow.typeID != APIWind_FloorPlanID) {
+            API_WindowInfo floorPlanWindow = {};
+            floorPlanWindow.typeID = APIWind_FloorPlanID;
+            if (ACAPI_Window_GetDatabaseInfo (&floorPlanWindow) == NoError) {
+                ACAPI_Database_ChangeCurrentDatabase (&floorPlanWindow);
+            }
+            err = ACAPI_Window_ChangeWindow (&floorPlanWindow);
+            if (err != NoError) {
+                return CreateFailedExecutionResult (err, "Failed to change the window to the floor plan.");
+            }
+            windowSwitched = true;
+        }
+
+        if (storyIndex != storyInfo.actStory) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = static_cast<short> (storyIndex);
+            err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+            if (err != NoError) {
+                return CreateFailedExecutionResult (err, "Failed to change the active story to storyIndex.");
+            }
+            previousStory = storyInfo.actStory;
+            storyChanged = true;
+        }
     }
 
     ioParams.fileLoc = &ifcFileLocation;
