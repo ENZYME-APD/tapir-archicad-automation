@@ -734,6 +734,26 @@ inline GSErrCode ACAPI_Navigator_GetLayoutBook (API_LayoutBook* book)
     return ACAPI_Database (APIDb_GetLayoutBookID, book);
 }
 
+// Drawing Manager data (APIdefs_Database.h): APIDb_CheckDrawingStatusID takes the drawing
+// guid as par1 and the status as par2; APIDb_GetDrawingLinkID takes the drawing guid as par1
+// and the API_DrawingLinkInfo to fill as par2.
+inline GSErrCode ACAPI_Drawing_CheckDrawingStatus (API_Guid* drawingGuid, Int32* status)
+{
+    return ACAPI_Database (APIDb_CheckDrawingStatusID, drawingGuid, status);
+}
+
+inline GSErrCode ACAPI_Drawing_GetDrawingLink (const API_Guid* drawingGuid, API_DrawingLinkInfo* drawingLinkInfo)
+{
+    return ACAPI_Database (APIDb_GetDrawingLinkID, (void*) drawingGuid, drawingLinkInfo);
+}
+
+// APIAny_GetRenovationFilterNameID (APIdefs_Goodies.h): par1 is the renovation filter guid,
+// par2 the GS::UniString to receive its name.
+inline GSErrCode ACAPI_Renovation_GetRenovationFilterName (const API_Guid* renovationFilterGuid, GS::UniString* name)
+{
+    return ACAPI_Goodies (APIAny_GetRenovationFilterNameID, (void*) renovationFilterGuid, name);
+}
+
 // The ghost story settings of the floor plan (APIEnv_GetGhostStorySettingsID) and the
 // ghost record of a database: before AC27 all four are ACAPI_Environment functions
 // (APIEnv_GetGhostRecordID and its change/create pair).

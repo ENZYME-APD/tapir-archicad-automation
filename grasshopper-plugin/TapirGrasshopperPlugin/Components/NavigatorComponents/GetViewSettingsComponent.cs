@@ -82,6 +82,10 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             OutBooleans(
                 nameof(ViewSettings.UsePhotoRendering) + "s",
                 "Whether photo rendering is used for each view.");
+
+            OutTexts(
+                nameof(ViewSettings.RenovationFilterName) + "s",
+                "Name of the renovation filter of each view.");
         }
 
         protected override void Solve(
@@ -189,6 +193,10 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             da.SetDataList(
                 16,
                 settings.Select(x => x?.UsePhotoRendering));
+
+            da.SetDataList(
+                17,
+                settings.Select(x => x?.RenovationFilterName));
         }
 
         protected override System.Drawing.Bitmap Icon =>
