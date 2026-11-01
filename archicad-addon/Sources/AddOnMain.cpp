@@ -480,7 +480,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetProjectNotesCommand> (
             projectCommands, "1.7.3",
-            "Changes the Project Notes of the project (File > Info > Project Notes). Only the given fields are changed; texts longer than the field Archicad stores are truncated."
+            "Changes the Project Notes of the project (File > Info > Project Notes). Only the given fields are changed; texts longer than the field Archicad stores are truncated. architect and draftsmen are full names that Archicad keeps as name parts: a new name is stored in the given name with the other parts cleared, and the parts of a name that is not given or not changed are kept."
         );
         err |= RegisterCommand<GetSunSettingsCommand> (
             projectCommands, "1.7.3",

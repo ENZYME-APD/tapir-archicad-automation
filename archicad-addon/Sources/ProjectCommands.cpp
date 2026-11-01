@@ -2984,11 +2984,11 @@ static const char* ProjectNotesPropertiesSchema = R"(
             },
             "architect": {
                 "type": "string",
-                "description": "Architect."
+                "description": "Architect: the full name of the Project Info contact. Archicad keeps it as name parts (title prefix, given, middle and family name, title suffix); SetProjectNotes puts a new value into the given name and clears the other parts, so it reads back unchanged. Use SetProjectInfoField to set the parts."
             },
             "draftsmen": {
                 "type": "string",
-                "description": "Draftsmen."
+                "description": "Draftsmen: the full name of the Project Info CAD technician, kept as name parts like architect."
             },
             "projectStatus": {
                 "type": "string",
@@ -3095,6 +3095,48 @@ GS::Optional<GS::UniString> SetProjectNotesCommand::GetRawResponseSchema () cons
     })";
 }
 
+// architect and draftsmen are the full names of two Project Info persons, which Archicad keeps as name parts.
+// ACAPI_ProjectSetting_ChangeProjectNotes writes the full name it is given into the given name and keeps the other
+// parts, so every write added a copy of the name (#1559, tested on Archicad 29). The parts are read before the
+// write and set afterwards: back to how they were for an unchanged name, or to the new name in the given name
+// alone, so the full name reads back as it was written.
+static const char* ProjectNotesNameParts[] = { "PREFIXTITLE", "GIVENNAME", "MIDDLENAME", "FAMILYNAME", "SUFFIXTITLE" };
+
+static GS::HashTable<GS::UniString, GS::UniString> GetProjectInfoAutoTexts ()
+{
+    GS::HashTable<GS::UniString, GS::UniString> values;
+    GS::Array<GS::ArrayFB<GS::UniString, 3>> autoTexts;
+    if (ACAPI_AutoText_GetAutoTexts (&autoTexts, APIAutoText_All) == NoError) {
+        for (const auto& autoText : autoTexts) {
+            values.Put (autoText[1], autoText[2]);
+        }
+    }
+    return values;
+}
+
+static GSErrCode SetNameParts (const GS::UniString& person, const GS::HashTable<GS::UniString, GS::UniString>& before, const GS::Optional<GS::UniString>& newFullName)
+{
+    const GS::HashTable<GS::UniString, GS::UniString> current = GetProjectInfoAutoTexts ();
+    for (const char* part : ProjectNotesNameParts) {
+        GS::UniString id = person + "_" + part;
+        if (!before.ContainsKey (id) || !current.ContainsKey (id)) {
+            continue;
+        }
+        GS::UniString value = before.Get (id);
+        if (newFullName.HasValue ()) {
+            value = GS::UniString (part) == "GIVENNAME" ? newFullName.Get () : GS::UniString ();
+        }
+        if (current.Get (id) != value) {
+            // An empty value is cleared with nullptr, see SetProjectInfoFieldCommand.
+            const GSErrCode err = ACAPI_AutoText_SetAnAutoText (&id, value.IsEmpty () ? nullptr : &value);
+            if (err != NoError) {
+                return err;
+            }
+        }
+    }
+    return NoError;
+}
+
 GS::ObjectState SetProjectNotesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     API_ProjectNoteInfo projectNotes = {};
@@ -3102,6 +3144,8 @@ GS::ObjectState SetProjectNotesCommand::Execute (const GS::ObjectState& paramete
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to get the project notes.");
     }
+    const API_ProjectNoteInfo notesBefore = projectNotes;
+    const GS::HashTable<GS::UniString, GS::UniString> autoTextsBefore = GetProjectInfoAutoTexts ();
 
     // Fields that are not given keep their current value. Longer texts are truncated to the field's length.
     bool hasAnyInput = false;
@@ -3123,11 +3167,35 @@ GS::ObjectState SetProjectNotesCommand::Execute (const GS::ObjectState& paramete
         return CreateFailedExecutionResult (APIERR_BADPARS, "No project notes field was given to change.");
     }
 
+    // A name counts as changed when the stored text changes; the new name is taken from the request, which keeps its
+    // non-ASCII characters (the project notes hold 8-bit text).
+    const auto getNewFullName = [&] (const char* key, const char* before, const char* after) -> GS::Optional<GS::UniString> {
+        GS::UniString requested;
+        if (strcmp (before, after) == 0 || !parameters.Get (key, requested)) {
+            return GS::NoValue;
+        }
+        return requested;
+    };
+    const GS::Optional<GS::UniString> newArchitect = getNewFullName ("architect", notesBefore.architect, projectNotes.architect);
+    const GS::Optional<GS::UniString> newDraftsmen = getNewFullName ("draftsmen", notesBefore.draftsmen, projectNotes.draftsmen);
+    // The name parts are set inside the same undoable command, so one Undo takes back the whole change.
+    bool namePartsFailed = false;
     err = ACAPI_CallUndoableCommand ("Change Project Notes", [&] () -> GSErrCode {
-        return ACAPI_ProjectSetting_ChangeProjectNotes (&projectNotes);
+        GSErrCode changeErr = ACAPI_ProjectSetting_ChangeProjectNotes (&projectNotes);
+        if (changeErr != NoError) {
+            return changeErr;
+        }
+        changeErr = SetNameParts ("CONTACT", autoTextsBefore, newArchitect);
+        if (changeErr == NoError) {
+            changeErr = SetNameParts ("CAD_TECHNICIAN", autoTextsBefore, newDraftsmen);
+        }
+        namePartsFailed = changeErr != NoError;
+        return changeErr;
     });
     if (err != NoError) {
-        return CreateFailedExecutionResult (err, "Failed to change the project notes.");
+        return CreateFailedExecutionResult (err, namePartsFailed ?
+            "Failed to set the name parts of the architect or the draftsmen in the project info." :
+            "Failed to change the project notes.");
     }
 
     return CreateSuccessfulExecutionResult ();

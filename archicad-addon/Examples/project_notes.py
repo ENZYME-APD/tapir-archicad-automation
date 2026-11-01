@@ -19,4 +19,10 @@ print (aclib.JsonDumpDictionary ({
     'notes': projectNotes['notes']
 }))
 
+# architect and draftsmen were not given, so they are unchanged. Archicad keeps them as name parts (see the
+# CONTACT_* and CAD_TECHNICIAN_* fields of GetProjectInfoFields), which SetProjectNotes leaves as they are.
+print ('Architect and draftsmen unchanged: {}'.format (
+    projectNotes['architect'] == originalProjectNotes['architect'] and projectNotes['draftsmen'] == originalProjectNotes['draftsmen']))
+
 aclib.RunTapirCommand ('SetProjectNotes', originalProjectNotes, debug = False)
+print ('Restored: {}'.format (aclib.RunTapirCommand ('GetProjectNotes', debug = False) == originalProjectNotes))
