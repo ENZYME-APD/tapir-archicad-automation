@@ -370,8 +370,9 @@ GS::ObjectState DeleteEmbeddedLibraryItemsCommand::Execute (const GS::ObjectStat
         return IO::fileSystem.Contains (location, &exists) == NoError && exists;
     };
 
-    // Index of the item in the input and its location, for every item with a path.
-    // The existing items are deleted with one API call, the others one by one as before.
+    // Index of the item in the input and its location, for every existing item.
+    // They are deleted with one API call; an item that does not exist is a failed result,
+    // because the API reports no error for a location that is not there.
     struct ItemToDelete {
         UIndex       inputIndex;
         IO::Location location;
@@ -387,6 +388,8 @@ GS::ObjectState DeleteEmbeddedLibraryItemsCommand::Execute (const GS::ObjectStat
         GSErrCode err = ACAPI_LibraryManagement_DeleteEmbeddedLibItem (&itemLocation, keepGSMFile, silentMode);
         if (err != NoError) {
             results[item.inputIndex] = CreateFailedExecutionResult (err, "Failed to delete the embedded library item on the given path.");
+        } else if (ItemExists (item.location)) {
+            results[item.inputIndex] = CreateFailedExecutionResult (APIERR_GENERAL, "The embedded library item is still there after the deletion.");
         }
     };
 
@@ -400,19 +403,20 @@ GS::ObjectState DeleteEmbeddedLibraryItemsCommand::Execute (const GS::ObjectStat
         IO::Location itemLocation = embeddedLibraryFolder;
         itemLocation.AppendToLocal (IO::RelativeLocation (path));
 
-        results.Push (CreateSuccessfulExecutionResult ());
-        if (ItemExists (itemLocation)) {
-            itemsToDelete.Push ({ i, itemLocation });
-            locationsToDelete.Push (itemLocation);
-        } else {
-            DeleteOneByOne ({ i, itemLocation });
+        if (!ItemExists (itemLocation)) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No item at the given path in the embedded library."));
+            continue;
         }
+
+        results.Push (CreateSuccessfulExecutionResult ());
+        itemsToDelete.Push ({ i, itemLocation });
+        locationsToDelete.Push (itemLocation);
     }
 
-    if (!locationsToDelete.IsEmpty () &&
-        ACAPI_LibraryManagement_DeleteEmbeddedLibItems (&locationsToDelete, keepGSMFile, silentMode) != NoError) {
-        // The API reports one error for the whole list, so find out item by item which ones failed:
-        // an item that is gone now was deleted, the others are tried one by one as before.
+    if (!locationsToDelete.IsEmpty ()) {
+        ACAPI_LibraryManagement_DeleteEmbeddedLibItems (&locationsToDelete, keepGSMFile, silentMode);
+        // The API reports at most one error for the whole list, and none for an item it left in place,
+        // so check item by item: an item that is gone now was deleted, the others are tried one by one.
         for (const ItemToDelete& item : itemsToDelete) {
             if (ItemExists (item.location)) {
                 DeleteOneByOne (item);
