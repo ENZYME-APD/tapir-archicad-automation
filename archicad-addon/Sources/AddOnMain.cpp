@@ -1253,6 +1253,14 @@ GSErrCode Initialize (void)
             propertyCommands, "1.7.3",
             "Sets one property value on all the given elements in a single step. If the property is not available for any of the elements, none of them is changed. Available from Archicad 27."
         );
+        err |= RegisterCommand<CheckPropertyExpressionsCommand> (
+            propertyCommands, "1.7.4",
+            "Checks whether the given property expressions are syntactically valid."
+        );
+        err |= RegisterCommand<GetPropertyExpressionReferencesCommand> (
+            propertyCommands, "1.7.4",
+            "Returns the strings that refer to the given properties in property expressions."
+        );
         err |= RegisterCommand<MakePropertyAvailableForElementsCommand> (
             propertyCommands, "1.7.2",
             "Makes a property definition available for all the given elements. Available only in Archicad 27."

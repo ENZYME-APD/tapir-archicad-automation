@@ -757,6 +757,18 @@ inline GSErrCode ACAPI_View_CreateGhostRecord (const API_GhostRecord* ghostRecor
     return ACAPI_Environment (APIEnv_CreateGhostRecordID, (void*) ghostRecord);
 }
 
+// APIAny_CheckPropertyExpressionStringID: par1 is the expression (GS::UniString*).
+inline GSErrCode ACAPI_Property_CheckPropertyExpressionString (const GS::UniString* propertyExpressionString)
+{
+    return ACAPI_Goodies (APIAny_CheckPropertyExpressionStringID, (void*) propertyExpressionString);
+}
+
+// APIAny_GetPropertyExprReferenceStringID: par1 is the definition, par2 the reference string.
+inline GSErrCode ACAPI_Property_GetPropertyExprReferenceString (const API_PropertyDefinition* propertyDefinition, GS::UniString* propertyReferenceString)
+{
+    return ACAPI_Goodies (APIAny_GetPropertyExprReferenceStringID, (void*) propertyDefinition, propertyReferenceString);
+}
+
 inline GSErrCode ACAPI_CurtainWall_IsCWPanelDegenerate (const API_Guid* guid, bool* isDegenerate)
 {
     return ACAPI_Database (APIDb_IsCWPanelDegenerateID, const_cast<API_Guid*> (guid), isDegenerate);
