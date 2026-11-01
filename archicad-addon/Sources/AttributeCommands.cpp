@@ -412,6 +412,304 @@ GS::ObjectState GetAttributesFromProjectCommand::Execute (const GS::ObjectState&
 #endif
 }
 
+ImportAttributesFromProjectCommand::ImportAttributesFromProjectCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ImportAttributesFromProjectCommand::GetName () const
+{
+    return "ImportAttributesFromProject";
+}
+
+GS::Optional<GS::UniString> ImportAttributesFromProjectCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "projectFilePath": {
+                "type": "string",
+                "description": "The absolute path of the project or template file (for example .pln or .tpl) to import the attributes from.",
+                "minLength": 1
+            },
+            "attributeTypes": {
+                "type": "array",
+                "description": "The attribute types to import. Line, Fill, ZoneCategory, PenTable and OperationProfile can be imported. The other types fail with an error item: Archicad does not read Layer, Surface, BuildingMaterial and MEPSystem from a closed file, and a Composite, Profile or LayerCombination refers to such attributes by their index in the source file.",
+                "items": {
+                    "$ref": "#/AttributeType"
+                },
+                "minItems": 1
+            },
+            "attributeNames": {
+                "type": "array",
+                "description": "Import only the attributes with these names. All attributes of the given types are imported when it is omitted.",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "overwriteExisting": {
+                "type": "boolean",
+                "description": "What happens to an attribute whose name already exists in the open project. false (default): it is skipped and the existing attribute is kept. true: the existing attribute is overwritten with the imported definition and keeps its index and guid."
+            },
+            "dryRun": {
+                "type": "boolean",
+                "description": "If true, nothing is changed: the response reports what an import would do."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectFilePath",
+            "attributeTypes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ImportAttributesFromProjectCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "oneOf": [
+            {
+                "type": "object",
+                "properties": {
+                    "attributesByType": {
+                        "type": "array",
+                        "description": "One item per requested attribute type, in the order of attributeTypes.",
+                        "items": {
+                            "type": "object",
+                            "oneOf": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "attributeType": {
+                                            "$ref": "#/AttributeType"
+                                        },
+                                        "attributes": {
+                                            "type": "array",
+                                            "description": "One item per imported (or, with dryRun, importable) attribute of the source file.",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "The name of the attribute in the source file."
+                                                    },
+                                                    "sourceIndex": {
+                                                        "type": "integer",
+                                                        "description": "The index of the attribute in the source file. Archicad hands out a new guid for the attributes of another file on every read, so they are identified by name and index."
+                                                    },
+                                                    "result": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "created",
+                                                            "overwritten",
+                                                            "skipped",
+                                                            "failed"
+                                                        ],
+                                                        "description": "created: new in the open project. overwritten: an attribute of the same name was overwritten. skipped: an attribute of the same name exists and overwriteExisting is false. failed: see error. With dryRun the result is what an import would do."
+                                                    },
+                                                    "attributeId": {
+                                                        "$ref": "#/AttributeId",
+                                                        "description": "The attribute in the open project. Missing when it was not created (failed, or created with dryRun)."
+                                                    },
+                                                    "error": {
+                                                        "$ref": "#/Error"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "name",
+                                                    "sourceIndex",
+                                                    "result"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "attributeType",
+                                        "attributes"
+                                    ]
+                                },
+                                {
+                                    "$ref": "#/ErrorItem"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "attributesByType"
+                ]
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    })";
+}
+
+#ifdef ServerMainVers_2700
+// The types an import brings over complete. ACAPI_Attribute_GetAttributesFromProject returns nothing
+// for Layer, Surface, BuildingMaterial and MEPSystem (#1582). A Composite, Profile or LayerCombination
+// refers to building materials, fills or layers by their index in the source file, and those indexes
+// would point at unrelated attributes of the open project.
+static bool IsImportableAttributeType (API_AttrTypeID typeID)
+{
+    switch (typeID) {
+        case API_LinetypeID:
+        case API_FilltypeID:
+        case API_ZoneCatID:
+        case API_PenTableID:
+        case API_OperationProfileID:
+            return true;
+        default:
+            return false;
+    }
+}
+
+// Looks the attribute up by name, as the Create* commands do with overwriteExisting.
+static bool FindAttributeByName (API_AttrTypeID typeID, const GS::UniString& name, API_Attr_Head& found)
+{
+    GS::UniString nameCopy = name;
+    API_Attribute attr = {};
+    attr.header.typeID = typeID;
+    attr.header.uniStringNamePtr = &nameCopy;
+    const bool exists = (ACAPI_Attribute_Get (&attr) == NoError);
+    if (exists) {
+        found = attr.header;
+        found.uniStringNamePtr = nullptr;
+    }
+    DisposeAttribute (attr);
+    return exists;
+}
+
+#endif
+
+GS::ObjectState ImportAttributesFromProjectCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::UniString projectFilePath;
+    if (!parameters.Get ("projectFilePath", projectFilePath) || projectFilePath.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "projectFilePath is missing.");
+    }
+    const IO::Location location (projectFilePath);
+    bool exists = false;
+    if (IO::fileSystem.Contains (location, &exists) != NoError || !exists) {
+        return CreateErrorResponse (APIERR_BADPARS,
+            GS::UniString::Printf ("The file '%T' does not exist.", projectFilePath.ToPrintf ()));
+    }
+
+    GS::Array<GS::UniString> attributeTypes;
+    parameters.Get ("attributeTypes", attributeTypes);
+    GS::Array<GS::UniString> attributeNames;
+    const bool filterByName = parameters.Get ("attributeNames", attributeNames);
+    bool overwriteExisting = false;
+    parameters.Get ("overwriteExisting", overwriteExisting);
+    bool dryRun = false;
+    parameters.Get ("dryRun", dryRun);
+
+    GS::ObjectState response;
+    const auto& attributesByType = response.AddList<GS::ObjectState> ("attributesByType");
+
+    for (const GS::UniString& typeStr : attributeTypes) {
+        const API_AttrTypeID typeID = ConvertAttributeTypeStringToID (typeStr);
+        if (typeID == API_ZombieAttrID) {
+            attributesByType (CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid attributeType '%T'.", typeStr.ToPrintf ())));
+            continue;
+        }
+        if (!IsImportableAttributeType (typeID)) {
+            attributesByType (CreateErrorResponse (APIERR_NOTSUPPORTED,
+                GS::UniString::Printf ("%T attributes cannot be imported: Archicad does not read Layer, Surface, BuildingMaterial and MEPSystem attributes from a closed file, and Composite, Profile and LayerCombination attributes refer to such attributes by their index in the source file.", typeStr.ToPrintf ())));
+            continue;
+        }
+
+        GS::Array<GS::Pair<API_Attribute, API_AttributeDefExt>> loaded;
+        const GSErrCode loadErr = ACAPI_Attribute_GetAttributesFromProject (location, typeID, &loaded);
+        if (loadErr != NoError) {
+            for (GS::Pair<API_Attribute, API_AttributeDefExt>& item : loaded) {
+                ACAPI_DisposeAttrDefsHdlsExt (&item.second);
+                DisposeAttribute (item.first);
+            }
+            attributesByType (CreateErrorResponse (loadErr,
+                GS::UniString::Printf ("Failed to read the %T attributes of the project file.", typeStr.ToPrintf ())));
+            continue;
+        }
+
+        GS::ObjectState typeResult;
+        typeResult.Add ("attributeType", typeStr);
+        const auto& attributes = typeResult.AddList<GS::ObjectState> ("attributes");
+        for (GS::Pair<API_Attribute, API_AttributeDefExt>& item : loaded) {
+            API_Attribute& attr = item.first;
+            // Only the legacy 8-bit name comes with an attribute of another file (see GetAttributesFromProject).
+            GS::UniString name (attr.header.name);
+            if (filterByName && !attributeNames.Contains (name)) {
+                ACAPI_DisposeAttrDefsHdlsExt (&item.second);
+                DisposeAttribute (attr);
+                continue;
+            }
+
+            GS::ObjectState attributeResult;
+            attributeResult.Add ("name", name);
+            attributeResult.Add ("sourceIndex", GetAttributeIndex (attr.header.index));
+
+            API_Attr_Head existing = {};
+            const bool nameExists = FindAttributeByName (typeID, name, existing);
+            if (nameExists && !overwriteExisting) {
+                attributeResult.Add ("result", "skipped");
+                attributeResult.Add ("attributeId", CreateGuidObjectState (existing.guid));
+            } else if (dryRun) {
+                attributeResult.Add ("result", nameExists ? "overwritten" : "created");
+                if (nameExists) {
+                    attributeResult.Add ("attributeId", CreateGuidObjectState (existing.guid));
+                }
+            } else {
+                attr.header.uniStringNamePtr = &name;
+                GSErrCode err = NoError;
+                if (nameExists) {
+                    // Overwritten in place: the attribute keeps its index and guid, so the elements and
+                    // attributes of the open project that refer to it keep doing so.
+                    attr.header.index = existing.index;
+                    attr.header.guid = existing.guid;
+                    err = ACAPI_Attribute_ModifyExt (&attr, &item.second);
+                } else {
+                    // The guid that comes with the attribute is not the one stored in the source file:
+                    // ACAPI_Attribute_GetAttributesFromProject hands out a new one on every read. So the
+                    // new attribute gets its own guid from Archicad.
+                    attr.header.guid = APINULLGuid;
+                    err = ACAPI_Attribute_CreateExt (&attr, &item.second);
+                }
+                attr.header.uniStringNamePtr = nullptr;
+
+                if (err != NoError) {
+                    attributeResult.Add ("result", "failed");
+                    GS::ObjectState error;
+                    error.Add ("code", err);
+                    error.Add ("message", nameExists ? "Failed to overwrite the attribute." : "Failed to create the attribute.");
+                    attributeResult.Add ("error", error);
+                } else {
+                    attributeResult.Add ("result", nameExists ? "overwritten" : "created");
+                    attributeResult.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
+                }
+            }
+            attributes (attributeResult);
+
+            ACAPI_DisposeAttrDefsHdlsExt (&item.second);
+            DisposeAttribute (attr);
+        }
+
+        attributesByType (typeResult);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_GENERAL, "ImportAttributesFromProject needs Archicad 27 or later.");
+#endif
+}
+
 GetBuildingMaterialPhysicalPropertiesCommand::GetBuildingMaterialPhysicalPropertiesCommand () :
     CommandBase (CommonSchema::Used)
 {
