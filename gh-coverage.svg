@@ -28,5 +28,5 @@
 <rect x="548.3" y="176" width="31.7" height="12" fill="#3987e5" clip-path="url(#params)"/>
 <text x="736" y="187" font-size="13" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#1f2328"><tspan font-weight="600">92 %</tspan><tspan style="fill:#59636e"> complete</tspan></text>
 <text x="180" y="208" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#1f2328" style="fill:#59636e">511 with every parameter, 44 with the rest through a JSON input, 0 with some missing</text>
-<text x="24" y="238" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#1f2328" style="fill:#59636e">Not applicable and skipped commands are left out. Updated 2026-11-01 16:00 UTC.</text>
+<text x="24" y="238" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#1f2328" style="fill:#59636e">Not applicable and skipped commands are left out. Updated 2026-11-01 19:11 UTC.</text>
 </svg>
