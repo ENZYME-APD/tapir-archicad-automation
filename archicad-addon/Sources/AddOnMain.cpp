@@ -2309,11 +2309,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateMEPRoutingElementsCommand> (
             mepCommands, "1.5.6",
-            "Creates MEP routing elements (duct, pipe or cable carrier routes) along the given polylines with optional cross section data (shape, size, preference table and reference id), MEP system and layer (also set on the segments, elbows and transitions). Available from Archicad 28."
+            "Creates MEP routing elements (duct, pipe or cable carrier routes) along the given polylines with optional cross section data (shape, size, preference table and reference id), MEP system and layer (also set on the segments, elbows and transitions), and optional elbow and transition defaults (preference tables and elbow radius factor, from Archicad 29) that apply only to what is placed. Available from Archicad 28."
         );
         err |= RegisterCommand<CreateMEPElementsCommand> (
             mepCommands, "1.5.6",
-            "Creates MEP elements (Terminal, Accessory, Equipment or Fitting) at the given positions. Available from Archicad 28."
+            "Creates MEP elements (Terminal, Accessory, Equipment or Fitting) at the given positions, optionally with a changed insulation that applies only to what is placed. Available from Archicad 28."
         );
         err |= RegisterCommand<ModifyMEPRoutingElementsCommand> (
             mepCommands, "1.5.6",
@@ -2413,7 +2413,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyElectricalProjectSettingsCommand> (
             mepCommands, "1.7.2",
-            "Modifies the electrical project settings: sets the default voltage and adds or removes wiring types and load classifications. Available from Archicad 30."
+            "Modifies the electrical project settings: sets the default voltage and clears, adds or removes wiring types and load classifications. Available from Archicad 30."
         );
         err |= RegisterCommand<GetMEPElementDetailsCommand> (
             mepCommands, "1.7.3",
