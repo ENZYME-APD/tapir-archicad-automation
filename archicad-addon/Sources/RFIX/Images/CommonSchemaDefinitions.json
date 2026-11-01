@@ -8846,6 +8846,10 @@
                 "type": "boolean",
                 "description": "True if the area text is shown."
             },
+            "fillOrientation": {
+                "$ref": "#/HatchOrientation",
+                "description": "Orientation, origin and distortion of the fill pattern."
+            },
             "zCoordinate": {
                 "type": "number"
             }
@@ -11420,6 +11424,10 @@
             },
             "showArea": {
                 "type": "boolean"
+            },
+            "fillOrientation": {
+                "$ref": "#/HatchOrientation",
+                "description": "Orientation, origin and distortion of the fill pattern. Omitted properties keep their current values. A given origin detaches the fill from the project origin, and a Global fill becomes Rotated unless a type is given as well. Archicad ignores the orientation of Solid fills (there is no pattern to orient)."
             }
         },
         "additionalProperties": false,

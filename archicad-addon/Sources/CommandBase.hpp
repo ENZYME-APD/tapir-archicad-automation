@@ -137,6 +137,20 @@ GS::UniString HatchOrientationTypeToString (API_HatchOrientationTypeID type);
 API_HatchOrientationTypeID HatchOrientationTypeFromString (const GS::UniString& str, API_HatchOrientationTypeID defaultValue = API_HatchGlobal);
 GS::ObjectState CreateHatchOrientationObjectState (const API_HatchOrientation& orientation);
 API_HatchOrientation GetHatchOrientationFromObjectState (const GS::ObjectState& os, const API_HatchOrientation& currentOrientation);
+
+// ACAPI_ELEMENT_MASK_SET marks only the first byte of a field, so masking a whole
+// API_HatchOrientation would let only its type through: every member is masked on its own.
+#define TAPIR_MASK_SET_HATCH_ORIENTATION(mask, typ, varnam)         \
+    do {                                                            \
+        ACAPI_ELEMENT_MASK_SET (mask, typ, varnam.type);            \
+        ACAPI_ELEMENT_MASK_SET (mask, typ, varnam.flags);           \
+        ACAPI_ELEMENT_MASK_SET (mask, typ, varnam.origo);           \
+        ACAPI_ELEMENT_MASK_SET (mask, typ, varnam.matrix00);        \
+        ACAPI_ELEMENT_MASK_SET (mask, typ, varnam.matrix10);        \
+        ACAPI_ELEMENT_MASK_SET (mask, typ, varnam.matrix01);        \
+        ACAPI_ELEMENT_MASK_SET (mask, typ, varnam.matrix11);        \
+        ACAPI_ELEMENT_MASK_SET (mask, typ, varnam.innerRadius);     \
+    } while (false)
 GS::UniString DrawingNameTypeToString (API_NameTypeValues nameType);
 API_NameTypeValues DrawingNameTypeFromString (const GS::UniString& str, API_NameTypeValues defaultValue = APIName_ViewOrSrcFileName);
 
