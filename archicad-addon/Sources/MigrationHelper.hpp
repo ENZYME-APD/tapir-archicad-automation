@@ -86,6 +86,10 @@
 // APIDb_DrawStoryControlID: par1 API_DatabaseUnId*, par2 ShapePrimsProc*.
 #define ACAPI_DrawingPrimitive_DrawStoryControl(par1, par2) ACAPI_Database (APIDb_DrawStoryControlID, (void*) par1, (void*) par2)
 
+#define ACAPI_DrawOrder_InitCreationOrderTable(par1) ACAPI_Database (APIDb_InitCreationOrderTableID, (void*) par1)
+#define ACAPI_DrawOrder_CreationOrderGetNext(par1) ACAPI_Database (APIDb_CreationOrderGetNextID, par1)
+#define ACAPI_DrawOrder_DisposeCreationOrderTable() ACAPI_Database (APIDb_DisposeCreationOrderTableID)
+
 #define ACAPI_Revision_GetRVMIssues(par1) ACAPI_Database (APIDb_GetRVMIssuesID, par1)
 #define ACAPI_Revision_GetRVMChanges(par1) ACAPI_Database (APIDb_GetRVMChangesID, par1)
 #define ACAPI_Revision_GetRVMDocumentRevisions(par1) ACAPI_Database (APIDb_GetRVMDocumentRevisionsID, par1)
