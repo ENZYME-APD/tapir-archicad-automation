@@ -110,6 +110,7 @@ aclib.RunTapirCommand ('CreateMeshes', {
 })
 
 # Two points make a straight stair, three or more an L or U shaped one.
+# treadDepth fixes the going, which is what decides the run length.
 aclib.RunTapirCommand ('CreateStairs', {
     'stairsData': [
         {
@@ -117,7 +118,8 @@ aclib.RunTapirCommand ('CreateStairs', {
                 { 'x': 60.0, 'y': 0.0 },
                 { 'x': 64.0, 'y': 0.0 }
             ],
-            'zCoordinate': 0.0
+            'zCoordinate': 0.0,
+            'treadDepth': 0.28
         }
     ]
 })
