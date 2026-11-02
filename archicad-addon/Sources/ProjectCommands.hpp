@@ -118,6 +118,16 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class GetNoteAutotextsCommand : public CommandBase
+{
+public:
+    GetNoteAutotextsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class GetNoteAutoTextKeywordsCommand : public CommandBase
 {
 public:
@@ -181,6 +191,26 @@ class ChangeHotlinkNodesCommand : public CommandBase
 {
 public:
     ChangeHotlinkNodesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class BreakHotlinkNodesCommand : public CommandBase
+{
+public:
+    BreakHotlinkNodesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class DeleteHotlinkNodesCommand : public CommandBase
+{
+public:
+    DeleteHotlinkNodesCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
@@ -314,6 +344,12 @@ public:
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
+
+// The picture format names of SaveCurrentWindowAsImage (png, jpg, bmp, tiff, gif), as
+// API_FTypeID; PhotoRender names its formats the same way. The second form reads the
+// format from the extension of the path (.jpeg and .tif are accepted too).
+bool ParseImageFileType (const GS::UniString& format, API_FTypeID& fileTypeID);
+bool ParseImageFileTypeFromExtension (const GS::UniString& imageFilePath, API_FTypeID& fileTypeID);
 
 class GetGeoLocationCommand : public CommandBase
 {

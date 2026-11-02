@@ -69,6 +69,14 @@ namespace TapirGrasshopperPlugin.Components.RevisionComponents
             OutTextTree(
                 "CustomSchemeValues",
                 "Custom scheme value of each custom data field (one branch per issue).");
+
+            OutTexts(
+                "CustomSchemeFieldKeys",
+                "Key of each custom scheme field defined for the revision issues (usable in ModifyRevisionIssues).");
+
+            OutTexts(
+                "CustomSchemeFieldNames",
+                "Name of each custom scheme field defined for the revision issues.");
         }
 
         protected override void Solve(
@@ -153,9 +161,19 @@ namespace TapirGrasshopperPlugin.Components.RevisionComponents
             da.SetDataList(6, createNewRevisions);
             da.SetDataList(7, isIssued);
             da.SetDataList(8, markersVisibleSinceIndices);
+            var customSchemeFieldKeys = new List<object>();
+            var customSchemeFieldNames = new List<object>();
+            foreach (var field in JsonOutputHelp.Items(response, "customScheme"))
+            {
+                customSchemeFieldKeys.Add(JsonOutputHelp.Scalar(field, "customSchemeKey"));
+                customSchemeFieldNames.Add(JsonOutputHelp.Scalar(field, "customSchemeName"));
+            }
+
             da.SetDataTree(9, documentRevisionGuids);
             da.SetDataTree(10, customSchemeKeys);
             da.SetDataTree(11, customSchemeValues);
+            da.SetDataList(12, customSchemeFieldKeys);
+            da.SetDataList(13, customSchemeFieldNames);
         }
 
         protected override System.Drawing.Bitmap Icon =>
