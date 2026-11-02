@@ -2234,6 +2234,10 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.5.0",
             "Creates Section elements on the floor plan. A section looks to the left of its start to end direction, with its depth line that far on that side. GetDetailsOfElements reads the geometry of existing sections back."
         );
+        err |= RegisterCommand<ModifySectionsCommand> (
+            navigatorCommands, "1.8.1",
+            "Changes the name and the reference ID of Section and Elevation elements, which the Project Map and the markers show. GetDetailsOfElements reads those of a Section back as name and idStr."
+        );
         err |= RegisterCommand<CreateInteriorElevationsCommand> (
             navigatorCommands, "1.5.8",
             "Creates Interior Elevation elements on the floor plan. Every consecutive pair of the given points becomes one segment, each with its own viewpoint - feed it the corner points of a room to get an interior elevation of that room."
