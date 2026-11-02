@@ -16,9 +16,10 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         public GetAutoTextKeysComponent()
             : base(
                 "GetAutoTextKeys",
-                "Get the autotext keys a Text or Label can embed. Without an element only the keys " +
-                "common to every element type are returned (Element ID, Area, ...); with an element " +
-                "its own type's keys come on top (e.g. the thickness of a wall).",
+                "Get the autotext keys a Text or Label can embed: the Project Info, layout, date and " +
+                "other autotexts, and the property based keys. Without an element only the property " +
+                "keys common to every element type are returned (Element ID, Area, ...); with an " +
+                "element its own type's keys come on top (e.g. the thickness of a wall).",
                 GroupNames.Project)
         {
         }
