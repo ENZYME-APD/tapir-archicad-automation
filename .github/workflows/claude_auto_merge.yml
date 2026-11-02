@@ -305,10 +305,10 @@ jobs:
             # request with no checks at all is not merged either.
             # The latest run of each check counts: a build started again
             # replaces the run it superseded (cancelled) on the same commit.
-            # API Coverage is left out: it runs on pull_request_target only to
-            # refresh the checklist, never tests the pull request's code, and
-            # cancels itself on every newer event, so its check on a head is
-            # cancelled more often than not.
+            # API Coverage is left out: it no longer runs on pull requests, but
+            # heads pushed before that still carry its check, which never
+            # tested the pull request's code and was cancelled more often than
+            # not.
             raw=$(gh pr checks "$pr" --repo "$REPO" --json name,bucket,workflow,startedAt 2>/dev/null || true)
             checks=$(jq '[.[] | select(.workflow != "API Coverage")] | group_by([.workflow, .name]) | map(max_by(.startedAt // ""))' <<<"${raw:-[]}" 2>/dev/null || echo '[]')
             total=$(printf '%s' "$checks" | jq 'length')
