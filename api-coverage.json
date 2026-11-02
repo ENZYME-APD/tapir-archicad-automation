@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-02 11:40 UTC",
+ "generatedAt": "2026-11-02 20:53 UTC",
  "versions": [
   25,
   26,
@@ -3164,6 +3164,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1731,
+     "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
+    },
     {
      "number": 1670,
      "title": "CreateHotlinkInstances: place on the Archicad layer when the default layer was deleted"
@@ -6645,6 +6649,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1731,
+     "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
+    },
+    {
      "number": 1702,
      "title": "Add CreateShells: extruded, revolved and ruled shells"
     },
@@ -7742,6 +7750,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1731,
+     "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
+    },
+    {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
@@ -7849,6 +7861,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1731,
+     "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
+    },
+    {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     }
@@ -7878,7 +7894,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1731,
+     "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
+    }
+   ],
    "issues": []
   },
   {
@@ -8045,6 +8066,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1731,
+     "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -8432,6 +8457,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1731,
+     "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
+    },
+    {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
@@ -8784,6 +8813,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1731,
+     "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
+    },
     {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
@@ -10835,6 +10868,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1731,
+     "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -29123,6 +29160,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1731,
+     "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
+    },
+    {
      "number": 1715,
      "title": "Get3DBoundingBoxes: real height of Opening elements"
     },
@@ -44347,6 +44388,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1731,
+     "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
