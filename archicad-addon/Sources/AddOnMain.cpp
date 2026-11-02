@@ -38,6 +38,7 @@
 #include "IssueCommands.hpp"
 #include "LibraryCommands.hpp"
 #include "LibraryPartCommands.hpp"
+#include "LibraryPartSectionCommands.hpp"
 #include "PropertyCommands.hpp"
 #include "ClassificationCommands.hpp"
 #include "FavoritesCommands.hpp"
