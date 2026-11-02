@@ -49,8 +49,32 @@
 #define ACAPI_Teamwork_HasConnection ACAPI_TeamworkControl_HasConnection
 #define ACAPI_Teamwork_ProjectSharing(par1) ACAPI_Environment (APIEnv_ProjectSharingID, par1)
 
+#ifdef ServerMainVers_2600
 #define ACAPI_UserInput_SetElementHighlight ACAPI_Interface_SetElementHighlight
 #define ACAPI_UserInput_ClearElementHighlight ACAPI_Interface_ClearElementHighlight
+#else
+// AC25 (APIdefs_Interface.h): APIIo_HighlightElementsID takes the guid -> color table as par1
+// and the 3D wireframe switch as par2 (bool*); it has no color for the non highlighted elements.
+inline GSErrCode ACAPI_UserInput_SetElementHighlight (const GS::HashTable<API_Guid, API_RGBAColor>& elems, const GS::Optional<bool>& wireframe3D, const GS::Optional<API_RGBAColor>& /*nonHighlightedColor*/)
+{
+    bool wireframe = wireframe3D.HasValue () ? wireframe3D.Get () : false;
+    return ACAPI_Interface (APIIo_HighlightElementsID, const_cast<GS::HashTable<API_Guid, API_RGBAColor>*> (&elems), &wireframe);
+}
+
+// AC25 has no separate clear call: highlighting an empty table removes the highlight.
+inline GSErrCode ACAPI_UserInput_ClearElementHighlight ()
+{
+    GS::HashTable<API_Guid, API_RGBAColor> noElems;
+    bool wireframe = false;
+    return ACAPI_Interface (APIIo_HighlightElementsID, &noElems, &wireframe);
+}
+#endif
+
+// APIEnv_DeleteGhostRecordID: par1 the ghost record (ACAPI_View_GetGhostRecord is defined below).
+inline GSErrCode ACAPI_View_DeleteGhostRecord (const API_GhostRecord* ghostRecord)
+{
+    return ACAPI_Environment (APIEnv_DeleteGhostRecordID, const_cast<API_GhostRecord*> (ghostRecord));
+}
 
 #define ACAPI_Selection_Select ACAPI_Element_Select
 #define ACAPI_Grouping_GetConnectedElements ACAPI_Element_GetConnectedElements
@@ -83,6 +107,7 @@
 #define ACAPI_View_GetZoom(par1, par2) ACAPI_Database (APIDb_GetZoomID, par1, par2)
 #define ACAPI_Element_RefreshElement(par1, par2) ACAPI_Database (APIDb_RefreshElementID, par1, par2)
 #define ACAPI_Element_RoomReductions(par1, par2) ACAPI_Database (APIDb_RoomReductionsID, (void*) par1, (void*) par2)
+#define ACAPI_Element_GetElementFromAnywhere(par1, par2) ACAPI_Database (APIDb_GetElementFromAnywhereID, (void*) par1, par2)
 // APIDb_DrawStoryControlID: par1 API_DatabaseUnId*, par2 ShapePrimsProc*.
 #define ACAPI_DrawingPrimitive_DrawStoryControl(par1, par2) ACAPI_Database (APIDb_DrawStoryControlID, (void*) par1, (void*) par2)
 
