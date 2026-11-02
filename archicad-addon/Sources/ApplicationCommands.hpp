@@ -2,6 +2,9 @@
 
 #include "CommandBase.hpp"
 
+// The name of a window type, as in the #/WindowType schema ("FloorPlan", "Section", ...).
+GS::UniString ConvertWindowTypeToString (API_WindowTypeID type);
+
 class GetAddOnVersionCommand : public CommandBase
 {
 public:
