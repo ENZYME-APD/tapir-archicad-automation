@@ -34,6 +34,19 @@ GS::ObjectState CreateNavigatorItemsResponse (const GS::Array<GS::ObjectState>& 
     return response;
 }
 
+// The id of a new worksheet or detail database, with the navigatorItemId of its Project Map item,
+// so that the new item can be opened with ChangeWindow or placed with CreateDrawings without
+// reading the whole Project Map (#1602). Without the item only the databaseId is returned.
+GS::ObjectState CreateNewWorksheetOrDetailObjectState (const API_DatabaseInfo& dbInfo)
+{
+    GS::ObjectState result = CreateDatabaseIdObjectState (DatabaseIdResolver::Instance ().GetIdOfDatabase (dbInfo));
+    const GS::Optional<API_Guid> navigatorItemId = FindProjectMapItemOfWorksheetOrDetail (dbInfo);
+    if (navigatorItemId.HasValue ()) {
+        result.Add ("navigatorItemId", CreateGuidObjectState (navigatorItemId.Get ()));
+    }
+    return result;
+}
+
 bool GetItems (const GS::ObjectState& parameters, const char* fieldName, GS::Array<GS::ObjectState>& outItems, GS::ObjectState& errorResponse)
 {
     if (!parameters.Get (fieldName, outItems)) {
@@ -406,7 +419,34 @@ GS::Optional<GS::UniString> CreateDetailsCommand::GetInputParametersSchema () co
 
 GS::Optional<GS::UniString> CreateDetailsCommand::GetRawResponseSchema () const
 {
-    return R"({"type":"object","properties":{"databases":{"$ref":"#/DatabaseIdsOrErrors"}},"additionalProperties":false,"required":["databases"]})";
+    return R"({
+        "type": "object",
+        "properties": {
+            "databases": {
+                "type": "array",
+                "description": "One item per input item, in the same order.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "databaseId": { "$ref": "#/DatabaseId" },
+                                "navigatorItemId": {
+                                    "$ref": "#/NavigatorItemId",
+                                    "description": "The Project Map item of the new database, for ChangeWindow or CreateDrawings. Missing when the item could not be found."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["databaseId"]
+                        },
+                        { "$ref": "#/ErrorItem" }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["databases"]
+    })";
 }
 
 GS::ObjectState CreateDetailsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -430,7 +470,7 @@ GS::ObjectState CreateDetailsCommand::Execute (const GS::ObjectState& parameters
             continue;
         }
 
-        databases.Push (CreateDatabaseIdObjectState (DatabaseIdResolver::Instance ().GetIdOfDatabase (dbInfo)));
+        databases.Push (CreateNewWorksheetOrDetailObjectState (dbInfo));
     }
     return CreateDatabasesResponse (databases);
 }
@@ -494,7 +534,7 @@ GS::ObjectState CreateWorksheetsCommand::Execute (const GS::ObjectState& paramet
             continue;
         }
 
-        databases.Push (CreateDatabaseIdObjectState (DatabaseIdResolver::Instance ().GetIdOfDatabase (dbInfo)));
+        databases.Push (CreateNewWorksheetOrDetailObjectState (dbInfo));
     }
     return CreateDatabasesResponse (databases);
 }
@@ -543,9 +583,9 @@ GS::Optional<GS::UniString> CreateLayoutCommand::GetInputParametersSchema () con
                                 "topMargin":                { "type": "number" },
                                 "rightMargin":              { "type": "number" },
                                 "bottomMargin":             { "type": "number" },
-                                "customLayoutNumber":       { "type": "string" },
-                                "customLayoutNumbering":    { "type": "boolean" },
-                                "doNotIncludeInNumbering":  { "type": "boolean" },
+                                "customLayoutNumber":       { "type": "string", "description": "The layout's own number, used when customLayoutNumbering is true. It only replaces this layout's displayed number: the layout still counts in its subset's numbering, so the sheets after it are renumbered. Use doNotIncludeInNumbering to leave it out." },
+                                "customLayoutNumbering":    { "type": "boolean", "description": "Use customLayoutNumber instead of the automatic number. Does not leave the layout out of the subset's numbering; see doNotIncludeInNumbering." },
+                                "doNotIncludeInNumbering":  { "type": "boolean", "description": "Leave the new layout out of its subset's automatic numbering, so the numbers of the other sheets do not change." },
                                 "displayMasterLayoutBelow": { "type": "boolean" }
                             },
                             "additionalProperties": false
@@ -563,7 +603,7 @@ GS::Optional<GS::UniString> CreateLayoutCommand::GetInputParametersSchema () con
 
 GS::Optional<GS::UniString> CreateLayoutCommand::GetRawResponseSchema () const
 {
-    return CreateDetailsCommand ().GetRawResponseSchema ();
+    return R"({"type":"object","properties":{"databases":{"$ref":"#/DatabaseIdsOrErrors"}},"additionalProperties":false,"required":["databases"]})";
 }
 
 GS::ObjectState CreateLayoutCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -622,6 +662,14 @@ GS::ObjectState CreateLayoutCommand::Execute (const GS::ObjectState& parameters,
                         continue;
                     }
                 }
+
+                // Best-effort flush of the navigator/database state just created above: a new
+                // database followed soon after by a RenameNavigatorItem + DeleteNavigatorItems
+                // has been seen to crash ArchiCAD internally (issue #1428). Error ignored.
+                // ACAPI_Database_RedrawCurrentDatabase only exists from AC27 on.
+#ifdef ServerMainVers_2700
+                ACAPI_Database_RedrawCurrentDatabase ();
+#endif
             }
         }
 
@@ -1745,7 +1793,10 @@ GS::Optional<GS::UniString> SetLayoutSettingsCommand::GetInputParametersSchema (
                     "properties": {
                         "layoutDatabaseId":         { "$ref": "#/DatabaseId" },
                         "layoutNavigatorItemId":    { "$ref": "#/NavigatorItemId" },
-                        "layoutName":               { "type": "string" },
+                        "layoutName": {
+                            "type": "string",
+                            "description": "The new name of the layout or master layout (its database name, as returned by GetDatabases and GetLayoutSettings). A custom name of its Navigator item is changed with RenameNavigatorItem instead."
+                        },
                         "horizontalSize":           { "type": "number" },
                         "verticalSize":             { "type": "number" },
                         "leftMargin":               { "type": "number" },
@@ -1873,6 +1924,33 @@ GS::ObjectState SetLayoutSettingsCommand::Execute (const GS::ObjectState& parame
             }
         }
 
+        // ACAPI_Navigator_ChangeLayoutSets does not modify the name of the layout (see its DevKit
+        // documentation), so the name is changed through the layout's database, and checked afterwards.
+        GS::UniString requestedLayoutName;
+        if (item.Get ("layoutName", requestedLayoutName)) {
+            API_DatabaseInfo layoutDbInfo = dbInfo;
+            err = ACAPI_Window_GetDatabaseInfo (&layoutDbInfo);
+            if (err != NoError) {
+                executionResults.Push (CreateFailedExecutionResult (err, "Failed to get the database of the layout."));
+                continue;
+            }
+            if (GS::UniString (layoutDbInfo.name) != requestedLayoutName) {
+                SetUCharProperty (&item, "layoutName", layoutDbInfo.name);
+                err = ACAPI_Database_ModifyDatabase (&layoutDbInfo);
+                if (err != NoError) {
+                    executionResults.Push (CreateFailedExecutionResult (err, "Failed to change the name of the layout."));
+                    continue;
+                }
+                API_DatabaseInfo verifyDbInfo = dbInfo;
+                err = ACAPI_Window_GetDatabaseInfo (&verifyDbInfo);
+                if (err != NoError || GS::UniString (verifyDbInfo.name) != requestedLayoutName) {
+                    executionResults.Push (CreateFailedExecutionResult (APIERR_GENERAL,
+                        "The name of the layout was not changed to the requested layoutName."));
+                    continue;
+                }
+            }
+        }
+
         API_LayoutInfo layoutInfo = {};
         err = ACAPI_Navigator_GetLayoutSets (&layoutInfo, &dbInfo.databaseUnId);
         if (err != NoError) {
@@ -1880,11 +1958,6 @@ GS::ObjectState SetLayoutSettingsCommand::Execute (const GS::ObjectState& parame
             continue;
         }
 
-#ifdef ServerMainVers_2600
-        SetUCharProperty (&item, "layoutName", layoutInfo.layoutName);
-#else
-        SetCharProperty (&item, "layoutName", layoutInfo.layoutName);
-#endif
         item.Get ("horizontalSize",          layoutInfo.sizeX);
         item.Get ("verticalSize",            layoutInfo.sizeY);
         item.Get ("leftMargin",              layoutInfo.leftMargin);
