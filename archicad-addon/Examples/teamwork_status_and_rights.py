@@ -8,3 +8,10 @@ aclib.RunTapirCommand ('GetTeamworkStatus')
 aclib.RunTapirCommand ('GetTeamworkAccessRights', {
     'accessRights': ['LayersCreate', 'LibraryPartDeleteModify', 'HotlinkAndXrefManage']
 })
+
+# The Teamwork owner of the first three layouts. userId is 0 when nobody owns the layout.
+layouts = aclib.RunTapirCommand ('GetDatabases', {'types': ['Layout']}, debug=False)['databases']
+if layouts:
+    aclib.RunTapirCommand ('GetTeamworkOwnersOfDatabases', {
+        'databases': [{'databaseId': layout['databaseId']} for layout in layouts[:3]]
+    })
