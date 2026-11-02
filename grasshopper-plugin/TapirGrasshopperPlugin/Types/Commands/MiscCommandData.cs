@@ -92,6 +92,12 @@ namespace TapirGrasshopperPlugin.Types.Commands
             "names",
             NullValueHandling = NullValueHandling.Ignore)]
         public List<string> Names;
+
+        // prefs, xml or legacyPRF; the last two from Archicad 29.
+        [JsonProperty(
+            "format",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string Format;
     }
 
     // Solid element operations
