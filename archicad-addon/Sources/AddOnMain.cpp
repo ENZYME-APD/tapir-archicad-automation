@@ -12,6 +12,7 @@
 #include "3DProjectionCommands.hpp"
 #include "DocumentFrom3DDefaultsCommands.hpp"
 #include "3DStyleCommands.hpp"
+#include "3DDocumentCommands.hpp"
 
 
 
@@ -2199,11 +2200,11 @@ GSErrCode Initialize (void)
             "Changes the pixel size of the 3D window and/or the zoom (scale and displacement) of its projection; the values not given are kept. Returns the settings read back after the change. Archicad may need a rebuild of the 3D window (RebuildView) before it shows the change, e.g. before SaveCurrentWindowAsImage."
         );
         err |= RegisterCommand<Get3DDocumentSettingsCommand> (
-            navigatorCommands, "1.7.4",
+            navigatorCommands, "1.8.0",
             "Gets the settings of a 3D Document, given by its navigator item: the element and story filter, the 3D cut, the projection, the window and zoom, the uniform cut and uncut surface attributes, the source and the boundary contours, with the field names of API_DocumentFrom3DType."
         );
         err |= RegisterCommand<Set3DDocumentSettingsCommand> (
-            navigatorCommands, "1.7.4",
+            navigatorCommands, "1.8.0",
             "Changes the given settings of a 3D Document, given by its navigator item, in the form Get3DDocumentSettings returns; the settings not given are kept. Returns the settings read back after the change."
         );
         err |= RegisterCommand<Get3DFilterAndCutSettingsCommand> (
