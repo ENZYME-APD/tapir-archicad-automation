@@ -1,0 +1,123 @@
+name: Archicad DevKit Update
+
+# Adds a new Archicad version without a maintainer. Once a day it asks
+# GRAPHISOFT/archicad-api-devkit for its releases; when Graphisoft has published
+# the DevKit of an Archicad version newer than the newest one in
+# archicad-addon/devkits.json, tools/devkits.py adds it there and to the README's
+# download table, and this opens a pull request from a claude/devkit-... branch.
+#
+# From there it is an ordinary bot pull request: claude_bot_pr_steward.yml (started
+# here) builds it for every version, including the new one, has it reviewed, and
+# starts fix rounds on whatever the new DevKit breaks; those fix runs and the
+# review have the new version's headers (download-devkits reads the pull
+# request's devkits.json). claude_auto_merge.yml merges it three days after a
+# clean review, as for every bot pull request, and the weekly release then
+# ships the new version's add-on with the others: archicad_addon.yml builds
+# every version in devkits.json, weekly_release.yml expects their assets, and
+# the Tapir Installer finds any Archicad version up to 39.
+#
+# The pull request touches only archicad-addon/devkits.json and README.md, so
+# none of the release critical paths that claude_auto_merge.yml keeps for a
+# person. The list can only name GRAPHISOFT/archicad-api-devkit releases (the
+# download URL is fixed; tools/devkits.py and download-devkits reject anything
+# but version and release numbers). It never changes the release of a version
+# already listed, which a maintainer chose and older Archicad builds rely on.
+#
+# A newer DevKit appearing while an earlier pull request of this workflow is
+# still open replaces that one: it is closed, pointing at the new one.
+# Setting the repository variable DEVKIT_UPDATE to `false` stops it.
+
+on:
+  schedule:
+    - cron: '23 4 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: archicad-devkit-update
+  cancel-in-progress: false
+
+permissions:
+  contents: write        # push the claude/devkit-... branch
+  pull-requests: write   # open it, close one it replaces
+  actions: write         # start the steward
+
+jobs:
+  update:
+    if: vars.DEVKIT_UPDATE != 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+
+      - name: Look for a new Archicad version
+        id: update
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          python3 tools/devkits.py update --summary "$RUNNER_TEMP/added.md"
+          status=$?
+          set -e
+          if [ "$status" -eq 3 ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          [ "$status" -eq 0 ] || exit "$status"
+          {
+            echo "changed=true"
+            echo "branch=claude/devkit-$(python3 tools/devkits.py pairs | tr ' ' '\n' | tail -n 1 | tr ':' '-')"
+            echo "newest=$(python3 tools/devkits.py newest)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Open the pull request
+        if: steps.update.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ steps.update.outputs.branch }}
+          NEWEST: ${{ steps.update.outputs.newest }}
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null; then
+            echo "$BRANCH exists already - its pull request was opened by an earlier run."
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -c "$BRANCH"
+          git add archicad-addon/devkits.json README.md
+          git commit -q -m "Add Archicad $NEWEST" -m "$(cat "$RUNNER_TEMP/added.md")" \
+            -m "Graphisoft published its DevKit; added by .github/workflows/archicad_devkit_update.yml."
+          git push -u origin "$BRANCH"
+
+          {
+            echo "Graphisoft has published the API DevKit of a new Archicad version, so Tapir now builds for it:"
+            echo
+            cat "$RUNNER_TEMP/added.md"
+            echo
+            echo "**What this changes:** \`archicad-addon/devkits.json\` (the one list of supported versions) and the README's download table. The build checks, the release, the weekly release's asset count, the API coverage and the bots' DevKit headers all read that list."
+            echo
+            echo "**What happens next, without a maintainer:** the steward builds this for every version, has it reviewed, and pushes fixes for whatever the new DevKit breaks (the fix runs and the review have its headers). Three days after a clean review it is merged, and the next weekly release ships the Archicad $NEWEST add-on; the Tapir Installer picks it up by itself."
+            echo
+            echo "**To stop it:** add \`do-not-merge\`, or convert it to a draft."
+            echo
+            echo "Opened by \`.github/workflows/archicad_devkit_update.yml\`."
+          } > "$RUNNER_TEMP/body.md"
+          url=$(gh pr create --repo "$REPO" --base main --head "$BRANCH" \
+            --title "Add Archicad $NEWEST" --body-file "$RUNNER_TEMP/body.md")
+          echo "Opened $url"
+
+          # An earlier pull request of this workflow that is still open is
+          # replaced by this one, which carries its change too.
+          gh pr list --repo "$REPO" --state open --limit 100 --json number,headRefName \
+            --jq '.[] | select((.headRefName | startswith("claude/devkit-")) and .headRefName != "'"$BRANCH"'") | .number' |
+          while read -r old; do
+            gh pr close "$old" --repo "$REPO" --delete-branch --comment "Replaced by $url, which adds a newer DevKit as well." || true
+          done
+
+          # Pushes and pull requests made with GITHUB_TOKEN start no workflow;
+          # the steward's sweep builds, reviews and fixes it from here.
+          gh workflow run claude_bot_pr_steward.yml --repo "$REPO" --ref main || echo "::warning::could not start the steward; its hourly sweep will"

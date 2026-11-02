@@ -788,20 +788,33 @@ def note_borderline(line, state):
     append_summary(line)
 
 
-def is_candidate(message, config):
+def skip_reason(message, config):
+    """Why `message` is not classified, for the log, or None when it is."""
     author = message.get("author", {})
-    if author.get("bot") or author.get("system"):
-        return False
+    if author.get("bot"):
+        return "posted by a bot"
+    if author.get("system"):
+        return "a system message"
     if message.get("type", 0) not in (0, 19):  # DEFAULT and REPLY messages only
-        return False
-    content = message.get("content", "")
-    if len(content.strip()) < config.min_message_length:
+        return "not a regular message (type {})".format(message.get("type"))
+    content = message.get("content", "").strip()
+    if len(content) < config.min_message_length:
         # A screenshot with a short caption is a common way to report a
         # bug, so an attachment exempts the caption from the length gate.
         # A truly caption-less image still has nothing to classify.
-        if not (message.get("attachments") and content.strip()):
-            return False
-    return True
+        if message.get("attachments") and not content:
+            return "an attachment without text"
+        if not message.get("attachments"):
+            return "shorter than MIN_MESSAGE_LENGTH ({} < {} characters)".format(
+                len(content), config.min_message_length)
+    return None
+
+
+def is_human(message):
+    """A DEFAULT or REPLY message by a person: what group_messages reads."""
+    author = message.get("author", {})
+    return (not author.get("bot") and not author.get("system")
+            and message.get("type", 0) in (0, 19))
 
 
 def group_messages(messages):
@@ -813,9 +826,7 @@ def group_messages(messages):
     current = []
     for message in messages:
         author = message.get("author", {})
-        human = (not author.get("bot") and not author.get("system")
-                 and message.get("type", 0) in (0, 19))
-        if not human:
+        if not is_human(message):
             current = []
             continue
         if current and current[-1].get("author", {}).get("id") == author.get("id"):
@@ -901,9 +912,6 @@ def process_channel(channel_id, config, discord, github, classifier, state):
                        "check the bot's Read Message History permission.".format(
                            str(channel_name).replace("`", "'"), channel_id))
         return
-    log("Channel #{}: {} message(s) in the last {} minutes".format(
-        channel_name, len(messages), config.lookback_minutes))
-
     human_messages = 0
     messages_with_signal = 0
     for message in messages:
@@ -932,23 +940,45 @@ def process_channel(channel_id, config, discord, github, classifier, state):
     after_checkpoint = messages
     if checkpoint is not None:
         after_checkpoint = messages[messages.index(checkpoint) + 1:]
+    log("Channel #{}: {} message(s) in the last {} minutes, {} after the {} "
+        "checkpoint{}".format(
+            channel_name, len(messages), config.lookback_minutes,
+            len(after_checkpoint), SEEN_MARK,
+            "" if checkpoint is not None else " (none in the window)"))
+    for message in after_checkpoint:
+        # Belongs to no group below, so it would otherwise pass unlogged.
+        if not is_human(message):
+            log("  message {}: skipped, {}".format(
+                message["id"], skip_reason(message, config)))
 
     # A candidate is a run of consecutive messages of one author, read as
     # one report: classified together, filed as one issue under the first
-    # message's ID, and checked as a whole.
+    # message's ID, and checked as a whole. A run that is no candidate (too
+    # short, an image without text) is checked without classifying it.
     candidates = []
+    skipped = set()
     groups_by_id = {}
     merged_by_id = {}
     groups = group_messages(after_checkpoint)
-    quiet_since = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
-        minutes=GROUP_QUIET_MINUTES)
+    now = datetime.datetime.now(datetime.timezone.utc)
     for group in groups:
+        posted = datetime.datetime.fromisoformat(group[-1]["timestamp"])
         if (group is groups[-1] and group[-1] is after_checkpoint[-1]
-                and datetime.datetime.fromisoformat(group[-1]["timestamp"]) > quiet_since):
+                and posted > now - datetime.timedelta(minutes=GROUP_QUIET_MINUTES)):
             # Its author may still be typing; the next run reads it whole.
+            log("  message {}: left for the next run, its author may still be "
+                "typing (last message {} minute(s) ago, read after {} quiet "
+                "minutes)".format(group[0]["id"], int((now - posted).total_seconds() // 60),
+                                  GROUP_QUIET_MINUTES))
             break
         merged = merge_group(group)
-        if not is_candidate(merged, config):
+        groups_by_id[merged["id"]] = group
+        merged_by_id[merged["id"]] = merged
+        reason = skip_reason(merged, config)
+        if reason:
+            log("  message {}: skipped, {}".format(merged["id"], reason))
+            skipped.add(merged["id"])
+            candidates.append({"id": merged["id"]})
             continue
         author = merged.get("author", {})
         candidates.append({
@@ -957,8 +987,6 @@ def process_channel(channel_id, config, discord, github, classifier, state):
             "author": author.get("global_name") or author.get("username", "unknown"),
             "content": merged.get("content", ""),
         })
-        groups_by_id[merged["id"]] = group
-        merged_by_id[merged["id"]] = merged
 
     # The checkpoint moves to the last message of each candidate checked.
     # It moves right away, not at the end, so a run cut short by the job
@@ -992,9 +1020,9 @@ def process_channel(channel_id, config, discord, github, classifier, state):
     classified_until = 0
     to_classify = []
     for candidate in candidates:
-        if filed(merged_by_id[candidate["id"]]):
-            # Filed by an earlier run that stopped before moving the
-            # checkpoint past it.
+        if candidate["id"] in skipped or filed(merged_by_id[candidate["id"]]):
+            # Not classified at all, or filed by an earlier run that stopped
+            # before moving the checkpoint past it.
             continue
         to_classify.append(candidate)
 
@@ -1007,6 +1035,11 @@ def process_channel(channel_id, config, discord, github, classifier, state):
 
     for candidate in candidates:
         message = merged_by_id[candidate["id"]]
+        if candidate["id"] in skipped:
+            # Nothing to classify; passed like plain chat.
+            if unclassified is None:
+                checked(message)
+            continue
         if filed(message):
             # Filed by an earlier run; says nothing about the classifier.
             if unclassified is None:

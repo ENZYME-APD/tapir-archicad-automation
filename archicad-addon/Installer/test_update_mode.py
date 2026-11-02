@@ -1423,7 +1423,22 @@ class StartArchicadTests (unittest.TestCase):
         archicadLocation = '/Applications/GRAPHISOFT/Archicad 29/Archicad 29.app'
         with unittest.mock.patch.object (tapir_installer, 'IsUsingMacOS', lambda : True), unittest.mock.patch.object (tapir_installer.subprocess, 'Popen') as popen:
             tapir_installer.StartArchicad (archicadLocation)
-        popen.assert_called_once_with (['open', '-n', archicadLocation])
+        popen.assert_called_once_with (['open', '-n', archicadLocation], env = unittest.mock.ANY)
+
+    def testFrozenInstallerVariablesAreNotPassedOn (self):
+        # Scripts run by Archicad would load the installer's Tcl/Tk (#1575).
+        environment = {'PATH': '/usr/bin', 'TCL_LIBRARY': '/tmp/_tcl_data', 'TK_LIBRARY': '/tmp/_tk_data', '_PYI_ARCHIVE_FILE': '/tmp/installer', '_MEIPASS2': '/tmp/_MEI'}
+        with unittest.mock.patch.dict (tapir_installer.os.environ, environment, clear = True), unittest.mock.patch.object (tapir_installer.sys, 'frozen', True, create = True):
+            self.assertEqual (tapir_installer.GetArchicadEnvironment (), {'PATH': '/usr/bin'})
+        with unittest.mock.patch.dict (tapir_installer.os.environ, environment, clear = True), unittest.mock.patch.object (tapir_installer, 'IsUsingMacOS', lambda : True), unittest.mock.patch.object (tapir_installer.sys, 'frozen', True, create = True), unittest.mock.patch.object (tapir_installer.subprocess, 'Popen') as popen:
+            tapir_installer.StartArchicad ('/Applications/GRAPHISOFT/Archicad 29/Archicad 29.app')
+        self.assertEqual (popen.call_args.kwargs['env'], {'PATH': '/usr/bin'})
+
+    def testUnfrozenInstallerKeepsTheEnvironment (self):
+        environment = {'PATH': '/usr/bin', 'TCL_LIBRARY': '/opt/tcl'}
+        with unittest.mock.patch.dict (tapir_installer.os.environ, environment, clear = True):
+            self.assertFalse (getattr (tapir_installer.sys, 'frozen', False))
+            self.assertEqual (tapir_installer.GetArchicadEnvironment (), environment)
 
 
 class ArgumentTests (UpdateModeTestBase):
