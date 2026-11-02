@@ -1793,7 +1793,10 @@ GS::Optional<GS::UniString> SetLayoutSettingsCommand::GetInputParametersSchema (
                     "properties": {
                         "layoutDatabaseId":         { "$ref": "#/DatabaseId" },
                         "layoutNavigatorItemId":    { "$ref": "#/NavigatorItemId" },
-                        "layoutName":               { "type": "string" },
+                        "layoutName": {
+                            "type": "string",
+                            "description": "The new name of the layout or master layout (its database name, as returned by GetDatabases and GetLayoutSettings). A custom name of its Navigator item is changed with RenameNavigatorItem instead."
+                        },
                         "horizontalSize":           { "type": "number" },
                         "verticalSize":             { "type": "number" },
                         "leftMargin":               { "type": "number" },
@@ -1921,6 +1924,33 @@ GS::ObjectState SetLayoutSettingsCommand::Execute (const GS::ObjectState& parame
             }
         }
 
+        // ACAPI_Navigator_ChangeLayoutSets does not modify the name of the layout (see its DevKit
+        // documentation), so the name is changed through the layout's database, and checked afterwards.
+        GS::UniString requestedLayoutName;
+        if (item.Get ("layoutName", requestedLayoutName)) {
+            API_DatabaseInfo layoutDbInfo = dbInfo;
+            err = ACAPI_Window_GetDatabaseInfo (&layoutDbInfo);
+            if (err != NoError) {
+                executionResults.Push (CreateFailedExecutionResult (err, "Failed to get the database of the layout."));
+                continue;
+            }
+            if (GS::UniString (layoutDbInfo.name) != requestedLayoutName) {
+                SetUCharProperty (&item, "layoutName", layoutDbInfo.name);
+                err = ACAPI_Database_ModifyDatabase (&layoutDbInfo);
+                if (err != NoError) {
+                    executionResults.Push (CreateFailedExecutionResult (err, "Failed to change the name of the layout."));
+                    continue;
+                }
+                API_DatabaseInfo verifyDbInfo = dbInfo;
+                err = ACAPI_Window_GetDatabaseInfo (&verifyDbInfo);
+                if (err != NoError || GS::UniString (verifyDbInfo.name) != requestedLayoutName) {
+                    executionResults.Push (CreateFailedExecutionResult (APIERR_GENERAL,
+                        "The name of the layout was not changed to the requested layoutName."));
+                    continue;
+                }
+            }
+        }
+
         API_LayoutInfo layoutInfo = {};
         err = ACAPI_Navigator_GetLayoutSets (&layoutInfo, &dbInfo.databaseUnId);
         if (err != NoError) {
@@ -1928,11 +1958,6 @@ GS::ObjectState SetLayoutSettingsCommand::Execute (const GS::ObjectState& parame
             continue;
         }
 
-#ifdef ServerMainVers_2600
-        SetUCharProperty (&item, "layoutName", layoutInfo.layoutName);
-#else
-        SetCharProperty (&item, "layoutName", layoutInfo.layoutName);
-#endif
         item.Get ("horizontalSize",          layoutInfo.sizeX);
         item.Get ("verticalSize",            layoutInfo.sizeY);
         item.Get ("leftMargin",              layoutInfo.leftMargin);
