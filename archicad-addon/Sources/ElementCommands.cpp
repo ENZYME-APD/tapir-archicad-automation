@@ -1862,6 +1862,11 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.zone.roomBaseLev, stories));
                 AddZoneContourAndCoverFill (elem.zone, typeSpecificDetails);
+                typeSpecificDetails.Add ("height", elem.zone.roomHeight);
+                typeSpecificDetails.Add ("bottomOffset", elem.zone.roomBaseLev);
+                typeSpecificDetails.Add ("topOffset", elem.zone.roomTopOffset);
+                typeSpecificDetails.Add ("relativeTopStory", elem.zone.relativeTopStory);
+                typeSpecificDetails.Add ("floorThickness", elem.zone.roomFlThick);
                 AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
                 break;
 
@@ -2307,6 +2312,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     typeSpecificDetails.Add ("customNumber", GS::UniString (elem.drawing.customNumber));
                 }
                 typeSpecificDetails.Add ("isInNumbering", elem.drawing.isInNumbering);
+                // Drawing Settings > "Include scale in Autotext and index" (#817)
+                typeSpecificDetails.Add ("isScaleIncludedInAutotextAndIndex", elem.drawing.includeInAutoTextsAndIES);
                 typeSpecificDetails.Add ("hasBorderLine",       elem.drawing.hasBorderLine);
                 typeSpecificDetails.Add ("borderLineTypeIndex", GetAttributeIndex (elem.drawing.borderLineType));
                 typeSpecificDetails.Add ("borderPenIndex",      (Int32)elem.drawing.borderPen);
@@ -2831,16 +2838,12 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         }
                     } break;
                     case API_ZoneID: {
-                        const GS::ObjectState* stampPosition = typeSpecificDetails->Get ("stampPosition");
-                        if (stampPosition != nullptr) {
-                            elem.zone.pos = Get2DCoordinateFromObjectState (*stampPosition);
-                            ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, pos);
-                        }
-                        if (typeSpecificDetails->Get ("stampAngle", elem.zone.stampAngle)) {
-                            ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, stampAngle);
-                        }
-                        if (typeSpecificDetails->Get ("fixedStampAngle", elem.zone.fixedAngle)) {
-                            ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, fixedAngle);
+                        // The same fields as ModifyZones, applied by the same helper.
+                        auto zoneError = ApplyZoneSettings (*typeSpecificDetails, elem, mask);
+                        if (zoneError.HasValue ()) {
+                            ACAPI_DisposeElemMemoHdls (&clipMemo);
+                            executionResults (CreateFailedExecutionResult (*zoneError));
+                            continue;
                         }
                         // Only an automatic zone is found around its reference point; a manual
                         // zone has its outline instead, so the field is ignored for it.
@@ -2993,6 +2996,9 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         }
                         if (typeSpecificDetails->Get ("isInNumbering", elem.drawing.isInNumbering)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, isInNumbering);
+                        }
+                        if (typeSpecificDetails->Get ("isScaleIncludedInAutotextAndIndex", elem.drawing.includeInAutoTextsAndIES)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, includeInAutoTextsAndIES);
                         }
                         if (typeSpecificDetails->Get ("hasBorderLine", elem.drawing.hasBorderLine)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, hasBorderLine);
