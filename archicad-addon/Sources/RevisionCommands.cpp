@@ -431,7 +431,7 @@ GS::ObjectState GetRevisionChangesOfElementsCommand::Execute (const GS::ObjectSt
 {
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
-    const GS::Array<API_Guid> elementIds = elements.Transform<API_Guid> (GetGuidFromDatabaseArrayItem);
+    const GS::Array<API_Guid> elementIds = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
 
     GS::ObjectState response;
     const auto& revisionChangesOfElements = response.AddList<GS::ObjectState> ("revisionChangesOfElements");
