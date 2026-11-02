@@ -2632,8 +2632,8 @@ GS::Optional<GS::UniString> GetLibraryPartSectionCommand::GetInputParametersSche
             "subIdent": {
                 "type": "integer",
                 "description": "The sub-identifier of the section, as GetLibraryPartSections returns it. 0 when not given.",
-                "minimum": -32768,
-                "maximum": 32767
+                "minimum": 0,
+                "maximum": 65535
             },
             "password": {
                 "type": "string",
@@ -2680,7 +2680,7 @@ GS::ObjectState GetLibraryPartSectionCommand::Execute (const GS::ObjectState& pa
     if (!SectionTypeFromString (sectionTypeStr, section.sectType)) {
         return CreateErrorResponse (APIERR_BADPARS, "The section type is a code of one to four characters, as GetLibraryPartSections returns it.");
     }
-    section.subIdent = static_cast<short> (subIdent);
+    section.subIdent = static_cast<unsigned short> (subIdent);
 
     GS::UniString errorMessage;
     GSErrCode err = CheckLibraryPartIndex (index, errorMessage);
