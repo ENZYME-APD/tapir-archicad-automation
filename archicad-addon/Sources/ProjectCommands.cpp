@@ -12,6 +12,9 @@
 #endif
 
 #include <cmath>
+#include <map>
+#include <unordered_map>
+#include <unordered_set>
 #include <optional>
 #include <initializer_list>
 
@@ -452,6 +455,120 @@ GS::ObjectState GetAutoTextNameCommand::Execute (const GS::ObjectState& paramete
     }
 
     return response;
+}
+
+GetNoteAutotextsCommand::GetNoteAutotextsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetNoteAutotextsCommand::GetName () const
+{
+    return "GetNoteAutotexts";
+}
+
+GS::Optional<GS::UniString> GetNoteAutotextsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "noteOwnerType": {
+                "$ref": "#/ElementType",
+                "description": "The type of the element that owns the note, e.g. 'Dimension', 'RadialDimension', 'LevelDimension' or 'AngleDimension'."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "noteOwnerType"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetNoteAutotextsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "noteAutotexts": {
+                "type": "array",
+                "description": "The autotexts available in the notes of the given owner type, in ascending order of autotextId.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "autotextId": {
+                            "type": "integer",
+                            "description": "The numeric value of the autotext's API_NoteAutotextID in the Archicad API."
+                        },
+                        "elementTypes": {
+                            "type": "array",
+                            "description": "The element types the autotext is available for.",
+                            "items": {
+                                "$ref": "#/ElementType"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "autotextId",
+                        "elementTypes"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "noteAutotexts"
+        ]
+    })";
+}
+
+GS::ObjectState GetNoteAutotextsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2600
+    GS::UniString noteOwnerTypeStr;
+    parameters.Get ("noteOwnerType", noteOwnerTypeStr);
+    const API_ElemTypeID noteOwnerTypeID = GetElementTypeFromNonLocalizedName (noteOwnerTypeStr);
+    if (noteOwnerTypeID == API_ZombieElemID) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid noteOwnerType.");
+    }
+
+    // dimAppear is left at its default (GS::NoValue).
+    std::unordered_map<API_NoteAutotextID, std::unordered_set<API_ElemType>> elemTypesForAutotextIDs;
+    const GSErrCode err = ACAPI_AutoText_GetNoteAutotexts (API_ElemType (noteOwnerTypeID), elemTypesForAutotextIDs);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve the note autotexts.");
+    }
+
+    // The map is unordered, so the autotexts are sorted by id, and element types that differ
+    // only in variation are listed once, so the output is stable.
+    std::map<Int32, GS::Array<GS::UniString>> elemTypeNamesForAutotextIDs;
+    for (const auto& autotextIdAndElemTypes : elemTypesForAutotextIDs) {
+        GS::Array<GS::UniString>& elemTypeNames = elemTypeNamesForAutotextIDs[static_cast<Int32> (autotextIdAndElemTypes.first)];
+        for (const API_ElemType& elemType : autotextIdAndElemTypes.second) {
+            const GS::UniString elemTypeName = GetElementTypeNonLocalizedName (elemType.typeID);
+            if (!elemTypeNames.Contains (elemTypeName)) {
+                elemTypeNames.Push (elemTypeName);
+            }
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& listAdder = response.AddList<GS::ObjectState> ("noteAutotexts");
+    for (const auto& autotextIdAndElemTypeNames : elemTypeNamesForAutotextIDs) {
+        GS::ObjectState noteAutotext;
+        noteAutotext.Add ("autotextId", autotextIdAndElemTypeNames.first);
+        const auto& elemTypesAdder = noteAutotext.AddList<GS::UniString> ("elementTypes");
+        for (const GS::UniString& elemTypeName : autotextIdAndElemTypeNames.second) {
+            elemTypesAdder (elemTypeName);
+        }
+        listAdder (noteAutotext);
+    }
+
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetNoteAutotexts needs Archicad 26 or later.");
+#endif
 }
 
 GetNoteAutoTextKeywordsCommand::GetNoteAutoTextKeywordsCommand () :
@@ -2414,7 +2531,7 @@ GS::Optional<GS::UniString> SaveCurrentWindowAsImageCommand::GetRawResponseSchem
     })";
 }
 
-static bool ParseImageFileType (const GS::UniString& format, API_FTypeID& fileTypeID)
+bool ParseImageFileType (const GS::UniString& format, API_FTypeID& fileTypeID)
 {
     if (format == "png") {
         fileTypeID = APIFType_PNGFile;
@@ -2432,7 +2549,7 @@ static bool ParseImageFileType (const GS::UniString& format, API_FTypeID& fileTy
     return true;
 }
 
-static bool ParseImageFileTypeFromExtension (const GS::UniString& imageFilePath, API_FTypeID& fileTypeID)
+bool ParseImageFileTypeFromExtension (const GS::UniString& imageFilePath, API_FTypeID& fileTypeID)
 {
     const UIndex dotIndex = imageFilePath.FindLast (GS::UniChar ('.'));
     if (dotIndex == MaxUIndex) {
@@ -6288,6 +6405,164 @@ GS::ObjectState ChangeHotlinkNodesCommand::Execute (const GS::ObjectState& param
     }
 
     return response;
+}
+
+// Breaking a node turns the elements of its placed instances into ordinary
+// elements of the project (the Hotlink Manager's Break Hotlink); deleting a
+// node removes it together with its placed instances (the Hotlink Manager's
+// Delete). Both take the same input and differ only in the call, so one
+// function runs both. Unlike Update and Change above they change elements,
+// so they run in one undo step for the whole call, as DeleteElements does.
+enum class HotlinkNodeRemoval {
+    Break,
+    Delete
+};
+
+static GS::Optional<GS::UniString> GetHotlinkNodesInputSchema (const GS::UniString& description)
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkNodes": {
+                "type": "array",
+                "description": ")" + description + R"(",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "hotlinkNodeId": {
+                            "$ref": "#/HotlinkNodeId"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "hotlinkNodeId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkNodes"
+        ]
+    })";
+}
+
+static GS::ObjectState RemoveHotlinkNodes (const GS::ObjectState& parameters, HotlinkNodeRemoval removal)
+{
+    GS::Array<GS::ObjectState> hotlinkNodes;
+    parameters.Get ("hotlinkNodes", hotlinkNodes);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    const bool isDelete = removal == HotlinkNodeRemoval::Delete;
+    ACAPI_CallUndoableCommand (isDelete ? "Delete Hotlink Nodes" : "Break Hotlink Nodes", [&] () -> GSErrCode {
+        for (const GS::ObjectState& nodeData : hotlinkNodes) {
+            const GS::ObjectState* hotlinkNodeId = nodeData.Get ("hotlinkNodeId");
+            if (hotlinkNodeId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "hotlinkNodeId is missing"));
+                continue;
+            }
+
+            // Reading the node first tells a wrong id (or a node already gone
+            // with its parent earlier in the same call) apart from a failed
+            // removal, and gives the name for the message.
+            API_HotlinkNode node = {};
+            node.guid = GetGuidFromObjectState (*hotlinkNodeId);
+            bool enableUnplaced = true;     // the node may have been created and not placed yet
+            if (ACAPI_Hotlink_GetHotlinkNode (&node, &enableUnplaced) != NoError) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "hotlinkNodeId is not a hotlink node"));
+                continue;
+            }
+            const GS::UniString name (node.name);
+
+            const GSErrCode err = isDelete
+                ? ACAPI_Hotlink_DeleteHotlinkNode (&node.guid)
+                : ACAPI_Hotlink_BreakHotlinkNode (&node.guid);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, (isDelete ? "Failed to delete the hotlink node " : "Failed to break the hotlink node ") + name));
+                continue;
+            }
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+}
+
+BreakHotlinkNodesCommand::BreakHotlinkNodesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String BreakHotlinkNodesCommand::GetName () const
+{
+    return "BreakHotlinkNodes";
+}
+
+GS::Optional<GS::UniString> BreakHotlinkNodesCommand::GetInputParametersSchema () const
+{
+    return GetHotlinkNodesInputSchema (
+        "The hotlink nodes to break, from GetHotlinks or CreateHotlinkNodes. The elements of each node's placed instances stay in the project as ordinary elements, no longer tied to the source file, as the Hotlink Manager's Break Hotlink does. In Teamwork the Hotlink and XRef management has to be reserved first (ReserveHotlinkCacheManagement).");
+}
+
+GS::Optional<GS::UniString> BreakHotlinkNodesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState BreakHotlinkNodesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    return RemoveHotlinkNodes (parameters, HotlinkNodeRemoval::Break);
+}
+
+DeleteHotlinkNodesCommand::DeleteHotlinkNodesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeleteHotlinkNodesCommand::GetName () const
+{
+    return "DeleteHotlinkNodes";
+}
+
+GS::Optional<GS::UniString> DeleteHotlinkNodesCommand::GetInputParametersSchema () const
+{
+    return GetHotlinkNodesInputSchema (
+        "The hotlink nodes to delete, from GetHotlinks or CreateHotlinkNodes. Each node is removed together with its placed instances and their elements, as the Hotlink Manager's Delete does; use BreakHotlinkNodes instead to keep the elements. In Teamwork the Hotlink and XRef management has to be reserved first (ReserveHotlinkCacheManagement).");
+}
+
+GS::Optional<GS::UniString> DeleteHotlinkNodesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteHotlinkNodesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    return RemoveHotlinkNodes (parameters, HotlinkNodeRemoval::Delete);
 }
 
 GetHotlinkOwnersOfElementsCommand::GetHotlinkOwnersOfElementsCommand () :
