@@ -25,8 +25,10 @@
 #include "ProjectCommands.hpp"
 #include "CustomDataCommands.hpp"
 #include "ElementCommands.hpp"
+#include "ElementChangeTrackingCommands.hpp"
 #include "ElementCategoryCommands.hpp"
 #include "ElementGDLParameterCommands.hpp"
+#include "ElementURLReferenceCommands.hpp"
 #include "ElementCreationCommands.hpp"
 #include "ExtendedElementCommands.hpp"
 #include "Model3DCommands.hpp"
@@ -60,6 +62,7 @@
 #include "PolygonCommands.hpp"
 #include "ViewAndPlaceSettingsCommands.hpp"
 #include "DrawingPrimitiveCommands.hpp"
+#include "RenderingCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -204,6 +207,8 @@ GSErrCode Initialize (void)
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_RUNSCRIPT_6, MenuCommandHandler);
     err |= TapirPalette::RegisterPaletteControlCallBack ();
     err |= ScriptUIPalette::RegisterPaletteControlCallBack ();
+    // The element states of CaptureElementState belong to the open project: drop them when it closes.
+    err |= InstallElementStateProjectEventHandler ();
 
     // The Add-On is preloaded, so this runs before Archicad opens the first project.
     ApplyDialogAutoCloseFromEnvironment ();
@@ -404,6 +409,10 @@ GSErrCode Initialize (void)
             projectCommands, "1.5.9",
             "Retrieves the display names of one or more autotext keys (as returned inside a '<...>' embedded key), with a direct guid lookup for property-based keys instead of enumerating every property definition."
         );
+        err |= RegisterCommand<GetNoteAutotextsCommand> (
+            projectCommands, "1.7.4",
+            "Retrieves the autotexts available in the notes of an element type (e.g. a Dimension), each with the element types it is available for. The autotexts are identified by the numeric value of their API_NoteAutotextID. Needs Archicad 26 or later."
+        );
         err |= RegisterCommand<GetNoteAutoTextKeywordsCommand> (
             projectCommands, "1.7.3",
             "Retrieves the keywords of note autotexts (the autotexts of dimension, label and other element notes) by their numeric API_NoteAutotextID values. Available from Archicad 26."
@@ -431,6 +440,14 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<ChangeHotlinkNodesCommand> (
             projectCommands, "1.7.1",
             "Repoints hotlink module nodes at other source files, as the Hotlink Manager's Relink button does. Follow it with UpdateHotlinks to re-read the content."
+        );
+        err |= RegisterCommand<BreakHotlinkNodesCommand> (
+            projectCommands, "1.7.4",
+            "Breaks hotlink nodes, as the Hotlink Manager's Break Hotlink does: the elements of each node's placed instances stay in the project as ordinary elements, no longer tied to the source file."
+        );
+        err |= RegisterCommand<DeleteHotlinkNodesCommand> (
+            projectCommands, "1.7.4",
+            "Deletes hotlink nodes together with their placed instances, as the Hotlink Manager's Delete does."
         );
         err |= RegisterCommand<GetHotlinkOwnersOfElementsCommand> (
             projectCommands, "1.7.4",
@@ -475,6 +492,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetCurrentViewImageCommand> (
             projectCommands, "1.7.3",
             "Returns what the 3D window, or the PhotoRendering window, shows as a base64 encoded png or jpg image with its size in pixels, without writing a file. Available from Archicad 30."
+        );
+        err |= RegisterCommand<GetRenderingScenesCommand> (
+            projectCommands, "1.7.4",
+            "Gets the names of the rendering scenes of the project, as the Scene list of the PhotoRendering Settings palette shows them."
+        );
+        err |= RegisterCommand<SetCurrentRenderingSceneCommand> (
+            projectCommands, "1.7.4",
+            "Makes the given rendering scene the current one, as selecting it in the PhotoRendering Settings palette does."
+        );
+        err |= RegisterCommand<PhotoRenderCommand> (
+            projectCommands, "1.7.4",
+            "Renders the 3D model with the current rendering scene, or with the given one, as Document > Creative Imaging > PhotoRender Projection does, and saves the image to a file (png, jpg, bmp, tiff or gif). The image size and quality come from the scene."
         );
         err |= RegisterCommand<GetCalculationUnitsCommand> (
             projectCommands, "1.4.0",
@@ -594,9 +623,25 @@ GSErrCode Initialize (void)
             elementCommands, "1.0.7",
             "Returns the identifier of all elements on the plan. Use the optional filter parameter for filtering. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given."
         );
+        err |= RegisterCommand<CaptureElementStateCommand> (
+            elementCommands, "1.7.4",
+            "Captures the current state of the elements of the project and returns a stateId for it, so that GetElementChangesSince can later list what was created, modified and deleted since. The optional type selects how changes are detected (modification stamps by default, or the 3D model). The state is kept in a file in the temporary folder for the Archicad session only: it is lost when the project is closed or Archicad restarts, and ReleaseElementState frees it earlier."
+        );
+        err |= RegisterCommand<GetElementChangesSinceCommand> (
+            elementCommands, "1.7.4",
+            "Returns the new, modified and deleted elements between a state captured by CaptureElementState and either another captured state (toStateId) or the current state of the project. Scripts that keep an external copy of the model use it to sync only what changed instead of re-reading every element. Fails for a stateId that is unknown - never captured, released, or lost because the project was closed or Archicad restarted."
+        );
+        err |= RegisterCommand<ReleaseElementStateCommand> (
+            elementCommands, "1.7.4",
+            "Frees a state captured by CaptureElementState. Every state is freed anyway when the project is closed or Archicad quits."
+        );
         err |= RegisterCommand<GetElementTypeNamesCommand> (
             elementCommands, "1.7.3",
             "Gets the localized names of the given element types, as the running Archicad shows them (for example 'Wand' for Wall in German Archicad). The output is aligned with the input array of element types. Available from Archicad 27."
+        );
+        err |= RegisterCommand<GetElementsInCreationOrderCommand> (
+            elementCommands, "1.7.4",
+            "Returns the identifier of every element of the current database, or of the given databases, in the order the elements were created."
         );
         err |= RegisterCommand<ChangeSelectionOfElementsCommand> (
             elementCommands, "1.0.7",
@@ -673,6 +718,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetVisibleSkinStatusCommand> (
             elementCommands, "1.7.4",
             "Checks whether elements have a visible skin in a given Partial Structure Display mode (EntireStructure, CoreOnly, WithoutFinishes or StructureOnly), e.g. a finish-only slab has none in CoreOnly. The current window is not changed. The output is aligned with the input array of elements."
+        );
+        err |= RegisterCommand<GetCurtainWallAbsoluteBottomsCommand> (
+            elementCommands, "1.7.4",
+            "Gets the absolute bottom level of curtain walls or their subelements (segments, frames, panels, junctions, accessories). The output is aligned with the input array of elements."
         );
         err |= RegisterCommand<GetQuantitiesOfElementsCommand> (
             elementCommands, "1.7.2",
@@ -841,6 +890,14 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SetMarkerParametersOfElementsCommand> (
             elementCommands, "1.7.1",
             "Sets the given GDL parameters of the marker of the given Window and Door elements. The opening's own settings and the other marker parameters are left as they are."
+        );
+        err |= RegisterCommand<GetURLReferencesOfElementsCommand> (
+            elementCommands, "1.7.4",
+            "Gets the web link (URL reference) of the given elements: a URL with a description, shown in Archicad in the element's settings under Element Information > Link. An element without a link gets the error APIERR_NOUSERDATA."
+        );
+        err |= RegisterCommand<SetURLReferencesOfElementsCommand> (
+            elementCommands, "1.7.4",
+            "Sets the web link (URL reference) of the given elements: a URL with a description, shown in Archicad in the element's settings under Element Information > Link. Fails with APIERR_MOREUSER for an element that already holds a link."
         );
         err |= RegisterCommand<ChangeLibraryPartOfElementsCommand> (
             elementCommands, "1.7.4",
@@ -1088,9 +1145,17 @@ GSErrCode Initialize (void)
             elementCommands, "1.5.9",
             "Modifies Label elements based on the given parameters."
         );
+        err |= RegisterCommand<ModifyCurtainWallsCommand> (
+            elementCommands, "1.7.4",
+            "Modifies Curtain Wall elements in place, keeping their GUID, properties and classifications: the height, the bottom elevation and story, the reference line (with the same number of segments), and the column (primary) and row (secondary) pattern with its cell assignments, in the fields of CreateCurtainWalls."
+        );
         err |= RegisterCommand<ChangeTextContentCommand> (
             elementCommands, "1.7.4",
             "Replaces a range of the content of Text elements and text Labels, keeping the styles of the runs and the autotexts in the rest of the content."
+        );
+        err |= RegisterCommand<ModifyZonesCommand> (
+            elementCommands, "1.7.4",
+            "Modifies Zone elements: name, number, category, zone stamp, height, base offset, top link and floor thickness. Only the given fields are changed; the polygon is kept."
         );
         err |=RegisterCommand<MeasureTextsCommand> (
             elementCommands, "1.7.3",
@@ -1232,9 +1297,10 @@ GSErrCode Initialize (void)
             favoritesCommands, "1.5.4",
             "Apply the given favorites to existing elements. Only settings-type parameters are changed - "
             "geometry (position, floor, and dimensions such as a Wall's height) is left untouched, so applying "
-            "a Favorite never moves or resizes the target element. For the hierarchical types (Stair, "
-            "Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are "
-            "inseparable from the Favorite's own geometry. By default settings, classifications, "
+            "a Favorite never moves the target element. A Window or Door keeps its wall, marker and placement, "
+            "and takes the Favorite's library part and parameters, size included. For the "
+            "hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, "
+            "because they are inseparable from the Favorite's own geometry. By default settings, classifications, "
             "categories and properties are all applied; each can be opted out of individually. "
             "keepFields lists fields of the target (its ID, layer, an opening's width, height and sill "
             "height, a Wall's reference line location, height and top link) that are copied back after "
@@ -1301,16 +1367,6 @@ GSErrCode Initialize (void)
             favoritesCommands, "1.7.4",
             "Moves a folder of the Favorites palette, with its Favorites and subfolders, into another folder. Folders are "
             "given as their path of folder names from the root. Returns the new path of the folder. Available from Archicad 29."
-        );
-        err |= RegisterCommand<CreateFavoriteFolderCommand> (
-            favoritesCommands, "1.7.4",
-            "Creates a folder in the Favorites palette, in the parent folder given by its path. Returns the new folder. "
-            "Available from Archicad 29."
-        );
-        err |= RegisterCommand<RenameFavoriteFolderCommand> (
-            favoritesCommands, "1.7.4",
-            "Renames a folder of the Favorites palette given by its path. The root folder cannot be renamed. Returns the renamed folder. "
-            "Available from Archicad 29."
         );
         err |= RegisterCommand<MoveFavoritesCommand> (
             favoritesCommands, "1.7.4",
@@ -1561,6 +1617,10 @@ GSErrCode Initialize (void)
             attributeCommands, "1.5.4",
             "Creates or overwrites Pen Table attributes based on the given parameters."
         );
+        err |= RegisterCommand<ModifyPensCommand> (
+            attributeCommands, "1.7.2",
+            "Changes the color, width and description of single pens of the Pen Table in effect for the model views (the default) or the layouts, keeping every other pen as it is. Only the given fields of a listed pen are changed. In a Teamwork project the PenTables lockable object set must be reserved first (see ReserveLockableObjectSet)."
+        );
         err |= RegisterCommand<CreateProfilesCommand> (
             attributeCommands, "1.5.4",
             "Creates or overwrites Profile attributes as a copy of an existing Profile's geometry, based on the given parameters."
@@ -1696,6 +1756,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<DeleteGraphicOverrideRuleGroupsCommand> (
             attributeCommands, "1.7.2",
             "Deletes graphic override rule groups, found by name. A group that still contains rules is kept unless its rules are moved to another group or deleted with it. Available from Archicad 27."
+        );
+        err |= RegisterCommand<SetGraphicOverrideRuleGroupOrderCommand> (
+            attributeCommands, "1.7.4",
+            "Sets the order of the graphic override rule groups, found by name. The groups not listed keep their order and follow the listed ones. Available from Archicad 27."
         );
         err |= RegisterCommand<MoveGraphicOverrideRulesCommand> (
             attributeCommands, "1.7.3",
@@ -2054,6 +2118,14 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.7.2",
             "Applies a graphic override combination, given by id or by name, to the current window. The current window must be a model window (floor plan, section, elevation, 3D, ...). To remove the overrides, apply the project's 'No Overrides' combination. The saved view is not changed (see SetViewSettings for that). Available from Archicad 30."
         );
+        err |= RegisterCommand<GetRenovationFiltersCommand> (
+            navigatorCommands, "1.7.4",
+            "Gets the renovation filters of the project, and the one the current window uses (Document > Renovation > Renovation Filter). A renovationFilterId has the same shape as the renovationFilterGuid of GetViewSettings and SetViewSettings, so a filter listed here can be set on saved views too."
+        );
+        err |= RegisterCommand<SetActiveRenovationFilterCommand> (
+            navigatorCommands, "1.7.4",
+            "Sets the renovation filter of the current window (Document > Renovation > Renovation Filter), given by its renovationFilterId from GetRenovationFilters or by its name. Saved views keep their own filter: change that with SetViewSettings."
+        );
         err |= RegisterCommand<GetGhostStorySettingsCommand> (
             navigatorCommands, "1.7.4",
             "Gets the Trace & Reference ghost story settings of the floor plan: whether it is on, whether one story, the story above or the one below is shown, which story, its color and the element types shown in it."
@@ -2297,6 +2369,10 @@ GSErrCode Initialize (void)
             issueCommands, "1.1.9",
             "Retrieves all issues."
         );
+        err |= RegisterCommand<ModifyRevisionIssuesCommand> (
+            issueCommands, "1.7.4",
+            "Modifies the ID, the short description and the custom scheme data of the given revision issues. Only the given fields are changed. Issued revision issues may refuse the change."
+        );
         err |= RegisterCommand<GetRevisionChangesCommand> (
             issueCommands, "1.1.9",
             "Retrieves all changes."
@@ -2409,6 +2485,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<ReorderDesignOptionsInSetCommand> (
             designOptionsCommands, "1.7.4",
             "Moves the given design options before another design option of the same set or to the end of their set. Available from Archicad 29."
+        );
+        err |= RegisterCommand<CanMoveElementsToDesignOptionsCommand> (
+            designOptionsCommands, "1.7.4",
+            "Checks whether the given elements can be moved to another design option or to the main model, with the reason when they cannot. Available from Archicad 29."
         );
         err |= RegisterCommand<DuplicateDesignOptionCombinationsCommand> (
             designOptionsCommands, "1.7.3",
@@ -2912,5 +2992,7 @@ GSErrCode FreeData (void)
     // ScriptUIPalette::Release for why (real macOS crash on quit, EXC_BAD_ACCESS tearing down the
     // browser control after Archicad's own environment had already begun shutting down).
     ScriptUIPalette::Release ();
+    // Deletes the files of the states CaptureElementState still holds.
+    ReleaseAllElementStates ();
     return NoError;
 }
