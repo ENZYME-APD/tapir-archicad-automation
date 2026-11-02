@@ -4,6 +4,7 @@
 #include "NativeImage.hpp"
 #include "MemoryOChannel32.hpp"
 #include "Base64Converter.hpp"
+#include "HashSet.hpp"
 
 #ifdef ServerMainVers_2800
 #include "ACAPI/IFCObjectAccessor.hpp"
@@ -235,7 +236,7 @@ GS::Optional<GS::UniString> GetAutoTextKeysCommand::GetInputParametersSchema () 
         "properties": {
             "elementId": {
                 "$ref": "#/ElementId",
-                "description": "Optional. The element to retrieve context dependent autotext keys for (its own properties, plus the ones common to all element types, e.g. 'Element ID', 'Area'). When omitted, only the autotext keys common to all element types are returned."
+                "description": "Optional. The element to retrieve context dependent autotext keys for (its own properties, plus the ones common to all element types, e.g. 'Element ID', 'Area'). When omitted, only the property based autotext keys common to all element types are returned. The other autotexts (Project Info, layout, drawing, date, ...) are returned either way."
             }
         },
         "additionalProperties": false
@@ -258,7 +259,7 @@ GS::Optional<GS::UniString> GetAutoTextKeysCommand::GetRawResponseSchema () cons
                         },
                         "key": {
                             "type": "string",
-                            "description": "The autotext's key. To embed it in the content of a Text or Label element, surround it with '<' and '>', e.g. '<PROPERTY-69A58F6F-DD3B-478D-B5EF-09A16BD0C548>'."
+                            "description": "The autotext's key. To embed it in the content of a Text or Label element, surround it with '<' and '>', e.g. '<PROJECTNAME>' or '<PROPERTY-69A58F6F-DD3B-478D-B5EF-09A16BD0C548>'."
                         }
                     },
                     "additionalProperties": false,
@@ -296,20 +297,50 @@ GS::ObjectState GetAutoTextKeysCommand::Execute (const GS::ObjectState& paramete
         return CreateErrorResponse (err, "Failed to retrieve the autotext keys.");
     }
 
+    // The property table only has the property based keys. The other autotexts (Project Info,
+    // layout, drawing, date, ...) come from the same list GetProjectInfoFields filters; its
+    // second item is the key that is embedded as '<KEY>' (e.g. 'PROJECTNAME').
+    GS::Array<GS::ArrayFB<GS::UniString, 3>> autoTexts;
+    err = ACAPI_AutoText_GetAutoTexts (&autoTexts, APIAutoText_All);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve the autotexts.");
+    }
+
     GS::ObjectState response;
     const auto& listAdder = response.AddList<GS::ObjectState> ("autoTextKeys");
+    GS::HashSet<GS::UniString> addedKeys;
+
+    for (const auto& autoText : autoTexts) {
+        const GS::UniString& autoTextKey = autoText[1];
+        if (autoTextKey.IsEmpty () || addedKeys.Contains (autoTextKey)) {
+            continue;
+        }
+        addedKeys.Add (autoTextKey);
+
+        GS::ObjectState keyData;
+        keyData.Add ("name", autoText[0]);
+        keyData.Add ("key", autoTextKey);
+        listAdder (keyData);
+    }
 
     // GS::HashTable's pair iterator hands out references from AC28 and pointers before
     // (GSRoot/HashTable.hpp: ConstCurrentPair::key is `const Key&` vs `const Key*`).
     for (const auto& keyPair : keyTable) {
-        GS::ObjectState keyData;
 #ifdef ServerMainVers_2800
-        keyData.Add ("name", keyPair.key);
-        keyData.Add ("key", keyPair.value);
+        const GS::UniString& name = keyPair.key;
+        const GS::UniString& key = keyPair.value;
 #else
-        keyData.Add ("name", *keyPair.key);
-        keyData.Add ("key", *keyPair.value);
+        const GS::UniString& name = *keyPair.key;
+        const GS::UniString& key = *keyPair.value;
 #endif
+        if (addedKeys.Contains (key)) {
+            continue;
+        }
+        addedKeys.Add (key);
+
+        GS::ObjectState keyData;
+        keyData.Add ("name", name);
+        keyData.Add ("key", key);
         listAdder (keyData);
     }
 
