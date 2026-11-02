@@ -658,6 +658,42 @@ GS::ObjectState GetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
     return response;
 }
 
+// Build a temporary value; a bad item leaves the property unchanged.
+static GSErrCode SetNumericListPropertyValueFromString (const GS::UniString& text, API_Property& property)
+{
+    const std::string input = text.ToCStr ().Get ();
+    if (input.find_first_not_of (" +-0123456789.eE;\t\r\n\f\v") != std::string::npos) {
+        return APIERR_BADPARS;
+    }
+    std::istringstream numbers (input);
+    numbers.imbue (std::locale::classic ());
+    API_PropertyValue value;
+    numbers >> std::ws;
+    while (!numbers.eof ()) {
+        API_Variant item;
+        item.type = property.definition.valueType;
+        if (item.type == API_PropertyIntegerValueType) {
+            if (!(numbers >> item.intValue)) {
+                return APIERR_BADPARS;
+            }
+        } else if (!(numbers >> item.doubleValue) || !std::isfinite (item.doubleValue)) {
+            return APIERR_BADPARS;
+        }
+        value.listVariant.variants.Push (item);
+        numbers >> std::ws;
+        if (numbers.eof ()) {
+            break;
+        }
+        if (numbers.get () != ';' || (numbers >> std::ws).eof ()) {
+            return APIERR_BADPARS;
+        }
+    }
+    property.value = value;
+    property.isDefault = false;
+    property.status = API_Property_HasValue;
+    return NoError;
+}
+
 SetPropertyValuesOfElementsCommand::SetPropertyValuesOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -674,7 +710,8 @@ GS::Optional<GS::UniString> SetPropertyValuesOfElementsCommand::GetInputParamete
         "type": "object",
         "properties": {
             "elementPropertyValues": {
-                "$ref": "#/ElementPropertyValues"
+                "$ref": "#/ElementPropertyValues",
+                "description": "Unitless real and integer lists accept semicolon-separated numbers; an empty string sets an empty list. Invalid items reject the entire property write."
             }
         },
         "additionalProperties": false,
@@ -775,7 +812,16 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
                     continue;
                 }
 
-                GSErrCode err = ACAPI_Property_SetPropertyValueFromString (propertyValuesForElements[guidPair], conversionUtils, &propertyValue);
+                const API_PropertyDefinition& definition = propertyValue.definition;
+                const bool isNumericList = definition.collectionType == API_PropertyListCollectionType &&
+                    definition.measureType == API_PropertyDefaultMeasureType &&
+                    (definition.valueType == API_PropertyRealValueType || definition.valueType == API_PropertyIntegerValueType);
+                GSErrCode err;
+                if (isNumericList) {
+                    err = SetNumericListPropertyValueFromString (propertyValuesForElements[guidPair], propertyValue);
+                } else {
+                    err = ACAPI_Property_SetPropertyValueFromString (propertyValuesForElements[guidPair], conversionUtils, &propertyValue);
+                }
 
                 if (err != NoError) {
                     result = CreateFailedExecutionResult (err, "Failed to set property value for element");
