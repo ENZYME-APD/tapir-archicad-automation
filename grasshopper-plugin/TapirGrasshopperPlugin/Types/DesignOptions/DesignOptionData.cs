@@ -115,6 +115,14 @@ namespace TapirGrasshopperPlugin.Types.DesignOptions
 
         [JsonProperty("ownerSetName")]
         public string OwnerSetName;
+
+        // Returned by GetDesignOptions only.
+        [JsonProperty("isEditable")]
+        public bool? IsEditable;
+
+        // Set when IsEditable is false.
+        [JsonProperty("notEditableError")]
+        public Error NotEditableError;
     }
 
     public class GetDesignOptionsResponse
@@ -130,6 +138,13 @@ namespace TapirGrasshopperPlugin.Types.DesignOptions
 
         [JsonProperty("name")]
         public string Name;
+
+        [JsonProperty("isEditable")]
+        public bool? IsEditable;
+
+        // Set when IsEditable is false.
+        [JsonProperty("notEditableError")]
+        public Error NotEditableError;
 
         [JsonProperty("designOptions")]
         public List<DesignOptionGuidWrapper> DesignOptions;
@@ -151,6 +166,14 @@ namespace TapirGrasshopperPlugin.Types.DesignOptions
 
         [JsonProperty("activeDesignOptions")]
         public List<DesignOptionGuidWrapper> ActiveDesignOptions;
+
+        // Available from Archicad 29.
+        [JsonProperty("isEditable")]
+        public bool? IsEditable;
+
+        // Set when IsEditable is false.
+        [JsonProperty("notEditableError")]
+        public Error NotEditableError;
     }
 
     public class GetDesignOptionCombinationsResponse
@@ -194,6 +217,25 @@ namespace TapirGrasshopperPlugin.Types.DesignOptions
     {
         [JsonProperty("designOptionForElements")]
         public List<DesignOptionForElement> DesignOptionForElements;
+    }
+
+    public class CanMoveElement
+    {
+        [JsonProperty("elementId")]
+        public ElementGuid ElementId;
+
+        [JsonProperty("canMove")]
+        public bool CanMove;
+
+        // Set when CanMove is false.
+        [JsonProperty("error")]
+        public Error Error;
+    }
+
+    public class CanMoveElementsToDesignOptionsResponse
+    {
+        [JsonProperty("canMoveElements")]
+        public List<CanMoveElement> CanMoveElements;
     }
 
     // Input parameter payloads
@@ -332,5 +374,50 @@ namespace TapirGrasshopperPlugin.Types.DesignOptions
     {
         [JsonProperty("designOptionCombinations")]
         public List<RenameDesignOptionCombinationParameter> DesignOptionCombinations;
+    }
+
+    public class SetDefaultDesignOptionParameters
+    {
+        // Null selects the Main Model as the default.
+        [JsonProperty(
+            "designOptionId",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public DesignOptionGuid DesignOptionId;
+    }
+
+    public class ReorderDesignOptionSetParameter
+    {
+        [JsonProperty("designOptionSetId")]
+        public DesignOptionSetGuid DesignOptionSetId;
+
+        // Null moves the set to the end.
+        [JsonProperty(
+            "beforeDesignOptionSetId",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public DesignOptionSetGuid BeforeDesignOptionSetId;
+    }
+
+    public class ReorderDesignOptionSetsParameters
+    {
+        [JsonProperty("designOptionSets")]
+        public List<ReorderDesignOptionSetParameter> DesignOptionSets;
+    }
+
+    public class ReorderDesignOptionInSetParameter
+    {
+        [JsonProperty("designOptionId")]
+        public DesignOptionGuid DesignOptionId;
+
+        // Null moves the design option to the end of its set.
+        [JsonProperty(
+            "beforeDesignOptionId",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public DesignOptionGuid BeforeDesignOptionId;
+    }
+
+    public class ReorderDesignOptionsInSetParameters
+    {
+        [JsonProperty("designOptions")]
+        public List<ReorderDesignOptionInSetParameter> DesignOptions;
     }
 }
