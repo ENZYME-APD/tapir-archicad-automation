@@ -1122,6 +1122,124 @@ GS::ObjectState CreateElementSetsCommand::Execute(const GS::ObjectState& paramet
     return response;
 }
 
+DeleteElementSetsCommand::DeleteElementSetsCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String DeleteElementSetsCommand::GetName() const
+{
+    return "DeleteElementSets";
+}
+
+GS::Optional<GS::UniString> DeleteElementSetsCommand::GetInputParametersSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementSets": {
+                "type": "array",
+                "description": "The element sets to delete, as returned by CreateElementSets or GetElementSetsOfElements. Only element sets created by the Tapir Add-On can be deleted. The elements of a deleted set are not deleted.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementSetId": {
+                            "type": "object",
+                            "description": "The identifier of an element set.",
+                            "properties": {
+                                "guid": {
+                                    "$ref": "#/Guid"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "guid"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementSetId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementSets"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteElementSetsCommand::GetRawResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteElementSetsCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementSets;
+    if (!parameters.Get("elementSets", elementSets)) {
+        return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'elementSets' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState>("executionResults");
+
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand("Delete Element Sets", [&]() -> GSErrCode {
+        for (const GS::ObjectState& elementSet : elementSets) {
+            const GS::ObjectState* elementSetId = elementSet.Get("elementSetId");
+            if (elementSetId == nullptr) {
+                executionResults(CreateFailedExecutionResult(APIERR_BADPARS, "elementSetId is missing"));
+                continue;
+            }
+
+            const API_Guid setGuid = GetGuidFromObjectState(*elementSetId);
+            if (setGuid == APINULLGuid) {
+                executionResults(CreateFailedExecutionResult(APIERR_BADID, "Invalid element set identifier."));
+                continue;
+            }
+
+            const GSErrCode err = ACAPI_ElementSet_Delete(setGuid);
+            switch (err) {
+                case NoError:
+                    executionResults(CreateSuccessfulExecutionResult());
+                    break;
+                case APIERR_NOTMINE:
+                    executionResults(CreateFailedExecutionResult(err, "The element set was not created by the Tapir Add-On, so it cannot be deleted."));
+                    break;
+                case APIERR_DELETED:
+                    executionResults(CreateFailedExecutionResult(err, "The element set is already deleted."));
+                    break;
+                case APIERR_BADID:
+                    executionResults(CreateFailedExecutionResult(err, "The element set does not exist."));
+                    break;
+                default:
+                    executionResults(CreateFailedExecutionResult(err, "Failed to delete the element set."));
+                    break;
+            }
+        }
+        return NoError;
+    });
+
+    if (undoErr != NoError) {
+        return CreateErrorResponse(undoErr, "Failed to delete the element sets.");
+    }
+
+    return response;
+}
+
 GetElementSetsOfElementsCommand::GetElementSetsOfElementsCommand() :
     CommandBase(CommonSchema::Used)
 {
