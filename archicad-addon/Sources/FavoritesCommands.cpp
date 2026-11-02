@@ -744,11 +744,65 @@ static void ResetCornerWindowVariationIfNotCornerWindow (API_Elem_Head& header, 
     }
 }
 
-// Fills in favorite.element/classifications/properties/memo by reading them off an existing
-// element - shared by CreateFavoritesFromElements (-> ACAPI_Favorite_Create, a new entry) and
-// UpdateFavoritesFromElements (-> ACAPI_Favorite_Change, re-capturing an existing entry in place).
-// favorite.name is intentionally left untouched here - the two callers use it differently (new
-// name to create vs. existing name to update).
+static bool IsWindowOrDoor (const API_Elem_Head& header)
+{
+    const API_ElemTypeID typeId = GetElemTypeId (header);
+    return typeId == API_WindowID || typeId == API_DoorID;
+}
+
+// A window's or door's marker (the Window/Door Marker library part with its own parameters) is
+// a separate element the opening links to with API_OpeningBaseType::markGuid. A Favorite keeps it in
+// API_Favorite::elementMarker/memoMarker - ApplyWindowOrDoorFavoriteToDefaults in
+// ExtendedElementCommands.cpp reads it back from there - so a Favorite captured without them
+// exported with an empty marker section, unlike one made in the Favorites palette (#812). The
+// marker is read the way the opening itself is: ACAPI_Element_Get by guid and
+// ACAPI_Element_GetMemo for its parameters. An opening without a marker leaves both empty.
+static GS::Optional<GS::ObjectState> CaptureOpeningMarker (API_Favorite& favorite)
+{
+    if (!IsWindowOrDoor (favorite.element.header)) {
+        return {};
+    }
+
+    const API_Guid markerGuid = favorite.element.window.openingBase.markGuid;
+    if (markerGuid == APINULLGuid) {
+        return {};
+    }
+
+    favorite.elementMarker.New ();
+    *favorite.elementMarker = {};
+    favorite.elementMarker->header.guid = markerGuid;
+    GSErrCode err = ACAPI_Element_Get (favorite.elementMarker.GetPtr ());
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get the marker of the element");
+    }
+
+    favorite.memoMarker.New ();
+    *favorite.memoMarker = {};
+    err = ACAPI_Element_GetMemo (markerGuid, favorite.memoMarker.GetPtr (), APIMemoMask_AddPars);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get the parameters of the element's marker");
+    }
+
+    return {};
+}
+
+// Frees the memo handles BuildFavoriteFromElement had Archicad allocate.
+static void DisposeFavoriteMemos (API_Favorite& favorite)
+{
+    if (favorite.memo.HasValue ()) {
+        ACAPI_DisposeElemMemoHdls (favorite.memo.GetPtr ());
+    }
+    if (favorite.memoMarker.HasValue ()) {
+        ACAPI_DisposeElemMemoHdls (favorite.memoMarker.GetPtr ());
+    }
+}
+
+// Fills in favorite.element/classifications/properties/memo (and, for a window or door, the
+// marker) by reading them off an existing element - shared by CreateFavoritesFromElements
+// (-> ACAPI_Favorite_Create, a new entry) and UpdateFavoritesFromElements (-> ACAPI_Favorite_Change,
+// re-capturing an existing entry in place). favorite.name is intentionally left untouched here -
+// the two callers use it differently (new name to create vs. existing name to update).
+// The caller owns the memo handles: free them with DisposeFavoriteMemos.
 static GS::Optional<GS::ObjectState> BuildFavoriteFromElement (const API_Guid& elemGuid, API_Favorite& favorite)
 {
     favorite.element.header.guid = elemGuid;
@@ -787,7 +841,7 @@ static GS::Optional<GS::ObjectState> BuildFavoriteFromElement (const API_Guid& e
 
     ResetCornerWindowVariationIfNotCornerWindow (favorite.element.header, favorite.memo.Get ());
 
-    return {};
+    return CaptureOpeningMarker (favorite);
 }
 
 GS::ObjectState CreateFavoritesFromElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -798,19 +852,21 @@ GS::ObjectState CreateFavoritesFromElementsCommand::Execute (const GS::ObjectSta
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
-    API_Favorite favorite;
-    favorite.memo.New ();
-    favorite.properties.New ();
-    favorite.classifications.New ();
-    favorite.elemCategoryValues.New ();
-    favorite.subElements.New ();
-    favorite.folder.New ();
-
     ACAPI_CallUndoableCommand ("CreateFavoritesFromElements", [&]() -> GSErrCode {
         for (const GS::ObjectState& favoriteFromElement : favoritesFromElements) {
+            // One API_Favorite per element: the marker of a window or door must not carry over
+            // to the next element, which may have none (see CaptureOpeningMarker).
+            API_Favorite favorite;
+            favorite.memo.New ();
+            favorite.properties.New ();
+            favorite.classifications.New ();
+            favorite.elemCategoryValues.New ();
+            favorite.subElements.New ();
+            favorite.folder.New ();
+            const GS::OnExit disposeMemos ([&favorite] () { DisposeFavoriteMemos (favorite); });
+
             favoriteFromElement.Get ("favorite", favorite.name);
 
-            favorite.folder->Clear ();
             GS::Array<GS::UniString> folderParts;
             if (favoriteFromElement.Get ("folder", folderParts)) {
                 for (const GS::UniString& part : folderParts) {
@@ -1319,6 +1375,47 @@ static bool MemoCarriesGeometry (const API_Elem_Head& header)
     }
 }
 
+// ACAPI_Element_ChangeParameters returns APIERR_REFUSEDPAR for a Window or Door, even with a
+// Favorite made from that very window (#812). The full mask it is given covers
+// API_WindowType::owner and openingBase.markGuid as well - the links to the wall and to the marker, which
+// no Favorite can supply. So an opening is changed with ACAPI_Element_Change instead, the call
+// SetGDLParametersOfElements and ChangeDetailsOfElements already make on openings, and the
+// way they do it: the record handed over is the target's own, and the mask names only the
+// fields taken from the Favorite. Those are the opening settings in API_OpeningBaseType -
+// library part, size, pens, line types, materials, section attributes - and the reveal
+// fields, the same ones ChangeDetailsOfElements writes; the Favorite's A and B parameters in
+// its memo match its size. Everything else in API_WindowType stays the target's without
+// being named here: its wall, its marker, the position along the wall, the sill height and
+// the sill/header anchor that gives it its meaning, the mirroring and side flags and any
+// placement field a DevKit adds. The placement fields inside API_OpeningBaseType - the
+// sill/header anchor (verticalLink), the subfloor thickness the sill height is measured from,
+// and the three mirroring and side flags - are put back from the target for the same reason. The Favorite's marker is not applied.
+static GSErrCode ApplyFavoriteToOpening (const API_Element& targetElement, API_Favorite& favorite)
+{
+    API_Element element = targetElement;
+    element.window.openingBase = favorite.element.window.openingBase;
+    element.window.openingBase.markGuid = targetElement.window.openingBase.markGuid;
+    element.window.openingBase.verticalLink = targetElement.window.openingBase.verticalLink;
+    element.window.openingBase.subFloorThickness = targetElement.window.openingBase.subFloorThickness;
+    element.window.openingBase.reflected = targetElement.window.openingBase.reflected;
+    element.window.openingBase.oSide = targetElement.window.openingBase.oSide;
+    element.window.openingBase.refSide = targetElement.window.openingBase.refSide;
+    element.window.reveal = favorite.element.window.reveal;
+    element.window.revealDepthOffset = favorite.element.window.revealDepthOffset;
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, reveal);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, revealDepthOffset);
+
+    API_ElementMemo* memo = favorite.memo.HasValue () && favorite.memo->params != nullptr
+        ? favorite.memo.GetPtr ()
+        : nullptr;
+    const UInt64 memoMask = memo != nullptr ? APIMemoMask_AddPars : 0;
+    return ACAPI_Element_Change (&element, &mask, memo, memoMask, true);
+}
+
 // The fields of the target element that `keepFields` can copy back after the Favorite has been
 // applied (#903). A Favorite captured from a placed element carries that element's size, sill
 // height, reference line, top link and Element ID, and ACAPI_Element_ChangeParameters applies
@@ -1551,7 +1648,7 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
             },
             "applySettings": {
                 "type": "boolean",
-                "description": "Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc. - never geometry; the element stays on its own home story). For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. A Dimension's text size, text pen and text frame are not changed (tested in Archicad 28): the dimension creation commands take textHeight and textPen for them. Default is true."
+                "description": "Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc.). Geometry (position, floor, and dimensions such as a Wall's height) is never applied - the element stays on its own home story - except that a Window or Door takes the Favorite's library part and parameters, size included, while keeping its wall, marker and placement. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. A Dimension's text size, text pen and text frame are not changed (tested in Archicad 28): the dimension creation commands take textHeight and textPen for them. Default is true."
             },
             "applyClassifications": {
                 "type": "boolean",
@@ -1693,25 +1790,29 @@ GS::ObjectState ApplyFavoritesToElementsCommand::Execute (const GS::ObjectState&
             // semantics we want here. The memo is the one part that can carry geometry, so
             // it is withheld for the types where it does (see MemoCarriesGeometry above).
             if (applySettings) {
-                API_Element mask = {};
-                ACAPI_ELEMENT_MASK_SETFULL (mask);
+                if (IsWindowOrDoor (targetElement.header)) {
+                    err = ApplyFavoriteToOpening (targetElement, favorite);
+                } else {
+                    API_Element mask = {};
+                    ACAPI_ELEMENT_MASK_SETFULL (mask);
 
-                GS::Array<API_Guid> targetGuids;
-                targetGuids.Push (targetGuid);
+                    GS::Array<API_Guid> targetGuids;
+                    targetGuids.Push (targetGuid);
 
-                const API_ElementMemo* memoToApply = MemoCarriesGeometry (targetElement.header)
-                    ? nullptr
-                    : favorite.memo.GetPtr ();
+                    const API_ElementMemo* memoToApply = MemoCarriesGeometry (targetElement.header)
+                        ? nullptr
+                        : favorite.memo.GetPtr ();
 
-                // The home story is part of the header the full mask covers, and the Favorite
-                // carries the story of the element it was captured from: applied as is, it moved
-                // a Wall from story 2 down to story 0 (#1565). The target keeps its own story.
-                favorite.element.header.floorInd = targetElement.header.floorInd;
-                mask.header.floorInd = 0;
+                    // The home story is part of the header the full mask covers, and the Favorite
+                    // carries the story of the element it was captured from: applied as is, it moved
+                    // a Wall from story 2 down to story 0 (#1565). The target keeps its own story.
+                    favorite.element.header.floorInd = targetElement.header.floorInd;
+                    mask.header.floorInd = 0;
 
-                err = ACAPI_Element_ChangeParameters (targetGuids, &favorite.element, memoToApply, &mask);
-                if (err == NoError) {
-                    err = RestoreHomeStory (targetElement);
+                    err = ACAPI_Element_ChangeParameters (targetGuids, &favorite.element, memoToApply, &mask);
+                    if (err == NoError) {
+                        err = RestoreHomeStory (targetElement);
+                    }
                 }
             }
             ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
@@ -1813,15 +1914,17 @@ GS::ObjectState UpdateFavoritesFromElementsCommand::Execute (const GS::ObjectSta
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
-    API_Favorite favorite;
-    favorite.memo.New ();
-    favorite.properties.New ();
-    favorite.classifications.New ();
-    favorite.elemCategoryValues.New ();
-    favorite.subElements.New ();
-
     ACAPI_CallUndoableCommand ("UpdateFavoritesFromElements", [&]() -> GSErrCode {
         for (const GS::ObjectState& favoriteFromElement : favoritesFromElements) {
+            // One API_Favorite per element, as in CreateFavoritesFromElements.
+            API_Favorite favorite;
+            favorite.memo.New ();
+            favorite.properties.New ();
+            favorite.classifications.New ();
+            favorite.elemCategoryValues.New ();
+            favorite.subElements.New ();
+            const GS::OnExit disposeMemos ([&favorite] () { DisposeFavoriteMemos (favorite); });
+
             favoriteFromElement.Get ("favorite", favorite.name);
 
             const API_Guid elemGuid = GetGuidFromElementsArrayItem (favoriteFromElement);
