@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-02 09:36 UTC",
+ "generatedAt": "2026-11-02 11:14 UTC",
  "versions": [
   25,
   26,
@@ -4536,6 +4536,10 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1649,
      "title": "SolveStairBaseline: run the stair solver inside an undoable command"
     },
@@ -7738,6 +7742,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
     },
@@ -8423,6 +8431,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
     {
      "number": 1714,
      "title": "Curtain wall segments, frames and panels: homeStoryLevel, and say what their z is measured from"
@@ -30570,6 +30582,10 @@
    "reason": "add-on infrastructure (undo scopes, results)",
    "pullRequests": [
     {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
+    {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     },
@@ -36118,6 +36134,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
+    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
     },
@@ -36153,6 +36185,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -36205,6 +36245,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -36265,6 +36313,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -36372,6 +36424,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -36453,6 +36509,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
     {
      "number": 1716,
      "title": "Add DeselectAll, GetMarquee and SetMarquee (replaces #963)"
@@ -36646,6 +36706,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -36752,6 +36820,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
+    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
     },
@@ -36844,6 +36928,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -36994,6 +37086,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -37138,7 +37238,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    }
+   ],
    "issues": []
   },
   {
@@ -37157,6 +37262,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -37202,6 +37311,22 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
@@ -37289,6 +37414,10 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -37516,6 +37645,14 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -38121,6 +38258,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
@@ -38592,6 +38733,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
+    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
     },
@@ -38986,6 +39143,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -39378,6 +39539,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
@@ -39503,6 +39668,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -39551,6 +39724,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
@@ -39731,6 +39920,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -40046,7 +40239,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    }
+   ],
    "issues": []
   },
   {
@@ -40202,6 +40400,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -40250,6 +40456,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
@@ -40422,6 +40644,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -40743,7 +40969,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    }
+   ],
    "issues": []
   },
   {
@@ -40865,6 +41096,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -40913,6 +41152,22 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
@@ -41000,6 +41255,10 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -41228,6 +41487,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -41274,6 +41541,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
@@ -41487,6 +41770,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -41791,6 +42078,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -41824,6 +42119,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
@@ -41862,6 +42173,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -42246,6 +42565,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -42308,6 +42635,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
@@ -42774,6 +43117,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -42802,6 +43153,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
@@ -43005,6 +43372,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -43107,6 +43482,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
@@ -43127,6 +43506,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
@@ -43490,6 +43885,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -43613,6 +44016,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
@@ -43633,6 +44040,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
@@ -43885,6 +44308,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -43916,6 +44347,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
@@ -44203,7 +44650,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    }
+   ],
    "issues": []
   },
   {
@@ -44258,6 +44710,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -44409,6 +44865,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -44463,6 +44923,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
@@ -44485,6 +44953,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -44537,6 +45009,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -44597,6 +45073,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -44650,6 +45130,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -44735,6 +45219,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -44862,7 +45350,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    }
+   ],
    "issues": []
   },
   {
@@ -44878,7 +45371,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    }
+   ],
    "issues": []
   },
   {
@@ -44894,7 +45392,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    }
+   ],
    "issues": []
   },
   {
@@ -44930,6 +45433,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -44999,6 +45510,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
+    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
     },
@@ -45067,6 +45594,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -45126,6 +45661,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -45187,6 +45726,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
+    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
     },
@@ -45222,6 +45777,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -45274,6 +45837,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -45335,6 +45906,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
@@ -45395,6 +45970,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
+    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
     },
@@ -45454,6 +46045,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -45608,7 +46207,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    }
+   ],
    "issues": []
   },
   {
@@ -45650,7 +46254,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    }
+   ],
    "issues": []
   },
   {
@@ -45670,6 +46279,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -46819,7 +47436,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    }
+   ],
    "issues": []
   },
   {
@@ -46835,7 +47457,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    }
+   ],
    "issues": []
   },
   {
@@ -46851,7 +47478,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    }
+   ],
    "issues": []
   },
   {
@@ -46906,6 +47538,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -46981,6 +47621,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
+    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
     },
@@ -47014,6 +47670,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -47143,6 +47803,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -47191,6 +47859,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
@@ -47586,6 +48270,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -47978,6 +48666,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
@@ -48103,6 +48795,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -48151,6 +48851,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
@@ -48323,6 +49039,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -48644,7 +49364,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    }
+   ],
    "issues": []
   },
   {
@@ -48766,6 +49491,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -48814,6 +49547,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
@@ -48994,6 +49743,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -49309,7 +50062,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    }
+   ],
    "issues": []
   },
   {
@@ -49465,6 +50223,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -49511,6 +50277,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
@@ -49715,6 +50497,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -49968,6 +50754,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
@@ -50024,6 +50814,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -50055,6 +50853,22 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
@@ -50295,6 +51109,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -50430,7 +51252,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    }
+   ],
    "issues": []
   },
   {
@@ -50502,6 +51329,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -50529,6 +51360,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
@@ -50653,6 +51500,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
@@ -50750,6 +51605,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -50777,6 +51636,10 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -50823,7 +51686,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    }
+   ],
    "issues": []
   },
   {
@@ -50997,7 +51865,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    }
+   ],
    "issues": []
   },
   {
@@ -51017,6 +51890,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
     {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
@@ -51040,7 +51917,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    }
+   ],
    "issues": []
   },
   {
@@ -51059,7 +51941,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    }
+   ],
    "issues": []
   },
   {
@@ -51079,6 +51966,14 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -51278,6 +52173,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
     }
@@ -51299,7 +52198,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    }
+   ],
    "issues": []
   },
   {
@@ -51317,7 +52221,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    }
+   ],
    "issues": []
   },
   {
@@ -51674,6 +52583,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -51777,6 +52690,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
     {
      "number": 1716,
      "title": "Add DeselectAll, GetMarquee and SetMarquee (replaces #963)"
@@ -51973,6 +52890,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -52022,6 +52947,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
+    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
     },
@@ -52057,6 +52998,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -52330,6 +53279,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
+    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
     },
@@ -52424,6 +53389,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
@@ -52509,6 +53482,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -52630,6 +53607,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -52853,6 +53834,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
     }
@@ -52969,6 +53954,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -53082,6 +54075,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
@@ -53131,6 +54132,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -53320,6 +54325,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
     }
@@ -53421,6 +54430,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -53452,6 +54469,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -53512,6 +54533,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
@@ -53597,6 +54634,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -53702,7 +54747,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    }
+   ],
    "issues": []
   },
   {
@@ -53749,7 +54799,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -53972,6 +55027,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -54058,6 +55121,14 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -54275,6 +55346,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -54342,6 +55421,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
@@ -54568,6 +55663,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
@@ -54766,7 +55869,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -55078,6 +56186,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -55302,6 +56418,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -55723,6 +56847,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -55840,6 +56972,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
+    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
     },
@@ -55873,6 +57021,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -55933,6 +57085,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
     {
      "number": 1716,
      "title": "Add DeselectAll, GetMarquee and SetMarquee (replaces #963)"
@@ -56126,6 +57282,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -56156,6 +57320,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
@@ -56191,6 +57371,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -56260,6 +57448,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
@@ -56282,6 +57474,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -56340,6 +57540,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -56401,6 +57605,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
+    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
     },
@@ -56436,6 +57656,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -56488,6 +57716,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -56549,6 +57785,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
@@ -56608,6 +57848,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
@@ -56672,6 +57928,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -56909,6 +58173,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -57120,6 +58392,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -57187,6 +58467,22 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
+    },
+    {
+     "number": 1726,
+     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
+    },
     {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
@@ -57357,6 +58653,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
+    {
+     "number": 1728,
+     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -57526,7 +58830,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    }
+   ],
    "issues": []
   },
   {
@@ -57563,6 +58872,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -57876,7 +59189,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1729,
+     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
+    }
+   ],
    "issues": []
   },
   {
