@@ -44,6 +44,8 @@
 #include "ACAPI/MEPFlexibleSegment.hpp"
 #include "ACAPI/MEPBranch.hpp"
 #include "ACAPI/MEPTransition.hpp"
+#include "ACAPI/MEPTakeOff.hpp"
+#include "ACAPI/MEPTakeOffDefault.hpp"
 #ifdef ServerMainVers_2900
 #include "ACAPI/MEPElbowDefault.hpp"
 #include "ACAPI/MEPElbow.hpp"
@@ -1726,6 +1728,204 @@ GS::ObjectState CreateMEPElementsCommand::Execute (const GS::ObjectState& parame
                 ACAPI::Result<EquipmentDefault> equipmentDefault = CreateEquipmentDefault ();
                 elements (PlaceMEPElementFromDefault (equipmentDefault, defaults, coordinate, orientation));
             }
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
+}
+
+CreateMEPTakeOffsCommand::CreateMEPTakeOffsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateMEPTakeOffsCommand::GetName () const
+{
+    return "CreateMEPTakeOffs";
+}
+
+GS::Optional<GS::UniString> CreateMEPTakeOffsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "takeOffsData": {
+                "type": "array",
+                "description": "Array of data to place Take-offs on MEP routing segments.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "segmentId": {
+                            "$ref": "#/ElementId",
+                            "description": "The routing segment the Take-off is placed on (the elementId of an item of 'segments' returned by GetMEPRoutingElements)."
+                        },
+                        "distance": {
+                            "type": "number",
+                            "description": "The distance along the segment where the Take-off is placed, in meters, measured from the beginning of the segment."
+                        },
+                        "rotationAngle": {
+                            "type": "number",
+                            "description": "Optional rotation of the Take-off around the segment's direction, in radians. Defaults to 0, which places the Take-off facing left relative to the segment's direction; pi/2 faces up, pi faces right."
+                        },
+                        "domain": {
+                            "$ref": "#/MEPDomain",
+                            "description": "Optional domain of the Take-off tool default to use. Defaults to the domain of the segment's routing element. Archicad currently only has Ventilation Take-offs."
+                        },
+                        "length": {
+                            "type": "number",
+                            "description": "Optional length of the Take-off in meters. Defaults to the length of the tool default."
+                        },
+                        "defaults": {
+                            "type": "object",
+                            "description": "Optional changes to the tool default before the Take-off is placed. Only what is placed changes, not the tool's settings. A value that cannot be set gives an error for the item, and nothing is placed.",
+                            "properties": {
+                                "insulationThickness": {
+                                    "type": "number",
+                                    "description": "The insulation thickness in meters."
+                                },
+                                "removeInsulation": {
+                                    "type": "boolean",
+                                    "description": "If true, the Take-off is placed without insulation. Cannot be combined with insulationThickness."
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "segmentId",
+                        "distance"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "takeOffsData"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateMEPTakeOffsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+#ifdef ServerMainVers_2800
+// Places one Take-off of CreateMEPTakeOffs. Returns the element id or the error of the item.
+static GS::ObjectState PlaceMEPTakeOff (const GS::ObjectState& takeOffData)
+{
+    const GS::ObjectState* segmentIdOs = takeOffData.Get ("segmentId");
+    if (segmentIdOs == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing 'segmentId' parameter.");
+    }
+    double distance = 0.0;
+    if (!takeOffData.Get ("distance", distance)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'distance' parameter.");
+    }
+    if (distance < 0.0) {
+        return CreateErrorResponse (APIERR_BADPARS, "The 'distance' parameter must not be negative.");
+    }
+    double rotationAngle = 0.0;
+    takeOffData.Get ("rotationAngle", rotationAngle);
+
+    double length = 0.0;
+    const bool hasLength = takeOffData.Get ("length", length);
+    if (hasLength && length <= 0.0) {
+        return CreateErrorResponse (APIERR_BADPARS, "The 'length' parameter must be positive.");
+    }
+
+    const GS::ObjectState* defaults = takeOffData.Get ("defaults");
+    bool removeInsulation = false;
+    if (defaults != nullptr && defaults->Get ("removeInsulation", removeInsulation) && removeInsulation && defaults->Contains ("insulationThickness")) {
+        return CreateErrorResponse (APIERR_BADPARS, "The 'removeInsulation' and 'insulationThickness' parameters cannot be given together.");
+    }
+
+    const ACAPI::MEP::UniqueID segmentId = Adapter::UniqueID (GetGuidFromObjectState (*segmentIdOs));
+    ACAPI::Result<RoutingSegment> segment = RoutingSegment::Get (segmentId);
+    if (segment.IsErr ()) {
+        return CreateErrorResponse (segment.UnwrapErr ().kind, "The 'segmentId' parameter does not refer to an MEP routing segment.");
+    }
+
+    std::optional<Domain> domain;
+    GS::UniString domainStr;
+    if (takeOffData.Get ("domain", domainStr)) {
+        domain = DomainFromString (domainStr);
+        if (!domain.has_value ()) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid 'domain' parameter.");
+        }
+    } else {
+        ACAPI::Result<RoutingElement> routingElement = RoutingElement::Get (segment->GetRoutingElementId ());
+        if (routingElement.IsErr ()) {
+            return CreateErrorResponse (routingElement.UnwrapErr ().kind, "Failed to get the routing element of the segment.");
+        }
+        domain = routingElement->GetDomain ();
+    }
+
+    ACAPI::Result<TakeOffDefault> takeOffDefault = CreateTakeOffDefault (domain.value ());
+    if (takeOffDefault.IsErr ()) {
+        return CreateErrorResponse (takeOffDefault.UnwrapErr ().kind, "Failed to get the Take-off default of the domain " + DomainToString (domain.value ()) + ". Archicad only has Ventilation Take-offs.");
+    }
+    if (defaults != nullptr) {
+        ACAPI::Result<void> defaultsResult = ApplyMEPElementDefaults (*takeOffDefault, *defaults);
+        if (defaultsResult.IsErr ()) {
+            return CreateErrorResponse (defaultsResult.UnwrapErr ().kind, "Failed to apply the 'defaults' parameter; nothing was placed.");
+        }
+    }
+
+    ACAPI::Result<ACAPI::MEP::UniqueID> takeOffId = takeOffDefault->Place (segmentId, distance, rotationAngle);
+    if (takeOffId.IsErr ()) {
+        return CreateErrorResponse (takeOffId.UnwrapErr ().kind, "Failed to place the Take-off. Check that the distance is within the segment.");
+    }
+
+    if (hasLength) {
+        const GS::UniString lengthError = "The Take-off " + APIGuidToString (MEPUniqueIDToAPIGuid (takeOffId.Unwrap ())) + " was placed, but its length could not be set.";
+        ACAPI::Result<TakeOff> takeOff = TakeOff::Get (takeOffId.Unwrap ());
+        if (takeOff.IsErr ()) {
+            return CreateErrorResponse (takeOff.UnwrapErr ().kind, lengthError);
+        }
+        ACAPI::Result<void> lengthResult = takeOff->Modify ([&](TakeOff::Modifier& modifier) {
+            modifier.SetLength (length);
+        }, "Set Take-off length");
+        if (lengthResult.IsErr ()) {
+            return CreateErrorResponse (lengthResult.UnwrapErr ().kind, lengthError);
+        }
+    }
+
+    return CreateElementIdObjectState (MEPUniqueIDToAPIGuid (takeOffId.Unwrap ()));
+}
+#endif
+
+GS::ObjectState CreateMEPTakeOffsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::Array<GS::ObjectState> takeOffsData;
+    if (!parameters.Get ("takeOffsData", takeOffsData)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'takeOffsData' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+
+    ACAPI_CallUndoableCommand ("Create MEP Take-offs", [&]() -> GSErrCode {
+        for (const GS::ObjectState& takeOffData : takeOffsData) {
+            elements (PlaceMEPTakeOff (takeOffData));
         }
         return NoError;
     });
