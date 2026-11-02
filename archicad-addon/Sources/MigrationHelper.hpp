@@ -859,13 +859,6 @@ inline GSErrCode ACAPI_Drawing_GetDrawingLink (const API_Guid* drawingGuid, API_
     return ACAPI_Database (APIDb_GetDrawingLinkID, (void*) drawingGuid, drawingLinkInfo);
 }
 
-// APIAny_GetRenovationFilterNameID (APIdefs_Goodies.h): par1 is the renovation filter guid,
-// par2 the GS::UniString to receive its name.
-inline GSErrCode ACAPI_Renovation_GetRenovationFilterName (const API_Guid* renovationFilterGuid, GS::UniString* name)
-{
-    return ACAPI_Goodies (APIAny_GetRenovationFilterNameID, (void*) renovationFilterGuid, name);
-}
-
 // The renovation filter functions of ACAPI_Renovation.h (AC27+) are the
 // APIDb_*RenovationFilter* database functions (APIdefs_Database.h) and the
 // APIAny_GetRenovationFilterNameID goodie before that; the parameters are the same.
