@@ -600,6 +600,97 @@ GS::ObjectState SetClassificationsOfAttributesCommand::Execute (const GS::Object
     return response;
 }
 
+GetClassificationOfAttributesInSystemCommand::GetClassificationOfAttributesInSystemCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetClassificationOfAttributesInSystemCommand::GetName () const
+{
+    return "GetClassificationOfAttributesInSystem";
+}
+
+GS::Optional<GS::UniString> GetClassificationOfAttributesInSystemCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeIds": {
+                "$ref": "#/AttributeIds"
+            },
+            "classificationSystemId": {
+                "$ref": "#/ClassificationSystemId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeIds",
+            "classificationSystemId"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetClassificationOfAttributesInSystemCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeClassifications": {
+                "$ref": "#/ClassificationIdsOrErrors",
+                "description": "Order of the items is the same as in the input. classificationItemId is omitted when the attribute is unclassified in the system. Non-existing attributes or a non-existing classification system are represented by error objects."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeClassifications"
+        ]
+    })";
+}
+
+GS::ObjectState GetClassificationOfAttributesInSystemCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> attributeIds;
+    parameters.Get ("attributeIds", attributeIds);
+
+    const GS::ObjectState* systemId = parameters.Get ("classificationSystemId");
+    if (systemId == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "classificationSystemId is missing");
+    }
+    const API_Guid systemGuid = GetGuidFromObjectState (*systemId);
+
+    GS::ObjectState response;
+    const auto& attributeClassifications = response.AddList<GS::ObjectState> ("attributeClassifications");
+
+    for (const GS::ObjectState& attribute : attributeIds) {
+        const GS::ObjectState* attributeId = attribute.Get ("attributeId");
+        if (attributeId == nullptr) {
+            attributeClassifications (CreateErrorResponse (APIERR_BADPARS, "attributeId is missing"));
+            continue;
+        }
+
+        API_Attr_Head attrHead = GetAttributeHeadFromGuid (GetGuidFromObjectState (*attributeId));
+        if (attrHead.typeID == API_ZombieAttrID) {
+            attributeClassifications (CreateErrorResponse (APIERR_BADID, "Attribute not found"));
+            continue;
+        }
+
+        API_ClassificationItem item;
+        const GSErrCode err = ACAPI_Attribute_GetClassificationInSystem (attrHead, systemGuid, item);
+        if (err != NoError) {
+            attributeClassifications (CreateErrorResponse (err, "Failed to get classification item"));
+            continue;
+        }
+
+        GS::ObjectState classificationId ("classificationSystemId", CreateGuidObjectState (systemGuid));
+        if (item.guid != APINULLGuid) {
+            classificationId.Add ("classificationItemId", CreateGuidObjectState (item.guid));
+        }
+        attributeClassifications (GS::ObjectState ("classificationId", classificationId));
+    }
+
+    return response;
+}
+
 GetClassificationsOfElementDefaultsCommand::GetClassificationsOfElementDefaultsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -938,6 +1029,104 @@ GS::ObjectState GetClassificationsOfToolDefaultsCommand::Execute (const GS::Obje
         }
 
         classificationsOfToolDefaults (classificationsOfToolDefault);
+    }
+
+    return response;
+}
+
+GetAllClassificationSystemsCommand::GetAllClassificationSystemsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetAllClassificationSystemsCommand::GetName () const
+{
+    return "GetAllClassificationSystems";
+}
+
+GS::Optional<GS::UniString> GetAllClassificationSystemsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "classificationSystems": {
+                "type": "array",
+                "description": "The classification systems of the project.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "classificationSystemId": {
+                            "$ref": "#/ClassificationSystemId"
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The display name of the classification system."
+                        },
+                        "description": {
+                            "type": "string",
+                            "description": "The description of the classification system."
+                        },
+                        "source": {
+                            "type": "string",
+                            "description": "The source of the classification system (e.g. URL to a classification system standard)."
+                        },
+                        "version": {
+                            "type": "string",
+                            "description": "The version of the classification system."
+                        },
+                        "date": {
+                            "$ref": "#/Date",
+                            "description": "The release date of the classification system's current version."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "classificationSystemId",
+                        "name",
+                        "description",
+                        "source",
+                        "version",
+                        "date"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationSystems"
+        ]
+    })";
+}
+
+static GS::UniString ClassificationSystemDateToString (const API_ClassificationSystem& system)
+{
+#ifdef ServerMainVers_2900
+    return GS::UniString::Printf ("%04d-%02u-%02u",
+        (int) system.editionDate.year (), (unsigned) system.editionDate.month (), (unsigned) system.editionDate.day ());
+#else
+    return GS::UniString::Printf ("%04u-%02u-%02u",
+        (unsigned) system.editionDate.year, (unsigned) system.editionDate.month, (unsigned) system.editionDate.day);
+#endif
+}
+
+GS::ObjectState GetAllClassificationSystemsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<API_ClassificationSystem> systems;
+    const GSErrCode err = ACAPI_Classification_GetClassificationSystems (systems);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the classification systems");
+    }
+
+    GS::ObjectState response;
+    const auto& classificationSystems = response.AddList<GS::ObjectState> ("classificationSystems");
+    for (const API_ClassificationSystem& system : systems) {
+        GS::ObjectState classificationSystem ("classificationSystemId", CreateGuidObjectState (system.guid));
+        classificationSystem.Add ("name", system.name);
+        classificationSystem.Add ("description", system.description);
+        classificationSystem.Add ("source", system.source);
+        classificationSystem.Add ("version", system.editionVersion);
+        classificationSystem.Add ("date", ClassificationSystemDateToString (system));
+        classificationSystems (classificationSystem);
     }
 
     return response;
