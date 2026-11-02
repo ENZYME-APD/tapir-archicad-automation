@@ -1098,6 +1098,233 @@ GS::ObjectState SetPropertyValuesOfAttributesCommand::Execute (const GS::ObjectS
     return response;
 }
 
+SetBuiltInPropertyValuesOfAttributesCommand::SetBuiltInPropertyValuesOfAttributesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetBuiltInPropertyValuesOfAttributesCommand::GetName () const
+{
+    return "SetBuiltInPropertyValuesOfAttributes";
+}
+
+GS::Optional<GS::UniString> SetBuiltInPropertyValuesOfAttributesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributes": {
+                "type": "array",
+                "description": "The attributes and the built-in property values to set on each.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "attributeId": {
+                            "$ref": "#/AttributeId"
+                        },
+                        "properties": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "propertyId": {
+                                        "$ref": "#/PropertyId"
+                                    },
+                                    "propertyValue": {
+                                        "$ref": "#/PropertyValue"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "propertyId",
+                                    "propertyValue"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "attributeId",
+                        "properties"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetBuiltInPropertyValuesOfAttributesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result per given property value, attribute by attribute, in the order of the input. The values of one attribute are written together, so an error of that write is the result of each of them."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetBuiltInPropertyValuesOfAttributesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    struct PropertyValueToSet {
+        GSIndex resultIndex;
+        API_Guid propertyGuid;
+        GS::UniString value;
+    };
+
+    struct AttributeToSet {
+        API_Guid attributeGuid;
+        GS::Array<PropertyValueToSet> values;
+    };
+
+    GS::Array<GS::ObjectState> attributes;
+    parameters.Get ("attributes", attributes);
+
+    GS::Array<GS::ObjectState> results;
+    GS::Array<AttributeToSet> attributesToSet;
+
+    for (const GS::ObjectState& attribute : attributes) {
+        GS::Array<GS::ObjectState> properties;
+        attribute.Get ("properties", properties);
+
+        const GS::ObjectState* attributeId = attribute.Get ("attributeId");
+        if (attributeId == nullptr) {
+            for (UIndex i = 0; i < properties.GetSize (); ++i) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "attributeId is missing"));
+            }
+            continue;
+        }
+
+        AttributeToSet attributeToSet;
+        attributeToSet.attributeGuid = GetGuidFromObjectState (*attributeId);
+        GS::HashSet<API_Guid> propertyGuids;
+
+        for (const GS::ObjectState& property : properties) {
+            const GSIndex resultIndex = results.GetSize ();
+            results.PushNew ();
+
+            const GS::ObjectState* propertyId = property.Get ("propertyId");
+            if (propertyId == nullptr) {
+                results[resultIndex] = CreateFailedExecutionResult (APIERR_BADPARS, "propertyId is missing");
+                continue;
+            }
+
+            const GS::ObjectState* propertyValue = property.Get ("propertyValue");
+            GS::UniString value;
+            if (propertyValue == nullptr || !propertyValue->Get ("value", value)) {
+                results[resultIndex] = CreateFailedExecutionResult (APIERR_BADPARS, "value is missing from propertyValue");
+                continue;
+            }
+
+            const API_Guid propertyGuid = GetGuidFromObjectState (*propertyId);
+            if (propertyGuids.Contains (propertyGuid)) {
+                results[resultIndex] = CreateFailedExecutionResult (APIERR_BADPARS, "The property is given more than once for this attribute");
+                continue;
+            }
+            propertyGuids.Add (propertyGuid);
+
+            const PropertyValueToSet valueToSet = { resultIndex, propertyGuid, value };
+            attributeToSet.values.Push (valueToSet);
+        }
+
+        if (!attributeToSet.values.IsEmpty ()) {
+            attributesToSet.Push (attributeToSet);
+        }
+    }
+
+    PropertyConversionUtils conversionUtils;
+
+    ACAPI_CallUndoableCommand ("SetBuiltInPropertyValuesOfAttributesCommand", [&]() -> GSErrCode {
+        for (const AttributeToSet& attributeToSet : attributesToSet) {
+            const auto setAllResults = [&] (const GSErrCode err, const GS::UniString& message) {
+                for (const PropertyValueToSet& valueToSet : attributeToSet.values) {
+                    results[valueToSet.resultIndex] = CreateFailedExecutionResult (err, message);
+                }
+            };
+
+            API_Attr_Head attrHead = GetAttributeHeadFromGuid (attributeToSet.attributeGuid);
+            if (attrHead.typeID == API_ZombieAttrID) {
+                setAllResults (APIERR_BADID, "Attribute not found");
+                continue;
+            }
+
+            GS::Array<API_Guid> propertyGuids;
+            for (const PropertyValueToSet& valueToSet : attributeToSet.values) {
+                propertyGuids.Push (valueToSet.propertyGuid);
+            }
+
+            GS::Array<API_Property> currentValues;
+            const GSErrCode getErr = ACAPI_Attribute_GetPropertyValuesByGuid (attrHead, propertyGuids, currentValues);
+            if (getErr != NoError) {
+                setAllResults (getErr, "Failed to get property values for attribute");
+                continue;
+            }
+
+            GS::HashTable<API_Guid, API_Property> currentValuesByGuid;
+            for (const API_Property& currentValue : currentValues) {
+                currentValuesByGuid.Put (currentValue.definition.guid, currentValue);
+            }
+
+            GS::Array<API_Property> propertiesToSet;
+            GS::Array<GSIndex> setResultIndices;
+            for (const PropertyValueToSet& valueToSet : attributeToSet.values) {
+                auto& result = results[valueToSet.resultIndex];
+
+                if (!currentValuesByGuid.ContainsKey (valueToSet.propertyGuid)) {
+                    result = CreateFailedExecutionResult (APIERR_BADPROPERTY, "The property is not available for the attribute");
+                    continue;
+                }
+
+                API_Property propertyValue = currentValuesByGuid[valueToSet.propertyGuid];
+                if (propertyValue.definition.definitionType == API_PropertyCustomDefinitionType) {
+                    result = CreateFailedExecutionResult (APIERR_BADPROPERTY, "Not a built-in property, use SetPropertyValuesOfAttributes for custom properties");
+                    continue;
+                }
+
+                const GSErrCode err = ACAPI_Property_SetPropertyValueFromString (valueToSet.value, conversionUtils, &propertyValue);
+                if (err != NoError) {
+                    result = CreateFailedExecutionResult (err, "Failed to convert the property value");
+                    continue;
+                }
+
+                propertiesToSet.Push (propertyValue);
+                setResultIndices.Push (valueToSet.resultIndex);
+            }
+
+            if (propertiesToSet.IsEmpty ()) {
+                continue;
+            }
+
+            const GSErrCode setErr = ACAPI_Attribute_SetProperties (attrHead, propertiesToSet);
+            for (const GSIndex resultIndex : setResultIndices) {
+                results[resultIndex] = setErr == NoError
+                    ? CreateSuccessfulExecutionResult ()
+                    : CreateFailedExecutionResult (setErr, "Failed to set the built-in property values of the attribute");
+            }
+        }
+
+        return NoError;
+    });
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    for (const GS::ObjectState& result : results) {
+        executionResults (result);
+    }
+
+    return response;
+}
+
 GetPropertyDefinitionsOfAttributesCommand::GetPropertyDefinitionsOfAttributesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -2890,6 +3117,125 @@ GS::ObjectState ModifyPropertyValueOfElementsCommand::Execute (const GS::ObjectS
 #else
     UNUSED_PARAMETER (parameters);
     return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
+GetPropertyAvailabilityOfDefaultsCommand::GetPropertyAvailabilityOfDefaultsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetPropertyAvailabilityOfDefaultsCommand::GetName () const
+{
+    return "GetPropertyAvailabilityOfDefaults";
+}
+
+GS::Optional<GS::UniString> GetPropertyAvailabilityOfDefaultsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementType": {
+                "$ref": "#/ElementType",
+                "description": "The element type whose current tool default is checked. This is the native tool default, a Favorite counts only after it was applied."
+            },
+            "properties": {
+                "$ref": "#/PropertyIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementType",
+            "properties"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetPropertyAvailabilityOfDefaultsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "propertyAvailabilities": {
+                "type": "array",
+                "description": "The order is that of the given properties.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "available": {
+                                    "type": "boolean",
+                                    "description": "Whether the property is available for the tool default of the element type."
+                                },
+                                "visible": {
+                                    "type": "boolean",
+                                    "description": "Whether the property is visible for the tool default of the element type."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "available",
+                                "visible"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyAvailabilities"
+        ]
+    })";
+}
+
+GS::ObjectState GetPropertyAvailabilityOfDefaultsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString elementTypeStr;
+    parameters.Get ("elementType", elementTypeStr);
+    const API_ElemTypeID elemTypeId = GetElementTypeFromNonLocalizedName (elementTypeStr);
+    if (elemTypeId == API_ZombieElemID) {
+        return CreateErrorResponse (APIERR_BADPARS,
+            GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ()));
+    }
+
+#ifdef ServerMainVers_2600
+    GS::Array<GS::ObjectState> properties;
+    parameters.Get ("properties", properties);
+
+    const API_ElemType elemType (elemTypeId);
+
+    GS::ObjectState response;
+    const auto& propertyAvailabilities = response.AddList<GS::ObjectState> ("propertyAvailabilities");
+    for (const GS::ObjectState& property : properties) {
+        const GS::ObjectState* propertyId = property.Get ("propertyId");
+        if (propertyId == nullptr) {
+            propertyAvailabilities (CreateErrorResponse (APIERR_BADPARS, "The 'propertyId' field is missing"));
+            continue;
+        }
+
+        // The availability functions return a plain bool, so an unknown property would
+        // look like an unavailable one. Check it first and report it as an error.
+        API_PropertyDefinition definition = {};
+        definition.guid = GetGuidFromObjectState (*propertyId);
+        if (definition.guid == APINULLGuid || ACAPI_Property_GetPropertyDefinition (definition) != NoError) {
+            propertyAvailabilities (CreateErrorResponse (APIERR_BADPROPERTY, "Property not found or invalid"));
+            continue;
+        }
+
+        GS::ObjectState availability;
+        availability.Add ("available", ACAPI_Element_IsPropertyDefinitionAvailableDefault (elemType, definition.guid));
+        availability.Add ("visible", ACAPI_Element_IsPropertyDefinitionVisibleDefault (elemType, definition.guid));
+        propertyAvailabilities (availability);
+    }
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Property availability of tool defaults is available from Archicad 26.");
 #endif
 }
 
