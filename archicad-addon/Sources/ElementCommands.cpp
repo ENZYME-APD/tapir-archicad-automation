@@ -897,6 +897,106 @@ GS::ObjectState GetElementTypeNamesCommand::Execute (const GS::ObjectState& para
 #endif
 }
 
+// ACAPI_DrawOrder_CreationOrderGetNext reads the table set up by ACAPI_DrawOrder_InitCreationOrderTable
+// (a nullptr filter keeps every element type), which must be disposed afterwards. It replaces the given
+// guid with the next one in creation order, starting from the first for APINULLGuid, and signals the end
+// with APIERR_NOMORE or APINULLGuid; any other error fails the list. The seen set guards against a
+// sequence that would not end.
+template <typename ListProxyType>
+static GSErrCode GetElementsInCreationOrderFromCurrentDatabase (ListProxyType& elementsListProxy)
+{
+    GSErrCode err = ACAPI_DrawOrder_InitCreationOrderTable (nullptr);
+    if (err != NoError) {
+        return err;
+    }
+
+    GS::HashSet<API_Guid> seenGuids;
+    API_Guid guid = APINULLGuid;
+    while (true) {
+        err = ACAPI_DrawOrder_CreationOrderGetNext (&guid);
+        if (err == APIERR_NOMORE) {
+            err = NoError;
+            break;
+        }
+        if (err != NoError || guid == APINULLGuid || seenGuids.Contains (guid)) {
+            break;
+        }
+        seenGuids.Add (guid);
+        elementsListProxy (CreateElementIdObjectState (guid));
+    }
+
+    ACAPI_DrawOrder_DisposeCreationOrderTable ();
+    return err;
+}
+
+GetElementsInCreationOrderCommand::GetElementsInCreationOrderCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetElementsInCreationOrderCommand::GetName () const
+{
+    return "GetElementsInCreationOrder";
+}
+
+GS::Optional<GS::UniString> GetElementsInCreationOrderCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "databases": {
+                "$ref": "#/Databases"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetElementsInCreationOrderCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ElementsWithExecutionResultsOrError"
+    })";
+}
+
+GS::ObjectState GetElementsInCreationOrderCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+
+    GS::Array<GS::ObjectState> databases;
+    bool databasesParameterExists = parameters.Get ("databases", databases);
+    if (!databasesParameterExists || databases.IsEmpty ()) {
+        const GSErrCode err = GetElementsInCreationOrderFromCurrentDatabase (elements);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to read the creation order table.");
+        }
+    }
+    else {
+        const auto& executionResultForDatabases = response.AddList<GS::ObjectState> ("executionResultForDatabases");
+
+        const GS::Array<API_Guid> databaseIds = databases.Transform<API_Guid> (GetGuidFromDatabaseArrayItem);
+
+        auto action = [&]() -> GSErrCode {
+            return GetElementsInCreationOrderFromCurrentDatabase (elements);
+        };
+        auto actionSuccess = [&]() -> void {
+            executionResultForDatabases (CreateSuccessfulExecutionResult ());
+        };
+        auto actionFailure = [&](GSErrCode err, const GS::UniString& errMsg) -> void {
+            executionResultForDatabases (CreateFailedExecutionResult (err, errMsg));
+        };
+
+        GSErrCode err = ExecuteActionForEachDatabase (databaseIds, action, actionSuccess, actionFailure);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to retrieve the starting database or to switch back to it after execution.");
+        }
+    }
+
+    return response;
+}
+
 GetDetailsOfElementsCommand::GetDetailsOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -1698,6 +1798,11 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.zone.roomBaseLev, stories));
                 AddZoneContourAndCoverFill (elem.zone, typeSpecificDetails);
+                typeSpecificDetails.Add ("height", elem.zone.roomHeight);
+                typeSpecificDetails.Add ("bottomOffset", elem.zone.roomBaseLev);
+                typeSpecificDetails.Add ("topOffset", elem.zone.roomTopOffset);
+                typeSpecificDetails.Add ("relativeTopStory", elem.zone.relativeTopStory);
+                typeSpecificDetails.Add ("floorThickness", elem.zone.roomFlThick);
                 AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
                 break;
 
@@ -2143,6 +2248,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     typeSpecificDetails.Add ("customNumber", GS::UniString (elem.drawing.customNumber));
                 }
                 typeSpecificDetails.Add ("isInNumbering", elem.drawing.isInNumbering);
+                // Drawing Settings > "Include scale in Autotext and index" (#817)
+                typeSpecificDetails.Add ("isScaleIncludedInAutotextAndIndex", elem.drawing.includeInAutoTextsAndIES);
                 typeSpecificDetails.Add ("hasBorderLine",       elem.drawing.hasBorderLine);
                 typeSpecificDetails.Add ("borderLineTypeIndex", GetAttributeIndex (elem.drawing.borderLineType));
                 typeSpecificDetails.Add ("borderPenIndex",      (Int32)elem.drawing.borderPen);
@@ -2667,16 +2774,12 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         }
                     } break;
                     case API_ZoneID: {
-                        const GS::ObjectState* stampPosition = typeSpecificDetails->Get ("stampPosition");
-                        if (stampPosition != nullptr) {
-                            elem.zone.pos = Get2DCoordinateFromObjectState (*stampPosition);
-                            ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, pos);
-                        }
-                        if (typeSpecificDetails->Get ("stampAngle", elem.zone.stampAngle)) {
-                            ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, stampAngle);
-                        }
-                        if (typeSpecificDetails->Get ("fixedStampAngle", elem.zone.fixedAngle)) {
-                            ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, fixedAngle);
+                        // The same fields as ModifyZones, applied by the same helper.
+                        auto zoneError = ApplyZoneSettings (*typeSpecificDetails, elem, mask);
+                        if (zoneError.HasValue ()) {
+                            ACAPI_DisposeElemMemoHdls (&clipMemo);
+                            executionResults (CreateFailedExecutionResult (*zoneError));
+                            continue;
                         }
                         // Only an automatic zone is found around its reference point; a manual
                         // zone has its outline instead, so the field is ignored for it.
@@ -2829,6 +2932,9 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         }
                         if (typeSpecificDetails->Get ("isInNumbering", elem.drawing.isInNumbering)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, isInNumbering);
+                        }
+                        if (typeSpecificDetails->Get ("isScaleIncludedInAutotextAndIndex", elem.drawing.includeInAutoTextsAndIES)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, includeInAutoTextsAndIES);
                         }
                         if (typeSpecificDetails->Get ("hasBorderLine", elem.drawing.hasBorderLine)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, hasBorderLine);
@@ -9370,6 +9476,129 @@ GS::ObjectState GetSurfaceQuantitiesOfElementsCommand::Execute (const GS::Object
         }
 
         surfaceQuantitiesOfElements (surfaceQuantitiesOfElement);
+    }
+
+    return response;
+}
+
+GetCurtainWallAbsoluteBottomsCommand::GetCurtainWallAbsoluteBottomsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetCurtainWallAbsoluteBottomsCommand::GetName () const
+{
+    return "GetCurtainWallAbsoluteBottoms";
+}
+
+GS::Optional<GS::UniString> GetCurtainWallAbsoluteBottomsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetCurtainWallAbsoluteBottomsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "absoluteBottoms": {
+                "type": "array",
+                "description": "The absolute bottom of each element, aligned with the input, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "absoluteBottom": {
+                                    "type": "number",
+                                    "description": "The absolute bottom level of the curtain wall or its subelement, as returned by ACAPI_CurtainWall_GetCWAbsoluteBottom."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "absoluteBottom"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "absoluteBottoms"
+        ]
+    })";
+}
+
+static bool IsCurtainWallOrItsSubelement (API_ElemTypeID typeID)
+{
+    switch (typeID) {
+        case API_CurtainWallID:
+        case API_CurtainWallSegmentID:
+        case API_CurtainWallFrameID:
+        case API_CurtainWallPanelID:
+        case API_CurtainWallJunctionID:
+        case API_CurtainWallAccessoryID:
+            return true;
+        default:
+            return false;
+    }
+}
+
+GS::ObjectState GetCurtainWallAbsoluteBottomsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& absoluteBottoms = response.AddList<GS::ObjectState> ("absoluteBottoms");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            absoluteBottoms (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            absoluteBottoms (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+
+        // Only a Curtain Wall or one of its subelements is passed on to Archicad.
+        const API_ElemTypeID typeID = GetElemTypeId (elemHead);
+        if (!IsCurtainWallOrItsSubelement (typeID)) {
+            absoluteBottoms (CreateErrorResponse (APIERR_BADELEMENTTYPE,
+                GS::UniString::Printf ("Element type '%T' is not supported. Supported types: CurtainWall, CurtainWallSegment, CurtainWallFrame, CurtainWallPanel, CurtainWallJunction, CurtainWallAccessory.",
+                    GetElementTypeNonLocalizedName (typeID).ToPrintf ())));
+            continue;
+        }
+
+        double bottom = 0.0;
+        err = ACAPI_CurtainWall_GetCWAbsoluteBottom (&elemHead.guid, &bottom);
+        if (err != NoError) {
+            absoluteBottoms (CreateErrorResponse (err, "Failed to get the absolute bottom of the curtain wall"));
+            continue;
+        }
+
+        absoluteBottoms (GS::ObjectState ("absoluteBottom", bottom));
     }
 
     return response;
