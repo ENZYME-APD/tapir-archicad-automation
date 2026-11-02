@@ -1,13 +1,15 @@
 {
- "generatedAt": "2026-11-02 02:44 UTC",
+ "generatedAt": "2026-11-02 07:08 UTC",
  "counts": {
   "done": 303,
   "merged": 252,
-  "open": 1,
+  "open": 53,
+  "in progress": 1,
   "not applicable": 1
  },
  "parameters": {
-  "all": 511,
+  "all": 507,
+  "partial": 4,
   "json": 44
  },
  "items": [
@@ -94,7 +96,7 @@
   {
    "id": "GetPrinterAndPlotterInfo",
    "group": "Application Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Retrieves the printer selected in Archicad, with its name and orientation, and the selected plotter, with its name and model.",
    "status": "merged",
    "reason": "",
@@ -228,7 +230,7 @@
    "id": "GetCurrentWindowType",
    "group": "Application Commands",
    "version": "1.0.7",
-   "brief": "Returns the type of the current (active) window.",
+   "brief": "Returns the type of the current (active) window and, when it has one, the databaseId of the database it shows, which ChangeWindow takes to bring the window back after a script switched to another one. The saved view (View Map item) the window was opened from is not returned, as Archicad does not tell which one it was.",
    "status": "done",
    "reason": "",
    "components": [
@@ -247,7 +249,7 @@
   {
    "id": "GetCurrentWindowDrawingScale",
    "group": "Application Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Returns the drawing scale of the current (active) window, the scale shown in the bottom bar, as its denominator: 100.0 for 1:100, 20.0 for 1:20. Unlike GetViewSettings it needs no saved view. It reads the scale of the current database: the floor plan, a section, elevation, interior elevation, detail, worksheet or 3D document window, each of which has its own. Layouts always return 1.0.",
    "status": "merged",
    "reason": "",
@@ -267,7 +269,7 @@
   {
    "id": "SetCurrentWindowDrawingScale",
    "group": "Application Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Changes the drawing scale of the current (active) window, the scale shown in the bottom bar, to the given denominator: 100 for 1:100. It changes the scale of the current database: the floor plan, a section, elevation, interior elevation, detail, worksheet or 3D document window, each of which has its own. Layouts are always 1:1 and are rejected. The scale must be between 1 and 30000. The change is undoable.",
    "status": "merged",
    "reason": "",
@@ -291,7 +293,7 @@
    "id": "ChangeWindow",
    "group": "Application Commands",
    "version": "1.3.1",
-   "brief": "Changes the current (active) window to the given window. A databaseId on its own is enough; the window type is taken from the database. The databaseId of a worksheet or detail whose window was never opened opens its Project Map item instead (from Archicad 27). With windowType 'FloorPlan' and a storyIndex it also activates that story on the floor plan.",
+   "brief": "Changes the current (active) window to the given window. A databaseId on its own is enough; the window type is taken from the database. The databaseId of a worksheet or detail whose window was never opened opens its Project Map item instead (from Archicad 27). With windowType 'FloorPlan' and a storyIndex it also activates that story on the floor plan. windowType 'Report' on its own opens the Session Report window (from Archicad 26); its text cannot be read through the Archicad API.",
    "status": "done",
    "reason": "",
    "components": [
@@ -310,7 +312,7 @@
   {
    "id": "GetContainingDatabases",
    "group": "Application Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Returns the database (window type, database id and name) that contains each of the given elements, from any database, not only the current one. Pass the windowType and databaseId to ChangeWindow to open it, for example to find an element placed on a layout.",
    "status": "merged",
    "reason": "",
@@ -332,7 +334,7 @@
   {
    "id": "CloseWindows",
    "group": "Application Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Closes the windows of the given databases (for example layouts, sections or details opened earlier with ChangeWindow), with one execution result per window; a window Archicad cannot close gets a failed result. Requires Archicad 27 or later.",
    "status": "merged",
    "reason": "",
@@ -356,7 +358,7 @@
   {
    "id": "RebuildCurrentDatabase",
    "group": "Application Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Rebuilds the current database, the one the API works on (see ChangeWindow). Requires Archicad 27 or later.",
    "status": "merged",
    "reason": "",
@@ -368,6 +370,21 @@
    ],
    "parameters": "all",
    "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "DeleteGhostRecords",
+   "group": "Application Commands",
+   "version": "1.7.4",
+   "brief": "Deletes the trace (ghost) record of each given parent database, which removes the trace reference shown in that database's window. A database without a trace reference gets a failed execution result. Not undoable.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
@@ -446,7 +463,7 @@
   {
    "id": "GetEditModeState",
    "group": "Application Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Tells whether Archicad is in a hierarchical editing mode (curtain wall, stair, beam or column editing), and which element is being edited. Read only: it never enters, leaves or cancels an editing mode. Commands that modify the project can fail while such a mode is active. The overall inEditMode flag requires Archicad 29 or later; the command requires Archicad 27 or later.",
    "status": "merged",
    "reason": "",
@@ -457,6 +474,66 @@
     }
    ],
    "parameters": "all",
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetArchicadVisibility",
+   "group": "Application Commands",
+   "version": "1.7.4",
+   "brief": "Returns whether the Archicad application is shown or hidden. Supported on Windows only; on macOS it returns an error.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetArchicadVisibility",
+   "group": "Application Commands",
+   "version": "1.7.4",
+   "brief": "Hides or shows the Archicad application, e.g. to keep it out of the way while a batch runs. A script that hides Archicad must show it again, also when the script fails (e.g. in a finally block). Supported on Windows only; on macOS it returns an error.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "RunActionCenterChecks",
+   "group": "Application Commands",
+   "version": "1.7.4",
+   "brief": "Runs the given checks of the Action Center (by default the hotlink check). A successful result means the check ran, not that nothing was found: Archicad does not report the outcome to the caller, it shows the Action Center tab when the check found an issue.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "RedrawCurrentDatabase",
+   "group": "Application Commands",
+   "version": "1.7.4",
+   "brief": "Redraws the current database, even when its window is in the background. Only the visible region of its window is updated.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
@@ -544,6 +621,21 @@
    "coveredParameters": [
     "enabled"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetDialogAutoClose",
+   "group": "Application Commands",
+   "version": "1.7.4",
+   "brief": "Tells whether the dialog auto close is on, the same state SetDialogAutoClose writes, so a script can restore it afterwards. The state belongs to the running Archicad process: it is off when Archicad starts (unless the TAPIR_DIALOG_AUTOCLOSE environment variable is true), it stays as last set until Archicad quits, and it is shared by every add-on and script in that Archicad.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -658,7 +750,7 @@
   {
    "id": "GetProjectInfoGroups",
    "group": "Project Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Retrieves the Project Info groups in their order, each with its fields: id, name, value and, when exactly one project info autotext has the name of the field, the autotext key that SetProjectInfoField takes. Available from Archicad 30.",
    "status": "merged",
    "reason": "",
@@ -678,7 +770,7 @@
   {
    "id": "CreateProjectInfoGroups",
    "group": "Project Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Creates Project Info groups with the given names, at the end of the group list. Available from Archicad 30.",
    "status": "merged",
    "reason": "",
@@ -701,7 +793,7 @@
   {
    "id": "RenameProjectInfoGroups",
    "group": "Project Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Renames Project Info groups. Available from Archicad 30.",
    "status": "merged",
    "reason": "",
@@ -725,7 +817,7 @@
   {
    "id": "DeleteProjectInfoGroups",
    "group": "Project Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Deletes Project Info groups. A group that contains fixed (built-in) fields cannot be deleted. Available from Archicad 30.",
    "status": "merged",
    "reason": "",
@@ -747,7 +839,7 @@
   {
    "id": "MoveProjectInfoGroups",
    "group": "Project Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Moves Project Info groups before another group, or to the end of the group list when no other group is given. Available from Archicad 30.",
    "status": "merged",
    "reason": "",
@@ -814,7 +906,7 @@
    "id": "GetAutoTextKeys",
    "group": "Project Commands",
    "version": "1.5.9",
-   "brief": "Retrieves the available autotext keys (name and embeddable key), optionally for a specific element. Embed a key in a Text or Label content by surrounding it with '<' and '>'.",
+   "brief": "Retrieves the available autotext keys (name and embeddable key): the Project Info, layout, drawing, date and other autotexts Archicad lists, and the property based ones, optionally for a specific element. Embed a key in a Text or Label content by surrounding it with '<' and '>'.",
    "status": "done",
    "reason": "",
    "components": [
@@ -1016,7 +1108,7 @@
   {
    "id": "GetHotlinkOwnersOfElements",
    "group": "Project Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Tells for each element whether it comes from a hotlinked module, and returns the hotlink element that contains it and the hotlink instance it belongs to. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -1058,6 +1150,21 @@
    "issues": []
   },
   {
+   "id": "GetHotlinkSourceStatus",
+   "group": "Project Commands",
+   "version": "1.7.4",
+   "brief": "Tells for each hotlink source file whether it is available, missing, not accessible, incompatible or offline. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "OpenProject",
    "group": "Project Commands",
    "version": "1.0.7",
@@ -1082,7 +1189,7 @@
   {
    "id": "NewProject",
    "group": "Project Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Starts a new, untitled project from the template set in Archicad's New Project settings, as File > New does; with newAndReset also the working environment is reset, as New and Reset All does. The unsaved changes of the open project are discarded, as with OpenProject.",
    "status": "done",
    "reason": "",
@@ -1200,7 +1307,7 @@
   {
    "id": "SaveCurrentWindowAsImage",
    "group": "Project Commands",
-   "version": "1.7.1",
+   "version": "1.7.2",
    "brief": "Saves what the current window shows as an image file (png, jpg, bmp, tiff or gif), as File > Save as does with a picture format. Master layout windows are not supported: save a layout that uses the master layout instead.",
    "status": "done",
    "reason": "",
@@ -1226,7 +1333,7 @@
   {
    "id": "GetCurrentViewImage",
    "group": "Project Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Returns what the 3D window, or the PhotoRendering window, shows as a base64 encoded png or jpg image with its size in pixels, without writing a file. Available from Archicad 30.",
    "status": "done",
    "reason": "",
@@ -1274,7 +1381,7 @@
   {
    "id": "GetDimensionStandards",
    "group": "Project Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Gets the dimension standards of the project (Options > Project Preferences > Dimensions) with their name and the unit, decimals and rounding of each dimension type, optionally only the one with the given name. Read-only. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -1299,9 +1406,54 @@
    "issues": []
   },
   {
+   "id": "GetExportTolerance",
+   "group": "Project Commands",
+   "version": "1.7.4",
+   "brief": "Gets the export tolerance: the largest distance allowed between an arc and the straight segments that replace it when curves are segmented for export.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetLast3DDefaultLevels",
+   "group": "Project Commands",
+   "version": "1.7.4",
+   "brief": "Gets the last 3D default levels of the given element types' defaults.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetLast3DDefaultLevels",
+   "group": "Project Commands",
+   "version": "1.7.4",
+   "brief": "Sets the last 3D default levels of the given element types' defaults.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetProjectPreferences",
    "group": "Project Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Gets pages of the project preferences (Options > Project Preferences): the working units, the dimensions, the calculation units and the zones. Further pages may follow.",
    "status": "merged",
    "reason": "",
@@ -1328,7 +1480,7 @@
   {
    "id": "SetProjectPreferences",
    "group": "Project Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Changes pages of the project preferences (Options > Project Preferences): the working units, the dimensions, the calculation units and the zones. Only the given fields change, the rest of each page keeps its value. In Teamwork the PreferencesDialog lockable object set has to be reserved first (ReserveLockableObjectSet). Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -1382,7 +1534,7 @@
   {
    "id": "ConvertUnitValues",
    "group": "Project Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Formats lengths, areas, volumes and angles (given in meters, square meters, cubic meters and radians) as Archicad shows them with the unit and rounding of the given Project Preference, returning the text, its extra accuracy decimals and the unit. The output is aligned with the input array of values. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -1406,7 +1558,7 @@
   {
    "id": "GetRenovationStatusNames",
    "group": "Project Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Gets the names the running Archicad shows for the renovation statuses Existing, New and Demolished (localized). Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -1487,6 +1639,36 @@
    "issues": []
   },
   {
+   "id": "SetPlaceSettings",
+   "group": "Project Commands",
+   "version": "1.7.4",
+   "brief": "Changes the place settings of the project: location (longitude, latitude, altitude, north), date, time, summer time and time zone. Only the given fields change. Returns the settings read back, with the sun position Archicad calculated for them. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 14,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "FindDimensionStandard",
+   "group": "Project Commands",
+   "version": "1.7.4",
+   "brief": "Finds a dimension standard (Options > Project Preferences > Dimensions) by its name and returns its index, name and guid. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetProjectNotes",
    "group": "Project Commands",
    "version": "1.7.3",
@@ -1543,7 +1725,7 @@
   {
    "id": "GetSunSettings",
    "group": "Project Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Gets the project's date and time (Options > Project Preferences > Location Settings), the sun position Archicad calculates for them at the project location, and the sun and ambient light settings.",
    "status": "merged",
    "reason": "",
@@ -1563,7 +1745,7 @@
   {
    "id": "CalculateSunPosition",
    "group": "Project Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Calculates the sun position (azimuth and altitude in degrees) for a date and time, at the project location unless another one is given, without changing the project.",
    "status": "merged",
    "reason": "",
@@ -1633,7 +1815,7 @@
   {
    "id": "GetAutoIntersect",
    "group": "Project Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Gets whether Auto-Intersection (Options > Auto-Intersection) is on. It changes what the wall and beam creation commands produce: with it on, the new elements are joined at their intersections.",
    "status": "merged",
    "reason": "",
@@ -1653,7 +1835,7 @@
   {
    "id": "SetAutoIntersect",
    "group": "Project Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Turns Auto-Intersection on or off. It is a setting of the running Archicad, not of the project; remember to restore the previous state afterwards.",
    "status": "merged",
    "reason": "",
@@ -1675,7 +1857,7 @@
   {
    "id": "SetElementUserData",
    "group": "Custom Data Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Stores string values under keys on elements, for scripts to keep their own state per element (external database ids, sync timestamps, markers). The data is saved with the project as the user data of the Tapir add-on on the element and appears nowhere in the Archicad UI. The given keys are merged into what the element already holds: a key that exists gets the new value, other keys are left as they are, and the keys listed in keysToDelete are removed. Prefix the keys with the script's name so that scripts do not overwrite each other's data. One undo step per call; in a Teamwork project the element has to be reserved.",
    "status": "merged",
    "reason": "",
@@ -1702,7 +1884,7 @@
   {
    "id": "GetElementUserData",
    "group": "Custom Data Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Reads the values stored on elements by SetElementUserData: every key of each element, or only the given keys.",
    "status": "merged",
    "reason": "",
@@ -1872,7 +2054,7 @@
    "id": "GetDetailsOfElements",
    "group": "Element Commands",
    "version": "1.5.7",
-   "brief": "Gets the details of the given elements (geometry parameters etc). Use the optional fields parameter to return only the fields you need and skip the computation of the others (for example floorPlanPolygons).",
+   "brief": "Gets the details of the given elements (geometry parameters etc). Use the optional fields parameter to return only the fields you need and skip the computation of the others (for example floorPlanPolygons). An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true.",
    "status": "done",
    "reason": "",
    "components": [
@@ -2008,9 +2190,24 @@
    "issues": []
   },
   {
+   "id": "SetElementInfoStrings",
+   "group": "Element Commands",
+   "version": "1.7.4",
+   "brief": "Sets the info string of the given elements: the Element ID shown in the Info Box, which GetDetailsOfElements returns as id. Returns one execution result per element.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetElementCategories",
    "group": "Element Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Lists the element categories of the project (Structural Function, Position, Renovation Status, Renovation Filter and, in the German version, BRI) with their possible values. The names of the categories and values are localized: identify a category by its type and a value by its categoryValueId, never by name.",
    "status": "merged",
    "reason": "",
@@ -2030,7 +2227,7 @@
   {
    "id": "GetCategoryValuesOfElements",
    "group": "Element Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Gets the category values (Structural Function, Position, Renovation Status ...) of the given elements, optionally only for the given category types. An element that has none of the requested categories (an annotation, for example) gets an error item. The names are localized: use the type and the categoryValueId in scripts.",
    "status": "merged",
    "reason": "",
@@ -2053,7 +2250,7 @@
   {
    "id": "GetCategoryValuesOfDefaults",
    "group": "Element Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Gets the category values (Structural Function, Position, Renovation Status ...) of the tool defaults of the given element types, the values new elements of the type get, optionally only for the given category types. A category the default has no value in is listed without categoryValueId; an element type without any of the requested categories gets an error item. The names are localized: use the type and the categoryValueId in scripts.",
    "status": "merged",
    "reason": "",
@@ -2076,7 +2273,7 @@
   {
    "id": "SetCategoryValuesOfElements",
    "group": "Element Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Sets the category values (Structural Function, Position, Renovation Status ...) of the given elements, one element and one category per item, in a single undoable step. The value must belong to the given category, as GetElementCategories lists them; an element without that category gets a failed execution result. The names are localized: use the type and the categoryValueId in scripts.",
    "status": "merged",
    "reason": "",
@@ -2123,7 +2320,7 @@
   {
    "id": "GetLibPartTransformations",
    "group": "Element Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Gets the placement transformation of library part instances (Window, Door, Object, Lamp, Zone) as Archicad computes it: the location, the rotation angle and the x/y scaling. The output is aligned with the input array of elements.",
    "status": "merged",
    "reason": "",
@@ -2192,7 +2389,7 @@
   {
    "id": "GetElementConnections",
    "group": "Element Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Gets the connections among the given elements: each pair of touching elements once, with the polygons of the surface where they touch, in world coordinates. The 3D model of the elements is generated with separate components in a temporary sight, so the 3D window is not changed. Also returns, aligned with the input array of elements, whether each element was found. Available from Archicad 28.",
    "status": "merged",
    "reason": "",
@@ -2214,7 +2411,7 @@
   {
    "id": "GetBodyMaterialsOfElements",
    "group": "Element Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Gets the building material of each body of the 3D model of the given elements. The 3D model is generated with separate components in a temporary sight, so a composite structure has one body per skin and the 3D window is not changed. The output is aligned with the input array of elements. Available from Archicad 28.",
    "status": "merged",
    "reason": "",
@@ -2236,7 +2433,7 @@
   {
    "id": "GetCutPolygonsOfElements",
    "group": "Element Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Cuts each body of the 3D model of the given elements with a plane and returns, for each body, its building material, the area of the cut surface and its polygons (outline and holes) in 2D coordinates of the plane. The 3D model is generated with separate components in a temporary sight, so a composite structure has one body per skin and the 3D window is not changed. The output is aligned with the input array of elements. Available from Archicad 28.",
    "status": "merged",
    "reason": "",
@@ -2263,7 +2460,7 @@
   {
    "id": "GetElementAtCoordinate",
    "group": "Element Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Finds the element of the given polygonal type (for example Slab, Roof, Mesh, Zone or Hatch) at a coordinate of the floor plan of the current database, the way a click there would. Use the optional filters parameter (the values of FilterElements) to consider only, for example, the elements visible by layer, and the optional z parameter to give the elevation of the point. Returns found: false when there is no such element. Useful together with GetPointFromUser.",
    "status": "done",
    "reason": "",
@@ -2291,9 +2488,24 @@
    "issues": []
   },
   {
+   "id": "GetSkylightHolePolygons",
+   "group": "Element Commands",
+   "version": "1.7.4",
+   "brief": "Gets the polygon of the hole each given Skylight cuts into its host Roof or Shell: the outline and any holes of it as 2D coordinates. The output is aligned with the input array of elements; an element that is not a Skylight gets an error item.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetVisibleSkinStatus",
    "group": "Element Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Checks whether elements have a visible skin in a given Partial Structure Display mode (EntireStructure, CoreOnly, WithoutFinishes or StructureOnly), e.g. a finish-only slab has none in CoreOnly. The current window is not changed. The output is aligned with the input array of elements.",
    "status": "merged",
    "reason": "",
@@ -2341,7 +2553,7 @@
    "id": "TriangulatePolygonsOfElements",
    "group": "Element Commands",
    "version": "1.7.3",
-   "brief": "Triangulates the plan polygon of the given elements, holes excluded, as Archicad does it: the outline of a Slab, Zone, Hatch or Mesh and the polygon of a Roof. Each triangle is given by the 2D coordinates of its three vertices. The output is aligned with the input array of elements; an element of another type gets an error item.",
+   "brief": "Triangulates the plan polygon of the given elements, holes excluded, as Archicad does it: the outline of a Slab, Zone, Hatch or Mesh and the polygon of a Roof. Each triangle is given by the 2D coordinates of its three vertices. With convex: true, the faces of the 3D model of the elements (of any type) are decomposed into convex polygons instead, given by the 3D coordinates of their vertices. The output is aligned with the input array of elements; an element of another type gets an error item.",
    "status": "merged",
    "reason": "",
    "components": [
@@ -2350,11 +2562,43 @@
      "path": "Components/ElementsComponents/TriangulatePolygonsOfElementsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 1,
+   "parameters": "partial",
+   "parameterCount": 2,
    "coveredParameters": [
     "elements"
    ],
+   "missingParameters": [
+    "convex"
+   ],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetTextureCoordinates",
+   "group": "Element Commands",
+   "version": "1.7.4",
+   "brief": "Gets the texture coordinates (u, v) of the faces of the 3D model of the given elements: per solid body, per face, at the first vertex of the face. The output is aligned with the input array of elements.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetSurfaceTypesOfElements",
+   "group": "Element Commands",
+   "version": "1.7.4",
+   "brief": "Gets the surface type of every polygon of the 3D model of the given elements, as ACAPI_Polygon_PolygonId2SurfaceType returns it: for each element its polygons with their body index, polygon index, polygon id and the numeric API_SurfaceTypeID value. The model is generated with separate components in a temporary sight, so the 3D window is not changed. The output is aligned with the input array of elements. Available from Archicad 28.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -2362,7 +2606,7 @@
   {
    "id": "Get3DModelCounts",
    "group": "Element Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Gets the number of components of each type (bodies, polygons, polygon edges, edges, vertices, normal vectors, materials and lights) in the 3D model Archicad currently holds, as ACAPI_ModelAccess_GetNum counts them. A type that cannot be counted gets an error item. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -2382,7 +2626,7 @@
   {
    "id": "GetSurfaceQuantitiesOfElements",
    "group": "Element Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Gets the exposed surface areas of the given elements calculated by Archicad: for each element one item per surface attribute and building material pair with the area that is not covered by the covering elements (for example the wall area behind a slab is taken off the wall's surface). The covering elements are the optional coverElements; by default every construction element of the project. The output is aligned with the input array of elements.",
    "status": "done",
    "reason": "",
@@ -2455,7 +2699,7 @@
   {
    "id": "EditHierarchicalElement",
    "group": "Element Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Opens the given hierarchical element (Curtain Wall, Stair, Railing, Beam or Column) in its hierarchical 3D editing mode, as the Edit button of the element does. Fails when Archicad is already in an editing mode. Leave the mode with FinishHierarchicalEditing. Requires Archicad 27 or later.",
    "status": "merged",
    "reason": "",
@@ -2477,7 +2721,7 @@
   {
    "id": "FinishHierarchicalEditing",
    "group": "Element Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Finishes the current hierarchical editing mode (Curtain Wall, Stair, Railing, Beam or Column): accept true keeps the changes (OK), accept false discards them (Cancel). The accept parameter is required, so changes are never discarded silently. Fails when Archicad is not in such an editing mode. Requires Archicad 27 or later.",
    "status": "merged",
    "reason": "",
@@ -2522,7 +2766,7 @@
   {
    "id": "GetElementsInDrawOrder",
    "group": "Element Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Returns the identifier of every element of the current database, or of the given databases, in Archicad's drawing order (the order set by Bring to Front and Send to Back), as ACAPI_DrawOrder_DrawOrderGetNext walks it. Use the optional elementType and filters parameters for filtering. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given.",
    "status": "merged",
    "reason": "",
@@ -2546,7 +2790,7 @@
   {
    "id": "GetDrawingPrimitivesOfElements",
    "group": "Element Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Returns the 2D drawing primitives (points, lines, arcs, texts, polylines, triangles, polygons, pictures) Archicad draws each given floor plan element from, in drawing order, as ACAPI_DrawingPrimitive_ShapePrimsExt decomposes it on every story and unclipped. Control items (type Ctrl_*) mark the beginning and the end of sub-parts such as hatches and texts. The floor plan must be the current database. The output is aligned with the input array of elements.",
    "status": "merged",
    "reason": "",
@@ -2568,7 +2812,7 @@
   {
    "id": "GetStoryControlPrimitives",
    "group": "Element Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Returns the 2D drawing primitives of the story levels (story lines and their markers) drawn in the given section, elevation or interior elevation database, as ACAPI_DrawingPrimitive_DrawStoryControl draws them, in the same format as GetDrawingPrimitivesOfElements. The databaseId can be obtained with GetDatabaseIdFromNavigatorItemId.",
    "status": "merged",
    "reason": "",
@@ -2635,7 +2879,7 @@
   {
    "id": "LinkElements",
    "group": "Element Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Creates persistent links between pairs of elements, each from one element to another, with an optional integer flags value per link. Scripts can record their own relations between elements this way (for example which label documents which column) instead of storing GUIDs in properties. The links are stored in the project and have no effect on geometry; they are independent from groups, hotlinks and solid element operations. A link is directional: it is returned by GetLinksOfElements for the element it starts from only, and removed by UnlinkElements. Undoable.",
    "status": "merged",
    "reason": "",
@@ -2662,7 +2906,7 @@
   {
    "id": "UnlinkElements",
    "group": "Element Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Removes the links created by LinkElements between the given pairs of elements. The direction matters: the link starting from fromElementId and pointing to toElementId is removed. Undoable.",
    "status": "merged",
    "reason": "",
@@ -2689,7 +2933,7 @@
   {
    "id": "GetLinksOfElements",
    "group": "Element Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Gets the links created by LinkElements that start from the given elements: the linked element and the flags of each link. Links pointing to an element are not returned; query the elements they start from. Returns an error item for an element that does not exist.",
    "status": "merged",
    "reason": "",
@@ -2739,7 +2983,7 @@
   {
    "id": "GetZoneReductions",
    "group": "Element Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Gets the area reductions of the given Zones, as the Zone Stamp's area calculation uses them: the polygons of the Zone covered by Walls, Columns, reducing Fills, sloping Roofs and low ceilings, each with its type, the percentage it is reduced by, its area and its outline with holes. Area calculations by local standards need these parts, which GetQuantitiesOfElements only gives as totals. The output is aligned with the input array of elements.",
    "status": "done",
    "reason": "",
@@ -2766,7 +3010,7 @@
   {
    "id": "GetPropertyObjectsOfElements",
    "group": "Element Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Gets the property objects of the given elements: the library parts of the old listing system (used by projects migrated from older Archicad versions) linked to each element by criteria or individually, with the library part's index (the same as the index returned by GetAvailableLibraryParts), name and guid. The output is aligned with the input array of elements.",
    "status": "merged",
    "reason": "",
@@ -2788,7 +3032,7 @@
   {
    "id": "GetDescriptorsOfElements",
    "group": "Element Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Gets the descriptors of the given elements: the listing descriptors in the property objects of each element, with the library part that declares them (index, name and guid), their listing database set and index, and their status (Normal, Deleted or Local). The output is aligned with the input array of elements.",
    "status": "merged",
    "reason": "",
@@ -2810,7 +3054,7 @@
   {
    "id": "GetLinkedPropertyObjectsOfElements",
    "group": "Element Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Gets how property objects (the library parts of the old listing system) are linked to the given elements, or to the element defaults of the given element types: whether the property objects matching their criteria are linked, which of them match, and which one is assigned individually, each with the library part's index (the same as the index returned by GetAvailableLibraryParts), name and guid. The output is aligned with the input array of elements.",
    "status": "merged",
    "reason": "",
@@ -2833,7 +3077,7 @@
   {
    "id": "SetLinkedPropertyObjectsOfElements",
    "group": "Element Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Sets how property objects (the library parts of the old listing system) are linked to the given elements, or to the element defaults of the given element types: whether the property objects matching their criteria are linked, and which one is assigned individually (0 removes the individual assignment). A link that is not given stays unchanged. All changes are made in one undoable step.",
    "status": "merged",
    "reason": "",
@@ -2906,7 +3150,7 @@
   {
    "id": "GetZoneLabelingSettings",
    "group": "Element Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Returns whether the automatic labeling of Zones is on and the name of the Label Favorite it places. Available from Archicad 28.",
    "status": "merged",
    "reason": "",
@@ -2954,7 +3198,7 @@
    "id": "HighlightElements",
    "group": "Element Commands",
    "version": "1.0.3",
-   "brief": "Highlights the elements given in the elements array. In case of empty elements array removes all previously set highlights.",
+   "brief": "Highlights the elements given in the elements array. In case of empty elements array removes all previously set highlights. On Archicad 25 nonHighlightedColor is ignored.",
    "status": "done",
    "reason": "",
    "components": [
@@ -3039,7 +3283,7 @@
   {
    "id": "MirrorElements",
    "group": "Element Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Mirrors elements across an axis given by two points on the floor plan, optionally as a copy. An element that cannot be edited (its layer is hidden or locked, it is locked, or it is not available in teamwork) gets a failed execution result naming the reason instead of being skipped silently.",
    "status": "done",
    "reason": "",
@@ -3161,7 +3405,7 @@
   {
    "id": "RefreshElements",
    "group": "Element Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Refreshes (rebuilds) the given elements, for example placed Objects, Windows and Doors that still show the old geometry after their library part's script or embedded file changed. Set force to true to run the parameter script of GDL-based elements too. The elements are looked up in the current database (floor plan, section or detail window). Returns an execution result for each input element. The refresh cannot be undone.",
    "status": "merged",
    "reason": "",
@@ -3212,7 +3456,7 @@
    "id": "SetGDLParametersOfElements",
    "group": "Element Commands",
    "version": "1.5.7",
-   "brief": "Sets the given GDL parameters of the given elements. An element Archicad does not let the user edit (its layer locked, the element locked, or not reserved by the user in Teamwork) gets a failed execution result naming that reason, whatever the parameter.",
+   "brief": "Sets the given GDL parameters of the given elements. An element Archicad does not let the user edit (its layer locked, the element locked, or not reserved by the user in Teamwork) gets a failed execution result naming that reason, whatever the parameter. The parameters are read back after the change, and a written parameter Archicad did not keep (e.g. one it sets from the element's own settings, like AC_TextSize_1 of a label) gives a failed execution result naming it.",
    "status": "done",
    "reason": "",
    "components": [
@@ -3284,7 +3528,7 @@
   {
    "id": "ChangeLibraryPartOfElements",
    "group": "Element Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Changes the library part of the given Object, Lamp, Window, Door, Skylight, Zone and symbol Label elements to another library part of the same type, given by name, index or guid, e.g. to replace missing library parts with ones from the loaded libraries. The elements themselves (guid, properties, classifications) are kept. Components of stairs and railings are not supported, even when they are reported as Objects. Optionally keeps the values of the GDL parameters with the same name and type, and the size (A and B).",
    "status": "merged",
    "reason": "",
@@ -3308,6 +3552,26 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetHotspotsOfElements",
+   "group": "Element Commands",
+   "version": "1.7.4",
+   "brief": "Gets the 2D hotspots of the given library part instances (Objects, Lamps, Windows, Doors, Skylights, Zones, Curtain Wall parts, etc.), e.g. to dimension to them.",
+   "status": "in progress",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1032,
+     "title": "[2/4] Add GetHotspotsOfElements: the hotspots of elements with their neig kind and subindex"
+    }
+   ],
    "issues": []
   },
   {
@@ -3701,7 +3965,7 @@
   {
    "id": "SetOpeningDefault",
    "group": "Element Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Changes the settings of the Opening tool defaults, with the names GetOpeningDefault returns. Only the given settings change. Available from Archicad 29.",
    "status": "merged",
    "reason": "",
@@ -3765,7 +4029,7 @@
   {
    "id": "PlaceOpenings",
    "group": "Element Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Places openings with the Opening tool settings at points of their parent elements. A point off the parent element's surface is moved to the closest point of the surface. Each opening can be given its own extrusion and floor plan settings, which change only that opening and not the tool's settings. Available from Archicad 29.",
    "status": "merged",
    "reason": "",
@@ -3897,6 +4161,36 @@
     "openingsWithFloorPlanParameters.floorPlanParameters.unCutSymbolLibPartId",
     "openingsWithFloorPlanParameters.floorPlanParameters.useCoverFills"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetOpeningSymbolParameters",
+   "group": "Element Commands",
+   "version": "1.7.4",
+   "brief": "Returns the GDL parameters of the cut and uncut floor plan symbols of Opening elements, in the format of GetGDLParametersOfElements. A symbol the opening does not have is left out. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetOpeningSymbolParameters",
+   "group": "Element Commands",
+   "version": "1.7.4",
+   "brief": "Changes the GDL parameters of the cut and uncut floor plan symbols of Opening elements, in the format of SetGDLParametersOfElements. Only the given parameters are changed. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 8,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -5231,6 +5525,21 @@
    "issues": []
   },
   {
+   "id": "ModifyShells",
+   "group": "Element Commands",
+   "version": "1.7.4",
+   "brief": "Modifies the structure (Basic or Composite, building material or composite) of Shell elements based on the given parameters.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 5,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "ModifyMeshes",
    "group": "Element Commands",
    "version": "1.5.4",
@@ -5409,7 +5718,7 @@
   {
    "id": "ChangeTextContent",
    "group": "Element Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Replaces a range of the content of Text elements and text Labels, keeping the styles of the runs and the autotexts in the rest of the content.",
    "status": "merged",
    "reason": "",
@@ -5435,7 +5744,7 @@
   {
    "id": "MeasureTexts",
    "group": "Element Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Measures texts before placing them: the length of every line for a given font, style and height, on paper in millimetres or in the model at the current drawing scale, and the font's capital size factor. Creates nothing.",
    "status": "merged",
    "reason": "",
@@ -5569,7 +5878,7 @@
   {
    "id": "RegularizePolygons",
    "group": "Element Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Regularizes polygons with Archicad's own polygon regularization, before they are used to create slabs, zones or fills: removes duplicate points, fixes the orientation, resolves self-intersections and touching holes. Each input polygon gives 0, 1 or more valid polygons in the format of CreateSlabs, optionally with the input vertex and edge each result vertex and edge came from. Changes nothing in the project.",
    "status": "merged",
    "reason": "",
@@ -5595,7 +5904,7 @@
   {
    "id": "RegularizePolylines",
    "group": "Element Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Regularizes polylines with Archicad's own polyline regularization: removes repeated consecutive points. The result is in the format of CreatePolylines and may be empty, optionally with the input point and segment each result point and segment came from. Changes nothing in the project.",
    "status": "merged",
    "reason": "",
@@ -5642,7 +5951,7 @@
   {
    "id": "UngroupElements",
    "group": "Element grouping Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Ungroups the given groups one level, like Edit > Grouping > Ungroup: each group is dissolved, the elements and subgroups it directly contains stay. A group nested in another group is reported as failed; ungroup the containing group first. Returns an execution result per group.",
    "status": "done",
    "reason": "",
@@ -5713,7 +6022,7 @@
   {
    "id": "GetElementSetData",
    "group": "Element grouping Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Gets the elements and the custom data of each given element set. Element sets are created by add-ons to link elements together; the custom data is returned as Base64 encoded bytes.",
    "status": "merged",
    "reason": "",
@@ -5737,7 +6046,7 @@
   {
    "id": "GetUserDataOfGroups",
    "group": "Element grouping Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Gets the user data an add-on attached to each given group: its version, platform sign, flags and bytes (base64 encoded), and, when its version is 1 (the layout SetUserDataOfGroups writes), its key-value pairs. Returns an error for groups that have no user data.",
    "status": "merged",
    "reason": "",
@@ -5759,7 +6068,7 @@
   {
    "id": "SetUserDataOfGroups",
    "group": "Element grouping Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Stores string values under keys in the user data of groups, for scripts to keep their own state on a group. The given pairs are merged into what each group already holds: a key that exists gets the new value, other keys are left as they are, and the keys listed in keysToDelete are removed. Prefix the keys with the script's name so that scripts do not overwrite each other's data. User data in another layout is left unchanged and reported as an error. One undo step per call.",
    "status": "merged",
    "reason": "",
@@ -5825,7 +6134,7 @@
   {
    "id": "CreateElementSets",
    "group": "Element grouping Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Creates element sets of the given elements. An element set is a hidden, persistent collection of elements (it is not a group and has no effect on selection or editing).",
    "status": "merged",
    "reason": "",
@@ -5841,6 +6150,21 @@
     "elementSets",
     "elementSets.elements"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "DeleteElementSets",
+   "group": "Element grouping Commands",
+   "version": "1.7.4",
+   "brief": "Deletes the given element sets. The elements of a set are not deleted. Only element sets created by the Tapir Add-On can be deleted; sets created by other add-ons are reported as failed.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -5940,7 +6264,7 @@
   {
    "id": "GetFavoriteDetails",
    "group": "Favorites Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Returns the classifications, property values and element category values stored in the given favorites, so they can be audited before elements are placed. Each property value comes with its evaluation status and default-value flag; the value itself is only returned when it has been evaluated.",
    "status": "merged",
    "reason": "",
@@ -6155,7 +6479,7 @@
   {
    "id": "GetFavoriteFolders",
    "group": "Favorites Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Returns the folder tree of the Favorites palette from its root folder: the name and path of every folder and the names of the Favorites in it. Available from Archicad 29.",
    "status": "merged",
    "reason": "",
@@ -6197,7 +6521,7 @@
   {
    "id": "CreateFavorite",
    "group": "Favorites Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Creates a Favorite in the given folder from the settings of another Favorite or of the current Opening tool default. conflictPolicy says what happens when the name is taken: fail, skip, overwrite the existing Favorite's settings or create the new one under a free name. Available from Archicad 29.",
    "status": "merged",
    "reason": "",
@@ -6229,7 +6553,7 @@
   {
    "id": "ChangeFavorite",
    "group": "Favorites Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Gives an existing Favorite the settings of another Favorite or of the current Opening tool default. Available from Archicad 29.",
    "status": "merged",
    "reason": "",
@@ -6258,7 +6582,7 @@
   {
    "id": "ApplyFavoriteToToolDefault",
    "group": "Favorites Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Makes the settings of the given Favorite the settings of its tool, and returns the element type of that tool. Available from Archicad 29.",
    "status": "merged",
    "reason": "",
@@ -6285,7 +6609,7 @@
   {
    "id": "MoveFavoriteFolder",
    "group": "Favorites Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Moves a folder of the Favorites palette, with its Favorites and subfolders, into another folder. Folders are given as their path of folder names from the root. Returns the new path of the folder. Available from Archicad 29.",
    "status": "merged",
    "reason": "",
@@ -6468,6 +6792,21 @@
    "issues": []
   },
   {
+   "id": "SetBuiltInPropertyValuesOfAttributes",
+   "group": "Property Commands",
+   "version": "1.7.4",
+   "brief": "Sets built-in property values of attributes, writing the values of each attribute together. Custom properties are refused; set them with SetPropertyValuesOfAttributes. Returns one execution result per value.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 5,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetPropertyDefinitionsOfAttributes",
    "group": "Property Commands",
    "version": "1.7.3",
@@ -6493,7 +6832,7 @@
   {
    "id": "GetPropertiesOfToolDefaults",
    "group": "Property Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Returns the property definitions of the tool defaults (the settings new elements get) of the given element types, filtered by kind (all by default), and optionally the value of each property in the tool default.",
    "status": "merged",
    "reason": "",
@@ -6726,7 +7065,7 @@
   {
    "id": "ModifyPropertyValueOfElements",
    "group": "Property Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Sets one property value on all the given elements in a single step. If the property is not available for any of the elements, none of them is changed. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -6750,7 +7089,7 @@
   {
    "id": "MakePropertyAvailableForElements",
    "group": "Property Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Makes a property definition available for all the given elements. Available only in Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -6773,7 +7112,7 @@
   {
    "id": "MakePropertyUnavailableForElements",
    "group": "Property Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Makes a property definition unavailable for all the given elements. Available only in Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -6819,7 +7158,7 @@
   {
    "id": "GetElementsByClassification",
    "group": "Classification Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Returns the elements classified with the given classification items, one list per item, so elements can be filtered by classification in a single call.",
    "status": "merged",
    "reason": "",
@@ -6863,7 +7202,7 @@
   {
    "id": "GetClassificationsOfAttributes",
    "group": "Classification Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Returns the classifications of the given attributes (building materials, composites, surfaces, etc.) in every classification system they are classified in.",
    "status": "merged",
    "reason": "",
@@ -6890,7 +7229,7 @@
   {
    "id": "SetClassificationsOfAttributes",
    "group": "Classification Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Sets the classifications of attributes (building materials, composites, surfaces, etc.). The given item replaces the attribute's current item in the same classification system. In order to set the classification of an attribute to unclassified in a system, omit the classificationItemId field.",
    "status": "merged",
    "reason": "",
@@ -6914,6 +7253,21 @@
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
+   "issues": []
+  },
+  {
+   "id": "GetClassificationOfAttributesInSystem",
+   "group": "Classification Commands",
+   "version": "1.7.4",
+   "brief": "Returns the classification of the given attributes (for example Building Materials) in the given classification system. classificationItemId is omitted for an unclassified attribute.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6976,7 +7330,7 @@
   {
    "id": "GetClassificationsOfToolDefaults",
    "group": "Classification Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Returns every classification of the tool defaults (the settings new elements get) of the given element types, in all classification systems at once. Unlike GetClassificationsOfElementDefaults it needs no list of classification systems; systems in which a default is unclassified are left out.",
    "status": "merged",
    "reason": "",
@@ -7145,7 +7499,7 @@
   {
    "id": "GetClassificationItemParents",
    "group": "Classification Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Returns the parent item and the classification system of the given Classification Items; a top level item has no parent. The output is aligned with the input array of items.",
    "status": "merged",
    "reason": "",
@@ -7191,7 +7545,7 @@
   {
    "id": "GetClassificationItemVisibility",
    "group": "Classification Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Tells whether the given classification items are visible (offered) for the given elements, element tool defaults and attributes, such as building materials. Non-existing targets and classification items are reported as errors. Visibility does not tell whether the target is classified with the item, and an item can be visible even if its parent item is not.",
    "status": "merged",
    "reason": "",
@@ -7286,7 +7640,7 @@
   {
    "id": "GetUsedAttributes",
    "group": "Attribute Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Gets the attributes in use, as Archicad reports them for the usedAttributes JSON query: parsed into usedAttributes when the report is a JSON object, otherwise as text in raw. Helps to find the attributes DeleteAttributes can remove before a handover. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -7306,7 +7660,7 @@
   {
    "id": "ConsolidateLines",
    "group": "Attribute Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Runs the Line Consolidation menu command of Archicad on the current window, as the menu does, and reports whether it ran together with what Archicad answered. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -7326,7 +7680,7 @@
   {
    "id": "ConsolidateFills",
    "group": "Attribute Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Runs the Fill Consolidation menu command of Archicad on the current window, as the menu does, and reports whether it ran together with what Archicad answered. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -7910,7 +8264,7 @@
   {
    "id": "GetCurrentLayerCombination",
    "group": "Attribute Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Returns the layer combination in effect in the current window. No layer combination is returned when the current state of the layers matches none.",
    "status": "merged",
    "reason": "",
@@ -8063,6 +8417,21 @@
    "issues": []
   },
   {
+   "id": "GetPens",
+   "group": "Attribute Commands",
+   "version": "1.7.4",
+   "brief": "Returns the given pens, or all of them, in effect in the current window: index, color, width and description. It also works when the pens in effect are not a Pen Table attribute. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetProfiles",
    "group": "Attribute Commands",
    "version": "1.5.4",
@@ -8180,7 +8549,7 @@
   {
    "id": "GetFontsByName",
    "group": "Attribute Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Finds loaded fonts by name through Archicad's font search and returns their index (as Text and Label fields reference fonts in fontIndex) and name, or an error for a name no loaded font has.",
    "status": "merged",
    "reason": "",
@@ -8222,7 +8591,7 @@
   {
    "id": "GetGraphicOverrideRulesByName",
    "group": "Attribute Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Gets graphic override rules by name, with their rule group, criterion and style. The rule group narrows the search; without it the rule is searched in every rule group. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -8366,7 +8735,7 @@
   {
    "id": "ModifyGraphicOverrideCombinations",
    "group": "Attribute Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Modifies the name and/or the rules of graphic override combinations. Omitted fields are kept. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -8413,7 +8782,7 @@
   {
    "id": "CreateGraphicOverrideRuleGroups",
    "group": "Attribute Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Creates empty graphic override rule groups. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -8455,7 +8824,7 @@
   {
    "id": "SetGraphicOverrideRuleOrder",
    "group": "Attribute Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Sets the order of the rules in graphic override rule groups, found by name. The listed rules come first, in the given order; the other rules of the group keep their order after them. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -8552,7 +8921,7 @@
   {
    "id": "GetUserDataOfAttributes",
    "group": "Attribute Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Reads the key-value pairs stored on attributes by SetUserDataOfAttributes. An attribute without user data returns no pairs; one holding user data in another layout returns an error.",
    "status": "merged",
    "reason": "",
@@ -8574,7 +8943,7 @@
   {
    "id": "SetUserDataOfAttributes",
    "group": "Attribute Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Stores string values under keys in the user data of attributes, for scripts to keep their own state on an attribute. The given pairs are merged into what each attribute already holds: a key that exists gets the new value, other keys are left as they are, and the keys listed in keysToDelete are removed. Prefix the keys with the script's name so that scripts do not overwrite each other's data. User data in another layout is left unchanged and reported as an error. Archicad does not record this change as an undo step, so Undo does not revert it.",
    "status": "merged",
    "reason": "",
@@ -8598,7 +8967,7 @@
   {
    "id": "DeleteUserDataOfAttributes",
    "group": "Attribute Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Removes the user data of attributes, every key at once. Archicad does not record this change as an undo step, so Undo does not revert it.",
    "status": "merged",
    "reason": "",
@@ -8667,7 +9036,7 @@
    "id": "GetElementsByIFCIds",
    "group": "IFC Commands",
    "version": "1.5.1",
-   "brief": "Retrieves the elements by the given IFC identifiers.",
+   "brief": "Retrieves the elements by the given IFC identifiers. Accepts IFC GlobalIds in every Archicad version.",
    "status": "done",
    "reason": "",
    "components": [
@@ -8689,7 +9058,7 @@
    "id": "GetIFCIdsOfElements",
    "group": "IFC Commands",
    "version": "1.5.1",
-   "brief": "Retrieves the IFC identifiers of the given elements.",
+   "brief": "Retrieves the IFC identifiers of the given elements. Before Archicad 28 it also returns their IFC GlobalIds.",
    "status": "done",
    "reason": "",
    "components": [
@@ -8829,7 +9198,7 @@
   {
    "id": "GetIFCClassificationReferencesOfElements",
    "group": "IFC Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Retrieves the IFC classification references of the given elements, subelements included: identification, name, location, description (from Archicad 29), the referenced classification (name, source, edition) and whether the reference comes from the preview translator or is stored locally. On Archicad 25, 26 and 27 the source is not given, the referenced classification also has its edition date, description and location, and storedOnly returns only the references stored on the elements.",
    "status": "merged",
    "reason": "",
@@ -8852,7 +9221,7 @@
   {
    "id": "SetIFCClassificationReferencesOfElements",
    "group": "IFC Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Stores IFC classification references (identification, name, location and the referenced classification with its name, edition, edition date, description and location) on elements. Available only in Archicad 25, 26 and 27 for now.",
    "status": "merged",
    "reason": "",
@@ -8882,7 +9251,7 @@
   {
    "id": "RemoveIFCClassificationReferencesOfElements",
    "group": "IFC Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Removes IFC classification references stored on elements, given by the name of their classification and optionally their identification; without identification every stored reference of that classification is removed. Available only in Archicad 25, 26 and 27 for now.",
    "status": "merged",
    "reason": "",
@@ -9019,7 +9388,7 @@
   {
    "id": "CreateLibraryParts",
    "group": "Library Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Creates GDL library parts in the embedded library from their scripts (master, 2D, 3D, parameter, interface, properties) and parameter definitions, under the given parent subtype. The new parts are placeable right away, e.g. with CreateObjects. With the overwriteExisting flag an embedded library item already existing on the path of a new part is replaced (Archicad 27 or newer).",
    "status": "merged",
    "reason": "",
@@ -9170,9 +9539,24 @@
    "issues": []
   },
   {
+   "id": "GetLibraryPartOriginalLocations",
+   "group": "Library Commands",
+   "version": "1.7.4",
+   "brief": "Gets the original location of the given library parts, the file they came from, e.g. before they were embedded into the project. The library parts are given by the index GetAvailableLibraryParts returns. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "IsUsableGDLString",
    "group": "Library Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Checks whether each of the given strings is usable in GDL, e.g. before writing it into a GDL parameter or script. Returns one boolean for each string.",
    "status": "merged",
    "reason": "",
@@ -9187,6 +9571,36 @@
    "coveredParameters": [
     "strings"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "CheckLibraries",
+   "group": "Library Commands",
+   "version": "1.7.4",
+   "brief": "Checks the loaded libraries with the Archicad API's library check. Returns the error the API reports, if any.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ResetLibraries",
+   "group": "Library Commands",
+   "version": "1.7.4",
+   "brief": "Resets the loaded libraries with the Archicad API's library reset.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -9227,7 +9641,7 @@
   {
    "id": "SetLibraryPartMetadata",
    "group": "Library Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Sets the author, keywords, license, license version, password and the placeable, UI default, subtype and hierarchical pages flags of loaded library parts. Only the given fields are changed. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. Available from Archicad 28.",
    "status": "merged",
    "reason": "",
@@ -9260,7 +9674,7 @@
   {
    "id": "GetLibraryPartPictures",
    "group": "Library Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Gets the preview picture and the GDL pictures of a loaded library part as base64 encoded PNGs, and from Archicad 29 also their dark user interface variants. Available from Archicad 28.",
    "status": "merged",
    "reason": "",
@@ -9282,7 +9696,7 @@
   {
    "id": "SetLibraryPartPictures",
    "group": "Library Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Deletes the preview picture, the GDL pictures (and from Archicad 29 their dark variants) or the 2D symbol of a loaded library part, or copies the 2D symbol from another library part. A library part that is not editable is refused and left unchanged. Available from Archicad 28.",
    "status": "merged",
    "reason": "",
@@ -9310,7 +9724,7 @@
   {
    "id": "GetLibraryPartCustomSection",
    "group": "Library Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Gets a custom section of a loaded library part by its section identifier and index: whether it exists, its data version and its content as base64. Available from Archicad 28.",
    "status": "merged",
    "reason": "",
@@ -9334,7 +9748,7 @@
   {
    "id": "SetLibraryPartCustomSection",
    "group": "Library Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Creates, replaces or deletes a custom section of a loaded library part. The content is given as base64. A library part that is not editable is refused and left unchanged. Available from Archicad 28.",
    "status": "merged",
    "reason": "",
@@ -9361,7 +9775,7 @@
   {
    "id": "CreateLibraryPart",
    "group": "Library Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Creates a new library part file (.gsm) of the given loaded subtype, inheriting its parameters, and reports whether it is loaded with its index and names. Available from Archicad 28.",
    "status": "merged",
    "reason": "",
@@ -9377,6 +9791,21 @@
     "ancestorSubtype",
     "path"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "OpenLibraryPartInEditor",
+   "group": "Library Commands",
+   "version": "1.7.4",
+   "brief": "Opens a loaded library part, given by its fileName or documentName as returned by GetAvailableLibraryParts, in Archicad's library part editor. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -9424,7 +9853,7 @@
   {
    "id": "GetTeamworkProjectInfo",
    "group": "Teamwork Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Tells whether the opened project is a Teamwork project and whether it is online, and returns its BIMcloud server, project name and the current user (id and name).",
    "status": "done",
    "reason": "",
@@ -9493,7 +9922,7 @@
   {
    "id": "GetReservationStatusOfElements",
    "group": "Teamwork Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Returns the Teamwork reservation status of elements without reserving them: whether each element is free, reserved by the current user or reserved by another user, with the reserving user and the element's owner.",
    "status": "done",
    "reason": "",
@@ -9520,7 +9949,7 @@
   {
    "id": "GrantElements",
    "group": "Teamwork Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Hands over the reservation of elements to another Teamwork user, given by user id, without a dialog. Available from Archicad 27.",
    "status": "done",
    "reason": "",
@@ -9672,9 +10101,24 @@
    "issues": []
   },
   {
+   "id": "GetTeamworkOwnersOfDatabases",
+   "group": "Teamwork Commands",
+   "version": "1.7.4",
+   "brief": "Returns the Teamwork owner (user id and name) of each given database, e.g. of a layout or a view database. The user id is 0 when nobody owns the database.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "UploadLibrariesToBIMcloud",
    "group": "Teamwork Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Uploads local library folders or container files (.lcf) to a folder of a BIMcloud or Teamwork server, as BIMcloud libraries. Returns a result per library. Available from Archicad 29.",
    "status": "merged",
    "reason": "",
@@ -9698,7 +10142,7 @@
   {
    "id": "RemoveLibrariesFromBIMcloud",
    "group": "Teamwork Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Removes libraries, given by name, from a folder of a BIMcloud or Teamwork server. Returns a result per library. Available from Archicad 29.",
    "status": "merged",
    "reason": "",
@@ -9768,7 +10212,7 @@
   {
    "id": "GetDrawingContentBoxes",
    "group": "Navigator Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Returns the full content box of the given Drawing elements, independent of their frames, as ACAPI_Drawing_GetFullDrawingContentBox reports it. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -9816,7 +10260,7 @@
   {
    "id": "GetDatabases",
    "group": "Navigator Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Lists every database of the given types (sections, elevations, interior elevations, details, worksheets, 3D documents, layouts, master layouts) with its database ID, name and reference ID, without walking the navigator trees.",
    "status": "merged",
    "reason": "",
@@ -9887,7 +10331,7 @@
    "id": "CreateLayout",
    "group": "Navigator Commands",
    "version": "1.4.0",
-   "brief": "Creates Layouts and their backing master layouts. Archicad inserts a new layout at the first place of its subset, renumbering the sheets after it; previousNavigatorItemId or position 'last' places it after an existing sheet or at the end instead.",
+   "brief": "Creates Layouts and their backing master layouts. Archicad inserts a new layout at the first place of its subset, renumbering the sheets after it; previousNavigatorItemId or position 'last' places it after an existing sheet or at the end instead. A custom layout number does not leave the layout out of the numbering; layoutParameters.doNotIncludeInNumbering does.",
    "status": "done",
    "reason": "",
    "components": [
@@ -9961,7 +10405,7 @@
   {
    "id": "GetLayoutSubsetSettings",
    "group": "Navigator Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Gets the settings of existing Layout Book subsets: the same fields CreateLayoutSubset accepts (name, ID prefix, numbering style, ...).",
    "status": "merged",
    "reason": "",
@@ -10124,7 +10568,7 @@
   {
    "id": "GetDrawingNumberingGridLines",
    "group": "Navigator Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Gets the lines of the grid of the grid-based drawing numbering of the current layout (start and end point, pen index, line type index), for example to find which grid cell a drawing on the layout sits in. The current window must be a layout (see ChangeWindow), and only a layout that uses grid-based drawing numbering has such a grid.",
    "status": "merged",
    "reason": "",
@@ -10169,7 +10613,7 @@
   {
    "id": "FindModelViewOption",
    "group": "Navigator Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Finds a model view option combination by id or by name and returns its index, id, name and flags. The index is the one Archicad uses to switch the model view options of a window to the combination. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -10186,6 +10630,36 @@
     "modelViewOptionId.guid",
     "name"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetViewOptions",
+   "group": "Navigator Commands",
+   "version": "1.7.4",
+   "brief": "Gets the model view options and on-screen view options of the current plan window, and the index of the model view option combination it applies.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetViewOptions",
+   "group": "Navigator Commands",
+   "version": "1.7.4",
+   "brief": "Switches the current plan window to a model view option combination by index, and/or changes the given model view options and on-screen view options.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 4,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -10293,7 +10767,7 @@
   {
    "id": "GetGhostStorySettings",
    "group": "Navigator Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Gets the Trace & Reference ghost story settings of the floor plan: whether it is on, whether one story, the story above or the one below is shown, which story, its color and the element types shown in it.",
    "status": "merged",
    "reason": "",
@@ -10318,7 +10792,7 @@
   {
    "id": "SetGhostStorySettings",
    "group": "Navigator Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Sets the Trace & Reference ghost story settings of the floor plan through its ghost record, which is created when the floor plan has none. Every field is optional; the ones left out keep their value, and without a story choice the current reference is kept.",
    "status": "merged",
    "reason": "",
@@ -10351,7 +10825,7 @@
   {
    "id": "GetStructureDisplay",
    "group": "Navigator Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Gets the Partial Structure Display (EntireStructure, CoreOnly, WithoutFinishes or StructureOnly) of the current window, and whether it is the 3D window. This is the setting of the window itself, not the one stored in a saved view (see GetViewSettings). Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -10371,7 +10845,7 @@
   {
    "id": "SetStructureDisplay",
    "group": "Navigator Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Sets the Partial Structure Display (EntireStructure, CoreOnly, WithoutFinishes or StructureOnly) of the current window, e.g. the floor plan, a section or the 3D window. The change cannot be undone. The saved view is not changed (see SetViewSettings for that). Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -10538,7 +11012,7 @@
   {
    "id": "Get3DCutPlanes",
    "group": "Navigator Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Gets whether the 3D cut planes are on and the cut planes (pa, pb, pc, pd) of the 3D window, in the form accepted by Set3DCutPlanes.",
    "status": "merged",
    "reason": "",
@@ -10558,7 +11032,7 @@
   {
    "id": "Get3DStyleDetails",
    "group": "Navigator Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Gets the settings of 3D styles by name (an empty name or no names means the current 3D style): rendering engine, model type, monochrome and background colors, contours, shadows and hatching. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -10580,7 +11054,7 @@
   {
    "id": "Create3DStyles",
    "group": "Navigator Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Creates 3D styles. Each new style starts from the current 3D style and differs from it only in the given fields. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -10624,7 +11098,7 @@
   {
    "id": "Change3DStyles",
    "group": "Navigator Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Changes the given fields of existing 3D styles, identified by name. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -10668,7 +11142,7 @@
   {
    "id": "Get3DProjectionSettings",
    "group": "Navigator Commands",
-   "version": "1.7.1",
+   "version": "1.7.2",
    "brief": "Gets the 3D projection settings of the 3D window: whether it is perspective or axonometric, the camera and target position, view cone, roll angle, distance and azimuth of a perspective, or the transformation matrix of an axonometry.",
    "status": "done",
    "reason": "",
@@ -10688,7 +11162,7 @@
   {
    "id": "Set3DProjectionSettings",
    "group": "Navigator Commands",
-   "version": "1.7.1",
+   "version": "1.7.2",
    "brief": "Sets a perspective projection for the 3D window. Every perspective parameter is required: read a known good set with Get3DProjectionSettings and pass it back, with the values to change replaced.",
    "status": "done",
    "reason": "",
@@ -10710,7 +11184,7 @@
   {
    "id": "GetDocumentFrom3DDefaults",
    "group": "Navigator Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Gets the defaults a newly created 3D Document starts with: name, reference ID, vectorial hatching and sun shadows, transparency, connection to the model, surfaces, boundary contours and the uniform cut, uncut, shadow and hidden edge attributes.",
    "status": "merged",
    "reason": "",
@@ -10730,7 +11204,7 @@
   {
    "id": "SetDocumentFrom3DDefaults",
    "group": "Navigator Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Sets the defaults a newly created 3D Document starts with. Only the given fields are changed; existing 3D Documents are not affected. The fields are the ones returned by GetDocumentFrom3DDefaults.",
    "status": "merged",
    "reason": "",
@@ -10823,6 +11297,66 @@
    "issues": []
   },
   {
+   "id": "Get3DFilterAndCutSettings",
+   "group": "Navigator Commands",
+   "version": "1.7.4",
+   "brief": "Gets the 'Filter and Cut Elements in 3D' settings of the 3D window: the stories shown, the filter mode and which element types are shown. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "Set3DFilterAndCutSettings",
+   "group": "Navigator Commands",
+   "version": "1.7.4",
+   "brief": "Changes the 'Filter and Cut Elements in 3D' settings of the 3D window; only the given fields and the listed element types change. Returns the settings read back after the change. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 10,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetGridSettings",
+   "group": "Navigator Commands",
+   "version": "1.7.4",
+   "brief": "Gets the grid and snap grid settings of the database of the current window, and which database that is. Each database has its own grid settings. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetGridSettings",
+   "group": "Navigator Commands",
+   "version": "1.7.4",
+   "brief": "Changes the grid and snap grid settings of the database of the current window; only the given fields change. Returns the settings read back after the change. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 26,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "FitInWindow",
    "group": "Navigator Commands",
    "version": "1.3.1",
@@ -10856,7 +11390,7 @@
   {
    "id": "ZoomToElements",
    "group": "Navigator Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Zooms the current window, 2D or 3D, to the given elements: selects them, zooms to the selection and restores the previous selection unless keepSelection is false. Fails when none of the elements could be selected, e.g. all of them are on another story or on a hidden layer.",
    "status": "merged",
    "reason": "",
@@ -11102,7 +11636,7 @@
   {
    "id": "SetMasterLayoutContext",
    "group": "Navigator Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Sets which layout's context the master layout of the current window is drawn in: its autotexts then show the values of the given layout. The current window must be a master layout, otherwise an error is returned. It does not assign a master layout to a layout. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -11124,7 +11658,7 @@
   {
    "id": "GetAddOnViewpointRoots",
    "group": "Navigator Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Returns the roots of the add-on viewpoints: the Project Map items created through the Archicad API by an add-on, as Archicad lists them to Tapir. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -11144,7 +11678,7 @@
   {
    "id": "GetAddOnViewpointChildren",
    "group": "Navigator Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Returns the direct children of an add-on viewpoint root or group. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -11167,7 +11701,7 @@
   {
    "id": "GetAddOnViewpoints",
    "group": "Navigator Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Returns the details of the given add-on viewpoint items: their parent, type (Root, Group or Leaf), ID, name, view settings flags and attached data (base64 encoded). The output is aligned with the input array; an item that cannot be read gets an error. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -11191,7 +11725,7 @@
   {
    "id": "CreateAddOnViewpoints",
    "group": "Navigator Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Creates add-on viewpoint roots, groups and leaf nodes in the Project Map, with their ID, name, view settings flags (leaf nodes only) and attached data (base64 encoded). A group or a leaf node is created in the given parent root or group. Returns the identifier of each new item, or an error for an item that could not be created. Roots and groups can't be created in a Teamwork project. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -11220,7 +11754,7 @@
   {
    "id": "ChangeAddOnViewpoints",
    "group": "Navigator Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Changes the ID, name, view settings flags or attached data (base64 encoded) of the given add-on viewpoint items; only the given fields are changed. Roots and groups can't be changed in a Teamwork project. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -11321,7 +11855,7 @@
   {
    "id": "GetGraphicalOverrideStyleOfElements",
    "group": "Graphic Override Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Returns the graphic override style each element is drawn with in the current window: for every overridable member (line type, pens, fill types, surfaces, ...) whether the active graphic override combination replaces it, and with what. Needs Archicad 27 or later.",
    "status": "merged",
    "reason": "",
@@ -11580,7 +12114,7 @@
   {
    "id": "ImportMarkupsFromPDF",
    "group": "Issue Management Commands",
-   "version": "1.7.2",
+   "version": "1.7.3",
    "brief": "Imports the markups of the specified PDF file as issues, like Issue Manager > Import PDF markups, without any dialog and without opening the Issue Manager palette, and reports the issues it created. Available from Archicad 29.",
    "status": "done",
    "reason": "",
@@ -11925,7 +12459,7 @@
   {
    "id": "ActivateDesignOptionsInCombinations",
    "group": "Design Options Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Activates one design option in each of the given combinations, without listing all active design options of the combination. Available from Archicad 29.",
    "status": "merged",
    "reason": "",
@@ -12021,7 +12555,7 @@
   {
    "id": "RenameDesignOptions",
    "group": "Design Options Commands",
-   "version": "1.7.1",
+   "version": "1.7.2",
    "brief": "Changes the name and/or the string id of the given design options. Available from Archicad 29.",
    "status": "done",
    "reason": "",
@@ -12046,7 +12580,7 @@
   {
    "id": "RenameDesignOptionSets",
    "group": "Design Options Commands",
-   "version": "1.7.1",
+   "version": "1.7.2",
    "brief": "Changes the name of the given design option sets. Available from Archicad 29.",
    "status": "done",
    "reason": "",
@@ -12070,7 +12604,7 @@
   {
    "id": "RenameDesignOptionCombinations",
    "group": "Design Options Commands",
-   "version": "1.7.1",
+   "version": "1.7.2",
    "brief": "Changes the name of the given design option combinations. Available from Archicad 29.",
    "status": "done",
    "reason": "",
@@ -12094,7 +12628,7 @@
   {
    "id": "DeleteDesignOptions",
    "group": "Design Options Commands",
-   "version": "1.7.1",
+   "version": "1.7.2",
    "brief": "Deletes the given design options. Available from Archicad 29.",
    "status": "done",
    "reason": "",
@@ -12116,7 +12650,7 @@
   {
    "id": "DeleteDesignOptionSets",
    "group": "Design Options Commands",
-   "version": "1.7.1",
+   "version": "1.7.2",
    "brief": "Deletes the given design option sets. Available from Archicad 29.",
    "status": "done",
    "reason": "",
@@ -12138,7 +12672,7 @@
   {
    "id": "DeleteDesignOptionCombinations",
    "group": "Design Options Commands",
-   "version": "1.7.1",
+   "version": "1.7.2",
    "brief": "Deletes the given design option combinations. Available from Archicad 29.",
    "status": "done",
    "reason": "",
@@ -12160,7 +12694,7 @@
   {
    "id": "SetDefaultDesignOption",
    "group": "Design Options Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Sets the given design option as the default, or the Main Model when no design option is given. Available from Archicad 29.",
    "status": "merged",
    "reason": "",
@@ -12187,7 +12721,7 @@
   {
    "id": "ReorderDesignOptionSets",
    "group": "Design Options Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Moves the given design option sets before another set or to the end of the list. Available from Archicad 29.",
    "status": "merged",
    "reason": "",
@@ -12216,7 +12750,7 @@
   {
    "id": "ReorderDesignOptionsInSet",
    "group": "Design Options Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Moves the given design options before another design option of the same set or to the end of their set. Available from Archicad 29.",
    "status": "merged",
    "reason": "",
@@ -12260,6 +12794,21 @@
    "coveredParameters": [
     "designOptionCombinations"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetHotlinkDesignOptionTableDetails",
+   "group": "Design Options Commands",
+   "version": "1.7.4",
+   "brief": "Reads the design option table of hotlink nodes: the design option sets, options and combinations of the hotlinked source file, and which of them the node shows. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -12751,7 +13300,7 @@
    "id": "CreateMEPRoutingElements",
    "group": "MEP Commands",
    "version": "1.5.6",
-   "brief": "Creates MEP routing elements (duct, pipe or cable carrier routes) along the given polylines with optional cross section data (shape, size, preference table and reference id), MEP system and layer (also set on the segments, elbows and transitions). Available from Archicad 28.",
+   "brief": "Creates MEP routing elements (duct, pipe or cable carrier routes) along the given polylines with optional cross section data (shape, size, preference table and reference id), MEP system and layer (also set on the segments, elbows and transitions), and optional elbow and transition defaults (preference tables and elbow radius factor, from Archicad 29) that apply only to what is placed. Available from Archicad 28.",
    "status": "done",
    "reason": "",
    "components": [
@@ -12760,8 +13309,8 @@
      "path": "Components/MEPComponents/CreateMEPRoutingElementsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 10,
+   "parameters": "partial",
+   "parameterCount": 15,
    "coveredParameters": [
     "routingElementsData",
     "routingElementsData.crossSectionHeight",
@@ -12774,7 +13323,13 @@
     "routingElementsData.nodeCoordinates",
     "routingElementsData.preferenceTableId"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "routingElementsData.defaults",
+    "routingElementsData.defaults.routingNode",
+    "routingElementsData.defaults.routingNode.elbow",
+    "routingElementsData.defaults.routingNode.elbow.factorRadius",
+    "routingElementsData.defaults.routingNode.transition"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -12782,7 +13337,7 @@
    "id": "CreateMEPElements",
    "group": "MEP Commands",
    "version": "1.5.6",
-   "brief": "Creates MEP elements (Terminal, Accessory, Equipment or Fitting) at the given positions. Available from Archicad 28.",
+   "brief": "Creates MEP elements (Terminal, Accessory, Equipment or Fitting) at the given positions, optionally with a changed insulation that applies only to what is placed. Available from Archicad 28.",
    "status": "done",
    "reason": "",
    "components": [
@@ -12791,8 +13346,8 @@
      "path": "Components/MEPComponents/CreateMEPElementsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 6,
+   "parameters": "partial",
+   "parameterCount": 9,
    "coveredParameters": [
     "elementsData",
     "elementsData.domain",
@@ -12801,7 +13356,11 @@
     "elementsData.position",
     "elementsData.type"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "elementsData.defaults",
+    "elementsData.defaults.insulationThickness",
+    "elementsData.defaults.removeInsulation"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -12850,7 +13409,7 @@
   {
    "id": "ModifyMEPPorts",
    "group": "MEP Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Modifies the given MEP ports (as returned by GetMEPPorts): shape, connection style (from Archicad 30), the flow direction of piping and ventilation ports, and the outer diameter and nominal size (from Archicad 30) of piping ports. Only the given fields are changed. Available from Archicad 28.",
    "status": "merged",
    "reason": "",
@@ -12902,7 +13461,7 @@
   {
    "id": "CheckMEPPortConnectability",
    "group": "MEP Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Checks whether MEP ports can be connected to other ports, for the given pairs of ports. Archicad 28 and later check the physical connection. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -12949,7 +13508,7 @@
   {
    "id": "ModifyMEPPreferenceTables",
    "group": "MEP Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Modifies the MEP preference tables of a domain, in the shape GetMEPPreferenceTables returns them: adds tables, changes their names, segmentation lengths (from Archicad 29) and row values and descriptions, deletes or empties rows, adds rows to the rectangular duct and cable carrier tables, deletes tables, and deletes reference ids from the reference set and angles from the angle set (from Archicad 29). Each table is changed in one undoable step. Available from Archicad 28.",
    "status": "merged",
    "reason": "",
@@ -13128,6 +13687,36 @@
     "physicalSystems",
     "physicalSystems.physicalSystemId"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetMEPRoutingParameters",
+   "group": "MEP Commands",
+   "version": "1.7.4",
+   "brief": "Gets the routing parameters of placed MEP elements: of a routing element its routing node parameters (preferred transition placement, elbow from Archicad 29, transition) and routing segment parameters (cross section, preference table, anchor, reference line offsets, wall thickness, flange size, connection style); of a routing node its elbow (from Archicad 29) and transition parameters; of a routing segment its rigid segment parameters (Archicad 28 only). Available from Archicad 28.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetMEPRoutingParameters",
+   "group": "MEP Commands",
+   "version": "1.7.4",
+   "brief": "Sets the routing parameters of placed MEP elements: the routing segment parameters (cross section and preference table) and, from Archicad 29, the routing node parameters (elbow radius factor and preference table, transition preference table) of routing elements, and the elbow and transition parameters of routing nodes (from Archicad 29). Only the given keys are changed, in one undo step with one execution result per element. Available from Archicad 28.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 14,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -13458,7 +14047,7 @@
    "id": "ModifyElectricalProjectSettings",
    "group": "MEP Commands",
    "version": "1.7.2",
-   "brief": "Modifies the electrical project settings: sets the default voltage and adds or removes wiring types and load classifications. Available from Archicad 30.",
+   "brief": "Modifies the electrical project settings: sets the default voltage and clears, adds or removes wiring types and load classifications. Available from Archicad 30.",
    "status": "done",
    "reason": "",
    "components": [
@@ -13467,8 +14056,8 @@
      "path": "Components/MEPComponents/ModifyElectricalProjectSettingsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 8,
+   "parameters": "partial",
+   "parameterCount": 10,
    "coveredParameters": [
     "loadClassificationsToAdd",
     "loadClassificationsToAdd.demandFactor",
@@ -13479,14 +14068,17 @@
     "wiringTypesToAdd.name",
     "wiringTypesToRemove"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "clearLoadClassifications",
+    "clearWiringTypes"
+   ],
    "pullRequests": [],
    "issues": []
   },
   {
    "id": "GetMEPElementDetails",
    "group": "MEP Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Retrieves the type-specific details of the given MEP elements: insulation thickness and routing segment of rigid segments, control points of flexible segments, radius factor, insulation thickness, preference table and routing node of elbows (from Archicad 29), angle, length and insulation thickness of branches, and offsets, wider and narrower ports, insulation thickness, routing node and (from Archicad 29) preference table of transitions. Available from Archicad 28.",
    "status": "merged",
    "reason": "",
@@ -13508,7 +14100,7 @@
   {
    "id": "GetMEPPreferenceTableRows",
    "group": "MEP Commands (extended)",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Gets rows of a segment, branch, elbow or (from Archicad 29) transition preference table by their key (the reference ids and, for branch and elbow rows from Archicad 29, the angle): whether the row is valid and its values (diameters, wall thickness, radius, length, angle, branch offset, connection length, description), and whether the table exists. Rectangular duct and cable carrier segment tables only give whether they exist, as their rows have no key. On Archicad 27, which has one kind of preference table, a row is found by its shape and index and has a value and a description; the table's name and number of rows per shape are returned too. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -13541,7 +14133,7 @@
   {
    "id": "SetMEPPreferenceTableRows",
    "group": "MEP Commands (extended)",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Sets the given values of rows of a segment, branch, elbow or (from Archicad 29) transition preference table, found by their key (the reference ids and, for branch and elbow rows from Archicad 29, the angle). Only the given values are changed, in one undo step. On Archicad 27 a row is found by its shape and index, its value and description are set, and its index after the call is returned; the keys give the indices before the call. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -13588,7 +14180,7 @@
   {
    "id": "AddMEPPreferenceTableRows",
    "group": "MEP Commands (extended)",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Adds rows with the given keys and optionally values to a branch, elbow or transition preference table and returns their index, in one undo step. Branch tables from Archicad 28, elbow and transition tables from Archicad 29; segment tables have a row for each reference id. On Archicad 27 a row is added to the list of the given shape of any preference table, and the index of each new row after the call is returned. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -13635,7 +14227,7 @@
   {
    "id": "DeleteMEPPreferenceTableRows",
    "group": "MEP Commands (extended)",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Deletes rows of a segment, branch, elbow or (from Archicad 29) transition preference table by their key (the reference ids and, for branch and elbow rows from Archicad 29, the angle), in one undo step. The rows of segment tables, and of the elbow tables of Archicad 28, are emptied instead. On Archicad 27 a row is found by its shape and index. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -13668,7 +14260,7 @@
   {
    "id": "GetMEPPreferenceTableContainers",
    "group": "MEP Commands (extended)",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Lists the preference tables of the Piping, Ventilation and Cable Carrier preference table containers of Archicad 27: their id, name, whether they exist and their number of rows per shape, and whether the container exists. Only for Archicad 27; from Archicad 28 use GetMEPPreferenceTables.",
    "status": "merged",
    "reason": "",
@@ -13690,7 +14282,7 @@
   {
    "id": "CreateMEPPreferenceTables",
    "group": "MEP Commands (extended)",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Adds empty preference tables with the given names to the preference table container of a domain of Archicad 27 and returns their id, in one undo step. Only for Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -13796,7 +14388,7 @@
   {
    "id": "GetAnalyticalModelVariation",
    "group": "Analytical Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Retrieves the variation of the given Structural Analytical Model, or of the model of the current view when no model is given (the model is required before Archicad 27). The fields of the variation depend on the Archicad version.",
    "status": "merged",
    "reason": "",
@@ -13818,7 +14410,7 @@
   {
    "id": "GetAnalyticalModel",
    "group": "Analytical Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Retrieves the Structural Analytical Model of the given variation, as returned by GetAnalyticalModelVariation.",
    "status": "merged",
    "reason": "",
@@ -13840,7 +14432,7 @@
   {
    "id": "GetAnalyticalVisibilitySettings",
    "group": "Analytical Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Retrieves the visibility settings of the Structural Analytical Model. Available from Archicad 26.",
    "status": "merged",
    "reason": "",
@@ -13860,7 +14452,7 @@
   {
    "id": "SetAnalyticalVisibilitySettings",
    "group": "Analytical Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Changes the given fields of the Structural Analytical Model visibility settings; the others keep their value. Available from Archicad 26.",
    "status": "merged",
    "reason": "",
@@ -13882,7 +14474,7 @@
   {
    "id": "GetAnalyticalMemberTypesOfElements",
    "group": "Analytical Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Retrieves the analytical member type (Beam, Column, Roof, Slab, Wall or Unknown) of the given elements.",
    "status": "merged",
    "reason": "",
@@ -13904,7 +14496,7 @@
   {
    "id": "GetAnalyticalLoadGroups",
    "group": "Analytical Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Retrieves the structural analysis load groups of the project with all their fields.",
    "status": "merged",
    "reason": "",
@@ -13924,7 +14516,7 @@
   {
    "id": "GetAnalyticalLoadCases",
    "group": "Analytical Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Retrieves the structural analysis load cases of the given load group, or of the project when no load group is given, with all their fields.",
    "status": "merged",
    "reason": "",
@@ -13946,7 +14538,7 @@
   {
    "id": "GetAnalyticalLoadCombinations",
    "group": "Analytical Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Retrieves the structural analysis load combinations of the project with all their fields and load factors.",
    "status": "merged",
    "reason": "",
@@ -13966,7 +14558,7 @@
   {
    "id": "CreateAnalyticalLoadGroups",
    "group": "Analytical Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Creates structural analysis load groups in one undo step and returns their identifiers.",
    "status": "merged",
    "reason": "",
@@ -13992,7 +14584,7 @@
   {
    "id": "CreateAnalyticalLoadCases",
    "group": "Analytical Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Creates structural analysis load cases in the given load groups in one undo step and returns their identifiers.",
    "status": "merged",
    "reason": "",
@@ -14020,7 +14612,7 @@
   {
    "id": "CreateAnalyticalLoadCombinations",
    "group": "Analytical Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Creates structural analysis load combinations, optionally with their load factors, in one undo step and returns their identifiers. The combination type is available from Archicad 27.",
    "status": "merged",
    "reason": "",
@@ -14048,7 +14640,7 @@
   {
    "id": "DeleteAnalyticalLoadGroups",
    "group": "Analytical Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Deletes the given structural analysis load groups in one undo step.",
    "status": "merged",
    "reason": "",
@@ -14071,7 +14663,7 @@
   {
    "id": "DeleteAnalyticalLoadCases",
    "group": "Analytical Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Deletes the given structural analysis load cases in one undo step.",
    "status": "merged",
    "reason": "",
@@ -14094,7 +14686,7 @@
   {
    "id": "DeleteAnalyticalLoadCombinations",
    "group": "Analytical Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Deletes the given structural analysis load combinations in one undo step.",
    "status": "merged",
    "reason": "",
@@ -14117,7 +14709,7 @@
   {
    "id": "AddLoadCasesToLoadCombination",
    "group": "Analytical Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Adds load cases with their factors to the given structural analysis load combination in one undo step.",
    "status": "merged",
    "reason": "",
@@ -14133,6 +14725,231 @@
     "loadCombinationId",
     "loadFactors"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetAnalyticalMembers",
+   "group": "Analytical Commands",
+   "version": "1.7.4",
+   "brief": "Lists the elements of the curve and surface members of the given Structural Analytical Model, or of the model of the current view when no model is given (the model is required before Archicad 27).",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetAnalyticalMemberDetails",
+   "group": "Analytical Commands",
+   "version": "1.7.4",
+   "brief": "Retrieves the curve, surface or segmented surface member of the given elements in a Structural Analytical Model, with their connections. Cross sections, curves, nodes and surfaces are returned with every field the Archicad version has.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetAnalyticalReleases",
+   "group": "Analytical Commands",
+   "version": "1.7.4",
+   "brief": "Retrieves the releases of the given analytical members. Available from Archicad 26.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetAnalyticalReleases",
+   "group": "Analytical Commands",
+   "version": "1.7.4",
+   "brief": "Replaces the releases of the given analytical members, in one undo step. Available from Archicad 26.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetCustomCurveMemberStretch",
+   "group": "Analytical Commands",
+   "version": "1.7.4",
+   "brief": "Retrieves the lengths added to the start and end of the given curve members. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetCustomCurveMemberStretch",
+   "group": "Analytical Commands",
+   "version": "1.7.4",
+   "brief": "Sets the lengths added to the start and end of the given curve members, in one undo step. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 4,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetLCSOfAnalyticalMembers",
+   "group": "Analytical Commands",
+   "version": "1.7.4",
+   "brief": "Retrieves the local coordinate system of the given analytical member parts, optionally in their intersection with another member part. Available from Archicad 26.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetAnalyticalMemberPartGeometries",
+   "group": "Analytical Commands",
+   "version": "1.7.4",
+   "brief": "Retrieves the node of the given analytical member vertices and the curve of the given member edges. Available from Archicad 26.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetAnalyticalSupports",
+   "group": "Analytical Commands",
+   "version": "1.7.4",
+   "brief": "Retrieves the settings, the supported member part and the geometry of the given analytical supports. Available from Archicad 26.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetAnalyticalLinks",
+   "group": "Analytical Commands",
+   "version": "1.7.4",
+   "brief": "Retrieves the settings, the connected member parts and the geometry of the given analytical links. Available from Archicad 26.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "CreateAnalyticalSupports",
+   "group": "Analytical Commands",
+   "version": "1.7.4",
+   "brief": "Creates analytical supports from their settings and supported member part, as GetAnalyticalSupports returns them, in one undo step. Available from Archicad 26.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "CreateAnalyticalLinks",
+   "group": "Analytical Commands",
+   "version": "1.7.4",
+   "brief": "Creates analytical links from their settings and connected member parts, as GetAnalyticalLinks returns them, in one undo step. Available from Archicad 26.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ConvertAnalyticalLinksToNonShortest",
+   "group": "Analytical Commands",
+   "version": "1.7.4",
+   "brief": "Converts the given shortest analytical links (associative to a curve member or a surface member edge) to links connected to a fixed coordinate, in one undo step, and returns the converted links. Available from Archicad 26.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetAnalyticalLoads",
+   "group": "Analytical Commands",
+   "version": "1.7.4",
+   "brief": "Retrieves the settings, the loaded member part, the custom data (the curve of an edge load, the contour of a surface load) and the geometry of the given analytical point, edge and surface loads. Available from Archicad 26.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "CreateAnalyticalLoads",
+   "group": "Analytical Commands",
+   "version": "1.7.4",
+   "brief": "Creates analytical point, edge and surface loads from their settings, loaded member part and custom data, as GetAnalyticalLoads returns them, in one undo step. Available from Archicad 26.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 5,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -14206,7 +15023,7 @@
   {
    "id": "CreateSolidOperations",
    "group": "Solid Element Operation Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Runs a solid operation (subtraction, intersection, addition) on two morphs and returns the resulting morphs, one item per operation. Unlike CreateSolidElementLinks this is not a link: the target and the operator morph are replaced by the result. Morphs only; the operations run in one undo step.",
    "status": "merged",
    "reason": "",
@@ -14301,7 +15118,7 @@
   {
    "id": "MergeElements",
    "group": "Solid Element Operation Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Merges the given construction elements (the Merge command of Archicad, which cleans up the junctions of slabs, beams, walls and similar elements). Undoable. The element types are not filtered: Archicad reports the ones it cannot merge.",
    "status": "merged",
    "reason": "",
@@ -14323,7 +15140,7 @@
   {
    "id": "UnmergeElements",
    "group": "Solid Element Operation Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Removes the merge between the two elements of each given pair. Undoable; one execution result per pair.",
    "status": "merged",
    "reason": "",
@@ -14347,7 +15164,7 @@
   {
    "id": "GetMergedElements",
    "group": "Solid Element Operation Commands",
-   "version": "1.7.3",
+   "version": "1.7.4",
    "brief": "Gets the elements each queried element is merged with, one item per queried element; an unknown element is an error item.",
    "status": "merged",
    "reason": "",
