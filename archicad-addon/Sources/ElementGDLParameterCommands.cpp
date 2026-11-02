@@ -743,6 +743,119 @@ static GS::UniString GetElementChangeFailureMessage (const API_Elem_Head& elemHe
     return GS::UniString::Printf ("The parameters of element with guid %T were set, but Archicad refused to change the element with them (ACAPI_Element_Change failed)", guidString.ToPrintf ());
 }
 
+static bool IsSameRealParameterValue (double value1, double value2)
+{
+    const double diff = (value1 > value2) ? value1 - value2 : value2 - value1;
+    const double abs1 = (value1 < 0.0) ? -value1 : value1;
+    const double abs2 = (value2 < 0.0) ? -value2 : value2;
+    const double scale = GS::Max (1.0, GS::Max (abs1, abs2));
+    return diff <= 1e-7 * scale;
+}
+
+// Whether two parameter lists hold the same value for a parameter of the same name, type and shape.
+// Types without a value that can be written (separators, titles, dictionaries) count as the same.
+static bool IsSameParameterValue (const API_AddParType& param1, const API_AddParType& param2)
+{
+    if (param1.typeID != param2.typeID || param1.typeMod != param2.typeMod) {
+        return false;
+    }
+    if (param1.typeID == APIParT_Separator || param1.typeID == APIParT_Title || param1.typeID == APIParT_Dictionary) {
+        return true;
+    }
+
+    const bool isString = (param1.typeID == APIParT_CString);
+    if (param1.typeMod == API_ParSimple) {
+        if (isString) {
+            return GS::UniString (param1.value.uStr) == GS::UniString (param2.value.uStr);
+        }
+        return IsSameRealParameterValue (param1.value.real, param2.value.real);
+    }
+
+    if (param1.dim1 != param2.dim1 || param1.dim2 != param2.dim2) {
+        return false;
+    }
+    if (param1.value.array == nullptr || param2.value.array == nullptr) {
+        return param1.value.array == param2.value.array;
+    }
+    Int32 itemIndex = 0;
+    Int32 strPos1 = 0;
+    Int32 strPos2 = 0;
+    for (Int32 i1 = 1; i1 <= param1.dim1; ++i1) {
+        for (Int32 i2 = 1; i2 <= param1.dim2; ++i2) {
+            if (isString) {
+                // The same walk as AddValueString: consecutive null-terminated strings.
+                const GS::uchar_t* valueStr1 = (reinterpret_cast<GS::uchar_t*> (*param1.value.array)) + strPos1;
+                const GS::uchar_t* valueStr2 = (reinterpret_cast<GS::uchar_t*> (*param2.value.array)) + strPos2;
+                strPos1 += GS::ucslen32 (valueStr1) + 1;
+                strPos2 += GS::ucslen32 (valueStr2) + 1;
+                if (GS::UniString (valueStr1) != GS::UniString (valueStr2)) {
+                    return false;
+                }
+            } else {
+                const double value1 = ((double*) *param1.value.array)[itemIndex];
+                const double value2 = ((double*) *param2.value.array)[itemIndex];
+                ++itemIndex;
+                if (!IsSameRealParameterValue (value1, value2)) {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+// ACAPI_Element_Change can succeed and still not keep a written parameter: Archicad overrides some
+// parameters from the element's own settings, e.g. AC_TextSize_1 of a symbol label keeps its value
+// (#1690). So the element's parameters are read back the way GetGDLParametersOfElements reads them,
+// and each written parameter is compared with the value that was committed. Must be called with no
+// parameter session open; it opens and closes its own.
+static GSErrCode CheckWrittenParametersKept (
+    API_ParamOwnerType& paramOwner,
+    const API_GetParamsType& committedParams,
+    const GS::Array<GS::String>& writtenNames,
+    const API_Guid& elemGuid,
+    GS::UniString& errMessage)
+{
+    if (writtenNames.IsEmpty () || committedParams.params == nullptr) {
+        return NoError;
+    }
+
+    GSErrCode err = ACAPI_LibraryPart_OpenParameters (&paramOwner);
+    if (err != NoError) {
+        errMessage = GS::UniString::Printf ("The parameters of element with guid %T were changed, but could not be read back to check them (ACAPI_LibraryPart_OpenParameters)", APIGuidToString (elemGuid).ToPrintf ());
+        return err;
+    }
+
+    API_GetParamsType readParams = {};
+    err = ACAPI_LibraryPart_GetActParameters (&readParams);
+    ACAPI_LibraryPart_CloseParameters ();
+    if (err != NoError || readParams.params == nullptr) {
+        ACAPI_DisposeAddParHdl (&readParams.params);
+        errMessage = GS::UniString::Printf ("The parameters of element with guid %T were changed, but could not be read back to check them (ACAPI_LibraryPart_GetActParameters)", APIGuidToString (elemGuid).ToPrintf ());
+        return (err != NoError) ? err : APIERR_GENERAL;
+    }
+
+    GS::UniString notKeptNames;
+    for (const GS::String& name : writtenNames) {
+        const API_AddParType* committedParam = FindParameterByName (committedParams, name.ToCStr ());
+        const API_AddParType* readParam = FindParameterByName (readParams, name.ToCStr ());
+        if (committedParam == nullptr || readParam == nullptr || !IsSameParameterValue (*committedParam, *readParam)) {
+            if (!notKeptNames.IsEmpty ()) {
+                notKeptNames.Append (", ");
+            }
+            notKeptNames.Append (GS::UniString (name.ToCStr ()));
+        }
+    }
+    ACAPI_DisposeAddParHdl (&readParams.params);
+
+    if (notKeptNames.IsEmpty ()) {
+        return NoError;
+    }
+
+    errMessage = GS::UniString::Printf ("Archicad accepted the change of element with guid %T but did not keep the value of %T: reading the parameters back gives another value. Archicad may set these parameters from the element's own settings (e.g. the text settings of a label, changed with ModifyLabels). The other given parameters were written.", APIGuidToString (elemGuid).ToPrintf (), notKeptNames.ToPrintf ());
+    return APIERR_GENERAL;
+}
+
 SetGDLParametersOfElementsCommand::SetGDLParametersOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -852,6 +965,8 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
             err = ACAPI_LibraryPart_OpenParameters (&paramOwner);
             if (err == NoError) {
                 API_GetParamsType getParams = {};
+                GS::Array<GS::String> writtenNames;
+                bool elementChanged = false;
                 err = ACAPI_LibraryPart_GetActParameters (&getParams);
                 if (err != NoError) {
                     errMessage = GS::UniString::Printf ("Failed to read the GDL parameters of element with guid %T (ACAPI_LibraryPart_GetActParameters)", APIGuidToString (elemGuid).ToPrintf ());
@@ -874,6 +989,23 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                         yRatioPerB = GetStoredSizeScale (getParams.b, GetSizeParameter (getParams, "B"));
                     }
 
+                    // The names of the parameters written, checked against the element once it is changed.
+                    const auto addWrittenName = [&] (const GS::ObjectState& parameter) {
+                        GS::String writtenName;
+                        GS::String givenName;
+                        short index = 0;
+                        if (parameter.Get ("name", givenName)) {
+                            char truncatedName[API_NameLen] = {};
+                            CHTruncate (givenName.ToCStr (), truncatedName, API_NameLen);
+                            writtenName = truncatedName;
+                        } else if (parameter.Get ("index", index) && gdlParametersIndexNameDictionary.ContainsKey (index)) {
+                            writtenName = gdlParametersIndexNameDictionary[index];
+                        }
+                        if (!writtenName.IsEmpty () && !writtenNames.Contains (writtenName)) {
+                            writtenNames.Push (writtenName);
+                        }
+                    };
+
                     GS::Array<ArrayParameterChange> pendingArrayChanges;
                     for (const GS::ObjectState& elemGdlParametersItem : elemGdlParameters) {
                         GS::Array<GS::ObjectState> parameters;
@@ -882,6 +1014,7 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                             for (const GS::ObjectState& parameter : parameters) {
                                 err = SetOneGDLParameter (parameter, elemGuid, getParams, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, xRatioPerA, yRatioPerB, pendingArrayChanges, errMessage);
                                 if (err == NoError) {
+                                    addWrittenName (parameter);
                                     err = ReadParametersAgain (getParams, elemGuid, errMessage);
                                 }
                                 if (err != NoError) {
@@ -894,6 +1027,7 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                         } else {
                             err = SetOneGDLParameter (elemGdlParametersItem, elemGuid, getParams, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, xRatioPerA, yRatioPerB, pendingArrayChanges, errMessage);
                             if (err == NoError) {
+                                addWrittenName (elemGdlParametersItem);
                                 err = ReadParametersAgain (getParams, elemGuid, errMessage);
                             }
                             if (err != NoError) {
@@ -948,10 +1082,15 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                         err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AddPars, true);
                         if (err != NoError) {
                             errMessage = GetElementChangeFailureMessage (element.header);
+                        } else {
+                            elementChanged = true;
                         }
                     }
                 }
                 ACAPI_LibraryPart_CloseParameters ();
+                if (elementChanged) {
+                    err = CheckWrittenParametersKept (paramOwner, getParams, writtenNames, elemGuid, errMessage);
+                }
                 ACAPI_DisposeAddParHdl (&getParams.params);
             }
 
