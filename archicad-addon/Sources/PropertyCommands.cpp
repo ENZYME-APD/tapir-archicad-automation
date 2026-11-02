@@ -802,17 +802,24 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
 
             GS::Array<API_Property> propertyValues;
             const GSErrCode getErr = ACAPI_Element_GetPropertyValuesByGuid (elemGuid, properties, propertyValues);
+            if (getErr != NoError) {
+                for (const API_Guid& propertyGuid : properties) {
+                    results[resultIndices[GS::NewPair (elemGuid, propertyGuid)]] =
+                        CreateFailedExecutionResult (getErr, "Failed to get property values for element");
+                }
+                continue;
+            }
 
             for (API_Property& propertyValue : propertyValues) {
                 const auto guidPair = GS::NewPair (elemGuid, propertyValue.definition.guid);
                 auto& result = results[resultIndices[guidPair]];
 
-                if (getErr != NoError) {
-                    result = CreateFailedExecutionResult (getErr, "Failed to get property values for element");
+                const API_PropertyDefinition& definition = propertyValue.definition;
+                if (!ACAPI_Element_IsPropertyDefinitionValueEditable (elemGuid, definition.guid)) {
+                    result = CreateFailedExecutionResult (APIERR_READONLY, "Property value is read-only for element");
                     continue;
                 }
 
-                const API_PropertyDefinition& definition = propertyValue.definition;
                 const bool isNumericList = definition.collectionType == API_PropertyListCollectionType &&
                     definition.measureType == API_PropertyDefaultMeasureType &&
                     (definition.valueType == API_PropertyRealValueType || definition.valueType == API_PropertyIntegerValueType);
