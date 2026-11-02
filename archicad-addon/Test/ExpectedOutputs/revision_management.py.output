@@ -348,3 +348,43 @@ Response:
         }
     ]
 }
+Command: ModifyRevisionIssues
+Parameters:
+{
+    "revisionIssues": [
+        {
+            "revisionIssueId": {
+                "guid": "<GUID>"
+            },
+            "description": "Transmittal Set B (modified by Tapir)"
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        }
+    ]
+}
+Command: ModifyRevisionIssues
+Parameters:
+{
+    "revisionIssues": [
+        {
+            "revisionIssueId": {
+                "guid": "<GUID>"
+            },
+            "description": "Transmittal Set B"
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        }
+    ]
+}
