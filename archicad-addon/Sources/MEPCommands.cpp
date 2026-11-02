@@ -465,13 +465,218 @@ static ACAPI::Result<void> ApplyMEPElementDefaults (DefaultT& elemDefault, const
     });
 }
 
-// Places a terminal, accessory, fitting or equipment from its default, after applying the optional
-// 'defaults' of CreateMEPElements. Returns the element id or the error of the item.
+// Resolves an optional 'mepSystemId' of CreateMEPElements. Returns false if it is given but is not an MEP system.
+static bool ResolveMEPSystemId (const GS::ObjectState& data, std::optional<API_AttributeIndex>& mepSystem)
+{
+    const GS::ObjectState* mepSystemId = data.Get ("mepSystemId");
+    if (mepSystemId == nullptr) {
+        return true;
+    }
+    const API_AttributeIndex index = GetAttributeIndexFromGuid (API_MEPSystemID, GetGuidFromObjectState (*mepSystemId));
+    if (index == ACAPI_CreateAttributeIndex (-1)) {
+        return false;
+    }
+    mepSystem = index;
+    return true;
+}
+
+// The shape, width and MEP system are on every port, the height on ventilation and cable carrier
+// ports, the diameter on piping ports.
+template <typename PortModifierT>
+static void ApplyMEPPortDefaultBase (PortModifierT& modifier, const GS::ObjectState* portData, const std::optional<API_AttributeIndex>& mepSystem)
+{
+    if (mepSystem.has_value ()) {
+        modifier.SetMEPSystem (mepSystem.value ());
+    }
+    if (portData == nullptr) {
+        return;
+    }
+    GS::UniString shapeStr;
+    if (portData->Get ("shape", shapeStr)) {
+        const std::optional<ConnectorShape> shape = ConnectorShapeFromString (shapeStr);
+        if (shape.has_value ()) {
+            modifier.SetShape (shape.value ());
+        }
+    }
+    double width = 0.0;
+    if (portData->Get ("width", width)) {
+        modifier.SetWidth (width);
+    }
+}
+
+// Changes one port of a terminal, accessory, fitting or equipment default before it is placed.
+// portData may be nullptr when only the MEP system is set. Returns an error message, or an empty string.
+static GS::UniString ApplyMEPPortDefault (const ACAPI::MEP::ElementDefault& elemDefault, uint32_t portIndex, const GS::ObjectState* portData, const std::optional<API_AttributeIndex>& mepSystem)
+{
+    ACAPI::Result<Domain> portDomain = elemDefault.GetDomainOfPort (portIndex);
+    if (portDomain.IsErr ()) {
+        return GS::UniString::Printf ("There is no port with portIndex %u.", portIndex);
+    }
+
+    const bool hasHeight = portData != nullptr && portData->Contains ("height");
+    const bool hasDiameter = portData != nullptr && portData->Contains ("diameter");
+    double height = 0.0;
+    double diameter = 0.0;
+    if (portData != nullptr) {
+        portData->Get ("height", height);
+        portData->Get ("diameter", diameter);
+    }
+
+    bool modified = false;
+    switch (portDomain.Unwrap ()) {
+        case Domain::Ventilation: {
+            if (hasDiameter) {
+                return GS::UniString::Printf ("Port %u is a ventilation port, 'diameter' is only for piping ports.", portIndex);
+            }
+            ACAPI::Result<VentilationPortDefault> portDefault = elemDefault.GetVentilationPortDefault (portIndex);
+            if (portDefault.IsErr ()) {
+                return GS::UniString::Printf ("Failed to get port %u.", portIndex);
+            }
+            modified = portDefault->Modify ([&](VentilationPortDefault::Modifier& modifier) {
+                ApplyMEPPortDefaultBase (modifier, portData, mepSystem);
+                if (hasHeight) {
+                    modifier.SetHeight (height);
+                }
+            }).IsOk ();
+            break;
+        }
+        case Domain::Piping: {
+            if (hasHeight) {
+                return GS::UniString::Printf ("Port %u is a piping port, use 'diameter' instead of 'height'.", portIndex);
+            }
+            ACAPI::Result<PipingPortDefault> portDefault = elemDefault.GetPipingPortDefault (portIndex);
+            if (portDefault.IsErr ()) {
+                return GS::UniString::Printf ("Failed to get port %u.", portIndex);
+            }
+            modified = portDefault->Modify ([&](PipingPortDefault::Modifier& modifier) {
+                ApplyMEPPortDefaultBase (modifier, portData, mepSystem);
+                if (hasDiameter) {
+                    modifier.SetDiameter (diameter);
+                }
+            }).IsOk ();
+            break;
+        }
+        case Domain::CableCarrier: {
+            if (hasDiameter) {
+                return GS::UniString::Printf ("Port %u is a cable carrier port, 'diameter' is only for piping ports.", portIndex);
+            }
+            ACAPI::Result<CableCarrierPortDefault> portDefault = elemDefault.GetCableCarrierPortDefault (portIndex);
+            if (portDefault.IsErr ()) {
+                return GS::UniString::Printf ("Failed to get port %u.", portIndex);
+            }
+            modified = portDefault->Modify ([&](CableCarrierPortDefault::Modifier& modifier) {
+                ApplyMEPPortDefaultBase (modifier, portData, mepSystem);
+                if (hasHeight) {
+                    modifier.SetHeight (height);
+                }
+            }).IsOk ();
+            break;
+        }
+    }
+    if (!modified) {
+        return GS::UniString::Printf ("Failed to change port %u.", portIndex);
+    }
+    return GS::UniString ();
+}
+
+// Applies the optional 'libraryPartId', 'xSize', 'ySize', 'mepSystemId' and 'ports' of a CreateMEPElements
+// item to the default before it is placed. The library part comes first, because it brings its own ports.
+// Only the in-memory default is changed, not the tool's settings. Returns the error of the item, if any.
 template <typename DefaultT>
-static GS::ObjectState PlaceMEPElementFromDefault (ACAPI::Result<DefaultT>& elemDefault, const GS::ObjectState* defaults, const API_Coord3D& coordinate, const Orientation& orientation)
+static GS::Optional<GS::ObjectState> ApplyMEPElementData (DefaultT& elemDefault, const GS::ObjectState& elementData, const std::optional<Domain>& domain)
+{
+    const GS::ObjectState* libraryPartId = elementData.Get ("libraryPartId");
+    const bool hasXSize = elementData.Contains ("xSize");
+    const bool hasYSize = elementData.Contains ("ySize");
+#ifndef ServerMainVers_3000
+    if (hasXSize || hasYSize) {
+        return CreateErrorResponse (APIERR_NOTSUPPORTED, "'xSize' and 'ySize' require Archicad 30 or newer; nothing was placed.");
+    }
+#endif
+    if (libraryPartId != nullptr || hasXSize || hasYSize) {
+        ACAPI::Result<void> result = elemDefault.Modify ([&](ACAPI::MEP::ElementDefault::Modifier& modifier) -> ACAPI::Result<void> {
+            if (libraryPartId != nullptr) {
+                modifier.SetObjectId (GetGuidFromObjectState (*libraryPartId));
+            }
+#ifdef ServerMainVers_3000
+            double size = 0.0;
+            if (elementData.Get ("xSize", size)) {
+                ACAPI::Result<void> sizeResult = modifier.SetObjectXSize (size);
+                if (sizeResult.IsErr ()) {
+                    return sizeResult;
+                }
+            }
+            if (elementData.Get ("ySize", size)) {
+                ACAPI::Result<void> sizeResult = modifier.SetObjectYSize (size);
+                if (sizeResult.IsErr ()) {
+                    return sizeResult;
+                }
+            }
+#endif
+            return ACAPI::Ok ();
+        });
+        if (result.IsErr ()) {
+            return CreateErrorResponse (result.UnwrapErr ().kind, "Failed to set the library part or the size; nothing was placed.");
+        }
+        // Archicad keeps the old library part when the given one does not exist.
+        if (libraryPartId != nullptr && elemDefault.GetObjectId () != GetGuidFromObjectState (*libraryPartId)) {
+            return CreateErrorResponse (APIERR_BADID, "The library part given in 'libraryPartId' was not found; nothing was placed.");
+        }
+    }
+
+    std::optional<API_AttributeIndex> mepSystem;
+    if (!ResolveMEPSystemId (elementData, mepSystem)) {
+        return CreateErrorResponse (APIERR_BADID, "The 'mepSystemId' is not an MEP system attribute; nothing was placed.");
+    }
+    const uint32_t portCount = elemDefault.GetPortCount ();
+    if (mepSystem.has_value ()) {
+        for (uint32_t portIndex = 0; portIndex < portCount; ++portIndex) {
+            ACAPI::Result<Domain> portDomain = elemDefault.GetDomainOfPort (portIndex);
+            if (portDomain.IsErr () || (domain.has_value () && portDomain.Unwrap () != domain.value ())) {
+                continue;
+            }
+            const GS::UniString error = ApplyMEPPortDefault (elemDefault, portIndex, nullptr, mepSystem);
+            if (!error.IsEmpty ()) {
+                return CreateErrorResponse (APIERR_GENERAL, error + " Nothing was placed.");
+            }
+        }
+    }
+
+    GS::Array<GS::ObjectState> ports;
+    if (elementData.Get ("ports", ports)) {
+        for (const GS::ObjectState& portData : ports) {
+            Int32 portIndex = -1;
+            if (!portData.Get ("portIndex", portIndex) || portIndex < 0 || static_cast<uint32_t> (portIndex) >= portCount) {
+                return CreateErrorResponse (APIERR_BADINDEX, GS::UniString::Printf ("Invalid 'portIndex': the library part has %u ports, numbered from 0. Nothing was placed.", portCount));
+            }
+            GS::UniString shapeStr;
+            if (portData.Get ("shape", shapeStr) && !ConnectorShapeFromString (shapeStr).has_value ()) {
+                return CreateErrorResponse (APIERR_BADPARS, "Invalid 'shape' value; nothing was placed.");
+            }
+            std::optional<API_AttributeIndex> portMepSystem;
+            if (!ResolveMEPSystemId (portData, portMepSystem)) {
+                return CreateErrorResponse (APIERR_BADID, "The 'mepSystemId' of a port is not an MEP system attribute; nothing was placed.");
+            }
+            const GS::UniString error = ApplyMEPPortDefault (elemDefault, static_cast<uint32_t> (portIndex), &portData, portMepSystem);
+            if (!error.IsEmpty ()) {
+                return CreateErrorResponse (APIERR_BADPARS, error + " Nothing was placed.");
+            }
+        }
+    }
+    return {};
+}
+
+// Places a terminal, accessory, fitting or equipment from its default, after applying the optional
+// fields and 'defaults' of the CreateMEPElements item. Returns the element id or the error of the item.
+template <typename DefaultT>
+static GS::ObjectState PlaceMEPElementFromDefault (ACAPI::Result<DefaultT>& elemDefault, const GS::ObjectState& elementData, const std::optional<Domain>& domain, const GS::ObjectState* defaults, const API_Coord3D& coordinate, const Orientation& orientation)
 {
     if (elemDefault.IsErr ()) {
         return CreateErrorResponse (elemDefault.UnwrapErr ().kind, "Failed to place the MEP element.");
+    }
+    const GS::Optional<GS::ObjectState> dataError = ApplyMEPElementData (*elemDefault, elementData, domain);
+    if (dataError.HasValue ()) {
+        return dataError.Get ();
     }
     if (defaults != nullptr) {
         ACAPI::Result<void> defaultsResult = ApplyMEPElementDefaults (*elemDefault, *defaults);
@@ -1602,10 +1807,63 @@ GS::Optional<GS::UniString> CreateMEPElementsCommand::GetInputParametersSchema (
                         },
                         "domain": {
                             "$ref": "#/MEPDomain",
-                            "description": "Required for all types except Equipment."
+                            "description": "Required for all types except Equipment. For Equipment it only selects the ports that mepSystemId is applied to."
                         },
                         "position": {
                             "$ref": "#/Coordinate3D"
+                        },
+                        "libraryPartId": {
+                            "$ref": "#/LibPartUnId",
+                            "description": "Optional library part to place instead of the one in the tool's settings, as listed by GetAvailableLibraryParts. Its ports replace the default ones, so 'ports' refers to the ports of this library part. If it is not found, the item fails and nothing is placed."
+                        },
+                        "xSize": {
+                            "type": "number",
+                            "description": "Optional size along the local x axis in meters. Available from Archicad 30. Some library parts calculate their own size and keep it."
+                        },
+                        "ySize": {
+                            "type": "number",
+                            "description": "Optional size along the local y axis in meters. Available from Archicad 30. Some library parts calculate their own size and keep it."
+                        },
+                        "mepSystemId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Optional MEP system of the ports of the element's domain (of every port when an Equipment item has no domain). The 'mepSystemId' of an entry of 'ports' overrides it for that port."
+                        },
+                        "ports": {
+                            "type": "array",
+                            "description": "Optional changes to single ports of the element before it is placed. The values are in meters.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "portIndex": {
+                                        "type": "integer",
+                                        "description": "Zero-based index of the port in the library part."
+                                    },
+                                    "mepSystemId": {
+                                        "$ref": "#/AttributeId",
+                                        "description": "The MEP system of the port."
+                                    },
+                                    "shape": {
+                                        "$ref": "#/MEPCrossSectionShape",
+                                        "description": "The shape of the port."
+                                    },
+                                    "width": {
+                                        "type": "number",
+                                        "description": "The width of the port."
+                                    },
+                                    "height": {
+                                        "type": "number",
+                                        "description": "The height of a ventilation or cable carrier port."
+                                    },
+                                    "diameter": {
+                                        "type": "number",
+                                        "description": "The diameter of a piping port."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "portIndex"
+                                ]
+                            }
                         },
                         "orientationDirection": {
                             "$ref": "#/Coordinate3D",
@@ -1715,16 +1973,16 @@ GS::ObjectState CreateMEPElementsCommand::Execute (const GS::ObjectState& parame
 
             if (typeStr == "Terminal") {
                 ACAPI::Result<TerminalDefault> terminalDefault = CreateTerminalDefault (domain.value ());
-                elements (PlaceMEPElementFromDefault (terminalDefault, defaults, coordinate, orientation));
+                elements (PlaceMEPElementFromDefault (terminalDefault, elementData, domain, defaults, coordinate, orientation));
             } else if (typeStr == "Accessory") {
                 ACAPI::Result<AccessoryDefault> accessoryDefault = CreateAccessoryDefault (domain.value ());
-                elements (PlaceMEPElementFromDefault (accessoryDefault, defaults, coordinate, orientation));
+                elements (PlaceMEPElementFromDefault (accessoryDefault, elementData, domain, defaults, coordinate, orientation));
             } else if (typeStr == "Fitting") {
                 ACAPI::Result<FittingDefault> fittingDefault = CreateFittingDefault (domain.value ());
-                elements (PlaceMEPElementFromDefault (fittingDefault, defaults, coordinate, orientation));
+                elements (PlaceMEPElementFromDefault (fittingDefault, elementData, domain, defaults, coordinate, orientation));
             } else {
                 ACAPI::Result<EquipmentDefault> equipmentDefault = CreateEquipmentDefault ();
-                elements (PlaceMEPElementFromDefault (equipmentDefault, defaults, coordinate, orientation));
+                elements (PlaceMEPElementFromDefault (equipmentDefault, elementData, domain, defaults, coordinate, orientation));
             }
         }
         return NoError;
