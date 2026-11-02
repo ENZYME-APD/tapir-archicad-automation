@@ -435,6 +435,10 @@ GS::Optional<GS::UniString> GetCurrentWindowTypeCommand::GetRawResponseSchema ()
         "properties": {
             "currentWindowType": {
                 "$ref": "#/WindowType"
+            },
+            "databaseId": {
+                "$ref": "#/DatabaseId",
+                "description": "The database shown in the current (active) window, the same id GetDatabases and GetContainingDatabases return. Pass it to ChangeWindow to bring this window back. Missing when the window has no database of its own that can be identified, for example a report, a rendering or a custom add-on window. The saved view (View Map item) the window was opened from is not returned: Archicad does not tell which one it was, and several saved views can show the same database."
             }
         },
         "additionalProperties": false,
@@ -538,12 +542,25 @@ static API_WindowTypeID ConvertStringToWindowType (GS::UniString typeStr)
 
 GS::ObjectState GetCurrentWindowTypeCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
-    API_WindowInfo windowInfo;
+    API_WindowInfo windowInfo = {};
     GSErrCode err = ACAPI_Window_GetCurrentWindow (&windowInfo);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to get the current window!");
     }
-    return GS::ObjectState ("currentWindowType", ConvertWindowTypeToString (windowInfo.typeID));
+    GS::ObjectState response ("currentWindowType", ConvertWindowTypeToString (windowInfo.typeID));
+
+    // The database of the active window, not the current database, which an earlier
+    // command may have switched (#1708). The floor plan and the 3D model are identified
+    // by their type, the other databases by their unique id; custom add-on windows only
+    // by an index, so they, and windows without a database (reports, renderings, ...),
+    // get no databaseId instead of a made-up one.
+    if (windowInfo.typeID != APIWind_MyDrawID && windowInfo.typeID != APIWind_MyTextID) {
+        const API_Guid databaseId = DatabaseIdResolver::Instance ().GetIdOfDatabase (windowInfo);
+        if (databaseId != APINULLGuid) {
+            response.Add ("databaseId", CreateGuidObjectState (databaseId));
+        }
+    }
+    return response;
 }
 
 GetCurrentWindowDrawingScaleCommand::GetCurrentWindowDrawingScaleCommand () :
