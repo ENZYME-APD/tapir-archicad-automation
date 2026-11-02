@@ -435,6 +435,10 @@ GS::Optional<GS::UniString> GetCurrentWindowTypeCommand::GetRawResponseSchema ()
         "properties": {
             "currentWindowType": {
                 "$ref": "#/WindowType"
+            },
+            "databaseId": {
+                "$ref": "#/DatabaseId",
+                "description": "The database shown in the current (active) window, the same id GetDatabases and GetContainingDatabases return. Pass it to ChangeWindow to bring this window back. Missing when the window has no database of its own that can be identified, for example a report, a rendering or a custom add-on window. The saved view (View Map item) the window was opened from is not returned: Archicad does not tell which one it was, and several saved views can show the same database."
             }
         },
         "additionalProperties": false,
@@ -444,7 +448,7 @@ GS::Optional<GS::UniString> GetCurrentWindowTypeCommand::GetRawResponseSchema ()
     })";
 }
 
-static GS::UniString ConvertWindowTypeToString (API_WindowTypeID type)
+GS::UniString ConvertWindowTypeToString (API_WindowTypeID type)
 {
     switch (type) {
         case APIWind_FloorPlanID: return "FloorPlan";
@@ -538,12 +542,25 @@ static API_WindowTypeID ConvertStringToWindowType (GS::UniString typeStr)
 
 GS::ObjectState GetCurrentWindowTypeCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
-    API_WindowInfo windowInfo;
+    API_WindowInfo windowInfo = {};
     GSErrCode err = ACAPI_Window_GetCurrentWindow (&windowInfo);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to get the current window!");
     }
-    return GS::ObjectState ("currentWindowType", ConvertWindowTypeToString (windowInfo.typeID));
+    GS::ObjectState response ("currentWindowType", ConvertWindowTypeToString (windowInfo.typeID));
+
+    // The database of the active window, not the current database, which an earlier
+    // command may have switched (#1708). The floor plan and the 3D model are identified
+    // by their type, the other databases by their unique id; custom add-on windows only
+    // by an index, so they, and windows without a database (reports, renderings, ...),
+    // get no databaseId instead of a made-up one.
+    if (windowInfo.typeID != APIWind_MyDrawID && windowInfo.typeID != APIWind_MyTextID) {
+        const API_Guid databaseId = DatabaseIdResolver::Instance ().GetIdOfDatabase (windowInfo);
+        if (databaseId != APINULLGuid) {
+            response.Add ("databaseId", CreateGuidObjectState (databaseId));
+        }
+    }
+    return response;
 }
 
 GetCurrentWindowDrawingScaleCommand::GetCurrentWindowDrawingScaleCommand () :
@@ -710,7 +727,7 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
             case API_MasterFolderNavItem:
             case API_SubSetNavItem:
             case API_FolderNavItem:
-                return CreateFailedExecutionResult (APIERR_BADPARS, "navigatorItemId must be a view or viewpoint; got a container or folder");
+                return CreateFailedExecutionResult (APIERR_BADPARS, "navigatorItemId must be a view or viewpoint; got a container or folder. To open the Session Report, pass windowType 'Report' instead.");
             default:
                 break;
         }
@@ -760,6 +777,21 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
         if (windowInfo.typeID == API_ZombieWindowID) {
             return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: windowType.");
         }
+    }
+
+    // The Session Report is not a database, so ACAPI_Window_ChangeWindow fails on it, even
+    // when its window is already open (#1707). It is opened with its own API function.
+    if (windowInfo.typeID == APIWind_ReportID && databaseId == nullptr && !parameters.Contains ("storyIndex")) {
+#if defined (ServerMainVers_2700)
+        const GSErrCode err = ACAPI_Dialog_ActivateSessionReport ();
+#elif defined (ServerMainVers_2600)
+        const GSErrCode err = ACAPI_Goodies (APIAny_ActivateSessionReportID);
+#else
+        const GSErrCode err = APIERR_NOTSUPPORTED;
+#endif
+        return err == NoError
+            ? CreateSuccessfulExecutionResult ()
+            : CreateErrorResponse (err, "Failed to activate the Session Report window.");
     }
 
     Int32 storyIndex = 0;
@@ -1083,6 +1115,93 @@ GS::ObjectState RebuildCurrentDatabaseCommand::Execute (const GS::ObjectState& /
 #else
     return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "RebuildCurrentDatabase requires Archicad 27 or later.");
 #endif
+}
+
+DeleteGhostRecordsCommand::DeleteGhostRecordsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeleteGhostRecordsCommand::GetName () const
+{
+    return "DeleteGhostRecords";
+}
+
+GS::Optional<GS::UniString> DeleteGhostRecordsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "databases": {
+                "$ref": "#/Databases",
+                "description": "The parent databases whose trace (ghost) record is deleted, as returned by GetDatabaseIdFromNavigatorItemId or GetContainingDatabases."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "databases"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteGhostRecordsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteGhostRecordsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> databases;
+    parameters.Get ("databases", databases);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& database : databases) {
+        const API_Guid databaseId = GetGuidFromDatabaseArrayItem (database);
+        if (databaseId == APINULLGuid) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "databaseId is corrupt or missing."));
+            continue;
+        }
+
+        API_DatabaseInfo dbInfo = DatabaseIdResolver::Instance ().GetDatabaseWithId (databaseId);
+        GSErrCode err = ACAPI_Window_GetDatabaseInfo (&dbInfo);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to resolve the database."));
+            continue;
+        }
+
+        API_GhostRecord ghostRecord {};
+        ghostRecord.parentDatabase = dbInfo.databaseUnId;
+        err = ACAPI_View_GetGhostRecord (&dbInfo.databaseUnId, &ghostRecord);
+        if (err == APIERR_WINDNOTEXIST) {
+            executionResults (CreateFailedExecutionResult (err, "The database has no trace reference."));
+            continue;
+        }
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to get the trace record of the database."));
+            continue;
+        }
+
+        // Deleting the ghost record is not undoable, so it is not wrapped in ACAPI_CallUndoableCommand.
+        err = ACAPI_View_DeleteGhostRecord (&ghostRecord);
+        executionResults (err == NoError
+            ? CreateSuccessfulExecutionResult ()
+            : CreateFailedExecutionResult (err, "Failed to delete the trace record of the database."));
+    }
+
+    return response;
 }
 
 
@@ -1495,6 +1614,240 @@ GS::ObjectState GetEditModeStateCommand::Execute (const GS::ObjectState& /*param
 #else
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetEditModeState requires Archicad 27 or later.");
 #endif
+}
+
+// ---------------------------------------------------------------------------
+// Archicad visibility, Action Center checks, redraw
+// ---------------------------------------------------------------------------
+
+GetArchicadVisibilityCommand::GetArchicadVisibilityCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetArchicadVisibilityCommand::GetName () const
+{
+    return "GetArchicadVisibility";
+}
+
+GS::Optional<GS::UniString> GetArchicadVisibilityCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "isVisible": {
+                "type": "boolean",
+                "description": "True when the Archicad application is shown, false when it is hidden."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "isVisible"
+        ]
+    })";
+}
+
+GS::ObjectState GetArchicadVisibilityCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#if defined (WINDOWS)
+    bool isShown = true;
+    const GSErrCode err = TAPIR_View_GetShowHideState (&isShown);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the visibility of Archicad.");
+    }
+    return GS::ObjectState ("isVisible", isShown);
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Supported on Windows only.");
+#endif
+}
+
+SetArchicadVisibilityCommand::SetArchicadVisibilityCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetArchicadVisibilityCommand::GetName () const
+{
+    return "SetArchicadVisibility";
+}
+
+GS::Optional<GS::UniString> SetArchicadVisibilityCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "isVisible": {
+                "type": "boolean",
+                "description": "True shows the Archicad application, false hides it."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "isVisible"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetArchicadVisibilityCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetArchicadVisibilityCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#if defined (WINDOWS)
+    bool isVisible = true;
+    if (!parameters.Get ("isVisible", isVisible)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing parameter: isVisible.");
+    }
+
+    const GSErrCode err = TAPIR_View_ChangeShowHideState (&isVisible);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, isVisible ? "Failed to show Archicad." : "Failed to hide Archicad.");
+    }
+    return CreateSuccessfulExecutionResult ();
+#else
+    (void) parameters;
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "Supported on Windows only.");
+#endif
+}
+
+RunActionCenterChecksCommand::RunActionCenterChecksCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RunActionCenterChecksCommand::GetName () const
+{
+    return "RunActionCenterChecks";
+}
+
+GS::Optional<GS::UniString> RunActionCenterChecksCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "checks": {
+                "type": "array",
+                "description": "The Action Center checks to run, in this order. Omitted means [\"Hotlinks\"]. \"Hotlinks\" is available on every Archicad version; \"All\", \"Libraries\", \"Drawings\" and \"Licenses\" only on Archicad 25, later versions return an error for them in their execution result.",
+                "items": {
+                    "type": "string",
+                    "enum": ["Hotlinks", "All", "Libraries", "Drawings", "Licenses"]
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> RunActionCenterChecksCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+static GS::Optional<API_ActionCenterItemID> ConvertStringToActionCenterItemID (const GS::UniString& checkName)
+{
+    // Always the named enumerator: Hotlinks is 1 on AC25 (after All) and 0 from AC26 on.
+    if (checkName == "Hotlinks") {
+        return APIActionCenterItem_Hotlinks;
+    }
+#ifndef ServerMainVers_2600
+    if (checkName == "All") {
+        return APIActionCenterItem_All;
+    }
+    if (checkName == "Libraries") {
+        return APIActionCenterItem_Libraries;
+    }
+    if (checkName == "Drawings") {
+        return APIActionCenterItem_Drawings;
+    }
+    if (checkName == "Licenses") {
+        return APIActionCenterItem_Licenses;
+    }
+#endif
+    return GS::NoValue;
+}
+
+GS::ObjectState RunActionCenterChecksCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> checks;
+    if (!parameters.Get ("checks", checks)) {
+        checks.Push ("Hotlinks");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::UniString& checkName : checks) {
+        const GS::Optional<API_ActionCenterItemID> itemId = ConvertStringToActionCenterItemID (checkName);
+        if (!itemId.HasValue ()) {
+            if (checkName == "All" || checkName == "Libraries" || checkName == "Drawings" || checkName == "Licenses") {
+                executionResults (CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "Not available on this Archicad version: " + checkName));
+            } else {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Invalid check: " + checkName));
+            }
+            continue;
+        }
+
+        // Returns only whether the check could run: the Action Center tab appears
+        // in Archicad when the check found an issue, the caller is not told.
+        const GSErrCode err = TAPIR_Window_ActionCenterCheck (itemId.Get ());
+        if (err == NoError) {
+            executionResults (CreateSuccessfulExecutionResult ());
+        } else if (err == APIERR_NOPLAN) {
+            executionResults (CreateFailedExecutionResult (err, "There is no open project."));
+        } else if (err == APIERR_REFUSEDCMD) {
+            executionResults (CreateFailedExecutionResult (err, "Refused to run the check because a modal dialog is open."));
+        } else {
+            executionResults (CreateFailedExecutionResult (err, "Failed to run the check: " + checkName));
+        }
+    }
+
+    return response;
+}
+
+RedrawCurrentDatabaseCommand::RedrawCurrentDatabaseCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RedrawCurrentDatabaseCommand::GetName () const
+{
+    return "RedrawCurrentDatabase";
+}
+
+GS::Optional<GS::UniString> RedrawCurrentDatabaseCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState RedrawCurrentDatabaseCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    const GSErrCode err = TAPIR_Database_RedrawCurrentDatabase ();
+    if (err == APIERR_NOPLAN) {
+        return CreateFailedExecutionResult (err, "There is no open project.");
+    }
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to redraw the current database.");
+    }
+    return CreateSuccessfulExecutionResult ();
 }
 
 // ---------------------------------------------------------------------------
@@ -2190,6 +2543,229 @@ GS::ObjectState GetPolygonFromUserCommand::Execute (const GS::ObjectState& param
 
 
 // ---------------------------------------------------------------------------
+// ModelToScreen / ScreenToModel
+// ---------------------------------------------------------------------------
+
+ModelToScreenCommand::ModelToScreenCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModelToScreenCommand::GetName () const
+{
+    return "ModelToScreen";
+}
+
+GS::Optional<GS::UniString> ModelToScreenCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "description": "Model coordinates in the current database (meters). In a 3D window they are projected with the current camera; in other windows z is disregarded.",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinates"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ModelToScreenCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "screenPoints": {
+                "type": "array",
+                "description": "One item per input coordinate, in the same order: the pixel position local to the current Archicad view window (not global desktop coordinates), or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "h": {
+                                    "type": "integer",
+                                    "description": "Horizontal pixel position from the left edge of the view window."
+                                },
+                                "v": {
+                                    "type": "integer",
+                                    "description": "Vertical pixel position from the top edge of the view window."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "h",
+                                "v"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "screenPoints"
+        ]
+    })";
+}
+
+GS::ObjectState ModelToScreenCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    // The documented route: ACAPI_View_ModelToScreen projects the model point into
+    // the current view, then ACAPI_View_CoordToPoint turns it into a pixel position.
+    // Both depend on the current window, its size, drawing scale and zoom.
+    GS::Array<GS::ObjectState> coordinates;
+    parameters.Get ("coordinates", coordinates);
+
+    GS::ObjectState response;
+    const auto& screenPoints = response.AddList<GS::ObjectState> ("screenPoints");
+    for (const GS::ObjectState& coordinateOS : coordinates) {
+        const API_Coord3D coord3D = Get3DCoordinateFromObjectState (coordinateOS);
+        API_Coord coord = {};
+        GSErrCode err = ACAPI_View_ModelToScreen (coord3D, coord);
+        if (err != NoError) {
+            screenPoints (CreateErrorResponse (err, "Failed to project the coordinate to the current view."));
+            continue;
+        }
+
+        API_Point point = {};
+        err = ACAPI_View_CoordToPoint (&coord, &point);
+        if (err != NoError) {
+            screenPoints (CreateErrorResponse (err, "Failed to convert the coordinate to a screen point."));
+            continue;
+        }
+
+        screenPoints (GS::ObjectState ("h", (Int32) point.h, "v", (Int32) point.v));
+    }
+
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Available from Archicad 29.");
+#endif
+}
+
+ScreenToModelCommand::ScreenToModelCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ScreenToModelCommand::GetName () const
+{
+    return "ScreenToModel";
+}
+
+GS::Optional<GS::UniString> ScreenToModelCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "screenPoints": {
+                "type": "array",
+                "description": "Pixel positions local to the current Archicad view window (not global desktop coordinates).",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "h": {
+                            "type": "integer",
+                            "description": "Horizontal pixel position from the left edge of the view window.",
+                            "minimum": -32768,
+                            "maximum": 32767
+                        },
+                        "v": {
+                            "type": "integer",
+                            "description": "Vertical pixel position from the top edge of the view window.",
+                            "minimum": -32768,
+                            "maximum": 32767
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "h",
+                        "v"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "screenPoints"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ScreenToModelCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "description": "One item per input screen point, in the same order: the 2D model coordinate in the current database (meters), or an error. This is a 2D mapping: it does not reconstruct a 3D point, and in a 3D window the result is not a point of the model.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "$ref": "#/Coordinate2D"
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinates"
+        ]
+    })";
+}
+
+GS::ObjectState ScreenToModelCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    // Depends on the current window, its size, drawing scale and zoom; several
+    // model coordinates can map to the same pixel.
+    GS::Array<GS::ObjectState> screenPointOSs;
+    parameters.Get ("screenPoints", screenPointOSs);
+
+    GS::ObjectState response;
+    const auto& coordinates = response.AddList<GS::ObjectState> ("coordinates");
+    for (const GS::ObjectState& screenPointOS : screenPointOSs) {
+        Int32 h = 0;
+        Int32 v = 0;
+        if (!screenPointOS.Get ("h", h) || !screenPointOS.Get ("v", v) ||
+            h < -32768 || h > 32767 || v < -32768 || v > 32767) {
+            coordinates (CreateErrorResponse (APIERR_BADPARS, "The screen point must have integer h and v between -32768 and 32767."));
+            continue;
+        }
+
+        API_Point point = {};
+        point.h = (short) h;
+        point.v = (short) v;
+        API_Coord coord = {};
+        const GSErrCode err = ACAPI_View_PointToCoord (&point, &coord);
+        if (err != NoError) {
+            coordinates (CreateErrorResponse (err, "Failed to convert the screen point to a model coordinate."));
+            continue;
+        }
+
+        coordinates (Create2DCoordinateObjectState (coord));
+    }
+
+    return response;
+}
+
+// ---------------------------------------------------------------------------
 // GetElementFromUser
 // ---------------------------------------------------------------------------
 
@@ -2316,6 +2892,38 @@ GS::ObjectState GetElementFromUserCommand::Execute (const GS::ObjectState& param
         }
         return response;
     }
+}
+
+GetDialogAutoCloseCommand::GetDialogAutoCloseCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetDialogAutoCloseCommand::GetName () const
+{
+    return "GetDialogAutoClose";
+}
+
+GS::Optional<GS::UniString> GetDialogAutoCloseCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "enabled": {
+                "type": "boolean",
+                "description": "Whether the dialog auto close is on: true while Archicad closes the dialogs it would show with their default button instead of waiting for the user. This is the same state SetDialogAutoClose writes."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "enabled"
+        ]
+    })";
+}
+
+GS::ObjectState GetDialogAutoCloseCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    return GS::ObjectState ("enabled", DGIsAutoCloseEnabled ());
 }
 
 SetDialogAutoCloseCommand::SetDialogAutoCloseCommand () :
