@@ -4,6 +4,7 @@
 #include "NativeImage.hpp"
 #include "MemoryOChannel32.hpp"
 #include "Base64Converter.hpp"
+#include "HashSet.hpp"
 
 #ifdef ServerMainVers_2800
 #include "ACAPI/IFCObjectAccessor.hpp"
@@ -11,6 +12,9 @@
 #endif
 
 #include <cmath>
+#include <map>
+#include <unordered_map>
+#include <unordered_set>
 #include <optional>
 #include <initializer_list>
 
@@ -235,7 +239,7 @@ GS::Optional<GS::UniString> GetAutoTextKeysCommand::GetInputParametersSchema () 
         "properties": {
             "elementId": {
                 "$ref": "#/ElementId",
-                "description": "Optional. The element to retrieve context dependent autotext keys for (its own properties, plus the ones common to all element types, e.g. 'Element ID', 'Area'). When omitted, only the autotext keys common to all element types are returned."
+                "description": "Optional. The element to retrieve context dependent autotext keys for (its own properties, plus the ones common to all element types, e.g. 'Element ID', 'Area'). When omitted, only the property based autotext keys common to all element types are returned. The other autotexts (Project Info, layout, drawing, date, ...) are returned either way."
             }
         },
         "additionalProperties": false
@@ -258,7 +262,7 @@ GS::Optional<GS::UniString> GetAutoTextKeysCommand::GetRawResponseSchema () cons
                         },
                         "key": {
                             "type": "string",
-                            "description": "The autotext's key. To embed it in the content of a Text or Label element, surround it with '<' and '>', e.g. '<PROPERTY-69A58F6F-DD3B-478D-B5EF-09A16BD0C548>'."
+                            "description": "The autotext's key. To embed it in the content of a Text or Label element, surround it with '<' and '>', e.g. '<PROJECTNAME>' or '<PROPERTY-69A58F6F-DD3B-478D-B5EF-09A16BD0C548>'."
                         }
                     },
                     "additionalProperties": false,
@@ -296,20 +300,50 @@ GS::ObjectState GetAutoTextKeysCommand::Execute (const GS::ObjectState& paramete
         return CreateErrorResponse (err, "Failed to retrieve the autotext keys.");
     }
 
+    // The property table only has the property based keys. The other autotexts (Project Info,
+    // layout, drawing, date, ...) come from the same list GetProjectInfoFields filters; its
+    // second item is the key that is embedded as '<KEY>' (e.g. 'PROJECTNAME').
+    GS::Array<GS::ArrayFB<GS::UniString, 3>> autoTexts;
+    err = ACAPI_AutoText_GetAutoTexts (&autoTexts, APIAutoText_All);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve the autotexts.");
+    }
+
     GS::ObjectState response;
     const auto& listAdder = response.AddList<GS::ObjectState> ("autoTextKeys");
+    GS::HashSet<GS::UniString> addedKeys;
+
+    for (const auto& autoText : autoTexts) {
+        const GS::UniString& autoTextKey = autoText[1];
+        if (autoTextKey.IsEmpty () || addedKeys.Contains (autoTextKey)) {
+            continue;
+        }
+        addedKeys.Add (autoTextKey);
+
+        GS::ObjectState keyData;
+        keyData.Add ("name", autoText[0]);
+        keyData.Add ("key", autoTextKey);
+        listAdder (keyData);
+    }
 
     // GS::HashTable's pair iterator hands out references from AC28 and pointers before
     // (GSRoot/HashTable.hpp: ConstCurrentPair::key is `const Key&` vs `const Key*`).
     for (const auto& keyPair : keyTable) {
-        GS::ObjectState keyData;
 #ifdef ServerMainVers_2800
-        keyData.Add ("name", keyPair.key);
-        keyData.Add ("key", keyPair.value);
+        const GS::UniString& name = keyPair.key;
+        const GS::UniString& key = keyPair.value;
 #else
-        keyData.Add ("name", *keyPair.key);
-        keyData.Add ("key", *keyPair.value);
+        const GS::UniString& name = *keyPair.key;
+        const GS::UniString& key = *keyPair.value;
 #endif
+        if (addedKeys.Contains (key)) {
+            continue;
+        }
+        addedKeys.Add (key);
+
+        GS::ObjectState keyData;
+        keyData.Add ("name", name);
+        keyData.Add ("key", key);
         listAdder (keyData);
     }
 
@@ -421,6 +455,120 @@ GS::ObjectState GetAutoTextNameCommand::Execute (const GS::ObjectState& paramete
     }
 
     return response;
+}
+
+GetNoteAutotextsCommand::GetNoteAutotextsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetNoteAutotextsCommand::GetName () const
+{
+    return "GetNoteAutotexts";
+}
+
+GS::Optional<GS::UniString> GetNoteAutotextsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "noteOwnerType": {
+                "$ref": "#/ElementType",
+                "description": "The type of the element that owns the note, e.g. 'Dimension', 'RadialDimension', 'LevelDimension' or 'AngleDimension'."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "noteOwnerType"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetNoteAutotextsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "noteAutotexts": {
+                "type": "array",
+                "description": "The autotexts available in the notes of the given owner type, in ascending order of autotextId.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "autotextId": {
+                            "type": "integer",
+                            "description": "The numeric value of the autotext's API_NoteAutotextID in the Archicad API."
+                        },
+                        "elementTypes": {
+                            "type": "array",
+                            "description": "The element types the autotext is available for.",
+                            "items": {
+                                "$ref": "#/ElementType"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "autotextId",
+                        "elementTypes"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "noteAutotexts"
+        ]
+    })";
+}
+
+GS::ObjectState GetNoteAutotextsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2600
+    GS::UniString noteOwnerTypeStr;
+    parameters.Get ("noteOwnerType", noteOwnerTypeStr);
+    const API_ElemTypeID noteOwnerTypeID = GetElementTypeFromNonLocalizedName (noteOwnerTypeStr);
+    if (noteOwnerTypeID == API_ZombieElemID) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid noteOwnerType.");
+    }
+
+    // dimAppear is left at its default (GS::NoValue).
+    std::unordered_map<API_NoteAutotextID, std::unordered_set<API_ElemType>> elemTypesForAutotextIDs;
+    const GSErrCode err = ACAPI_AutoText_GetNoteAutotexts (API_ElemType (noteOwnerTypeID), elemTypesForAutotextIDs);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve the note autotexts.");
+    }
+
+    // The map is unordered, so the autotexts are sorted by id, and element types that differ
+    // only in variation are listed once, so the output is stable.
+    std::map<Int32, GS::Array<GS::UniString>> elemTypeNamesForAutotextIDs;
+    for (const auto& autotextIdAndElemTypes : elemTypesForAutotextIDs) {
+        GS::Array<GS::UniString>& elemTypeNames = elemTypeNamesForAutotextIDs[static_cast<Int32> (autotextIdAndElemTypes.first)];
+        for (const API_ElemType& elemType : autotextIdAndElemTypes.second) {
+            const GS::UniString elemTypeName = GetElementTypeNonLocalizedName (elemType.typeID);
+            if (!elemTypeNames.Contains (elemTypeName)) {
+                elemTypeNames.Push (elemTypeName);
+            }
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& listAdder = response.AddList<GS::ObjectState> ("noteAutotexts");
+    for (const auto& autotextIdAndElemTypeNames : elemTypeNamesForAutotextIDs) {
+        GS::ObjectState noteAutotext;
+        noteAutotext.Add ("autotextId", autotextIdAndElemTypeNames.first);
+        const auto& elemTypesAdder = noteAutotext.AddList<GS::UniString> ("elementTypes");
+        for (const GS::UniString& elemTypeName : autotextIdAndElemTypeNames.second) {
+            elemTypesAdder (elemTypeName);
+        }
+        listAdder (noteAutotext);
+    }
+
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetNoteAutotexts needs Archicad 26 or later.");
+#endif
 }
 
 GetNoteAutoTextKeywordsCommand::GetNoteAutoTextKeywordsCommand () :
@@ -3798,6 +3946,211 @@ GS::ObjectState GetDimensionStandardsCommand::Execute (const GS::ObjectState& pa
 #endif
 }
 
+GetExportToleranceCommand::GetExportToleranceCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetExportToleranceCommand::GetName () const
+{
+    return "GetExportTolerance";
+}
+
+GS::Optional<GS::UniString> GetExportToleranceCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "arcTolerance": {
+                "type": "number",
+                "description": "The largest distance allowed between an arc and the straight segments that replace it when Archicad segments curves for export, in meters."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "arcTolerance"
+        ]
+    })";
+}
+
+GS::ObjectState GetExportToleranceCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    double arcDiff = 0.0;
+    const GSErrCode err = ACAPI_ProjectSetting_GetExportTolerance (&arcDiff);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the export tolerance.");
+    }
+
+    return GS::ObjectState ("arcTolerance", arcDiff);
+}
+
+static GS::Optional<GS::ObjectState> GetLast3DDefaultLevelsElemTypes (const GS::ObjectState& parameters, GS::Array<API_ElemTypeID>& typeIDs)
+{
+    GS::Array<GS::UniString> elementTypes;
+    parameters.Get ("elementTypes", elementTypes);
+    if (elementTypes.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "elementTypes must contain at least one element type.");
+    }
+
+    for (const GS::UniString& elementTypeStr : elementTypes) {
+        const API_ElemTypeID typeID = GetElementTypeFromNonLocalizedName (elementTypeStr);
+        if (typeID == API_ZombieElemID) {
+            return CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ()));
+        }
+        typeIDs.Push (typeID);
+    }
+    return {};
+}
+
+GetLast3DDefaultLevelsCommand::GetLast3DDefaultLevelsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetLast3DDefaultLevelsCommand::GetName () const
+{
+    return "GetLast3DDefaultLevels";
+}
+
+GS::Optional<GS::UniString> GetLast3DDefaultLevelsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementTypes": {
+                "type": "array",
+                "description": "The element types to get the last 3D default level of.",
+                "items": {
+                    "$ref": "#/ElementType"
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementTypes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetLast3DDefaultLevelsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "levels": {
+                "type": "array",
+                "description": "The last 3D default level of each element type, in the order of elementTypes, in meters.",
+                "items": {
+                    "type": "number"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "levels"
+        ]
+    })";
+}
+
+GS::ObjectState GetLast3DDefaultLevelsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<API_ElemTypeID> typeIDs;
+    const GS::Optional<GS::ObjectState> badInput = GetLast3DDefaultLevelsElemTypes (parameters, typeIDs);
+    if (badInput.HasValue ()) {
+        return *badInput;
+    }
+
+    GS::Array<double> levels;
+    const GSErrCode err = TAPIR_ProjectSetting_GetLast3DDefLevels (typeIDs, levels);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the last 3D default levels.");
+    }
+    if (levels.GetSize () != typeIDs.GetSize ()) {
+        return CreateErrorResponse (APIERR_GENERAL,
+            GS::UniString::Printf ("Archicad returned %u levels for %u element types.", levels.GetSize (), typeIDs.GetSize ()));
+    }
+
+    GS::ObjectState response;
+    const auto& levelsList = response.AddList<double> ("levels");
+    for (const double level : levels) {
+        levelsList (level);
+    }
+    return response;
+}
+
+SetLast3DDefaultLevelsCommand::SetLast3DDefaultLevelsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetLast3DDefaultLevelsCommand::GetName () const
+{
+    return "SetLast3DDefaultLevels";
+}
+
+GS::Optional<GS::UniString> SetLast3DDefaultLevelsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementTypes": {
+                "type": "array",
+                "description": "The element types to set the last 3D default level of.",
+                "items": {
+                    "$ref": "#/ElementType"
+                },
+                "minItems": 1
+            },
+            "levels": {
+                "type": "array",
+                "description": "The new last 3D default level of each element type, in the order of elementTypes, in meters.",
+                "items": {
+                    "type": "number"
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementTypes",
+            "levels"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetLast3DDefaultLevelsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetLast3DDefaultLevelsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<API_ElemTypeID> typeIDs;
+    const GS::Optional<GS::ObjectState> badInput = GetLast3DDefaultLevelsElemTypes (parameters, typeIDs);
+    if (badInput.HasValue ()) {
+        return CreateFailedExecutionResult (*badInput);
+    }
+
+    GS::Array<double> levels;
+    parameters.Get ("levels", levels);
+    if (levels.GetSize () != typeIDs.GetSize ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "levels must contain one level for each of elementTypes.");
+    }
+
+    const GSErrCode err = ACAPI_CallUndoableCommand ("Set Last 3D Default Levels", [&] () -> GSErrCode {
+        return TAPIR_ProjectSetting_SetLast3DDefLevels (typeIDs, levels);
+    });
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to set the last 3D default levels.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
 GS::ObjectState GetCalculationUnitsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
     API_CalcUnitPrefs unitPrefs = {};
@@ -6292,6 +6645,148 @@ GS::ObjectState GetHotlinkProxyElementTableCommand::Execute (const GS::ObjectSta
     }
 
     return response;
+}
+
+GetHotlinkSourceStatusCommand::GetHotlinkSourceStatusCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetHotlinkSourceStatusCommand::GetName () const
+{
+    return "GetHotlinkSourceStatus";
+}
+
+GS::Optional<GS::UniString> GetHotlinkSourceStatusCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinks": {
+                "type": "array",
+                "description": "The source files of hotlinks of the project, for example the location of each node GetHotlinks returns.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "location": {
+                            "type": "string",
+                            "description": "Absolute path of the hotlink's source file."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "location"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinks"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetHotlinkSourceStatusCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkSourceStatuses": {
+                "type": "array",
+                "description": "One item per requested hotlink, in order: the availability of its source file, or an error.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string",
+                                    "enum": [
+                                        "AuthCanceld",
+                                        "SourceMissing",
+                                        "SourceAvailable",
+                                        "SourceNotAccessible",
+                                        "SourceIncompatible",
+                                        "SourceOffline"
+                                    ],
+                                    "description": "The API_HotlinkSourceStatus value without its prefix (AuthCanceld is spelled as in the API)."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "status"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkSourceStatuses"
+        ]
+    })";
+}
+
+#ifdef ServerMainVers_2700
+static const char* GetHotlinkSourceStatusName (API_HotlinkSourceStatus status)
+{
+    switch (status) {
+        case API_HotlinkSource_AuthCanceld:         return "AuthCanceld";
+        case API_HotlinkSource_SourceMissing:       return "SourceMissing";
+        case API_HotlinkSource_SourceAvailable:     return "SourceAvailable";
+        case API_HotlinkSource_SourceNotAccessible: return "SourceNotAccessible";
+        case API_HotlinkSource_SourceIncompatible:  return "SourceIncompatible";
+        case API_HotlinkSource_SourceOffline:       return "SourceOffline";
+        default:                                    return nullptr;
+    }
+}
+#endif
+
+GS::ObjectState GetHotlinkSourceStatusCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> hotlinks;
+    parameters.Get ("hotlinks", hotlinks);
+
+    GS::ObjectState response;
+    const auto& hotlinkSourceStatuses = response.AddList<GS::ObjectState> ("hotlinkSourceStatuses");
+
+    for (const GS::ObjectState& hotlinkData : hotlinks) {
+        GS::UniString sourcePath;
+        if (!hotlinkData.Get ("location", sourcePath) || sourcePath.IsEmpty ()) {
+            hotlinkSourceStatuses (CreateErrorResponse (APIERR_BADPARS, "location is missing"));
+            continue;
+        }
+        const IO::Location sourceLocation (sourcePath);
+
+        API_HotlinkSourceStatus status = API_HotlinkSource_SourceMissing;
+        const GSErrCode err = ACAPI_Hotlink_GetHotlinkSourceStatus (&sourceLocation, &status);
+        if (err != NoError) {
+            hotlinkSourceStatuses (CreateErrorResponse (err, "Failed to get the status of the hotlink source " + sourcePath));
+            continue;
+        }
+        const char* statusName = GetHotlinkSourceStatusName (status);
+        if (statusName == nullptr) {
+            hotlinkSourceStatuses (CreateErrorResponse (APIERR_GENERAL, "Unknown hotlink source status of " + sourcePath));
+            continue;
+        }
+
+        GS::ObjectState item;
+        item.Add ("status", GS::UniString (statusName));
+        hotlinkSourceStatuses (item);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
 }
 
 #ifdef ServerMainVers_2700
