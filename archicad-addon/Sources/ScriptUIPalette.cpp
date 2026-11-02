@@ -303,6 +303,12 @@ GSErrCode ScriptUIPalette::PaletteControlCallBack (Int32, API_PaletteMessageID m
 {
     switch (messageID) {
         case APIPalMsg_OpenPalette:
+            // Archicad restores the palette when it was open at the last quit, but the page and the
+            // script that showed it are gone by then: only reopen a page shown in this session, so
+            // Archicad does not start with an empty palette. The instance only exists once
+            // ShowWithHTML ran.
+            if (!HasInstance ())
+                break;
             Instance ().Show ();
             break;
 

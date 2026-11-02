@@ -269,6 +269,31 @@ if holes:
     check('hole vertex count >= 4', True, len(hc) >= 4)
     check('hole vertex[0].x = 2.0', 2.0, hc and hc[0]['x'])
 
+# Omitting holes keeps them when only the outline changes
+OUTER_POLY_Z = [dict(c, z=0.1 * i) for i, c in enumerate(OUTER_POLY)]
+modify(elem_id, {'polygonCoordinates': OUTER_POLY_Z})
+d = get_details(elem_id)
+holes = d and d.get('details', {}).get('holes', [])
+check('outline only: holes count = 1', 1, holes and len(holes))
+coords = d and strip_closing(d.get('details', {}).get('polygonCoordinates', []))
+check('outline only: Z[3] = 0.3', 0.3, coords and len(coords) >= 4 and coords[3]['z'])
+
+# An empty holes array alone removes the holes and keeps the outline
+modify(elem_id, {'holes': []})
+d = get_details(elem_id)
+holes = d and d.get('details', {}).get('holes')
+check('holes [] only: holes count = 0', 0, len(holes) if holes is not None else 0)
+coords = d and strip_closing(d.get('details', {}).get('polygonCoordinates', []))
+check('holes [] only: Z[3] = 0.3', 0.3, coords and len(coords) >= 4 and coords[3]['z'])
+
+# Holes sent alone are added to the current outline
+modify(elem_id, {'holes': [{'polygonCoordinates': HOLE}]})
+d = get_details(elem_id)
+holes = d and d.get('details', {}).get('holes', [])
+check('holes only: holes count = 1', 1, holes and len(holes))
+coords = d and strip_closing(d.get('details', {}).get('polygonCoordinates', []))
+check('holes only: outline vertex[1].x = 8.0', 8.0, coords and len(coords) >= 2 and coords[1]['x'])
+
 # Supprimer le trou pour la suite
 modify(elem_id, {'polygonCoordinates': BASE_POLY, 'holes': []})
 print()

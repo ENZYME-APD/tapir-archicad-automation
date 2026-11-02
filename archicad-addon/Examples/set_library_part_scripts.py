@@ -12,7 +12,9 @@ response = aclib.RunTapirCommand ('SetLibraryPartScripts', {
             # Only the given scripts are changed; an empty string makes the 2D script empty.
             '3d': 'BLOCK A, B, ZZYZX\n',
             '2d': ''
-        }
+        },
+        # Deletes these script sections; a script cannot be both set and deleted.
+        'deleteScripts': ['backwardMigration']
     }]
 }, debug = False)
 print (response)

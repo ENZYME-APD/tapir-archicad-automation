@@ -34,6 +34,14 @@ namespace TapirGrasshopperPlugin.Components.DesignOptionsComponents
             OutGenericTree(
                 "DesignOptionGuids",
                 "Identifiers of the design options in each set (one branch per set).");
+
+            OutBooleans(
+                "IsEditable",
+                "Whether each design option set can be renamed, deleted or changed now (for example it is not reserved by someone else in Teamwork).");
+
+            OutTexts(
+                "NotEditableReasons",
+                "The reason why each design option set is not editable (empty when it is editable).");
         }
 
         protected override void Solve(
@@ -78,6 +86,14 @@ namespace TapirGrasshopperPlugin.Components.DesignOptionsComponents
             da.SetDataTree(
                 2,
                 tree);
+
+            da.SetDataList(
+                3,
+                sets.Select(s => s.IsEditable));
+
+            da.SetDataList(
+                4,
+                sets.Select(s => s.NotEditableError?.Message));
         }
 
         protected override System.Drawing.Bitmap Icon =>

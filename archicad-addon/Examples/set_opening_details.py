@@ -3,7 +3,7 @@ import aclib
 # SetOpeningDetails needs Archicad 29 or newer.
 openings = aclib.RunCommand ('API.GetElementsByType', { 'elementType': 'Opening' })['elements']
 
-# Makes every opening 0.1 wider and moves it by 0.5 along X.
+# Makes every opening 0.1 wider, cuts it through its whole parent element and moves it by 0.5 along X.
 openingDetails = aclib.RunTapirCommand ('GetOpeningDetails', {
         'elements': openings
     })['openings']
@@ -15,6 +15,7 @@ for opening in openingDetails:
     openingsWithDetails.append ({
         'elementId': opening['elementId'],
         'extrusionParameters': {
+            'limitType': 'Infinite',
             'width': opening['extrusionParameters']['width'] + 0.1
         },
         'transformation': [
