@@ -12,7 +12,9 @@ sourcePath = os.environ.get ('TAPIR_ATTRIBUTE_SOURCE')
 if not sourcePath:
     print ('Set TAPIR_ATTRIBUTE_SOURCE to the path of a project or template file.')
 else:
-    attributeTypes = ['Layer', 'Line', 'Fill', 'Composite', 'Surface', 'PenTable']
+    # Layer, Surface, BuildingMaterial and MEPSystem are not read from a file that is not open
+    # (they get an error item), so they are left out here.
+    attributeTypes = ['Line', 'Fill', 'Composite', 'LayerCombination', 'Profile', 'PenTable']
     result = aclib.RunTapirCommand ('GetAttributesFromProject', {
         'projectFilePath': sourcePath,
         'attributeTypes': attributeTypes
