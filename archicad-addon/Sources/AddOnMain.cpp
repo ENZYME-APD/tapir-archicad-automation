@@ -2881,7 +2881,7 @@ GSErrCode Initialize (void)
         );
 
         err |= RegisterCommand<CreateElementsFromAnalyticalMembersCommand> (
-            analyticalCommands, "1.7.3",
+            analyticalCommands, "1.7.4",
             "Creates elements (beams, columns, walls, slabs, roofs) from the given curve, surface or segmented surface members, in the form GetAnalyticalMemberDetails returns them, optionally with the settings of a favorite, in one undo step. Returns the new elements and, from Archicad 26, the mapping of their edges and vertices to member parts."
         );
         AddCommandGroup (analyticalCommands);
