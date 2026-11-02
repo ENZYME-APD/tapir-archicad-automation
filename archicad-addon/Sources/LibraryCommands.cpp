@@ -1659,6 +1659,60 @@ GS::ObjectState ReloadLibrariesCommand::Execute (const GS::ObjectState& /*parame
     return CreateSuccessfulExecutionResult ();
 }
 
+CheckLibrariesCommand::CheckLibrariesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CheckLibrariesCommand::GetName () const
+{
+    return "CheckLibraries";
+}
+
+GS::Optional<GS::UniString> CheckLibrariesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState CheckLibrariesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GSErrCode err = ACAPI_LibraryManagement_CheckLibraries ();
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to check libraries.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+ResetLibrariesCommand::ResetLibrariesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ResetLibrariesCommand::GetName () const
+{
+    return "ResetLibraries";
+}
+
+GS::Optional<GS::UniString> ResetLibrariesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState ResetLibrariesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GSErrCode err = ACAPI_LibraryManagement_ResetLibraries ();
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to reset libraries.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
 GetAvailableLibraryPartsCommand::GetAvailableLibraryPartsCommand () :
     CommandBase (CommonSchema::Used)
 {
