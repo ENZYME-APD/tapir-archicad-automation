@@ -2097,7 +2097,8 @@ GS::ObjectState GetGDLParametersOfLibraryPartsCommand::Execute (const GS::Object
         }
 
         API_LibPart libPart = {};
-        GS::ucscpy (libPart.docu_UName, libName.ToUStr ());
+        const USize maxNameLength = sizeof (libPart.docu_UName) / sizeof (libPart.docu_UName[0]) - 1;
+        GS::ucscpy (libPart.docu_UName, libName.ToUStr (0, GS::Min (libName.GetLength (), maxNameLength)).Get ());
         GSErrCode err = ACAPI_LibraryPart_Search (&libPart, false, true);
         delete libPart.location;
         if (err != NoError) {
