@@ -37,8 +37,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "How the changes are found between this state and another one. ModificationStamp (the default) " +
                 "compares the modification stamps of the elements, so any change counts. 3DModel compares the 3D " +
                 "model of the elements, so only a change that alters the 3D model counts, and capturing it " +
-                "generates the 3D model of the project. Context is the context based difference generator of the " +
-                "Archicad API. Two states can only be compared when they were captured with the same type.",
+                "generates the 3D model of the project. Two states can only be compared when they were captured " +
+                "with the same type.",
                 ElementStateTypes.ModificationStamp);
 
             SetOptionality(0);

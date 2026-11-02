@@ -16,14 +16,12 @@ namespace TapirGrasshopperPlugin.Types.Element
     {
         public const string ModificationStamp = "ModificationStamp";
         public const string Model3D = "3DModel";
-        public const string Context = "Context";
 
         // In the order of the command's enum; the first one is the default.
         public static readonly string[] All =
         {
             ModificationStamp,
-            Model3D,
-            Context
+            Model3D
         };
     }
 
