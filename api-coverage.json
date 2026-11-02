@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-02 07:08 UTC",
+ "generatedAt": "2026-11-02 09:36 UTC",
  "versions": [
   25,
   26,
@@ -12,9 +12,9 @@
   "not applicable": 627,
   "done": 1098,
   "claimed": 50,
-  "merged": 734,
-  "open": 72,
-  "in progress": 296,
+  "merged": 770,
+  "in progress": 263,
+  "open": 69,
   "skipped": 2
  },
  "items": [
@@ -1608,9 +1608,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_CreateElementFromCurveMember"
    ],
-   "status": "open",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1510,
+     "title": "[3/6] Create elements from analytical members"
+    }
+   ],
    "issues": []
   },
   {
@@ -1631,9 +1636,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_CreateElementFromSegmentedSurfaceMember"
    ],
-   "status": "open",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1510,
+     "title": "[3/6] Create elements from analytical members"
+    }
+   ],
    "issues": []
   },
   {
@@ -1654,9 +1664,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_CreateElementFromSurfaceMember"
    ],
-   "status": "open",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1510,
+     "title": "[3/6] Create elements from analytical members"
+    }
+   ],
    "issues": []
   },
   {
@@ -1982,12 +1997,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1503,
-     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2010,12 +2020,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1503,
-     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2038,12 +2043,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1503,
-     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2145,12 +2145,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1503,
-     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2252,12 +2247,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1503,
-     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2280,12 +2270,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1503,
-     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2302,12 +2287,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1503,
-     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2374,12 +2354,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1503,
-     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2401,12 +2376,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1503,
-     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2495,12 +2465,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1503,
-     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2545,12 +2510,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1503,
-     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2617,12 +2577,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1503,
-     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2672,12 +2627,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1503,
-     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2694,12 +2644,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1503,
-     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3248,20 +3193,12 @@
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     },
     {
-     "number": 975,
-     "title": "Add ModifyPens: change single pens of the active pen table"
-    },
-    {
      "number": 916,
      "title": "Add ActivateLayerCombination command and Grasshopper component"
     },
     {
      "number": 900,
      "title": "UpdateZones: optional list of Zones to update instead of the current selection"
-    },
-    {
-     "number": 899,
-     "title": "Zones: expose height, base offset, top link and floor thickness; add ModifyZones"
     }
    ],
    "issues": []
@@ -3286,10 +3223,6 @@
     {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    },
-    {
-     "number": 975,
-     "title": "Add ModifyPens: change single pens of the active pen table"
     }
    ],
    "issues": []
@@ -3475,12 +3408,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 975,
-     "title": "Add ModifyPens: change single pens of the active pen table"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3894,10 +3822,6 @@
     {
      "number": 1619,
      "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
-    },
-    {
-     "number": 975,
-     "title": "Add ModifyPens: change single pens of the active pen table"
     }
    ],
    "issues": []
@@ -4289,14 +4213,9 @@
    "olderNames": [
     "ACAPI_Element_GetNoteAutotexts"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1181,
-     "title": "Add GetNoteAutotexts command (ACAPI_AutoText_GetNoteAutotexts)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4594,16 +4513,7 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "add-on infrastructure",
-   "pullRequests": [
-    {
-     "number": 1286,
-     "title": "[4/4] Add DeleteFavoriteFolder command"
-    },
-    {
-     "number": 1257,
-     "title": "[2/4] Add CreateFavoriteFolder and RenameFavoriteFolder commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4678,8 +4588,8 @@
      "title": "[6/6] Add Get3DDocumentSettings and Set3DDocumentSettings"
     },
     {
-     "number": 1503,
-     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+     "number": 1510,
+     "title": "[3/6] Create elements from analytical members"
     },
     {
      "number": 1489,
@@ -4714,14 +4624,6 @@
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
     {
-     "number": 1282,
-     "title": "[3/4] Add MoveFavorites command (move Favorites into a folder by path)"
-    },
-    {
-     "number": 1178,
-     "title": "Add SetGraphicOverrideRuleGroupOrder command"
-    },
-    {
      "number": 1115,
      "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
     },
@@ -4742,32 +4644,16 @@
      "title": "[2/3] Project Info fields on Archicad 30: rename and move fields, create in a group, delete by field id"
     },
     {
-     "number": 1007,
-     "title": "Add GetURLReferencesOfElements and SetURLReferencesOfElements (element web links)"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
-    },
-    {
-     "number": 973,
-     "title": "Add ModifyRevisionIssues: change a revision issue's ID, description and custom scheme data"
     },
     {
      "number": 968,
      "title": "[1/3] Add Get/SetPropertyValuesOfElementDefaults"
     },
     {
-     "number": 956,
-     "title": "Add BreakHotlinkNodes and DeleteHotlinkNodes, report hotlink source status"
-    },
-    {
      "number": 912,
      "title": "Add ElevateElements command (vertical move)"
-    },
-    {
-     "number": 899,
-     "title": "Zones: expose height, base offset, top link and floor thickness; add ModifyZones"
     }
    ],
    "issues": [
@@ -5385,14 +5271,9 @@
    "olderNames": [
     "APIAny_GetCWAbsoluteBottomID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1087,
-     "title": "Add GetCurtainWallAbsoluteBottoms command"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6568,14 +6449,9 @@
    "olderNames": [
     "ACAPI_ElemDifferenceGenerator_GenerateDifference"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 965,
-     "title": "[1/2] Add element change tracking: CaptureElementState, GetElementChangesSince, ReleaseElementState"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6596,14 +6472,9 @@
    "olderNames": [
     "ACAPI_ElemDifferenceGenerator_GetState"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 965,
-     "title": "[1/2] Add element change tracking: CaptureElementState, GetElementChangesSince, ReleaseElementState"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6704,10 +6575,6 @@
     {
      "number": 1619,
      "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
-    },
-    {
-     "number": 975,
-     "title": "Add ModifyPens: change single pens of the active pen table"
     }
    ],
    "issues": []
@@ -6806,18 +6673,6 @@
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     },
     {
-     "number": 940,
-     "title": "Add ModifyCurtainWalls command"
-    },
-    {
-     "number": 899,
-     "title": "Zones: expose height, base offset, top link and floor thickness; add ModifyZones"
-    },
-    {
-     "number": 813,
-     "title": "Keep 2D GDL arrays intact on flat-list writes, apply Favorites to windows and doors, capture opening markers"
-    },
-    {
      "number": 463,
      "title": "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters"
     }
@@ -6910,14 +6765,9 @@
    "olderNames": [
     "APIDb_CreationOrderGetNextID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1161,
-     "title": "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1548,
@@ -6945,12 +6795,7 @@
    ],
    "status": "not applicable",
    "reason": "memory management (#1159)",
-   "pullRequests": [
-    {
-     "number": 1161,
-     "title": "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7057,12 +6902,7 @@
    ],
    "status": "not applicable",
    "reason": "builds an internal table, only useful inside the command that reads it (#1072)",
-   "pullRequests": [
-    {
-     "number": 1161,
-     "title": "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7930,24 +7770,12 @@
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     },
     {
-     "number": 940,
-     "title": "Add ModifyCurtainWalls command"
-    },
-    {
      "number": 918,
      "title": "Add the ModifyOpenings command"
     },
     {
-     "number": 899,
-     "title": "Zones: expose height, base offset, top link and floor thickness; add ModifyZones"
-    },
-    {
      "number": 834,
      "title": "SetGDLParametersOfElements: reject the mirrored size parameters of curtain wall frames"
-    },
-    {
-     "number": 813,
-     "title": "Keep 2D GDL arrays intact on flat-list writes, apply Favorites to windows and doors, capture opening markers"
     },
     {
      "number": 463,
@@ -8216,10 +8044,6 @@
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    },
-    {
-     "number": 813,
-     "title": "Keep 2D GDL arrays intact on flat-list writes, apply Favorites to windows and doors, capture opening markers"
     }
    ],
    "issues": []
@@ -8656,24 +8480,12 @@
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     },
     {
-     "number": 940,
-     "title": "Add ModifyCurtainWalls command"
-    },
-    {
      "number": 918,
      "title": "Add the ModifyOpenings command"
     },
     {
-     "number": 899,
-     "title": "Zones: expose height, base offset, top link and floor thickness; add ModifyZones"
-    },
-    {
      "number": 827,
      "title": "CreateZones refuses an overlapping zone instead of opening the modal warning (#822)"
-    },
-    {
-     "number": 813,
-     "title": "Keep 2D GDL arrays intact on flat-list writes, apply Favorites to windows and doors, capture opening markers"
     },
     {
      "number": 463,
@@ -9170,14 +8982,9 @@
    "olderNames": [
     "APIDb_GetElementURLRefID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1007,
-     "title": "Add GetURLReferencesOfElements and SetURLReferencesOfElements (element web links)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9326,20 +9133,12 @@
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
     {
-     "number": 1087,
-     "title": "Add GetCurtainWallAbsoluteBottoms command"
-    },
-    {
      "number": 1032,
      "title": "[2/4] Add GetHotspotsOfElements: the hotspots of elements with their neig kind and subindex"
     },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    },
-    {
-     "number": 1007,
-     "title": "Add GetURLReferencesOfElements and SetURLReferencesOfElements (element web links)"
     },
     {
      "number": 954,
@@ -9400,14 +9199,6 @@
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    },
-    {
-     "number": 940,
-     "title": "Add ModifyCurtainWalls command"
-    },
-    {
-     "number": 813,
-     "title": "Keep 2D GDL arrays intact on flat-list writes, apply Favorites to windows and doors, capture opening markers"
     },
     {
      "number": 463,
@@ -10047,20 +9838,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1279,
-     "title": "Add GetPropertyAvailabilityOfDefaults command (property availability and visibility of tool defaults)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1262,
-     "title": "Expose ACAPI_Element_IsPropertyDefinitionAvailableDefault / VisibleDefault"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Element_IsPropertyDefinitionValueEditable",
@@ -10171,20 +9952,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1279,
-     "title": "Add GetPropertyAvailabilityOfDefaults command (property availability and visibility of tool defaults)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1262,
-     "title": "Expose ACAPI_Element_IsPropertyDefinitionAvailableDefault / VisibleDefault"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Element_Merge_Elements",
@@ -10450,14 +10221,9 @@
    "olderNames": [
     "APIDb_SetElementURLRefID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1007,
-     "title": "Add GetURLReferencesOfElements and SetURLReferencesOfElements (element web links)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10971,10 +10737,6 @@
     {
      "number": 1712,
      "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    },
-    {
-     "number": 813,
-     "title": "Keep 2D GDL arrays intact on flat-list writes, apply Favorites to windows and doors, capture opening markers"
     }
    ],
    "issues": []
@@ -10997,12 +10759,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 813,
-     "title": "Keep 2D GDL arrays intact on flat-list writes, apply Favorites to windows and doors, capture opening markers"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11630,12 +11387,8 @@
      "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
     },
     {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
-    },
-    {
-     "number": 1503,
-     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+     "number": 1510,
+     "title": "[3/6] Create elements from analytical members"
     },
     {
      "number": 1011,
@@ -12016,12 +11769,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1178,
-     "title": "Add SetGraphicOverrideRuleGroupOrder command"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12040,12 +11788,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1178,
-     "title": "Add SetGraphicOverrideRuleGroupOrder command"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12143,14 +11886,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1178,
-     "title": "Add SetGraphicOverrideRuleGroupOrder command"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12230,20 +11968,10 @@
    "olderNames": [
     "ACAPI_ElementGroup_GetAllGroupedElems"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1266,
-     "title": "Add GetMainGroups, GetAllElementsOfGroups and GetAutoGroupMode commands"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1243,
-     "title": "Expose ACAPI_Grouping_GetMainGroupGuid / GetAllGroupedElems (+ IsAutoGroupOn)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Grouping_GetConnectedElements",
@@ -12290,10 +12018,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1266,
-     "title": "Add GetMainGroups, GetAllElementsOfGroups and GetAutoGroupMode commands"
-    },
-    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -12322,10 +12046,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1266,
-     "title": "Add GetMainGroups, GetAllElementsOfGroups and GetAutoGroupMode commands"
-    },
-    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -12350,20 +12070,10 @@
    "olderNames": [
     "APIAny_GetMainGroupGuidID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1266,
-     "title": "Add GetMainGroups, GetAllElementsOfGroups and GetAutoGroupMode commands"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1243,
-     "title": "Expose ACAPI_Grouping_GetMainGroupGuid / GetAllGroupedElems (+ IsAutoGroupOn)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Grouping_GetRootGroup",
@@ -12749,14 +12459,9 @@
    "olderNames": [
     "APIDb_BreakHotlinkNodeID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 956,
-     "title": "Add BreakHotlinkNodes and DeleteHotlinkNodes, report hotlink source status"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12805,14 +12510,9 @@
    "olderNames": [
     "APIDb_DeleteHotlinkNodeID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 956,
-     "title": "Add BreakHotlinkNodes and DeleteHotlinkNodes, report hotlink source status"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12908,10 +12608,6 @@
     {
      "number": 1115,
      "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    },
-    {
-     "number": 956,
-     "title": "Add BreakHotlinkNodes and DeleteHotlinkNodes, report hotlink source status"
     }
    ],
    "issues": []
@@ -18301,12 +17997,7 @@
    ],
    "status": "not applicable",
    "reason": "event handlers, not commands",
-   "pullRequests": [
-    {
-     "number": 965,
-     "title": "[1/2] Add element change tracking: CaptureElementState, GetElementChangesSince, ReleaseElementState"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -19180,10 +18871,6 @@
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
     {
-     "number": 1279,
-     "title": "Add GetPropertyAvailabilityOfDefaults command (property availability and visibility of tool defaults)"
-    },
-    {
      "number": 1238,
      "title": "Add GetPropertyEditability command (property value editability and visibility)"
     },
@@ -19654,18 +19341,9 @@
    "olderNames": [
     "APIEnv_GetRenderingSceneNamesID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1004,
-     "title": "Let PhotoRender set the image size and resolution, report the current rendering scene"
-    },
-    {
-     "number": 943,
-     "title": "[1/2] Add the GetRenderingScenes, SetCurrentRenderingScene and PhotoRender commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -19714,18 +19392,9 @@
    "olderNames": [
     "APIDo_PhotoRenderID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1004,
-     "title": "Let PhotoRender set the image size and resolution, report the current rendering scene"
-    },
-    {
-     "number": 943,
-     "title": "[1/2] Add the GetRenderingScenes, SetCurrentRenderingScene and PhotoRender commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -19746,18 +19415,9 @@
    "olderNames": [
     "APIEnv_SetCurrentRenderingSceneID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1004,
-     "title": "Let PhotoRender set the image size and resolution, report the current rendering scene"
-    },
-    {
-     "number": 943,
-     "title": "[1/2] Add the GetRenderingScenes, SetCurrentRenderingScene and PhotoRender commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -19778,14 +19438,9 @@
    "olderNames": [
     "APIDb_GetActualRenovationFilterID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 947,
-     "title": "[1/2] Add GetRenovationFilters and SetActiveRenovationFilter commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -19806,13 +19461,9 @@
    "olderNames": [
     "APIAny_GetRenovationFilterNameID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 947,
-     "title": "[1/2] Add GetRenovationFilters and SetActiveRenovationFilter commands"
-    },
     {
      "number": 837,
      "title": "Expose Drawing Manager data for Drawings and the renovation filter name of views"
@@ -19843,14 +19494,9 @@
    "olderNames": [
     "APIDb_GetRenovationFiltersID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 947,
-     "title": "[1/2] Add GetRenovationFilters and SetActiveRenovationFilter commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -19894,14 +19540,9 @@
    "olderNames": [
     "APIDb_SetActualRenovationFilterID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 947,
-     "title": "[1/2] Add GetRenovationFilters and SetActiveRenovationFilter commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -19985,14 +19626,9 @@
    "olderNames": [
     "APIDb_ChangeRVMIssueID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 973,
-     "title": "Add ModifyRevisionIssues: change a revision issue's ID, description and custom scheme data"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20179,14 +19815,9 @@
    "olderNames": [
     "APIDb_GetRVMIssueCustomSchemeID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 973,
-     "title": "Add ModifyRevisionIssues: change a revision issue's ID, description and custom scheme data"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20232,12 +19863,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 973,
-     "title": "Add ModifyRevisionIssues: change a revision issue's ID, description and custom scheme data"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -22295,20 +21921,10 @@
    "olderNames": [
     "APIDb_CoordToPointID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1236,
-     "title": "Add ModelToScreen and ScreenToModel commands"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1225,
-     "title": "Expose ACAPI_View_ModelToScreen / CoordToPoint / PointToCoord (model ↔ screen coordinates)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_View_Create3DStyle",
@@ -22799,20 +22415,10 @@
    "olderNames": [
     "APIEnv_IsAutoGroupOnID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1266,
-     "title": "Add GetMainGroups, GetAllElementsOfGroups and GetAutoGroupMode commands"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1243,
-     "title": "Expose ACAPI_Grouping_GetMainGroupGuid / GetAllGroupedElems (+ IsAutoGroupOn)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_View_IsAutoIntersectOn",
@@ -22872,20 +22478,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1236,
-     "title": "Add ModelToScreen and ScreenToModel commands"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1225,
-     "title": "Expose ACAPI_View_ModelToScreen / CoordToPoint / PointToCoord (model ↔ screen coordinates)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_View_PointToCoord",
@@ -22905,20 +22501,10 @@
    "olderNames": [
     "APIDb_PointToCoordID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1236,
-     "title": "Add ModelToScreen and ScreenToModel commands"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1225,
-     "title": "Expose ACAPI_View_ModelToScreen / CoordToPoint / PointToCoord (model ↔ screen coordinates)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_View_Rebuild",
@@ -23132,7 +22718,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1004,
+     "title": "Let PhotoRender set the image size and resolution, report the current rendering scene"
+    }
+   ],
    "issues": []
   },
   {
@@ -23883,10 +23474,6 @@
     {
      "number": 954,
      "title": "Add Get3DStyles and ShowElementsIn3D commands"
-    },
-    {
-     "number": 943,
-     "title": "[1/2] Add the GetRenderingScenes, SetCurrentRenderingScene and PhotoRender commands"
     }
    ],
    "issues": [
@@ -24008,36 +23595,12 @@
      "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
     },
     {
-     "number": 1236,
-     "title": "Add ModelToScreen and ScreenToModel commands"
-    },
-    {
-     "number": 1161,
-     "title": "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"
-    },
-    {
      "number": 1125,
      "title": "Add GetModelExtent command (ACAPI_Element_GetExtent3D)"
     },
     {
      "number": 1123,
      "title": "Add GetCoordinateOrigins command (virtual origin offset and user origin)"
-    },
-    {
-     "number": 1007,
-     "title": "Add GetURLReferencesOfElements and SetURLReferencesOfElements (element web links)"
-    },
-    {
-     "number": 973,
-     "title": "Add ModifyRevisionIssues: change a revision issue's ID, description and custom scheme data"
-    },
-    {
-     "number": 956,
-     "title": "Add BreakHotlinkNodes and DeleteHotlinkNodes, report hotlink source status"
-    },
-    {
-     "number": 947,
-     "title": "[1/2] Add GetRenovationFilters and SetActiveRenovationFilter commands"
     },
     {
      "number": 837,
@@ -24588,20 +24151,12 @@
      "title": "[1/6] Add GetGDLDate and SetGDLDate commands"
     },
     {
-     "number": 1266,
-     "title": "Add GetMainGroups, GetAllElementsOfGroups and GetAutoGroupMode commands"
-    },
-    {
      "number": 1004,
      "title": "Let PhotoRender set the image size and resolution, report the current rendering scene"
     },
     {
      "number": 954,
      "title": "Add Get3DStyles and ShowElementsIn3D commands"
-    },
-    {
-     "number": 943,
-     "title": "[1/2] Add the GetRenderingScenes, SetCurrentRenderingScene and PhotoRender commands"
     },
     {
      "number": 916,
@@ -24679,20 +24234,8 @@
      "title": "Add GetAllAutoTextKeys and InterpretAutoTexts commands"
     },
     {
-     "number": 1087,
-     "title": "Add GetCurtainWallAbsoluteBottoms command"
-    },
-    {
      "number": 1086,
      "title": "Add GetCalculatedParametersOfCurtainWallSubElements (ACAPI_CurtainWall_GetCWSubElemParams)"
-    },
-    {
-     "number": 947,
-     "title": "[1/2] Add GetRenovationFilters and SetActiveRenovationFilter commands"
-    },
-    {
-     "number": 837,
-     "title": "Expose Drawing Manager data for Drawings and the renovation filter name of views"
     }
    ],
    "issues": [
@@ -26632,10 +26175,6 @@
      "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
     },
     {
-     "number": 1114,
-     "title": "Design options: isEditable in the getters and CanMoveElementsToDesignOptions"
-    },
-    {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     },
@@ -26902,10 +26441,6 @@
      "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
     },
     {
-     "number": 1114,
-     "title": "Design options: isEditable in the getters and CanMoveElementsToDesignOptions"
-    },
-    {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     },
@@ -27100,10 +26635,6 @@
      "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
     },
     {
-     "number": 1114,
-     "title": "Design options: isEditable in the getters and CanMoveElementsToDesignOptions"
-    },
-    {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     },
@@ -27185,10 +26716,6 @@
      "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
     },
     {
-     "number": 1114,
-     "title": "Design options: isEditable in the getters and CanMoveElementsToDesignOptions"
-    },
-    {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     },
@@ -27228,20 +26755,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1114,
-     "title": "Design options: isEditable in the getters and CanMoveElementsToDesignOptions"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1111,
-     "title": "Expose the design option pre-checks (IsEditable, CanBeMovedToOtherDesignOption) so writes can explain why they would fail"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOption::SetId",
@@ -27333,10 +26850,6 @@
      "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
     },
     {
-     "number": 1114,
-     "title": "Design options: isEditable in the getters and CanMoveElementsToDesignOptions"
-    },
-    {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     },
@@ -27359,20 +26872,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1114,
-     "title": "Design options: isEditable in the getters and CanMoveElementsToDesignOptions"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1111,
-     "title": "Expose the design option pre-checks (IsEditable, CanBeMovedToOtherDesignOption) so writes can explain why they would fail"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionCombination::SetName",
@@ -27614,20 +27117,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1114,
-     "title": "Design options: isEditable in the getters and CanMoveElementsToDesignOptions"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1111,
-     "title": "Expose the design option pre-checks (IsEditable, CanBeMovedToOtherDesignOption) so writes can explain why they would fail"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionManager::CreateDesignOption",
@@ -28253,10 +27746,6 @@
      "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
     },
     {
-     "number": 1114,
-     "title": "Design options: isEditable in the getters and CanMoveElementsToDesignOptions"
-    },
-    {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     },
@@ -28279,20 +27768,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1114,
-     "title": "Design options: isEditable in the getters and CanMoveElementsToDesignOptions"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1111,
-     "title": "Expose the design option pre-checks (IsEditable, CanBeMovedToOtherDesignOption) so writes can explain why they would fail"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionSet::SetName",
@@ -29188,12 +28667,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -29397,12 +28871,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -29690,24 +29159,8 @@
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
     {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    },
-    {
-     "number": 1286,
-     "title": "[4/4] Add DeleteFavoriteFolder command"
-    },
-    {
-     "number": 1282,
-     "title": "[3/4] Add MoveFavorites command (move Favorites into a folder by path)"
-    },
-    {
-     "number": 1257,
-     "title": "[2/4] Add CreateFavoriteFolder and RenameFavoriteFolder commands"
     },
     {
      "number": 1237,
@@ -29724,10 +29177,6 @@
     {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
-    },
-    {
-     "number": 940,
-     "title": "Add ModifyCurtainWalls command"
     },
     {
      "number": 918,
@@ -29823,12 +29272,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -29944,12 +29388,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30009,10 +29448,6 @@
     {
      "number": 1711,
      "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
-    },
-    {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
     }
    ],
    "issues": []
@@ -30057,12 +29492,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30105,12 +29535,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30131,10 +29556,6 @@
     {
      "number": 1711,
      "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
-    },
-    {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
     }
    ],
    "issues": []
@@ -30622,12 +30043,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30831,12 +30247,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31393,12 +30804,24 @@
      "title": "Add Get2DBoundingBoxes: 2D boxes of texts, hatches, drawings and polylines on any database"
     },
     {
+     "number": 1641,
+     "title": "SetPropertyValueOfAttributes, clearer results of SetPropertyValuesOfAttributes (replaces #1365)"
+    },
+    {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
     {
      "number": 1535,
      "title": "[6/6] Add DeleteUserDataOfElements"
+    },
+    {
+     "number": 1365,
+     "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
+    },
+    {
+     "number": 1362,
+     "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
     },
     {
      "number": 1336,
@@ -31409,48 +30832,44 @@
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
     {
-     "number": 1286,
-     "title": "[4/4] Add DeleteFavoriteFolder command"
-    },
-    {
-     "number": 1282,
-     "title": "[3/4] Add MoveFavorites command (move Favorites into a folder by path)"
-    },
-    {
      "number": 1281,
      "title": "Add GetRoofPlanes: the single planes of multi-plane roofs"
     },
     {
-     "number": 1279,
-     "title": "Add GetPropertyAvailabilityOfDefaults command (property availability and visibility of tool defaults)"
-    },
-    {
-     "number": 1257,
-     "title": "[2/4] Add CreateFavoriteFolder and RenameFavoriteFolder commands"
+     "number": 1238,
+     "title": "Add GetPropertyEditability command (property value editability and visibility)"
     },
     {
      "number": 1237,
      "title": "Add ReadFavoritesFile command (ACAPI_Favorite_Read)"
     },
     {
-     "number": 1161,
-     "title": "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"
+     "number": 1147,
+     "title": "[2/4] Add CheckPropertyValues command (ACAPI_Property_IsValidValue)"
+    },
+    {
+     "number": 1146,
+     "title": "[1/4] Add CheckPropertyExpressions and GetPropertyExpressionReferences"
     },
     {
      "number": 1125,
      "title": "Add GetModelExtent command (ACAPI_Element_GetExtent3D)"
     },
     {
-     "number": 1087,
-     "title": "Add GetCurtainWallAbsoluteBottoms command"
-    },
-    {
      "number": 1032,
      "title": "[2/4] Add GetHotspotsOfElements: the hotspots of elements with their neig kind and subindex"
     },
     {
+     "number": 1019,
+     "title": "Add element component commands: list components and read their properties"
+    },
+    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    },
+    {
+     "number": 968,
+     "title": "[1/3] Add Get/SetPropertyValuesOfElementDefaults"
     },
     {
      "number": 963,
@@ -31619,10 +31038,6 @@
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
     {
-     "number": 1286,
-     "title": "[4/4] Add DeleteFavoriteFolder command"
-    },
-    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -31656,18 +31071,6 @@
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    },
-    {
-     "number": 1286,
-     "title": "[4/4] Add DeleteFavoriteFolder command"
-    },
-    {
-     "number": 1282,
-     "title": "[3/4] Add MoveFavorites command (move Favorites into a folder by path)"
-    },
-    {
-     "number": 1257,
-     "title": "[2/4] Add CreateFavoriteFolder and RenameFavoriteFolder commands"
     },
     {
      "number": 1237,
@@ -31752,14 +31155,6 @@
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    },
-    {
-     "number": 1286,
-     "title": "[4/4] Add DeleteFavoriteFolder command"
-    },
-    {
-     "number": 1257,
-     "title": "[2/4] Add CreateFavoriteFolder and RenameFavoriteFolder commands"
     },
     {
      "number": 1011,
@@ -31877,22 +31272,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1286,
-     "title": "[4/4] Add DeleteFavoriteFolder command"
-    },
-    {
-     "number": 1282,
-     "title": "[3/4] Add MoveFavorites command (move Favorites into a folder by path)"
-    },
-    {
-     "number": 1257,
-     "title": "[2/4] Add CreateFavoriteFolder and RenameFavoriteFolder commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1231,
@@ -31939,14 +31321,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1286,
-     "title": "[4/4] Add DeleteFavoriteFolder command"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1231,
@@ -32038,10 +31415,6 @@
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    },
-    {
-     "number": 1282,
-     "title": "[3/4] Add MoveFavorites command (move Favorites into a folder by path)"
     },
     {
      "number": 1011,
@@ -32177,14 +31550,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1282,
-     "title": "[3/4] Add MoveFavorites command (move Favorites into a folder by path)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1231,
@@ -32248,22 +31616,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1286,
-     "title": "[4/4] Add DeleteFavoriteFolder command"
-    },
-    {
-     "number": 1282,
-     "title": "[3/4] Add MoveFavorites command (move Favorites into a folder by path)"
-    },
-    {
-     "number": 1257,
-     "title": "[2/4] Add CreateFavoriteFolder and RenameFavoriteFolder commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1231,
@@ -32289,18 +31644,6 @@
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    },
-    {
-     "number": 1286,
-     "title": "[4/4] Add DeleteFavoriteFolder command"
-    },
-    {
-     "number": 1282,
-     "title": "[3/4] Add MoveFavorites command (move Favorites into a folder by path)"
-    },
-    {
-     "number": 1257,
-     "title": "[2/4] Add CreateFavoriteFolder and RenameFavoriteFolder commands"
     },
     {
      "number": 1011,
@@ -35335,10 +34678,6 @@
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     },
     {
-     "number": 975,
-     "title": "Add ModifyPens: change single pens of the active pen table"
-    },
-    {
      "number": 916,
      "title": "Add ActivateLayerCombination command and Grasshopper component"
     }
@@ -37159,10 +36498,6 @@
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
     {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
-    },
-    {
      "number": 1518,
      "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
     },
@@ -37239,10 +36574,6 @@
      "title": "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"
     },
     {
-     "number": 1161,
-     "title": "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"
-    },
-    {
      "number": 1032,
      "title": "[2/4] Add GetHotspotsOfElements: the hotspots of elements with their neig kind and subindex"
     },
@@ -37259,16 +36590,8 @@
      "title": "UpdateZones: optional list of Zones to update instead of the current selection"
     },
     {
-     "number": 899,
-     "title": "Zones: expose height, base offset, top link and floor thickness; add ModifyZones"
-    },
-    {
      "number": 837,
      "title": "Expose Drawing Manager data for Drawings and the renovation filter name of views"
-    },
-    {
-     "number": 828,
-     "title": "Expose the Drawing \"Include scale in Autotext and index\" flag in Get/SetDetailsOfElements"
     }
    ],
    "issues": []
@@ -38802,7 +38125,12 @@
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1724,
+     "title": "Add CreateMEPTakeOffs: place Take-Offs on routing segments (TakeOffDefault::Place)"
+    }
+   ]
   },
   {
    "id": "ACAPI::MEP::CreateTakeOffUIManager",
@@ -40495,10 +39823,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1291,
-     "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
    ],
    "issues": []
@@ -44721,10 +44045,6 @@
      "title": "[6/6] Add DeleteUserDataOfElements"
     },
     {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -44753,24 +44073,8 @@
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
     {
-     "number": 1286,
-     "title": "[4/4] Add DeleteFavoriteFolder command"
-    },
-    {
-     "number": 1282,
-     "title": "[3/4] Add MoveFavorites command (move Favorites into a folder by path)"
-    },
-    {
      "number": 1281,
      "title": "Add GetRoofPlanes: the single planes of multi-plane roofs"
-    },
-    {
-     "number": 1266,
-     "title": "Add GetMainGroups, GetAllElementsOfGroups and GetAutoGroupMode commands"
-    },
-    {
-     "number": 1257,
-     "title": "[2/4] Add CreateFavoriteFolder and RenameFavoriteFolder commands"
     },
     {
      "number": 1238,
@@ -44785,20 +44089,8 @@
      "title": "Add GetGDLParametersOfLibraryParts: default GDL parameters of a library part"
     },
     {
-     "number": 1181,
-     "title": "Add GetNoteAutotexts command (ACAPI_AutoText_GetNoteAutotexts)"
-    },
-    {
-     "number": 1161,
-     "title": "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"
-    },
-    {
      "number": 1094,
      "title": "Add GetAllAutoTextKeys and InterpretAutoTexts commands"
-    },
-    {
-     "number": 1087,
-     "title": "Add GetCurtainWallAbsoluteBottoms command"
     },
     {
      "number": 1086,
@@ -44833,24 +44125,12 @@
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     },
     {
-     "number": 975,
-     "title": "Add ModifyPens: change single pens of the active pen table"
-    },
-    {
      "number": 963,
      "title": "[1/2] Add the DeselectAll, GetMarquee and SetMarquee commands"
     },
     {
-     "number": 956,
-     "title": "Add BreakHotlinkNodes and DeleteHotlinkNodes, report hotlink source status"
-    },
-    {
      "number": 954,
      "title": "Add Get3DStyles and ShowElementsIn3D commands"
-    },
-    {
-     "number": 940,
-     "title": "Add ModifyCurtainWalls command"
     },
     {
      "number": 918,
@@ -44867,14 +44147,6 @@
     {
      "number": 900,
      "title": "UpdateZones: optional list of Zones to update instead of the current selection"
-    },
-    {
-     "number": 899,
-     "title": "Zones: expose height, base offset, top link and floor thickness; add ModifyZones"
-    },
-    {
-     "number": 828,
-     "title": "Expose the Drawing \"Include scale in Autotext and index\" flag in Get/SetDetailsOfElements"
     },
     {
      "number": 827,
@@ -49814,10 +49086,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1291,
-     "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
    ],
    "issues": []
@@ -50827,10 +50095,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1291,
-     "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
    ],
    "issues": []
@@ -50892,14 +50156,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1291,
-     "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50926,10 +50185,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1291,
-     "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
    ],
    "issues": []
@@ -52567,10 +51822,6 @@
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
     {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
-    },
-    {
      "number": 1518,
      "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
     },
@@ -52647,10 +51898,6 @@
      "title": "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"
     },
     {
-     "number": 1161,
-     "title": "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"
-    },
-    {
      "number": 1032,
      "title": "[2/4] Add GetHotspotsOfElements: the hotspots of elements with their neig kind and subindex"
     },
@@ -52667,16 +51914,8 @@
      "title": "UpdateZones: optional list of Zones to update instead of the current selection"
     },
     {
-     "number": 899,
-     "title": "Zones: expose height, base offset, top link and floor thickness; add ModifyZones"
-    },
-    {
      "number": 837,
      "title": "Expose Drawing Manager data for Drawings and the renovation filter name of views"
-    },
-    {
-     "number": 828,
-     "title": "Expose the Drawing \"Include scale in Autotext and index\" flag in Get/SetDetailsOfElements"
     }
    ],
    "issues": []
@@ -55377,10 +54616,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1291,
-     "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
    ],
    "issues": []
@@ -55562,10 +54797,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1291,
-     "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
    ],
    "issues": []
@@ -56101,10 +55332,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1291,
-     "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
    ],
    "issues": []
@@ -56243,10 +55470,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1291,
-     "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
    ],
    "issues": []
@@ -56755,10 +55978,6 @@
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
     {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
-    },
-    {
      "number": 1518,
      "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
     },
@@ -56835,10 +56054,6 @@
      "title": "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"
     },
     {
-     "number": 1161,
-     "title": "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"
-    },
-    {
      "number": 1032,
      "title": "[2/4] Add GetHotspotsOfElements: the hotspots of elements with their neig kind and subindex"
     },
@@ -56855,16 +56070,8 @@
      "title": "UpdateZones: optional list of Zones to update instead of the current selection"
     },
     {
-     "number": 899,
-     "title": "Zones: expose height, base offset, top link and floor thickness; add ModifyZones"
-    },
-    {
      "number": 837,
      "title": "Expose Drawing Manager data for Drawings and the renovation filter name of views"
-    },
-    {
-     "number": 828,
-     "title": "Expose the Drawing \"Include scale in Autotext and index\" flag in Get/SetDetailsOfElements"
     }
    ],
    "issues": []
@@ -58020,10 +57227,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1291,
-     "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
    ],
    "issues": []
@@ -58079,10 +57282,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1291,
-     "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
    ],
    "issues": []
@@ -63847,8 +63046,8 @@
      "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
     },
     {
-     "number": 1503,
-     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+     "number": 1510,
+     "title": "[3/6] Create elements from analytical members"
     },
     {
      "number": 1421,
@@ -63871,10 +63070,6 @@
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
     {
-     "number": 1279,
-     "title": "Add GetPropertyAvailabilityOfDefaults command (property availability and visibility of tool defaults)"
-    },
-    {
      "number": 1238,
      "title": "Add GetPropertyEditability command (property value editability and visibility)"
     },
@@ -63895,16 +63090,8 @@
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     },
     {
-     "number": 975,
-     "title": "Add ModifyPens: change single pens of the active pen table"
-    },
-    {
      "number": 968,
      "title": "[1/3] Add Get/SetPropertyValuesOfElementDefaults"
-    },
-    {
-     "number": 947,
-     "title": "[1/2] Add GetRenovationFilters and SetActiveRenovationFilter commands"
     },
     {
      "number": 916,
@@ -65130,10 +64317,6 @@
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    },
-    {
-     "number": 1279,
-     "title": "Add GetPropertyAvailabilityOfDefaults command (property availability and visibility of tool defaults)"
     },
     {
      "number": 1273,

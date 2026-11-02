@@ -1,16 +1,16 @@
 {
- "generatedAt": "2026-11-02 07:08 UTC",
+ "generatedAt": "2026-11-02 09:36 UTC",
  "counts": {
   "done": 303,
-  "merged": 252,
-  "open": 53,
-  "in progress": 1,
+  "merged": 260,
+  "open": 70,
+  "in progress": 7,
   "not applicable": 1
  },
  "parameters": {
-  "all": 507,
+  "all": 514,
   "partial": 4,
-  "json": 44
+  "json": 45
  },
  "items": [
   {
@@ -151,6 +151,36 @@
    "coveredParameters": [
     "prompt"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ModelToScreen",
+   "group": "Application Commands",
+   "version": "1.7.4",
+   "brief": "Converts model coordinates to pixel positions local to the current Archicad view window (not global desktop coordinates), using the current window's size, drawing scale and zoom. In a 3D window the coordinates are projected with the current camera; in other windows z is disregarded. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ScreenToModel",
+   "group": "Application Commands",
+   "version": "1.7.4",
+   "brief": "Converts pixel positions local to the current Archicad view window to 2D model coordinates of the current database, using the current window's size, drawing scale and zoom. It is a 2D mapping: it does not reconstruct a 3D point, and several model coordinates can map to the same pixel.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -947,6 +977,21 @@
    "issues": []
   },
   {
+   "id": "GetNoteAutotexts",
+   "group": "Project Commands",
+   "version": "1.7.4",
+   "brief": "Retrieves the autotexts available in the notes of an element type (e.g. a Dimension), each with the element types it is available for. The autotexts are identified by the numeric value of their API_NoteAutotextID. Needs Archicad 26 or later.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetNoteAutoTextKeywords",
    "group": "Project Commands",
    "version": "1.7.3",
@@ -1100,6 +1145,52 @@
     "hotlinkNodes",
     "hotlinkNodes.hotlinkNodeId",
     "hotlinkNodes.sourceLocation"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "BreakHotlinkNodes",
+   "group": "Project Commands",
+   "version": "1.7.4",
+   "brief": "Breaks hotlink nodes, as the Hotlink Manager's Break Hotlink does: the elements of each node's placed instances stay in the project as ordinary elements, no longer tied to the source file.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "BreakHotlinkNodesComponent",
+     "path": "Components/ProjectComponents/BreakHotlinkNodesComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "hotlinkNodes",
+    "hotlinkNodes.hotlinkNodeId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "DeleteHotlinkNodes",
+   "group": "Project Commands",
+   "version": "1.7.4",
+   "brief": "Deletes hotlink nodes together with their placed instances, as the Hotlink Manager's Delete does.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "DeleteHotlinkNodesComponent",
+     "path": "Components/ProjectComponents/DeleteHotlinkNodesComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "hotlinkNodes",
+    "hotlinkNodes.hotlinkNodeId"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -1354,6 +1445,66 @@
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "GetRenderingScenes",
+   "group": "Project Commands",
+   "version": "1.7.4",
+   "brief": "Gets the names of the rendering scenes of the project, as the Scene list of the PhotoRendering Settings palette shows them.",
+   "status": "in progress",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1022,
+     "title": "[2/2] Add Grasshopper components for GetRenderingScenes, SetCurrentRenderingScene and PhotoRender"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "SetCurrentRenderingScene",
+   "group": "Project Commands",
+   "version": "1.7.4",
+   "brief": "Makes the given rendering scene the current one, as selecting it in the PhotoRendering Settings palette does.",
+   "status": "in progress",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1022,
+     "title": "[2/2] Add Grasshopper components for GetRenderingScenes, SetCurrentRenderingScene and PhotoRender"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "PhotoRender",
+   "group": "Project Commands",
+   "version": "1.7.4",
+   "brief": "Renders the 3D model with the current rendering scene, or with the given one, as Document > Creative Imaging > PhotoRender Projection does, and saves the image to a file (png, jpg, bmp, tiff or gif). The image size and quality come from the scene.",
+   "status": "in progress",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1022,
+     "title": "[2/2] Add Grasshopper components for GetRenderingScenes, SetCurrentRenderingScene and PhotoRender"
     }
    ],
    "issues": []
@@ -1980,6 +2131,66 @@
    "issues": []
   },
   {
+   "id": "CaptureElementState",
+   "group": "Element Commands",
+   "version": "1.7.4",
+   "brief": "Captures the current state of the elements of the project and returns a stateId for it, so that GetElementChangesSince can later list what was created, modified and deleted since. The optional type selects how changes are detected (modification stamps by default, or the 3D model). The state is kept in a file in the temporary folder for the Archicad session only: it is lost when the project is closed or Archicad restarts, and ReleaseElementState frees it earlier.",
+   "status": "in progress",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1034,
+     "title": "[2/2] Add Grasshopper components for element change tracking"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "GetElementChangesSince",
+   "group": "Element Commands",
+   "version": "1.7.4",
+   "brief": "Returns the new, modified and deleted elements between a state captured by CaptureElementState and either another captured state (toStateId) or the current state of the project. Scripts that keep an external copy of the model use it to sync only what changed instead of re-reading every element. Fails for a stateId that is unknown - never captured, released, or lost because the project was closed or Archicad restarted.",
+   "status": "in progress",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1034,
+     "title": "[2/2] Add Grasshopper components for element change tracking"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "ReleaseElementState",
+   "group": "Element Commands",
+   "version": "1.7.4",
+   "brief": "Frees a state captured by CaptureElementState. Every state is freed anyway when the project is closed or Archicad quits.",
+   "status": "in progress",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1034,
+     "title": "[2/2] Add Grasshopper components for element change tracking"
+    }
+   ],
+   "issues": []
+  },
+  {
    "id": "GetElementTypeNames",
    "group": "Element Commands",
    "version": "1.7.3",
@@ -1997,6 +2208,21 @@
    "coveredParameters": [
     "elementTypes"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetElementsInCreationOrder",
+   "group": "Element Commands",
+   "version": "1.7.4",
+   "brief": "Returns the identifier of every element of the current database, or of the given databases, in the order the elements were created.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -2521,6 +2747,21 @@
     "elements",
     "structureDisplay"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetCurtainWallAbsoluteBottoms",
+   "group": "Element Commands",
+   "version": "1.7.4",
+   "brief": "Gets the absolute bottom level of curtain walls or their subelements (segments, frames, panels, junctions, accessories). The output is aligned with the input array of elements.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -3521,6 +3762,36 @@
     "elementsWithMarkerParameters.markerParameters.name",
     "elementsWithMarkerParameters.markerParameters.value"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetURLReferencesOfElements",
+   "group": "Element Commands",
+   "version": "1.7.4",
+   "brief": "Gets the web link (URL reference) of the given elements: a URL with a description, shown in Archicad in the element's settings under Element Information > Link. An element without a link gets the error APIERR_NOUSERDATA.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetURLReferencesOfElements",
+   "group": "Element Commands",
+   "version": "1.7.4",
+   "brief": "Sets the web link (URL reference) of the given elements: a URL with a description, shown in Archicad in the element's settings under Element Information > Link. Fails with APIERR_MOREUSER for an element that already holds a link.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 4,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -4569,12 +4840,14 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 13,
+   "parameterCount": 18,
    "coveredParameters": [
     "zonesData",
+    "zonesData.bottomOffset",
     "zonesData.categoryAttributeId",
     "zonesData.favoriteName",
     "zonesData.geometry",
+    "zonesData.height",
     "zonesData.name",
     "zonesData.numberStr",
     "zonesData.stampPosition"
@@ -4584,8 +4857,11 @@
     "zonesData.coverFill",
     "zonesData.fixedStampAngle",
     "zonesData.floorIndex",
+    "zonesData.floorThickness",
     "zonesData.id",
-    "zonesData.stampAngle"
+    "zonesData.relativeTopStory",
+    "zonesData.stampAngle",
+    "zonesData.topOffset"
    ],
    "pullRequests": [],
    "issues": []
@@ -5716,6 +5992,37 @@
    "issues": []
   },
   {
+   "id": "ModifyCurtainWalls",
+   "group": "Element Commands",
+   "version": "1.7.4",
+   "brief": "Modifies Curtain Wall elements in place, keeping their GUID, properties and classifications: the height, the bottom elevation and story, the reference line (with the same number of segments), and the column (primary) and row (secondary) pattern with its cell assignments, in the fields of CreateCurtainWalls.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "ModifyCurtainWallsComponent",
+     "path": "Components/ElementsComponents/ModifyCurtainWallsComponent.cs"
+    }
+   ],
+   "parameters": "json",
+   "parameterCount": 9,
+   "coveredParameters": [
+    "curtainWallsWithDetails",
+    "curtainWallsWithDetails.coordinates",
+    "curtainWallsWithDetails.elementId",
+    "curtainWallsWithDetails.floorIndex",
+    "curtainWallsWithDetails.height",
+    "curtainWallsWithDetails.zCoordinate"
+   ],
+   "missingParameters": [
+    "curtainWallsWithDetails.cells",
+    "curtainWallsWithDetails.primaryPattern",
+    "curtainWallsWithDetails.secondaryPattern"
+   ],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "ChangeTextContent",
    "group": "Element Commands",
    "version": "1.7.4",
@@ -5737,6 +6044,21 @@
     "contentChanges.from",
     "contentChanges.range"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ModifyZones",
+   "group": "Element Commands",
+   "version": "1.7.4",
+   "brief": "Modifies Zone elements: name, number, category, zone stamp, height, base offset, top link and floor thickness. Only the given fields are changed; the polygon is kept.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 13,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -6015,6 +6337,51 @@
    "coveredParameters": [
     "groups"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetMainGroups",
+   "group": "Element grouping Commands",
+   "version": "1.7.4",
+   "brief": "Gets the top level group of each given group. A group that is not nested in another group is its own top level group.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetAllElementsOfGroups",
+   "group": "Element grouping Commands",
+   "version": "1.7.4",
+   "brief": "Gets all the elements of each given group, including the elements of its nested groups.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetAutoGroupMode",
+   "group": "Element grouping Commands",
+   "version": "1.7.4",
+   "brief": "Gets the current state of the Auto Group mode.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -6385,7 +6752,7 @@
    "id": "ApplyFavoritesToElements",
    "group": "Favorites Commands",
    "version": "1.5.4",
-   "brief": "Apply the given favorites to existing elements. Only settings-type parameters are changed - geometry (position, floor, and dimensions such as a Wall's height) is left untouched, so applying a Favorite never moves or resizes the target element. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. By default settings, classifications, categories and properties are all applied; each can be opted out of individually. keepFields lists fields of the target (its ID, layer, an opening's width, height and sill height, a Wall's reference line location, height and top link) that are copied back after the Favorite has been applied, so that e.g. only the library part or the wall type changes.",
+   "brief": "Apply the given favorites to existing elements. Only settings-type parameters are changed - geometry (position, floor, and dimensions such as a Wall's height) is left untouched, so applying a Favorite never moves the target element. A Window or Door keeps its wall, marker and placement, and takes the Favorite's library part and parameters, size included. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. By default settings, classifications, categories and properties are all applied; each can be opted out of individually. keepFields lists fields of the target (its ID, layer, an opening's width, height and sill height, a Wall's reference line location, height and top link) that are copied back after the Favorite has been applied, so that e.g. only the library part or the wall type changes.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6491,6 +6858,51 @@
    ],
    "parameters": "all",
    "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "CreateFavoriteFolder",
+   "group": "Favorites Commands",
+   "version": "1.7.4",
+   "brief": "Creates a folder in the Favorites palette, in the parent folder given by its path. Returns the new folder. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "RenameFavoriteFolder",
+   "group": "Favorites Commands",
+   "version": "1.7.4",
+   "brief": "Renames a folder of the Favorites palette given by its path. The root folder cannot be renamed. Returns the renamed folder. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "DeleteFavoriteFolder",
+   "group": "Favorites Commands",
+   "version": "1.7.4",
+   "brief": "Deletes a folder of the Favorites palette given by its path. Archicad deletes the folder's Favorites and subfolders with it, so a folder that is not empty is deleted only if recursive is true. The root folder cannot be deleted. Returns the deleted folder. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
@@ -6632,6 +7044,21 @@
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
+   "issues": []
+  },
+  {
+   "id": "MoveFavorites",
+   "group": "Favorites Commands",
+   "version": "1.7.4",
+   "brief": "Moves Favorites given by their names into a folder of the Favorites palette given by its path. Returns an execution result for each Favorite. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7082,6 +7509,21 @@
     "propertyId",
     "propertyValue"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetPropertyAvailabilityOfDefaults",
+   "group": "Property Commands",
+   "version": "1.7.4",
+   "brief": "Tells whether the given properties are available and whether they are visible in the current tool default of an element type, before creating new elements. It checks the native tool default only, not a Favorite that is not applied. Unknown properties are reported as errors, not as unavailable. Available from Archicad 26.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -8051,6 +8493,29 @@
    "issues": []
   },
   {
+   "id": "ModifyPens",
+   "group": "Attribute Commands",
+   "version": "1.7.2",
+   "brief": "Changes the color, width and description of single pens of the Pen Table in effect for the model views (the default) or the layouts, keeping every other pen as it is. Only the given fields of a listed pen are changed. In a Teamwork project the PenTables lockable object set must be reserved first (see ReserveLockableObjectSet).",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "ModifyPensComponent",
+     "path": "Components/AttributesComponents/ModifyPensComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "pens",
+    "target"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "CreateProfiles",
    "group": "Attribute Commands",
    "version": "1.5.4",
@@ -8889,6 +9354,21 @@
     "moveRulesToGroup",
     "ruleGroupNames"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetGraphicOverrideRuleGroupOrder",
+   "group": "Attribute Commands",
+   "version": "1.7.4",
+   "brief": "Sets the order of the graphic override rule groups, found by name. The groups not listed keep their order and follow the listed ones. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -10765,6 +11245,59 @@
    "issues": []
   },
   {
+   "id": "GetRenovationFilters",
+   "group": "Navigator Commands",
+   "version": "1.7.4",
+   "brief": "Gets the renovation filters of the project, and the one the current window uses (Document > Renovation > Renovation Filter). A renovationFilterId has the same shape as the renovationFilterGuid of GetViewSettings and SetViewSettings, so a filter listed here can be set on saved views too.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "GetRenovationFiltersComponent",
+     "path": "Components/NavigatorComponents/GetRenovationFiltersComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "SetActiveRenovationFilter",
+   "group": "Navigator Commands",
+   "version": "1.7.4",
+   "brief": "Sets the renovation filter of the current window (Document > Renovation > Renovation Filter), given by its renovationFilterId from GetRenovationFilters or by its name. Saved views keep their own filter: change that with SetViewSettings.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "SetActiveRenovationFilterComponent",
+     "path": "Components/NavigatorComponents/SetActiveRenovationFilterComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "name",
+    "renovationFilterId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
+   "issues": []
+  },
+  {
    "id": "GetGhostStorySettings",
    "group": "Navigator Commands",
    "version": "1.7.4",
@@ -12159,6 +12692,35 @@
    "issues": []
   },
   {
+   "id": "ModifyRevisionIssues",
+   "group": "Revision Management Commands",
+   "version": "1.7.4",
+   "brief": "Modifies the ID, the short description and the custom scheme data of the given revision issues. Only the given fields are changed. Issued revision issues may refuse the change.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "ModifyRevisionIssuesComponent",
+     "path": "Components/RevisionComponents/ModifyRevisionIssuesComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 8,
+   "coveredParameters": [
+    "revisionIssues",
+    "revisionIssues.customSchemeData",
+    "revisionIssues.customSchemeData.customSchemeKey",
+    "revisionIssues.customSchemeData.customSchemeName",
+    "revisionIssues.customSchemeData.customSchemeValue",
+    "revisionIssues.description",
+    "revisionIssues.id",
+    "revisionIssues.revisionIssueId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetRevisionChanges",
    "group": "Revision Management Commands",
    "version": "1.1.9",
@@ -12777,6 +13339,28 @@
    "issues": []
   },
   {
+   "id": "CanMoveElementsToDesignOptions",
+   "group": "Design Options Commands",
+   "version": "1.7.4",
+   "brief": "Checks whether the given elements can be moved to another design option or to the main model, with the reason when they cannot. Available from Archicad 29.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "CanMoveElementsToDesignOptionsComponent",
+     "path": "Components/DesignOptionsComponents/CanMoveElementsToDesignOptionsComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "DuplicateDesignOptionCombinations",
    "group": "Design Options Commands",
    "version": "1.7.3",
@@ -13258,7 +13842,7 @@
    "id": "GetMEPPorts",
    "group": "MEP Commands",
    "version": "1.5.6",
-   "brief": "Retrieves the ports of the given MEP elements including position, shape, size, connection status and connection style (from Archicad 30), the flow direction of piping and ventilation ports and the nominal size of piping ports (from Archicad 30). Available from Archicad 28.",
+   "brief": "Retrieves the ports of the given MEP elements including position, shape, size, connection status and connection style (from Archicad 30), the flow direction of piping and ventilation ports, the nominal size of piping ports (from Archicad 30), and the outer diameter, wall thickness and flange size (Archicad 30) of piping and ventilation ports. Available from Archicad 28.",
    "status": "done",
    "reason": "",
    "components": [
