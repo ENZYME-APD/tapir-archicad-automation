@@ -6,12 +6,15 @@
 #include "ProfileAdditionalInfo.hpp"
 #include "VectorImageIterator.hpp"
 #include "FileSystem.hpp"
+#include "UserDataPairs.hpp"
 #ifdef ServerMainVers_2700
 #include "ADBAttributeIndex.hpp"
 #endif
 #ifdef ServerMainVers_3000
 #include <optional>
 #endif
+#include <cstdlib>
+#include <limits>
 
 // Before AC27, API_AttributeIndex is a plain integer typedef with no IsPositive() method; AC27+ replaced it with
 // a class. Kept local (rather than in the shared MigrationHelper shim) since it is only used in this file.
@@ -263,7 +266,7 @@ GS::Optional<GS::UniString> GetAttributesFromProjectCommand::GetInputParametersS
             },
             "attributeTypes": {
                 "type": "array",
-                "description": "The attribute types to read.",
+                "description": "The attribute types to read. Layer, Surface, BuildingMaterial and MEPSystem cannot be read from a file that is not open; they get an error item.",
                 "items": {
                     "$ref": "#/AttributeType"
                 },
@@ -327,6 +330,20 @@ GS::Optional<GS::UniString> GetAttributesFromProjectCommand::GetRawResponseSchem
     })";
 }
 
+#ifdef ServerMainVers_2700
+// ACAPI_Attribute_GetAttributesFromProject returns NoError and an empty list for these types
+// (tested on Archicad 29 with .pln and .tpl files that contain them, see #1582), so an empty list of
+// one of them means "not read", not "the file has none". A non-empty list is still passed through,
+// in case an Archicad version reads them.
+static bool IsNotReadFromProjectFileWhenEmpty (API_AttrTypeID typeID)
+{
+    return typeID == API_LayerID ||
+        typeID == API_MaterialID ||
+        typeID == API_BuildingMaterialID ||
+        typeID == API_MEPSystemID;
+}
+#endif
+
 GS::ObjectState GetAttributesFromProjectCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2700
@@ -380,6 +397,9 @@ GS::ObjectState GetAttributesFromProjectCommand::Execute (const GS::ObjectState&
         if (err != NoError) {
             attributesByType (CreateErrorResponse (err,
                 GS::UniString::Printf ("Failed to read the %T attributes of the project file.", typeStr.ToPrintf ())));
+        } else if (loaded.IsEmpty () && IsNotReadFromProjectFileWhenEmpty (typeID)) {
+            attributesByType (CreateErrorResponse (APIERR_NOTSUPPORTED,
+                GS::UniString::Printf ("Archicad returned no %T attributes from the project file. It does not read this type from a file that is not open; open the file and use GetAttributesByType instead.", typeStr.ToPrintf ())));
         } else {
             attributesByType (typeResult);
         }
@@ -938,6 +958,15 @@ GS::ObjectState GetFillsCommand::Execute (const GS::ObjectState& parameters, GS:
         }
         if (wantsField.Wants ("gradientEnd") && isGradient) {
             fill.Add ("gradientEnd", Create2DCoordinateObjectState (attr.filltype.c2));
+        }
+        // For Symbol fills c1/c2 are the offset vectors of the repeating motif (X1/Y1 and X2/Y2 in the Fill Types
+        // dialog); without them a copied symbol fill draws every motif on top of the other.
+        bool isSymbol = (attr.filltype.subType == APIFill_Symbol);
+        if (wantsField.Wants ("symbolOffset1") && isSymbol) {
+            fill.Add ("symbolOffset1", Create2DCoordinateObjectState (attr.filltype.c1));
+        }
+        if (wantsField.Wants ("symbolOffset2") && isSymbol) {
+            fill.Add ("symbolOffset2", Create2DCoordinateObjectState (attr.filltype.c2));
         }
         if (wantsField.Wants ("percent")) {
             fill.Add ("percent", attr.filltype.percent);
@@ -1516,6 +1545,108 @@ GS::ObjectState GetCurrentPenTableCommand::Execute (const GS::ObjectState& /*par
 #endif
 
     return response;
+}
+
+GetPensCommand::GetPensCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetPensCommand::GetName () const
+{
+    return "GetPens";
+}
+
+GS::Optional<GS::UniString> GetPensCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "indices": {
+                "type": "array",
+                "description": "The indices of the pens to return, from 1 to the number of pens (GetCurrentPenTable returns penCount). If omitted, every pen is returned.",
+                "items": {
+                    "type": "integer"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetPensCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "pens": {
+                "type": "array",
+                "description": "The pens in effect in the current window, or errors. The order is that of the given indices.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "$ref": "#/PenTablePen"
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "pens"
+        ]
+    })";
+}
+
+GS::ObjectState GetPensCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    UInt32 penCount = 0;
+    GSErrCode err = ACAPI_Attribute_GetPenNum (penCount);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the number of pens.");
+    }
+
+    GS::Array<Int32> indices;
+    if (!parameters.Get ("indices", indices)) {
+        for (UInt32 i = 1; i <= penCount; ++i) {
+            indices.Push ((Int32) i);
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& pens = response.AddList<GS::ObjectState> ("pens");
+
+    for (const Int32 index : indices) {
+        if (index < 1 || (UInt32) index > penCount) {
+            pens (CreateErrorResponse (APIERR_BADINDEX, GS::UniString::Printf ("Invalid pen index %d, it must be between 1 and %u.", index, penCount)));
+            continue;
+        }
+
+        API_Pen pen = {};
+        pen.index = (short) index;
+        err = ACAPI_Attribute_GetPen (pen);
+        if (err != NoError) {
+            pens (CreateErrorResponse (err, GS::UniString::Printf ("Failed to get the pen %d.", index)));
+            continue;
+        }
+
+        pens (GS::ObjectState (
+            "index", (Int32) pen.index,
+            "color", GS::ObjectState ("red", pen.rgb.f_red, "green", pen.rgb.f_green, "blue", pen.rgb.f_blue),
+            "width", pen.width,
+            "description", GS::UniString (pen.description)));
+    }
+
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
 }
 
 GetProfilesCommand::GetProfilesCommand () :
@@ -3612,6 +3743,24 @@ GS::Optional<GS::UniString> CreateAttributesCommandBase::GetRawResponseSchema ()
     })";
 }
 
+// The "index" of an attribute to overwrite. The input schemas of the Create<Attribute> commands
+// declare it as a string, which never read into an Int32, so the index used to be ignored.
+static bool GetIndexToOverwrite (const GS::ObjectState& data, Int32& index)
+{
+    GS::UniString indexStr;
+    if (!data.Get ("index", indexStr)) {
+        return false;
+    }
+    const auto indexCStr = indexStr.ToCStr ();
+    char* end = nullptr;
+    const long value = std::strtol (indexCStr.Get (), &end, 10);
+    if (end == indexCStr.Get () || *end != '\0' || value < 0 || value > std::numeric_limits<Int32>::max ()) {
+        return false;
+    }
+    index = static_cast<Int32> (value);
+    return true;
+}
+
 GS::ObjectState CreateAttributesCommandBase::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> dataArray;
@@ -3637,7 +3786,7 @@ GS::ObjectState CreateAttributesCommandBase::Execute (const GS::ObjectState& par
             attr.header.guid = GetGuidFromAttributesArrayItem (data);
 
             Int32 index = -1;
-            if (data.Get ("index", index) && index >= 0) {
+            if (GetIndexToOverwrite (data, index)) {
                 attr.header.index = ACAPI_CreateAttributeIndex (index);
             }
         }
@@ -4002,13 +4151,13 @@ GS::Optional<GS::UniString> CreateLayerCombinationsCommand::GetInputParametersSc
                             "description": "Name. If overwriteExisting is true, then the existing Layer Combination with the given name will be overwritten."
                         },
                         "layers": {
-                            "$ref": "#/LayersOfLayerCombination"
+                            "$ref": "#/LayersOfLayerCombination",
+                            "description": "Layer states to set. Layers not listed keep their current state when overwriting an existing Layer Combination (or get the default visible/unlocked state for a new one), so this can be omitted to e.g. only rename an existing Layer Combination."
                         }
                     },
                     "additionalProperties": false,
                     "required" : [
-                        "name",
-                        "layers"
+                        "name"
                     ]
                 }
             },
@@ -4418,6 +4567,14 @@ GS::Optional<GS::UniString> CreateFillsCommand::GetInputParametersSchema () cons
                             "description": "Gradient end point (LinearGradient/RadialGradient fills only).",
                             "$ref": "#/Coordinate2D"
                         },
+                        "symbolOffset1": {
+                            "description": "First offset vector of the repeating symbol motif, X1/Y1 in the Fill Types dialog (Symbol fills only).",
+                            "$ref": "#/Coordinate2D"
+                        },
+                        "symbolOffset2": {
+                            "description": "Second offset vector of the repeating symbol motif, X2/Y2 in the Fill Types dialog (Symbol fills only).",
+                            "$ref": "#/Coordinate2D"
+                        },
                         "percent": {
                             "type": "number",
                             "description": "Translucency percentage [0..1] (gradient and some Solid fills)."
@@ -4528,7 +4685,7 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
             fill.header.guid = GetGuidFromAttributesArrayItem (data);
 
             Int32 index = -1;
-            if (data.Get ("index", index) && index >= 0) {
+            if (GetIndexToOverwrite (data, index)) {
                 fill.header.index = ACAPI_CreateAttributeIndex (index);
             }
         }
@@ -4628,6 +4785,13 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
         }
         if (const GS::ObjectState* gradientEnd = data.Get ("gradientEnd")) {
             fill.filltype.c2 = Get2DCoordinateFromObjectState (*gradientEnd);
+        }
+        // Same c1/c2 fields, under the names GetFills returns them for Symbol fills.
+        if (const GS::ObjectState* symbolOffset1 = data.Get ("symbolOffset1")) {
+            fill.filltype.c1 = Get2DCoordinateFromObjectState (*symbolOffset1);
+        }
+        if (const GS::ObjectState* symbolOffset2 = data.Get ("symbolOffset2")) {
+            fill.filltype.c2 = Get2DCoordinateFromObjectState (*symbolOffset2);
         }
 
         GS::ObjectState textureObj;
@@ -5459,7 +5623,7 @@ GS::ObjectState CreatePenTablesCommand::Execute (const GS::ObjectState& paramete
             penTable.header.guid = GetGuidFromAttributesArrayItem (penTableData);
 
             Int32 index = -1;
-            if (penTableData.Get ("index", index) && index >= 0) {
+            if (GetIndexToOverwrite (penTableData, index)) {
                 penTable.header.index = ACAPI_CreateAttributeIndex (index);
             }
         }
@@ -5591,7 +5755,7 @@ GS::ObjectState CreatePenTablesCommand::Execute (const GS::ObjectState& paramete
             penTable.header.guid = GetGuidFromAttributesArrayItem (penTableData);
 
             Int32 index = -1;
-            if (penTableData.Get ("index", index) && index >= 0) {
+            if (GetIndexToOverwrite (penTableData, index)) {
                 penTable.header.index = ACAPI_CreateAttributeIndex (index);
             }
         }
@@ -5691,6 +5855,172 @@ GS::ObjectState CreatePenTablesCommand::Execute (const GS::ObjectState& paramete
     return response;
 }
 #endif
+
+ModifyPensCommand::ModifyPensCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyPensCommand::GetName () const
+{
+    return "ModifyPens";
+}
+
+GS::Optional<GS::UniString> ModifyPensCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "pens": {
+                "type": "array",
+                "description": "The pens to change in the active Pen Table. Only the given fields (color, width, description) of a listed pen are changed; every other pen of the table is left as it is.",
+                "items": {
+                    "$ref": "#/PenData"
+                }
+            },
+            "target": {
+                "type": "string",
+                "description": "Which active Pen Table to change: the one in effect for the model views (the default) or the one in effect for the layouts. The two can be the same Pen Table.",
+                "enum": [
+                    "model",
+                    "layout"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "pens"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyPensCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+// The pens of a Pen Table can only be written as a whole (ACAPI_Attribute_ModifyExt with the full pen array,
+// the way CreatePenTables overwrites a table), so the current array is read with ACAPI_Attribute_GetDefExt,
+// the given pens are patched in memory and the table is written back once. Before AC27 the array is an
+// old-style handle of API_PenType elements instead of a GS::Array<API_Pen>; the fields used here (rgb, width,
+// description) have the same names in both, so only the element count needs a version-specific line.
+// Which table is active is read from inEffectForModel/inEffectForLayout, as GetPenTables reports them.
+GS::ObjectState ModifyPensCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> pens;
+    parameters.Get ("pens", pens);
+
+    GS::UniString target = "model";
+    parameters.Get ("target", target);
+    const bool forLayout = (target == "layout");
+
+    GS::UniString penTableName;
+    API_Attribute penTable = {};
+    bool found = false;
+    GS::Array<API_Attribute> penTables;
+    ACAPI_Attribute_GetAttributesByType (API_PenTableID, penTables);
+    for (API_Attribute& candidate : penTables) {
+        if (!found) {
+            API_Attribute attr = {};
+            attr.header.typeID = API_PenTableID;
+            attr.header.index = candidate.header.index;
+            attr.header.uniStringNamePtr = &penTableName;
+            if (ACAPI_Attribute_Get (&attr) == NoError &&
+                (forLayout ? attr.penTable.inEffectForLayout : attr.penTable.inEffectForModel)) {
+                penTable = attr;
+                found = true;
+            }
+        }
+        DisposeAttribute (candidate);
+    }
+
+    if (!found) {
+        return CreateErrorResponse (APIERR_BADID, forLayout
+            ? "No Pen Table is active for the layouts."
+            : "No Pen Table is active for the model views.");
+    }
+
+    API_AttributeDefExt penTableDefs = {};
+    GSErrCode err = ACAPI_Attribute_GetDefExt (API_PenTableID, penTable.header.index, &penTableDefs);
+    if (err != NoError || penTableDefs.penTable_Items == nullptr) {
+        ACAPI_DisposeAttrDefsHdlsExt (&penTableDefs);
+        return CreateErrorResponse (err != NoError ? err : APIERR_GENERAL, "Failed to read the pens of the active Pen Table.");
+    }
+
+#ifdef ServerMainVers_2700
+    const Int32 penCount = (Int32) penTableDefs.penTable_Items->GetSize ();
+#else
+    const Int32 penCount = (Int32) (BMGetHandleSize ((GSHandle) penTableDefs.penTable_Items) / sizeof (API_PenType));
+#endif
+
+    struct PenResult {
+        bool          failed = false;
+        GSErrCode     errorCode = NoError;
+        GS::UniString errorMessage;
+    };
+    std::vector<PenResult> penResults;
+    bool anyPenChanged = false;
+
+    for (const GS::ObjectState& penData : pens) {
+        PenResult result;
+
+        Int32 penIndex = 0;
+        if (!penData.Get ("index", penIndex) || penIndex < 1 || penIndex > penCount) {
+            result.failed = true;
+            result.errorCode = APIERR_BADINDEX;
+            result.errorMessage = GS::UniString::Printf ("index must be between 1 and %d.", penCount);
+            penResults.push_back (result);
+            continue;
+        }
+
+        double width = 0.0;
+        if (penData.Get ("width", width) && width < 0.0) {
+            result.failed = true;
+            result.errorCode = APIERR_BADPARS;
+            result.errorMessage = "width must not be negative.";
+            penResults.push_back (result);
+            continue;
+        }
+
+        auto& pen = (*penTableDefs.penTable_Items)[penIndex - 1];
+        GetColor (penData, "color", pen.rgb);
+        penData.Get ("width", pen.width);
+        SetCharProperty (&penData, "description", pen.description);
+        anyPenChanged = true;
+        penResults.push_back (result);
+    }
+
+    GSErrCode modifyErr = NoError;
+    if (anyPenChanged) {
+        modifyErr = ACAPI_Attribute_ModifyExt (&penTable, &penTableDefs);
+    }
+    ACAPI_DisposeAttrDefsHdlsExt (&penTableDefs);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    for (const PenResult& result : penResults) {
+        if (result.failed) {
+            executionResults (CreateFailedExecutionResult (result.errorCode, result.errorMessage));
+        } else if (modifyErr != NoError) {
+            executionResults (CreateFailedExecutionResult (modifyErr, "Failed to modify the active Pen Table. In a Teamwork project the PenTables lockable object set must be reserved first (see ReserveLockableObjectSet)."));
+        } else {
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+    }
+
+    return response;
+}
 
 CreateProfilesCommand::CreateProfilesCommand () :
     CommandBase (CommonSchema::Used)
@@ -5872,7 +6202,7 @@ GS::ObjectState CreateProfilesCommand::Execute (const GS::ObjectState& parameter
             profile.header.guid = GetGuidFromAttributesArrayItem (profileData);
 
             Int32 index = -1;
-            if (profileData.Get ("index", index) && index >= 0) {
+            if (GetIndexToOverwrite (profileData, index)) {
                 profile.header.index = ACAPI_CreateAttributeIndex (index);
             }
         }
@@ -6075,7 +6405,7 @@ GS::Optional<GS::UniString> CreateCompositesCommand::GetInputParametersSchema ()
                         },
                         "useWith": {
                             "type": "array",
-                            "description" : "Array of types the composite can used with.",
+                            "description" : "Array of types the composite can used with. If omitted when overwriting an existing Composite, its current setting is kept.",
                             "items": {
                                 "type": "string",
                                 "description": "Element type (Wall, Slab, Roof, or Shell)"
@@ -6083,7 +6413,7 @@ GS::Optional<GS::UniString> CreateCompositesCommand::GetInputParametersSchema ()
                         },
                         "skins": {
                             "type": "array",
-                            "description" : "Array of skin data.",
+                            "description" : "Array of skin data. Required when creating a new Composite. If omitted when overwriting an existing Composite, its current skins are kept.",
                             "items" : {
                                 "type": "object",
                                 "description" : "Data to represent a skin.",
@@ -6115,7 +6445,7 @@ GS::Optional<GS::UniString> CreateCompositesCommand::GetInputParametersSchema ()
                         },
                         "separators": {
                             "type": "array",
-                            "description" : "Array of skin separator data. The number of items must be the number of skins plus one.",
+                            "description" : "Array of skin separator data. The number of items must be the number of skins plus one. Required when creating a new Composite. If omitted when overwriting an existing Composite, its current separators are kept (only possible if the number of skins does not change).",
                             "items" : {
                                 "type": "object",
                                 "description" : "Data to represent a skin separator.",
@@ -6138,9 +6468,7 @@ GS::Optional<GS::UniString> CreateCompositesCommand::GetInputParametersSchema ()
                     },
                     "additionalProperties": false,
                     "required" : [
-                        "name",
-                        "skins",
-                        "separators"
+                        "name"
                     ]
                 }
             },
@@ -6197,7 +6525,7 @@ GS::ObjectState CreateCompositesCommand::Execute (const GS::ObjectState& paramet
             composite.header.guid = GetGuidFromAttributesArrayItem (compositeData);
 
             Int32 index = -1;
-            if (compositeData.Get ("index", index) && index >= 0) {
+            if (GetIndexToOverwrite (compositeData, index)) {
                 composite.header.index = ACAPI_CreateAttributeIndex (index);
             }
         }
@@ -6215,82 +6543,122 @@ GS::ObjectState CreateCompositesCommand::Execute (const GS::ObjectState& paramet
             composite.header.uniStringNamePtr = &name;
         }
 
+        // useWith is only applied when given: a modify that omits it (e.g. a pure rename) keeps the
+        // Composite's current Wall/Slab/Roof/Shell flags, already loaded by ACAPI_Attribute_Get above,
+        // instead of clearing all of them.
         GS::Array<GS::UniString> useWith;
-        compositeData.Get ("useWith", useWith);
-        composite.header.flags &= ~APICWall_ForWall;
-        composite.header.flags &= ~APICWall_ForSlab;
-        composite.header.flags &= ~APICWall_ForRoof;
-        composite.header.flags &= ~APICWall_ForShell;
-        for (const GS::UniString& useWithStr : useWith) {
-            if (useWithStr == "Wall") {
-                composite.header.flags |= APICWall_ForWall;
-            } else if (useWithStr == "Slab") {
-                composite.header.flags |= APICWall_ForSlab;
-            } else if (useWithStr == "Roof") {
-                composite.header.flags |= APICWall_ForRoof;
-            } else if (useWithStr == "Shell") {
-                composite.header.flags |= APICWall_ForShell;
+        if (compositeData.Get ("useWith", useWith)) {
+            composite.header.flags &= ~APICWall_ForWall;
+            composite.header.flags &= ~APICWall_ForSlab;
+            composite.header.flags &= ~APICWall_ForRoof;
+            composite.header.flags &= ~APICWall_ForShell;
+            for (const GS::UniString& useWithStr : useWith) {
+                if (useWithStr == "Wall") {
+                    composite.header.flags |= APICWall_ForWall;
+                } else if (useWithStr == "Slab") {
+                    composite.header.flags |= APICWall_ForSlab;
+                } else if (useWithStr == "Roof") {
+                    composite.header.flags |= APICWall_ForRoof;
+                } else if (useWithStr == "Shell") {
+                    composite.header.flags |= APICWall_ForShell;
+                }
             }
         }
 
         GS::Array<GS::ObjectState> skins;
-        compositeData.Get ("skins", skins);
+        bool hasSkins = compositeData.Get ("skins", skins);
 
         GS::Array<GS::ObjectState> separators;
-        compositeData.Get ("separators", separators);
+        bool hasSeparators = compositeData.Get ("separators", separators);
 
-        if (skins.IsEmpty ()) {
+        // skins/separators are only required for a brand new Composite. When overwriting an existing
+        // one, whichever of the two is omitted is taken from its current definition, so a rename or a
+        // useWith-only change does not have to resend the whole skin structure. nComps/totalThick are
+        // already the existing values here (filled by ACAPI_Attribute_Get above).
+        if (!doesExist && (!hasSkins || !hasSeparators)) {
+            attributeIds (CreateErrorResponse (APIERR_BADPARS, "skins and separators are required when creating a new Composite."));
+            continue;
+        }
+
+        UInt32 componentCount = hasSkins ? skins.GetSize () : (UInt32) composite.compWall.nComps;
+        if (componentCount == 0) {
             attributeIds (CreateErrorResponse (Error, "Skin array is empty."));
             continue;
         }
-        if (separators.GetSize () != skins.GetSize () + 1) {
+        if (hasSeparators && separators.GetSize () != componentCount + 1) {
             attributeIds (CreateErrorResponse (Error, "Invalid separator count."));
             continue;
         }
-
-        UInt32 componentCount = skins.GetSize ();
-        double totalThickness = 0.0;
-        compositeDefs.cwall_compItems = (API_CWallComponent**) BMAllocateHandle (componentCount * sizeof (API_CWallComponent), ALLOCATE_CLEAR, 0);
-        for (UInt32 i = 0; i < componentCount; i++) {
-            const GS::ObjectState& skinData = skins[i];
-            API_CWallComponent& compData = (*compositeDefs.cwall_compItems)[i];
-
-            GS::UniString type;
-            skinData.Get ("type", type);
-            if (type == "Core") {
-                compData.flagBits |= APICWallComp_Core;
-            } else if (type == "Finish") {
-                compData.flagBits |= APICWallComp_Finish;
-            }
-
-            GS::ObjectState buildingMaterialId;
-            skinData.Get ("buildingMaterialId", buildingMaterialId);
-            API_AttributeIndex buildingMaterialIndex;
-            if (GetAttributeIndexFromAttributeId (buildingMaterialId, API_BuildingMaterialID, buildingMaterialIndex)) {
-                compData.buildingMaterial = buildingMaterialIndex;
-            }
-
-            skinData.Get ("framePen", compData.framePen);
-            skinData.Get ("thickness", compData.fillThick);
-            totalThickness += compData.fillThick;
+        if (!hasSeparators && componentCount != (UInt32) composite.compWall.nComps) {
+            attributeIds (CreateErrorResponse (APIERR_BADPARS, "separators are required when the number of skins changes."));
+            continue;
         }
 
-        composite.compWall.nComps = (short) componentCount;
-        composite.compWall.totalThick = totalThickness;
+        if (!hasSkins || !hasSeparators) {
+            API_AttributeDefExt existingDefs = {};
+            if (ACAPI_Attribute_GetDefExt (API_CompWallID, composite.header.index, &existingDefs) != NoError) {
+                attributeIds (CreateErrorResponse (Error, "Failed to read the existing Composite's skins."));
+                continue;
+            }
+            // Take ownership of the kept handles (nulled in existingDefs so they are not disposed twice),
+            // compositeDefs is disposed as a whole once the Composite has been modified.
+            if (!hasSkins) {
+                compositeDefs.cwall_compItems = existingDefs.cwall_compItems;
+                existingDefs.cwall_compItems = nullptr;
+            }
+            if (!hasSeparators) {
+                compositeDefs.cwall_compLItems = existingDefs.cwall_compLItems;
+                existingDefs.cwall_compLItems = nullptr;
+            }
+            ACAPI_DisposeAttrDefsHdlsExt (&existingDefs);
+        }
 
-        compositeDefs.cwall_compLItems = (API_CWallLineComponent**) BMAllocateHandle ((componentCount + 1) * sizeof (API_CWallLineComponent), ALLOCATE_CLEAR, 0);
-        for (UInt32 i = 0; i < componentCount + 1; i++) {
-            const GS::ObjectState& separatorData = separators[i];
-            API_CWallLineComponent& lineData = (*compositeDefs.cwall_compLItems)[i];
+        if (hasSkins) {
+            double totalThickness = 0.0;
+            compositeDefs.cwall_compItems = (API_CWallComponent**) BMAllocateHandle (componentCount * sizeof (API_CWallComponent), ALLOCATE_CLEAR, 0);
+            for (UInt32 i = 0; i < componentCount; i++) {
+                const GS::ObjectState& skinData = skins[i];
+                API_CWallComponent& compData = (*compositeDefs.cwall_compItems)[i];
 
-            GS::ObjectState lineTypeId;
-            separatorData.Get ("lineTypeId", lineTypeId);
-            API_AttributeIndex lineTypeIndex;
-            if (GetAttributeIndexFromAttributeId (lineTypeId, API_LinetypeID, lineTypeIndex)) {
-                lineData.ltypeInd = lineTypeIndex;
+                GS::UniString type;
+                skinData.Get ("type", type);
+                if (type == "Core") {
+                    compData.flagBits |= APICWallComp_Core;
+                } else if (type == "Finish") {
+                    compData.flagBits |= APICWallComp_Finish;
+                }
+
+                GS::ObjectState buildingMaterialId;
+                skinData.Get ("buildingMaterialId", buildingMaterialId);
+                API_AttributeIndex buildingMaterialIndex;
+                if (GetAttributeIndexFromAttributeId (buildingMaterialId, API_BuildingMaterialID, buildingMaterialIndex)) {
+                    compData.buildingMaterial = buildingMaterialIndex;
+                }
+
+                skinData.Get ("framePen", compData.framePen);
+                skinData.Get ("thickness", compData.fillThick);
+                totalThickness += compData.fillThick;
             }
 
-            separatorData.Get ("linePen", lineData.linePen);
+            composite.compWall.nComps = (short) componentCount;
+            composite.compWall.totalThick = totalThickness;
+        }
+
+        if (hasSeparators) {
+            compositeDefs.cwall_compLItems = (API_CWallLineComponent**) BMAllocateHandle ((componentCount + 1) * sizeof (API_CWallLineComponent), ALLOCATE_CLEAR, 0);
+            for (UInt32 i = 0; i < componentCount + 1; i++) {
+                const GS::ObjectState& separatorData = separators[i];
+                API_CWallLineComponent& lineData = (*compositeDefs.cwall_compLItems)[i];
+
+                GS::ObjectState lineTypeId;
+                separatorData.Get ("lineTypeId", lineTypeId);
+                API_AttributeIndex lineTypeIndex;
+                if (GetAttributeIndexFromAttributeId (lineTypeId, API_LinetypeID, lineTypeIndex)) {
+                    lineData.ltypeInd = lineTypeIndex;
+                }
+
+                separatorData.Get ("linePen", lineData.linePen);
+            }
         }
 
         if (doesExist) {
@@ -6552,6 +6920,318 @@ GS::ObjectState GetFontsByNameCommand::Execute (const GS::ObjectState& parameter
         fontOS.Add ("fontIndex", fontIndex);
         fontOS.Add ("fontName", foundName.HasValue () ? *foundName : fontName);
         fonts (fontOS);
+    }
+
+    return response;
+}
+
+// The user data of an attribute: ACAPI_UserData_GetUserData / SetUserData from AC27, ACAPI_Attribute_GetUserData /
+// SetUserData before (see MigrationHelper.hpp). Only dataVersion, platformSign and dataHdl are used, the fields the
+// AC25-AC30 API_AttributeUserData share. Setting is a non-undoable modifier, so it runs outside an undo scope.
+
+static bool FindAttributeForUserData (const GS::ObjectState& attributeIdItem, API_Attr_Head& attrHead)
+{
+    const GS::ObjectState* attributeId = attributeIdItem.Get ("attributeId");
+    if (attributeId == nullptr) {
+        return false;
+    }
+    attrHead = GetAttributeHeadFromGuid (GetGuidFromObjectState (*attributeId));
+    return attrHead.typeID != API_ZombieAttrID;
+}
+
+// Reads the pairs stored on the attribute: none when it has no user data. A failure fills errorMessage.
+static GSErrCode ReadAttributeUserDataPairs (API_Attr_Head& attrHead, UserDataPairs& pairs, GS::UniString& errorMessage)
+{
+    pairs.clear ();
+
+    API_AttributeUserData userData = {};
+    GSErrCode err = ACAPI_UserData_GetUserData (&attrHead, &userData);
+    if (err == APIERR_NOUSERDATA) {
+        BMKillHandle (&userData.dataHdl);
+        return NoError;
+    }
+    if (err != NoError) {
+        BMKillHandle (&userData.dataHdl);
+        errorMessage = "Failed to get the user data of the attribute.";
+        return err;
+    }
+    if (userData.dataHdl == nullptr) {
+        return NoError;
+    }
+
+    // Data in a layout these commands do not write is reported, never overwritten.
+    if (userData.dataVersion != UserDataPairsLayoutVersion) {
+        errorMessage = GS::UniString::Printf ("The attribute holds user data in another layout (version %d).", static_cast<int> (userData.dataVersion));
+        err = APIERR_BADPARS;
+    } else {
+        pairs = ParseUserDataPairs (userData.dataHdl);
+    }
+
+    BMKillHandle (&userData.dataHdl);
+    return err;
+}
+
+GetUserDataOfAttributesCommand::GetUserDataOfAttributesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetUserDataOfAttributesCommand::GetName () const
+{
+    return "GetUserDataOfAttributes";
+}
+
+GS::Optional<GS::UniString> GetUserDataOfAttributesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeIds": {
+                "$ref": "#/AttributeIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetUserDataOfAttributesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "userDataOfAttributes": {
+                "type": "array",
+                "description": "One item per attribute, in the input order: the pairs stored on the attribute (none when it holds no user data), or an error when the attribute was not found or holds user data in another layout.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "pairs": {
+                                    "$ref": "#/UserDataPairs"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "pairs"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "userDataOfAttributes"
+        ]
+    })";
+}
+
+GS::ObjectState GetUserDataOfAttributesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> attributeIds;
+    parameters.Get ("attributeIds", attributeIds);
+
+    GS::ObjectState response;
+    const auto& userDataOfAttributes = response.AddList<GS::ObjectState> ("userDataOfAttributes");
+
+    for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        API_Attr_Head attrHead = {};
+        if (!FindAttributeForUserData (attributeIdItem, attrHead)) {
+            userDataOfAttributes (CreateErrorResponse (APIERR_BADID, "Attribute not found."));
+            continue;
+        }
+
+        UserDataPairs pairs;
+        GS::UniString errorMessage;
+        const GSErrCode err = ReadAttributeUserDataPairs (attrHead, pairs, errorMessage);
+        if (err != NoError) {
+            userDataOfAttributes (CreateErrorResponse (err, errorMessage));
+            continue;
+        }
+
+        GS::ObjectState item;
+        AddUserDataPairsList (item, "pairs", pairs);
+        userDataOfAttributes (item);
+    }
+
+    return response;
+}
+
+SetUserDataOfAttributesCommand::SetUserDataOfAttributesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetUserDataOfAttributesCommand::GetName () const
+{
+    return "SetUserDataOfAttributes";
+}
+
+GS::Optional<GS::UniString> SetUserDataOfAttributesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeIds": {
+                "$ref": "#/AttributeIds"
+            },
+            "pairs": {
+                "$ref": "#/UserDataPairs",
+                "description": "The key-value pairs to store on each attribute. A key the attribute already holds gets the new value; other keys are left as they are."
+            },
+            "keysToDelete": {
+                "$ref": "#/UserDataKeysToDelete"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetUserDataOfAttributesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result per attribute, in the input order."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetUserDataOfAttributesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> attributeIds;
+    parameters.Get ("attributeIds", attributeIds);
+
+    UserDataPairs pairsToSet;
+    GS::Array<GS::UniString> keysToDelete;
+    GS::UniString errorMessage;
+    if (!GetUserDataPairChanges (parameters, pairsToSet, keysToDelete, errorMessage)) {
+        return CreateErrorResponse (APIERR_BADPARS, errorMessage);
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        API_Attr_Head attrHead = {};
+        if (!FindAttributeForUserData (attributeIdItem, attrHead)) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "Attribute not found."));
+            continue;
+        }
+
+        UserDataPairs pairs;
+        GSErrCode err = ReadAttributeUserDataPairs (attrHead, pairs, errorMessage);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, errorMessage));
+            continue;
+        }
+
+        ApplyUserDataPairChanges (pairs, pairsToSet, keysToDelete);
+
+        API_AttributeUserData userData = {};
+        userData.dataVersion = UserDataPairsLayoutVersion;
+        userData.platformSign = GS::Act_Platform_Sign;
+        userData.dataHdl = SerializeUserDataPairs (pairs);
+        if (userData.dataHdl == nullptr) {
+            executionResults (CreateFailedExecutionResult (APIERR_MEMFULL, "Failed to store the user data of the attribute."));
+            continue;
+        }
+
+        // The API copies the data, the handle stays ours to free.
+        err = ACAPI_UserData_SetUserData (&attrHead, &userData);
+        BMKillHandle (&userData.dataHdl);
+        executionResults (err == NoError
+            ? CreateSuccessfulExecutionResult ()
+            : CreateFailedExecutionResult (err, "Failed to store the user data of the attribute."));
+    }
+
+    return response;
+}
+
+DeleteUserDataOfAttributesCommand::DeleteUserDataOfAttributesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeleteUserDataOfAttributesCommand::GetName () const
+{
+    return "DeleteUserDataOfAttributes";
+}
+
+GS::Optional<GS::UniString> DeleteUserDataOfAttributesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeIds": {
+                "$ref": "#/AttributeIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteUserDataOfAttributesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result per attribute, in the input order."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteUserDataOfAttributesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> attributeIds;
+    parameters.Get ("attributeIds", attributeIds);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        API_Attr_Head attrHead = {};
+        if (!FindAttributeForUserData (attributeIdItem, attrHead)) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "Attribute not found."));
+            continue;
+        }
+
+        // A null dataHdl deletes the user data; the struct pointer itself must not be null (APIERR_BADPARS).
+        API_AttributeUserData userData = {};
+        userData.platformSign = GS::Act_Platform_Sign;
+        userData.dataHdl = nullptr;
+        const GSErrCode err = ACAPI_UserData_SetUserData (&attrHead, &userData);
+        executionResults (err == NoError
+            ? CreateSuccessfulExecutionResult ()
+            : CreateFailedExecutionResult (err, "Failed to delete the user data of the attribute."));
     }
 
     return response;
