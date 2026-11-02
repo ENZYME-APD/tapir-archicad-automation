@@ -3,7 +3,21 @@ Parameters:
 {}
 Response:
 {
-    "currentWindowType": "FloorPlan"
+    "currentWindowType": "FloorPlan",
+    "databaseId": {
+        "guid": "d5d16dd4-093f-4674-895d-410d634d8c7e"
+    }
+}
+Command: ChangeWindow
+Parameters:
+{
+    "databaseId": {
+        "guid": "d5d16dd4-093f-4674-895d-410d634d8c7e"
+    }
+}
+Response:
+{
+    "success": true
 }
 Command: GetView2DTransformations
 Parameters:
