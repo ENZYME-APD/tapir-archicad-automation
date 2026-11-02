@@ -51,6 +51,17 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
+            foreach (var item in response.BoundingBoxes3D)
+            {
+                if (item.BoundingBox3D == null)
+                {
+                    AddRuntimeMessage(
+                        GH_RuntimeMessageLevel.Warning,
+                        item.Error?.Message ??
+                        "An element has no 3D bounding box.");
+                }
+            }
+
             da.SetDataList(
                 0,
                 response.BoundingBoxes3D.Select(x => x.ToRhino()));

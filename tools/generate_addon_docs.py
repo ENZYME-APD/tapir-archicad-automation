@@ -20,7 +20,7 @@ stops the script with an error naming the function, so an unsupported
 construct can never produce silently wrong docs - extend the interpreter (or
 simplify the schema code) when that happens. Preprocessor conditions on
 ServerMainVers_NNNN / AC_VERSION are resolved for the newest supported
-Archicad version (the newest one build_all_win.bat builds), the one the
+Archicad version (the newest one in archicad-addon/devkits.json), the one the
 docs are generated with.
 
 Usage: python tools/generate_addon_docs.py [--check]
@@ -38,7 +38,7 @@ REPO_ROOT = os.path.dirname (os.path.dirname (os.path.abspath (__file__)))
 SOURCES_DIR = os.path.join (REPO_ROOT, 'archicad-addon', 'Sources')
 COMMON_SCHEMA_FILE = os.path.join (SOURCES_DIR, 'RFIX', 'Images', 'CommonSchemaDefinitions.json')
 DOCS_DIR = os.path.join (REPO_ROOT, 'docs', 'archicad-addon')
-BUILD_ALL_SCRIPT = os.path.join (REPO_ROOT, 'archicad-addon', 'Tools', 'build_all_win.bat')
+DEVKITS_JSON = os.path.join (REPO_ROOT, 'archicad-addon', 'devkits.json')
 
 
 DOCUMENTED_METHODS = ('GetName', 'GetInputParametersSchema', 'GetRawResponseSchema')
@@ -60,9 +60,9 @@ def WriteText (path, content):
 
 
 def GetDocsArchicadVersion ():
-    versions = [int (v) for v in re.findall (r'-DAC_VERSION=(\d+)', ReadText (BUILD_ALL_SCRIPT))]
+    versions = [devkit['archicad'] for devkit in json.loads (ReadText (DEVKITS_JSON))['devkits']]
     if not versions:
-        raise GeneratorError ('No Archicad versions found in ' + BUILD_ALL_SCRIPT)
+        raise GeneratorError ('No Archicad versions found in ' + DEVKITS_JSON)
     return max (versions)
 
 
