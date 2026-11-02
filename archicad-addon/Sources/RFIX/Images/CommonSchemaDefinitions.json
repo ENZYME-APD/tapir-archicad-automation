@@ -5410,7 +5410,7 @@
     },
     "PropertyValue": {
         "type": "object",
-        "description": "The display string value of a property.",
+        "description": "The string value of a property, formatted according to the command's options.",
         "properties": {
             "value": {
                 "type": "string"

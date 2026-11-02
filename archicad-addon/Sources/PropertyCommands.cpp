@@ -2,6 +2,12 @@
 #include "MigrationHelper.hpp"
 #include "HashTable.hpp"
 #include <tuple>
+#include <cmath>
+#include <iomanip>
+#include <limits>
+#include <locale>
+#include <sstream>
+#include <string>
 
 using PropertyTypeTuple = std::tuple<API_PropertyCollectionType, API_VariantType, API_PropertyMeasureType>;
 
@@ -215,6 +221,102 @@ GSErrCode GetPropertyValueString (const API_Property& propertyValue, GS::UniStri
     }
 }
 
+// Keep enough significant digits to recover the double, then expand any exponent.
+// Fixed decimal precision would either round small values to zero or lose digits.
+// This also works with the C++14 toolchains used for older Archicad versions.
+static bool FormatPropertyRealValue (double value, std::string& result)
+{
+    if (!std::isfinite (value)) {
+        return false;
+    }
+
+    std::ostringstream stream;
+    stream.imbue (std::locale::classic ());
+    stream << std::setprecision (std::numeric_limits<double>::max_digits10) << value;
+    result = stream.str ();
+
+    const std::size_t exponentPos = result.find_first_of ("eE");
+    if (exponentPos == std::string::npos) {
+        return true;
+    }
+
+    // Move the decimal point by the exponent, padding with zeros when needed.
+    const int exponent = std::stoi (result.substr (exponentPos + 1));
+    const bool negative = result[0] == '-';
+    const std::size_t start = negative ? 1 : 0;
+    std::string digits = result.substr (start, exponentPos - start);
+    const std::size_t pointPos = digits.find ('.');
+    const int decimalPos = static_cast<int> (pointPos == std::string::npos ? digits.size () : pointPos) + exponent;
+    if (pointPos != std::string::npos) {
+        digits.erase (pointPos, 1);
+    }
+
+    result = negative ? "-" : "";
+    if (decimalPos <= 0) {
+        result += "0.";
+        result.append (static_cast<std::size_t> (-decimalPos), '0');
+        result += digits;
+    } else if (decimalPos >= static_cast<int> (digits.size ())) {
+        result += digits;
+        result.append (static_cast<std::size_t> (decimalPos) - digits.size (), '0');
+    } else {
+        digits.insert (static_cast<std::size_t> (decimalPos), 1, '.');
+        result += digits;
+    }
+    return true;
+}
+
+static GSErrCode GetPropertyValueStringInSIUnits (const API_Property& propertyValue, GS::UniString& resultString)
+{
+    const API_PropertyDefinition& definition = propertyValue.definition;
+    const bool isNumeric = definition.valueType == API_PropertyRealValueType ||
+                           definition.valueType == API_PropertyIntegerValueType;
+    const bool isScalarOrList = definition.collectionType == API_PropertySingleCollectionType ||
+                                definition.collectionType == API_PropertyListCollectionType;
+    const bool isUndefined = propertyValue.value.variantStatus == API_VariantStatusUserUndefined;
+    if (isUndefined || !isNumeric || !isScalarOrList) {
+        return GetPropertyValueString (propertyValue, resultString);
+    }
+
+    const auto formatVariant = [&] (const API_Variant& variant, GS::UniString& text) -> GSErrCode {
+        std::string number;
+        if (definition.valueType == API_PropertyIntegerValueType) {
+            number = std::to_string (variant.intValue);
+        } else {
+            // API measurements are already SI. Degrees are an intentional exception
+            // because SetPropertyValuesOfElements parses suffix-free angles as degrees.
+            constexpr double radiansToDegrees = 180.0 / 3.14159265358979323846;
+            const double value = definition.measureType == API_PropertyAngleMeasureType ?
+                variant.doubleValue * radiansToDegrees : variant.doubleValue;
+            if (!FormatPropertyRealValue (value, number)) {
+                return APIERR_BADPARS;
+            }
+        }
+        text = number.c_str ();
+        return NoError;
+    };
+
+    if (definition.collectionType == API_PropertySingleCollectionType) {
+        return formatVariant (propertyValue.value.singleVariant.variant, resultString);
+    }
+
+    resultString.Clear ();
+    bool first = true;
+    for (const API_Variant& variant : propertyValue.value.listVariant.variants) {
+        GS::UniString item;
+        const GSErrCode err = formatVariant (variant, item);
+        if (err != NoError) {
+            return err;
+        }
+        if (!first) {
+            resultString.Append ("; ");
+        }
+        resultString.Append (item);
+        first = false;
+    }
+    return NoError;
+}
+
 GetAllPropertiesCommand::GetAllPropertiesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -422,6 +524,11 @@ GS::Optional<GS::UniString> GetPropertyValuesOfElementsCommand::GetInputParamete
             "includeAvailability": {
                 "type": "boolean",
                 "description": "Adds isAvailable to each property value or error, telling whether the property is available for the element (for example by its classification). Default is false."
+            },
+            "useSIUnits": {
+                "type": "boolean",
+                "default": false,
+                "description": "Returns precise, locale-independent numeric strings in SI units, except degrees for angles. Default is false."
             }
         },
         "additionalProperties": false,
@@ -459,6 +566,9 @@ GS::ObjectState GetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
 
     bool includeAvailability = false;
     parameters.Get ("includeAvailability", includeAvailability);
+
+    bool useSIUnits = false;
+    parameters.Get ("useSIUnits", useSIUnits);
 
     GS::ObjectState response;
     const auto& propertyValuesForElements = response.AddList<GS::ObjectState> ("propertyValuesForElements");
@@ -528,7 +638,11 @@ GS::ObjectState GetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
             }
 
             GS::UniString propertyValueString;
-            err = GetPropertyValueString (propertyValue, propertyValueString);
+            if (useSIUnits) {
+                err = GetPropertyValueStringInSIUnits (propertyValue, propertyValueString);
+            } else {
+                err = GetPropertyValueString (propertyValue, propertyValueString);
+            }
 
             if (err != NoError) {
                 addPropertyValue (CreateErrorResponse (err, "Failed to get property value as string"));
