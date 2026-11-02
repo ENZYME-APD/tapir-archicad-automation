@@ -31,6 +31,9 @@
 
 #define ACAPI_Element_NeigIDToElemType ACAPI_Goodies_NeigIDToElemType
 
+// Archicad 26 only, before that there is no such function.
+#define ACAPI_AutoText_GetNoteAutotexts ACAPI_Element_GetNoteAutotexts
+
 #define ACAPI_Command_GetHttpConnectionPort(par1) ACAPI_Goodies (APIAny_GetHttpConnectionPortID, par1)
 
 #define ACAPI_Teamwork_ReceiveChanges ACAPI_TeamworkControl_ReceiveChanges
@@ -106,6 +109,8 @@ inline GSErrCode ACAPI_View_DeleteGhostRecord (const API_GhostRecord* ghostRecor
 
 #define ACAPI_Element_CalcBounds(par1,par2) ACAPI_Database (APIDb_CalcBoundsID, par1, par2)
 #define ACAPI_View_GetZoom(par1, par2) ACAPI_Database (APIDb_GetZoomID, par1, par2)
+#define ACAPI_Element_GetElementURLRef(par1, par2) ACAPI_Database (APIDb_GetElementURLRefID, (void*) par1, (void*) par2)
+#define ACAPI_Element_SetElementURLRef(par1, par2) ACAPI_Database (APIDb_SetElementURLRefID, (void*) par1, (void*) par2)
 #define ACAPI_Element_RefreshElement(par1, par2) ACAPI_Database (APIDb_RefreshElementID, par1, par2)
 #define ACAPI_View_CoordToPoint(par1, par2) ACAPI_Database (APIDb_CoordToPointID, par1, par2)
 #define ACAPI_View_PointToCoord(par1, par2) ACAPI_Database (APIDb_PointToCoordID, par1, par2)
@@ -113,6 +118,10 @@ inline GSErrCode ACAPI_View_DeleteGhostRecord (const API_GhostRecord* ghostRecor
 #define ACAPI_Element_GetElementFromAnywhere(par1, par2) ACAPI_Database (APIDb_GetElementFromAnywhereID, (void*) par1, par2)
 // APIDb_DrawStoryControlID: par1 API_DatabaseUnId*, par2 ShapePrimsProc*.
 #define ACAPI_DrawingPrimitive_DrawStoryControl(par1, par2) ACAPI_Database (APIDb_DrawStoryControlID, (void*) par1, (void*) par2)
+
+#define ACAPI_DrawOrder_InitCreationOrderTable(par1) ACAPI_Database (APIDb_InitCreationOrderTableID, (void*) par1)
+#define ACAPI_DrawOrder_CreationOrderGetNext(par1) ACAPI_Database (APIDb_CreationOrderGetNextID, par1)
+#define ACAPI_DrawOrder_DisposeCreationOrderTable() ACAPI_Database (APIDb_DisposeCreationOrderTableID)
 
 #define ACAPI_Revision_GetRVMIssues(par1) ACAPI_Database (APIDb_GetRVMIssuesID, par1)
 #define ACAPI_Revision_GetRVMChanges(par1) ACAPI_Database (APIDb_GetRVMChangesID, par1)
@@ -123,6 +132,8 @@ inline GSErrCode ACAPI_View_DeleteGhostRecord (const API_GhostRecord* ghostRecor
 #define ACAPI_Revision_GetRVMLayoutCurrentRevisionChanges(par1, par2) ACAPI_Database (APIDb_GetRVMLayoutCurrentRevisionChangesID, (void*)par1, par2)
 #define ACAPI_Revision_GetRVMElemChangeIds(par1, par2) ACAPI_Database (APIDb_GetRVMElemChangeIdsID, (void*)par1, par2)
 #define ACAPI_Revision_GetRVMChangesFromChangeIds(par1, par2) ACAPI_Database (APIDb_GetRVMChangesFromChangeIdsID, (void*)par1, par2)
+#define ACAPI_Revision_GetRVMIssueCustomScheme(par1) ACAPI_Database (APIDb_GetRVMIssueCustomSchemeID, par1)
+#define ACAPI_Revision_ChangeRVMIssue(par1) ACAPI_Database (APIDb_ChangeRVMIssueID, par1)
 #define ACAPI_Revision_GetRVMChangeCustomScheme(par1) ACAPI_Database (APIDb_GetRVMChangeCustomSchemeID, par1)
 
 #define ACAPI_LibraryPart_Register(par1) ACAPI_LibPart_Register(par1)
@@ -163,6 +174,18 @@ inline GSErrCode ACAPI_ModelAccess_GetTextureCoord (API_TexCoordPars* texCoordPa
 {
     return ACAPI_Goodies (APIAny_GetTextureCoordID, texCoordPars, uvCoord);
 }
+
+#define ACAPI_ProjectOperation_CatchProjectEvent ACAPI_Notify_CatchProjectEvent
+
+// The element difference generator (APIdefs_ElementDifferenceGenerator.h) is called
+// ACAPI_ElemDifferenceGenerator_* before AC27. AC25 takes the API_ElemDifference result by
+// pointer, AC26 and later by reference.
+#define ACAPI_DifferenceGenerator_GetState ACAPI_ElemDifferenceGenerator_GetState
+#ifdef ServerMainVers_2600
+#define ACAPI_DifferenceGenerator_GenerateDifference ACAPI_ElemDifferenceGenerator_GenerateDifference
+#else
+#define ACAPI_DifferenceGenerator_GenerateDifference(par1, par2, par3, par4) ACAPI_ElemDifferenceGenerator_GenerateDifference (par1, par2, par3, &(par4))
+#endif
 
 #define ACAPI_View_Get3DCuttingPlanes(par1) ACAPI_Environment (APIEnv_Get3DCuttingPlanesID, par1)
 #define ACAPI_View_Change3DCuttingPlanes(par1) ACAPI_Environment (APIEnv_Change3DCuttingPlanesID, par1)
@@ -331,6 +354,25 @@ inline GSErrCode ACAPI_ProjectOperation_GetMiscPlotterInfo (API_MiscPlotterInfo*
     return ACAPI_Environment (APIEnv_GetMiscPlotterInfoID, miscPlotterInfo);
 }
 
+// The rendering scene calls of AC27+ (ACAPI_Rendering.h), on the pre-27 dispatchers:
+// APIEnv_GetRenderingSceneNamesID and APIEnv_SetCurrentRenderingSceneID of
+// APIdefs_Environment.h, APIDo_PhotoRenderID of APIdefs_Automate.h (par2, the
+// print parameters, is optional there too).
+inline GSErrCode ACAPI_Rendering_GetRenderingSceneNames (GS::Array<GS::UniString>* sceneNames)
+{
+    return ACAPI_Environment (APIEnv_GetRenderingSceneNamesID, (void*) sceneNames);
+}
+
+inline GSErrCode ACAPI_Rendering_SetCurrentRenderingScene (const GS::UniString* sceneName)
+{
+    return ACAPI_Environment (APIEnv_SetCurrentRenderingSceneID, (void*) sceneName);
+}
+
+inline GSErrCode ACAPI_Rendering_PhotoRender (const API_PhotoRenderPars* photoRenderPars, const API_PrintPars* printPars = nullptr)
+{
+    return ACAPI_Automate (APIDo_PhotoRenderID, (void*) photoRenderPars, (void*) printPars);
+}
+
 inline GSErrCode ACAPI_View_Zoom ()
 {
     return ACAPI_Automate (APIDo_ZoomID);
@@ -455,6 +497,19 @@ inline GSErrCode ACAPI_Hotlink_UpdateHotlinkCache (const API_Guid* hotlinkNodeGu
     return ACAPI_Database (APIDb_UpdateHotlinkCacheID, (void*) hotlinkNodeGuid);
 }
 
+// APIDb_BreakHotlinkNodeID and APIDb_DeleteHotlinkNodeID take the node guid as
+// par1 (APIdefs_Database.h), the same argument as AC27's
+// ACAPI_Hotlink_BreakHotlinkNode and ACAPI_Hotlink_DeleteHotlinkNode.
+inline GSErrCode ACAPI_Hotlink_BreakHotlinkNode (const API_Guid* hotlinkNodeGuid)
+{
+    return ACAPI_Database (APIDb_BreakHotlinkNodeID, (void*) hotlinkNodeGuid);
+}
+
+inline GSErrCode ACAPI_Hotlink_DeleteHotlinkNode (const API_Guid* hotlinkNodeGuid)
+{
+    return ACAPI_Database (APIDb_DeleteHotlinkNodeID, (void*) hotlinkNodeGuid);
+}
+
 // APIDb_GetHotlinkInstancesID (APIdefs_Database.h): par1 is the node guid,
 // par2 receives the API_HotlinkType elements placed from that node.
 inline GSErrCode ACAPI_Hotlink_GetHotlinkInstances (const API_Guid* hotlinkNodeGuid, GS::Array<API_Guid>* elementRefList)
@@ -520,6 +575,13 @@ inline GSErrCode ACAPI_Element_Elem2UIPriority (GS::Int32* elemPriority, GS::Int
 inline GSErrCode ACAPI_Element_ElemHasVisibleSkin (const API_Guid* elemGuid, const API_StructureDisplay* structure, bool* result)
 {
     return ACAPI_Goodies (APIAny_ElemHasVisibleSkinID, (void*) elemGuid, (void*) structure, result);
+}
+
+// The goodie behind ACAPI_CurtainWall_GetCWAbsoluteBottom before AC27: par1 is the guid of
+// the curtain wall or its subelement, par2 the bottom.
+inline GSErrCode ACAPI_CurtainWall_GetCWAbsoluteBottom (const API_Guid* guid, double* bottom)
+{
+    return ACAPI_Goodies (APIAny_GetCWAbsoluteBottomID, (void*) guid, bottom);
 }
 
 inline GSErrCode ACAPI_CurtainWall_GetCWHeight (const API_Guid* guid, double* height)
@@ -792,6 +854,29 @@ inline GSErrCode ACAPI_Element_GetExtent (API_Box* extent, API_DatabaseUnId* dat
 inline GSErrCode ACAPI_Navigator_GetLayoutBook (API_LayoutBook* book)
 {
     return ACAPI_Database (APIDb_GetLayoutBookID, book);
+}
+
+// The renovation filter functions of ACAPI_Renovation.h (AC27+) are the
+// APIDb_*RenovationFilter* database functions (APIdefs_Database.h) and the
+// APIAny_GetRenovationFilterNameID goodie before that; the parameters are the same.
+inline GSErrCode ACAPI_Renovation_GetRenovationFilters (GS::Array<API_Guid>* renovationFilters)
+{
+    return ACAPI_Database (APIDb_GetRenovationFiltersID, (void*) renovationFilters);
+}
+
+inline GSErrCode ACAPI_Renovation_GetRenovationFilterName (const API_Guid* renovationFilterGuid, GS::UniString* name)
+{
+    return ACAPI_Goodies (APIAny_GetRenovationFilterNameID, (void*) renovationFilterGuid, (void*) name);
+}
+
+inline GSErrCode ACAPI_Renovation_GetActualRenovationFilter (API_Guid* renovationFilterGuid)
+{
+    return ACAPI_Database (APIDb_GetActualRenovationFilterID, (void*) renovationFilterGuid);
+}
+
+inline GSErrCode ACAPI_Renovation_SetActualRenovationFilter (const API_Guid* renovationFilterGuid)
+{
+    return ACAPI_Database (APIDb_SetActualRenovationFilterID, (void*) renovationFilterGuid);
 }
 
 // The ghost story settings of the floor plan (APIEnv_GetGhostStorySettingsID) and the
