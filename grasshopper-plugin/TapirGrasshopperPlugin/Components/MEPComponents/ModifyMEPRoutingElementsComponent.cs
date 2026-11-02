@@ -18,8 +18,11 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
         public ModifyMEPRoutingElementsComponent()
             : base(
                 "ModifyMEPRoutingElements",
-                "Modify the given MEP routing elements: MEP system, cross section data of all segments and node positions. " +
-                "Only provided fields are changed. Available from Archicad 28.",
+                "Modify the given MEP routing elements: MEP system, branch preference table, floor plan display settings " +
+                "(cut plane position, floor plan display option, show projection and on-story visibility, from Archicad 29), " +
+                "cross section data (shape, size, preference table and reference id), anchor, reference line offsets, " +
+                "wall thickness, flange size and connection style of all segments, preferred transition placement of all " +
+                "nodes, and node positions. Only provided fields are changed. Available from Archicad 28.",
                 GroupNames.MEP)
         {
         }
@@ -67,7 +70,66 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 "(see GetMEPPreferenceTables; not applicable to the CableCarrier domain; " +
                 "input only 1 to use the same table for all). Optional.");
 
-            SetOptionality(new[] { 1, 2, 3, 4, 5, 6, 7 });
+            InTexts(
+                "BranchPreferenceTableGuids",
+                "Identifier of the new branch preference table of each route (see GetMEPPreferenceTables with " +
+                "IncludeFittingTables; input only 1 to use the same table for all). Optional.");
+
+            InTexts(
+                "Anchors",
+                "New anchor point of the cross section of each route, on a 3x3 grid, applied to all segments: " +
+                "TopLeft, TopCenter, TopRight, MiddleLeft, Center, MiddleRight, BottomLeft, BottomCenter or BottomRight " +
+                "(input only 1 to use the same anchor for all). Optional.");
+
+            InNumbers(
+                "ReferenceLineOffsetsX",
+                "New horizontal offset of the reference line from the anchor point, applied to all segments of each route " +
+                "(input only 1 to use the same offset for all). Optional.");
+
+            InNumbers(
+                "ReferenceLineOffsetsY",
+                "New vertical offset of the reference line from the anchor point, applied to all segments of each route " +
+                "(input only 1 to use the same offset for all). Optional.");
+
+            InNumbers(
+                "WallThicknesses",
+                "New wall thickness applied to all segments of each route (input only 1 to use the same value for all). Optional.");
+
+            InNumbers(
+                "FlangeSizes",
+                "New flange size applied to all segments of each route (input only 1 to use the same value for all). Optional.");
+
+            InTexts(
+                "ConnectionStyles",
+                "New connection style applied to all segments of each route: SimpleBody, Flanged or Welded " +
+                "(input only 1 to use the same style for all). Optional.");
+
+            InTexts(
+                "PreferredTransitionPlacements",
+                "New preferred transition placement applied to all nodes of each route: SmallToLarge or LargeToSmall " +
+                "(input only 1 to use the same value for all). Optional.");
+
+            InTexts(
+                "CutPlanePositions",
+                "New cut plane position of each route: AtUpperDisplayLimit or ByViewSettings " +
+                "(input only 1 to use the same value for all; Archicad 29 or newer). Optional.");
+
+            InTexts(
+                "FloorPlanDisplayOptions",
+                "New floor plan display option of each route: Projected, ProjectedWithOverhead, Symbolic or ByMVO " +
+                "(input only 1 to use the same value for all; Archicad 29 or newer). Optional.");
+
+            InTexts(
+                "ShowProjections",
+                "New show projection setting of each route: ToFloorPlanRange, ToAbsoluteDisplayLimit or EntireElement " +
+                "(input only 1 to use the same value for all; Archicad 29 or newer). Optional.");
+
+            InTexts(
+                "OnStoryVisibilities",
+                "New on-story visibility of each route: AllRelevantStories or HomeStoryOnly " +
+                "(input only 1 to use the same value for all; Archicad 29 or newer). Optional.");
+
+            SetOptionality(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 });
         }
 
         protected override void AddOutputs()
@@ -99,6 +161,25 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             referenceIds = referenceIds ?? new List<int>();
             da.TryGetList(7, out List<string> preferenceTableGuids);
             preferenceTableGuids = preferenceTableGuids ?? new List<string>();
+            da.TryGetList(8, out List<string> branchPreferenceTableGuids);
+            branchPreferenceTableGuids = branchPreferenceTableGuids ?? new List<string>();
+
+            // The settings added later, each written as it is given.
+            var fields = new ElectricalItemFields(this, 0, elementWrappers.Count);
+            if (!fields.AddTexts(da, 9, "anchor") ||
+                !fields.AddNumbers(da, 10, "referenceLineOffsetX") ||
+                !fields.AddNumbers(da, 11, "referenceLineOffsetY") ||
+                !fields.AddNumbers(da, 12, "wallThickness") ||
+                !fields.AddNumbers(da, 13, "flangeSize") ||
+                !fields.AddTexts(da, 14, "connectionStyle") ||
+                !fields.AddTexts(da, 15, "preferredTransitionPlacement") ||
+                !fields.AddTexts(da, 16, "cutPlanePosition") ||
+                !fields.AddTexts(da, 17, "floorPlanDisplayOption") ||
+                !fields.AddTexts(da, 18, "showProjection") ||
+                !fields.AddTexts(da, 19, "onStoryVisibility"))
+            {
+                return;
+            }
 
             foreach (var pair in new (string Name, int Count)[]
                      {
@@ -107,7 +188,8 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                          ("CrossSectionHeights", heights.Count),
                          ("CrossSectionShapes", shapes.Count),
                          ("CrossSectionReferenceIds", referenceIds.Count),
-                         ("PreferenceTableGuids", preferenceTableGuids.Count)
+                         ("PreferenceTableGuids", preferenceTableGuids.Count),
+                         ("BranchPreferenceTableGuids", branchPreferenceTableGuids.Count)
                      })
             {
                 if (pair.Count > 1 &&
@@ -128,6 +210,15 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                     return;
                 }
                 preferenceTableGuids[i] = tableGuid.ToString("D");
+            }
+            for (var i = 0; i < branchPreferenceTableGuids.Count; i++)
+            {
+                if (!Guid.TryParse(branchPreferenceTableGuids[i], out var tableGuid))
+                {
+                    this.AddError("Invalid identifier in the BranchPreferenceTableGuids input.");
+                    return;
+                }
+                branchPreferenceTableGuids[i] = tableGuid.ToString("D");
             }
 
             var mepSystemIds = new List<AttributeGuidObject>();
@@ -183,6 +274,12 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 {
                     item["preferenceTableId"] = preferenceTableGuids[preferenceTableGuids.Count == 1 ? 0 : i];
                 }
+                if (branchPreferenceTableGuids.Count > 0)
+                {
+                    item["branchPreferenceTableId"] =
+                        branchPreferenceTableGuids[branchPreferenceTableGuids.Count == 1 ? 0 : i];
+                }
+                fields.ApplyTo(item, i);
 
                 if (nodePositions != null &&
                     i < nodePositions.Branches.Count &&
