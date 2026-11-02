@@ -70,66 +70,9 @@
 #include "ACAPI/MEPPhysicalSystem.hpp"
 #endif
 
-#ifdef ServerMainVers_2800
-#include "ACAPI/Result.hpp"
-#include "ACAPI/MEPAdapter.hpp"
-#include "ACAPI/MEPTypes.hpp"
-#include "ACAPI/MEPEnums.hpp"
-#include "ACAPI/MEPElement.hpp"
-#include "ACAPI/MEPPort.hpp"
-#include "ACAPI/MEPPipingPort.hpp"
-#include "ACAPI/MEPVentilationPort.hpp"
-#include "ACAPI/MEPRoutingElement.hpp"
-#include "ACAPI/MEPRoutingElementDefault.hpp"
-#include "ACAPI/MEPRoutingSegment.hpp"
-#include "ACAPI/MEPRoutingSegmentDefault.hpp"
-#include "ACAPI/MEPRoutingNode.hpp"
-#include "ACAPI/MEPTerminalDefault.hpp"
-#include "ACAPI/MEPAccessoryDefault.hpp"
-#include "ACAPI/MEPEquipmentDefault.hpp"
-#include "ACAPI/MEPFittingDefault.hpp"
-#include "ACAPI/MEPDistributionSystemsGraph.hpp"
-#include "ACAPI/MEPDistributionSystem.hpp"
-#include "ACAPI/MEPPipeSegmentPreferenceTable.hpp"
-#include "ACAPI/MEPPipeSegmentPreferenceTableContainer.hpp"
-#include "ACAPI/MEPDuctCircularSegmentPreferenceTable.hpp"
-#include "ACAPI/MEPDuctSegmentPreferenceTableContainer.hpp"
-#include "ACAPI/MEPDuctRectangularSegmentPreferenceTable.hpp"
-#include "ACAPI/MEPCableCarrierSegmentPreferenceTable.hpp"
-#include "ACAPI/MEPCableCarrierSegmentPreferenceTableContainer.hpp"
-#include "ACAPI/MEPPipeElbowPreferenceTable.hpp"
-#include "ACAPI/MEPPipeElbowPreferenceTableContainer.hpp"
-#include "ACAPI/MEPPipeBranchPreferenceTable.hpp"
-#include "ACAPI/MEPPipeBranchPreferenceTableContainer.hpp"
-#include "ACAPI/MEPDuctElbowPreferenceTable.hpp"
-#include "ACAPI/MEPDuctElbowPreferenceTableContainer.hpp"
-#include "ACAPI/MEPDuctBranchPreferenceTable.hpp"
-#include "ACAPI/MEPDuctBranchPreferenceTableContainer.hpp"
-#include "ACAPI/MEPPipeReferenceSet.hpp"
-#include "ACAPI/MEPDuctReferenceSet.hpp"
-#include "ACAPI/MEPRoutingNodeDefault.hpp"
-#include "ACAPI/MEPTransitionDefault.hpp"
-#include "ACAPI/MEPRigidSegment.hpp"
-#include "ACAPI/MEPFlexibleSegment.hpp"
-#include "ACAPI/MEPBranch.hpp"
-#include "ACAPI/MEPTransition.hpp"
-#ifdef ServerMainVers_2900
-#include "ACAPI/MEPElbowDefault.hpp"
-#include "ACAPI/MEPElbow.hpp"
-#include "ACAPI/MEPPipeTransitionPreferenceTable.hpp"
-#include "ACAPI/MEPPipeTransitionPreferenceTableContainer.hpp"
-#include "ACAPI/MEPDuctTransitionPreferenceTable.hpp"
-#include "ACAPI/MEPDuctTransitionPreferenceTableContainer.hpp"
-#include "ACAPI/MEPPipeAngleSet.hpp"
-#include "ACAPI/MEPDuctAngleSet.hpp"
-#include "ACAPI/MEPSystemGroup.hpp"
-#include "ACAPI/MEPPhysicalSystem.hpp"
-#endif
-
 #include <optional>
 #include <utility>
 #include <type_traits>
-#include <utility>
 
 using namespace ACAPI::MEP;
 #elif defined (ServerMainVers_2700)
