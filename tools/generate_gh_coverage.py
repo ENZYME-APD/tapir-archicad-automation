@@ -187,16 +187,20 @@ def sent_with (statement):
 def sends_to_addon (classes, owner, text, position):
     """Whether the command name literal at position of owner's text is sent to the Add-On.
 
-    A name given as CommandName is sent where CommandName is used, in the class
-    or in its base classes (the nearest one that uses it); any other literal
-    counts only as an argument of a call that sends to the Add-On, so a
-    component's display name or a resource name equal to a command does not.
+    A name given as CommandName (or as CreateCommand / ModifyCommand, the
+    commands of the Archicad tool components) is sent where that property is
+    used, in the class or in its base classes (the nearest one that uses it);
+    any other literal counts only as an argument of a call that sends to the
+    Add-On, so a component's display name or a resource name equal to a
+    command does not.
     """
-    if re.search (r'\bCommandName\s*=>\s*$', text[max (0, position - 80):position]):
+    property_match = re.search (r'\b(CommandName|CreateCommand|ModifyCommand)\s*=>\s*$', text[max (0, position - 80):position])
+    if property_match:
+        property_name = property_match.group (1)
         for name in chain (classes, owner):
             body = classes[name]['text']
             found = [sent_with (statement_at (body, m.start ()))
-                     for m in re.finditer (r'\bCommandName\b(?!\s*=>)(?!\s*\{)', body)]
+                     for m in re.finditer (r'\b' + property_name + r'\b(?!\s*=>)(?!\s*\{)', body)]
             found = [f for f in found if f]
             if found:
                 return 'addon' in found

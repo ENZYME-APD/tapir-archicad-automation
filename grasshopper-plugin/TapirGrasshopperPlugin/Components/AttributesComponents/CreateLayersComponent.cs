@@ -53,7 +53,12 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 "Overwrite the existing layer with the same name or identifier.",
                 false);
 
-            SetOptionality(new[] { 1, 2, 3, 4, 5 });
+            InTexts(
+                "Indices",
+                "Index of the existing layer to overwrite for each item. " +
+                "Optional; ignored when OverwriteExisting is false.");
+
+            SetOptionality(new[] { 1, 2, 3, 4, 5, 7 });
         }
 
         protected override void AddOutputs()
@@ -136,6 +141,18 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 6,
                 out bool overwriteExisting);
 
+            da.TryGetList(
+                7,
+                out List<string> indices);
+
+            if (indices.Count > 0 &&
+                indices.Count != names.Count)
+            {
+                this.AddError(
+                    "The size of the input Indices must be 0 or equal to the size of the input Names.");
+                return;
+            }
+
             var items = new JArray();
             for (var i = 0; i < names.Count; i++)
             {
@@ -147,6 +164,11 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                     {
                         ["guid"] = attributeGuids[i].Guid
                     };
+                }
+
+                if (indices.Count > 0)
+                {
+                    item["index"] = indices[i];
                 }
 
                 if (isHiddenLayers.Count > 0)
