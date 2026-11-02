@@ -1808,6 +1808,51 @@ GS::Optional<GS::UniString> ApplyRoofStructure (
     return {};
 }
 
+// Same as ApplyRoofStructure: the shell keeps its structure in the same API_ShellBaseType.
+GS::Optional<GS::UniString> ApplyShellStructure (
+    API_Element& element,
+    API_Element* mask,
+    const GS::ObjectState& details,
+    bool& changed)
+{
+    StructureSelection selection;
+    auto error = ParseStructureSelection (details, true, false, selection);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    if (selection.kind == StructureSelectionKind::Unspecified) {
+        return {};
+    }
+
+    switch (selection.kind) {
+        case StructureSelectionKind::Basic:
+            element.shell.shellBase.modelElemStructureType = API_BasicStructure;
+            if (selection.buildingMaterial != APIInvalidAttributeIndex) {
+                element.shell.shellBase.buildingMaterial = selection.buildingMaterial;
+            }
+            element.shell.shellBase.composite = APIInvalidAttributeIndex;
+            break;
+        case StructureSelectionKind::Composite:
+            element.shell.shellBase.modelElemStructureType = API_CompositeStructure;
+            if (selection.composite != APIInvalidAttributeIndex) {
+                element.shell.shellBase.composite = selection.composite;
+            }
+            break;
+        case StructureSelectionKind::Profile:
+        case StructureSelectionKind::Unspecified:
+            break;
+    }
+
+    if (mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET ((*mask), API_ShellType, shellBase.modelElemStructureType);
+        ACAPI_ELEMENT_MASK_SET ((*mask), API_ShellType, shellBase.buildingMaterial);
+        ACAPI_ELEMENT_MASK_SET ((*mask), API_ShellType, shellBase.composite);
+    }
+    changed = true;
+    return {};
+}
+
 } // namespace
 
 // Defined OUTSIDE the anonymous namespace: ExtendedElementCommands.hpp declares it
@@ -5235,7 +5280,7 @@ static const char* OpeningExtrusionParametersResponseSchema = R"({
         "linkedStatus": {
             "type": "string",
             "enum": ["Linked", "NotLinked"],
-            "description": "Whether the opening is linked to its parent element. Left out when Archicad gives none."
+            "description": "Whether the opening's width and height are linked. Left out when Archicad gives none."
         },
         "shapeType": {
             "type": "string",
@@ -5628,15 +5673,15 @@ static const char* OpeningExtrusionParametersInputSchema = R"({
         "linkedStatus": {
             "type": "string",
             "enum": ["Linked", "NotLinked"],
-            "description": "Whether the opening is linked to its parent element."
+            "description": "Whether the opening's width and height are linked. While they are linked, giving both width and height makes a square of the height; give NotLinked with them to get a different width and height."
         },
         "shapeType": {
             "type": "string",
             "enum": ["Rectangular", "Circular", "Polygonal"],
             "description": "The shape of the opening's polygon."
         },
-        "width": { "type": "number", "exclusiveMinimum": 0.0 },
-        "height": { "type": "number", "exclusiveMinimum": 0.0 },
+        "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "The opening's width. See linkedStatus." },
+        "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "The opening's height. See linkedStatus." },
         "anchor": {
             "type": "string",
             "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"],
@@ -7583,6 +7628,94 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
 
             err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
             results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify roof."));
+        }
+    });
+}
+
+ModifyShellsCommand::ModifyShellsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyShellsCommand::GetName () const
+{
+    return "ModifyShells";
+}
+
+GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "shellsWithDetails": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "structureType": {
+                            "$ref": "#/ShellStructureType"
+                        },
+                        "buildingMaterialId": { "$ref": "#/AttributeId" },
+                        "compositeId": { "$ref": "#/AttributeId" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["shellsWithDetails"]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyShellsCommand::GetRawResponseSchema () const
+{
+    return ModifyWallsCommand ().GetRawResponseSchema ();
+}
+
+GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> items;
+    auto error = GetElementArray (parameters, "shellsWithDetails", items);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+
+    return ExecuteModifyWithResults ("Modify Shells", [&](GS::Array<GS::ObjectState>& results) {
+        for (const auto& item : items) {
+            if (item.Get ("elementId") == nullptr) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
+                continue;
+            }
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to load shell."));
+                continue;
+            }
+            if (GetElemTypeId (element.header) != API_ShellID) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "The element is not a shell."));
+                continue;
+            }
+
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+            bool changed = false;
+            auto error = ApplyShellStructure (element, &mask, item, changed);
+            if (error.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
+                continue;
+            }
+
+            if (!changed) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No shell fields to modify."));
+                continue;
+            }
+
+            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify shell."));
         }
     });
 }
@@ -9858,49 +9991,52 @@ GS::Optional<GS::UniString> GetOpeningSymbolParametersCommand::GetRawResponseSch
 }
 
 #ifdef ServerMainVers_2900
-// The DevKit has no library or framework of the GDL module, so only the virtual functions of
-// GDL::Parameters link (called through the vtable), not its constructors, destructor or
-// assignment. The opening gives a symbol's parameters in a std::optional, whose destructor
-// calls ~Parameters directly. This holds that optional without ever running its destructor
-// and destroys the parameters through their virtual destructor instead. The parameters are
-// the opening's copy, so they are changed in place; they are never copied.
-class SymbolParameters
+// The parameters of an opening's cut or uncut symbol, as the API returns them. GDL::Parameters is
+// implemented in the GDL module, which the DevKit has no import library or framework for: its
+// constructors, destructor and assignment operators cannot be linked, only its virtual functions
+// can be called. So the parameters are never copied: they stay where the API's getter put them,
+// are changed there, and are destroyed through the virtual destructor.
+class OpeningSymbolParameters
 {
 public:
-    template <typename Getter>
-    explicit SymbolParameters (const Getter& getter) :
-        parameters (getter ())
-    {
-    }
+    enum class Symbol { Cut, UnCut };
 
-    ~SymbolParameters ()
+    OpeningSymbolParameters (const ACAPI::Element::OpeningFloorPlanParameters& floorPlanParameters, Symbol symbol)
     {
-        if (parameters.has_value ()) {
-            GDL::ParameterGetter& value = *parameters;
-            value.~ParameterGetter ();
+        if (symbol == Symbol::Cut) {
+            ::new (static_cast<void*> (&storage.symbolParameters)) std::optional<GDL::Parameters> (floorPlanParameters.GetCutSymbolParameters ());
+        } else {
+            ::new (static_cast<void*> (&storage.symbolParameters)) std::optional<GDL::Parameters> (floorPlanParameters.GetUnCutSymbolParameters ());
         }
     }
 
-    SymbolParameters (const SymbolParameters&) = delete;
-    SymbolParameters& operator= (const SymbolParameters&) = delete;
-
-    bool HasValue () const
+    ~OpeningSymbolParameters ()
     {
-        return parameters.has_value ();
+        if (storage.symbolParameters.has_value ()) {
+            // Read through a volatile pointer, so the call cannot be resolved at compile time to
+            // GDL::Parameters::~Parameters, and the destructor of the GDL module runs.
+            GDL::ParameterGetter* volatile parameters = &*storage.symbolParameters;
+            parameters->~ParameterGetter ();
+        }
     }
 
-    GDL::Parameters& Get ()
-    {
-        return *parameters;
-    }
+    OpeningSymbolParameters (const OpeningSymbolParameters&) = delete;
+    OpeningSymbolParameters& operator= (const OpeningSymbolParameters&) = delete;
+
+    bool                    HasValue () const   { return storage.symbolParameters.has_value (); }
+    GDL::Parameters&        Get ()              { return *storage.symbolParameters; }
+    const GDL::Parameters&  Get () const        { return *storage.symbolParameters; }
 
 private:
-    union {
-        std::optional<GDL::Parameters> parameters;
-    };
+    // A union, so that the destructor of std::optional (which calls ~Parameters) is never used.
+    union Storage {
+        Storage () {}
+        ~Storage () {}
+        std::optional<GDL::Parameters> symbolParameters;
+    } storage;
 };
 
-static void AddSymbolParameters (GS::ObjectState& os, const char* key, SymbolParameters& symbolParameters)
+static void AddSymbolParameters (GS::ObjectState& os, const char* key, const OpeningSymbolParameters& symbolParameters)
 {
     if (!symbolParameters.HasValue ()) {
         return;
@@ -9932,10 +10068,8 @@ GS::ObjectState GetOpeningSymbolParametersCommand::Execute (const GS::ObjectStat
         const auto& floorPlanParameters = opening->GetFloorPlanParameters ();
         GS::ObjectState details;
         details.Add ("elementId", CreateGuidObjectState (openingGuid));
-        SymbolParameters cutSymbolParameters ([&] () { return floorPlanParameters.GetCutSymbolParameters (); });
-        SymbolParameters unCutSymbolParameters ([&] () { return floorPlanParameters.GetUnCutSymbolParameters (); });
-        AddSymbolParameters (details, "cutSymbolParameters", cutSymbolParameters);
-        AddSymbolParameters (details, "unCutSymbolParameters", unCutSymbolParameters);
+        AddSymbolParameters (details, "cutSymbolParameters", OpeningSymbolParameters (floorPlanParameters, OpeningSymbolParameters::Symbol::Cut));
+        AddSymbolParameters (details, "unCutSymbolParameters", OpeningSymbolParameters (floorPlanParameters, OpeningSymbolParameters::Symbol::UnCut));
         openings (details);
     }
     return response;
@@ -9994,10 +10128,10 @@ GS::Optional<GS::UniString> SetOpeningSymbolParametersCommand::GetRawResponseSch
 }
 
 #ifdef ServerMainVers_2900
-// Changes the given parameters of the symbol in the opening's copy of them and sets `changed`.
-// Returns an error message when the opening has no such symbol or a parameter cannot be set;
-// then nothing is written.
-static GS::Optional<GS::UniString> ChangeSymbolParameters (const GS::ObjectState& data, const char* key, const char* symbolName, SymbolParameters& symbolParameters, bool& changed, GSErrCode& error)
+// Changes the given parameters of the symbol in symbolParameters (read from the opening) and sets
+// changed. Returns an error message when the opening has no such symbol or a parameter cannot be
+// set; then nothing is written.
+static GS::Optional<GS::UniString> GetChangedSymbolParameters (const GS::ObjectState& data, const char* key, const char* symbolName, OpeningSymbolParameters& symbolParameters, bool& changed, GSErrCode& error)
 {
     GS::Array<GS::ObjectState> changes;
     if (!data.Get (key, changes)) {
@@ -10007,12 +10141,12 @@ static GS::Optional<GS::UniString> ChangeSymbolParameters (const GS::ObjectState
         error = APIERR_BADPARS;
         return GS::UniString::Printf ("The opening has no %s symbol.", symbolName);
     }
+    changed = true;
     GS::UniString errMessage;
     error = SetGDLParametersFromObjectStates (symbolParameters.Get (), changes, errMessage);
     if (error != NoError) {
         return GS::UniString::Printf ("The parameters of the %s symbol were not changed: ", symbolName) + errMessage;
     }
-    changed = true;
     return GS::NoValue;
 }
 
@@ -10030,17 +10164,16 @@ static GS::ObjectState SetOpeningSymbolParameters (const GS::ObjectState& data)
         return CreateFailedExecutionResult (opening.UnwrapErr ().kind, "Failed to load opening: the element is missing or is not an Opening.");
     }
 
-    // Both symbols are changed in copies of their parameters (the ones the opening gives) and
-    // checked before the opening is touched.
+    // Both symbols' parameters are read and changed, and checked before the opening is touched.
     const auto& floorPlanParameters = opening->GetFloorPlanParameters ();
-    SymbolParameters cutSymbolParameters ([&] () { return floorPlanParameters.GetCutSymbolParameters (); });
-    SymbolParameters unCutSymbolParameters ([&] () { return floorPlanParameters.GetUnCutSymbolParameters (); });
+    OpeningSymbolParameters cutSymbolParameters (floorPlanParameters, OpeningSymbolParameters::Symbol::Cut);
+    OpeningSymbolParameters unCutSymbolParameters (floorPlanParameters, OpeningSymbolParameters::Symbol::UnCut);
     bool cutSymbolChanged = false;
     bool unCutSymbolChanged = false;
     GSErrCode inputError = NoError;
-    GS::Optional<GS::UniString> inputErrorMessage = ChangeSymbolParameters (data, "cutSymbolParameters", "cut", cutSymbolParameters, cutSymbolChanged, inputError);
+    GS::Optional<GS::UniString> inputErrorMessage = GetChangedSymbolParameters (data, "cutSymbolParameters", "cut", cutSymbolParameters, cutSymbolChanged, inputError);
     if (!inputErrorMessage.HasValue ()) {
-        inputErrorMessage = ChangeSymbolParameters (data, "unCutSymbolParameters", "uncut", unCutSymbolParameters, unCutSymbolChanged, inputError);
+        inputErrorMessage = GetChangedSymbolParameters (data, "unCutSymbolParameters", "uncut", unCutSymbolParameters, unCutSymbolChanged, inputError);
     }
     if (inputErrorMessage.HasValue ()) {
         return CreateFailedExecutionResult (inputError, inputErrorMessage.Get ());
@@ -10368,8 +10501,6 @@ GS::ObjectState PlaceOpeningsCommand::Execute (const GS::ObjectState& parameters
     notification.notifID = APINotifyElement_BeginEvents;
     AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
 
-    // OpeningDefault::Place opens and closes its own undoable command, so unlike the other
-    // creation commands this one is not run inside ACAPI_CallUndoableCommand.
     for (const GS::ObjectState& data : openingsData) {
         const GS::ObjectState* parentElementId = data.Get ("parentElementId");
         const GS::ObjectState* point = data.Get ("point");
@@ -10400,7 +10531,22 @@ GS::ObjectState PlaceOpeningsCommand::Execute (const GS::ObjectState& parameters
         }
 
         const ACAPI::UniqueID parentElemId (APIGuid2GSGuid (GetGuidFromObjectState (*parentElementId)), ACAPI_GetToken ());
-        ACAPI::Result<ACAPI::UniqueID> resultId = openingDefault->Place (parentElemId, Get3DCoordinateFromObjectState (*point));
+        const API_Coord3D placePoint = Get3DCoordinateFromObjectState (*point);
+
+        // Although the header says OpeningDefault::Place opens its own undoable command, calling it
+        // outside ACAPI_CallUndoableCommand crashes Archicad 30 with an ODB assertion (#1665), so it
+        // is run inside one, like the other creation commands.
+        std::optional<ACAPI::Result<ACAPI::UniqueID>> placed;
+        const GSErrCode scopeErr = ACAPI_CallUndoableCommand ("Place Opening", [&] () -> GSErrCode {
+            placed.emplace (openingDefault->Place (parentElemId, placePoint));
+            return NoError;
+        });
+        if (!placed.has_value ()) {
+            results.Push (CreateErrorResponse (scopeErr, "Failed to open an undoable command for the opening."));
+            continue;
+        }
+
+        ACAPI::Result<ACAPI::UniqueID>& resultId = *placed;
         if (resultId.IsErr ()) {
             results.Push (CreateErrorResponse (resultId.UnwrapErr ().kind, "Failed to place the opening: " + GS::UniString (resultId.UnwrapErr ().text.c_str ())));
             continue;
