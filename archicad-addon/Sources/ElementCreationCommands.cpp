@@ -3550,7 +3550,8 @@ static void ReplaceCWPatternArray (T*& array, const GS::Array<T>& values)
 
 // Rewrites the column (primary) or row (secondary) pattern of the segment from the "sizes",
 // "logic", "origin" and "flexibleIndices" fields. Returns the reason when the fields are invalid.
-static GS::Optional<GS::UniString> ApplyCurtainWallPattern (const GS::ObjectState& patternOS, const char* fieldName, API_CWSegmentPatternData& pattern)
+// Shared with ModifyCurtainWallsCommand (ExtendedElementCommands.cpp).
+GS::Optional<GS::UniString> ApplyCurtainWallPattern (const GS::ObjectState& patternOS, const char* fieldName, API_CWSegmentPatternData& pattern)
 {
     GS::Array<double> sizes;
     if (!GetDoubleList (patternOS, "sizes", sizes) || sizes.IsEmpty ()) {
@@ -3628,7 +3629,11 @@ static GS::Optional<GS::UniString> ApplyCurtainWallPattern (const GS::ObjectStat
     return {};
 }
 
-static GS::Optional<GS::UniString> ApplyCurtainWallPatternCells (const GS::Array<GS::ObjectState>& cells, const API_Element& element, API_ElementMemo& memo, bool patternChanged)
+// Rewrites memo.cWSegPatternCells for the pattern in memo (nColumns x nRows cells) from the
+// "cells" assignments. element is the curtain wall, whose panel and frame class counts bound the
+// class indices (from the memo's class defaults when loaded, else from the element).
+// Shared with ModifyCurtainWallsCommand (ExtendedElementCommands.cpp).
+GS::Optional<GS::UniString> ApplyCurtainWallPatternCells (const GS::Array<GS::ObjectState>& cells, const API_Element& element, API_ElementMemo& memo, bool patternChanged)
 {
     const UInt32 nColumns = memo.cWSegPrimaryPattern.nPattern;
     const UInt32 nRows = memo.cWSegSecondaryPattern.nPattern;
