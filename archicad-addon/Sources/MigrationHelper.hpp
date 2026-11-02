@@ -126,6 +126,7 @@ inline GSErrCode ACAPI_View_DeleteGhostRecord (const API_GhostRecord* ghostRecor
 #define ACAPI_LibraryPart_Register(par1) ACAPI_LibPart_Register(par1)
 #define ACAPI_LibraryPart_GetNum(par1) ACAPI_LibPart_GetNum(par1)
 #define ACAPI_LibraryPart_GetParams ACAPI_LibPart_GetParams
+#define ACAPI_LibraryPart_GetHotspots ACAPI_LibPart_GetHotspots
 #define ACAPI_LibraryPart_GetParamValues(par1) ACAPI_Goodies(APIAny_GetParamValuesID,par1)
 #define ACAPI_LibraryPart_Create(par1) ACAPI_LibPart_Create(par1)
 #define ACAPI_LibraryPart_AddSection ACAPI_LibPart_AddSection
