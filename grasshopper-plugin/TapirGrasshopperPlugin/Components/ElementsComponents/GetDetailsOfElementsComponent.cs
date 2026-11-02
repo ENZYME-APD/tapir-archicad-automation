@@ -301,7 +301,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 var wallDetails =
-                    detailsOfElement.Details.ToObject<WallDetails>();
+                    detailsOfElement.Details?.ToObject<WallDetails>();
 
                 if (wallDetails == null)
                 {
@@ -528,7 +528,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 var beamDetails =
-                    detailsOfElement.Details.ToObject<BeamDetails>();
+                    detailsOfElement.Details?.ToObject<BeamDetails>();
 
                 if (beamDetails == null)
                 {
@@ -743,7 +743,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 var columnDetails =
-                    detailsOfElement.Details.ToObject<ColumnDetails>();
+                    detailsOfElement.Details?.ToObject<ColumnDetails>();
 
                 if (columnDetails == null)
                 {
@@ -897,7 +897,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 var slabDetails =
-                    detailsOfElement.Details.ToObject<SlabDetails>();
+                    detailsOfElement.Details?.ToObject<SlabDetails>();
                 if (slabDetails == null)
                 {
                     continue;
@@ -1045,7 +1045,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 var roofDetails =
-                    detailsOfElement.Details.ToObject<RoofDetails>();
+                    detailsOfElement.Details?.ToObject<RoofDetails>();
                 if (roofDetails == null || roofDetails.PolygonCoordinates == null)
                 {
                     continue;
@@ -1178,7 +1178,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 var polylineDetails =
-                    detailsOfElement.Details.ToObject<PolylineDetails>();
+                    detailsOfElement.Details?.ToObject<PolylineDetails>();
                 if (polylineDetails == null)
                 {
                     continue;
@@ -1276,7 +1276,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 var zoneDetails =
-                    detailsOfElement.Details.ToObject<ZoneDetails>();
+                    detailsOfElement.Details?.ToObject<ZoneDetails>();
                 if (zoneDetails == null)
                 {
                     continue;
@@ -1416,7 +1416,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 var textDetails =
-                    detailsOfElement.Details.ToObject<TextDetails>();
+                    detailsOfElement.Details?.ToObject<TextDetails>();
                 if (textDetails == null)
                 {
                     continue;
@@ -1514,7 +1514,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 var labelDetails =
-                    detailsOfElement.Details.ToObject<LabelDetails>();
+                    detailsOfElement.Details?.ToObject<LabelDetails>();
                 if (labelDetails == null || labelDetails.Text == null)
                 {
                     continue;
