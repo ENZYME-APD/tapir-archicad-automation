@@ -36,6 +36,14 @@ namespace TapirGrasshopperPlugin.Components.DesignOptionsComponents
             OutTexts(
                 "OwnerSetNames",
                 "Names of the owner design option sets.");
+
+            OutBooleans(
+                "IsEditable",
+                "Whether each design option can be renamed, deleted or changed now (for example it is not reserved by someone else in Teamwork).");
+
+            OutTexts(
+                "NotEditableReasons",
+                "The reason why each design option is not editable (empty when it is editable).");
         }
 
         protected override void Solve(
@@ -69,6 +77,14 @@ namespace TapirGrasshopperPlugin.Components.DesignOptionsComponents
             da.SetDataList(
                 3,
                 designOptions.Select(o => o.OwnerSetName));
+
+            da.SetDataList(
+                4,
+                designOptions.Select(o => o.IsEditable));
+
+            da.SetDataList(
+                5,
+                designOptions.Select(o => o.NotEditableError?.Message));
         }
 
         protected override System.Drawing.Bitmap Icon =>
