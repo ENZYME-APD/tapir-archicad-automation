@@ -78,6 +78,8 @@ API_Coord   Get2DCoordinateFromObjectState (const GS::ObjectState& objectState);
 API_Coord3D Get3DCoordinateFromObjectState (const GS::ObjectState& objectState);
 API_RGBColor GetColorFromObjectState (const GS::ObjectState& objectState);
 bool GetColor (const GS::ObjectState& objectState, const GS::String& fieldName, API_RGBColor& outColor);
+// Reads a list of numbers, integer items included; false when the field is not a list of numbers.
+bool GetDoubleList (const GS::ObjectState& parameters, const char* fieldName, GS::Array<double>& outValues);
 GS::ObjectState Create2DCoordinateObjectState (const API_Coord& c);
 GS::ObjectState Create3DCoordinateObjectState (const API_Coord3D& c);
 GS::ObjectState CreatePolyArcObjectState (const API_PolyArc& a);

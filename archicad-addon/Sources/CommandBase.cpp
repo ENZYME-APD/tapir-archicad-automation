@@ -834,6 +834,84 @@ bool GetColor (const GS::ObjectState& objectState, const GS::String& fieldName, 
     return true;
 }
 
+// A list of numbers read with ObjectState::Get<GS::Array<double>> does not convert integer items
+// (their bit pattern is taken as a double), so the items are collected one by one.
+class DoubleListCollector : public GS::ObjectState::Processor
+{
+public:
+    virtual void IntFound (const GS::String&, Int64 value) override
+    {
+        values.Push (static_cast<double> (value));
+    }
+
+    virtual void UIntFound (const GS::String&, UInt64 value) override
+    {
+        values.Push (static_cast<double> (value));
+    }
+
+    virtual void RealFound (const GS::String&, double value) override
+    {
+        values.Push (value);
+    }
+
+    virtual void BoolFound (const GS::String&, bool) override
+    {
+        failed = true;
+    }
+
+    virtual void StringFound (const GS::String&, const GS::UniString&) override
+    {
+        failed = true;
+    }
+
+    virtual bool ObjectFound (const GS::String&, const GS::ObjectState&) override
+    {
+        failed = true;
+        return false;
+    }
+
+    virtual bool ListFound (const GS::String&) override
+    {
+        return !failed;
+    }
+
+    virtual void ListEntered (const GS::String&) override
+    {
+        if (++depth > 1) {
+            failed = true;
+        }
+    }
+
+    virtual void ListExited (const GS::String&) override
+    {
+        --depth;
+    }
+
+    bool Get (GS::Array<double>& outValues) const
+    {
+        if (failed) {
+            return false;
+        }
+        outValues = values;
+        return true;
+    }
+
+private:
+    GS::Array<double> values;
+    Int32 depth = 0;
+    bool failed = false;
+};
+
+bool GetDoubleList (const GS::ObjectState& parameters, const char* fieldName, GS::Array<double>& outValues)
+{
+    if (!parameters.IsList (fieldName)) {
+        return false;
+    }
+    DoubleListCollector collector;
+    parameters.Enumerate (fieldName, collector);
+    return collector.Get (outValues);
+}
+
 Stories GetStories ()
 {
     Stories stories;

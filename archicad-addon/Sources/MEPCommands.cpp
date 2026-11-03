@@ -3168,6 +3168,13 @@ GS::Optional<GS::UniString> ModifyMEPPreferenceTablesCommand::GetInputParameters
                     "minimum": 0
                 }
             },
+            "anglesToAdd": {
+                "type": "array",
+                "description": "Angles in degrees, between 1 and 90, to add to the angle set of the Piping or Ventilation domain, so that elbow and branch rows can have them. They are added before the tables are changed. Available from Archicad 29.",
+                "items": {
+                    "type": "number"
+                }
+            },
             "anglesToDelete": {
                 "type": "array",
                 "description": "Angles to delete from the angle set of the Piping or Ventilation domain, as GetMEPPreferenceTables returns them. Available from Archicad 29.",
@@ -3218,6 +3225,10 @@ GS::Optional<GS::UniString> ModifyMEPPreferenceTablesCommand::GetRawResponseSche
             "referenceSet": {
                 "$ref": "#/ExecutionResult",
                 "description": "Only when referenceIdsToDelete is given."
+            },
+            "addedAngles": {
+                "$ref": "#/ExecutionResult",
+                "description": "Only when anglesToAdd is given."
             },
             "angleSet": {
                 "$ref": "#/ExecutionResult",
@@ -3790,6 +3801,38 @@ static GS::ObjectState DeleteReferenceIds (ReferenceSetResultT referenceSet, con
 
 #ifdef ServerMainVers_2900
 template <typename AngleSetResultT>
+static GS::ObjectState AddAngles (AngleSetResultT angleSet, const GS::Array<double>& anglesToAdd)
+{
+    if (angleSet.IsErr ()) {
+        return CreateFailedExecutionResult (angleSet.UnwrapErr ().kind, "Failed to get the angle set.");
+    }
+    for (double angleToAdd : anglesToAdd) {
+        if (angleToAdd < 1.0 || angleToAdd > 90.0) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "The angle " + GS::ValueToUniString (angleToAdd) + " is not between 1 and 90 degrees.");
+        }
+        for (uint32_t i = 0; i < angleSet->GetSize (); ++i) {
+            auto angle = angleSet->GetAngle (i);
+            if (angle.IsOk () && std::abs (*angle - angleToAdd) < 1e-9) {
+                return CreateFailedExecutionResult (APIERR_BADPARS, "The angle " + GS::ValueToUniString (angleToAdd) + " is already in the angle set.");
+            }
+        }
+    }
+    std::optional<GSErrCode> addError;
+    // The modifier is the base class's, as in DeleteAngles.
+    ACAPI::Result<void> modifyResult = angleSet->Modify ([&] (AngleSetBase::Modifier& modifier) {
+        for (double angle : anglesToAdd) {
+            if (!addError.has_value ()) {
+                addError = GetErrorOfCall ([&] () { return modifier.Add (angle); });
+            }
+        }
+    }, "Modify MEP Angle Set");
+    if (addError.has_value () || modifyResult.IsErr ()) {
+        return CreateFailedExecutionResult (addError.has_value () ? *addError : modifyResult.UnwrapErr ().kind, "Failed to add the angles.");
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
+template <typename AngleSetResultT>
 static GS::ObjectState DeleteAngles (AngleSetResultT angleSet, const GS::Array<double>& anglesToDelete)
 {
     if (angleSet.IsErr ()) {
@@ -3843,18 +3886,28 @@ GS::ObjectState ModifyMEPPreferenceTablesCommand::Execute (const GS::ObjectState
     parameters.Get ("tablesToDelete", tablesToDelete);
     GS::Array<Int32> referenceIdsToDelete;
     const bool hasReferenceIdsToDelete = parameters.Get ("referenceIdsToDelete", referenceIdsToDelete);
+    GS::Array<double> anglesToAdd;
+    const bool hasAnglesToAdd = GetDoubleList (parameters, "anglesToAdd", anglesToAdd);
     GS::Array<double> anglesToDelete;
-    const bool hasAnglesToDelete = parameters.Get ("anglesToDelete", anglesToDelete);
-    if (*domain == Domain::CableCarrier && (hasReferenceIdsToDelete || hasAnglesToDelete)) {
+    const bool hasAnglesToDelete = GetDoubleList (parameters, "anglesToDelete", anglesToDelete);
+    if (*domain == Domain::CableCarrier && (hasReferenceIdsToDelete || hasAnglesToAdd || hasAnglesToDelete)) {
         return CreateErrorResponse (APIERR_BADPARS, "The CableCarrier domain has no reference set or angle set.");
     }
 #ifndef ServerMainVers_2900
-    if (hasAnglesToDelete) {
+    if (hasAnglesToAdd || hasAnglesToDelete) {
         return CreateErrorResponse (APIERR_NOTSUPPORTED, "The angle set is available from Archicad 29.");
     }
 #endif
 
     GS::ObjectState response;
+#ifdef ServerMainVers_2900
+    if (hasAnglesToAdd) {
+        response.Add ("addedAngles", *domain == Domain::Piping
+            ? AddAngles (GetPipeAngleSet (), anglesToAdd)
+            : AddAngles (GetDuctAngleSet (), anglesToAdd));
+    }
+#endif
+
     const auto& addedTables = response.AddList<GS::ObjectState> ("addedTables");
     for (const GS::ObjectState& tableToAdd : tablesToAdd) {
         GS::UniString type;
