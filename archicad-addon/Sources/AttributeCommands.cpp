@@ -4892,6 +4892,9 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
                         arcs[i][j].Get ("begIndex", arc.begIndex);
                         arcs[i][j].Get ("endIndex", arc.endIndex);
                         arcs[i][j].Get ("arcAngle", arc.arcAngle);
+                        // GetFills returns them 0 based (CreatePolyArcObjectState), Archicad counts from the unused slot 0.
+                        arc.begIndex += 1;
+                        arc.endIndex += 1;
                     }
                     coordOffset += coordinates[i].GetSize () + 1;
                     subPolyOffset += subPolygons[i].GetSize () + 1;
