@@ -1029,80 +1029,7 @@ GS::Optional<GS::UniString> GetMEPElementDetailsCommand::GetRawResponseSchema ()
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementId": {
-                                    "$ref": "#/ElementId"
-                                },
-                                "type": {
-                                    "$ref": "#/MEPElementType"
-                                },
-                                "domain": {
-                                    "type": "string",
-                                    "description": "The MEP domain (Ventilation, Piping or CableCarrier), empty if the element has none."
-                                },
-                                "insulationThickness": {
-                                    "type": "number",
-                                    "description": "The insulation thickness. RigidSegment, Elbow, Branch and Transition."
-                                },
-                                "routingSegmentId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The routing segment the rigid segment belongs to (see GetMEPRoutingElements). RigidSegment."
-                                },
-                                "routingNodeId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The routing node the elbow or transition belongs to (see GetMEPRoutingElements). Elbow and Transition."
-                                },
-                                "controlPoints": {
-                                    "type": "array",
-                                    "description": "The control points of the flexible segment. FlexibleSegment.",
-                                    "items": {
-                                        "$ref": "#/Coordinate3D"
-                                    }
-                                },
-                                "factorRadius": {
-                                    "type": "number",
-                                    "description": "The radius factor of the elbow (Elbow::GetFactorRadius). Elbow, from Archicad 29."
-                                },
-                                "preferenceTableId": {
-                                    "$ref": "#/Guid",
-                                    "description": "The guid of the elbow or transition preference table (see GetMEPPreferenceTables). Elbow and Transition, from Archicad 29."
-                                },
-                                "branchAngle": {
-                                    "type": "number",
-                                    "description": "The angle of the branch, as returned by Branch::GetBranchAngle. Branch."
-                                },
-                                "branchLength": {
-                                    "type": "number",
-                                    "description": "The length of the branch. Branch."
-                                },
-                                "offsetY": {
-                                    "type": "number",
-                                    "description": "The Y offset of the transition (Transition::GetOffsetY). Transition."
-                                },
-                                "offsetZ": {
-                                    "type": "number",
-                                    "description": "The Z offset of the transition (Transition::GetOffsetZ). Transition."
-                                },
-                                "widerPortId": {
-                                    "$ref": "#/Guid",
-                                    "description": "The port at the wider end of the transition (see GetMEPPorts). Transition."
-                                },
-                                "narrowerPortId": {
-                                    "$ref": "#/Guid",
-                                    "description": "The port at the narrower end of the transition (see GetMEPPorts). Transition."
-                                },
-                                "isControlledByPreference": {
-                                    "type": "boolean",
-                                    "description": "Whether the transition is controlled by its preference table. Transition, from Archicad 29."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elementId",
-                                "type",
-                                "domain"
-                            ]
+                            "$ref": "#/MEPElementDetails"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -1368,42 +1295,7 @@ GS::Optional<GS::UniString> CreateMEPRoutingElementsCommand::GetInputParametersS
                             "description": "Optional layer attribute index of the routing element and all its parts (routing segments, rigid segments, elbows and transitions). Only a positive index takes effect; otherwise the routing tool default layer is used. A layer that does not exist or is locked gives an error for the item, and nothing is placed."
                         },
                         "defaults": {
-                            "type": "object",
-                            "description": "Optional changes to the routing tool default of the domain before the route is placed. Only what is placed changes, not the routing tool's settings. A value that cannot be set gives an error for the item, and nothing is placed.",
-                            "properties": {
-                                "routingNode": {
-                                    "type": "object",
-                                    "description": "The routing node default: the elbows and transitions placed at the nodes of the route. Available from Archicad 29.",
-                                    "properties": {
-                                        "elbow": {
-                                            "type": "object",
-                                            "properties": {
-                                                "preferenceTableId": {
-                                                    "$ref": "#/Guid",
-                                                    "description": "The guid of an elbow preference table of the domain (see GetMEPPreferenceTables with includeFittingTables)."
-                                                },
-                                                "factorRadius": {
-                                                    "type": "number",
-                                                    "description": "The radius factor of the elbows placed at the nodes."
-                                                }
-                                            },
-                                            "additionalProperties": false
-                                        },
-                                        "transition": {
-                                            "type": "object",
-                                            "properties": {
-                                                "preferenceTableId": {
-                                                    "$ref": "#/Guid",
-                                                    "description": "The guid of a transition preference table of the domain (see GetMEPPreferenceTables with includeFittingTables)."
-                                                }
-                                            },
-                                            "additionalProperties": false
-                                        }
-                                    },
-                                    "additionalProperties": false
-                                }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/MEPRoutingElementDefaults"
                         }
                     },
                     "additionalProperties": false,
@@ -1630,19 +1522,7 @@ GS::Optional<GS::UniString> CreateMEPElementsCommand::GetInputParametersSchema (
                             "description": "Optional rotation vector of the orientation. Defaults to (0, 1, 0)."
                         },
                         "defaults": {
-                            "type": "object",
-                            "description": "Optional changes to the tool default before the element is placed. Only what is placed changes, not the tool's settings. A value that cannot be set gives an error for the item, and nothing is placed.",
-                            "properties": {
-                                "insulationThickness": {
-                                    "type": "number",
-                                    "description": "The insulation thickness in meters."
-                                },
-                                "removeInsulation": {
-                                    "type": "boolean",
-                                    "description": "If true, the element is placed without insulation. Cannot be combined with insulationThickness."
-                                }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/MEPElementDefaults"
                         }
                     },
                     "additionalProperties": false,
@@ -2522,22 +2402,7 @@ GS::Optional<GS::UniString> CheckMEPPortConnectabilityCommand::GetInputParameter
                 "type": "array",
                 "description": "The pairs of ports to check.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "portId": {
-                            "$ref": "#/Guid",
-                            "description": "The port to check, as returned by GetMEPPorts."
-                        },
-                        "otherPortId": {
-                            "$ref": "#/Guid",
-                            "description": "The port to connect it to, as returned by GetMEPPorts."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "portId",
-                        "otherPortId"
-                    ]
+                    "$ref": "#/MEPPortPair"
                 }
             }
         },
@@ -2560,17 +2425,7 @@ GS::Optional<GS::UniString> CheckMEPPortConnectabilityCommand::GetRawResponseSch
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "isConnectable": {
-                                    "type": "boolean",
-                                    "description": "Whether the port can be connected to the other port."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "isConnectable"
-                            ]
+                            "$ref": "#/MEPPortConnectability"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -3178,8 +3033,7 @@ GS::Optional<GS::UniString> ModifyMEPPreferenceTablesCommand::GetInputParameters
                 "type": "array",
                 "description": "Reference ids to delete from the reference set of the Piping or Ventilation domain.",
                 "items": {
-                    "type": "integer",
-                    "minimum": 0
+                    "$ref": "#/MEPReferenceId"
                 }
             },
             "anglesToDelete": {
@@ -3206,14 +3060,7 @@ GS::Optional<GS::UniString> ModifyMEPPreferenceTablesCommand::GetRawResponseSche
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "guid": {
-                                    "type": "string"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["guid"]
+                            "$ref": "#/MEPAddedPreferenceTableId"
                         },
                         {
                             "$ref": "#/FailedExecutionResult"

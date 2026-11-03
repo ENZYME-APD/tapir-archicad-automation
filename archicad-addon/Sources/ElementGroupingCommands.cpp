@@ -669,26 +669,7 @@ GS::Optional<GS::UniString> GetElementSetDataCommand::GetInputParametersSchema()
                 "type": "array",
                 "description": "The element sets to get the data of.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementSetId": {
-                            "type": "object",
-                            "description": "The identifier of an element set.",
-                            "properties": {
-                                "guid": {
-                                    "$ref": "#/Guid"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "guid"
-                            ]
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementSetId"
-                    ]
+                    "$ref": "#/ElementSetIdArrayItem"
                 }
             }
         },
@@ -711,42 +692,7 @@ GS::Optional<GS::UniString> GetElementSetDataCommand::GetRawResponseSchema() con
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elements": {
-                                    "$ref": "#/Elements",
-                                    "description": "The elements of the element set."
-                                },
-                                "userData": {
-                                    "type": "object",
-                                    "description": "The custom data stored with the element set by the add-on that created it.",
-                                    "properties": {
-                                        "dataVersion": {
-                                            "type": "integer",
-                                            "description": "The version of the data, as set by the add-on that created the element set."
-                                        },
-                                        "platformSign": {
-                                            "type": "integer",
-                                            "description": "The platform sign of the data, telling the byte order it was written with."
-                                        },
-                                        "data": {
-                                            "type": "string",
-                                            "description": "The raw bytes of the data, Base64 encoded. Empty when the element set has no data."
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "dataVersion",
-                                        "platformSign",
-                                        "data"
-                                    ]
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elements",
-                                "userData"
-                            ]
+                            "$ref": "#/ElementSetDetails"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -1272,26 +1218,7 @@ GS::Optional<GS::UniString> CreateElementSetsCommand::GetRawResponseSchema() con
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementSetId": {
-                                    "type": "object",
-                                    "description": "The identifier of an element set.",
-                                    "properties": {
-                                        "guid": {
-                                            "$ref": "#/Guid"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "guid"
-                                    ]
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elementSetId"
-                            ]
+                            "$ref": "#/ElementSetIdArrayItem"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -1375,26 +1302,7 @@ GS::Optional<GS::UniString> DeleteElementSetsCommand::GetInputParametersSchema()
                 "type": "array",
                 "description": "The element sets to delete, as returned by CreateElementSets or GetElementSetsOfElements. Only element sets created by the Tapir Add-On can be deleted. The elements of a deleted set are not deleted.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementSetId": {
-                            "type": "object",
-                            "description": "The identifier of an element set.",
-                            "properties": {
-                                "guid": {
-                                    "$ref": "#/Guid"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "guid"
-                            ]
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementSetId"
-                    ]
+                    "$ref": "#/ElementSetIdArrayItem"
                 }
             }
         },

@@ -714,29 +714,8 @@ GS::Optional<GS::UniString> CreateLibraryPartCommand::GetRawResponseSchema () co
                 "description": "Whether the new library part is loaded in the project. It is only loaded when its folder is in a loaded library; otherwise only the file was created."
             },
             "libraryPart": {
-                "type": "object",
-                "description": "The new library part, in the same form as in GetAvailableLibraryParts. Left out when it is not loaded.",
-                "properties": {
-                    "guid": {
-                        "type": "string"
-                    },
-                    "index": {
-                        "type": "integer"
-                    },
-                    "documentName": {
-                        "type": "string"
-                    },
-                    "fileName": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "guid",
-                    "index",
-                    "documentName",
-                    "fileName"
-                ]
+                "$ref": "#/CreatedLibraryPart",
+                "description": "Left out when it is not loaded."
             }
         },
         "additionalProperties": false,
