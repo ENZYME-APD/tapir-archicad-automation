@@ -333,6 +333,10 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                             "$ref": "#/AttributeId",
                             "description": "Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments."
                         },
+                        "veneer": {
+                            "$ref": "#/ColumnVeneer",
+                            "description": "Veneer of the column (type, thickness, building material); the fields not given come from the tool defaults or favoriteName, thickness 0 creates the column without veneer. Applied to all segments."
+                        },
                         "floorIndex": {
                             "type": "integer",
                             "description": "Optional floor index. If omitted, derived from the coordinate's z value."
@@ -406,9 +410,17 @@ GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (A
     const GS::ObjectState* buildingMaterialIdOs = parameters.Get ("buildingMaterialId");
     const GS::ObjectState* profileIdOs = parameters.Get ("profileId");
 
-    if ((hasWidth || hasDepth || hasCircleBased || hasIsWidthAndHeightLinked || buildingMaterialIdOs != nullptr || profileIdOs != nullptr) && memo.columnSegments != nullptr) {
+    const GS::ObjectState* veneerOs = parameters.Get ("veneer");
+
+    if ((hasWidth || hasDepth || hasCircleBased || hasIsWidthAndHeightLinked || buildingMaterialIdOs != nullptr || profileIdOs != nullptr || veneerOs != nullptr) && memo.columnSegments != nullptr) {
         GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.columnSegments)) / sizeof (API_ColumnSegmentType);
         for (GSSize i = 0; i < nSegments; ++i) {
+            if (veneerOs != nullptr) {
+                const GS::Optional<GS::UniString> veneerError = ApplyColumnVeneer (*veneerOs, memo.columnSegments[i]);
+                if (veneerError.HasValue ()) {
+                    return CreateErrorResponse (APIERR_BADPARS, veneerError.Get ());
+                }
+            }
             API_AssemblySegmentData& segment = memo.columnSegments[i].assemblySegmentData;
             if (hasIsWidthAndHeightLinked) {
                 segment.isWidthAndHeightLinked = isWidthAndHeightLinked;
@@ -3938,6 +3950,129 @@ GS::Optional<GS::ObjectState> CreateRailingsCommand::SetTypeSpecificParameters (
     return {};
 }
 
+GS::String CreateRailingsFromPolylineCommand::GetName () const
+{
+    return "CreateRailingsFromPolyline";
+}
+
+GS::Optional<GS::UniString> CreateRailingsFromPolylineCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "railingsData": {
+            "type": "array",
+            "description": "Array of data to create Railings.",
+            "items": {
+                "type": "object",
+                "description": "The parameters of the new Railing. Everything not given here - the posts, rails, handrails, toprails, panels and balusters - comes from the favorite or from the Railing tool defaults of the open project. Archicad generates one node per vertex and one segment per pair of consecutive vertices from them.",
+                "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                    },
+                    "floorIndex": {
+                        "type": "integer",
+                        "description": "Optional floor index (home story) of the railing. The story is made active in the floor plan while the railing is created and the previously active story is restored afterwards. When omitted, the current story."
+                    },
+                    "polylineCoordinates": {
+                        "type": "array",
+                        "description": "The nodes of the reference line of the railing. z is the elevation of the node relative to the floor level of the home story, so the railing can climb or descend along its segments.",
+                        "items": {
+                            "$ref": "#/Coordinate3D"
+                        },
+                        "minItems": 2
+                    },
+                    "polylineArcs": {
+                        "type": "array",
+                        "description": "Optional arc segments of the reference line. begIndex and endIndex are indices into polylineCoordinates and must be consecutive (endIndex = begIndex + 1).",
+                        "items": {
+                            "$ref": "#/PolyArc"
+                        }
+                    },
+                    "height": {
+                        "type": "number",
+                        "description": "Optional height of the railing segments. When omitted, the segment height of the favorite (or of the Railing tool defaults) is kept.",
+                        "exclusiveMinimum": 0.0
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "polylineCoordinates"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "railingsData"
+    ]
+})";
+}
+
+GS::Optional<GS::ObjectState> CreateRailingsFromPolylineCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
+{
+    GS::Array<GS::ObjectState> coordinates;
+    GS::Array<GS::ObjectState> arcs;
+    parameters.Get ("polylineCoordinates", coordinates);
+    parameters.Get ("polylineArcs", arcs);
+    const Int32 nCoords = (Int32) coordinates.GetSize ();
+    if (nCoords < 2) {
+        return CreateErrorResponse (APIERR_BADPARS, "polylineCoordinates must have at least 2 points.");
+    }
+    for (UIndex i = 1; i < coordinates.GetSize (); ++i) {
+        if (IsSame2DCoordinate (coordinates[i - 1], coordinates[i])) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("Zero-length segment: polylineCoordinates[%u] and polylineCoordinates[%u] have the same x and y.", i - 1, i));
+        }
+    }
+    // The memo indices start at 1 (index 0 is unused), so the arcs are shifted by one.
+    const GS::Array<API_PolyArc> polyArcs = GetPolyArcs (arcs, 1);
+    for (const API_PolyArc& arc : polyArcs) {
+        if (arc.begIndex < 1 || arc.endIndex > nCoords || arc.endIndex != arc.begIndex + 1) {
+            return CreateErrorResponse (APIERR_BADPARS, "Each item of polylineArcs must connect two consecutive points of polylineCoordinates.");
+        }
+    }
+
+    short floorIndex = 0;
+    if (parameters.Get ("floorIndex", floorIndex)) {
+        element.header.floorInd = floorIndex;
+    }
+    parameters.Get ("height", element.railing.defSegment.height);
+
+    // As in CreateRailings, only the reference line is written; the segment, post, rail and panel
+    // definitions in the memo of the defaults are kept. polyZCoords holds the elevation of each vertex,
+    // from which Archicad derives bottomOffset, so the z of the request is taken from the home story.
+    if (memo.coords != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.coords));
+    }
+    if (memo.parcs != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.parcs));
+    }
+    if (memo.polyZCoords != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.polyZCoords));
+    }
+    memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    memo.polyZCoords = reinterpret_cast<double**> (BMAllocateHandle ((nCoords + 1) * sizeof (double), ALLOCATE_CLEAR, 0));
+    for (Int32 i = 0; i < nCoords; ++i) {
+        const API_Coord3D coord = Get3DCoordinateFromObjectState (coordinates[i]);
+        (*memo.coords)[i + 1] = { coord.x, coord.y };
+        (*memo.polyZCoords)[i + 1] = GetZPos (element.header.floorInd, coord.z, stories);
+    }
+    if (!polyArcs.IsEmpty ()) {
+        memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (polyArcs.GetSize () * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+        for (UIndex i = 0; i < polyArcs.GetSize (); ++i) {
+            (*memo.parcs)[i] = polyArcs[i];
+        }
+    }
+    element.railing.nVertices = nCoords;
+
+    return {};
+}
+
 CreateCurtainWallsCommand::CreateCurtainWallsCommand () :
     CreateElementsCommandBase ("CreateCurtainWalls", API_CurtainWallID, "curtainWallsData")
 {
@@ -4012,84 +4147,6 @@ GS::Optional<GS::UniString> CreateCurtainWallsCommand::GetInputParametersSchema 
         "curtainWallsData"
     ]
 })";
-}
-
-// A list of numbers read with ObjectState::Get<GS::Array<double>> does not convert integer items
-// (their bit pattern is taken as a double), so the items are collected one by one.
-class DoubleListCollector : public GS::ObjectState::Processor
-{
-public:
-    virtual void IntFound (const GS::String&, Int64 value) override
-    {
-        values.Push (static_cast<double> (value));
-    }
-
-    virtual void UIntFound (const GS::String&, UInt64 value) override
-    {
-        values.Push (static_cast<double> (value));
-    }
-
-    virtual void RealFound (const GS::String&, double value) override
-    {
-        values.Push (value);
-    }
-
-    virtual void BoolFound (const GS::String&, bool) override
-    {
-        failed = true;
-    }
-
-    virtual void StringFound (const GS::String&, const GS::UniString&) override
-    {
-        failed = true;
-    }
-
-    virtual bool ObjectFound (const GS::String&, const GS::ObjectState&) override
-    {
-        failed = true;
-        return false;
-    }
-
-    virtual bool ListFound (const GS::String&) override
-    {
-        return !failed;
-    }
-
-    virtual void ListEntered (const GS::String&) override
-    {
-        if (++depth > 1) {
-            failed = true;
-        }
-    }
-
-    virtual void ListExited (const GS::String&) override
-    {
-        --depth;
-    }
-
-    bool Get (GS::Array<double>& outValues) const
-    {
-        if (failed) {
-            return false;
-        }
-        outValues = values;
-        return true;
-    }
-
-private:
-    GS::Array<double> values;
-    Int32 depth = 0;
-    bool failed = false;
-};
-
-static bool GetDoubleList (const GS::ObjectState& parameters, const char* fieldName, GS::Array<double>& outValues)
-{
-    if (!parameters.IsList (fieldName)) {
-        return false;
-    }
-    DoubleListCollector collector;
-    parameters.Enumerate (fieldName, collector);
-    return collector.Get (outValues);
 }
 
 template <typename T>

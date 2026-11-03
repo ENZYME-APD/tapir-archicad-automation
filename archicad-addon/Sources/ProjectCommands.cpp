@@ -2291,17 +2291,16 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
         targetLevels.Push (level);
     }
 
-    // Levels are set in two steps, because Archicad anchors the story ladder on the active
-    // story: that one never moves, and every other story is positioned relative to it.
-    // Measured on a live AC29: APIStory_SetElevation moves only the story it names, and
-    // APIStory_SetHeight moves whichever side of the boundary is further from the anchor.
-    // Measured on a live AC28 (#747): APIStory_SetHeight moves the story above the
-    // boundary even when that one is the active story, so a story below the active one
-    // cannot be moved through the height of the boundary between them - the active story
-    // moves instead. The two agree on every boundary above the active story, so the active
-    // story is moved down to the lowest story whose level changes for the duration of the
-    // level pass; then no boundary below the anchor has to change at all. The previously
-    // active story is restored afterwards.
+    // Every story that is not on its requested level is made the active story and given
+    // its elevation directly. APIStory_SetElevation moves the story it names and nothing
+    // else, while which side of a boundary APIStory_SetHeight moves differs between
+    // Archicad versions (on Archicad 27 it moves the active story below the boundary, on
+    // Archicad 28 the story above it), so heights are not used here at all.
+    //
+    // A story never crosses a neighbour: the stories that go down are moved first, from
+    // the bottom up, so the one below has already reached its lower level or is still
+    // below its own higher one; then the stories that go up are moved from the top down,
+    // with the same argument mirrored. The previously active story is restored afterwards.
     const short originalActStory = storyInfo.actStory;
     bool actStoryMoved = false;
     const GS::OnExit restoreActStory ([&] () {
@@ -2313,99 +2312,37 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
         }
     });
 
-    bool hasChangingStory = false;
-    GS::UIndex lowestChangingStory = 0;
+    GS::Array<GS::UIndex> moveOrder;
     for (GS::UIndex i = 0; i < storyCount; ++i) {
-        if (std::abs (currentStories[i].level - targetLevels[i]) >= StoryLevelTolerance) {
-            hasChangingStory = true;
-            lowestChangingStory = i;
-            break;
+        if (targetLevels[i] <= currentStories[i].level - StoryLevelTolerance) {
+            moveOrder.Push (i);
+        }
+    }
+    for (GS::UIndex i = storyCount; i > 0; --i) {
+        if (targetLevels[i - 1] >= currentStories[i - 1].level + StoryLevelTolerance) {
+            moveOrder.Push (i - 1);
         }
     }
 
-    const bool actStoryIsValid = storyInfo.actStory >= storyInfo.firstStory && storyInfo.actStory <= storyInfo.lastStory;
-
-    if (hasChangingStory && actStoryIsValid && storyInfo.actStory > currentStories[lowestChangingStory].index) {
-        API_StoryCmdType storyCmd = {};
-        storyCmd.action = APIStory_GoTo;
-        storyCmd.index  = currentStories[lowestChangingStory].index;
-
-        // Where the active story cannot be switched (#748) this falls back to anchoring on
-        // the story which is active, and the final check reports the levels it could not
-        // set, exactly as before.
-        if (ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd) == NoError) {
-            err = RefreshStoryInfo (storyInfo);
-            if (err != NoError) {
-                BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-                return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
-            }
-            if (static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1) != storyCount) {
-                BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-                return CreateFailedExecutionResult (APIERR_GENERAL, "The story structure changed unexpectedly.");
-            }
-            TakeStorySnapshot (storyInfo, currentStories);
-            actStoryMoved = storyInfo.actStory != originalActStory;
+    for (const GS::UIndex i : moveOrder) {
+        API_StoryCmdType goToCmd = {};
+        goToCmd.action = APIStory_GoTo;
+        goToCmd.index  = currentStories[i].index;
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&goToCmd);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to make the story active to set its level.");
         }
-    }
+        actStoryMoved = currentStories[i].index != originalActStory;
 
-    // Step one puts the anchor on its requested level. It has to come first - moving the
-    // anchor afterwards would change the gap to its neighbour and undo a distance already
-    // set. The anchor is the active story, the only one SetElevation is known to move.
-    const GS::UIndex anchor =
-        (storyInfo.actStory >= storyInfo.firstStory && storyInfo.actStory <= storyInfo.lastStory)
-            ? static_cast<GS::UIndex> (storyInfo.actStory - storyInfo.firstStory)
-            : 0;
-
-    if (std::abs (currentStories[anchor].level - targetLevels[anchor]) >= StoryLevelTolerance) {
-        API_StoryCmdType storyCmd = {};
-        storyCmd.action    = APIStory_SetElevation;
-        storyCmd.index     = currentStories[anchor].index;
-        storyCmd.elevation = targetLevels[anchor];
-
-        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        API_StoryCmdType elevationCmd = {};
+        elevationCmd.action    = APIStory_SetElevation;
+        elevationCmd.index     = currentStories[i].index;
+        elevationCmd.elevation = targetLevels[i];
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&elevationCmd);
         if (err != NoError) {
             BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
             return CreateFailedExecutionResult (err, "Failed to change story elevation.");
-        }
-
-        err = RefreshStoryInfo (storyInfo);
-        if (err != NoError) {
-            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-            return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
-        }
-        if (static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1) != storyCount) {
-            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-            return CreateFailedExecutionResult (APIERR_GENERAL, "The story structure changed unexpectedly.");
-        }
-        TakeStorySnapshot (storyInfo, currentStories);
-    }
-
-    // Step two sets the distances, working outwards from the anchor in both directions so
-    // that every height is set against a story which is already on its requested level and
-    // positions exactly one story that is not.
-    for (GS::UIndex i = anchor; i + 1 < storyCount; ++i) {
-        API_StoryCmdType storyCmd = {};
-        storyCmd.action = APIStory_SetHeight;
-        storyCmd.index  = currentStories[i].index;
-        storyCmd.height = targetLevels[i + 1] - targetLevels[i];
-
-        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
-        if (err != NoError) {
-            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-            return CreateFailedExecutionResult (err, "Failed to change story height.");
-        }
-    }
-
-    for (GS::UIndex i = anchor; i > 0; --i) {
-        API_StoryCmdType storyCmd = {};
-        storyCmd.action = APIStory_SetHeight;
-        storyCmd.index  = currentStories[i - 1].index;
-        storyCmd.height = targetLevels[i] - targetLevels[i - 1];
-
-        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
-        if (err != NoError) {
-            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-            return CreateFailedExecutionResult (err, "Failed to change story height.");
         }
     }
 
@@ -2422,7 +2359,7 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
 
     // A structure which silently ended up somewhere else than requested is worse than an
     // error, so report the first level which could not be set, naming both levels so the
-    // message says what actually happened, and the story the ladder was anchored on.
+    // message says what actually happened, and the story that is active.
     for (GS::UIndex i = 0; i < storyCount; ++i) {
         if (std::abs (currentStories[i].level - targetLevels[i]) >= StoryLevelTolerance) {
             const GS::UniString message = GS::UniString::Printf (
@@ -3289,37 +3226,6 @@ GS::Optional<GS::UniString> GetSurveyPointTransformationCommand::GetRawResponseS
     })";
 }
 
-#ifdef ServerMainVers_2700
-// Inverts the affine transformation of a 3x4 API_Tranmat (rotation/scale part plus translation).
-static bool InvertTranmat (const API_Tranmat& tranmat, API_Tranmat& inverse)
-{
-    const double* m = tranmat.tmx;
-    const double c00 = m[5] * m[10] - m[6] * m[9];
-    const double c01 = m[6] * m[8] - m[4] * m[10];
-    const double c02 = m[4] * m[9] - m[5] * m[8];
-    const double det = m[0] * c00 + m[1] * c01 + m[2] * c02;
-    if (std::fabs (det) < 1e-12) {
-        return false;
-    }
-
-    double* r = inverse.tmx;
-    r[0]  = c00 / det;
-    r[1]  = (m[2] * m[9] - m[1] * m[10]) / det;
-    r[2]  = (m[1] * m[6] - m[2] * m[5]) / det;
-    r[4]  = c01 / det;
-    r[5]  = (m[0] * m[10] - m[2] * m[8]) / det;
-    r[6]  = (m[2] * m[4] - m[0] * m[6]) / det;
-    r[8]  = c02 / det;
-    r[9]  = (m[1] * m[8] - m[0] * m[9]) / det;
-    r[10] = (m[0] * m[5] - m[1] * m[4]) / det;
-
-    r[3]  = -(r[0] * m[3] + r[1] * m[7] + r[2] * m[11]);
-    r[7]  = -(r[4] * m[3] + r[5] * m[7] + r[6] * m[11]);
-    r[11] = -(r[8] * m[3] + r[9] * m[7] + r[10] * m[11]);
-    return true;
-}
-#endif
-
 GS::ObjectState GetSurveyPointTransformationCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2700
@@ -3570,11 +3476,11 @@ static const char* ProjectNotesPropertiesSchema = R"(
             },
             "architect": {
                 "type": "string",
-                "description": "Architect."
+                "description": "Architect: the full name of the Project Info contact. Archicad keeps it as name parts (title prefix, given, middle and family name, title suffix); SetProjectNotes puts a new value into the given name and clears the other parts, so it reads back unchanged. Use SetProjectInfoField to set the parts."
             },
             "draftsmen": {
                 "type": "string",
-                "description": "Draftsmen."
+                "description": "Draftsmen: the full name of the Project Info CAD technician, kept as name parts like architect."
             },
             "projectStatus": {
                 "type": "string",
@@ -3681,6 +3587,48 @@ GS::Optional<GS::UniString> SetProjectNotesCommand::GetRawResponseSchema () cons
     })";
 }
 
+// architect and draftsmen are the full names of two Project Info persons, which Archicad keeps as name parts.
+// ACAPI_ProjectSetting_ChangeProjectNotes writes the full name it is given into the given name and keeps the other
+// parts, so every write added a copy of the name (#1559, tested on Archicad 29). The parts are read before the
+// write and set afterwards: back to how they were for an unchanged name, or to the new name in the given name
+// alone, so the full name reads back as it was written.
+static const char* ProjectNotesNameParts[] = { "PREFIXTITLE", "GIVENNAME", "MIDDLENAME", "FAMILYNAME", "SUFFIXTITLE" };
+
+static GS::HashTable<GS::UniString, GS::UniString> GetProjectInfoAutoTexts ()
+{
+    GS::HashTable<GS::UniString, GS::UniString> values;
+    GS::Array<GS::ArrayFB<GS::UniString, 3>> autoTexts;
+    if (ACAPI_AutoText_GetAutoTexts (&autoTexts, APIAutoText_All) == NoError) {
+        for (const auto& autoText : autoTexts) {
+            values.Put (autoText[1], autoText[2]);
+        }
+    }
+    return values;
+}
+
+static GSErrCode SetNameParts (const GS::UniString& person, const GS::HashTable<GS::UniString, GS::UniString>& before, const GS::Optional<GS::UniString>& newFullName)
+{
+    const GS::HashTable<GS::UniString, GS::UniString> current = GetProjectInfoAutoTexts ();
+    for (const char* part : ProjectNotesNameParts) {
+        GS::UniString id = person + "_" + part;
+        if (!before.ContainsKey (id) || !current.ContainsKey (id)) {
+            continue;
+        }
+        GS::UniString value = before.Get (id);
+        if (newFullName.HasValue ()) {
+            value = GS::UniString (part) == "GIVENNAME" ? newFullName.Get () : GS::UniString ();
+        }
+        if (current.Get (id) != value) {
+            // An empty value is cleared with nullptr, see SetProjectInfoFieldCommand.
+            const GSErrCode err = ACAPI_AutoText_SetAnAutoText (&id, value.IsEmpty () ? nullptr : &value);
+            if (err != NoError) {
+                return err;
+            }
+        }
+    }
+    return NoError;
+}
+
 GS::ObjectState SetProjectNotesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     API_ProjectNoteInfo projectNotes = {};
@@ -3688,6 +3636,8 @@ GS::ObjectState SetProjectNotesCommand::Execute (const GS::ObjectState& paramete
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to get the project notes.");
     }
+    const API_ProjectNoteInfo notesBefore = projectNotes;
+    const GS::HashTable<GS::UniString, GS::UniString> autoTextsBefore = GetProjectInfoAutoTexts ();
 
     // Fields that are not given keep their current value. Longer texts are truncated to the field's length.
     bool hasAnyInput = false;
@@ -3709,11 +3659,35 @@ GS::ObjectState SetProjectNotesCommand::Execute (const GS::ObjectState& paramete
         return CreateFailedExecutionResult (APIERR_BADPARS, "No project notes field was given to change.");
     }
 
+    // A name counts as changed when the stored text changes; the new name is taken from the request, which keeps its
+    // non-ASCII characters (the project notes hold 8-bit text).
+    const auto getNewFullName = [&] (const char* key, const char* before, const char* after) -> GS::Optional<GS::UniString> {
+        GS::UniString requested;
+        if (strcmp (before, after) == 0 || !parameters.Get (key, requested)) {
+            return GS::NoValue;
+        }
+        return requested;
+    };
+    const GS::Optional<GS::UniString> newArchitect = getNewFullName ("architect", notesBefore.architect, projectNotes.architect);
+    const GS::Optional<GS::UniString> newDraftsmen = getNewFullName ("draftsmen", notesBefore.draftsmen, projectNotes.draftsmen);
+    // The name parts are set inside the same undoable command, so one Undo takes back the whole change.
+    bool namePartsFailed = false;
     err = ACAPI_CallUndoableCommand ("Change Project Notes", [&] () -> GSErrCode {
-        return ACAPI_ProjectSetting_ChangeProjectNotes (&projectNotes);
+        GSErrCode changeErr = ACAPI_ProjectSetting_ChangeProjectNotes (&projectNotes);
+        if (changeErr != NoError) {
+            return changeErr;
+        }
+        changeErr = SetNameParts ("CONTACT", autoTextsBefore, newArchitect);
+        if (changeErr == NoError) {
+            changeErr = SetNameParts ("CAD_TECHNICIAN", autoTextsBefore, newDraftsmen);
+        }
+        namePartsFailed = changeErr != NoError;
+        return changeErr;
     });
     if (err != NoError) {
-        return CreateFailedExecutionResult (err, "Failed to change the project notes.");
+        return CreateFailedExecutionResult (err, namePartsFailed ?
+            "Failed to set the name parts of the architect or the draftsmen in the project info." :
+            "Failed to change the project notes.");
     }
 
     return CreateSuccessfulExecutionResult ();
@@ -5606,6 +5580,10 @@ GS::Optional<GS::UniString> IFCFileOperationCommand::GetInputParametersSchema ()
             "elementsToExport": {
                 "$ref": "#/IFCElementsToExport",
                 "description": "Only for the save method, and only together with translatorName. The default is VisibleElementsOnAllStories."
+            },
+            "storyIndex": {
+                "type": "integer",
+                "description": "Only for the merge method: the story the first storey of the IFC file is placed on, the IFC's other storeys follow on the stories above it. Without it Archicad uses the active story of the floor plan. The active story and the current window are restored after the merge. See GetStories for the valid story indices."
             }
         },
         "additionalProperties": false,
@@ -5680,6 +5658,68 @@ GS::ObjectState IFCFileOperationCommand::Execute (const GS::ObjectState& paramet
         // The add-on path below has no element filter, so a filter without a translator
         // would be dropped without a word.
         return CreateFailedExecutionResult (APIERR_BADPARS, "elementsToExport is only valid together with translatorName");
+    }
+
+    // Without a dialog, a merge puts the first storey of the IFC file on the active story of
+    // the floor plan and the next storeys on the stories above it (#1616, tested on Archicad 29).
+    // So the requested story is made the active one for the merge, the same way ChangeWindow
+    // does it, and the previous story and window are restored afterwards.
+    Int32 storyIndex = 0;
+    const bool hasStoryIndex = parameters.Get ("storyIndex", storyIndex);
+    API_WindowInfo previousWindow = {};
+    bool windowSwitched = false;
+    short previousStory = 0;
+    bool storyChanged = false;
+    const GS::OnExit restoreStoryAndWindow ([&] () {
+        if (storyChanged) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = previousStory;
+            ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        }
+        if (windowSwitched) {
+            ACAPI_Window_ChangeWindow (&previousWindow);
+        }
+    });
+    if (hasStoryIndex) {
+        if (ioParams.method != IO_MERGE) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "storyIndex is only valid with the merge method");
+        }
+
+        API_StoryInfo storyInfo = {};
+        GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+        BMKillHandle (reinterpret_cast<GSHandle*> (&storyInfo.data));
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to retrieve stories info.");
+        }
+        if (storyIndex < storyInfo.firstStory || storyIndex > storyInfo.lastStory) {
+            return CreateFailedExecutionResult (APIERR_BADINDEX, "storyIndex is out of range; see GetStories for the valid story indices.");
+        }
+
+        if (ACAPI_Window_GetCurrentWindow (&previousWindow) == NoError && previousWindow.typeID != APIWind_FloorPlanID) {
+            API_WindowInfo floorPlanWindow = {};
+            floorPlanWindow.typeID = APIWind_FloorPlanID;
+            if (ACAPI_Window_GetDatabaseInfo (&floorPlanWindow) == NoError) {
+                ACAPI_Database_ChangeCurrentDatabase (&floorPlanWindow);
+            }
+            err = ACAPI_Window_ChangeWindow (&floorPlanWindow);
+            if (err != NoError) {
+                return CreateFailedExecutionResult (err, "Failed to change the window to the floor plan.");
+            }
+            windowSwitched = true;
+        }
+
+        if (storyIndex != storyInfo.actStory) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = static_cast<short> (storyIndex);
+            err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+            if (err != NoError) {
+                return CreateFailedExecutionResult (err, "Failed to change the active story to storyIndex.");
+            }
+            previousStory = storyInfo.actStory;
+            storyChanged = true;
+        }
     }
 
     ioParams.fileLoc = &ifcFileLocation;
@@ -6177,6 +6217,21 @@ GS::Optional<GS::UniString> CreateHotlinkInstancesCommand::GetRawResponseSchema 
     })";
 }
 
+// Whether the project has a layer with this index. A tool default can still name a layer that
+// has been deleted since; Archicad then refuses the new element with APIERR_BADINDEX.
+static bool LayerExists (const API_AttributeIndex& layer)
+{
+    API_Attribute attribute = {};
+    attribute.header.typeID = API_LayerID;
+    attribute.header.index = layer;
+    return ACAPI_Attribute_Get (&attribute) == NoError;
+}
+
+static GS::UniString NotALayerMessage (Int32 layerIndex)
+{
+    return GS::UniString::Printf ("layerIndex %d is not a layer of the project.", layerIndex);
+}
+
 GS::ObjectState CreateHotlinkInstancesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> hotlinkInstances;
@@ -6214,6 +6269,14 @@ GS::ObjectState CreateHotlinkInstancesCommand::Execute (const GS::ObjectState& p
             Int32 layerIndex = 0;
             if (instanceData.Get ("layerIndex", layerIndex) && layerIndex > 0) {
                 element.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
+                if (!LayerExists (element.header.layer)) {
+                    elements (CreateErrorResponse (APIERR_BADINDEX, NotALayerMessage (layerIndex)));
+                    continue;
+                }
+            } else if (!LayerExists (element.header.layer)) {
+                // The hotlink tool's default layer was deleted: every placement failed with
+                // APIERR_BADINDEX. Use the built-in Archicad layer instead, which cannot be deleted.
+                element.header.layer = ACAPI_CreateAttributeIndex (1);
             }
             Int32 floorIndex;
             if (instanceData.Get ("floorIndex", floorIndex)) {
@@ -6400,6 +6463,10 @@ GS::ObjectState ChangeHotlinkInstancesCommand::Execute (const GS::ObjectState& p
             Int32 layerIndex = 0;
             if (instanceData.Get ("layerIndex", layerIndex) && layerIndex > 0) {
                 element.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
+                if (!LayerExists (element.header.layer)) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADINDEX, NotALayerMessage (layerIndex)));
+                    continue;
+                }
                 ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
             }
 

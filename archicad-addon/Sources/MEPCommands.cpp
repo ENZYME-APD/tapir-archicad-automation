@@ -15,6 +15,15 @@
 #include "ACAPI/MEPRoutingSegment.hpp"
 #include "ACAPI/MEPRoutingSegmentDefault.hpp"
 #include "ACAPI/MEPRoutingNode.hpp"
+#include "ACAPI/MEPRigidSegmentDefault.hpp"
+#include "ACAPI/MEPRoutingNodeDefault.hpp"
+#include "ACAPI/MEPRigidSegment.hpp"
+#include "ACAPI/MEPTransitionDefault.hpp"
+#ifdef ServerMainVers_2900
+#include "ACAPI/MEPElbowDefault.hpp"
+#else
+#include "ACAPI/MEPBendDefault.hpp"
+#endif
 #include "ACAPI/MEPTerminalDefault.hpp"
 #include "ACAPI/MEPAccessoryDefault.hpp"
 #include "ACAPI/MEPEquipmentDefault.hpp"
@@ -185,6 +194,119 @@ static GSErrCode SetLayerOfRoutingElement (const ACAPI::MEP::UniqueID& routingEl
         }
     }
     return firstErr;
+}
+
+// Sets the insulation of an MEP element default (rigid segment, elbow, bend or transition); a
+// thickness of 0 removes it.
+template<class ElementDefaultType>
+static bool SetInsulationOfDefault (ElementDefaultType& elementDefault, double insulationThickness)
+{
+    bool setterSucceeded = true;
+    ACAPI::Result<void> result = elementDefault.Modify ([&](auto& modifier) {
+        if (insulationThickness > 0.0) {
+            setterSucceeded = modifier.SetInsulationThickness (insulationThickness).IsOk ();
+        } else {
+            modifier.RemoveInsulation ();
+        }
+    });
+    return result.IsOk () && setterSucceeded;
+}
+
+// Sets the insulation in the defaults of a routing element, which its uncustomized segments and nodes
+// follow and its settings show.
+static bool SetInsulationOfRoutingElementDefaults (RoutingElement& routingElement, double insulationThickness)
+{
+    RoutingSegmentDefault routingSegmentDefault = routingElement.GetRoutingSegmentDefaultParameters ();
+    RigidSegmentDefault rigidSegmentDefault = routingSegmentDefault.GetRigidSegmentDefault ();
+    if (!SetInsulationOfDefault (rigidSegmentDefault, insulationThickness) ||
+        routingSegmentDefault.Modify ([&](RoutingSegmentDefault::Modifier& modifier) {
+            modifier.SetRigidSegmentDefault (rigidSegmentDefault);
+        }).IsErr ()) {
+        return false;
+    }
+
+    RoutingNodeDefault routingNodeDefault = routingElement.GetRoutingNodeDefaultParameters ();
+#ifdef ServerMainVers_2900
+    ElbowDefault elbowDefault = routingNodeDefault.GetElbowDefault ();
+#else
+    BendDefault elbowDefault = routingNodeDefault.GetBendDefault ();
+#endif
+    TransitionDefault transitionDefault = routingNodeDefault.GetTransitionDefault ();
+    if (!SetInsulationOfDefault (elbowDefault, insulationThickness) ||
+        !SetInsulationOfDefault (transitionDefault, insulationThickness) ||
+        routingNodeDefault.Modify ([&](RoutingNodeDefault::Modifier& modifier) {
+#ifdef ServerMainVers_2900
+            modifier.SetElbowDefault (elbowDefault);
+#else
+            modifier.SetBendDefault (elbowDefault);
+#endif
+            modifier.SetTransitionDefault (transitionDefault);
+        }).IsErr ()) {
+        return false;
+    }
+
+    bool settersSucceeded = true;
+    ACAPI::Result<void> result = routingElement.Modify ([&](RoutingElement::Modifier& modifier) {
+        settersSucceeded &= modifier.SetRoutingSegmentDefaultParameters (routingSegmentDefault).IsOk ();
+        settersSucceeded &= modifier.SetRoutingNodeDefaultParameters (routingNodeDefault).IsOk ();
+    }, "Modify Insulation of Routing Element");
+    return result.IsOk () && settersSucceeded;
+}
+
+// Sets the insulation of a routing element, as Insulation in its settings does: in its defaults,
+// in the rigid segment defaults of each segment, and in the elbow (bend in Archicad 28) and
+// transition defaults of each node, without which the existing elbows and transitions keep their
+// insulation. Every part is tried; returns whether all of them succeeded.
+static bool SetInsulationOfRoutingElement (RoutingElement& routingElement, double insulationThickness)
+{
+    bool success = SetInsulationOfRoutingElementDefaults (routingElement, insulationThickness);
+
+    for (const auto& segmentId : routingElement.GetRoutingSegmentIds ()) {
+        auto segment = RoutingSegment::Get (segmentId);
+        if (segment.IsErr ()) {
+            success = false;
+            continue;
+        }
+        RigidSegmentDefault rigidSegmentDefault = segment->GetRigidSegmentDefaultParameters ();
+        if (!SetInsulationOfDefault (rigidSegmentDefault, insulationThickness)) {
+            success = false;
+            continue;
+        }
+        bool setterSucceeded = true;
+        ACAPI::Result<void> result = segment->Modify ([&](RoutingSegment::Modifier& modifier) {
+            setterSucceeded = modifier.SetRigidSegmentDefaultParameters (rigidSegmentDefault).IsOk ();
+        }, "Modify Insulation of Routing Segment");
+        success &= result.IsOk () && setterSucceeded;
+    }
+
+    for (const auto& nodeId : routingElement.GetRoutingNodeIds ()) {
+        auto node = RoutingNode::Get (nodeId);
+        if (node.IsErr ()) {
+            success = false;
+            continue;
+        }
+#ifdef ServerMainVers_2900
+        ElbowDefault elbowDefault = node->GetElbowDefaultParameters ();
+#else
+        BendDefault elbowDefault = node->GetBendDefaultParameters ();
+#endif
+        TransitionDefault transitionDefault = node->GetTransitionDefaultParameters ();
+        if (!SetInsulationOfDefault (elbowDefault, insulationThickness) || !SetInsulationOfDefault (transitionDefault, insulationThickness)) {
+            success = false;
+            continue;
+        }
+        bool settersSucceeded = true;
+        ACAPI::Result<void> result = node->Modify ([&](RoutingNode::Modifier& modifier) {
+#ifdef ServerMainVers_2900
+            settersSucceeded &= modifier.SetElbowDefaultParameters (elbowDefault).IsOk ();
+#else
+            settersSucceeded &= modifier.SetBendDefaultParameters (elbowDefault).IsOk ();
+#endif
+            settersSucceeded &= modifier.SetTransitionDefaultParameters (transitionDefault).IsOk ();
+        }, "Modify Insulation of Routing Node");
+        success &= result.IsOk () && settersSucceeded;
+    }
+    return success;
 }
 
 static GS::UniString DomainToString (Domain domain)
@@ -799,9 +921,19 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
                 segmentOs.Add ("flangeSize", flangeSize.value ());
             }
             AddMEPEnumName (segmentOs, "connectionStyle", ConnectionStyleNames, segment->GetConnectionStyle ());
+            // Read from the rigid segments, which carry the geometry: the segment's rigid segment
+            // defaults did not report a thickness set by ModifyMEPRoutingElements.
+            std::optional<double> insulationThickness;
             const auto& rigidSegments = segmentOs.AddList<GS::ObjectState> ("rigidSegments");
             for (const ACAPI::MEP::UniqueID& rigidSegmentId : segment->GetRigidSegmentIds ()) {
                 rigidSegments (CreateIdObjectState ("elementId", MEPUniqueIDToAPIGuid (rigidSegmentId)));
+                ACAPI::Result<RigidSegment> rigidSegment = RigidSegment::Get (rigidSegmentId);
+                if (!insulationThickness.has_value () && rigidSegment.IsOk ()) {
+                    insulationThickness = rigidSegment->GetInsulationThickness ();
+                }
+            }
+            if (insulationThickness.has_value ()) {
+                segmentOs.Add ("insulationThickness", insulationThickness.value ());
             }
             segments (segmentOs);
         }
@@ -1711,7 +1843,12 @@ GS::Optional<GS::UniString> ModifyMEPRoutingElementsCommand::GetInputParametersS
                         },
                         "flangeSize": {
                             "type": "number",
-                            "description": "New flange size applied to all segments."
+                            "description": "New flange size applied to all segments. Needs the Flanged connection style, which can be set in the same call."
+                        },
+                        "insulationThickness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "description": "New insulation thickness of the route, as Insulation in its settings: applied to the rigid segments of all segments and to the elbows (bends in Archicad 28) and transitions at all nodes. 0 removes the insulation. Not applicable to the CableCarrier domain."
                         },
                         "connectionStyle": {
                             "$ref": "#/MEPConnectionStyle",
@@ -1799,6 +1936,13 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
             continue;
         }
 
+        double insulationThickness = 0.0;
+        const bool hasInsulationThickness = routingElementData.Get ("insulationThickness", insulationThickness);
+        if (hasInsulationThickness && routingElement->GetDomain () == Domain::CableCarrier) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Cable carriers have no insulation, nothing was changed."));
+            continue;
+        }
+
         // The enum values are checked before anything is changed.
         GS::UniString connectionStyleStr;
         GS::UniString preferredTransitionPlacementStr;
@@ -1880,6 +2024,12 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
             success &= result.IsOk () && setterSucceeded;
         }
 
+        // The insulation first: it writes back the route's segment defaults as they were read, so it
+        // must not run after the cross section and the other segment settings below are changed.
+        if (hasInsulationThickness) {
+            success &= SetInsulationOfRoutingElement (*routingElement, insulationThickness);
+        }
+
         double width = 0.0;
         double height = 0.0;
         GS::UniString shapeStr;
@@ -1942,11 +2092,12 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
                     if (hasWallThickness) {
                         settersSucceeded &= modifier.SetWallThickness (wallThickness).IsOk ();
                     }
-                    if (hasFlangeSize) {
-                        settersSucceeded &= modifier.SetFlangeSize (flangeSize).IsOk ();
-                    }
+                    // The style first: a flange size is refused unless the style is already Flanged.
                     if (connectionStyle.has_value ()) {
                         settersSucceeded &= modifier.SetConnectionStyle (connectionStyle.value ()).IsOk ();
+                    }
+                    if (hasFlangeSize) {
+                        settersSucceeded &= modifier.SetFlangeSize (flangeSize).IsOk ();
                     }
                 }, "Modify Routing Segment");
                 success &= result.IsOk () && settersSucceeded;
@@ -2212,6 +2363,35 @@ GS::ObjectState ModifyMEPPortsCommand::Execute (const GS::ObjectState& parameter
 #endif
 }
 
+#ifdef ServerMainVers_2700
+
+// Says which condition of ConnectLogically/Connect the two elements break, as far as it can be told without modifying them.
+static GS::UniString GetMEPConnectionFailureMessage (const ACAPI::Result<RoutingElement>& routingElement, const API_Guid& connectToGuid, const ACAPI::Error& error)
+{
+    GS::UniString message ("Failed to connect the elements. ");
+
+    ACAPI::Result<RoutingElement> connectToRoute = RoutingElement::Get (Adapter::UniqueID (connectToGuid));
+    if (connectToRoute.IsOk ()) {
+        if (routingElement->GetDomain () != connectToRoute->GetDomain ()) {
+            message += "The two routing elements belong to different domains.";
+        } else if (!(routingElement->GetMEPSystem () == connectToRoute->GetMEPSystem ())) {
+            message += "The two routing elements belong to different MEP systems.";
+        } else {
+            message += "The routing elements have no common point: the first or last node of 'connectToId' must lie exactly on 'routingElementId' (on its centerline). "
+                       "For a tee, pass the main route as 'routingElementId' and the branch route as 'connectToId'.";
+        }
+    } else {
+        message += "The connected port of the MEP element must match the routing element in domain and MEP system, lie on the routing element's first or last node and point in the opposite direction.";
+    }
+
+    if (!error.text.empty ()) {
+        message += GS::UniString (" Archicad: ") + error.text.c_str ();
+    }
+    return message;
+}
+
+#endif
+
 ConnectMEPElementsCommand::ConnectMEPElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -2235,11 +2415,11 @@ GS::Optional<GS::UniString> ConnectMEPElementsCommand::GetInputParametersSchema 
                     "properties": {
                         "routingElementId": {
                             "$ref": "#/ElementId",
-                            "description": "The routing element to connect."
+                            "description": "The routing element to connect to. When connecting two routes, the first or last node of the 'connectToId' route must lie exactly on this route (on its centerline, not within a tolerance). For a tee, this is the main route, which is split and gets the branch element."
                         },
                         "connectToId": {
                             "$ref": "#/ElementId",
-                            "description": "The MEP element or routing element to connect to."
+                            "description": "The MEP element or routing element connected to 'routingElementId'. For a tee, this is the branch route, whose first or last node lies on the main route. Two routes must have the same domain and MEP system; an MEP element's port must match the route in domain and MEP system, lie on its first or last node and point in the opposite direction."
                         }
                     },
                     "additionalProperties": false,
@@ -2310,7 +2490,7 @@ GS::ObjectState ConnectMEPElementsCommand::Execute (const GS::ObjectState& param
         }, "Connect MEP Elements");
 
         if (connectionError.has_value ()) {
-            connectionResults (CreateErrorResponse (connectionError->kind, "Failed to connect the elements."));
+            connectionResults (CreateErrorResponse (connectionError->kind, GetMEPConnectionFailureMessage (routingElement, GetGuidFromObjectState (*connectToId), *connectionError)));
             continue;
         }
         if (modifyResult.IsErr () || !connectionResult.has_value ()) {
@@ -2365,7 +2545,7 @@ GS::ObjectState ConnectMEPElementsCommand::Execute (const GS::ObjectState& param
         }, "Connect MEP Elements");
 
         if (connectionError.has_value ()) {
-            connectionResults (CreateErrorResponse (connectionError->kind, "Failed to connect the elements."));
+            connectionResults (CreateErrorResponse (connectionError->kind, GetMEPConnectionFailureMessage (routingElement, GetGuidFromObjectState (*connectToId), *connectionError)));
             continue;
         }
         if (modifyResult.IsErr ()) {
@@ -3036,6 +3216,13 @@ GS::Optional<GS::UniString> ModifyMEPPreferenceTablesCommand::GetInputParameters
                     "$ref": "#/MEPReferenceId"
                 }
             },
+            "anglesToAdd": {
+                "type": "array",
+                "description": "Angles in degrees, between 1 and 90, to add to the angle set of the Piping or Ventilation domain, so that elbow and branch rows can have them. They are added before the tables are changed. Available from Archicad 29.",
+                "items": {
+                    "type": "number"
+                }
+            },
             "anglesToDelete": {
                 "type": "array",
                 "description": "Angles to delete from the angle set of the Piping or Ventilation domain, as GetMEPPreferenceTables returns them. Available from Archicad 29.",
@@ -3079,6 +3266,10 @@ GS::Optional<GS::UniString> ModifyMEPPreferenceTablesCommand::GetRawResponseSche
             "referenceSet": {
                 "$ref": "#/ExecutionResult",
                 "description": "Only when referenceIdsToDelete is given."
+            },
+            "addedAngles": {
+                "$ref": "#/ExecutionResult",
+                "description": "Only when anglesToAdd is given."
             },
             "angleSet": {
                 "$ref": "#/ExecutionResult",
@@ -3651,6 +3842,38 @@ static GS::ObjectState DeleteReferenceIds (ReferenceSetResultT referenceSet, con
 
 #ifdef ServerMainVers_2900
 template <typename AngleSetResultT>
+static GS::ObjectState AddAngles (AngleSetResultT angleSet, const GS::Array<double>& anglesToAdd)
+{
+    if (angleSet.IsErr ()) {
+        return CreateFailedExecutionResult (angleSet.UnwrapErr ().kind, "Failed to get the angle set.");
+    }
+    for (double angleToAdd : anglesToAdd) {
+        if (angleToAdd < 1.0 || angleToAdd > 90.0) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "The angle " + GS::ValueToUniString (angleToAdd) + " is not between 1 and 90 degrees.");
+        }
+        for (uint32_t i = 0; i < angleSet->GetSize (); ++i) {
+            auto angle = angleSet->GetAngle (i);
+            if (angle.IsOk () && std::abs (*angle - angleToAdd) < 1e-9) {
+                return CreateFailedExecutionResult (APIERR_BADPARS, "The angle " + GS::ValueToUniString (angleToAdd) + " is already in the angle set.");
+            }
+        }
+    }
+    std::optional<GSErrCode> addError;
+    // The modifier is the base class's, as in DeleteAngles.
+    ACAPI::Result<void> modifyResult = angleSet->Modify ([&] (AngleSetBase::Modifier& modifier) {
+        for (double angle : anglesToAdd) {
+            if (!addError.has_value ()) {
+                addError = GetErrorOfCall ([&] () { return modifier.Add (angle); });
+            }
+        }
+    }, "Modify MEP Angle Set");
+    if (addError.has_value () || modifyResult.IsErr ()) {
+        return CreateFailedExecutionResult (addError.has_value () ? *addError : modifyResult.UnwrapErr ().kind, "Failed to add the angles.");
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
+template <typename AngleSetResultT>
 static GS::ObjectState DeleteAngles (AngleSetResultT angleSet, const GS::Array<double>& anglesToDelete)
 {
     if (angleSet.IsErr ()) {
@@ -3704,18 +3927,28 @@ GS::ObjectState ModifyMEPPreferenceTablesCommand::Execute (const GS::ObjectState
     parameters.Get ("tablesToDelete", tablesToDelete);
     GS::Array<Int32> referenceIdsToDelete;
     const bool hasReferenceIdsToDelete = parameters.Get ("referenceIdsToDelete", referenceIdsToDelete);
+    GS::Array<double> anglesToAdd;
+    const bool hasAnglesToAdd = GetDoubleList (parameters, "anglesToAdd", anglesToAdd);
     GS::Array<double> anglesToDelete;
-    const bool hasAnglesToDelete = parameters.Get ("anglesToDelete", anglesToDelete);
-    if (*domain == Domain::CableCarrier && (hasReferenceIdsToDelete || hasAnglesToDelete)) {
+    const bool hasAnglesToDelete = GetDoubleList (parameters, "anglesToDelete", anglesToDelete);
+    if (*domain == Domain::CableCarrier && (hasReferenceIdsToDelete || hasAnglesToAdd || hasAnglesToDelete)) {
         return CreateErrorResponse (APIERR_BADPARS, "The CableCarrier domain has no reference set or angle set.");
     }
 #ifndef ServerMainVers_2900
-    if (hasAnglesToDelete) {
+    if (hasAnglesToAdd || hasAnglesToDelete) {
         return CreateErrorResponse (APIERR_NOTSUPPORTED, "The angle set is available from Archicad 29.");
     }
 #endif
 
     GS::ObjectState response;
+#ifdef ServerMainVers_2900
+    if (hasAnglesToAdd) {
+        response.Add ("addedAngles", *domain == Domain::Piping
+            ? AddAngles (GetPipeAngleSet (), anglesToAdd)
+            : AddAngles (GetDuctAngleSet (), anglesToAdd));
+    }
+#endif
+
     const auto& addedTables = response.AddList<GS::ObjectState> ("addedTables");
     for (const GS::ObjectState& tableToAdd : tablesToAdd) {
         GS::UniString type;

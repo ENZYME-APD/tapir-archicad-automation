@@ -1,6 +1,7 @@
 #include "ElementCommands.hpp"
 
 #include "ElementCreationCommands.hpp"
+#include "ExtendedElementCommands.hpp"
 #include "MigrationHelper.hpp"
 #include "GSUnID.hpp"
 #include "Plane.hpp"
@@ -18,6 +19,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 // The pivot polygon of a multi-plane roof lives in the memo's additional polygon
 // (APIMemoMask_AdditionalPolygon); the first sub-polygon is the outline. Arcs are
@@ -196,7 +198,58 @@ static void AddColumnSegmentSurfacesFromMemo (const API_Guid& guid, GS::ObjectSt
         segmentOs.Add ("extrusionSurfaceMaterial", CreateOverriddenMaterialObjectState (segment.extrusionSurfaceMaterial));
         segmentOs.Add ("endsMaterial", CreateOverriddenMaterialObjectState (segment.endsMaterial));
         segmentOs.Add ("materialsChained", segment.materialsChained);
+        segmentOs.Add ("veneer", CreateColumnVeneerObjectState (segment));
         segments (segmentOs);
+    }
+}
+
+static const char* StairSegmentTypeToString (API_StairSegmentTypeID type)
+{
+    switch (type) {
+        case APIST_StepsSegment:          return "Flight";
+        case APIST_LandingSegment:        return "Landing";
+        case APIST_DividedLandingSegment: return "DividedLanding";
+        default:                          return "Unknown";
+    }
+}
+
+static const char* StairTurnTypeToString (API_StairTurnTypeID type)
+{
+    switch (type) {
+        case APIST_NoTurn:             return "None";
+        case APIST_LandingTurn:        return "Landing";
+        case APIST_WinderTurn:         return "Winder";
+        case APIST_DividedLandingTurn: return "DividedLanding";
+        default:                       return "Unknown";
+    }
+}
+
+// The segment type of each baseline edge and the turn of each baseline vertex (memo
+// stairBaseLine.edgeData and vertexData, plain pointers). The DevKit does not state their size;
+// on Archicad 29 both hold nPoints + 1 entries with slot 0 unused, like the coords (#1628): entry i
+// belongs to point i, and edge i runs from point i to point i + 1. They are reported without
+// slot 0, so they line up with baseLinePoints.
+static void AddStairBaseLineSegmentsFromMemo (const API_StairPolylineData& baseLine, GSIndex nPoints, GS::ObjectState& os)
+{
+    if (baseLine.edgeData != nullptr) {
+        const GSSize nEdgeData = BMGetPtrSize (reinterpret_cast<GSPtr> (baseLine.edgeData)) / sizeof (API_StairPolylineEdgeData);
+        const auto& edges = os.AddList<GS::ObjectState> ("baseLineEdges");
+        for (GSIndex i = 1; i < nPoints && i < nEdgeData; ++i) {
+            edges (GS::ObjectState ("segmentType", StairSegmentTypeToString (baseLine.edgeData[i].segmentType)));
+        }
+    }
+    if (baseLine.vertexData != nullptr) {
+        const GSSize nVertexData = BMGetPtrSize (reinterpret_cast<GSPtr> (baseLine.vertexData)) / sizeof (API_StairPolylineVertexData);
+        const auto& vertices = os.AddList<GS::ObjectState> ("baseLineVertices");
+        for (GSIndex i = 1; i <= nPoints && i < nVertexData; ++i) {
+            const API_StairPolylineVertexData& vertex = baseLine.vertexData[i];
+            vertices (GS::ObjectState (
+                "turnType", StairTurnTypeToString (vertex.turnType),
+                "landingStartEdgeOffset", vertex.currLandingStartEdgeOffset,
+                "landingEndEdgeOffset", vertex.currLandingEndEdgeOffset,
+                "minLandingStartEdgeOffset", vertex.minLandingStartEdgeOffset,
+                "minLandingEndEdgeOffset", vertex.minLandingEndEdgeOffset));
+        }
     }
 }
 
@@ -230,6 +283,8 @@ static void AddStairBaseLineFromMemo (const API_Guid& guid, const API_Coord& ori
         coords (Create2DCoordinateObjectState ({ coord.x + origin.x, coord.y + origin.y }));
     }
 
+    AddStairBaseLineSegmentsFromMemo (baseLine, last < nCoords ? last : nCoords - 1, os);
+
     if (baseLine.parcs == nullptr) {
         return;
     }
@@ -243,7 +298,7 @@ static void AddStairBaseLineFromMemo (const API_Guid& guid, const API_Coord& ori
     }
 }
 
-// The section line and the depth line of a Section (CutPlane) live in the memo's
+// The section line and the depth line of a Section (CutPlane), or of an Elevation, live in the memo's
 // sectionSegmentMainCoords and sectionSegmentDepthCoords, 0-based pointers with
 // cutPlane.segment.nMainCoord and nDepthCoord points: the very ones CreateSectionsCommand
 // fills in to place one (#1607). The counts are checked against the pointer sizes. depth and
@@ -301,6 +356,18 @@ static void AddSectionLinesFromMemo (const API_Guid& guid, GSSize nMainCoord, GS
     os.Add ("viewDirection", Create2DCoordinateObjectState (viewDirection));
 }
 
+
+// The z values of curtain wall segments, frames and panels (begC, endC, gridOrigin, the panel
+// polygon) are measured from the curtain wall's home story, not from project zero like the
+// curtain wall's own 3D box. homeStoryLevel is that story's absolute level, so callers can add it.
+static void AddCurtainWallHomeStoryLevel (const API_Guid& curtainWallGuid, const Stories& stories, GS::ObjectState& os)
+{
+    API_Element curtainWall = {};
+    curtainWall.header.guid = curtainWallGuid;
+    if (ACAPI_Element_Get (&curtainWall) == NoError) {
+        os.Add ("homeStoryLevel", GetZPos (curtainWall.header.floorInd, 0.0, stories));
+    }
+}
 
 // Shared "line-family settings" fields present on Line/PolyLine/Arc/Circle/Spline
 // (API_LineType/API_PolyLineType/API_ArcType/API_SplineType all share this exact shape).
@@ -1962,6 +2029,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 } else if (segment.modelElemStructureType == API_ProfileStructure) {
                     typeSpecificDetails.Add ("profileId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_ProfileID, segment.profileAttr)));
                 }
+                typeSpecificDetails.Add ("veneer", CreateColumnVeneerObjectState (elem.columnSegment));
             } break;
 
             case API_DoorID:
@@ -2107,6 +2175,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, elem.hatch.buildingMaterial)));
                 typeSpecificDetails.Add ("roomSpecial", (Int32) elem.hatch.roomSpecial);
                 typeSpecificDetails.Add ("showArea", elem.hatch.showArea);
+                typeSpecificDetails.Add ("fillOrientation", CreateHatchOrientationObjectState (elem.hatch.hatchOrientation));
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
             } break;
 
@@ -2184,6 +2253,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     typeSpecificDetails.Add ("arcOrigin", Create3DCoordinateObjectState (elem.cwSegment.arcOrigin));
                     typeSpecificDetails.Add ("isNegativeArc", elem.cwSegment.negArc);
                 }
+                AddCurtainWallHomeStoryLevel (elem.cwSegment.owner, stories, typeSpecificDetails);
             } break;
 
             case API_CurtainWallPanelID: {
@@ -2271,6 +2341,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
                 typeSpecificDetails.Add ("segmentIndex", elem.cwPanel.segmentID);
                 typeSpecificDetails.Add ("className", GS::UniString (elem.cwPanel.className));
+                AddCurtainWallHomeStoryLevel (elem.cwPanel.owner, stories, typeSpecificDetails);
             } break;
 
             case API_CurtainWallFrameID: {
@@ -2286,6 +2357,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     elem.cwFrame.classID == APICWFrameClass_Boundary ? "Boundary" :
                     elem.cwFrame.classID == APICWFrameClass_Corner ? "Corner" :
                     elem.cwFrame.classID == APICWFrameClass_Division ? "Division" : "Custom");
+                AddCurtainWallHomeStoryLevel (elem.cwFrame.owner, stories, typeSpecificDetails);
             } break;
 
             case API_MeshID: {
@@ -2455,6 +2527,14 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("name", GS::UniString (elem.cutPlane.segment.cutPlName));
                 typeSpecificDetails.Add ("idStr", GS::UniString (elem.cutPlane.segment.cutPlIdStr));
                 AddSectionLinesFromMemo (elem.header.guid, static_cast<GSSize> (elem.cutPlane.segment.nMainCoord), static_cast<GSSize> (elem.cutPlane.segment.nDepthCoord), typeSpecificDetails);
+            } break;
+
+            case API_ElevationID: {
+                // API_ElevationType is API_CutPlaneType, and an elevation keeps its lines in the
+                // same memo fields as a section, so the section reader applies as it is.
+                typeSpecificDetails.Add ("name", GS::UniString (elem.elevation.segment.cutPlName));
+                typeSpecificDetails.Add ("idStr", GS::UniString (elem.elevation.segment.cutPlIdStr));
+                AddSectionLinesFromMemo (elem.header.guid, static_cast<GSSize> (elem.elevation.segment.nMainCoord), static_cast<GSSize> (elem.elevation.segment.nDepthCoord), typeSpecificDetails);
             } break;
 
             default:
@@ -3298,6 +3378,23 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, showArea);
                     hasElementChanges = true;
                 }
+                GS::ObjectState fillOrientationOs;
+                if (typeSpecificDetails->Get ("fillOrientation", fillOrientationOs)) {
+                    API_HatchOrientation& orientation = elem.hatch.hatchOrientation;
+                    orientation = GetHatchOrientationFromObjectState (fillOrientationOs, orientation);
+                    GS::UniString typeStr;
+                    if (fillOrientationOs.Get ("origin") != nullptr) {
+                        // Archicad ignores the origin while the fill is snapped to the project origin (the
+                        // GlobalOrigo flag, set on every Global fill), so a given origin unsnaps it and turns
+                        // a Global fill into a Rotated one unless a type was sent as well.
+                        if (!fillOrientationOs.Get ("type", typeStr) && orientation.type == API_HatchGlobal) {
+                            orientation.type = API_HatchRotated;
+                        }
+                        orientation.flags &= ~APIHatchOrinFlag_GlobalOrigo;
+                    }
+                    TAPIR_MASK_SET_HATCH_ORIENTATION (mask, API_HatchType, hatchOrientation);
+                    hasElementChanges = true;
+                }
             }
 
             // The Element ID is a memo part of its own (elemInfoString), written separately
@@ -3510,9 +3607,11 @@ GS::Optional<GS::UniString> GetSelectedElementsCommand::GetRawResponseSchema () 
 
 GS::ObjectState GetSelectedElementsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
-    API_SelectionInfo selectionInfo;
+    API_SelectionInfo selectionInfo = {};
     GS::Array<API_Neig> selectedNeigs;
     GSErrCode err = ACAPI_Selection_Get (&selectionInfo, &selectedNeigs, false);
+    // The marquee polygon handle is owned by the caller (same as the Selection_Manager DevKit example).
+    BMKillHandle (reinterpret_cast<GSHandle*> (&selectionInfo.marquee.coords));
     if (err != NoError && err != APIERR_NOSEL) {
         return CreateErrorResponse (err, "Failed to retrieve selected elements.");
     }
@@ -3621,6 +3720,308 @@ GS::ObjectState ChangeSelectionOfElementsCommand::Execute (const GS::ObjectState
     }
 
     return response;
+}
+
+DeselectAllCommand::DeselectAllCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeselectAllCommand::GetName () const
+{
+    return "DeselectAll";
+}
+
+GS::Optional<GS::UniString> DeselectAllCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState DeselectAllCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    const GSErrCode err = ACAPI_Selection_DeselectAll ();
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to deselect all elements.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+// The marquee of the current window is read and written through API_SelectionInfo:
+// typeID tells the marquee shape (API_MarqueeHorBox, API_MarqueeRotBox, API_MarqueePoly),
+// marquee.box/boxRotAngle hold a rectangle, marquee.coords/nCoords a polygon, and multiStory
+// the "thick" marquee. Measured on Archicad 29:
+// - Unlike memo polygons, marquee.coords is 0-based: nCoords vertices from index 0, the last
+//   one repeating the first. Writing it 1-based adds the unused vertex 0 (the origin) to the
+//   outline, which reading it 1-based hides.
+// - A rotated rectangle has no coords, also when it is drawn by hand. Its box lies in the
+//   coordinate system rotated by boxRotAngle around the project origin, so the corners of the
+//   outline are the box's corners rotated by boxRotAngle around the origin.
+
+static bool IsMarqueeSelectionType (API_SelTypeID typeID)
+{
+    return typeID == API_MarqueePoly || typeID == API_MarqueeHorBox || typeID == API_MarqueeRotBox;
+}
+
+static GS::ObjectState CreateBoxObjectState (const API_Box& box)
+{
+    return GS::ObjectState (
+        "xMin", box.xMin,
+        "yMin", box.yMin,
+        "xMax", box.xMax,
+        "yMax", box.yMax);
+}
+
+static void AddMarqueePolygonFromCoords (const API_Region& marquee, GS::ObjectState& os)
+{
+    if (marquee.coords == nullptr) {
+        return;
+    }
+
+    const GSSize handleSize = BMhGetSize (reinterpret_cast<GSHandle> (marquee.coords)) / sizeof (API_Coord);
+    GSSize count = handleSize;
+    if (marquee.nCoords > 0 && marquee.nCoords < count) {
+        count = marquee.nCoords;
+    }
+
+    // The closing vertex repeats the first one; the response lists each vertex once.
+    if (count > 1 && IsSame2DCoordinate ((*marquee.coords)[count - 1], (*marquee.coords)[0])) {
+        --count;
+    }
+    if (count < 1) {
+        return;
+    }
+
+    const auto& polygon = os.AddList<GS::ObjectState> ("polygon");
+    for (GSIndex i = 0; i < count; ++i) {
+        polygon (Create2DCoordinateObjectState ((*marquee.coords)[i]));
+    }
+}
+
+static void AddRotatedBoxPolygon (const API_Box& box, double rotationAngle, GS::ObjectState& os)
+{
+    const double c = std::cos (rotationAngle);
+    const double s = std::sin (rotationAngle);
+    const auto& polygon = os.AddList<GS::ObjectState> ("polygon");
+    for (const API_Coord& corner : { API_Coord { box.xMin, box.yMin }, API_Coord { box.xMax, box.yMin }, API_Coord { box.xMax, box.yMax }, API_Coord { box.xMin, box.yMax } }) {
+        polygon (Create2DCoordinateObjectState ({ corner.x * c - corner.y * s, corner.x * s + corner.y * c }));
+    }
+}
+
+GetMarqueeCommand::GetMarqueeCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetMarqueeCommand::GetName () const
+{
+    return "GetMarquee";
+}
+
+GS::Optional<GS::UniString> GetMarqueeCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "description": "The shape of the marquee in the current window, or 'none' when there is no marquee.",
+                "enum": ["none", "rectangle", "rotatedRectangle", "polygon"]
+            },
+            "multiStory": {
+                "type": "boolean",
+                "description": "True for a multi-story (thick) marquee, false for a single-story (thin) one. Absent when there is no marquee."
+            },
+            "box": {
+                "$ref": "#/BoundingBox2D",
+                "description": "The rectangle of a 'rectangle' or 'rotatedRectangle' marquee. For a rotated rectangle it is given as Archicad stores it: in the coordinate system rotated by rotationAngle around the project origin, not around the box itself. Use polygon for the corners on the plan."
+            },
+            "rotationAngle": {
+                "type": "number",
+                "description": "The rotation angle (radians) of a 'rotatedRectangle' marquee."
+            },
+            "polygon": {
+                "type": "array",
+                "description": "The vertices of the marquee outline on the plan, each listed once: the four corners of a 'rectangle' or 'rotatedRectangle' marquee, the vertices of a 'polygon' marquee.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type"
+        ]
+    })";
+}
+
+GS::ObjectState GetMarqueeCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_SelectionInfo selectionInfo = {};
+    GS::Array<API_Neig> selectedNeigs;
+    const GSErrCode err = ACAPI_Selection_Get (&selectionInfo, &selectedNeigs, false);
+    if (err != NoError && err != APIERR_NOSEL) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&selectionInfo.marquee.coords));
+        return CreateErrorResponse (err, "Failed to retrieve the marquee.");
+    }
+
+    // APIERR_NOSEL only means that no element is selected: a marquee drawn over empty space
+    // returns it too, with typeID still holding the marquee type. So typeID alone decides.
+    GS::ObjectState response;
+    if (!IsMarqueeSelectionType (selectionInfo.typeID)) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&selectionInfo.marquee.coords));
+        response.Add ("type", GS::UniString ("none"));
+        return response;
+    }
+
+    const API_Region& marquee = selectionInfo.marquee;
+    switch (selectionInfo.typeID) {
+        case API_MarqueeHorBox:
+            response.Add ("type", GS::UniString ("rectangle"));
+            response.Add ("box", CreateBoxObjectState (marquee.box));
+            {
+                const auto& polygon = response.AddList<GS::ObjectState> ("polygon");
+                polygon (Create2DCoordinateObjectState ({ marquee.box.xMin, marquee.box.yMin }));
+                polygon (Create2DCoordinateObjectState ({ marquee.box.xMax, marquee.box.yMin }));
+                polygon (Create2DCoordinateObjectState ({ marquee.box.xMax, marquee.box.yMax }));
+                polygon (Create2DCoordinateObjectState ({ marquee.box.xMin, marquee.box.yMax }));
+            }
+            break;
+        case API_MarqueeRotBox:
+            response.Add ("type", GS::UniString ("rotatedRectangle"));
+            response.Add ("box", CreateBoxObjectState (marquee.box));
+            response.Add ("rotationAngle", marquee.boxRotAngle);
+            AddRotatedBoxPolygon (marquee.box, marquee.boxRotAngle, response);
+            break;
+        default:
+            response.Add ("type", GS::UniString ("polygon"));
+            AddMarqueePolygonFromCoords (marquee, response);
+            break;
+    }
+    response.Add ("multiStory", selectionInfo.multiStory);
+
+    BMKillHandle (reinterpret_cast<GSHandle*> (&selectionInfo.marquee.coords));
+
+    return response;
+}
+
+SetMarqueeCommand::SetMarqueeCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetMarqueeCommand::GetName () const
+{
+    return "SetMarquee";
+}
+
+GS::Optional<GS::UniString> SetMarqueeCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "polygon": {
+                "type": "array",
+                "description": "The vertices of a polygon marquee, in order. The polygon is closed automatically; a repeated first vertex at the end is accepted. Give either polygon or box.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 3
+            },
+            "box": {
+                "$ref": "#/BoundingBox2D",
+                "description": "A rectangle marquee. With rotationAngle it is a rotated rectangle, and the box is read the way Archicad stores it (see GetMarquee): in the coordinate system rotated by rotationAngle around the project origin. Give either polygon or box."
+            },
+            "rotationAngle": {
+                "type": "number",
+                "description": "Rotation angle (radians) of the box around the project origin. Only together with box. The default is 0: a horizontal rectangle."
+            },
+            "multiStory": {
+                "type": "boolean",
+                "description": "True for a multi-story (thick) marquee, false for a single-story (thin) one. The default is false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetMarqueeCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetMarqueeCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> polygon;
+    const bool hasPolygon = parameters.Get ("polygon", polygon) && !polygon.IsEmpty ();
+    GS::ObjectState boxOS;
+    const bool hasBox = parameters.Get ("box", boxOS);
+    if (hasPolygon && hasBox) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Give either polygon or box, not both.");
+    }
+    if (!hasBox && parameters.Contains ("rotationAngle")) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "rotationAngle needs a box.");
+    }
+
+    API_SelectionInfo selectionInfo = {};
+    parameters.Get ("multiStory", selectionInfo.multiStory);
+
+    if (hasBox) {
+        API_Box& box = selectionInfo.marquee.box;
+        if (!boxOS.Get ("xMin", box.xMin) || !boxOS.Get ("yMin", box.yMin) ||
+            !boxOS.Get ("xMax", box.xMax) || !boxOS.Get ("yMax", box.yMax)) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "box needs xMin, yMin, xMax and yMax.");
+        }
+        if (box.xMax <= box.xMin || box.yMax <= box.yMin) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "box must have a positive width and height.");
+        }
+        double rotationAngle = 0.0;
+        parameters.Get ("rotationAngle", rotationAngle);
+        if (std::fabs (rotationAngle) > 1e-9) {
+            selectionInfo.typeID = API_MarqueeRotBox;
+            selectionInfo.marquee.boxRotAngle = rotationAngle;
+        } else {
+            selectionInfo.typeID = API_MarqueeHorBox;
+        }
+    } else if (hasPolygon) {
+        // The closing vertex is added here, so drop it when the caller already repeated the first one.
+        USize nUnique = polygon.GetSize ();
+        if (nUnique > 1 && IsSame2DCoordinate (polygon[nUnique - 1], polygon[0])) {
+            --nUnique;
+        }
+        if (nUnique < 3) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "polygon needs at least 3 distinct vertices.");
+        }
+
+        // 0-based, unlike memo polygons, with the closing vertex repeated (see above).
+        const Int32 nCoords = (Int32) nUnique + 1;
+        selectionInfo.typeID = API_MarqueePoly;
+        selectionInfo.marquee.nCoords = nCoords;
+        selectionInfo.marquee.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle (nCoords * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+        if (selectionInfo.marquee.coords == nullptr) {
+            return CreateFailedExecutionResult (APIERR_MEMFULL, "Failed to allocate the marquee polygon.");
+        }
+        for (USize i = 0; i < nUnique; ++i) {
+            (*selectionInfo.marquee.coords)[i] = Get2DCoordinateFromObjectState (polygon[i]);
+        }
+        (*selectionInfo.marquee.coords)[nUnique] = (*selectionInfo.marquee.coords)[0];
+    } else {
+        selectionInfo.typeID = API_SelEmpty; // removes the marquee
+    }
+
+    const GSErrCode err = ACAPI_Selection_SetMarquee (&selectionInfo);
+    BMKillHandle (reinterpret_cast<GSHandle*> (&selectionInfo.marquee.coords));
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, selectionInfo.typeID == API_SelEmpty ? "Failed to remove the marquee." : "Failed to set the marquee.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
 }
 
 GetSubelementsOfHierarchicalElementsCommand::GetSubelementsOfHierarchicalElementsCommand () :
@@ -5271,6 +5672,10 @@ GS::Optional<GS::UniString> UpdateZonesCommand::GetInputParametersSchema () cons
             "undoBottomTrim": {
                 "type": "boolean",
                 "description": "Undo the trimming of the bottom of the Zones. The default is false."
+            },
+            "zones": {
+                "$ref": "#/Elements",
+                "description": "Optional list of the Zones to update, on any story. They are selected instead of the current selection and stay selected: Archicad updates the selected Zones right after the command has returned, not during it, and clears the selection when it is done. So do not change the selection until then, and read the new geometry with a later command. Every Zone is checked first; if one cannot be updated (not a Zone, listed twice, hidden or locked layer, not editable), nothing is selected or updated. An empty list updates nothing. Without the list the current selection is updated, or every Zone when nothing is selected."
             }
         },
         "additionalProperties": false,
@@ -5286,12 +5691,99 @@ GS::Optional<GS::UniString> UpdateZonesCommand::GetRawResponseSchema () const
     })";
 }
 
+static GS::Optional<GS::ObjectState> GetFailedExecutionResultIfNotEditable (const API_Guid& elemGuid, const char* operation);
+
+// APIInternal_UpdateRoomsID updates the Zones that are selected when Archicad gets to it, which is
+// after the command has returned (measured on Archicad 29: about 0.3 s later, whether it is called
+// inside an undoable command, outside one, or from the main event loop). With an empty selection it
+// updates every Zone (#894). So the listed Zones are checked, made the selection and left selected;
+// Archicad clears the selection after the update. Putting the previous selection back here would make
+// the deferred update work on that selection instead (#900).
+static GS::Optional<GS::ObjectState> SelectZonesToUpdate (const GS::Array<GS::ObjectState>& zones)
+{
+    GS::Array<API_Neig> neigs;
+    GS::HashSet<API_Guid> listed;
+    GS::UniString errors;
+    for (const GS::ObjectState& zone : zones) {
+        const GS::ObjectState* elementId = zone.Get ("elementId");
+        if (elementId == nullptr) {
+            errors += "An item has no elementId. ";
+            continue;
+        }
+        const API_Guid guid = GetGuidFromObjectState (*elementId);
+        const GS::UniString guidString = APIGuidToString (guid);
+        API_Elem_Head head = {};
+        head.guid = guid;
+        if (ACAPI_Element_GetHeader (&head) != NoError) {
+            errors += guidString + ": the element does not exist. ";
+            continue;
+        }
+        if (GetElemTypeId (head) != API_ZoneID) {
+            errors += guidString + ": the element is not a Zone. ";
+            continue;
+        }
+        if (listed.Contains (guid)) {
+            errors += guidString + ": the Zone is listed twice. ";
+            continue;
+        }
+        listed.Add (guid);
+        const GS::Optional<GS::ObjectState> notEditable = GetFailedExecutionResultIfNotEditable (guid, "updated");
+        if (notEditable.HasValue ()) {
+            GS::UniString message;
+            const GS::ObjectState* error = notEditable->Get ("error");
+            if (error != nullptr) {
+                error->Get ("message", message);
+            }
+            errors += guidString + ": " + message + " ";
+            continue;
+        }
+        neigs.Push (API_Neig (guid));
+    }
+    if (!errors.IsEmpty ()) {
+        errors.Trim ();
+        return CreateFailedExecutionResult (APIERR_BADPARS, "No Zone was selected or updated. " + errors);
+    }
+
+    GSErrCode err = ACAPI_Selection_DeselectAll ();
+    if (err == NoError) {
+        err = ACAPI_Selection_Select (neigs, true);
+    }
+    // The update works on whatever is selected, so it may only go ahead when the selection is exactly
+    // the listed Zones.
+    API_SelectionInfo selectionInfo = {};
+    GS::Array<API_Neig> selected;
+    if (err == NoError) {
+        err = ACAPI_Selection_Get (&selectionInfo, &selected, false);
+        BMKillHandle ((GSHandle*) &selectionInfo.marquee.coords);
+    }
+    bool exact = err == NoError && selected.GetSize () == neigs.GetSize ();
+    for (UIndex i = 0; exact && i < selected.GetSize (); ++i) {
+        exact = listed.Contains (selected[i].guid);
+    }
+    if (!exact) {
+        ACAPI_Selection_DeselectAll ();
+        return CreateFailedExecutionResult (err != NoError ? err : APIERR_GENERAL, "Failed to select exactly the listed Zones, so none was updated.");
+    }
+    return GS::NoValue;
+}
+
 GS::ObjectState UpdateZonesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     API_RoomUpdateParams roomUpdateParams;
     parameters.Get ("keepStampPosition", roomUpdateParams.keepStampPos);
     parameters.Get ("undoTopTrim", roomUpdateParams.undoTopTrim);
     parameters.Get ("undoBottomTrim", roomUpdateParams.undoBotTrim);
+
+    GS::Array<GS::ObjectState> zones;
+    if (parameters.Get ("zones", zones)) {
+        if (zones.IsEmpty ()) {
+            return CreateSuccessfulExecutionResult ();
+        }
+        const GS::Optional<GS::ObjectState> selectError = SelectZonesToUpdate (zones);
+        if (selectError.HasValue ()) {
+            return selectError.Get ();
+        }
+    }
 
     GSErrCode err = NoError;
 
@@ -5712,16 +6204,10 @@ static GS::Optional<GS::ObjectState> GetFailedExecutionResultIfNotEditable (cons
         return CreateFailedExecutionResult (APIERR_BADID, "Element does not exist.");
     }
 
-    API_Attribute layerAttr = {};
-    layerAttr.header.typeID = API_LayerID;
-    layerAttr.header.index = elemHead.layer;
-    if (ACAPI_Attribute_Get (&layerAttr) == NoError) {
-        if ((layerAttr.header.flags & APILay_Locked) != 0) {
-            return CreateFailedExecutionResult (APIERR_LOCKEDLAY, GS::UniString::Printf ("The element was not %s, because its layer is locked.", operation));
-        }
-        if ((layerAttr.header.flags & APILay_Hidden) != 0) {
-            return CreateFailedExecutionResult (APIERR_HIDDENLAY, GS::UniString::Printf ("The element was not %s, because its layer is hidden.", operation));
-        }
+    GS::UniString layerReason;
+    const GSErrCode layerError = GetLayerChangeError (elemHead.layer, layerReason);
+    if (layerError != NoError) {
+        return CreateFailedExecutionResult (layerError, GS::UniString::Printf ("The element was not %s, because %T.", operation, layerReason.ToPrintf ()));
     }
 
     if (!ACAPI_Element_Filter (elemGuid, APIFilt_IsEditable)) {
@@ -6270,6 +6756,18 @@ GS::Optional<GS::UniString> FilterElementsCommand::GetInputParametersSchema () c
                     "$ref": "#/ElementType"
                 },
                 "minItems": 1
+            },
+            "fromHotlink": {
+                "type": "boolean",
+                "description": "Optional. true keeps only the elements that came in through a placed hotlink (they are read-only), false only the project's own elements."
+            },
+            "hotlinkIds": {
+                "type": "array",
+                "description": "Optional. An element is kept only when it came in through one of these placed hotlink instances (the hotlinkId field of GetDetailsOfElements, elements of type Hotlink).",
+                "items": {
+                    "$ref": "#/ElementId"
+                },
+                "minItems": 1
             }
         },
         "additionalProperties": false,
@@ -6329,8 +6827,19 @@ GS::ObjectState FilterElementsCommand::Execute (const GS::ObjectState& parameter
         elementTypes.Push (elementType);
     }
 
-    // The header based criteria (layer, home story, type) are checked only when at least one of them is given.
-    const bool checkHeader = !layerIndices.IsEmpty () || !floorIndices.IsEmpty () || !elementTypes.IsEmpty ();
+    bool fromHotlink = false;
+    const bool checkFromHotlink = parameters.Get ("fromHotlink", fromHotlink);
+
+    GS::Array<GS::ObjectState> hotlinkIdStates;
+    parameters.Get ("hotlinkIds", hotlinkIdStates);
+    GS::Array<API_Guid> hotlinkIds;
+    for (const GS::ObjectState& hotlinkIdState : hotlinkIdStates) {
+        hotlinkIds.Push (GetGuidFromObjectState (hotlinkIdState));
+    }
+
+    // The header based criteria (layer, home story, type, hotlink) are checked only when at least one of them is given.
+    const bool checkHeader = !layerIndices.IsEmpty () || !floorIndices.IsEmpty () || !elementTypes.IsEmpty () ||
+        checkFromHotlink || !hotlinkIds.IsEmpty ();
     if (filterFlags == APIFilt_None && !checkHeader) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing filters!");
     }
@@ -6362,6 +6871,14 @@ GS::ObjectState FilterElementsCommand::Execute (const GS::ObjectState& parameter
                 continue;
             }
             if (!elementTypes.IsEmpty () && !elementTypes.Contains (GetElemTypeId (elemHead))) {
+                continue;
+            }
+            // hotlinkGuid is the placed hotlink instance the element came in through, APINULLGuid
+            // for the project's own elements (#1657).
+            if (checkFromHotlink && (elemHead.hotlinkGuid != APINULLGuid) != fromHotlink) {
+                continue;
+            }
+            if (!hotlinkIds.IsEmpty () && !hotlinkIds.Contains (elemHead.hotlinkGuid)) {
                 continue;
             }
         }
@@ -6571,6 +7088,110 @@ static GSErrCode CalculateSolidBodyBounds (const API_Elem_Head& elemHead, API_Bo
     return NoError;
 }
 
+#ifdef ServerMainVers_2900
+static API_Coord3D TransformBodyVertex (const API_Tranmat& tranmat, double x, double y, double z);
+
+// Widens [extentMin, extentMax] to the extent of the element's solid bodies along `direction`, measured
+// from `origin`: unlike their bounding box, the vertices give the thickness of a diagonal wall.
+static void AccumulateSolidBodyExtent (const API_Elem_Head& elemHead, const API_Coord3D& origin, const API_Vector3D& direction, double& extentMin, double& extentMax, bool& foundSolidBody)
+{
+    API_ElemInfo3D info3D = {};
+    if (ACAPI_ModelAccess_Get3DInfo (elemHead, &info3D) != NoError) {
+        return;
+    }
+
+    for (Int32 iBody = info3D.fbody; iBody <= info3D.lbody; ++iBody) {
+        API_Component3D component = {};
+        component.header.typeID = API_BodyID;
+        component.header.index = iBody;
+        if (ACAPI_ModelAccess_GetComponent (&component) != NoError || component.body.nPgon == 0) {
+            continue;
+        }
+
+        const API_BodyType body = component.body;
+        for (Int32 iVert = 1; iVert <= body.nVert; ++iVert) {
+            component.header.typeID = API_VertID;
+            component.header.index = iVert;
+            if (ACAPI_ModelAccess_GetComponent (&component) != NoError) {
+                continue;
+            }
+            const API_Coord3D vertex = TransformBodyVertex (body.tranmat, component.vert.x, component.vert.y, component.vert.z);
+            const double t = (vertex.x - origin.x) * direction.x + (vertex.y - origin.y) * direction.y + (vertex.z - origin.z) * direction.z;
+            extentMin = std::min (extentMin, t);
+            extentMax = std::max (extentMax, t);
+            foundSolidBody = true;
+        }
+    }
+}
+
+// An Opening element only cuts other elements, and ACAPI_Element_CalcBounds answers with
+// zMin == zMax == 0 for it. So the bounds are those of the
+// opening's outline extruded along its extrusion direction. An extrusion that is infinite at one or
+// both ends is limited to the extent of the solid bodies of the elements the opening cuts, and the
+// box to their bounding box, since the opening has no effect beyond them.
+static GSErrCode CalculateOpeningBounds (const API_Guid& openingGuid, API_Box3D& outBounds)
+{
+    OpeningExtrusionBody body;
+    GSErrCode err = GetOpeningExtrusionBody (openingGuid, body);
+    if (err != NoError) {
+        return err;
+    }
+
+    const API_Coord3D& anchor = body.anchorPoint;
+    const API_Vector3D& e = body.extrusionDirection;
+    const bool isInfinite = std::isinf (body.extrusionStart) || std::isinf (body.extrusionEnd);
+    API_Box3D cutBounds = {};
+    if (isInfinite) {
+        InitializeEmptyBounds (cutBounds);
+        double cutStart = std::numeric_limits<double>::infinity ();
+        double cutEnd = -cutStart;
+        bool foundSolidBody = false;
+        for (const API_Guid& cutElementGuid : body.cutElements) {
+            API_Elem_Head cutElemHead = {};
+            cutElemHead.guid = cutElementGuid;
+            if (ACAPI_Element_GetHeader (&cutElemHead) == NoError) {
+                AccumulateSolidBodyBounds (cutElemHead, cutBounds, foundSolidBody);
+                AccumulateSolidBodyExtent (cutElemHead, anchor, e, cutStart, cutEnd, foundSolidBody);
+            }
+        }
+        if (!foundSolidBody) {
+            return APIERR_GENERAL;
+        }
+        body.extrusionStart = std::max (body.extrusionStart, cutStart);
+        body.extrusionEnd = std::min (body.extrusionEnd, cutEnd);
+        if (body.extrusionStart > body.extrusionEnd) {
+            return APIERR_GENERAL;
+        }
+    }
+
+    InitializeEmptyBounds (outBounds);
+    for (const double u : { body.profileXMin, body.profileXMax }) {
+        for (const double v : { body.profileYMin, body.profileYMax }) {
+            for (const double t : { body.extrusionStart, body.extrusionEnd }) {
+                UpdateGlobalBoundsWithPoint (outBounds, API_Coord3D {
+                    anchor.x + u * body.xAxis.x + v * body.yAxis.x + t * e.x,
+                    anchor.y + u * body.xAxis.y + v * body.yAxis.y + t * e.y,
+                    anchor.z + u * body.xAxis.z + v * body.yAxis.z + t * e.z
+                });
+            }
+        }
+    }
+
+    if (isInfinite) {
+        outBounds.xMin = std::max (outBounds.xMin, cutBounds.xMin);
+        outBounds.yMin = std::max (outBounds.yMin, cutBounds.yMin);
+        outBounds.zMin = std::max (outBounds.zMin, cutBounds.zMin);
+        outBounds.xMax = std::min (outBounds.xMax, cutBounds.xMax);
+        outBounds.yMax = std::min (outBounds.yMax, cutBounds.yMax);
+        outBounds.zMax = std::min (outBounds.zMax, cutBounds.zMax);
+        if (outBounds.xMin > outBounds.xMax || outBounds.yMin > outBounds.yMax || outBounds.zMin > outBounds.zMax) {
+            return APIERR_GENERAL;
+        }
+    }
+    return NoError;
+}
+#endif
+
 template<typename APIElemType>
 static void AccumulateSubelementBounds (APIElemType* subelemArray, API_Box3D& bounds, bool& foundSolidBody)
 {
@@ -6607,6 +7228,36 @@ static GSErrCode CalculateStairBounds (const API_Elem_Head& stairElemHead, API_B
         return APIERR_GENERAL;
     }
 
+    return NoError;
+}
+
+// ACAPI_Element_CalcBounds only finds elements of the current database, and the 3D model of a
+// Slab, Zone or Roof can't be read while a layout or a section is the current database. So the
+// current database is switched to the one that contains the element (the floor plan for model
+// elements; a layout, a master layout, a worksheet, a section ... for 2D elements), and the
+// starting database is put back after the last element.
+static GSErrCode ChangeToContainingDatabase (const API_Guid& elemGuid, API_DatabaseInfo& currentDatabase)
+{
+    API_DatabaseInfo elemDatabase = {};
+    GSErrCode err = ACAPI_Database_GetContainingDatabase (&elemGuid, &elemDatabase);
+    if (err != NoError) {
+        return err;
+    }
+
+    const DatabaseIdResolver& resolver = DatabaseIdResolver::Instance ();
+    if (resolver.GetIdOfDatabase (elemDatabase) == resolver.GetIdOfDatabase (currentDatabase)) {
+        return NoError;
+    }
+
+    err = ACAPI_Window_GetDatabaseInfo (&elemDatabase);
+    if (err != NoError) {
+        return err;
+    }
+    err = ACAPI_Database_ChangeCurrentDatabase (&elemDatabase);
+    if (err != NoError) {
+        return err;
+    }
+    currentDatabase = elemDatabase;
     return NoError;
 }
 
@@ -6657,6 +7308,14 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
 
+    API_DatabaseInfo startingDatabase = {};
+    GSErrCode err = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the current database.");
+    }
+    API_DatabaseInfo currentDatabase = startingDatabase;
+    const GS::OnExit restoreDatabase ([&] () { ACAPI_Database_ChangeCurrentDatabase (&startingDatabase); });
+
     GS::ObjectState response;
     const auto& boundingBoxes3D = response.AddList<GS::ObjectState> ("boundingBoxes3D");
 
@@ -6669,7 +7328,12 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
 
         API_Elem_Head elemHead = {};
         elemHead.guid = GetGuidFromObjectState (*elementId);
-        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        err = ChangeToContainingDatabase (elemHead.guid, currentDatabase);
+        if (err != NoError) {
+            boundingBoxes3D (CreateErrorResponse (err, err == APIERR_BADID ? "Failed to find element in Archicad" : "Failed to switch to the database of the element"));
+            continue;
+        }
+        err = ACAPI_Element_GetHeader (&elemHead);
         if (err != NoError) {
             boundingBoxes3D (CreateErrorResponse (err, "Failed to find element in Archicad"));
             continue;
@@ -6702,6 +7366,10 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
             if (err != NoError) {
                 err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
             }
+#ifdef ServerMainVers_2900
+        } else if (typeID == API_OpeningID) {
+            err = CalculateOpeningBounds (elemHead.guid, box3D);
+#endif
         } else {
             err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
         }
@@ -6724,6 +7392,111 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
                                        "zMin", box3D.zMin,
                                        "zMax", box3D.zMax);
         boundingBoxes3D (GS::ObjectState ("boundingBox3D", boundingBox3D));
+    }
+
+    return response;
+}
+
+Get2DBoundingBoxesCommand::Get2DBoundingBoxesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String Get2DBoundingBoxesCommand::GetName () const
+{
+    return "Get2DBoundingBoxes";
+}
+
+GS::Optional<GS::UniString> Get2DBoundingBoxesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> Get2DBoundingBoxesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+            "properties": {
+            "boundingBoxes2D": {
+                "$ref": "#/BoundingBoxes2D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "boundingBoxes2D"
+        ]
+    })";
+}
+
+GS::ObjectState Get2DBoundingBoxesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    API_DatabaseInfo startingDatabase = {};
+    GSErrCode err = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the current database.");
+    }
+    API_DatabaseInfo currentDatabase = startingDatabase;
+    const GS::OnExit restoreDatabase ([&] () { ACAPI_Database_ChangeCurrentDatabase (&startingDatabase); });
+
+    GS::ObjectState response;
+    const auto& boundingBoxes2D = response.AddList<GS::ObjectState> ("boundingBoxes2D");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            boundingBoxes2D (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        err = ChangeToContainingDatabase (elemHead.guid, currentDatabase);
+        if (err != NoError) {
+            boundingBoxes2D (CreateErrorResponse (err, err == APIERR_BADID ? "Failed to find element in Archicad" : "Failed to switch to the database of the element"));
+            continue;
+        }
+        err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            boundingBoxes2D (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+
+        API_Box3D box3D = {};
+        if (GetElemTypeId (elemHead) == API_SlabID) {
+            // ACAPI_Element_CalcBounds crashes Archicad for a Slab that is not drawn in the current
+            // window (#686, see Get3DBoundingBoxes), so its box is the plan view of its 3D body.
+            err = CalculateSolidBodyBounds (elemHead, box3D);
+        } else {
+            err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
+        }
+        if (err != NoError) {
+            boundingBoxes2D (CreateErrorResponse (err, "Failed to get the 2D bounding box"));
+            continue;
+        }
+        if (IsEmptyBounds (box3D)) {
+            boundingBoxes2D (CreateErrorResponse (APIERR_GENERAL, "The element has no geometry to get the bounding box of"));
+            continue;
+        }
+
+        GS::ObjectState boundingBox2D ("xMin", box3D.xMin,
+                                       "yMin", box3D.yMin,
+                                       "xMax", box3D.xMax,
+                                       "yMax", box3D.yMax);
+        boundingBoxes2D (GS::ObjectState ("boundingBox2D", boundingBox2D));
     }
 
     return response;
