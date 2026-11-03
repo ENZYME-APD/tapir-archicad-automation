@@ -1766,11 +1766,11 @@ GS::Optional<GS::UniString> CreateMEPTakeOffsCommand::GetInputParametersSchema (
                         },
                         "distance": {
                             "type": "number",
-                            "description": "The distance along the segment where the Take-off is placed, in meters, measured from the beginning of the segment."
+                            "description": "The distance along the segment where the Take-off is placed, in meters, measured from the beginning of the segment. Must not be negative or longer than the segment."
                         },
                         "rotationAngle": {
                             "type": "number",
-                            "description": "Optional rotation of the Take-off around the segment's direction, in radians. Defaults to 0, which places the Take-off facing left relative to the segment's direction; pi/2 faces up, pi faces right."
+                            "description": "Optional rotation of the Take-off around the segment's direction, in radians, a multiple of pi/2 (negative values and full turns are allowed). Defaults to 0, which places the Take-off facing left relative to the segment's direction; pi/2 faces up, pi faces right, 3*pi/2 (or -pi/2) faces down."
                         },
                         "domain": {
                             "$ref": "#/MEPDomain",
@@ -1782,15 +1782,11 @@ GS::Optional<GS::UniString> CreateMEPTakeOffsCommand::GetInputParametersSchema (
                         },
                         "defaults": {
                             "type": "object",
-                            "description": "Optional changes to the tool default before the Take-off is placed. Only what is placed changes, not the tool's settings. A value that cannot be set gives an error for the item, and nothing is placed.",
+                            "description": "Optional changes to the tool default before the Take-off is placed. Only what is placed changes, not the tool's settings. A value that cannot be set gives an error for the item, and nothing is placed. The insulation thickness of a Take-off cannot be set (Archicad stops with a fatal error).",
                             "properties": {
-                                "insulationThickness": {
-                                    "type": "number",
-                                    "description": "The insulation thickness in meters."
-                                },
                                 "removeInsulation": {
                                     "type": "boolean",
-                                    "description": "If true, the Take-off is placed without insulation. Cannot be combined with insulationThickness."
+                                    "description": "If true, the Take-off is placed without insulation."
                                 }
                             },
                             "additionalProperties": false
@@ -1842,8 +1838,19 @@ static GS::ObjectState PlaceMEPTakeOff (const GS::ObjectState& takeOffData)
     if (distance < 0.0) {
         return CreateErrorResponse (APIERR_BADPARS, "The 'distance' parameter must not be negative.");
     }
+    // Archicad only places Take-offs at quarter turns, so the angle must be a multiple of pi/2;
+    // it is normalized into [0, 2*pi), so a negative angle or a full turn works too.
     double rotationAngle = 0.0;
-    takeOffData.Get ("rotationAngle", rotationAngle);
+    if (takeOffData.Get ("rotationAngle", rotationAngle)) {
+        constexpr double halfPi = 1.57079632679489661923;
+        const double quarterTurns = rotationAngle / halfPi;
+        const double roundedQuarterTurns = std::round (quarterTurns);
+        if (!std::isfinite (quarterTurns) || std::fabs (quarterTurns - roundedQuarterTurns) > 1e-6) {
+            return CreateErrorResponse (APIERR_BADPARS, "The 'rotationAngle' parameter must be a multiple of pi/2.");
+        }
+        const double normalizedQuarterTurns = std::fmod (std::fmod (roundedQuarterTurns, 4.0) + 4.0, 4.0);
+        rotationAngle = normalizedQuarterTurns * halfPi;
+    }
 
     double length = 0.0;
     const bool hasLength = takeOffData.Get ("length", length);
@@ -1851,16 +1858,33 @@ static GS::ObjectState PlaceMEPTakeOff (const GS::ObjectState& takeOffData)
         return CreateErrorResponse (APIERR_BADPARS, "The 'length' parameter must be positive.");
     }
 
+    // Setting the insulation thickness of a Take-off default stops Archicad with a fatal error
+    // (TakeOffDefault::SetInsulationThickness, seen in Archicad 30), so it is refused before the call.
     const GS::ObjectState* defaults = takeOffData.Get ("defaults");
-    bool removeInsulation = false;
-    if (defaults != nullptr && defaults->Get ("removeInsulation", removeInsulation) && removeInsulation && defaults->Contains ("insulationThickness")) {
-        return CreateErrorResponse (APIERR_BADPARS, "The 'removeInsulation' and 'insulationThickness' parameters cannot be given together.");
+    if (defaults != nullptr && defaults->Contains ("insulationThickness")) {
+        return CreateErrorResponse (APIERR_BADPARS, "The insulation thickness of a Take-off cannot be set; only 'removeInsulation' is supported.");
     }
 
     const ACAPI::MEP::UniqueID segmentId = Adapter::UniqueID (GetGuidFromObjectState (*segmentIdOs));
     ACAPI::Result<RoutingSegment> segment = RoutingSegment::Get (segmentId);
     if (segment.IsErr ()) {
         return CreateErrorResponse (segment.UnwrapErr ().kind, "The 'segmentId' parameter does not refer to an MEP routing segment.");
+    }
+
+    // Archicad places a Take-off beyond the segment at its end, so a longer distance is an error.
+    ACAPI::Result<RoutingNode> beginNode = RoutingNode::Get (segment->GetBeginNodeId ());
+    ACAPI::Result<RoutingNode> endNode = RoutingNode::Get (segment->GetEndNodeId ());
+    if (beginNode.IsErr () || endNode.IsErr ()) {
+        return CreateErrorResponse (APIERR_GENERAL, "Failed to get the nodes of the segment.");
+    }
+    const API_Coord3D beginPosition = beginNode->GetPosition ();
+    const API_Coord3D endPosition = endNode->GetPosition ();
+    const double segmentLength = std::sqrt (
+        (endPosition.x - beginPosition.x) * (endPosition.x - beginPosition.x) +
+        (endPosition.y - beginPosition.y) * (endPosition.y - beginPosition.y) +
+        (endPosition.z - beginPosition.z) * (endPosition.z - beginPosition.z));
+    if (distance > segmentLength + 1e-6) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("The 'distance' parameter is longer than the segment (%.4f m).", segmentLength));
     }
 
     std::optional<Domain> domain;
@@ -1891,7 +1915,7 @@ static GS::ObjectState PlaceMEPTakeOff (const GS::ObjectState& takeOffData)
 
     ACAPI::Result<ACAPI::MEP::UniqueID> takeOffId = takeOffDefault->Place (segmentId, distance, rotationAngle);
     if (takeOffId.IsErr ()) {
-        return CreateErrorResponse (takeOffId.UnwrapErr ().kind, "Failed to place the Take-off. Check that the distance is within the segment.");
+        return CreateErrorResponse (takeOffId.UnwrapErr ().kind, "Failed to place the Take-off on the segment.");
     }
 
     if (hasLength) {

@@ -2598,8 +2598,8 @@ GSErrCode Initialize (void)
             "Creates MEP elements (Terminal, Accessory, Equipment or Fitting) at the given positions, optionally with a changed insulation that applies only to what is placed. Available from Archicad 28."
         );
         err |= RegisterCommand<CreateMEPTakeOffsCommand> (
-            mepCommands, "1.7.4",
-            "Places Take-offs on MEP routing segments, at the given distance from the beginning of the segment and rotation around it, optionally with a length and a changed insulation that apply only to what is placed. Archicad only has Ventilation Take-offs. The ports of a placed Take-off are returned by GetMEPPorts like those of any MEP element. Available from Archicad 28."
+            mepCommands, "1.8.1",
+            "Places Take-offs on MEP routing segments, at the given distance from the beginning of the segment and rotation around it (a multiple of 90 degrees), optionally with a length and without insulation, which apply only to what is placed. Archicad only has Ventilation Take-offs. The ports of a placed Take-off are returned by GetMEPPorts like those of any MEP element. Available from Archicad 28."
         );
         err |= RegisterCommand<ModifyMEPRoutingElementsCommand> (
             mepCommands, "1.5.6",
