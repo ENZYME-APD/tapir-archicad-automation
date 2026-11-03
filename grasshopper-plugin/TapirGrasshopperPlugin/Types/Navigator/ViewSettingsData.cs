@@ -117,6 +117,9 @@ namespace TapirGrasshopperPlugin.Types.Navigator
 
         [JsonProperty("usePhotoRendering", NullValueHandling = NullValueHandling.Ignore)]
         public bool? UsePhotoRendering { get; set; }
+
+        [JsonProperty("renovationFilterName", NullValueHandling = NullValueHandling.Ignore)]
+        public string RenovationFilterName { get; set; }
     }
 
     // The "stored in this view" checkboxes of the View Settings dialog. Every flag

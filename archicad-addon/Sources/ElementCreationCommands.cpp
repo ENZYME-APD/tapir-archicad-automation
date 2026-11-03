@@ -5,6 +5,8 @@
 #include "NotificationCommands.hpp"
 
 #include <algorithm>
+#include <cmath>
+#include <utility>
 #include <vector>
 
 CreateElementsCommandBase::CreateElementsCommandBase (const GS::String& commandNameIn, API_ElemTypeID elemTypeIDIn, const GS::String& arrayFieldNameIn)
@@ -331,6 +333,10 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                             "$ref": "#/AttributeId",
                             "description": "Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments."
                         },
+                        "veneer": {
+                            "$ref": "#/ColumnVeneer",
+                            "description": "Veneer of the column (type, thickness, building material); the fields not given come from the tool defaults or favoriteName, thickness 0 creates the column without veneer. Applied to all segments."
+                        },
                         "floorIndex": {
                             "type": "integer",
                             "description": "Optional floor index. If omitted, derived from the coordinate's z value."
@@ -404,9 +410,17 @@ GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (A
     const GS::ObjectState* buildingMaterialIdOs = parameters.Get ("buildingMaterialId");
     const GS::ObjectState* profileIdOs = parameters.Get ("profileId");
 
-    if ((hasWidth || hasDepth || hasCircleBased || hasIsWidthAndHeightLinked || buildingMaterialIdOs != nullptr || profileIdOs != nullptr) && memo.columnSegments != nullptr) {
+    const GS::ObjectState* veneerOs = parameters.Get ("veneer");
+
+    if ((hasWidth || hasDepth || hasCircleBased || hasIsWidthAndHeightLinked || buildingMaterialIdOs != nullptr || profileIdOs != nullptr || veneerOs != nullptr) && memo.columnSegments != nullptr) {
         GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.columnSegments)) / sizeof (API_ColumnSegmentType);
         for (GSSize i = 0; i < nSegments; ++i) {
+            if (veneerOs != nullptr) {
+                const GS::Optional<GS::UniString> veneerError = ApplyColumnVeneer (*veneerOs, memo.columnSegments[i]);
+                if (veneerError.HasValue ()) {
+                    return CreateErrorResponse (APIERR_BADPARS, veneerError.Get ());
+                }
+            }
             API_AssemblySegmentData& segment = memo.columnSegments[i].assemblySegmentData;
             if (hasIsWidthAndHeightLinked) {
                 segment.isWidthAndHeightLinked = isWidthAndHeightLinked;
@@ -735,6 +749,418 @@ GS::Optional<GS::UniString> ApplyZoneContourAndCoverFill (const GS::ObjectState&
     return {};
 }
 
+// --- Zone overlap pre-check (#822) -------------------------------------------------
+//
+// Archicad answers ACAPI_Element_Create of a Zone whose area overlaps another Zone on
+// the same story with a modal "overlapping zone areas" warning. A JSON command runs on
+// the main thread, so the command does not return until someone clicks that dialog and
+// every other API call is blocked meanwhile. The overlap is therefore looked for here,
+// before the element is created, and the item fails with an error naming the other
+// Zone instead; the per-item "allowOverlap" flag skips the check for callers who
+// accept the dialog.
+//
+// The check uses the polygons as stored in the memo, so a curved edge is taken as its
+// chord. Two Zones overlap when they share area: an edge of one properly crosses an
+// edge of the other, or a point just inside an edge of one lies strictly inside the
+// other. Zones that only touch (a shared edge or corner, the normal case for the rooms
+// of a floor plan) do not overlap. For an automatic Zone only its reference point is
+// known before creation, so it counts as overlapping when that point is inside an
+// existing Zone.
+
+namespace {
+
+struct ZoneArea {
+    std::vector<API_Coord>              outline;
+    std::vector<std::vector<API_Coord>> holes;
+};
+
+// 1 mm, the same as IsSame2DCoordinate: closer than this to an edge is "on" it.
+constexpr double ZoneBoundaryTolerance = 0.001;
+// How far inside an edge its probe point is taken; above the tolerance so that the
+// probe of a shared edge lands clearly outside the neighbouring Zone. Together the two
+// mean that a sliver overlap narrower than about 3 mm (with no crossing edges) is
+// taken as touching, not overlapping.
+constexpr double ZoneProbeOffset = 0.002;
+
+enum class RingPosition {
+    Outside,
+    OnBoundary,
+    Inside
+};
+
+static double SquaredDistance (const API_Coord& a, const API_Coord& b)
+{
+    const double dx = a.x - b.x;
+    const double dy = a.y - b.y;
+    return dx * dx + dy * dy;
+}
+
+static bool IsPointOnSegment (const API_Coord& p, const API_Coord& a, const API_Coord& b)
+{
+    const double abx = b.x - a.x;
+    const double aby = b.y - a.y;
+    const double lengthSquared = abx * abx + aby * aby;
+    double t = 0.0;
+    if (lengthSquared > 0.0) {
+        t = ((p.x - a.x) * abx + (p.y - a.y) * aby) / lengthSquared;
+        t = std::max (0.0, std::min (1.0, t));
+    }
+    const API_Coord closest = { a.x + t * abx, a.y + t * aby };
+    return SquaredDistance (p, closest) <= ZoneBoundaryTolerance * ZoneBoundaryTolerance;
+}
+
+static RingPosition GetRingPosition (const std::vector<API_Coord>& ring, const API_Coord& p)
+{
+    const size_t n = ring.size ();
+    if (n < 3) {
+        return RingPosition::Outside;
+    }
+    bool inside = false;
+    for (size_t i = 0, j = n - 1; i < n; j = i++) {
+        const API_Coord& a = ring[j];
+        const API_Coord& b = ring[i];
+        if (IsPointOnSegment (p, a, b)) {
+            return RingPosition::OnBoundary;
+        }
+        // Even-odd rule: count the edges crossed by the ray from p towards +x.
+        if ((a.y > p.y) != (b.y > p.y)) {
+            const double xAtP = a.x + (p.y - a.y) * (b.x - a.x) / (b.y - a.y);
+            if (xAtP > p.x) {
+                inside = !inside;
+            }
+        }
+    }
+    return inside ? RingPosition::Inside : RingPosition::Outside;
+}
+
+// Strictly inside the Zone's area: inside its outline and neither in nor on a hole.
+static bool IsStrictlyInsideZone (const ZoneArea& zone, const API_Coord& p)
+{
+    if (GetRingPosition (zone.outline, p) != RingPosition::Inside) {
+        return false;
+    }
+    for (const std::vector<API_Coord>& hole : zone.holes) {
+        if (GetRingPosition (hole, p) != RingPosition::Outside) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Signed distance of p from the line through a and b, positive on the left of a->b.
+static double SignedDistanceFromLine (const API_Coord& a, const API_Coord& b, const API_Coord& p)
+{
+    const double length = std::sqrt (SquaredDistance (a, b));
+    if (length <= 0.0) {
+        return 0.0;
+    }
+    return ((b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x)) / length;
+}
+
+static bool SegmentsProperlyCross (const API_Coord& p1, const API_Coord& p2, const API_Coord& q1, const API_Coord& q2)
+{
+    // Only a proper crossing counts: an endpoint on the other segment (a shared corner
+    // or a T-junction) is how neighbouring Zones touch, and that is not an overlap.
+    const auto onOppositeSides = [] (double d1, double d2) {
+        return (d1 > ZoneBoundaryTolerance && d2 < -ZoneBoundaryTolerance) ||
+               (d1 < -ZoneBoundaryTolerance && d2 > ZoneBoundaryTolerance);
+    };
+    return onOppositeSides (SignedDistanceFromLine (q1, q2, p1), SignedDistanceFromLine (q1, q2, p2)) &&
+           onOppositeSides (SignedDistanceFromLine (p1, p2, q1), SignedDistanceFromLine (p1, p2, q2));
+}
+
+static bool RingsProperlyCross (const std::vector<API_Coord>& ringA, const std::vector<API_Coord>& ringB)
+{
+    const size_t nA = ringA.size ();
+    const size_t nB = ringB.size ();
+    if (nA < 2 || nB < 2) {
+        return false;
+    }
+    for (size_t i = 0, j = nA - 1; i < nA; j = i++) {
+        for (size_t k = 0, l = nB - 1; k < nB; l = k++) {
+            if (SegmentsProperlyCross (ringA[j], ringA[i], ringB[l], ringB[k])) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+static double SignedArea (const std::vector<API_Coord>& ring)
+{
+    double area = 0.0;
+    const size_t n = ring.size ();
+    for (size_t i = 0, j = n - 1; i < n; j = i++) {
+        area += ring[j].x * ring[i].y - ring[i].x * ring[j].y;
+    }
+    return area / 2.0;
+}
+
+// Takes a point ZoneProbeOffset inside the midpoint of each edge of the ring - on the
+// ring's interior side for an outline, on its exterior side for a hole, so that the
+// probe is always within the Zone's own area - and tells whether any of them lies
+// strictly inside the other Zone. Catches identical and nested Zones, which have no
+// properly crossing edges.
+static bool HasProbePointInside (const std::vector<API_Coord>& ring, bool probeTowardsRingInterior, const ZoneArea& other)
+{
+    const size_t n = ring.size ();
+    if (n < 3) {
+        return false;
+    }
+    const bool leftIsInterior = SignedArea (ring) >= 0.0;
+    const double sign = (leftIsInterior == probeTowardsRingInterior) ? 1.0 : -1.0;
+    for (size_t i = 0, j = n - 1; i < n; j = i++) {
+        const API_Coord& a = ring[j];
+        const API_Coord& b = ring[i];
+        const double length = std::sqrt (SquaredDistance (a, b));
+        if (length <= ZoneBoundaryTolerance) {
+            continue;
+        }
+        // The left normal of a->b is (-(b.y - a.y), b.x - a.x).
+        const API_Coord probe = {
+            (a.x + b.x) / 2.0 - sign * (b.y - a.y) / length * ZoneProbeOffset,
+            (a.y + b.y) / 2.0 + sign * (b.x - a.x) / length * ZoneProbeOffset
+        };
+        if (IsStrictlyInsideZone (other, probe)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool DoZonesOverlap (const ZoneArea& a, const ZoneArea& b)
+{
+    std::vector<const std::vector<API_Coord>*> ringsA { &a.outline };
+    for (const std::vector<API_Coord>& hole : a.holes) {
+        ringsA.push_back (&hole);
+    }
+    std::vector<const std::vector<API_Coord>*> ringsB { &b.outline };
+    for (const std::vector<API_Coord>& hole : b.holes) {
+        ringsB.push_back (&hole);
+    }
+    for (const std::vector<API_Coord>* ringA : ringsA) {
+        for (const std::vector<API_Coord>* ringB : ringsB) {
+            if (RingsProperlyCross (*ringA, *ringB)) {
+                return true;
+            }
+        }
+    }
+    if (HasProbePointInside (a.outline, true, b) || HasProbePointInside (b.outline, true, a)) {
+        return true;
+    }
+    for (const std::vector<API_Coord>& hole : a.holes) {
+        if (HasProbePointInside (hole, false, b)) {
+            return true;
+        }
+    }
+    for (const std::vector<API_Coord>& hole : b.holes) {
+        if (HasProbePointInside (hole, false, a)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static std::vector<API_Coord> GetRingFromObjectStates (const GS::Array<GS::ObjectState>& coords)
+{
+    std::vector<API_Coord> ring;
+    ring.reserve (coords.GetSize ());
+    for (const GS::ObjectState& coord : coords) {
+        ring.push_back (Get2DCoordinateFromObjectState (coord));
+    }
+    return ring;
+}
+
+struct ExistingZone {
+    API_Guid      guid;
+    short         floorInd;
+    GS::UniString name;
+    GS::UniString numberStr;
+    ZoneArea      area;
+};
+
+// The project's Zones, read once per CreateZones call rather than once per item: a
+// batch of hundreds of Zones into a project with hundreds of Zones would otherwise
+// read every Zone's memo for every item. Refresh picks up the Zones the earlier items
+// of the same call created, which the later items must not overlap either. Commands
+// run one at a time on the main thread, so a file-scope cache that CreateZones::Execute
+// sets up and tears down is safe; it never outlives the call, so it cannot go stale.
+struct ZoneOverlapCache {
+    GS::HashSet<API_Guid>     knownGuids;
+    std::vector<ExistingZone> zones;
+};
+
+ZoneOverlapCache zoneOverlapCache;
+
+// Adds every Zone of the project not seen before, with its polygons as stored in the
+// memo (the first sub-polygon is the outline, the others are holes; arcs as chords).
+static void RefreshZoneOverlapCache ()
+{
+    GS::Array<API_Guid> zoneGuids;
+    if (ACAPI_Element_GetElemList (API_ZoneID, &zoneGuids) != NoError) {
+        return;
+    }
+    for (const API_Guid& guid : zoneGuids) {
+        if (zoneOverlapCache.knownGuids.Contains (guid)) {
+            continue;
+        }
+        zoneOverlapCache.knownGuids.Add (guid);
+        API_Element zone = {};
+        zone.header.guid = guid;
+        if (ACAPI_Element_Get (&zone) != NoError) {
+            continue;
+        }
+        std::vector<PolygonData> polygons = GetPolygonsFromMemoCoords (guid);
+        if (polygons.empty () || polygons[0].coords.size () < 3) {
+            continue;
+        }
+        ExistingZone existing;
+        existing.guid = guid;
+        existing.floorInd = zone.header.floorInd;
+        existing.name = GS::UniString (zone.zone.roomName);
+        existing.numberStr = GS::UniString (zone.zone.roomNoStr);
+        existing.area.outline = std::move (polygons[0].coords);
+        for (size_t i = 1; i < polygons.size (); ++i) {
+            existing.area.holes.push_back (std::move (polygons[i].coords));
+        }
+        zoneOverlapCache.zones.push_back (std::move (existing));
+    }
+}
+
+// The first existing Zone of the new Zone's story that it would share area with.
+// For a manual Zone the polygon is compared; for an automatic one only its reference
+// point is known before creation, so it counts when that point is inside a Zone.
+static const ExistingZone* FindOverlappingZone (const API_ZoneType& newZone, short floorInd, const ZoneArea& newZoneArea)
+{
+    RefreshZoneOverlapCache ();
+    for (const ExistingZone& existing : zoneOverlapCache.zones) {
+        if (existing.floorInd != floorInd) {
+            continue;
+        }
+        const bool overlaps = newZone.manual
+            ? DoZonesOverlap (newZoneArea, existing.area)
+            : IsStrictlyInsideZone (existing.area, newZone.refPos);
+        if (overlaps) {
+            return &existing;
+        }
+    }
+    return nullptr;
+}
+
+static GS::ObjectState CreateZoneOverlapErrorResponse (const ExistingZone& existing)
+{
+    return CreateErrorResponse (APIERR_BADPARS,
+        "The new zone would overlap the existing zone '" + existing.numberStr + " " + existing.name + "' (" + APIGuidToString (existing.guid) +
+        ") on the same story, which Archicad answers with a modal warning dialog that blocks the API. "
+        "Move or delete that zone first, or set allowOverlap to true to create the new zone anyway. "
+        "Curved edges are compared by their chords, so a zone that only follows the curved edge of that zone may be refused although nothing overlaps; allowOverlap creates it too.");
+}
+
+} // namespace
+
+// The levels of a zone: its height, base offset, top link and floor (finish) thickness.
+// Applied by CreateZones (no mask) and, through ApplyZoneSettings, by ModifyZones and
+// SetDetailsOfElements. Same rule as for walls and columns: an explicit height unlinks
+// the top (relativeTopStory 0), and with a non-zero relativeTopStory Archicad computes
+// the height from the story levels and topOffset. When both are given, relativeTopStory
+// is applied last and wins.
+static GS::Optional<GS::ObjectState> ApplyZoneLevels (const GS::ObjectState& details, API_ZoneType& zone, API_Element* mask)
+{
+    double height = 0.0;
+    if (details.Get ("height", height)) {
+        if (height <= 0.0) {
+            return CreateErrorResponse (APIERR_BADPARS, "height must be greater than 0.");
+        }
+        zone.roomHeight = height;
+        zone.relativeTopStory = 0;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET ((*mask), API_ZoneType, roomHeight);
+            ACAPI_ELEMENT_MASK_SET ((*mask), API_ZoneType, relativeTopStory);
+        }
+    }
+
+    double bottomOffset = 0.0;
+    if (details.Get ("bottomOffset", bottomOffset)) {
+        zone.roomBaseLev = bottomOffset;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET ((*mask), API_ZoneType, roomBaseLev);
+        }
+    }
+
+    double topOffset = 0.0;
+    if (details.Get ("topOffset", topOffset)) {
+        zone.roomTopOffset = topOffset;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET ((*mask), API_ZoneType, roomTopOffset);
+        }
+    }
+
+    double relativeTopStory = 0.0;
+    if (details.Get ("relativeTopStory", relativeTopStory)) {
+        zone.relativeTopStory = static_cast<short> (relativeTopStory);
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET ((*mask), API_ZoneType, relativeTopStory);
+        }
+    }
+
+    double floorThickness = 0.0;
+    if (details.Get ("floorThickness", floorThickness)) {
+        if (floorThickness < 0.0) {
+            return CreateErrorResponse (APIERR_BADPARS, "floorThickness must not be negative.");
+        }
+        zone.roomFlThick = floorThickness;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET ((*mask), API_ZoneType, roomFlThick);
+        }
+    }
+
+    return {};
+}
+
+GS::Optional<GS::ObjectState> ApplyZoneSettings (const GS::ObjectState& details, API_Element& element, API_Element& mask)
+{
+    if (details.Contains ("name")) {
+        if (!SetUCharProperty (&details, "name", element.zone.roomName)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid name parameter.");
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, roomName);
+    }
+
+    if (details.Contains ("numberStr")) {
+        if (!SetUCharProperty (&details, "numberStr", element.zone.roomNoStr)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid numberStr parameter.");
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, roomNoStr);
+    }
+
+    const GS::ObjectState* categoryAttributeId = details.Get ("categoryAttributeId");
+    if (categoryAttributeId != nullptr) {
+        // Refused instead of silently setting an invalid category, as CreateZones would.
+        API_Attribute category = {};
+        category.header.typeID = API_ZoneCatID;
+        category.header.guid = GetGuidFromObjectState (*categoryAttributeId);
+        if (category.header.guid == APINULLGuid || ACAPI_Attribute_Get (&category) != NoError) {
+            return CreateErrorResponse (APIERR_BADPARS, "No Zone Category attribute was found for categoryAttributeId.");
+        }
+        element.zone.catInd = category.header.index;
+        ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, catInd);
+    }
+
+    const GS::ObjectState* stampPosition = details.Get ("stampPosition");
+    if (stampPosition != nullptr) {
+        element.zone.pos = Get2DCoordinateFromObjectState (*stampPosition);
+        ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, pos);
+    }
+    if (details.Get ("stampAngle", element.zone.stampAngle)) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, stampAngle);
+    }
+    if (details.Get ("fixedStampAngle", element.zone.fixedAngle)) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, fixedAngle);
+    }
+
+    return ApplyZoneLevels (details, element.zone, &mask);
+}
+
 CreateZonesCommand::CreateZonesCommand () :
     CreateElementsCommandBase ("CreateZones", API_ZoneID, "zonesData")
 {
@@ -755,6 +1181,12 @@ CreateZonesCommand::CreateZonesCommand () :
 // back in the order of the request. A call with no such item runs exactly as before.
 GS::ObjectState CreateZonesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const
 {
+    // The overlap pre-check (see SetTypeSpecificParameters) caches the project's Zones
+    // for the duration of this call only, across all the story groups below: the Zones
+    // created by an earlier group are picked up by the next refresh.
+    zoneOverlapCache = ZoneOverlapCache {};
+    const GS::OnExit cacheGuard ([] () { zoneOverlapCache = ZoneOverlapCache {}; });
+
     GS::Array<GS::ObjectState> zonesData;
     parameters.Get (arrayFieldName, zonesData);
 
@@ -906,6 +1338,33 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
                         "$ref": "#/ZoneCoverFill",
                         "description": "Optional cover fill of the zone. Fields that are left out keep the value of the favorite or of the Zone tool defaults."
                     },
+                    "allowOverlap": {
+                        "type": "boolean",
+                        "description" : "Optional, defaults to false. Archicad answers a new zone whose area overlaps an existing zone on the same story with a modal warning dialog that blocks the API until it is dismissed, so by default such an item fails with an error naming the overlapping zone and no element is created for it. Set it to true to skip this check and create the zone anyway; the dialog may then appear. Zones that only touch (a shared edge or corner) do not overlap; curved edges are checked by their chords, and an automatic zone counts as overlapping when its referencePosition lies inside an existing zone."
+                    },
+
+                    "height": {
+                        "type": "number",
+                        "exclusiveMinimum": 0.0,
+                        "description" : "Optional height of the zone from its bottom. Sets relativeTopStory to 0 (explicit height); when omitted, the height and top link of the favorite or of the Zone tool defaults are kept. Do not combine with relativeTopStory."
+                    },
+                    "bottomOffset": {
+                        "type": "number",
+                        "description" : "Optional base level of the zone relative to its home story level."
+                    },
+                    "topOffset": {
+                        "type": "number",
+                        "description" : "Optional offset of the top of the zone from the linked top story level. Only has an effect when relativeTopStory is non-zero."
+                    },
+                    "relativeTopStory": {
+                        "type": "number",
+                        "description" : "Optional top link: non-zero links the top of the zone to another story, relative to its home story (1 is the story above), instead of an explicit height. Do not combine with height."
+                    },
+                    "floorThickness": {
+                        "type": "number",
+                        "minimum": 0.0,
+                        "description" : "Optional thickness of the floor finish (subfloor thickness) of the zone."
+                    },
                     "geometry": {
                         "$ref": "#/ZoneCreationGeometry"
                     }
@@ -961,6 +1420,15 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
         return CreateErrorResponse (APIERR_BADPARS, *contourAndFillError);
     }
 
+    // Filled for a manual zone; the overlap pre-check at the end compares it with the
+    // zones already on the story (see the comment above the ZoneArea helpers).
+    ZoneArea newZoneArea;
+
+    auto levelsError = ApplyZoneLevels (parameters, element.zone, nullptr);
+    if (levelsError.HasValue ()) {
+        return levelsError;
+    }
+
     GS::ObjectState referencePosition;
     if (geometry.Get ("referencePosition", referencePosition)) {
         element.zone.manual = false;
@@ -993,6 +1461,7 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
         element.zone.poly.nCoords	= polygonCoordinates.GetSize() + 1;
         element.zone.poly.nSubPolys	= 1;
         element.zone.poly.nArcs		= polygonArcs.GetSize ();
+        newZoneArea.outline = GetRingFromObjectStates (polygonCoordinates);
 
         for (const GS::ObjectState& hole : holes) {
             GS::Array<GS::ObjectState> holePolygonOutline;
@@ -1001,6 +1470,7 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
                 element.zone.poly.nCoords += holePolygonOutline.GetSize () + 1;
                 ++element.zone.poly.nSubPolys;
                 element.zone.poly.nArcs += holePolygonArcs.GetSize ();
+                newZoneArea.holes.push_back (GetRingFromObjectStates (holePolygonOutline));
             }
         }
 
@@ -1034,7 +1504,127 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
         element.zone.pos = stampPosition.IsEmpty() ? (*memo.coords)[1] : Get2DCoordinateFromObjectState (stampPosition);
     }
 
+    // Fail an item that would overlap a zone of the same story before ACAPI_Element_Create
+    // opens Archicad's modal overlap warning, which blocks the API until someone clicks it
+    // (#822). The zones created by the earlier items of the same call are already in the
+    // project, so they are compared too.
+    bool allowOverlap = false;
+    parameters.Get ("allowOverlap", allowOverlap);
+    if (!allowOverlap) {
+        const ExistingZone* overlapped = FindOverlappingZone (element.zone, element.header.floorInd, newZoneArea);
+        if (overlapped != nullptr) {
+            return CreateZoneOverlapErrorResponse (*overlapped);
+        }
+    }
+
     return {};
+}
+
+ModifyZonesCommand::ModifyZonesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyZonesCommand::GetName () const
+{
+    return "ModifyZones";
+}
+
+GS::Optional<GS::UniString> ModifyZonesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "zonesWithDetails": {
+                "type": "array",
+                "description": "Array of Zone elements to modify, with the fields to change. Only the given fields are changed; the polygon and the omitted fields are kept. The same fields as the ZoneSettings of SetDetailsOfElements.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "name": { "type": "string", "description": "Name of the zone." },
+                        "numberStr": { "type": "string", "description": "Zone number." },
+                        "categoryAttributeId": { "$ref": "#/AttributeId", "description": "The identifier of the zone category attribute." },
+                        "stampPosition": { "$ref": "#/Coordinate2D", "description": "Position of the origin of the zone stamp." },
+                        "stampAngle": { "type": "number", "description": "Rotation angle of the zone stamp in radians." },
+                        "fixedStampAngle": { "type": "boolean", "description": "If true, the zone stamp angle remains fixed when the element is rotated." },
+                        "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Height of the zone from its bottom. Sets relativeTopStory to 0 (explicit height), so do not combine it with relativeTopStory in the same call: whichever is applied last wins." },
+                        "bottomOffset": { "type": "number", "description": "Base level of the zone relative to its home story level." },
+                        "topOffset": { "type": "number", "description": "Offset of the top of the zone from the linked top story level. Only has an effect when relativeTopStory is non-zero." },
+                        "relativeTopStory": { "type": "number", "description": "Non-zero links the top of the zone to another story, relative to its home story (1 is the story above), instead of an explicit height. Do not set together with height in the same call, see the note on height." },
+                        "floorThickness": { "type": "number", "minimum": 0.0, "description": "Thickness of the floor finish (subfloor thickness) of the zone." }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["zonesWithDetails"]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyZonesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": { "$ref": "#/ExecutionResults" }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+GS::ObjectState ModifyZonesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> zonesWithDetails;
+    parameters.Get ("zonesWithDetails", zonesWithDetails);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("ModifyZones", [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : zonesWithDetails) {
+            const GS::ObjectState* elementId = item.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*elementId);
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to find the element"));
+                continue;
+            }
+            if (GetElemTypeId (element.header) != API_ZoneID) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Element is not a Zone."));
+                continue;
+            }
+
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+            auto settingsError = ApplyZoneSettings (item, element, mask);
+            if (settingsError.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (*settingsError));
+                continue;
+            }
+
+            // No memo is passed, so the polygon is kept as it is.
+            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to modify the zone."));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
 }
 
 // Shared "line-family settings" properties for Line/PolyLine/Arc/Circle/Spline creation
@@ -3382,6 +3972,129 @@ GS::Optional<GS::ObjectState> CreateRailingsCommand::SetTypeSpecificParameters (
     return {};
 }
 
+GS::String CreateRailingsFromPolylineCommand::GetName () const
+{
+    return "CreateRailingsFromPolyline";
+}
+
+GS::Optional<GS::UniString> CreateRailingsFromPolylineCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "railingsData": {
+            "type": "array",
+            "description": "Array of data to create Railings.",
+            "items": {
+                "type": "object",
+                "description": "The parameters of the new Railing. Everything not given here - the posts, rails, handrails, toprails, panels and balusters - comes from the favorite or from the Railing tool defaults of the open project. Archicad generates one node per vertex and one segment per pair of consecutive vertices from them.",
+                "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                    },
+                    "floorIndex": {
+                        "type": "integer",
+                        "description": "Optional floor index (home story) of the railing. The story is made active in the floor plan while the railing is created and the previously active story is restored afterwards. When omitted, the current story."
+                    },
+                    "polylineCoordinates": {
+                        "type": "array",
+                        "description": "The nodes of the reference line of the railing. z is the elevation of the node relative to the floor level of the home story, so the railing can climb or descend along its segments.",
+                        "items": {
+                            "$ref": "#/Coordinate3D"
+                        },
+                        "minItems": 2
+                    },
+                    "polylineArcs": {
+                        "type": "array",
+                        "description": "Optional arc segments of the reference line. begIndex and endIndex are indices into polylineCoordinates and must be consecutive (endIndex = begIndex + 1).",
+                        "items": {
+                            "$ref": "#/PolyArc"
+                        }
+                    },
+                    "height": {
+                        "type": "number",
+                        "description": "Optional height of the railing segments. When omitted, the segment height of the favorite (or of the Railing tool defaults) is kept.",
+                        "exclusiveMinimum": 0.0
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "polylineCoordinates"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "railingsData"
+    ]
+})";
+}
+
+GS::Optional<GS::ObjectState> CreateRailingsFromPolylineCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
+{
+    GS::Array<GS::ObjectState> coordinates;
+    GS::Array<GS::ObjectState> arcs;
+    parameters.Get ("polylineCoordinates", coordinates);
+    parameters.Get ("polylineArcs", arcs);
+    const Int32 nCoords = (Int32) coordinates.GetSize ();
+    if (nCoords < 2) {
+        return CreateErrorResponse (APIERR_BADPARS, "polylineCoordinates must have at least 2 points.");
+    }
+    for (UIndex i = 1; i < coordinates.GetSize (); ++i) {
+        if (IsSame2DCoordinate (coordinates[i - 1], coordinates[i])) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("Zero-length segment: polylineCoordinates[%u] and polylineCoordinates[%u] have the same x and y.", i - 1, i));
+        }
+    }
+    // The memo indices start at 1 (index 0 is unused), so the arcs are shifted by one.
+    const GS::Array<API_PolyArc> polyArcs = GetPolyArcs (arcs, 1);
+    for (const API_PolyArc& arc : polyArcs) {
+        if (arc.begIndex < 1 || arc.endIndex > nCoords || arc.endIndex != arc.begIndex + 1) {
+            return CreateErrorResponse (APIERR_BADPARS, "Each item of polylineArcs must connect two consecutive points of polylineCoordinates.");
+        }
+    }
+
+    short floorIndex = 0;
+    if (parameters.Get ("floorIndex", floorIndex)) {
+        element.header.floorInd = floorIndex;
+    }
+    parameters.Get ("height", element.railing.defSegment.height);
+
+    // As in CreateRailings, only the reference line is written; the segment, post, rail and panel
+    // definitions in the memo of the defaults are kept. polyZCoords holds the elevation of each vertex,
+    // from which Archicad derives bottomOffset, so the z of the request is taken from the home story.
+    if (memo.coords != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.coords));
+    }
+    if (memo.parcs != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.parcs));
+    }
+    if (memo.polyZCoords != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.polyZCoords));
+    }
+    memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    memo.polyZCoords = reinterpret_cast<double**> (BMAllocateHandle ((nCoords + 1) * sizeof (double), ALLOCATE_CLEAR, 0));
+    for (Int32 i = 0; i < nCoords; ++i) {
+        const API_Coord3D coord = Get3DCoordinateFromObjectState (coordinates[i]);
+        (*memo.coords)[i + 1] = { coord.x, coord.y };
+        (*memo.polyZCoords)[i + 1] = GetZPos (element.header.floorInd, coord.z, stories);
+    }
+    if (!polyArcs.IsEmpty ()) {
+        memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (polyArcs.GetSize () * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+        for (UIndex i = 0; i < polyArcs.GetSize (); ++i) {
+            (*memo.parcs)[i] = polyArcs[i];
+        }
+    }
+    element.railing.nVertices = nCoords;
+
+    return {};
+}
+
 CreateCurtainWallsCommand::CreateCurtainWallsCommand () :
     CreateElementsCommandBase ("CreateCurtainWalls", API_CurtainWallID, "curtainWallsData")
 {
@@ -3458,84 +4171,6 @@ GS::Optional<GS::UniString> CreateCurtainWallsCommand::GetInputParametersSchema 
 })";
 }
 
-// A list of numbers read with ObjectState::Get<GS::Array<double>> does not convert integer items
-// (their bit pattern is taken as a double), so the items are collected one by one.
-class DoubleListCollector : public GS::ObjectState::Processor
-{
-public:
-    virtual void IntFound (const GS::String&, Int64 value) override
-    {
-        values.Push (static_cast<double> (value));
-    }
-
-    virtual void UIntFound (const GS::String&, UInt64 value) override
-    {
-        values.Push (static_cast<double> (value));
-    }
-
-    virtual void RealFound (const GS::String&, double value) override
-    {
-        values.Push (value);
-    }
-
-    virtual void BoolFound (const GS::String&, bool) override
-    {
-        failed = true;
-    }
-
-    virtual void StringFound (const GS::String&, const GS::UniString&) override
-    {
-        failed = true;
-    }
-
-    virtual bool ObjectFound (const GS::String&, const GS::ObjectState&) override
-    {
-        failed = true;
-        return false;
-    }
-
-    virtual bool ListFound (const GS::String&) override
-    {
-        return !failed;
-    }
-
-    virtual void ListEntered (const GS::String&) override
-    {
-        if (++depth > 1) {
-            failed = true;
-        }
-    }
-
-    virtual void ListExited (const GS::String&) override
-    {
-        --depth;
-    }
-
-    bool Get (GS::Array<double>& outValues) const
-    {
-        if (failed) {
-            return false;
-        }
-        outValues = values;
-        return true;
-    }
-
-private:
-    GS::Array<double> values;
-    Int32 depth = 0;
-    bool failed = false;
-};
-
-static bool GetDoubleList (const GS::ObjectState& parameters, const char* fieldName, GS::Array<double>& outValues)
-{
-    if (!parameters.IsList (fieldName)) {
-        return false;
-    }
-    DoubleListCollector collector;
-    parameters.Enumerate (fieldName, collector);
-    return collector.Get (outValues);
-}
-
 template <typename T>
 static void ReplaceCWPatternArray (T*& array, const GS::Array<T>& values)
 {
@@ -3550,7 +4185,8 @@ static void ReplaceCWPatternArray (T*& array, const GS::Array<T>& values)
 
 // Rewrites the column (primary) or row (secondary) pattern of the segment from the "sizes",
 // "logic", "origin" and "flexibleIndices" fields. Returns the reason when the fields are invalid.
-static GS::Optional<GS::UniString> ApplyCurtainWallPattern (const GS::ObjectState& patternOS, const char* fieldName, API_CWSegmentPatternData& pattern)
+// Shared with ModifyCurtainWallsCommand (ExtendedElementCommands.cpp).
+GS::Optional<GS::UniString> ApplyCurtainWallPattern (const GS::ObjectState& patternOS, const char* fieldName, API_CWSegmentPatternData& pattern)
 {
     GS::Array<double> sizes;
     if (!GetDoubleList (patternOS, "sizes", sizes) || sizes.IsEmpty ()) {
@@ -3628,7 +4264,11 @@ static GS::Optional<GS::UniString> ApplyCurtainWallPattern (const GS::ObjectStat
     return {};
 }
 
-static GS::Optional<GS::UniString> ApplyCurtainWallPatternCells (const GS::Array<GS::ObjectState>& cells, const API_Element& element, API_ElementMemo& memo, bool patternChanged)
+// Rewrites memo.cWSegPatternCells for the pattern in memo (nColumns x nRows cells) from the
+// "cells" assignments. element is the curtain wall, whose panel and frame class counts bound the
+// class indices (from the memo's class defaults when loaded, else from the element).
+// Shared with ModifyCurtainWallsCommand (ExtendedElementCommands.cpp).
+GS::Optional<GS::UniString> ApplyCurtainWallPatternCells (const GS::Array<GS::ObjectState>& cells, const API_Element& element, API_ElementMemo& memo, bool patternChanged)
 {
     const UInt32 nColumns = memo.cWSegPrimaryPattern.nPattern;
     const UInt32 nRows = memo.cWSegSecondaryPattern.nPattern;
