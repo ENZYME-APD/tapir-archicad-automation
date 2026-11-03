@@ -281,6 +281,7 @@ def archicad_label(send: Callable[..., dict]) -> str:
 
 def run_checks(send: Callable[..., dict], spec_files: list[Path]) -> tuple[list[dict], str]:
     version = send("GetAddOnVersion", {}, DEFAULT_TIMEOUT).get("version", "?")
+    ac = archicad_version(send)
     rows: list[dict] = []
     for path in spec_files:
         spec = json.loads(path.read_text(encoding="utf-8"))
@@ -289,6 +290,11 @@ def run_checks(send: Callable[..., dict], spec_files: list[Path]) -> tuple[list[
         if needed and version_tuple(version) < version_tuple(needed):
             rows.append({"check": name, "step": "-", "what": "minTapir", "ok": None,
                          "detail": f"skipped: needs Tapir {needed}, running {version}"})
+            continue
+        needed = spec.get("minArchicad")
+        if needed and version_tuple(ac) < version_tuple(str(needed)):
+            rows.append({"check": name, "step": "-", "what": "minArchicad", "ok": None,
+                         "detail": f"skipped: needs Archicad {needed}, running {ac}"})
             continue
         ok, reason = project_is_scratch(send, spec)
         if not ok:

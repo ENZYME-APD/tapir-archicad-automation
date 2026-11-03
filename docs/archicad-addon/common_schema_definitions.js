@@ -376,6 +376,18 @@ var gSchemaDefinitions = {
                 "type": "string",
                 "description": "The nominal size of a piping port. Available from Archicad 30."
             },
+            "outerDiameter": {
+                "type": "number",
+                "description": "The outer diameter of a piping port."
+            },
+            "wallThickness": {
+                "type": "number",
+                "description": "The wall thickness of a piping or ventilation port."
+            },
+            "flangeSize": {
+                "type": "number",
+                "description": "The flange size of a piping or ventilation port. Available from Archicad 30."
+            },
             "connectedPortId": {
                 "$ref": "#/Guid"
             },
@@ -1281,6 +1293,12 @@ var gSchemaDefinitions = {
                 "$ref": "#/Coordinate2D"
             },
             "gradientEnd": {
+                "$ref": "#/Coordinate2D"
+            },
+            "symbolOffset1": {
+                "$ref": "#/Coordinate2D"
+            },
+            "symbolOffset2": {
                 "$ref": "#/Coordinate2D"
             },
             "percent": {
@@ -2357,7 +2375,7 @@ var gSchemaDefinitions = {
                 "description": "The 2nd dimension of array (in case of array value)."
             },
             "value": {
-                "description": "The value of the parameter."
+                "description": "The value of the parameter. For an array parameter it is a flat list of all items row by row: dimension1 rows of dimension2 items each. SetGDLParametersOfElements accepts the same flat list back."
             },
             "valueDescription": {
                 "type": "string",
@@ -2434,7 +2452,7 @@ var gSchemaDefinitions = {
                 "description": "Optional 1-based second index for changing a single item of a two-dimensional array parameter. Only valid together with index1. Defaults to 1."
             },
             "value": {
-                "description": "The new value of the parameter, in the unit GetGDLParametersOfElements reports it in (Angle parameters in radians). For array parameters provide a list of values for one-dimensional arrays (e.g. [1, 2, 3]) or a list of lists for two-dimensional arrays (e.g. [[11, 12], [21, 22]]); the list must contain exactly as many values as the parameter has items, resizing an array parameter is not supported. Alternatively provide index1 (and optionally index2) together with a single value to change one item of the array. Within one command call whole-array (list) values are applied after all single-value changes."
+                "description": "The new value of the parameter, in the unit GetGDLParametersOfElements reports it in (Angle parameters in radians). For array parameters provide a list of values for one-dimensional arrays (e.g. [1, 2, 3]) or a list of lists for two-dimensional arrays (e.g. [[11, 12], [21, 22]]); the list must contain exactly as many values as the parameter has items, resizing an array parameter is not supported. A two-dimensional array can also be given as a flat list of all its dimension1 x dimension2 items row by row, the layout GetGDLParametersOfElements returns. Alternatively provide index1 (and optionally index2) together with a single value to change one item of the array. Within one command call whole-array (list) values are applied after all single-value changes."
             }
         },
         "additionalProperties": false,
@@ -2460,7 +2478,7 @@ var gSchemaDefinitions = {
                 "description": "Optional 1-based second index for changing a single item of a two-dimensional array parameter. Only valid together with index1. Defaults to 1."
             },
             "value": {
-                "description": "The new value of the parameter, in the unit GetGDLParametersOfElements reports it in (Angle parameters in radians). For array parameters provide a list of values for one-dimensional arrays (e.g. [1, 2, 3]) or a list of lists for two-dimensional arrays (e.g. [[11, 12], [21, 22]]); the list must contain exactly as many values as the parameter has items, resizing an array parameter is not supported. Alternatively provide index1 (and optionally index2) together with a single value to change one item of the array. Within one command call whole-array (list) values are applied after all single-value changes."
+                "description": "The new value of the parameter, in the unit GetGDLParametersOfElements reports it in (Angle parameters in radians). For array parameters provide a list of values for one-dimensional arrays (e.g. [1, 2, 3]) or a list of lists for two-dimensional arrays (e.g. [[11, 12], [21, 22]]); the list must contain exactly as many values as the parameter has items, resizing an array parameter is not supported. A two-dimensional array can also be given as a flat list of all its dimension1 x dimension2 items row by row, the layout GetGDLParametersOfElements returns. Alternatively provide index1 (and optionally index2) together with a single value to change one item of the array. Within one command call whole-array (list) values are applied after all single-value changes."
             }
         },
         "additionalProperties": false,
@@ -3435,6 +3453,8 @@ var gSchemaDefinitions = {
             "bitPattern",
             "gradientStart",
             "gradientEnd",
+            "symbolOffset1",
+            "symbolOffset2",
             "percent",
             "texture",
             "lineItems",
@@ -3615,6 +3635,13 @@ var gSchemaDefinitions = {
             "Composite"
         ]
     },
+    "ShellStructureType": {
+        "type": "string",
+        "enum": [
+            "Basic",
+            "Composite"
+        ]
+    },
     "DisplayOption": {
         "type": "string",
         "description": "Floor plan display option.",
@@ -3682,21 +3709,6 @@ var gSchemaDefinitions = {
             "None",
             "FromBottomLeftToTopRight",
             "FromTopLeftToBottomRight"
-        ]
-    },
-    "DrawingAnchorPoint": {
-        "type": "string",
-        "description": "The node of a Drawing's box, on a 3x3 grid, that is placed at its pos on the layout when useOwnOrigoAsAnchor is false (API_DrawingType::anchorPoint).",
-        "enum": [
-            "TopLeft",
-            "TopCenter",
-            "TopRight",
-            "MiddleLeft",
-            "Center",
-            "MiddleRight",
-            "BottomLeft",
-            "BottomCenter",
-            "BottomRight"
         ]
     },
     "BeamAnchorPoint": {
@@ -3896,15 +3908,6 @@ var gSchemaDefinitions = {
             "CustomNumber"
         ],
         "description": "How the drawing's title ID is assigned (Identification tabpage of the Drawing Settings dialog)."
-    },
-    "DrawingPenTableUsageMode": {
-        "type": "string",
-        "enum": [
-            "UseOwnPenTable",
-            "UseModelPenTable",
-            "UsePenTableIndex"
-        ],
-        "description": "Which pen table a Drawing uses (API_PenTableUsageModeValues): UseOwnPenTable keeps the colors stored in the drawing data itself (the pen table of its source view/model at the time it was created or last updated); UseModelPenTable always follows the current pen table of the model space; UsePenTableIndex forces the pen table given by penTableIndex."
     },
     "MEPCrossSectionShape": {
         "type": "string",
@@ -4559,6 +4562,10 @@ var gSchemaDefinitions = {
                         },
                         "linkFlags": {
                             "$ref": "#/SolidLinkFlags"
+                        },
+                        "linkTime": {
+                            "type": "string",
+                            "description": "When the solid link was made, as a date and time string formatted like the times of revision issues. Omitted when Archicad does not report it."
                         }
                     },
                     "additionalProperties": false,
@@ -4583,6 +4590,10 @@ var gSchemaDefinitions = {
                         },
                         "linkFlags": {
                             "$ref": "#/SolidLinkFlags"
+                        },
+                        "linkTime": {
+                            "type": "string",
+                            "description": "When the solid link was made, as a date and time string formatted like the times of revision issues. Omitted when Archicad does not report it."
                         }
                     },
                     "additionalProperties": false,
@@ -6641,10 +6652,20 @@ var gSchemaDefinitions = {
                 "$ref": "#/ElementId"
             },
             "ifcId": {
-                "type": "string"
+                "type": "string",
+                "description": "The IFC identifier of the element. From Archicad 28 it is the IFC GlobalId (22 characters); before Archicad 28 it is the same identifier in the 36 character GUID form, and ifcGlobalId gives its GlobalId."
             },
             "externalIFCId": {
-                "type": "string"
+                "type": "string",
+                "description": "The external IFC identifier of the element, in the same form as ifcId."
+            },
+            "ifcGlobalId": {
+                "type": "string",
+                "description": "The IFC GlobalId (22 characters) of ifcId. Only returned before Archicad 28, where ifcId is in the GUID form; from Archicad 28 ifcId already is the GlobalId."
+            },
+            "externalIFCGlobalId": {
+                "type": "string",
+                "description": "The IFC GlobalId (22 characters) of externalIFCId, empty when the element has no external IFC identifier. Only returned before Archicad 28."
             }
         },
         "additionalProperties": false,
@@ -8033,6 +8054,13 @@ var gSchemaDefinitions = {
             "profileId": {
                 "$ref": "#/AttributeId",
                 "description": "Present when the cross section uses a custom extruded profile rather than a building material."
+            },
+            "segments": {
+                "type": "array",
+                "description": "The surfaces of each segment of the beam.",
+                "items": {
+                    "$ref": "#/BeamSegmentSurfaces"
+                }
             }
         },
         "additionalProperties": false,
@@ -8072,6 +8100,19 @@ var gSchemaDefinitions = {
             },
             "compositeId": {
                 "$ref": "#/AttributeId"
+            },
+            "topMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "sideMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "bottomMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "materialsChained": {
+                "type": "boolean",
+                "description": "Whether the surface materials are chained."
             },
             "angle": {
                 "type": "number",
@@ -8114,6 +8155,13 @@ var gSchemaDefinitions = {
             },
             "holes": {
                 "$ref": "#/Holes2D"
+            },
+            "edgeSideMaterials": {
+                "type": "array",
+                "description": "The custom side surface of each edge of the roof's polygon: the edges of polygonOutline first, then those of each hole in order, the item i of a polygon belonging to its edge from vertex i to vertex i + 1.",
+                "items": {
+                    "$ref": "#/OverriddenMaterial"
+                }
             }
         },
         "additionalProperties": false,
@@ -8124,6 +8172,33 @@ var gSchemaDefinitions = {
             "level",
             "zCoordinate",
             "polygonOutline"
+        ]
+    },
+    "ShellDetails": {
+        "type": "object",
+        "properties": {
+            "shellClass": {
+                "type": "string",
+                "enum": [ "Extruded", "Revolved", "Ruled" ]
+            },
+            "structureType": {
+                "$ref": "#/ShellStructureType"
+            },
+            "thickness": {
+                "type": "number"
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId"
+            },
+            "compositeId": {
+                "$ref": "#/AttributeId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "shellClass",
+            "structureType",
+            "thickness"
         ]
     },
     "SlabDetails": {
@@ -8280,6 +8355,13 @@ var gSchemaDefinitions = {
             "profileId": {
                 "$ref": "#/AttributeId",
                 "description": "Present when the cross section uses a custom extruded profile rather than a building material."
+            },
+            "segments": {
+                "type": "array",
+                "description": "The surfaces of each segment of the column.",
+                "items": {
+                    "$ref": "#/ColumnSegmentSurfaces"
+                }
             }
         },
         "additionalProperties": false,
@@ -8288,6 +8370,66 @@ var gSchemaDefinitions = {
             "zCoordinate",
             "height",
             "bottomOffset"
+        ]
+    },
+    "BeamSegmentSurfaces": {
+        "type": "object",
+        "description": "The surfaces of a beam segment.",
+        "properties": {
+            "leftMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "topMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "rightMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "bottomMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "endsMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "extrusionMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "Available from Archicad 28."
+            },
+            "materialsChained": {
+                "type": "boolean",
+                "description": "Whether the surface materials are chained."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "leftMaterial",
+            "topMaterial",
+            "rightMaterial",
+            "bottomMaterial",
+            "endsMaterial",
+            "materialsChained"
+        ]
+    },
+    "ColumnSegmentSurfaces": {
+        "type": "object",
+        "description": "The surfaces of a column segment.",
+        "properties": {
+            "extrusionSurfaceMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "endsMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "materialsChained": {
+                "type": "boolean",
+                "description": "Whether the surface materials are chained."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "extrusionSurfaceMaterial",
+            "endsMaterial",
+            "materialsChained"
         ]
     },
     "ColumnSegmentDetails": {
@@ -8926,7 +9068,34 @@ var gSchemaDefinitions = {
                 "$ref": "#/Holes2D"
             },
             "zCoordinate": {
-                "type": "number"
+                "type": "number",
+                "description": "Absolute elevation of the bottom of the zone (the home story level plus bottomOffset)."
+            },
+            "height": {
+                "type": "number",
+                "description": "Height of the zone from its bottom. When relativeTopStory is non-zero, Archicad calculates it from the story levels and topOffset."
+            },
+            "bottomOffset": {
+                "type": "number",
+                "description": "Base level of the zone relative to its home story level."
+            },
+            "topOffset": {
+                "type": "number",
+                "description": "Offset of the top of the zone from the linked top story level. Only has an effect when relativeTopStory is non-zero."
+            },
+            "relativeTopStory": {
+                "type": "number",
+                "description": "The story the top of the zone is linked to, relative to its home story (1 is the story above). 0 means not linked: the top is set by height."
+            },
+            "floorThickness": {
+                "type": "number",
+                "description": "Thickness of the floor finish (subfloor thickness) of the zone."
+            },
+            "contourLine": {
+                "$ref": "#/ZoneContourLine"
+            },
+            "coverFill": {
+                "$ref": "#/ZoneCoverFill"
             }
         },
         "additionalProperties": false,
@@ -8937,7 +9106,53 @@ var gSchemaDefinitions = {
             "stampPosition",
             "isManual",
             "polygonOutline",
-            "zCoordinate"
+            "zCoordinate",
+            "height",
+            "bottomOffset",
+            "topOffset",
+            "relativeTopStory",
+            "floorThickness",
+            "contourLine",
+            "coverFill"
+        ]
+    },
+    "RailingDetails": {
+        "type": "object",
+        "properties": {
+            "referenceLine": {
+                "type": "array",
+                "description": "The 2D coordinates of the reference line of the railing, one per node.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "bottomOffset": {
+                "type": "number",
+                "description": "The base height of the railing relative to the floor level."
+            },
+            "zCoordinate": {
+                "type": "number",
+                "description": "The absolute elevation of the base of the railing."
+            },
+            "height": {
+                "type": "number",
+                "description": "The segment height new segments of the railing are made with (the default segment)."
+            },
+            "segmentHeights": {
+                "type": "array",
+                "description": "The height of each segment of the railing, in the order of the reference line.",
+                "items": {
+                    "type": "number"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "referenceLine",
+            "bottomOffset",
+            "zCoordinate",
+            "height",
+            "segmentHeights"
         ]
     },
     "CurtainWallDetails": {
@@ -9560,19 +9775,7 @@ var gSchemaDefinitions = {
         "properties": {
             "pos": {
                 "$ref": "#/Coordinate2D",
-                "description": "Position of the drawing's reference point on the layout: its own origin when useOwnOrigoAsAnchor is true, otherwise the anchorPoint node of its box."
-            },
-            "useOwnOrigoAsAnchor": {
-                "type": "boolean",
-                "description": "Whether the drawing is placed by its own origin instead of a node of its box (Drawing Settings > Anchor Point > Drawing Origin)."
-            },
-            "anchorPoint": {
-                "$ref": "#/DrawingAnchorPoint",
-                "description": "The node of the drawing's box placed at pos when useOwnOrigoAsAnchor is false. Settable through SetDetailsOfElements."
-            },
-            "offset": {
-                "$ref": "#/Coordinate2D",
-                "description": "API_DrawingType::offset, read-only: equal to pos when the drawing is clipped, otherwise pos minus the coordinate of the anchor."
+                "description": "Position of the drawing's reference point on the layout."
             },
             "angle": {
                 "type": "number",
@@ -9628,6 +9831,10 @@ var gSchemaDefinitions = {
                 "type": "boolean",
                 "description": "Whether the drawing is included in the automatic drawing numbering sequence."
             },
+            "isScaleIncludedInAutotextAndIndex": {
+                "type": "boolean",
+                "description": "The 'Include scale in Autotext and index' checkbox of Drawing Settings (API_DrawingType::includeInAutoTextsAndIES): whether the drawing's scale is included in the 'Drawing Scale' and 'Original Scale' Autotexts and in indexes."
+            },
             "hasBorderLine": {
                 "type": "boolean",
                 "description": "Whether the drawing shows a printable border (Drawing Settings > Frame > Add Printable Border)."
@@ -9656,9 +9863,6 @@ var gSchemaDefinitions = {
         "additionalProperties": false,
         "required": [
             "pos",
-            "useOwnOrigoAsAnchor",
-            "anchorPoint",
-            "offset",
             "angle",
             "ratio",
             "drawingScale",
@@ -9669,6 +9873,7 @@ var gSchemaDefinitions = {
             "nameType",
             "numberingType",
             "isInNumbering",
+            "isScaleIncludedInAutotextAndIndex",
             "hasBorderLine",
             "borderLineTypeIndex",
             "borderPenIndex",
@@ -9946,6 +10151,57 @@ var gSchemaDefinitions = {
             "baseLinePoints"
         ]
     },
+    "SectionDetails": {
+        "type": "object",
+        "description": "The geometry of a Section (CutPlane) marker on the floor plan, the fields CreateSections takes.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the section."
+            },
+            "idStr": {
+                "type": "string",
+                "description": "The reference ID of the section."
+            },
+            "mainCoordinates": {
+                "type": "array",
+                "description": "The points of the section line, from start to end. More than two for a broken section line. Empty when the line cannot be read.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "depthCoordinates": {
+                "type": "array",
+                "description": "The points of the depth line, the far boundary of the section. Empty when it cannot be read.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "startCoordinate": {
+                "$ref": "#/Coordinate2D",
+                "description": "The first point of the section line (startCoordinate of CreateSections)."
+            },
+            "endCoordinate": {
+                "$ref": "#/Coordinate2D",
+                "description": "The last point of the section line (endCoordinate of CreateSections)."
+            },
+            "depth": {
+                "type": "number",
+                "description": "The distance of the first depth point from the first segment of the section line (depth of CreateSections)."
+            },
+            "viewDirection": {
+                "$ref": "#/Coordinate2D",
+                "description": "The unit vector perpendicular to the first segment of the section line, pointing to the side of the depth line: the direction the section looks in. CreateSections puts it to the left of the start to end direction."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "idStr",
+            "mainCoordinates",
+            "depthCoordinates"
+        ]
+    },
     "NotYetSupportedElementTypeDetails": {
         "type": "object",
         "properties": {
@@ -9978,6 +10234,9 @@ var gSchemaDefinitions = {
                 "$ref": "#/RoofDetails"
             },
             {
+                "$ref": "#/ShellDetails"
+            },
+            {
                 "$ref": "#/ColumnDetails"
             },
             {
@@ -10003,6 +10262,9 @@ var gSchemaDefinitions = {
             },
             {
                 "$ref": "#/ZoneDetails"
+            },
+            {
+                "$ref": "#/RailingDetails"
             },
             {
                 "$ref": "#/CurtainWallDetails"
@@ -10036,6 +10298,9 @@ var gSchemaDefinitions = {
             },
             {
                 "$ref": "#/StairDetails"
+            },
+            {
+                "$ref": "#/SectionDetails"
             },
             {
                 "$ref": "#/NotYetSupportedElementTypeDetails"
@@ -10323,6 +10588,14 @@ var gSchemaDefinitions = {
                     "$ref": "#/DesignOptionIdArrayItem"
                 },
                 "description": "The list of active design options in the combination. Available from Archicad 29."
+            },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Whether the design option combination can be renamed, deleted or changed now (for example it is not reserved by someone else in Teamwork). Available from Archicad 29."
+            },
+            "notEditableError": {
+                "$ref": "#/Error",
+                "description": "The reason why the design option combination is not editable. Only present when isEditable is false."
             }
         },
         "additionalProperties": false,
@@ -10901,19 +11174,23 @@ var gSchemaDefinitions = {
         },
         "additionalProperties": false,
         "required": [
-            "revisionChange"
+            "revisionChanges"
         ]
     },
     "RevisionChangesOfEntities": {
-        "type": "object",
-        "oneOf": [
-            {
-                "$ref": "#/RevisionChangesArrayItem"
-            },
-            {
-                "$ref": "#/ErrorItem"
-            }
-        ]
+        "type": "array",
+        "description": "The revision changes of the requested entities, in the order of the input, or an error for an entity whose changes could not be retrieved.",
+        "items": {
+            "type": "object",
+            "oneOf": [
+                {
+                    "$ref": "#/RevisionChangesArrayItem"
+                },
+                {
+                    "$ref": "#/ErrorItem"
+                }
+            ]
+        }
     },
     "StoryParameters": {
         "type": "object",
@@ -11090,8 +11367,20 @@ var gSchemaDefinitions = {
     },
     "ZoneSettings": {
         "type": "object",
-        "description": "Settings for modifying a zone.",
+        "description": "Settings for modifying a zone. Only the given fields are changed, the polygon is kept. Set height and bottomOffset with ModifyZones: in SetDetailsOfElements they would make a wall's settings ambiguous.",
         "properties": {
+            "name": {
+                "type": "string",
+                "description": "Name of the zone."
+            },
+            "numberStr": {
+                "type": "string",
+                "description": "Zone number."
+            },
+            "categoryAttributeId": {
+                "$ref": "#/AttributeId",
+                "description": "The identifier of the zone category attribute."
+            },
             "stampPosition": {
                 "$ref": "#/Coordinate2D",
                 "description": "Position of the origin of the zone stamp."
@@ -11104,9 +11393,78 @@ var gSchemaDefinitions = {
                 "type": "boolean",
                 "description": "If true, the zone stamp angle remains fixed when the element is rotated."
             },
+            "topOffset": {
+                "type": "number",
+                "description": "Offset of the top of the zone from the linked top story level. Only has an effect when relativeTopStory is non-zero."
+            },
+            "relativeTopStory": {
+                "type": "number",
+                "description": "Non-zero links the top of the zone to another story, relative to its home story (1 is the story above), instead of an explicit height. Do not set together with height (ModifyZones) in the same call: whichever is applied last wins."
+            },
+            "floorThickness": {
+                "type": "number",
+                "minimum": 0.0,
+                "description": "Thickness of the floor finish (subfloor thickness) of the zone."
+            },
             "referencePosition": {
                 "$ref": "#/Coordinate2D",
                 "description": "Moves the reference point of an automatic zone; the zone is found around the new point when zones are next updated. Ignored for a manual zone (isManual true)."
+            },
+            "contourLine": {
+                "$ref": "#/ZoneContourLine"
+            },
+            "coverFill": {
+                "$ref": "#/ZoneCoverFill"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "ZoneContourLine": {
+        "type": "object",
+        "description": "The contour line of a zone on the floor plan. GetDetailsOfElements returns every field; when setting, only the given fields are changed.",
+        "properties": {
+            "use": {
+                "type": "boolean",
+                "description": "Whether the contour line is drawn."
+            },
+            "pen": {
+                "type": "integer",
+                "description": "The pen index of the contour line.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type attribute of the contour line."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "ZoneCoverFill": {
+        "type": "object",
+        "description": "The cover fill of a zone on the floor plan. GetDetailsOfElements returns every field; when setting, only the given fields are changed.",
+        "properties": {
+            "use": {
+                "type": "boolean",
+                "description": "Whether the cover fill is drawn."
+            },
+            "fillId": {
+                "$ref": "#/AttributeId",
+                "description": "The fill attribute of the cover fill."
+            },
+            "foregroundPen": {
+                "type": "integer",
+                "description": "The pen index of the fill pattern.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "backgroundPen": {
+                "type": "integer",
+                "description": "The pen index of the fill background. 0 is a transparent background; -1 also occurs in projects and is accepted, so a value read with GetDetailsOfElements can always be written back.",
+                "minimum": -1,
+                "maximum": 255
             }
         },
         "additionalProperties": false,
@@ -11298,15 +11656,7 @@ var gSchemaDefinitions = {
         "properties": {
             "pos": {
                 "$ref": "#/Coordinate2D",
-                "description": "Position of the drawing's reference point on the layout: its own origin when useOwnOrigoAsAnchor is true, otherwise the anchorPoint node of its box."
-            },
-            "useOwnOrigoAsAnchor": {
-                "type": "boolean",
-                "description": "Place the drawing by its own origin instead of a node of its box."
-            },
-            "anchorPoint": {
-                "$ref": "#/DrawingAnchorPoint",
-                "description": "The node of the drawing's box to place at pos when useOwnOrigoAsAnchor is false. Applied with a Graphisoft-confirmed workaround for an Archicad bug where setting it resets to BottomLeft otherwise: it is first set together with useOwnOrigoAsAnchor forced true, then, unless useOwnOrigoAsAnchor is also requested true, a second call sets useOwnOrigoAsAnchor back to false alone."
+                "description": "Position of the drawing's reference point on the layout."
             },
             "angle": {
                 "type": "number",
@@ -11354,6 +11704,10 @@ var gSchemaDefinitions = {
                 "type": "boolean",
                 "description": "Whether the drawing is included in the automatic drawing numbering sequence."
             },
+            "isScaleIncludedInAutotextAndIndex": {
+                "type": "boolean",
+                "description": "The 'Include scale in Autotext and index' checkbox of Drawing Settings (API_DrawingType::includeInAutoTextsAndIES): whether the drawing's scale is included in the 'Drawing Scale' and 'Original Scale' Autotexts and in indexes. Set it to false on e.g. a 1:1 schedule drawing placed next to a 1:200 plan so that the layout's scale Autotext shows only 1:200."
+            },
             "hasBorderLine": {
                 "type": "boolean",
                 "description": "Whether the drawing shows a printable border (Drawing Settings > Frame > Add Printable Border)."
@@ -11376,15 +11730,6 @@ var gSchemaDefinitions = {
             "titleLibraryPartIndex": {
                 "type": "number",
                 "description": "Library part index of the drawing title (API_DrawingTitle::libInd). A negative/invalid index means no title object is instantiated; setting it to a valid index (e.g. copied from another drawing) makes Archicad create the title's own placed element."
-            },
-            "penTableUsageMode": {
-                "$ref": "#/DrawingPenTableUsageMode",
-                "description": "Which pen table (jeu de stylos) the drawing uses to display its content (Drawing Settings > Pens and Colors)."
-            },
-            "penTableIndex": {
-                "type": "integer",
-                "minimum": 1,
-                "description": "Attribute index of the pen table to use. Only consulted (on read and write) when penTableUsageMode is UsePenTableIndex; setting it implicitly requires penTableUsageMode to also be set to UsePenTableIndex in the same call for it to take effect."
             }
         },
         "additionalProperties": false
@@ -12283,6 +12628,14 @@ var gSchemaDefinitions = {
             "ownerSetName": {
                 "type": "string",
                 "description": "The name of the owner design option set."
+            },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Whether the design option can be renamed, deleted or changed now (for example it is not reserved by someone else in Teamwork). Returned by GetDesignOptions."
+            },
+            "notEditableError": {
+                "$ref": "#/Error",
+                "description": "The reason why the design option is not editable. Only present when isEditable is false."
             }
         },
         "additionalProperties": false,
@@ -15948,6 +16301,995 @@ var gSchemaDefinitions = {
             "loadCombinationId",
             "name",
             "loadFactors"
+        ]
+    },
+    "AnalyticalNode": {
+        "type": "object",
+        "description": "A node of the Structural Analytical Model.",
+        "properties": {
+            "nodeId": {
+                "type": "integer",
+                "description": "The identifier of the node."
+            },
+            "coord": {
+                "$ref": "#/Coordinate3D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "nodeId",
+            "coord"
+        ]
+    },
+    "AnalyticalCurve": {
+        "type": "object",
+        "description": "A curve of the Structural Analytical Model.",
+        "properties": {
+            "type": {
+                "type": "string",
+                "description": "The type of the curve. Bezier exists from Archicad 26.",
+                "enum": [
+                    "Line",
+                    "Arc",
+                    "Spline",
+                    "Bezier",
+                    "Ellipse"
+                ]
+            },
+            "begNode": {
+                "$ref": "#/AnalyticalNode"
+            },
+            "endNode": {
+                "$ref": "#/AnalyticalNode"
+            },
+            "midCoords": {
+                "type": "array",
+                "description": "The points between the start and the end of the curve.",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "begNode",
+            "endNode",
+            "midCoords"
+        ]
+    },
+    "AnalyticalCrossSection": {
+        "type": "object",
+        "description": "The cross section of a curve member. The profile image of Archicad 26 and newer is not returned.",
+        "properties": {
+            "crossSectionType": {
+                "type": "string",
+                "enum": [
+                    "Rectangle",
+                    "Circle",
+                    "Attribute",
+                    "Custom"
+                ]
+            },
+            "width": {
+                "type": "number"
+            },
+            "height": {
+                "type": "number"
+            },
+            "veneerThickness": {
+                "type": "number"
+            },
+            "profileAttrIndex": {
+                "type": "integer",
+                "description": "The attribute index of the profile."
+            },
+            "materialAttrIndices": {
+                "type": "array",
+                "description": "The attribute indices of the materials of the cross section.",
+                "items": {
+                    "type": "integer"
+                }
+            },
+            "profileParameters": {
+                "type": "array",
+                "description": "The parameters of the profile.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "parameterId": {
+                            "$ref": "#/GuidId"
+                        },
+                        "value": {
+                            "type": "number"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "parameterId",
+                        "value"
+                    ]
+                }
+            },
+            "alignment": {
+                "type": "string",
+                "description": "The alignment of the cross section. Archicad 26 and newer.",
+                "enum": [
+                    "TopLeft",
+                    "Top",
+                    "TopRight",
+                    "Left",
+                    "Center",
+                    "Right",
+                    "BottomLeft",
+                    "Bottom",
+                    "BottomRight",
+                    "None"
+                ]
+            }
+        },
+        "additionalProperties": false
+    },
+    "AnalyticalCurveMember": {
+        "type": "object",
+        "description": "A curve member (beam, column) of the Structural Analytical Model.",
+        "properties": {
+            "analyticalMemberType": {
+                "$ref": "#/AnalyticalMemberType"
+            },
+            "elemGuid": {
+                "$ref": "#/GuidId"
+            },
+            "crossSection": {
+                "$ref": "#/AnalyticalCrossSection"
+            },
+            "curve": {
+                "$ref": "#/AnalyticalCurve"
+            },
+            "internalNodes": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/AnalyticalNode"
+                }
+            },
+            "rotationAngle": {
+                "type": "number"
+            },
+            "ey": {
+                "type": "number"
+            },
+            "eyVector": {
+                "$ref": "#/Coordinate3D"
+            },
+            "ez": {
+                "type": "number"
+            },
+            "ezVector": {
+                "$ref": "#/Coordinate3D"
+            },
+            "layerAttrIndex": {
+                "type": "integer",
+                "description": "The attribute index of the layer."
+            },
+            "FEMType": {
+                "type": "string",
+                "enum": [
+                    "Standard",
+                    "AxialForceOnly",
+                    "CompressionOnly",
+                    "TensionOnly"
+                ]
+            },
+            "varyingSegmentList": {
+                "type": "array",
+                "description": "The segments of a member with varying cross section. Archicad 26 and newer.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "begProfile": {
+                            "$ref": "#/AnalyticalCrossSection"
+                        },
+                        "endProfile": {
+                            "$ref": "#/AnalyticalCrossSection",
+                            "description": "Only for a tapered segment."
+                        },
+                        "span": {
+                            "type": "number"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "begProfile",
+                        "span"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false
+    },
+    "AnalyticalSurfaceMember": {
+        "type": "object",
+        "description": "A surface member (wall, slab, roof) or a segment of one of the Structural Analytical Model.",
+        "properties": {
+            "analyticalMemberType": {
+                "$ref": "#/AnalyticalMemberType"
+            },
+            "elemGuid": {
+                "$ref": "#/GuidId"
+            },
+            "surface": {
+                "type": "object",
+                "properties": {
+                    "surfaceType": {
+                        "type": "string",
+                        "enum": [
+                            "Plane",
+                            "Cylinder"
+                        ]
+                    },
+                    "planeSurface": {
+                        "type": "object",
+                        "properties": {
+                            "basePoint": {
+                                "$ref": "#/Coordinate3D"
+                            },
+                            "normalVector": {
+                                "$ref": "#/Coordinate3D"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "cylinderSurface": {
+                        "type": "object",
+                        "properties": {
+                            "basePoint": {
+                                "$ref": "#/Coordinate3D"
+                            },
+                            "axisDirection": {
+                                "$ref": "#/Coordinate3D"
+                            },
+                            "referenceRay": {
+                                "$ref": "#/Coordinate3D"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false
+            },
+            "contour": {
+                "type": "array",
+                "description": "The curves of the outer contour.",
+                "items": {
+                    "$ref": "#/AnalyticalCurve"
+                }
+            },
+            "holeContours": {
+                "type": "array",
+                "description": "The contours of the holes.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "contour": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/AnalyticalCurve"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "contour"
+                    ]
+                }
+            },
+            "internalNodes": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/AnalyticalNode"
+                }
+            },
+            "thickness": {
+                "type": "number"
+            },
+            "lcsXVector": {
+                "$ref": "#/Coordinate3D",
+                "description": "The X axis of the local coordinate system. Archicad 26 and newer."
+            },
+            "ez": {
+                "type": "number"
+            },
+            "ezVector": {
+                "$ref": "#/Coordinate3D"
+            },
+            "materialAttrIndex": {
+                "type": "integer",
+                "description": "The attribute index of the material."
+            },
+            "layerAttrIndex": {
+                "type": "integer",
+                "description": "The attribute index of the layer."
+            },
+            "FEMType": {
+                "type": "string",
+                "enum": [
+                    "Plate",
+                    "Wall",
+                    "Shell"
+                ]
+            },
+            "groupId": {
+                "$ref": "#/GuidId"
+            }
+        },
+        "additionalProperties": false
+    },
+    "AnalyticalMemberConnections": {
+        "type": "array",
+        "description": "The identifiers of the connections of the analytical member.",
+        "items": {
+            "$ref": "#/GuidId"
+        }
+    },
+    "AnalyticalInternalMemberPartId": {
+        "type": "object",
+        "description": "Identifies a part of an analytical member by its contour, edge or vertex and edge fragment.",
+        "properties": {
+            "contourIdx": {
+                "type": "integer"
+            },
+            "edgeOrVertexIdx": {
+                "type": "integer"
+            },
+            "edgeFragmentIndex": {
+                "type": "integer"
+            }
+        },
+        "additionalProperties": false
+    },
+    "AnalyticalExportMappingTable": {
+        "type": "object",
+        "properties": {
+            "items": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "partId": {
+                            "$ref": "#/AnalyticalInternalMemberPartId"
+                        },
+                        "elemPartIds": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "memberGuid": {
+                                        "$ref": "#/GuidId"
+                                    },
+                                    "contourIndex": {
+                                        "type": "integer"
+                                    },
+                                    "edgeOrVertexIndex": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "memberGuid",
+                                    "contourIndex",
+                                    "edgeOrVertexIndex"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "partId",
+                        "elemPartIds"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "items"
+        ]
+    },
+    "AnalyticalExportIdMapping": {
+        "type": "object",
+        "description": "Maps the edges and vertices of a surface member to the parts of the exported members. Archicad 26 and newer.",
+        "properties": {
+            "edges": {
+                "$ref": "#/AnalyticalExportMappingTable"
+            },
+            "vertices": {
+                "$ref": "#/AnalyticalExportMappingTable"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "edges",
+            "vertices"
+        ]
+    },
+    "AnalyticalMemberPartRef": {
+        "type": "object",
+        "description": "A reference to a part (vertex, edge or surface) of an analytical member. partId, customVertexData and ratioEdgeData are zero when left out.",
+        "properties": {
+            "elemGuid": {
+                "$ref": "#/GuidId",
+                "description": "The element of the analytical member."
+            },
+            "partRefType": {
+                "type": "string",
+                "enum": [
+                    "BegVertex",
+                    "EndVertex",
+                    "CustomVertex",
+                    "Edge",
+                    "RatioEdge",
+                    "Surface",
+                    "CustomSurface",
+                    "CustomEdge"
+                ]
+            },
+            "partId": {
+                "$ref": "#/AnalyticalInternalMemberPartId"
+            },
+            "customVertexData": {
+                "type": "object",
+                "description": "The point of a CustomVertex.",
+                "properties": {
+                    "customVertexCoord": {
+                        "$ref": "#/Coordinate3D"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "ratioEdgeData": {
+                "type": "object",
+                "description": "The part of the edge of a RatioEdge.",
+                "properties": {
+                    "ratioStart": {
+                        "type": "number"
+                    },
+                    "ratioEnd": {
+                        "type": "number"
+                    }
+                },
+                "additionalProperties": false
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elemGuid",
+            "partRefType"
+        ]
+    },
+    "AnalyticalRigidityType": {
+        "type": "string",
+        "description": "The rigidity of a degree of freedom of a release.",
+        "enum": [
+            "Free",
+            "Rigid",
+            "Custom",
+            "RigidCompressionOnly",
+            "RigidTensionOnly",
+            "CustomCompressionOnly",
+            "CustomTensionOnly"
+        ]
+    },
+    "AnalyticalRelease": {
+        "type": "object",
+        "description": "The release of an analytical member.",
+        "properties": {
+            "guid": {
+                "$ref": "#/GuidId",
+                "description": "The identifier of the release."
+            },
+            "releaseDescriptions": {
+                "type": "array",
+                "description": "The releases of the member parts. Each needs all six rigidities; a stiffness left out is 0.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "ux": {
+                            "$ref": "#/AnalyticalRigidityType"
+                        },
+                        "stiffnessX": {
+                            "type": "number"
+                        },
+                        "uy": {
+                            "$ref": "#/AnalyticalRigidityType"
+                        },
+                        "stiffnessY": {
+                            "type": "number"
+                        },
+                        "uz": {
+                            "$ref": "#/AnalyticalRigidityType"
+                        },
+                        "stiffnessZ": {
+                            "type": "number"
+                        },
+                        "fix": {
+                            "$ref": "#/AnalyticalRigidityType"
+                        },
+                        "stiffnessFix": {
+                            "type": "number"
+                        },
+                        "fiy": {
+                            "$ref": "#/AnalyticalRigidityType"
+                        },
+                        "stiffnessFiy": {
+                            "type": "number"
+                        },
+                        "fiz": {
+                            "$ref": "#/AnalyticalRigidityType"
+                        },
+                        "stiffnessFiz": {
+                            "type": "number"
+                        },
+                        "amPartRef": {
+                            "$ref": "#/AnalyticalMemberPartRef"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "ux",
+                        "uy",
+                        "uz",
+                        "fix",
+                        "fiy",
+                        "fiz",
+                        "amPartRef"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid",
+            "releaseDescriptions"
+        ]
+    },
+    "AnalyticalCoordinateSystem": {
+        "type": "object",
+        "description": "A local coordinate system, given by its X and Y axes.",
+        "properties": {
+            "xVector": {
+                "$ref": "#/Coordinate3D"
+            },
+            "yVector": {
+                "$ref": "#/Coordinate3D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "xVector",
+            "yVector"
+        ]
+    },
+    "AnalyticalCoordSysDirection": {
+        "type": "string",
+        "description": "Whether the values are in the global or in the local coordinate system.",
+        "enum": [
+            "Global",
+            "Local"
+        ]
+    },
+    "AnalyticalSupport": {
+        "type": "object",
+        "description": "An analytical support: its settings and the member part it supports. Every rigidity type is required; a value left out is 0.",
+        "properties": {
+            "supportSettings": {
+                "type": "object",
+                "properties": {
+                    "supportType": {
+                        "type": "string",
+                        "enum": [
+                            "SimplePoint",
+                            "SingleLine",
+                            "Surface"
+                        ]
+                    },
+                    "supportValues": {
+                        "type": "object",
+                        "description": "The rigidity and the value of the three translations and the three rotations.",
+                        "properties": {
+                            "xType": { "$ref": "#/AnalyticalRigidityType" },
+                            "xValue": { "type": "number" },
+                            "yType": { "$ref": "#/AnalyticalRigidityType" },
+                            "yValue": { "type": "number" },
+                            "zType": { "$ref": "#/AnalyticalRigidityType" },
+                            "zValue": { "type": "number" },
+                            "rxType": { "$ref": "#/AnalyticalRigidityType" },
+                            "rxValue": { "type": "number" },
+                            "ryType": { "$ref": "#/AnalyticalRigidityType" },
+                            "ryValue": { "type": "number" },
+                            "rzType": { "$ref": "#/AnalyticalRigidityType" },
+                            "rzValue": { "type": "number" }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "xType",
+                            "yType",
+                            "zType",
+                            "rxType",
+                            "ryType",
+                            "rzType"
+                        ]
+                    },
+                    "coordinateSystem": {
+                        "$ref": "#/AnalyticalCoordSysDirection"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "supportType",
+                    "supportValues",
+                    "coordinateSystem"
+                ]
+            },
+            "supportedMemberPartRef": {
+                "$ref": "#/AnalyticalMemberPartRef"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "supportSettings",
+            "supportedMemberPartRef"
+        ]
+    },
+    "AnalyticalSupportGeometry": {
+        "type": "object",
+        "description": "The geometry of an analytical support in a Structural Analytical Model.",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                }
+            },
+            "translationStiffnessVector": {
+                "$ref": "#/Coordinate3D"
+            },
+            "rotationStiffnessVector": {
+                "$ref": "#/Coordinate3D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinates",
+            "translationStiffnessVector",
+            "rotationStiffnessVector"
+        ]
+    },
+    "AnalyticalLink": {
+        "type": "object",
+        "description": "An analytical link: its settings and the member parts it connects. The rigid and the spring settings are both required, whichever type the link has. Every rigidity type is required; a value left out is 0 and a resistance left out is false.",
+        "properties": {
+            "linkSettings": {
+                "type": "object",
+                "properties": {
+                    "geometry": {
+                        "type": "string",
+                        "enum": [
+                            "Link1D",
+                            "Link2D"
+                        ]
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "Rigid",
+                            "Spring"
+                        ]
+                    },
+                    "rigidSettings": {
+                        "type": "object",
+                        "properties": {
+                            "startConnectionType": {
+                                "type": "string",
+                                "enum": [
+                                    "RigidConnection",
+                                    "HingeConnection"
+                                ]
+                            },
+                            "endConnectionType": {
+                                "type": "string",
+                                "enum": [
+                                    "RigidConnection",
+                                    "HingeConnection"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "startConnectionType",
+                            "endConnectionType"
+                        ]
+                    },
+                    "springSettings": {
+                        "type": "object",
+                        "properties": {
+                            "direction": {
+                                "$ref": "#/AnalyticalCoordSysDirection"
+                            },
+                            "translation": {
+                                "type": "object",
+                                "properties": {
+                                    "kxType": { "$ref": "#/AnalyticalRigidityType" },
+                                    "kxValue": { "type": "number" },
+                                    "kyType": { "$ref": "#/AnalyticalRigidityType" },
+                                    "kyValue": { "type": "number" },
+                                    "kzType": { "$ref": "#/AnalyticalRigidityType" },
+                                    "kzValue": { "type": "number" },
+                                    "resistanceFx": { "type": "boolean" },
+                                    "fxValue": { "type": "number" },
+                                    "resistanceFy": { "type": "boolean" },
+                                    "fyValue": { "type": "number" },
+                                    "resistanceFz": { "type": "boolean" },
+                                    "fzValue": { "type": "number" }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "kxType",
+                                    "kyType",
+                                    "kzType"
+                                ]
+                            },
+                            "rotation": {
+                                "type": "object",
+                                "properties": {
+                                    "kxxType": { "$ref": "#/AnalyticalRigidityType" },
+                                    "kxxValue": { "type": "number" },
+                                    "kyyType": { "$ref": "#/AnalyticalRigidityType" },
+                                    "kyyValue": { "type": "number" },
+                                    "kzzType": { "$ref": "#/AnalyticalRigidityType" },
+                                    "kzzValue": { "type": "number" },
+                                    "resistanceMx": { "type": "boolean" },
+                                    "mxValue": { "type": "number" },
+                                    "resistanceMy": { "type": "boolean" },
+                                    "myValue": { "type": "number" },
+                                    "resistanceMz": { "type": "boolean" },
+                                    "mzValue": { "type": "number" }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "kxxType",
+                                    "kyyType",
+                                    "kzzType"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "direction",
+                            "translation",
+                            "rotation"
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "geometry",
+                    "type",
+                    "rigidSettings",
+                    "springSettings"
+                ]
+            },
+            "startElementPartRef": {
+                "$ref": "#/AnalyticalMemberPartRef"
+            },
+            "endElementPartRef": {
+                "$ref": "#/AnalyticalMemberPartRef"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "linkSettings",
+            "startElementPartRef",
+            "endElementPartRef"
+        ]
+    },
+    "AnalyticalLinkGeometry": {
+        "type": "object",
+        "description": "The geometry of an analytical link in a Structural Analytical Model.",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                }
+            },
+            "translationStiffnessVector": {
+                "$ref": "#/Coordinate3D"
+            },
+            "rotationStiffnessVector": {
+                "$ref": "#/Coordinate3D"
+            },
+            "curves": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/AnalyticalCurve"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinates",
+            "translationStiffnessVector",
+            "rotationStiffnessVector",
+            "curves"
+        ]
+    },
+    "AnalyticalLoadForceType": {
+        "type": "string",
+        "description": "Whether the load is a force or a moment.",
+        "enum": [
+            "Force",
+            "Moment"
+        ]
+    },
+    "AnalyticalPointLoad": {
+        "type": "object",
+        "description": "An analytical point load: its settings and the member part it loads.",
+        "properties": {
+            "loadSettings": {
+                "type": "object",
+                "properties": {
+                    "loadCaseId": {
+                        "$ref": "#/GuidId",
+                        "description": "The load case the load belongs to."
+                    },
+                    "loadForceType": {
+                        "$ref": "#/AnalyticalLoadForceType"
+                    },
+                    "coordinateSystemType": {
+                        "$ref": "#/AnalyticalCoordSysDirection"
+                    },
+                    "xValue": { "type": "number" },
+                    "yValue": { "type": "number" },
+                    "zValue": { "type": "number" }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "loadCaseId",
+                    "loadForceType",
+                    "coordinateSystemType",
+                    "xValue",
+                    "yValue",
+                    "zValue"
+                ]
+            },
+            "loadedMemberPartRef": {
+                "$ref": "#/AnalyticalMemberPartRef"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "loadSettings",
+            "loadedMemberPartRef"
+        ]
+    },
+    "AnalyticalEdgeLoad": {
+        "type": "object",
+        "description": "An analytical edge load: its settings and the member part it loads.",
+        "properties": {
+            "loadSettings": {
+                "type": "object",
+                "properties": {
+                    "loadCaseId": {
+                        "$ref": "#/GuidId",
+                        "description": "The load case the load belongs to."
+                    },
+                    "loadForceType": {
+                        "$ref": "#/AnalyticalLoadForceType"
+                    },
+                    "loadDistributionType": {
+                        "type": "string",
+                        "description": "Whether the load is the same along the edge or changes from the start value to the end value.",
+                        "enum": [
+                            "Uniform",
+                            "Trapezoid"
+                        ]
+                    },
+                    "coordinateSystemType": {
+                        "$ref": "#/AnalyticalCoordSysDirection"
+                    },
+                    "startValue": {
+                        "$ref": "#/Coordinate3D"
+                    },
+                    "endValue": {
+                        "$ref": "#/Coordinate3D"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "loadCaseId",
+                    "loadForceType",
+                    "loadDistributionType",
+                    "coordinateSystemType",
+                    "startValue",
+                    "endValue"
+                ]
+            },
+            "loadedMemberPartRef": {
+                "$ref": "#/AnalyticalMemberPartRef"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "loadSettings",
+            "loadedMemberPartRef"
+        ]
+    },
+    "AnalyticalSurfaceLoad": {
+        "type": "object",
+        "description": "An analytical surface load: its settings and the member part it loads.",
+        "properties": {
+            "loadSettings": {
+                "type": "object",
+                "properties": {
+                    "loadCaseId": {
+                        "$ref": "#/GuidId",
+                        "description": "The load case the load belongs to."
+                    },
+                    "coordinateSystemType": {
+                        "$ref": "#/AnalyticalCoordSysDirection"
+                    },
+                    "xValue": { "type": "number" },
+                    "yValue": { "type": "number" },
+                    "zValue": { "type": "number" }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "loadCaseId",
+                    "coordinateSystemType",
+                    "xValue",
+                    "yValue",
+                    "zValue"
+                ]
+            },
+            "loadedMemberPartRef": {
+                "$ref": "#/AnalyticalMemberPartRef"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "loadSettings",
+            "loadedMemberPartRef"
+        ]
+    },
+    "AnalyticalEdgeLoadCustomData": {
+        "type": "object",
+        "description": "The curve of an analytical edge load. CreateAnalyticalLoads needs at least one curve.",
+        "properties": {
+            "curve": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/AnalyticalCurve"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "curve"
+        ]
+    },
+    "AnalyticalSurfaceLoadCustomData": {
+        "type": "object",
+        "description": "The contour of an analytical surface load. CreateAnalyticalLoads needs at least one curve.",
+        "properties": {
+            "contour": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/AnalyticalCurve"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "contour"
         ]
     }
 }

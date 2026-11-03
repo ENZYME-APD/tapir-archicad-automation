@@ -36,10 +36,9 @@ static GSFlags FlagsFromObjectState (const GS::ObjectState& os)
 
 // ACAPI_Element_SolidLink_Remove answers APIERR_BADDATABASE (-2130313110) when the current
 // database is not the floor plan (e.g. the 3D window is active), even though the link is
-// gone afterwards (#1566). Reuses the shared SwitchCurrentDatabaseToFloorPlan (declared in
-// CommandBase.hpp, defined in ExtendedElementCommands.cpp): only the CURRENT DATABASE
-// changes, not the visible window, and `switched` says whether the caller has to put the
-// previous one back.
+// gone afterwards (#1566). SwitchCurrentDatabaseToFloorPlan (CommandBase.hpp, defined in
+// ExtendedElementCommands.cpp) changes only the CURRENT DATABASE, not the visible window,
+// and `switched` says whether the caller has to put the previous one back.
 
 static bool SolidLinkExists (const API_Guid& targetGuid, const API_Guid& operatorGuid)
 {
@@ -56,6 +55,15 @@ static GS::ObjectState FlagsToObjectState (GSFlags flags)
     os.Add ("inheritOperatorAttributes", (flags & APISolidFlag_OperatorAttrib) != 0);
     os.Add ("skipPolygonHoles",          (flags & APISolidFlag_SkipPolygonHoles) != 0);
     return os;
+}
+
+static void AddLinkTime (GS::ObjectState& link, const API_Guid& targetGuid, const API_Guid& operatorGuid)
+{
+    GSTime linkTime = 0;
+    UInt32 linkSubTime = 0;
+    if (ACAPI_Element_SolidLink_GetTime (targetGuid, operatorGuid, &linkTime, &linkSubTime) == NoError) {
+        link.Add ("linkTime", TIGetTimeString (linkTime));
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -477,6 +485,7 @@ GS::ObjectState GetSolidElementLinksCommand::Execute (const GS::ObjectState& par
                     link.Add ("operatorId", CreateGuidObjectState (opGuid));
                     link.Add ("operation",  OperationToString (operation));
                     link.Add ("linkFlags",  FlagsToObjectState (flags));
+                    AddLinkTime (link, elemGuid, opGuid);
                     asTargetAdder (link);
                 }
             }
@@ -493,6 +502,7 @@ GS::ObjectState GetSolidElementLinksCommand::Execute (const GS::ObjectState& par
                     link.Add ("targetId",  CreateGuidObjectState (tGuid));
                     link.Add ("operation", OperationToString (operation));
                     link.Add ("linkFlags", FlagsToObjectState (flags));
+                    AddLinkTime (link, tGuid, elemGuid);
                     asOperatorAdder (link);
                 }
             }
