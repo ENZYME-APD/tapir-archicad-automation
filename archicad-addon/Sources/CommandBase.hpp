@@ -55,6 +55,9 @@ GS::UniString DescribeDefinitionChangeError (GSErrCode err);
 // element as it is in the project; targetLayer is the layer a change moves it to, if any.
 GS::UniString DescribeElementEditRefusal (GSErrCode err, const API_Elem_Head& elemHead, const GS::Optional<API_AttributeIndex>& targetLayer = GS::NoValue);
 
+// One of "Free", "Editable", "Locked", "NotAvailable", "NotExist".
+const char* LockableStatusToString (API_LockableStatus status);
+
 // Adds {"guid": ...} to `list` for every guid in `from` that is not in `minus`. The import
 // commands use it to report what an import created and removed.
 template <typename List>
