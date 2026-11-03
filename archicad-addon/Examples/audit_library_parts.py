@@ -33,3 +33,6 @@ if libraryParts:
             'subIdent': textSections[0]['subIdent']
         }, debug = False)
         print (response)
+
+response = aclib.RunTapirCommand ('GetLastValidEmbeddedLibraryPartName', {}, debug = False)
+print (response)
