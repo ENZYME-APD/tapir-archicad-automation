@@ -19,6 +19,11 @@ roofs = aclib.RunTapirCommand ('CreateRoofs', {'roofsData': [
     }
 ]}, debug = False)['elements']
 
-aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': roofs})
+details = aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': roofs})['detailsOfElements']
+
+# The roof planes of each edge of the multi-plane roof's pivot polygon, each with its angle and eaves
+# overhang; printed here: whether each plane is sloped or a gable.
+for edge in details[0]['details']['pivotEdges']:
+    print ([level['angleType'] for level in edge['levels']])
 
 aclib.RunTapirCommand ('DeleteElements', {'elements': roofs}, debug = False)

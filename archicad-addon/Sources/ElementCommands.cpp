@@ -77,6 +77,44 @@ static void AddEdgeSideMaterialsFromMemo (const API_Guid& guid, GS::ObjectState&
     }
 }
 
+// The roof planes of each edge of a Multi-plane Roof's pivot polygon (APIMemoMask_AdditionalPolygon,
+// which the DevKit calls APIMemoMask_PivotPolygon but does not define): per level the angle,
+// the eaves overhang and whether the plane is a gable (#569). pivotPolyEdges is indexed like
+// the pivot polygon's coords (the DevKit's Plan_Dump reads it that way), so index 0 and the
+// closing vertex of each contour carry no edge, and the items follow pivotPolygonOutline.
+static void AddPivotEdgesFromMemo (const API_Guid& guid, GS::ObjectState& os)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_AdditionalPolygon) != NoError || memo.pivotPolyEdges == nullptr || memo.additionalPolyCoords == nullptr) {
+        return;
+    }
+    const GSSize nCoords = BMhGetSize (reinterpret_cast<GSHandle> (memo.additionalPolyCoords)) / sizeof (API_Coord);
+    const GSSize nEdges = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.pivotPolyEdges)) / sizeof (API_PivotPolyEdgeData);
+    const GSSize nPends = memo.additionalPolyPends == nullptr ? 0 : BMhGetSize (reinterpret_cast<GSHandle> (memo.additionalPolyPends)) / sizeof (Int32);
+
+    const auto& pivotEdges = os.AddList<GS::ObjectState> ("pivotEdges");
+    GSIndex iPend = 1;
+    for (GSIndex i = 1; i < nCoords - 1 && i < nEdges; ++i) {
+        if (iPend < nPends && (*memo.additionalPolyPends)[iPend] == i) {
+            ++iPend;
+            continue;
+        }
+        const API_PivotPolyEdgeData& edge = memo.pivotPolyEdges[i];
+        GS::ObjectState edgeOs;
+        const auto& levels = edgeOs.AddList<GS::ObjectState> ("levels");
+        for (Int32 j = 0; j < edge.nLevelEdgeData && edge.levelEdgeData != nullptr; ++j) {
+            const API_RoofSegmentData& segment = edge.levelEdgeData[j];
+            GS::ObjectState level;
+            level.Add ("angle", segment.angle);
+            level.Add ("eavesOverhang", segment.eavesOverhang);
+            level.Add ("angleType", segment.angleType == APIPolyRoof_SegmentAngleTypeGable ? "Gable" : "Sloped");
+            levels (level);
+        }
+        pivotEdges (edgeOs);
+    }
+}
+
 // The surfaces of a Beam or Column are kept on each of its segments (#1672).
 static void AddBeamSegmentSurfacesFromMemo (const API_Guid& guid, GS::ObjectState& os)
 {
@@ -2301,6 +2339,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         levels (level);
                     }
                     AddPivotPolygonFromMemo (elem.header.guid, typeSpecificDetails);
+                    AddPivotEdgesFromMemo (elem.header.guid, typeSpecificDetails);
                 }
                 // the roof's own polygon: the plane roof's outline, the multi-plane roof's contour
                 AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
