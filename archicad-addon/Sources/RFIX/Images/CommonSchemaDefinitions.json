@@ -6622,7 +6622,7 @@
         "description": "A classification identifier or an error.",
         "oneOf": [
             {
-                "$ref": "#/ClassificationIdArrayItem"
+                "$ref": "#/ClassificationId"
             },
             {
                 "$ref": "#/ErrorItem"

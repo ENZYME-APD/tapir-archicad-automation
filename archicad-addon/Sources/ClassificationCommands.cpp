@@ -602,7 +602,18 @@ GS::Optional<GS::UniString> GetClassificationOfAttributesInSystemCommand::GetRaw
         "type": "object",
         "properties": {
             "attributeClassifications": {
-                "$ref": "#/ClassificationIdsOrErrors",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "$ref": "#/ClassificationIdArrayItem"
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                },
                 "description": "Order of the items is the same as in the input. classificationItemId is omitted when the attribute is unclassified in the system. Non-existing attributes or a non-existing classification system are represented by error objects."
             }
         },
