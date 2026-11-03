@@ -4905,5 +4905,21 @@ namespace TapirGrasshopperPlugin.Properties
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
+
+        internal static System.Drawing.Bitmap RenameProjectInfoFields
+        {
+            get {
+                object obj = ResourceManager.GetObject ("RenameProjectInfoFields", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap MoveProjectInfoFields
+        {
+            get {
+                object obj = ResourceManager.GetObject ("MoveProjectInfoFields", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
     }
 }
