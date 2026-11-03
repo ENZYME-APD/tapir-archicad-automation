@@ -9,14 +9,14 @@ using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class GetHotspotsOfElementsComponent : ArchicadAccessorComponent
+    public class GetSnapPointsOfElementsComponent : ArchicadAccessorComponent
     {
-        public override string CommandName => "GetHotspotsOfElements";
+        public override string CommandName => "GetSnapPointsOfElements";
 
-        public GetHotspotsOfElementsComponent()
+        public GetSnapPointsOfElementsComponent()
             : base(
-                "ElementHotspots",
-                "Gets the hotspots of elements: the points the cursor snaps to and dimensions attach to.",
+                "SnapPointsOfElements",
+                "Gets the snap points (hotspots) of elements of any type: the points the cursor snaps to and dimensions attach to.",
                 GroupNames.ElementDetails)
         {
         }
@@ -25,28 +25,28 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             InGenerics(
                 "ElementGuids",
-                "Identifiers of the elements to get the hotspots of.");
+                "Identifiers of the elements to get the snap points of.");
         }
 
         protected override void AddOutputs()
         {
             OutPointTree(
-                "Hotspots",
-                "The hotspots of each element in world coordinates, one branch per element " +
+                "SnapPoints",
+                "The snap points of each element in world coordinates, one branch per element " +
                 "(an empty branch for an element with an error).");
 
             OutIntegerTree(
                 "NeigIds",
-                "Which kind of point of the element each hotspot is (the Archicad API_NeigID value), " +
-                "one branch per element, aligned with Hotspots.");
+                "Which kind of point of the element each snap point is (the Archicad API_NeigID value), " +
+                "one branch per element, aligned with SnapPoints.");
 
             OutIntegerTree(
                 "InIndices",
-                "Subindex of each hotspot within its kind, for example the vertex index in the element's polygon, " +
-                "one branch per element, aligned with Hotspots.");
+                "Subindex of each snap point within its kind, for example the vertex index in the element's polygon, " +
+                "one branch per element, aligned with SnapPoints.");
 
             OutErrorMessages(
-                "Error message of each element (empty when its hotspots were read).");
+                "Error message of each element (empty when its snap points were read).");
         }
 
         protected override void Solve(
@@ -63,8 +63,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     CommandName,
                     elements,
                     ToAddOn,
-                    JHelp.Deserialize<HotspotsOfElementsObject>,
-                    out HotspotsOfElementsObject response))
+                    JHelp.Deserialize<SnapPointsOfElementsObject>,
+                    out SnapPointsOfElementsObject response))
             {
                 return;
             }
@@ -74,9 +74,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             var inIndices = new DataTree<int>();
             var errorMessages = new List<string>();
 
-            for (var i = 0; i < response.HotspotsOfElements.Count; i++)
+            for (var i = 0; i < response.SnapPointsOfElements.Count; i++)
             {
-                var item = response.HotspotsOfElements[i];
+                var item = response.SnapPointsOfElements[i];
                 var path = new GH_Path(i);
                 points.EnsurePath(path);
                 neigIds.EnsurePath(path);
@@ -89,12 +89,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 errorMessages.Add("");
-                if (item?.Hotspots == null)
+                if (item?.SnapPoints == null)
                 {
                     continue;
                 }
 
-                foreach (var hotspot in item.Hotspots)
+                foreach (var hotspot in item.SnapPoints)
                 {
                     if (hotspot?.Coordinate == null)
                     {

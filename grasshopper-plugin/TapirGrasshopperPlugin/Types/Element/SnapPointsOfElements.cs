@@ -4,11 +4,11 @@ using TapirGrasshopperPlugin.Types.Generic;
 
 namespace TapirGrasshopperPlugin.Types.Element
 {
-    // The response of GetHotspotsOfElements: the hotspots of each element
+    // The response of GetSnapPointsOfElements: the snap points (hotspots) of each element
     // (the points the cursor snaps to and dimensions attach to), or an
     // error per element.
 
-    public class Hotspot
+    public class SnapPoint
     {
         // World coordinates.
         [JsonProperty("coordinate")]
@@ -23,12 +23,12 @@ namespace TapirGrasshopperPlugin.Types.Element
         public int InIndex;
     }
 
-    public class HotspotsOfElementItem
+    public class SnapPointsOfElementItem
     {
         [JsonProperty(
-            "hotspots",
+            "snapPoints",
             NullValueHandling = NullValueHandling.Ignore)]
-        public List<Hotspot> Hotspots;
+        public List<SnapPoint> SnapPoints;
 
         [JsonProperty(
             "error",
@@ -36,9 +36,9 @@ namespace TapirGrasshopperPlugin.Types.Element
         public Error Error;
     }
 
-    public class HotspotsOfElementsObject
+    public class SnapPointsOfElementsObject
     {
-        [JsonProperty("hotspotsOfElements")]
-        public List<HotspotsOfElementItem> HotspotsOfElements;
+        [JsonProperty("snapPointsOfElements")]
+        public List<SnapPointsOfElementItem> SnapPointsOfElements;
     }
 }

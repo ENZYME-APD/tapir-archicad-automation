@@ -375,10 +375,10 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
-class GetHotspotsOfElementsCommand : public CommandBase
+class GetSnapPointsOfElementsCommand : public CommandBase
 {
 public:
-    GetHotspotsOfElementsCommand ();
+    GetSnapPointsOfElementsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;

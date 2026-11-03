@@ -7680,17 +7680,17 @@ GS::ObjectState GetLibPartTransformationsCommand::Execute (const GS::ObjectState
     return response;
 }
 
-GetHotspotsOfElementsCommand::GetHotspotsOfElementsCommand () :
+GetSnapPointsOfElementsCommand::GetSnapPointsOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
 }
 
-GS::String GetHotspotsOfElementsCommand::GetName () const
+GS::String GetSnapPointsOfElementsCommand::GetName () const
 {
-    return "GetHotspotsOfElements";
+    return "GetSnapPointsOfElements";
 }
 
-GS::Optional<GS::UniString> GetHotspotsOfElementsCommand::GetInputParametersSchema () const
+GS::Optional<GS::UniString> GetSnapPointsOfElementsCommand::GetInputParametersSchema () const
 {
     return R"({
         "type": "object",
@@ -7706,22 +7706,22 @@ GS::Optional<GS::UniString> GetHotspotsOfElementsCommand::GetInputParametersSche
     })";
 }
 
-GS::Optional<GS::UniString> GetHotspotsOfElementsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetSnapPointsOfElementsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
         "properties": {
-            "hotspotsOfElements": {
+            "snapPointsOfElements": {
                 "type": "array",
-                "description": "The hotspots of each element, aligned with the input array of elements, or an error.",
+                "description": "The snap points (hotspots) of each element, aligned with the input array of elements, or an error.",
                 "items": {
                     "oneOf": [
                         {
                             "type": "object",
                             "properties": {
-                                "hotspots": {
+                                "snapPoints": {
                                     "type": "array",
-                                    "description": "The hotspots of the element: the points Archicad snaps to and dimensions, in world coordinates (meters, absolute Z). Empty when the element has none.",
+                                    "description": "The snap points (hotspots) of the element: the points Archicad snaps to and dimensions attach to, in world coordinates (meters, absolute Z). Empty when the element has none.",
                                     "items": {
                                         "type": "object",
                                         "properties": {
@@ -7748,7 +7748,7 @@ GS::Optional<GS::UniString> GetHotspotsOfElementsCommand::GetRawResponseSchema (
                             },
                             "additionalProperties": false,
                             "required": [
-                                "hotspots"
+                                "snapPoints"
                             ]
                         },
                         {
@@ -7760,23 +7760,23 @@ GS::Optional<GS::UniString> GetHotspotsOfElementsCommand::GetRawResponseSchema (
         },
         "additionalProperties": false,
         "required": [
-            "hotspotsOfElements"
+            "snapPointsOfElements"
         ]
     })";
 }
 
-GS::ObjectState GetHotspotsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState GetSnapPointsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
 
     GS::ObjectState response;
-    const auto& hotspotsOfElements = response.AddList<GS::ObjectState> ("hotspotsOfElements");
+    const auto& snapPointsOfElements = response.AddList<GS::ObjectState> ("snapPointsOfElements");
 
     for (const GS::ObjectState& element : elements) {
         const GS::ObjectState* elementId = element.Get ("elementId");
         if (elementId == nullptr) {
-            hotspotsOfElements (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            snapPointsOfElements (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
             continue;
         }
 
@@ -7784,7 +7784,7 @@ GS::ObjectState GetHotspotsOfElementsCommand::Execute (const GS::ObjectState& pa
         elemHead.guid = GetGuidFromObjectState (*elementId);
         GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
         if (err != NoError) {
-            hotspotsOfElements (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            snapPointsOfElements (CreateErrorResponse (err, "Failed to find element in Archicad"));
             continue;
         }
 
@@ -7794,12 +7794,12 @@ GS::ObjectState GetHotspotsOfElementsCommand::Execute (const GS::ObjectState& pa
         GS::Array<API_ElementHotspot> elementHotspots;
         err = ACAPI_Element_GetHotspots (elemHead.guid, &elementHotspots);
         if (err != NoError) {
-            hotspotsOfElements (CreateErrorResponse (err, "Failed to get the hotspots of the element"));
+            snapPointsOfElements (CreateErrorResponse (err, "Failed to get the hotspots of the element"));
             continue;
         }
 
-        GS::ObjectState hotspotsOfElement;
-        const auto& hotspots = hotspotsOfElement.AddList<GS::ObjectState> ("hotspots");
+        GS::ObjectState snapPointsOfElement;
+        const auto& snapPoints = snapPointsOfElement.AddList<GS::ObjectState> ("snapPoints");
         for (const API_ElementHotspot& elementHotspot : elementHotspots) {
             const API_Neig& neig = elementHotspot.first;
             const API_Coord3D& coord3D = elementHotspot.second;
@@ -7807,9 +7807,9 @@ GS::ObjectState GetHotspotsOfElementsCommand::Execute (const GS::ObjectState& pa
             hotspot.Add ("coordinate", Create3DCoordinateObjectState (coord3D));
             hotspot.Add ("neigId", static_cast<Int32> (neig.neigID));
             hotspot.Add ("inIndex", static_cast<Int32> (neig.inIndex));
-            hotspots (hotspot);
+            snapPoints (hotspot);
         }
-        hotspotsOfElements (hotspotsOfElement);
+        snapPointsOfElements (snapPointsOfElement);
     }
 
     return response;

@@ -716,9 +716,9 @@ GSErrCode Initialize (void)
             elementCommands, "1.8.0",
             "Gets the placement transformation of library part instances (Window, Door, Object, Lamp, Zone) as Archicad computes it: the location, the rotation angle and the x/y scaling. The output is aligned with the input array of elements."
         );
-        err |= RegisterCommand<GetHotspotsOfElementsCommand> (
-            elementCommands, "1.7.4",
-            "Gets the hotspots of the given elements: the points of an element that the cursor snaps to and dimensions attach to (for example the endpoints of a Wall's reference line or the vertices of a Slab), in world coordinates, each with the neig kind and subindex identifying which point of the element it is. The output is aligned with the input array of elements."
+        err |= RegisterCommand<GetSnapPointsOfElementsCommand> (
+            elementCommands, "1.8.1",
+            "Gets the snap points (hotspots) of the given elements, of any element type: the points of an element that the cursor snaps to and dimensions attach to (for example the endpoints of a Wall's reference line or the vertices of a Slab), in world coordinates, each with the neig kind and subindex identifying which point of the element it is. For the 2D hotspots of library part instances see GetHotspotsOfElements. The output is aligned with the input array of elements."
         );
         err |= RegisterCommand<ConvertRevealOffsetsCommand> (
             elementCommands, "1.7.3",
