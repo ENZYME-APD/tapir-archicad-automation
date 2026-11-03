@@ -1649,7 +1649,7 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
             },
             "applySettings": {
                 "type": "boolean",
-                "description": "Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc.). Geometry (position, floor, and dimensions such as a Wall's height) is never applied - the element stays on its own home story - except that a Window or Door takes the Favorite's library part and parameters, size included, while keeping its wall, marker and placement. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. A Dimension's text size, text pen and text frame are not changed (tested in Archicad 28): the dimension creation commands take textHeight and textPen for them. Default is true."
+                "description": "Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc.). Geometry (position, floor, and dimensions such as a Wall's height) is never applied - the element stays on its own home story - except that a Window or Door takes the Favorite's library part and parameters, size included, while keeping its wall, marker and placement. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. A Dimension's text size, text pen and text frame are not changed (tested in Archicad 28): the dimension creation commands take textHeight, textPen and textFrame for them. Default is true."
             },
             "applyClassifications": {
                 "type": "boolean",
@@ -2928,6 +2928,127 @@ GS::ObjectState DeleteFavoriteFolderCommand::Execute (const GS::ObjectState& par
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
 #endif
+}
+
+// ============================================================================
+// ReadFavoritesFile — wraps ACAPI_Favorite_Read, which reads the Favorites of a
+// .prefs file or folder without importing them, so a caller can compare them
+// with the project's Favorites before ImportFavorites overwrites anything.
+// ============================================================================
+
+ReadFavoritesFileCommand::ReadFavoritesFileCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ReadFavoritesFileCommand::GetName () const
+{
+    return "ReadFavoritesFile";
+}
+
+GS::Optional<GS::UniString> ReadFavoritesFileCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "path": {
+                "type": "string",
+                "description": "Absolute path on the AC host to a Favorites file (.prefs) or folder."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["path"]
+    })";
+}
+
+GS::Optional<GS::UniString> ReadFavoritesFileCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "favorites": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the Favorite."
+                        },
+                        "elementType": {
+                            "$ref": "#/ElementType"
+                        },
+                        "folder": {
+                            "type": "array",
+                            "items": { "type": "string" },
+                            "description": "The folder hierarchy of the Favorite in the file or folder. Empty = root."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "elementType",
+                        "folder"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favorites"
+        ]
+    })";
+}
+
+GS::ObjectState ReadFavoritesFileCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString path;
+    parameters.Get ("path", path);
+    if (path.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "path is required");
+    }
+
+    // Nothing is imported: ACAPI_Favorite_Read only fills this array, the project's
+    // Favorites stay as they are.
+    GS::Array<API_Favorite> favorites;
+    const GSErrCode err = ACAPI_Favorite_Read (LocationFromPath (path), &favorites);
+
+    GS::ObjectState response;
+    const auto& favoritesList = response.AddList<GS::ObjectState> ("favorites");
+    for (API_Favorite& favorite : favorites) {
+        if (err == NoError) {
+            GS::ObjectState favoriteOS;
+            favoriteOS.Add ("name", favorite.name);
+            favoriteOS.Add ("elementType", GetElementTypeNonLocalizedName (GetElemTypeId (favorite.element.header)));
+            const auto& folder = favoriteOS.AddList<GS::UniString> ("folder");
+            if (favorite.folder.HasValue ()) {
+                for (const GS::UniString& part : *favorite.folder) {
+                    folder (part);
+                }
+            }
+            favoritesList (favoriteOS);
+        }
+
+        // Only the name, type and folder are returned; the memo handles the read
+        // allocated are released here, also when it failed part way.
+        if (favorite.memo.HasValue ()) {
+            ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
+        }
+        if (favorite.memoMarker.HasValue ()) {
+            ACAPI_DisposeElemMemoHdls (&favorite.memoMarker.Get ());
+        }
+        if (favorite.subElements.HasValue ()) {
+            for (API_SubElement& subElement : *favorite.subElements) {
+                ACAPI_DisposeElemMemoHdls (&subElement.memo);
+            }
+        }
+    }
+
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to read the Favorites file or folder.");
+    }
+
+    return response;
 }
 
 // ============================================================================

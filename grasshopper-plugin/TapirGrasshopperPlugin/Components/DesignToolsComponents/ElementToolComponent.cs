@@ -362,7 +362,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
 
             var parameters = new JObject
             {
-                ["elements"] = new JArray(indices.Select(i => ElementIdObject(guids[i])))
+                ["elements"] = new JArray(indices.Select(i => ElementItemObject(guids[i])))
             };
             if (!TryGetCadResponse("GetDetailsOfElements", parameters, ToAddOn, out var response))
             {
@@ -875,7 +875,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
 
             var parameters = new JObject
             {
-                ["elements"] = new JArray(indices.Select(i => ElementIdObject(guids[i]))),
+                ["elements"] = new JArray(indices.Select(i => ElementItemObject(guids[i]))),
                 ["fields"] = new JArray("type")
             };
             if (!TryGetCadResponse("GetDetailsOfElements", parameters, ToAddOn, out var response))
@@ -928,6 +928,14 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             string guid)
         {
             return new JObject { ["guid"] = guid };
+        }
+
+        // An item of an "elements" array (ElementIdArrayItem):
+        // { "elementId": { "guid": ... } }.
+        protected static JObject ElementItemObject(
+            string guid)
+        {
+            return new JObject { ["elementId"] = ElementIdObject(guid) };
         }
 
         private static T ItemOf<T>(

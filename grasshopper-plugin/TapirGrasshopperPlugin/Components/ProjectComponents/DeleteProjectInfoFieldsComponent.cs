@@ -1,7 +1,9 @@
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Types;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.GuidObjects;
 using TapirGrasshopperPlugin.Types.Project;
 
 namespace TapirGrasshopperPlugin.Components.ProjectComponents
@@ -13,7 +15,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         public DeleteProjectInfoFieldsComponent()
             : base(
                 "DeleteProjectInfoFields",
-                "Delete one or more custom project info fields. Hardcoded fields cannot be deleted.",
+                "Delete one or more custom project info fields, by their autotext keys or, from Archicad 30, by their identifiers in the Project Info groups. Hardcoded fields cannot be deleted.",
                 GroupNames.Project)
         {
         }
@@ -22,29 +24,69 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         {
             InTexts(
                 "ProjectInfoIds",
-                "Ids of the custom project info fields to delete (ids starting with 'autotext-').");
+                "Autotext keys of the custom project info fields to delete (ids starting with 'autotext-'). On Archicad 30 a key is matched to the field by its name, so it fails when more than one field has the name; delete such a field through FieldGuids instead.");
+
+            InGenerics(
+                "FieldGuids",
+                "Identifiers of the custom fields to delete, as the GetProjectInfoGroups component gives them. Available from Archicad 30.");
+
+            SetOptionality(0);
+            SetOptionality(1);
         }
 
         protected override void AddOutputs()
         {
             OutErrorMessages(
-                "Error message of each project info field (empty when it succeeded).");
+                "Error message of each project info field (empty when it succeeded): first one per item of ProjectInfoIds, then one per item of FieldGuids.");
         }
 
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.TryGetList(
-                    0,
-                    out List<string> ids))
+            da.TryGetList(
+                0,
+                out List<string> ids);
+            ids = ids ?? new List<string>();
+
+            da.TryGetList(
+                1,
+                out List<GH_ObjectWrapper> fieldWrappers);
+            fieldWrappers = fieldWrappers ?? new List<GH_ObjectWrapper>();
+
+            if (ids.Count == 0 && fieldWrappers.Count == 0)
             {
+                this.AddError(
+                    "Give the fields to delete in the ProjectInfoIds or the FieldGuids input.");
                 return;
             }
 
-            var input = new DeleteProjectInfoFieldsParameters
+            var input = new DeleteProjectInfoFieldsParameters();
+
+            if (ids.Count > 0)
             {
-                ProjectInfoIds = ids
-            };
+                input.ProjectInfoIds = ids;
+            }
+
+            if (fieldWrappers.Count > 0)
+            {
+                input.ProjectInfoFieldIds = new List<ProjectInfoFieldGuidWrapper>();
+                foreach (var wrapper in fieldWrappers)
+                {
+                    var fieldId = GuidObject<ProjectInfoFieldGuid>.CreateFromWrapper(wrapper);
+                    if (fieldId == null)
+                    {
+                        this.AddError(
+                            "Invalid Project Info field identifier in the FieldGuids input.");
+                        return;
+                    }
+
+                    input.ProjectInfoFieldIds.Add(
+                        new ProjectInfoFieldGuidWrapper
+                        {
+                            ProjectInfoFieldId = fieldId
+                        });
+                }
+            }
 
             SetCadValuesWithErrorMessages(
                 CommandName,
