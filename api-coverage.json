@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-03 01:50 UTC",
+ "generatedAt": "2026-11-03 03:04 UTC",
  "versions": [
   25,
   26,
@@ -6648,6 +6648,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1734,
+     "title": "ModifyCurtainWalls: rebuild the grid on pattern changes, apply height before the other fields"
+    },
+    {
      "number": 1731,
      "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
     },
@@ -7753,6 +7757,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1734,
+     "title": "ModifyCurtainWalls: rebuild the grid on pattern changes, apply height before the other fields"
+    },
+    {
      "number": 1731,
      "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
     },
@@ -8468,6 +8476,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1734,
+     "title": "ModifyCurtainWalls: rebuild the grid on pattern changes, apply height before the other fields"
+    },
     {
      "number": 1731,
      "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
@@ -9253,6 +9265,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1734,
+     "title": "ModifyCurtainWalls: rebuild the grid on pattern changes, apply height before the other fields"
+    },
     {
      "number": 1281,
      "title": "Add GetRoofPlanes: the single planes of multi-plane roofs"
@@ -29188,6 +29204,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1734,
+     "title": "ModifyCurtainWalls: rebuild the grid on pattern changes, apply height before the other fields"
+    },
+    {
      "number": 1731,
      "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
     },
@@ -44416,6 +44436,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1734,
+     "title": "ModifyCurtainWalls: rebuild the grid on pattern changes, apply height before the other fields"
+    },
     {
      "number": 1731,
      "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
