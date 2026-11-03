@@ -24,3 +24,6 @@ if unIds:
         'pattern': '*'
     }, debug = False)
     print (response)
+
+response = aclib.RunTapirCommand ('GetLastValidEmbeddedLibraryPartName', {}, debug = False)
+print (response)
