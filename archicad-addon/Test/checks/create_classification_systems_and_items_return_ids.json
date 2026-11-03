@@ -1,0 +1,100 @@
+{
+  "title": "CreateClassificationSystems and CreateClassificationItems answer one result and one id per input",
+  "minTapir": "1.7.4",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "[system without items, system with one item]",
+      "command": "CreateClassificationSystems",
+      "creates": false,
+      "params": {
+        "classificationSystemsWithItems": [
+          {
+            "classificationSystem": { "name": "Tapir check system A", "description": "", "source": "", "version": "1", "date": "2026-01-01" },
+            "classificationItems": []
+          },
+          {
+            "classificationSystem": { "name": "Tapir check system B", "description": "", "source": "", "version": "1", "date": "2026-01-01" },
+            "classificationItems": [
+              { "id": "B1", "name": "Tapir check item B1", "description": "" }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "systemA": "classificationSystemIds[0].classificationSystemId.guid",
+        "systemB": "classificationSystemIds[1].classificationSystemId.guid"
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per system" },
+        { "path": "executionResults[0].success", "eq": true, "name": "system without items: success" },
+        { "path": "executionResults[1].success", "eq": true, "name": "system with an item: success" },
+        { "path": "classificationSystemIds", "len": 2, "name": "one id per system" },
+        { "path": "classificationSystemIds[0].classificationSystemId.guid", "exists": true, "name": "id of the system without items" },
+        { "path": "classificationSystemIds[1].classificationSystemId.guid", "exists": true, "name": "id of the system with an item" }
+      ]
+    },
+    {
+      "id": "[item with a child into system A]",
+      "command": "CreateClassificationItems",
+      "creates": false,
+      "params": {
+        "newClassificationItems": [
+          {
+            "classificationSystemId": { "guid": "${systemA}" },
+            "classificationItemDetails": {
+              "id": "A1", "name": "Tapir check item A1", "description": "",
+              "children": [ { "id": "A1.1", "name": "Tapir check item A1.1", "description": "" } ]
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "item and child: success" },
+        { "path": "classificationItemIds", "len": 1, "name": "one id per item" },
+        { "path": "classificationItemIds[0].classificationItemId.guid", "exists": true, "name": "id of the new item" }
+      ]
+    },
+    {
+      "id": "read system A back",
+      "command": "API.GetAllClassificationsInSystem",
+      "creates": false,
+      "params": {
+        "classificationSystemId": { "guid": "${systemA}" }
+      },
+      "expect": [
+        { "path": "classificationItems", "len": 1, "name": "system A has the one item" },
+        { "path": "classificationItems[0].classificationItem.children", "len": 1, "name": "with its child" }
+      ]
+    },
+    {
+      "id": "[item into a system that does not exist]",
+      "command": "CreateClassificationItems",
+      "creates": false,
+      "params": {
+        "newClassificationItems": [
+          {
+            "classificationSystemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "classificationItemDetails": { "id": "X1", "name": "Tapir check item X1", "description": "" }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "failed" },
+        { "path": "classificationItemIds[0].error", "exists": true, "name": "error item in place of the id" }
+      ]
+    },
+    {
+      "id": "remove both systems",
+      "command": "DeleteClassificationSystems",
+      "creates": false,
+      "params": {
+        "classificationSystemIds": [
+          { "classificationSystemId": { "guid": "${systemA}" } },
+          { "classificationSystemId": { "guid": "${systemB}" } }
+        ]
+      }
+    }
+  ]
+}
