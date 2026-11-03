@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-03 21:05 UTC",
+ "generatedAt": "2026-11-03 21:14 UTC",
  "versions": [
   25,
   26,
@@ -7229,10 +7229,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1715,
-     "title": "Get3DBoundingBoxes: real height of Opening elements"
-    },
-    {
      "number": 1687,
      "title": "CreateAssociativeDimensionsOnSection: OpeningEdges preset for Opening tool elements"
     },
@@ -8704,10 +8700,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1715,
-     "title": "Get3DBoundingBoxes: real height of Opening elements"
-    },
     {
      "number": 1711,
      "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
@@ -10858,10 +10850,6 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
-    {
-     "number": 1715,
-     "title": "Get3DBoundingBoxes: real height of Opening elements"
-    },
     {
      "number": 1711,
      "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
@@ -14757,12 +14745,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1715,
-     "title": "Get3DBoundingBoxes: real height of Opening elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
@@ -14813,12 +14796,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1715,
-     "title": "Get3DBoundingBoxes: real height of Opening elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
@@ -27672,10 +27650,6 @@
      "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
     },
     {
-     "number": 1715,
-     "title": "Get3DBoundingBoxes: real height of Opening elements"
-    },
-    {
      "number": 1711,
      "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
     },
@@ -27769,12 +27743,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1715,
-     "title": "Get3DBoundingBoxes: real height of Opening elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27792,10 +27761,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1715,
-     "title": "Get3DBoundingBoxes: real height of Opening elements"
-    },
     {
      "number": 1711,
      "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
@@ -27834,12 +27799,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1715,
-     "title": "Get3DBoundingBoxes: real height of Opening elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27909,10 +27869,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1715,
-     "title": "Get3DBoundingBoxes: real height of Opening elements"
-    },
-    {
      "number": 1711,
      "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
     }
@@ -27950,12 +27906,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1715,
-     "title": "Get3DBoundingBoxes: real height of Opening elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28013,10 +27964,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1715,
-     "title": "Get3DBoundingBoxes: real height of Opening elements"
-    },
-    {
      "number": 1711,
      "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
     }
@@ -28055,10 +28002,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1715,
-     "title": "Get3DBoundingBoxes: real height of Opening elements"
-    },
     {
      "number": 1711,
      "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
@@ -28177,10 +28120,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1715,
-     "title": "Get3DBoundingBoxes: real height of Opening elements"
-    },
-    {
      "number": 1711,
      "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
     }
@@ -28240,12 +28179,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1715,
-     "title": "Get3DBoundingBoxes: real height of Opening elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28262,12 +28196,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1715,
-     "title": "Get3DBoundingBoxes: real height of Opening elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28284,12 +28213,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1715,
-     "title": "Get3DBoundingBoxes: real height of Opening elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28306,12 +28230,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1715,
-     "title": "Get3DBoundingBoxes: real height of Opening elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28396,12 +28315,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1715,
-     "title": "Get3DBoundingBoxes: real height of Opening elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28928,12 +28842,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1715,
-     "title": "Get3DBoundingBoxes: real height of Opening elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28967,12 +28876,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1715,
-     "title": "Get3DBoundingBoxes: real height of Opening elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -42595,10 +42499,6 @@
     {
      "number": 1716,
      "title": "Add DeselectAll, GetMarquee and SetMarquee (replaces #963)"
-    },
-    {
-     "number": 1715,
-     "title": "Get3DBoundingBoxes: real height of Opening elements"
     },
     {
      "number": 1711,
@@ -61642,10 +61542,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1715,
-     "title": "Get3DBoundingBoxes: real height of Opening elements"
     },
     {
      "number": 1711,
