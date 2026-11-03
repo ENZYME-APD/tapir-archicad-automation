@@ -8962,6 +8962,10 @@ private:
     bool restore = false;
 };
 
+// The element, its memo and its marker are restored. The classification, category and
+// property defaults that ApplyWindowOrDoorFavoriteToDefaults replays stay untouched: a Section
+// cannot be classified and has no element categories or user-defined properties in Archicad,
+// so a Section favorite carries none of them.
 SectionDefaultsWithFavorite::~SectionDefaultsWithFavorite ()
 {
     if (restore) {
@@ -9099,9 +9103,13 @@ GS::ObjectState CreateSectionsCommand::Execute (const GS::ObjectState& parameter
             if (err != NoError) {
                 GS::UniString favoriteName;
                 data.Get ("favoriteName", favoriteName);
-                const GS::UniString reason = err == APIERR_REFUSEDPAR
-                    ? GS::UniString ("it is not a Section favorite")
-                    : GS::UniString ("no favorite with this exact name was found");
+                // The code itself is in the error's "code"; only these two have a known reason.
+                GS::UniString reason = "Archicad refused it";
+                if (err == APIERR_REFUSEDPAR) {
+                    reason = "it is not a Section favorite";
+                } else if (err == APIERR_BADNAME) {
+                    reason = "no favorite with this exact name was found";
+                }
                 elements.Push (CreateErrorResponse (err,
                     "Failed to apply favoriteName '" + favoriteName + "' to the Section defaults: " + reason + "."));
                 continue;
