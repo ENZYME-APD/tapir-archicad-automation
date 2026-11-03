@@ -11065,48 +11065,6 @@ GS::ObjectState PlaceOpeningsCommand::Execute (const GS::ObjectState& parameters
 // CreateSections does for sections. API_WorksheetType is API_DetailType, so element.detail
 // serves both.
 
-static GS::UniString GetDetailMarkerItemSchema ()
-{
-    return R"({
-        "type": "object",
-        "properties": {
-            "clipPolygon": {
-                "type": "array",
-                "description": "The boundary of the cut out area, at least 3 points, without repeating the first one.",
-                "items": { "$ref": "#/Coordinate2D" },
-                "minItems": 3
-            },
-            "polygonArcs": {
-                "type": "array",
-                "description": "Optional arcs of the boundary, with indices into clipPolygon.",
-                "items": { "$ref": "#/PolyArc" }
-            },
-            "markerCoordinate": { "$ref": "#/Coordinate2D", "description": "Where the marker symbol is placed. Default is the first point of clipPolygon." },
-            "angle": { "type": "number", "description": "Rotation of the marker symbol in radians. Default is that of the tool defaults." },
-            "name": { "type": "string", "description": "Name of the new viewpoint. Default is that of the tool defaults." },
-            "id": { "type": "string", "description": "Reference ID shown in the marker and in the Project Map. A '/' splits it between the two lines of the marker. Default is that of the tool defaults." },
-            "floorIndex": { "type": "integer", "description": "Story of the marker when it is placed on a floor plan. Default is the current story." }
-        },
-        "additionalProperties": false,
-        "required": ["clipPolygon"]
-    })";
-}
-
-static GS::UniString GetDetailMarkersInputSchema (const GS::UniString& arrayName)
-{
-    return R"({
-        "type": "object",
-        "properties": {
-            ")" + arrayName + R"(": {
-                "type": "array",
-                "items": )" + GetDetailMarkerItemSchema () + R"(
-            }
-        },
-        "additionalProperties": false,
-        "required": [")" + arrayName + R"("]
-    })";
-}
-
 static void CopyToDetailString (GS::uchar_t (&target)[API_UniLongNameLen], const GS::UniString& source)
 {
     GS::ucsncpy (target, source.ToUStr (), API_UniLongNameLen);
@@ -11202,20 +11160,6 @@ static GS::ObjectState ExecuteCreateDetailMarkers (const GS::ObjectState& parame
     });
 }
 
-static GS::UniString GetDetailMarkersResponseSchema ()
-{
-    return R"({
-        "type": "object",
-        "properties": {
-            "elements": {
-                "$ref": "#/ElementIdsOrErrors"
-            }
-        },
-        "additionalProperties": false,
-        "required": ["elements"]
-    })";
-}
-
 CreateDetailMarkersCommand::CreateDetailMarkersCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -11228,12 +11172,53 @@ GS::String CreateDetailMarkersCommand::GetName () const
 
 GS::Optional<GS::UniString> CreateDetailMarkersCommand::GetInputParametersSchema () const
 {
-    return GetDetailMarkersInputSchema ("detailMarkersData");
+    return R"({
+        "type": "object",
+        "properties": {
+            "detailMarkersData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "clipPolygon": {
+                            "type": "array",
+                            "description": "The boundary of the cut out area, at least 3 points, without repeating the first one.",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 3
+                        },
+                        "polygonArcs": {
+                            "type": "array",
+                            "description": "Optional arcs of the boundary, with indices into clipPolygon.",
+                            "items": { "$ref": "#/PolyArc" }
+                        },
+                        "markerCoordinate": { "$ref": "#/Coordinate2D", "description": "Where the marker symbol is placed. Default is the first point of clipPolygon." },
+                        "angle": { "type": "number", "description": "Rotation of the marker symbol in radians. Default is that of the tool defaults." },
+                        "name": { "type": "string", "description": "Name of the new viewpoint. Default is that of the tool defaults." },
+                        "id": { "type": "string", "description": "Reference ID shown in the marker and in the Project Map. A '/' splits it between the two lines of the marker. Default is that of the tool defaults." },
+                        "floorIndex": { "type": "integer", "description": "Story of the marker when it is placed on a floor plan. Default is the current story." }
+                    },
+                    "additionalProperties": false,
+                    "required": ["clipPolygon"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["detailMarkersData"]
+    })";
 }
 
 GS::Optional<GS::UniString> CreateDetailMarkersCommand::GetRawResponseSchema () const
 {
-    return GetDetailMarkersResponseSchema ();
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    })";
 }
 
 GS::ObjectState CreateDetailMarkersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -11253,12 +11238,53 @@ GS::String CreateWorksheetMarkersCommand::GetName () const
 
 GS::Optional<GS::UniString> CreateWorksheetMarkersCommand::GetInputParametersSchema () const
 {
-    return GetDetailMarkersInputSchema ("worksheetMarkersData");
+    return R"({
+        "type": "object",
+        "properties": {
+            "worksheetMarkersData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "clipPolygon": {
+                            "type": "array",
+                            "description": "The boundary of the cut out area, at least 3 points, without repeating the first one.",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 3
+                        },
+                        "polygonArcs": {
+                            "type": "array",
+                            "description": "Optional arcs of the boundary, with indices into clipPolygon.",
+                            "items": { "$ref": "#/PolyArc" }
+                        },
+                        "markerCoordinate": { "$ref": "#/Coordinate2D", "description": "Where the marker symbol is placed. Default is the first point of clipPolygon." },
+                        "angle": { "type": "number", "description": "Rotation of the marker symbol in radians. Default is that of the tool defaults." },
+                        "name": { "type": "string", "description": "Name of the new viewpoint. Default is that of the tool defaults." },
+                        "id": { "type": "string", "description": "Reference ID shown in the marker and in the Project Map. A '/' splits it between the two lines of the marker. Default is that of the tool defaults." },
+                        "floorIndex": { "type": "integer", "description": "Story of the marker when it is placed on a floor plan. Default is the current story." }
+                    },
+                    "additionalProperties": false,
+                    "required": ["clipPolygon"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["worksheetMarkersData"]
+    })";
 }
 
 GS::Optional<GS::UniString> CreateWorksheetMarkersCommand::GetRawResponseSchema () const
 {
-    return GetDetailMarkersResponseSchema ();
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    })";
 }
 
 GS::ObjectState CreateWorksheetMarkersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
