@@ -1339,6 +1339,12 @@ GSErrCode Initialize (void)
             "Returns the folder tree of the Favorites palette from its root folder: the name and path of every folder "
             "and the names of the Favorites in it. Available from Archicad 29."
         );
+        err |= RegisterCommand<ReadFavoritesFileCommand> (
+            favoritesCommands, "1.7.4",
+            "Read the Favorites of a .prefs file or folder without importing them, returning the name, "
+            "element type and folder of each. Nothing in the project changes, so the result can be "
+            "compared with the project's Favorites before ImportFavorites."
+        );
         err |= RegisterCommand<CreateFavoriteFolderCommand> (
             favoritesCommands, "1.8.0",
             "Creates a folder in the Favorites palette, in the parent folder given by its path. Returns the new folder. "
