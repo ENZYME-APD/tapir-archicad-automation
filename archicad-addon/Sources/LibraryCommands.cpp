@@ -1982,17 +1982,17 @@ static GS::ObjectState CreateDoorWindowDetails (const DoorWindowDetails& details
     return os;
 }
 
-GetLibraryPartDetailsCommand::GetLibraryPartDetailsCommand () :
+GetLibraryPartTypeDetailsCommand::GetLibraryPartTypeDetailsCommand () :
     CommandBase (CommonSchema::Used)
 {
 }
 
-GS::String GetLibraryPartDetailsCommand::GetName () const
+GS::String GetLibraryPartTypeDetailsCommand::GetName () const
 {
-    return "GetLibraryPartDetails";
+    return "GetLibraryPartTypeDetails";
 }
 
-GS::Optional<GS::UniString> GetLibraryPartDetailsCommand::GetInputParametersSchema () const
+GS::Optional<GS::UniString> GetLibraryPartTypeDetailsCommand::GetInputParametersSchema () const
 {
     return R"({
         "type": "object",
@@ -2012,7 +2012,7 @@ GS::Optional<GS::UniString> GetLibraryPartDetailsCommand::GetInputParametersSche
     })";
 }
 
-GS::Optional<GS::UniString> GetLibraryPartDetailsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetLibraryPartTypeDetailsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -2079,7 +2079,7 @@ GS::Optional<GS::UniString> GetLibraryPartDetailsCommand::GetRawResponseSchema (
     })";
 }
 
-GS::ObjectState GetLibraryPartDetailsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState GetLibraryPartTypeDetailsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> identifiers;
     parameters.Get ("libraryParts", identifiers);

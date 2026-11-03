@@ -3,7 +3,7 @@ import aclib
 objects = aclib.RunTapirCommand ('GetAvailableLibraryParts', {'filterByTypeId': 'Object'})['libraryParts'][:10]
 libraryParts = [{'index': libraryPart['index']} for libraryPart in objects]
 
-details = aclib.RunTapirCommand ('GetLibraryPartDetails', {'libraryParts': libraryParts})
+details = aclib.RunTapirCommand ('GetLibraryPartTypeDetails', {'libraryParts': libraryParts})
 
 # Is each object a subtype of the direct parent of the first one?
 first = details['libraryParts'][0] if details['libraryParts'] else None

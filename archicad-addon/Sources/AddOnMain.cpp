@@ -1979,9 +1979,9 @@ GSErrCode Initialize (void)
             libraryCommands, "1.5.0",
             "Lists library parts currently available to the project. Filter by typeId (e.g. 'Door', 'Window', 'Object', 'Lamp')."
         );
-        err |= RegisterCommand<GetLibraryPartDetailsCommand> (
+        err |= RegisterCommand<GetLibraryPartTypeDetailsCommand> (
             libraryCommands, "1.8.1",
-            "Returns the details of the given library parts: full unique ID and its direct parent's, type, the detail flags of objects, lamps, labels and zones, the frame and orientation settings of doors and windows, and the element type and variation of the tool that places the library part."
+            "Returns the type details of the given library parts (ACAPI_LibraryPart_GetDetails): full unique ID and its direct parent's, type, the detail flags of objects, lamps, labels and zones, the frame and orientation settings of doors and windows, and the element type and variation of the tool that places the library part. For their path, library, GUID, license and scripts see GetLibraryPartDetails."
         );
         err |= RegisterCommand<IsLibraryPartSubtypeOfCommand> (
             libraryCommands, "1.8.1",
