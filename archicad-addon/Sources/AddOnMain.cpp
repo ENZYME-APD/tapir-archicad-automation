@@ -2554,11 +2554,11 @@ GSErrCode Initialize (void)
             "Deletes the given design option combinations. Available from Archicad 29."
         );
         err |= RegisterCommand<GetHotlinkDesignOptionTablesCommand> (
-            designOptionsCommands, "1.7.4",
+            designOptionsCommands, "1.8.1",
             "Retrieves the design option table of the given hotlink nodes and placed hotlink instances: the filter mode (main model only, by options or by combination), the design option sets, options and combinations of the hotlinked module and which of them are active. Available from Archicad 29."
         );
         err |= RegisterCommand<SetHotlinkDesignOptionTablesCommand> (
-            designOptionsCommands, "1.7.4",
+            designOptionsCommands, "1.8.1",
             "Sets the filter mode, the active combination and the active option of sets in the design option table of the given placed hotlink instances. Available from Archicad 29."
         );
         err |= RegisterCommand<SetDefaultDesignOptionCommand> (
