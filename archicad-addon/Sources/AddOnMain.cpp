@@ -1912,11 +1912,11 @@ GSErrCode Initialize (void)
             "Checks whether each of the given strings is usable in GDL, e.g. before writing it into a GDL parameter or script. Returns one boolean for each string."
         );
         err |= RegisterCommand<GetGDLDateCommand> (
-            libraryCommands, "1.7.4",
+            libraryCommands, "1.8.1",
             "Gets the date GDL scripts see, as the integer value the Archicad API returns."
         );
         err |= RegisterCommand<SetGDLDateCommand> (
-            libraryCommands, "1.7.4",
+            libraryCommands, "1.8.1",
             "Sets the date GDL scripts see, in the integer format GetGDLDate returns. Useful to test date-dependent library parts; set the value read with GetGDLDate back to restore it."
         );
         err |= RegisterCommand<CheckLibrariesCommand> (
