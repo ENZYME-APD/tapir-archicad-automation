@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-03 14:27 UTC",
+ "generatedAt": "2026-11-03 16:06 UTC",
  "versions": [
   25,
   26,
@@ -12,9 +12,9 @@
   "not applicable": 627,
   "done": 1868,
   "claimed": 50,
-  "in progress": 248,
+  "in progress": 245,
   "open": 70,
-  "merged": 14,
+  "merged": 17,
   "skipped": 2
  },
  "items": [
@@ -6355,6 +6355,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1748,
+     "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
+    },
+    {
      "number": 1745,
      "title": "CopyElementsToDatabase: copy 2D elements into another database (#819)"
     },
@@ -7424,6 +7428,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1748,
+     "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
+    },
     {
      "number": 1744,
      "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
@@ -8885,6 +8893,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1748,
+     "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
+    },
+    {
      "number": 1745,
      "title": "CopyElementsToDatabase: copy 2D elements into another database (#819)"
     },
@@ -9530,24 +9542,15 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 1732,
      "title": "Align property reads and writes for numeric round-tripping"
-    },
-    {
-     "number": 1238,
-     "title": "Add GetPropertyEditability command (property value editability and visibility)"
     }
    ],
-   "issues": [
-    {
-     "number": 1228,
-     "title": "Expose ACAPI_Element_IsPropertyDefinitionValueEditable (+Default)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_IsPropertyDefinitionValueEditableDefault",
@@ -9565,20 +9568,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1238,
-     "title": "Add GetPropertyEditability command (property value editability and visibility)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1228,
-     "title": "Expose ACAPI_Element_IsPropertyDefinitionValueEditable (+Default)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Element_IsPropertyDefinitionVisible",
@@ -9596,20 +9589,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1238,
-     "title": "Add GetPropertyEditability command (property value editability and visibility)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1228,
-     "title": "Expose ACAPI_Element_IsPropertyDefinitionValueEditable (+Default)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Element_IsPropertyDefinitionVisibleDefault",
@@ -15850,7 +15833,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1751,
+     "title": "Expose publisher set output path: read it, and change it without publishing"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_GetNavigatorSetNum",
@@ -17732,7 +17720,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1751,
+     "title": "Expose publisher set output path: read it, and change it without publishing"
+    }
+   ]
   },
   {
    "id": "ACAPI_ProjectOperation_Quit",
@@ -18327,10 +18320,6 @@
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    },
-    {
-     "number": 1238,
-     "title": "Add GetPropertyEditability command (property value editability and visibility)"
     },
     {
      "number": 1147,
@@ -28232,6 +28221,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
+     "number": 1748,
+     "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
+    },
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
+    {
      "number": 1744,
      "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
     },
@@ -29685,6 +29686,10 @@
    "reason": "add-on infrastructure (undo scopes, results)",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1726,
      "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
     },
@@ -29952,10 +29957,6 @@
     {
      "number": 1281,
      "title": "Add GetRoofPlanes: the single planes of multi-plane roofs"
-    },
-    {
-     "number": 1238,
-     "title": "Add GetPropertyEditability command (property value editability and visibility)"
     },
     {
      "number": 1237,
@@ -35041,6 +35042,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -35125,6 +35130,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -35152,6 +35161,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -35305,6 +35318,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -35361,6 +35378,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
@@ -35416,6 +35437,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
+     "number": 1748,
+     "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
+    },
     {
      "number": 1744,
      "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
@@ -35617,6 +35646,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -35652,7 +35685,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -35730,6 +35768,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -35915,6 +35957,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -35996,6 +36042,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -36223,6 +36273,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -36356,6 +36410,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1741,
      "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
@@ -36565,6 +36623,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -37653,6 +37715,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -38108,6 +38174,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1741,
      "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
@@ -38641,6 +38711,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -38697,6 +38771,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -38942,6 +39020,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1741,
      "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
@@ -39387,6 +39469,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -39444,6 +39530,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -39493,6 +39583,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -39731,6 +39825,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1741,
      "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
@@ -40097,6 +40195,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -40153,6 +40255,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -40287,6 +40393,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1741,
      "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
@@ -40497,6 +40607,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -40552,6 +40666,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -40601,6 +40719,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -40810,6 +40932,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1741,
      "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
@@ -41102,6 +41228,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -41143,6 +41273,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -41317,6 +41455,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -41449,6 +41591,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -41508,6 +41654,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -41536,7 +41686,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -41561,7 +41716,16 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -41588,6 +41752,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -41659,6 +41831,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -42141,6 +42317,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -42177,6 +42357,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -42323,6 +42507,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -42395,6 +42583,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -42530,6 +42722,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -42820,6 +43016,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -42908,6 +43108,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -43064,6 +43268,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -43332,6 +43540,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -43372,6 +43584,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
+     "number": 1748,
+     "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
+    },
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
+    {
      "number": 1745,
      "title": "CopyElementsToDatabase: copy 2D elements into another database (#819)"
     },
@@ -43386,6 +43610,10 @@
     {
      "number": 1734,
      "title": "ModifyCurtainWalls: rebuild the grid on pattern changes, apply height before the other fields"
+    },
+    {
+     "number": 1732,
+     "title": "Align property reads and writes for numeric round-tripping"
     },
     {
      "number": 1731,
@@ -43476,6 +43704,10 @@
      "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
     },
     {
+     "number": 1641,
+     "title": "SetPropertyValueOfAttributes, clearer results of SetPropertyValuesOfAttributes (replaces #1365)"
+    },
+    {
      "number": 1639,
      "title": "Dimensions: textFrame on the creation commands, text settings in GetDimensionData (replaces #1593)"
     },
@@ -43560,6 +43792,18 @@
      "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
     },
     {
+     "number": 1365,
+     "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
+    },
+    {
+     "number": 1362,
+     "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
+    },
+    {
+     "number": 1336,
+     "title": "[1/3] Add GetPropertyValuesOfElementDefaults command (property values of tool defaults)"
+    },
+    {
      "number": 1326,
      "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
     },
@@ -43572,16 +43816,20 @@
      "title": "Add GetRoofPlanes: the single planes of multi-plane roofs"
     },
     {
-     "number": 1238,
-     "title": "Add GetPropertyEditability command (property value editability and visibility)"
-    },
-    {
      "number": 1237,
      "title": "Add ReadFavoritesFile command (ACAPI_Favorite_Read)"
     },
     {
      "number": 1234,
      "title": "Add GetGDLParametersOfLibraryParts: default GDL parameters of a library part"
+    },
+    {
+     "number": 1147,
+     "title": "[2/4] Add CheckPropertyValues command (ACAPI_Property_IsValidValue)"
+    },
+    {
+     "number": 1146,
+     "title": "[1/4] Add CheckPropertyExpressions and GetPropertyExpressionReferences"
     },
     {
      "number": 1094,
@@ -43614,6 +43862,10 @@
     {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
+    },
+    {
+     "number": 968,
+     "title": "[1/3] Add Get/SetPropertyValuesOfElementDefaults"
     },
     {
      "number": 963,
@@ -44462,6 +44714,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -44538,6 +44794,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -44594,6 +44854,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -44621,6 +44885,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -44754,6 +45022,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -44838,6 +45110,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -44865,6 +45141,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -44997,6 +45277,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -45185,6 +45469,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -45307,6 +45595,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -45595,7 +45887,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    }
+   ],
    "issues": []
   },
   {
@@ -45772,7 +46069,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    }
+   ],
    "issues": []
   },
   {
@@ -46567,6 +46869,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -46648,6 +46954,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -46831,6 +47141,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -46887,6 +47201,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -47343,6 +47661,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1741,
      "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
@@ -47876,6 +48198,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -47933,6 +48259,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -47982,6 +48312,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -48220,6 +48554,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1741,
      "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
@@ -48586,6 +48924,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -48642,6 +48984,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -48887,6 +49233,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1741,
      "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
@@ -49332,6 +49682,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -49386,6 +49740,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -49636,6 +49994,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1741,
      "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
@@ -49941,6 +50303,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -49980,6 +50346,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -50241,6 +50611,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -50497,6 +50871,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -51103,6 +51481,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -51779,6 +52161,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
@@ -51837,6 +52223,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
+     "number": 1748,
+     "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
+    },
     {
      "number": 1744,
      "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
@@ -52041,6 +52435,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -52097,6 +52495,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -52430,6 +52832,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -52759,6 +53169,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
@@ -52815,6 +53229,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -52905,6 +53323,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -52930,7 +53352,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    }
+   ],
    "issues": []
   },
   {
@@ -53030,6 +53457,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
@@ -53058,6 +53489,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -53105,6 +53540,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -53144,6 +53587,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -53421,7 +53868,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    }
+   ],
    "issues": []
   },
   {
@@ -53519,7 +53971,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -53543,7 +54000,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    }
+   ],
    "issues": []
   },
   {
@@ -53580,6 +54042,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -53684,6 +54154,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -53815,6 +54293,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -53981,6 +54463,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
@@ -54028,6 +54514,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -54081,6 +54571,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -54149,6 +54643,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
@@ -54177,6 +54675,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -54217,6 +54723,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -54303,6 +54813,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -54363,6 +54877,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -54420,6 +54938,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
@@ -54468,6 +54990,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
@@ -54496,6 +55022,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -54572,6 +55106,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -54892,6 +55434,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -55078,6 +55624,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -55140,7 +55690,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    }
+   ],
    "issues": []
   },
   {
@@ -55158,7 +55713,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    }
+   ],
    "issues": []
   },
   {
@@ -55177,7 +55737,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    }
+   ],
    "issues": []
   },
   {
@@ -55196,7 +55761,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    }
+   ],
    "issues": []
   },
   {
@@ -55238,7 +55808,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    }
+   ],
    "issues": []
   },
   {
@@ -55342,6 +55921,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -55381,6 +55968,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -55634,6 +56225,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -55806,7 +56401,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    }
+   ],
    "issues": []
   },
   {
@@ -55824,7 +56424,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    }
+   ],
    "issues": []
   },
   {
@@ -55843,7 +56448,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    }
+   ],
    "issues": []
   },
   {
@@ -55862,7 +56472,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    }
+   ],
    "issues": []
   },
   {
@@ -55904,7 +56519,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    }
+   ],
    "issues": []
   },
   {
@@ -56007,6 +56631,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -56133,6 +56765,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -56246,6 +56882,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
+     "number": 1748,
+     "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
+    },
     {
      "number": 1744,
      "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
@@ -56447,6 +57091,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -56485,6 +57133,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -56586,6 +57238,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -56643,6 +57299,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -56774,6 +57434,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -56858,6 +57522,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -56885,6 +57553,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -57018,6 +57690,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -57069,6 +57749,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -57246,6 +57930,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -57342,6 +58030,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
+    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -57382,6 +58078,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -57409,6 +58109,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -57492,6 +58196,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -57535,7 +58243,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -57560,6 +58277,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -57636,6 +58361,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1747,
+     "title": "MEP routing commands: reject a preference table id that is not a guid string"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -57826,6 +58555,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1749,
+     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
+    },
     {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
@@ -63056,6 +63789,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1750,
+     "title": "SetMEPRoutingParameters: make route preference table changes stick"
+    },
+    {
      "number": 1715,
      "title": "Get3DBoundingBoxes: real height of Opening elements"
     },
@@ -63534,10 +64271,6 @@
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    },
-    {
-     "number": 1238,
-     "title": "Add GetPropertyEditability command (property value editability and visibility)"
     },
     {
      "number": 1147,
@@ -64719,10 +65452,6 @@
     {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
-    },
-    {
-     "number": 1238,
-     "title": "Add GetPropertyEditability command (property value editability and visibility)"
     },
     {
      "number": 1227,
