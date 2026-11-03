@@ -185,6 +185,10 @@
                 "type": "number",
                 "description": "The flange size of the segment. Only present when the segment has flanges."
             },
+            "insulationThickness": {
+                "type": "number",
+                "description": "The insulation thickness of the rigid segments of the segment. Only present when they are insulated (never for cable carriers)."
+            },
             "connectionStyle": {
                 "$ref": "#/MEPConnectionStyle"
             },
