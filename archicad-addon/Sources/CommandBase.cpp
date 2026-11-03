@@ -1317,6 +1317,25 @@ bool DoesElementExist (const API_Guid& elementGuid, API_ElemTypeID expectedTypeI
     return GetElemTypeId (header) == expectedTypeId;
 }
 
+GSErrCode GetLayerChangeError (const API_AttributeIndex& layer, GS::UniString& reason)
+{
+    API_Attribute layerAttr = {};
+    layerAttr.header.typeID = API_LayerID;
+    layerAttr.header.index = layer;
+    if (ACAPI_Attribute_Get (&layerAttr) != NoError) {
+        return NoError;
+    }
+    if ((layerAttr.header.flags & APILay_Locked) != 0) {
+        reason = "its layer is locked";
+        return APIERR_LOCKEDLAY;
+    }
+    if ((layerAttr.header.flags & APILay_Hidden) != 0) {
+        reason = "its layer is hidden";
+        return APIERR_HIDDENLAY;
+    }
+    return NoError;
+}
+
 
 // Inverts the affine transformation of a 3x4 API_Tranmat (rotation/scale part plus translation).
 bool InvertTranmat (const API_Tranmat& tranmat, API_Tranmat& inverse)
