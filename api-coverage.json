@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-03 21:14 UTC",
+ "generatedAt": "2026-11-03 21:41 UTC",
  "versions": [
   25,
   26,
@@ -10,11 +10,11 @@
  ],
  "counts": {
   "not applicable": 627,
-  "done": 1868,
+  "done": 1860,
   "claimed": 47,
-  "in progress": 145,
-  "open": 69,
-  "merged": 121,
+  "merged": 138,
+  "in progress": 128,
+  "open": 77,
   "skipped": 2
  },
  "items": [
@@ -1508,14 +1508,9 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_CreateElementFromCurveMember"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1510,
-     "title": "[3/6] Create elements from analytical members"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1536,14 +1531,9 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_CreateElementFromSegmentedSurfaceMember"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1510,
-     "title": "[3/6] Create elements from analytical members"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1564,14 +1554,9 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_CreateElementFromSurfaceMember"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1510,
-     "title": "[3/6] Create elements from analytical members"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2822,16 +2807,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1622,
-     "title": "CreateFills: keep the percent of a Solid fill (isPercentFill)"
-    },
-    {
-     "number": 1619,
-     "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2969,28 +2945,12 @@
      "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
     },
     {
-     "number": 1731,
-     "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
-    },
-    {
-     "number": 1670,
-     "title": "CreateHotlinkInstances: place on the Archicad layer when the default layer was deleted"
-    },
-    {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     },
     {
-     "number": 1619,
-     "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
-    },
-    {
      "number": 1618,
      "title": "SetDetailsOfElements: say why Archicad refused the element (hidden or locked layer)"
-    },
-    {
-     "number": 1578,
-     "title": "CreateMorphs, ModifyMorphs: say when the morph's layer is hidden"
     },
     {
      "number": 1395,
@@ -3045,12 +3005,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1619,
-     "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1615,
@@ -3251,18 +3206,6 @@
     {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    },
-    {
-     "number": 1625,
-     "title": "MoveAttributesAndFolders: already in the target folder counts as moved; requested paths in folder messages"
-    },
-    {
-     "number": 1624,
-     "title": "GetAttributesByType: return the attribute folder path (replaces #1026)"
-    },
-    {
-     "number": 1026,
-     "title": "[3/4] Add folderPath to GetAttributesByType"
     }
    ],
    "issues": []
@@ -3282,24 +3225,12 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    },
-    {
-     "number": 1625,
-     "title": "MoveAttributesAndFolders: already in the target folder counts as moved; requested paths in folder messages"
-    },
-    {
-     "number": 1624,
-     "title": "GetAttributesByType: return the attribute folder path (replaces #1026)"
-    },
-    {
-     "number": 1026,
-     "title": "[3/4] Add folderPath to GetAttributesByType"
     }
    ],
    "issues": []
@@ -3580,12 +3511,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1619,
-     "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3621,13 +3547,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1641,
-     "title": "SetPropertyValueOfAttributes, clearer results of SetPropertyValuesOfAttributes (replaces #1365)"
-    },
     {
      "number": 1365,
      "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
@@ -3656,10 +3578,6 @@
     {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    },
-    {
-     "number": 1625,
-     "title": "MoveAttributesAndFolders: already in the target folder counts as moved; requested paths in folder messages"
     }
    ],
    "issues": []
@@ -3925,10 +3843,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1638,
-     "title": "SetProjectNotes: no longer duplicates architect and draftsmen (#1559)"
-    },
-    {
      "number": 674,
      "title": "Verify project info field create/delete instead of trusting NoError (#667)"
     }
@@ -4061,10 +3975,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1638,
-     "title": "SetProjectNotes: no longer duplicates architect and draftsmen (#1559)"
-    },
     {
      "number": 674,
      "title": "Verify project info field create/delete instead of trusting NoError (#667)"
@@ -4283,28 +4193,12 @@
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
-     "number": 1649,
-     "title": "SolveStairBaseline: run the stair solver inside an undoable command"
-    },
-    {
-     "number": 1642,
-     "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
-    },
-    {
-     "number": 1641,
-     "title": "SetPropertyValueOfAttributes, clearer results of SetPropertyValuesOfAttributes (replaces #1365)"
-    },
-    {
      "number": 1640,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
     },
     {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    },
-    {
-     "number": 1574,
-     "title": "Set3DProjectionSettings: set an axonometry as well as a perspective"
     },
     {
      "number": 1543,
@@ -4327,10 +4221,6 @@
      "title": "[6/6] Add Get3DDocumentSettings and Set3DDocumentSettings"
     },
     {
-     "number": 1510,
-     "title": "[3/6] Create elements from analytical members"
-    },
-    {
      "number": 1489,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
     },
@@ -4343,20 +4233,12 @@
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
-     "number": 1421,
-     "title": "Add ReorderNavigatorItems command"
-    },
-    {
      "number": 1383,
      "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
     },
     {
      "number": 1365,
      "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
-    },
-    {
-     "number": 1362,
-     "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
     },
     {
      "number": 1292,
@@ -4785,12 +4667,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1052,
-     "title": "Graphic override criterion: library part element types, new fields and operators (on top of #994)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4811,16 +4688,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1636,
-     "title": "Add GetClassificationSystems command"
-    },
-    {
-     "number": 1052,
-     "title": "Graphic override criterion: library part element types, new fields and operators (on top of #994)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5135,24 +5003,12 @@
      "title": "CopyElementsToDatabase: copy 2D elements into another database (#819)"
     },
     {
-     "number": 1686,
-     "title": "Get3DBoundingBoxes: work for Slabs and Zones while a layout or a section is open"
-    },
-    {
-     "number": 1675,
-     "title": "Add Get2DBoundingBoxes: 2D boxes of texts, hatches, drawings and polylines on any database"
-    },
-    {
      "number": 1640,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
     },
     {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    },
-    {
-     "number": 1634,
-     "title": "IFCFileOperation: storyIndex for merge, so the IFC's storeys no longer follow the active story (#1616)"
     },
     {
      "number": 1489,
@@ -5213,10 +5069,6 @@
     {
      "number": 1424,
      "title": "DeleteNavigatorItems returns NOTSUPPORTED for SubSetItem (Layout Book group) — expected?"
-    },
-    {
-     "number": 1418,
-     "title": "View Map: DeleteNavigatorItems rejects folders/TOC items, and item ordering within a folder is unreliable"
     }
    ]
   },
@@ -5265,18 +5117,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1687,
-     "title": "CreateAssociativeDimensionsOnSection: OpeningEdges preset for Opening tool elements"
-    },
-    {
-     "number": 1686,
-     "title": "Get3DBoundingBoxes: work for Slabs and Zones while a layout or a section is open"
-    },
-    {
-     "number": 1675,
-     "title": "Add Get2DBoundingBoxes: 2D boxes of texts, hatches, drawings and polylines on any database"
-    },
-    {
      "number": 900,
      "title": "UpdateZones: optional list of Zones to update instead of the current selection"
     }
@@ -5307,18 +5147,6 @@
     {
      "number": 1745,
      "title": "CopyElementsToDatabase: copy 2D elements into another database (#819)"
-    },
-    {
-     "number": 1687,
-     "title": "CreateAssociativeDimensionsOnSection: OpeningEdges preset for Opening tool elements"
-    },
-    {
-     "number": 1686,
-     "title": "Get3DBoundingBoxes: work for Slabs and Zones while a layout or a section is open"
-    },
-    {
-     "number": 1675,
-     "title": "Add Get2DBoundingBoxes: 2D boxes of texts, hatches, drawings and polylines on any database"
     },
     {
      "number": 1640,
@@ -6172,10 +6000,6 @@
      "title": "Add CreateSkylights: place skylights in roofs and shells"
     },
     {
-     "number": 1642,
-     "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
-    },
-    {
      "number": 1395,
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
     },
@@ -6234,12 +6058,7 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "memory management",
-   "pullRequests": [
-    {
-     "number": 1619,
-     "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6320,28 +6139,12 @@
      "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
     },
     {
-     "number": 1734,
-     "title": "ModifyCurtainWalls: rebuild the grid on pattern changes, apply height before the other fields"
-    },
-    {
-     "number": 1731,
-     "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
-    },
-    {
      "number": 1702,
      "title": "Add CreateShells: extruded, revolved and ruled shells"
     },
     {
-     "number": 1700,
-     "title": "CreateWindows, CreateDoors: create without a marker when the marker defaults cannot be read"
-    },
-    {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
-    },
-    {
-     "number": 1642,
-     "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
     },
     {
      "number": 1383,
@@ -6360,12 +6163,7 @@
      "title": "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters"
     }
    ],
-   "issues": [
-    {
-     "number": 1733,
-     "title": "ModifyCurtainWalls: height is never applied, and pattern changes report success without changing the wall"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_DisposeParagraphsHdl",
@@ -6650,12 +6448,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1509,
-     "title": "[4/6] Add GetDrawingPrimitivesOfElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -7227,20 +7020,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1687,
-     "title": "CreateAssociativeDimensionsOnSection: OpeningEdges preset for Opening tool elements"
-    },
-    {
-     "number": 1686,
-     "title": "Get3DBoundingBoxes: work for Slabs and Zones while a layout or a section is open"
-    },
-    {
-     "number": 1675,
-     "title": "Add Get2DBoundingBoxes: 2D boxes of texts, hatches, drawings and polylines on any database"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7363,14 +7143,6 @@
      "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
     },
     {
-     "number": 1734,
-     "title": "ModifyCurtainWalls: rebuild the grid on pattern changes, apply height before the other fields"
-    },
-    {
-     "number": 1731,
-     "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
-    },
-    {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
@@ -7385,10 +7157,6 @@
     {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    },
-    {
-     "number": 1629,
-     "title": "ModifySlabs: report a floor fill origin or matrix that Archicad ignored (#662)"
     },
     {
      "number": 1618,
@@ -7408,10 +7176,6 @@
     }
    ],
    "issues": [
-    {
-     "number": 1733,
-     "title": "ModifyCurtainWalls: height is never applied, and pattern changes report success without changing the wall"
-    },
     {
      "number": 1226,
      "title": "Expose ACAPI_Element_ChangeMore (apply one masked change to many elements, like multi-select + settings)"
@@ -7469,10 +7233,6 @@
      "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
     },
     {
-     "number": 1731,
-     "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
-    },
-    {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     }
@@ -7502,12 +7262,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1731,
-     "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7558,19 +7313,11 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1642,
-     "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
-    },
-    {
      "number": 1383,
      "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
     }
    ],
    "issues": [
-    {
-     "number": 1382,
-     "title": "Expose changing which library part a window/door marker uses"
-    },
     {
      "number": 1377,
      "title": "Place Detail and Worksheet markers, and change their settings"
@@ -7642,12 +7389,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1578,
-     "title": "CreateMorphs, ModifyMorphs: say when the morph's layer is hidden"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7674,10 +7416,6 @@
      "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
     },
     {
-     "number": 1731,
-     "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
-    },
-    {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
     },
@@ -7686,12 +7424,7 @@
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
    ],
-   "issues": [
-    {
-     "number": 1733,
-     "title": "ModifyCurtainWalls: height is never applied, and pattern changes report success without changing the wall"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_Create",
@@ -7715,14 +7448,6 @@
     {
      "number": 1745,
      "title": "CopyElementsToDatabase: copy 2D elements into another database (#819)"
-    },
-    {
-     "number": 1700,
-     "title": "CreateWindows, CreateDoors: create without a marker when the marker defaults cannot be read"
-    },
-    {
-     "number": 1578,
-     "title": "CreateMorphs, ModifyMorphs: say when the morph's layer is hidden"
     }
    ],
    "issues": [
@@ -7762,10 +7487,6 @@
     {
      "number": 1744,
      "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
-    },
-    {
-     "number": 1700,
-     "title": "CreateWindows, CreateDoors: create without a marker when the marker defaults cannot be read"
     },
     {
      "number": 995,
@@ -7822,12 +7543,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1711,
-     "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8047,20 +7763,8 @@
      "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
     },
     {
-     "number": 1734,
-     "title": "ModifyCurtainWalls: rebuild the grid on pattern changes, apply height before the other fields"
-    },
-    {
-     "number": 1731,
-     "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
-    },
-    {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1714,
-     "title": "Curtain wall segments, frames and panels: homeStoryLevel, and say what their z is measured from"
     },
     {
      "number": 1671,
@@ -8073,10 +7777,6 @@
     {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    },
-    {
-     "number": 1629,
-     "title": "ModifySlabs: report a floor fill origin or matrix that Archicad ignored (#662)"
     },
     {
      "number": 1506,
@@ -8112,10 +7812,6 @@
     }
    ],
    "issues": [
-    {
-     "number": 1733,
-     "title": "ModifyCurtainWalls: height is never applied, and pattern changes report success without changing the wall"
-    },
     {
      "number": 1580,
      "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
@@ -8356,10 +8052,6 @@
      "title": "Add CreateShells: extruded, revolved and ruled shells"
     },
     {
-     "number": 1700,
-     "title": "CreateWindows, CreateDoors: create without a marker when the marker defaults cannot be read"
-    },
-    {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     }
@@ -8393,10 +8085,6 @@
     {
      "number": 1744,
      "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
-    },
-    {
-     "number": 1731,
-     "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
     },
     {
      "number": 995,
@@ -8701,22 +8389,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1711,
-     "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
-    },
-    {
-     "number": 1706,
-     "title": "UpdateZones: optional list of the Zones to update"
-    },
-    {
-     "number": 1686,
-     "title": "Get3DBoundingBoxes: work for Slabs and Zones while a layout or a section is open"
-    },
-    {
-     "number": 1675,
-     "title": "Add Get2DBoundingBoxes: 2D boxes of texts, hatches, drawings and polylines on any database"
-    },
-    {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     },
@@ -8789,19 +8461,11 @@
      "title": "CopyElementsToDatabase: copy 2D elements into another database (#819)"
     },
     {
-     "number": 1734,
-     "title": "ModifyCurtainWalls: rebuild the grid on pattern changes, apply height before the other fields"
-    },
-    {
      "number": 463,
      "title": "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters"
     }
    ],
    "issues": [
-    {
-     "number": 1733,
-     "title": "ModifyCurtainWalls: height is never applied, and pattern changes report success without changing the wall"
-    },
     {
      "number": 1580,
      "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
@@ -9025,10 +8689,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1362,
-     "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -9419,12 +9079,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1732,
-     "title": "Align property reads and writes for numeric round-tripping"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10316,10 +9971,6 @@
      "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
     },
     {
-     "number": 1731,
-     "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
@@ -10849,16 +10500,7 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "add-on infrastructure",
-   "pullRequests": [
-    {
-     "number": 1711,
-     "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
-    },
-    {
-     "number": 1510,
-     "title": "[3/6] Create elements from analytical members"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11842,12 +11484,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1649,
-     "title": "SolveStairBaseline: run the stair solver inside an undoable command"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12858,13 +12495,9 @@
    "olderNames": [
     "APIAny_CheckLibPartSubtypeOfID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1642,
-     "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
-    },
     {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
@@ -13038,10 +12671,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1642,
-     "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
-    },
     {
      "number": 1383,
      "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
@@ -13344,18 +12973,8 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1642,
-     "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1382,
-     "title": "Expose changing which library part a window/door marker uses"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_GetNum",
@@ -13406,12 +13025,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1382,
-     "title": "Expose changing which library part a window/door marker uses"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_GetParams",
@@ -13437,10 +13051,6 @@
     {
      "number": 1703,
      "title": "Add CreateSkylights: place skylights in roofs and shells"
-    },
-    {
-     "number": 1642,
-     "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
     },
     {
      "number": 1395,
@@ -13855,10 +13465,6 @@
      "title": "Add CreateSkylights: place skylights in roofs and shells"
     },
     {
-     "number": 1642,
-     "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
-    },
-    {
      "number": 1543,
      "title": "[5/6] Add UpdateLibraryPartSections and GetLibraryPart2DPrimitives"
     },
@@ -13879,10 +13485,6 @@
     {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    },
-    {
-     "number": 1382,
-     "title": "Expose changing which library part a window/door marker uses"
     }
    ]
   },
@@ -15314,20 +14916,11 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1643,
-     "title": "DeleteNavigatorItems: say why an item was not deleted (replaces #1419)"
-    },
-    {
      "number": 1419,
      "title": "Navigator: name the refused item type on delete, verify MoveNavigatorItem's position"
     }
    ],
-   "issues": [
-    {
-     "number": 1418,
-     "title": "View Map: DeleteNavigatorItems rejects folders/TOC items, and item ordering within a folder is unreliable"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_DimStand_Get",
@@ -15505,10 +15098,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1421,
-     "title": "Add ReorderNavigatorItems command"
-    },
-    {
      "number": 1419,
      "title": "Navigator: name the refused item type on delete, verify MoveNavigatorItem's position"
     }
@@ -15539,10 +15128,6 @@
     {
      "number": 1517,
      "title": "[6/6] Add Get3DDocumentSettings and Set3DDocumentSettings"
-    },
-    {
-     "number": 1421,
-     "title": "Add ReorderNavigatorItems command"
     },
     {
      "number": 1419,
@@ -16019,24 +15604,11 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1421,
-     "title": "Add ReorderNavigatorItems command"
-    },
-    {
      "number": 1419,
      "title": "Navigator: name the refused item type on delete, verify MoveNavigatorItem's position"
     }
    ],
-   "issues": [
-    {
-     "number": 1420,
-     "title": "Add a command to reorder Navigator items (works around MoveNavigatorItem's same-parent no-op)"
-    },
-    {
-     "number": 1418,
-     "title": "View Map: DeleteNavigatorItems rejects folders/TOC items, and item ordering within a folder is unreliable"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Notification_CatchAttributeReplacement",
@@ -17549,12 +17121,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1638,
-     "title": "SetProjectNotes: no longer duplicates architect and draftsmen (#1559)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17578,14 +17145,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1634,
-     "title": "IFCFileOperation: storyIndex for merge, so the IFC's storeys no longer follow the active story (#1616)"
-    },
-    {
-     "number": 1632,
-     "title": "SetStories: set every story's level directly with SetElevation"
-    },
     {
      "number": 900,
      "title": "UpdateZones: optional list of Zones to update instead of the current selection"
@@ -17749,10 +17308,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1634,
-     "title": "IFCFileOperation: storyIndex for merge, so the IFC's storeys no longer follow the active story (#1616)"
-    },
     {
      "number": 900,
      "title": "UpdateZones: optional list of Zones to update instead of the current selection"
@@ -18000,16 +17555,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1641,
-     "title": "SetPropertyValueOfAttributes, clearer results of SetPropertyValuesOfAttributes (replaces #1365)"
-    },
-    {
      "number": 1365,
      "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
-    },
-    {
-     "number": 1362,
-     "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
     },
     {
      "number": 1292,
@@ -18334,20 +17881,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1732,
-     "title": "Align property reads and writes for numeric round-tripping"
-    },
-    {
-     "number": 1641,
-     "title": "SetPropertyValueOfAttributes, clearer results of SetPropertyValuesOfAttributes (replaces #1365)"
-    },
-    {
      "number": 1365,
      "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
-    },
-    {
-     "number": 1362,
-     "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
     },
     {
      "number": 1147,
@@ -18441,14 +17976,9 @@
    "olderNames": [
     "APIEnv_ChangeRenderingSetsID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1004,
-     "title": "Let PhotoRender set the image size and resolution, report the current rendering scene"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18492,14 +18022,9 @@
    "olderNames": [
     "APIEnv_GetRenderingSetsID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1004,
-     "title": "Let PhotoRender set the image size and resolution, report the current rendering scene"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -19024,14 +18549,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1716,
-     "title": "Add DeselectAll, GetMarquee and SetMarquee (replaces #963)"
-    },
-    {
-     "number": 1706,
-     "title": "UpdateZones: optional list of the Zones to update"
-    },
-    {
      "number": 963,
      "title": "[1/2] Add the DeselectAll, GetMarquee and SetMarquee commands"
     }
@@ -19057,14 +18574,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1716,
-     "title": "Add DeselectAll, GetMarquee and SetMarquee (replaces #963)"
-    },
-    {
-     "number": 1706,
-     "title": "UpdateZones: optional list of the Zones to update"
-    },
     {
      "number": 963,
      "title": "[1/2] Add the DeselectAll, GetMarquee and SetMarquee commands"
@@ -19121,10 +18630,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1706,
-     "title": "UpdateZones: optional list of the Zones to update"
-    },
-    {
      "number": 900,
      "title": "UpdateZones: optional list of Zones to update instead of the current selection"
     }
@@ -19152,13 +18657,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1716,
-     "title": "Add DeselectAll, GetMarquee and SetMarquee (replaces #963)"
-    },
     {
      "number": 963,
      "title": "[1/2] Add the DeselectAll, GetMarquee and SetMarquee commands"
@@ -19543,12 +19044,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1739,
-     "title": "Fix GetReservationStatusOfElements reporting reserved elements as Free"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20708,12 +20204,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1574,
-     "title": "Set3DProjectionSettings: set an axonometry as well as a perspective"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 876,
@@ -21073,12 +20564,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1574,
-     "title": "Set3DProjectionSettings: set an axonometry as well as a perspective"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 876,
@@ -21671,12 +21157,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1004,
-     "title": "Let PhotoRender set the image size and resolution, report the current rendering scene"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -21797,10 +21278,6 @@
      "title": "CopyElementsToDatabase: copy 2D elements into another database (#819)"
     },
     {
-     "number": 1634,
-     "title": "IFCFileOperation: storyIndex for merge, so the IFC's storeys no longer follow the active story (#1616)"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
@@ -21905,10 +21382,6 @@
     {
      "number": 1745,
      "title": "CopyElementsToDatabase: copy 2D elements into another database (#819)"
-    },
-    {
-     "number": 1634,
-     "title": "IFCFileOperation: storyIndex for merge, so the IFC's storeys no longer follow the active story (#1616)"
     }
    ],
    "issues": []
@@ -21943,24 +21416,12 @@
      "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
     },
     {
-     "number": 1686,
-     "title": "Get3DBoundingBoxes: work for Slabs and Zones while a layout or a section is open"
-    },
-    {
-     "number": 1675,
-     "title": "Add Get2DBoundingBoxes: 2D boxes of texts, hatches, drawings and polylines on any database"
-    },
-    {
      "number": 1640,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
     },
     {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    },
-    {
-     "number": 1634,
-     "title": "IFCFileOperation: storyIndex for merge, so the IFC's storeys no longer follow the active story (#1616)"
     },
     {
      "number": 1489,
@@ -22304,13 +21765,9 @@
     26
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1641,
-     "title": "SetPropertyValueOfAttributes, clearer results of SetPropertyValuesOfAttributes (replaces #1365)"
-    },
     {
      "number": 1365,
      "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
@@ -22398,12 +21855,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1004,
-     "title": "Let PhotoRender set the image size and resolution, report the current rendering scene"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -22664,7 +22116,7 @@
    "pullRequests": [
     {
      "number": 1362,
-     "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
+     "title": "[3/3] Batch property commands on Archicad 25–26: ModifyPropertyValueOfElements, MakePropertyAvailable/UnavailableForElements"
     }
    ],
    "issues": []
@@ -22686,7 +22138,7 @@
    "pullRequests": [
     {
      "number": 1362,
-     "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
+     "title": "[3/3] Batch property commands on Archicad 25–26: ModifyPropertyValueOfElements, MakePropertyAvailable/UnavailableForElements"
     }
    ],
    "issues": []
@@ -22708,7 +22160,7 @@
    "pullRequests": [
     {
      "number": 1362,
-     "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
+     "title": "[3/3] Batch property commands on Archicad 25–26: ModifyPropertyValueOfElements, MakePropertyAvailable/UnavailableForElements"
     }
    ],
    "issues": []
@@ -23037,10 +22489,6 @@
     {
      "number": 1325,
      "title": "[1/6] Add GetGDLDate and SetGDLDate commands"
-    },
-    {
-     "number": 1004,
-     "title": "Let PhotoRender set the image size and resolution, report the current rendering scene"
     }
    ],
    "issues": [
@@ -23073,10 +22521,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1642,
-     "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
-    },
     {
      "number": 1353,
      "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
@@ -26761,12 +26205,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1711,
-     "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27622,10 +27061,6 @@
      "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
     },
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
@@ -27638,22 +27073,6 @@
      "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
     },
     {
-     "number": 1743,
-     "title": "Columns: read and write the veneer of the segments (#1044)"
-    },
-    {
-     "number": 1734,
-     "title": "ModifyCurtainWalls: rebuild the grid on pattern changes, apply height before the other fields"
-    },
-    {
-     "number": 1731,
-     "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
-    },
-    {
-     "number": 1711,
-     "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
-    },
-    {
      "number": 1703,
      "title": "Add CreateSkylights: place skylights in roofs and shells"
     },
@@ -27662,24 +27081,8 @@
      "title": "Add CreateShells: extruded, revolved and ruled shells"
     },
     {
-     "number": 1687,
-     "title": "CreateAssociativeDimensionsOnSection: OpeningEdges preset for Opening tool elements"
-    },
-    {
      "number": 1668,
      "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands"
-    },
-    {
-     "number": 1648,
-     "title": "CreateStairs: landings and winders per baseline edge and point"
-    },
-    {
-     "number": 1639,
-     "title": "Dimensions: textFrame on the creation commands, text settings in GetDimensionData (replaces #1593)"
-    },
-    {
-     "number": 1629,
-     "title": "ModifySlabs: report a floor fill origin or matrix that Archicad ignored (#662)"
     },
     {
      "number": 1618,
@@ -27696,10 +27099,6 @@
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    },
-    {
-     "number": 1052,
-     "title": "Graphic override criterion: library part element types, new fields and operators (on top of #994)"
     },
     {
      "number": 995,
@@ -27760,12 +27159,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1711,
-     "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27867,12 +27261,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1711,
-     "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27940,12 +27329,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1711,
-     "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27962,12 +27346,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1711,
-     "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28001,12 +27380,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1711,
-     "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28040,12 +27414,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1711,
-     "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28079,12 +27448,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1711,
-     "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28118,12 +27482,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1711,
-     "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28140,12 +27499,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1711,
-     "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -29018,10 +28372,6 @@
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     },
@@ -29261,32 +28611,12 @@
      "title": "CopyElementsToDatabase: copy 2D elements into another database (#819)"
     },
     {
-     "number": 1716,
-     "title": "Add DeselectAll, GetMarquee and SetMarquee (replaces #963)"
-    },
-    {
-     "number": 1686,
-     "title": "Get3DBoundingBoxes: work for Slabs and Zones while a layout or a section is open"
-    },
-    {
-     "number": 1675,
-     "title": "Add Get2DBoundingBoxes: 2D boxes of texts, hatches, drawings and polylines on any database"
-    },
-    {
-     "number": 1641,
-     "title": "SetPropertyValueOfAttributes, clearer results of SetPropertyValuesOfAttributes (replaces #1365)"
-    },
-    {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
     {
      "number": 1365,
      "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
-    },
-    {
-     "number": 1362,
-     "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
     },
     {
      "number": 1292,
@@ -32234,12 +31564,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32848,16 +32173,8 @@
      "title": "Add GetAttributeIndexes; mark GetCurrentAttributeSetReader as not applicable"
     },
     {
-     "number": 1642,
-     "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
-    },
-    {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    },
-    {
-     "number": 1619,
-     "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
     },
     {
      "number": 1543,
@@ -34293,16 +33610,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -34335,14 +33644,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": []
@@ -34389,20 +33690,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -34530,12 +33823,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -34579,10 +33867,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -34640,10 +33924,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
@@ -34652,28 +33932,8 @@
      "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
     },
     {
-     "number": 1743,
-     "title": "Columns: read and write the veneer of the segments (#1044)"
-    },
-    {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1716,
-     "title": "Add DeselectAll, GetMarquee and SetMarquee (replaces #963)"
-    },
-    {
-     "number": 1714,
-     "title": "Curtain wall segments, frames and panels: homeStoryLevel, and say what their z is measured from"
-    },
-    {
-     "number": 1713,
-     "title": "GetDetailsOfElements: read Elevation markers like sections"
-    },
-    {
-     "number": 1706,
-     "title": "UpdateZones: optional list of the Zones to update"
     },
     {
      "number": 1671,
@@ -34682,18 +33942,6 @@
     {
      "number": 1668,
      "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands"
-    },
-    {
-     "number": 1639,
-     "title": "Dimensions: textFrame on the creation commands, text settings in GetDimensionData (replaces #1593)"
-    },
-    {
-     "number": 1620,
-     "title": "Hatch fill orientation in Get/SetDetailsOfElements"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1537,
@@ -34824,20 +34072,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -34959,16 +34199,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -35058,14 +34290,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": []
@@ -35086,12 +34310,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35151,12 +34370,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -35178,12 +34392,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -35209,20 +34418,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -35368,20 +34569,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -35441,16 +34634,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -35554,14 +34739,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -35673,12 +34850,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35768,20 +34940,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -36822,16 +35986,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -36854,12 +36010,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36928,12 +36079,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37206,12 +36352,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37257,14 +36398,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -37425,12 +36558,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37445,7 +36573,7 @@
     30
    ],
    "olderNames": [],
-   "status": "done",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
    "issues": []
@@ -37481,12 +36609,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37501,7 +36624,7 @@
     30
    ],
    "olderNames": [],
-   "status": "done",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
    "issues": []
@@ -37537,12 +36660,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37557,7 +36675,7 @@
     30
    ],
    "olderNames": [],
-   "status": "done",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
    "issues": []
@@ -37593,12 +36711,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37615,12 +36728,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37655,10 +36763,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
@@ -37718,12 +36822,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37738,7 +36837,7 @@
     30
    ],
    "olderNames": [],
-   "status": "done",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
    "issues": []
@@ -37794,20 +36893,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -37867,16 +36958,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -38082,14 +37165,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -38300,12 +37375,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38322,12 +37392,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38522,20 +37587,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -38595,16 +37652,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -38627,12 +37676,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38850,14 +37894,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
@@ -39031,12 +38067,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39053,12 +38084,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39219,20 +38245,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -39292,16 +38310,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -39405,14 +38415,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -39524,12 +38526,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39619,20 +38616,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -39690,16 +38679,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -39722,12 +38703,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39925,14 +38901,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
@@ -40123,12 +39091,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40145,12 +39108,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40220,20 +39178,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -40282,16 +39232,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -40326,14 +39268,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": []
@@ -40398,12 +39332,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40676,20 +39605,12 @@
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     },
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -40763,16 +39684,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -41228,20 +40141,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -41281,16 +40186,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -41479,20 +40376,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -41621,16 +40510,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -41979,20 +40860,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -42142,16 +41015,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -42393,20 +41258,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -42457,22 +41314,6 @@
      "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
     },
     {
-     "number": 1743,
-     "title": "Columns: read and write the veneer of the segments (#1044)"
-    },
-    {
-     "number": 1734,
-     "title": "ModifyCurtainWalls: rebuild the grid on pattern changes, apply height before the other fields"
-    },
-    {
-     "number": 1732,
-     "title": "Align property reads and writes for numeric round-tripping"
-    },
-    {
-     "number": 1731,
-     "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
@@ -42485,28 +41326,12 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
     },
     {
      "number": 1717,
      "title": "Add GetAttributeIndexes; mark GetCurrentAttributeSetReader as not applicable"
-    },
-    {
-     "number": 1716,
-     "title": "Add DeselectAll, GetMarquee and SetMarquee (replaces #963)"
-    },
-    {
-     "number": 1711,
-     "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
-    },
-    {
-     "number": 1706,
-     "title": "UpdateZones: optional list of the Zones to update"
     },
     {
      "number": 1703,
@@ -42517,100 +41342,20 @@
      "title": "Add CreateShells: extruded, revolved and ruled shells"
     },
     {
-     "number": 1701,
-     "title": "Add CreateRailingsFromPolyline: railings along a 3D polyline with arcs"
-    },
-    {
-     "number": 1687,
-     "title": "CreateAssociativeDimensionsOnSection: OpeningEdges preset for Opening tool elements"
-    },
-    {
-     "number": 1686,
-     "title": "Get3DBoundingBoxes: work for Slabs and Zones while a layout or a section is open"
-    },
-    {
-     "number": 1675,
-     "title": "Add Get2DBoundingBoxes: 2D boxes of texts, hatches, drawings and polylines on any database"
-    },
-    {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
-    },
-    {
-     "number": 1669,
-     "title": "FilterElements: fromHotlink and hotlinkIds criteria"
     },
     {
      "number": 1668,
      "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands"
     },
     {
-     "number": 1648,
-     "title": "CreateStairs: landings and winders per baseline edge and point"
-    },
-    {
-     "number": 1642,
-     "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
-    },
-    {
-     "number": 1641,
-     "title": "SetPropertyValueOfAttributes, clearer results of SetPropertyValuesOfAttributes (replaces #1365)"
-    },
-    {
-     "number": 1639,
-     "title": "Dimensions: textFrame on the creation commands, text settings in GetDimensionData (replaces #1593)"
-    },
-    {
-     "number": 1638,
-     "title": "SetProjectNotes: no longer duplicates architect and draftsmen (#1559)"
-    },
-    {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     },
     {
-     "number": 1634,
-     "title": "IFCFileOperation: storyIndex for merge, so the IFC's storeys no longer follow the active story (#1616)"
-    },
-    {
-     "number": 1630,
-     "title": "CreateClassificationSystems/Items: one result per input, and the new ids"
-    },
-    {
-     "number": 1629,
-     "title": "ModifySlabs: report a floor fill origin or matrix that Archicad ignored (#662)"
-    },
-    {
-     "number": 1624,
-     "title": "GetAttributesByType: return the attribute folder path (replaces #1026)"
-    },
-    {
-     "number": 1622,
-     "title": "CreateFills: keep the percent of a Solid fill (isPercentFill)"
-    },
-    {
-     "number": 1621,
-     "title": "[2/2] GetFills/CreateFills: filled polygons of Symbol fills (builds on #1617, fixes #1614)"
-    },
-    {
-     "number": 1620,
-     "title": "Hatch fill orientation in Get/SetDetailsOfElements"
-    },
-    {
-     "number": 1619,
-     "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
-    },
-    {
      "number": 1593,
      "title": "Dimensions: add textFrame to the dimension creation commands"
-    },
-    {
-     "number": 1574,
-     "title": "Set3DProjectionSettings: set an axonometry as well as a perspective"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1537,
@@ -42635,10 +41380,6 @@
     {
      "number": 1365,
      "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
-    },
-    {
-     "number": 1362,
-     "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
     },
     {
      "number": 1326,
@@ -42667,10 +41408,6 @@
     {
      "number": 1032,
      "title": "[2/4] Add GetHotspotsOfElements: the hotspots of elements with their neig kind and subindex"
-    },
-    {
-     "number": 1026,
-     "title": "[3/4] Add folderPath to GetAttributesByType"
     },
     {
      "number": 1019,
@@ -43007,14 +41744,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": []
@@ -43058,12 +41787,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43333,12 +42057,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -43378,12 +42097,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -43491,20 +42205,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -43583,24 +42289,12 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
     },
     {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
-     "number": 1052,
-     "title": "Graphic override criterion: library part element types, new fields and operators (on top of #994)"
     }
    ],
    "issues": []
@@ -43647,20 +42341,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -43786,16 +42472,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -43828,14 +42506,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": []
@@ -43882,20 +42552,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -44021,16 +42683,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -44087,14 +42741,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": []
@@ -44297,20 +42943,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -44552,12 +43190,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44734,12 +43367,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45534,20 +44162,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -45632,16 +44252,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -45794,20 +44406,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -45867,16 +44471,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -45899,12 +44495,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45973,12 +44564,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46251,12 +44837,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46302,14 +44883,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -46470,12 +45043,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46490,7 +45058,7 @@
     30
    ],
    "olderNames": [],
-   "status": "done",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
    "issues": []
@@ -46526,12 +45094,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46546,7 +45109,7 @@
     30
    ],
    "olderNames": [],
-   "status": "done",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
    "issues": []
@@ -46582,12 +45145,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46602,7 +45160,7 @@
     30
    ],
    "olderNames": [],
-   "status": "done",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
    "issues": []
@@ -46638,12 +45196,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46660,12 +45213,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46700,10 +45248,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
@@ -46763,12 +45307,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46783,7 +45322,7 @@
     30
    ],
    "olderNames": [],
-   "status": "done",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
    "issues": []
@@ -46839,20 +45378,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -46912,16 +45443,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -46944,12 +45467,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47167,14 +45685,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
@@ -47348,12 +45858,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47370,12 +45875,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47536,20 +46036,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -47609,16 +46101,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -47824,14 +46308,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -48042,12 +46518,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48064,12 +46535,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48264,20 +46730,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -48335,16 +46793,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -48565,14 +47015,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
@@ -48729,12 +47171,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48751,12 +47188,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48808,10 +47240,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
@@ -48873,20 +47301,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -48929,16 +47349,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -49048,12 +47460,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1742,
-     "title": "ModifyMEPRoutingElements: set the connection style before the flange size"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49146,20 +47553,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -49274,12 +47673,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1742,
-     "title": "ModifyMEPRoutingElements: set the connection style before the flange size"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49335,20 +47729,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -49391,16 +47777,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -49511,14 +47889,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": []
@@ -49603,12 +47973,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49941,20 +48306,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -50002,14 +48359,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": []
@@ -50029,12 +48378,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50206,20 +48550,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -50305,12 +48641,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50374,12 +48705,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50610,10 +48936,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
@@ -50673,10 +48995,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
@@ -50685,28 +49003,8 @@
      "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
     },
     {
-     "number": 1743,
-     "title": "Columns: read and write the veneer of the segments (#1044)"
-    },
-    {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1716,
-     "title": "Add DeselectAll, GetMarquee and SetMarquee (replaces #963)"
-    },
-    {
-     "number": 1714,
-     "title": "Curtain wall segments, frames and panels: homeStoryLevel, and say what their z is measured from"
-    },
-    {
-     "number": 1713,
-     "title": "GetDetailsOfElements: read Elevation markers like sections"
-    },
-    {
-     "number": 1706,
-     "title": "UpdateZones: optional list of the Zones to update"
     },
     {
      "number": 1671,
@@ -50715,18 +49013,6 @@
     {
      "number": 1668,
      "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands"
-    },
-    {
-     "number": 1639,
-     "title": "Dimensions: textFrame on the creation commands, text settings in GetDimensionData (replaces #1593)"
-    },
-    {
-     "number": 1620,
-     "title": "Hatch fill orientation in Get/SetDetailsOfElements"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1537,
@@ -50860,20 +49146,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -50933,16 +49211,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -50975,14 +49245,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": []
@@ -51022,12 +49284,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51246,16 +49503,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -51328,14 +49577,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": []
@@ -51409,12 +49650,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51488,12 +49724,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -51525,10 +49756,6 @@
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": []
@@ -51549,12 +49776,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -51582,10 +49804,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": []
@@ -51792,10 +50010,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": [
@@ -51825,10 +50039,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": [
@@ -51877,20 +50087,12 @@
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     },
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -51982,14 +50184,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": []
@@ -52027,12 +50221,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52301,20 +50490,12 @@
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     },
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -52425,16 +50606,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -52460,14 +50633,9 @@
     28
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -52516,14 +50684,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": []
@@ -52546,10 +50706,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": [
@@ -52710,10 +50866,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": [
@@ -52778,14 +50930,9 @@
     28
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -52811,10 +50958,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": [
@@ -52882,10 +51025,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": [
@@ -52917,20 +51056,12 @@
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     },
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -52975,14 +51106,9 @@
     28
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -53014,14 +51140,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": []
@@ -53044,10 +51162,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": []
@@ -53091,10 +51205,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": []
@@ -53111,14 +51221,9 @@
     28
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -53144,10 +51249,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": [
@@ -53196,10 +51297,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": [
@@ -53231,20 +51328,12 @@
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     },
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -53327,16 +51416,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -53509,14 +51590,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": []
@@ -53639,12 +51712,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -53888,12 +51956,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1742,
-     "title": "ModifyMEPRoutingElements: set the connection style before the flange size"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -53974,14 +52037,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -54029,20 +52087,12 @@
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     },
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -54210,14 +52260,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": []
@@ -54314,14 +52356,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -54493,12 +52530,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1742,
-     "title": "ModifyMEPRoutingElements: set the connection style before the flange size"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -54579,14 +52611,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -54634,20 +52661,12 @@
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     },
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -54775,16 +52794,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -54869,10 +52880,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
@@ -54881,28 +52888,8 @@
      "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
     },
     {
-     "number": 1743,
-     "title": "Columns: read and write the veneer of the segments (#1044)"
-    },
-    {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1716,
-     "title": "Add DeselectAll, GetMarquee and SetMarquee (replaces #963)"
-    },
-    {
-     "number": 1714,
-     "title": "Curtain wall segments, frames and panels: homeStoryLevel, and say what their z is measured from"
-    },
-    {
-     "number": 1713,
-     "title": "GetDetailsOfElements: read Elevation markers like sections"
-    },
-    {
-     "number": 1706,
-     "title": "UpdateZones: optional list of the Zones to update"
     },
     {
      "number": 1671,
@@ -54911,18 +52898,6 @@
     {
      "number": 1668,
      "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands"
-    },
-    {
-     "number": 1639,
-     "title": "Dimensions: textFrame on the creation commands, text settings in GetDimensionData (replaces #1593)"
-    },
-    {
-     "number": 1620,
-     "title": "Hatch fill orientation in Get/SetDetailsOfElements"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1537,
@@ -55053,20 +53028,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -55108,16 +53075,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -55149,14 +53108,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": []
@@ -55219,10 +53170,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1741,
-     "title": "Set MEP branch preference table row values by index, honouring branchAxisAngle"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
@@ -55250,20 +53197,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -55387,16 +53326,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -55429,14 +53360,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": []
@@ -55483,20 +53406,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -55626,16 +53541,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -55660,12 +53567,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -55692,14 +53594,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     }
    ],
    "issues": []
@@ -55720,12 +53614,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -55916,20 +53805,12 @@
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     },
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -55978,12 +53859,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -56118,20 +53994,12 @@
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     },
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -56210,16 +54078,8 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
-     "number": 1726,
-     "title": "ConnectMEPElements: document the tee direction and report why a connection failed"
-    },
-    {
      "number": 1719,
      "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -56294,12 +54154,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1742,
-     "title": "ModifyMEPRoutingElements: set the connection style before the flange size"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -56357,20 +54212,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -56462,12 +54309,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1742,
-     "title": "ModifyMEPRoutingElements: set the connection style before the flange size"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -56546,20 +54388,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1749,
-     "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
-    },
-    {
      "number": 1729,
      "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
     },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1573,
-     "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
      "number": 1462,
@@ -61542,10 +59376,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1711,
-     "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
     }
    ],
    "issues": []
@@ -61967,36 +59797,12 @@
      "title": "Add GetAttributeIndexes; mark GetCurrentAttributeSetReader as not applicable"
     },
     {
-     "number": 1641,
-     "title": "SetPropertyValueOfAttributes, clearer results of SetPropertyValuesOfAttributes (replaces #1365)"
-    },
-    {
-     "number": 1636,
-     "title": "Add GetClassificationSystems command"
-    },
-    {
      "number": 1635,
      "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     },
     {
-     "number": 1619,
-     "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
-    },
-    {
-     "number": 1510,
-     "title": "[3/6] Create elements from analytical members"
-    },
-    {
-     "number": 1421,
-     "title": "Add ReorderNavigatorItems command"
-    },
-    {
      "number": 1365,
      "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
-    },
-    {
-     "number": 1362,
-     "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
     },
     {
      "number": 1292,
@@ -62173,12 +59979,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1636,
-     "title": "Add GetClassificationSystems command"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1306,
@@ -63100,10 +60901,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1641,
-     "title": "SetPropertyValueOfAttributes, clearer results of SetPropertyValuesOfAttributes (replaces #1365)"
-    },
-    {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
@@ -63134,10 +60931,6 @@
     {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
-    },
-    {
-     "number": 1362,
-     "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
     },
     {
      "number": 1353,
