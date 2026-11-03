@@ -1971,6 +1971,18 @@ GSErrCode Initialize (void)
             libraryCommands, "1.5.0",
             "Lists library parts currently available to the project. Filter by typeId (e.g. 'Door', 'Window', 'Object', 'Lamp')."
         );
+        err |= RegisterCommand<FindLibraryPartsCommand> (
+            libraryCommands, "1.8.1",
+            "Finds loaded library parts with the Library Manager: all of them, GDL objects, images or text files, optionally only those whose name contains a text. Returns the name, path and index of each. Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetLibraryPartDetailsCommand> (
+            libraryCommands, "1.8.1",
+            "Gets the details of loaded library parts, by name or index: path, library tree path, containing library, and for GDL objects the GUID, subtype, license, UI default flag, which scripts and pictures they have, and optionally the interface and migration scripts. Can also tell whether each one is in the subtype of another library part. Available from Archicad 28."
+        );
+        err |= RegisterCommand<ModifyLibraryListCommand> (
+            libraryCommands, "1.8.1",
+            "Adds libraries by path and removes loaded libraries by name or path, in one change of the library list. Returns the result of each addition and removal. Available from Archicad 28."
+        );
         err |= RegisterCommand<GetLibraryPartMetadataCommand> (
             libraryCommands, "1.7.4",
             "Returns the description, keywords, author and placeable, password protected and hierarchical pages flags of loaded library parts, given by file name. Use it to search library parts by description or keywords and to tell placeable parts from macros. Available from Archicad 28."
