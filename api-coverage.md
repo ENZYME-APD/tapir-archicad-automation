@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 66 % | 80 | 53 |  | 7 | 1 | 19 | 2 | 57 |
 | C++ API (ACAPI::, IFCAPI::) | 85 % | 1435 | 1215 | 10 | 176 | 32 | 2 |  | 392 |
 
-Archicad 25–30 DevKits; updated 2026-11-03 11:19 UTC.
+Archicad 25–30 DevKits; updated 2026-11-03 12:17 UTC.
 
 | | Status |
 |---|---|
