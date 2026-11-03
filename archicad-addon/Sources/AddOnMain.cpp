@@ -660,6 +660,18 @@ GSErrCode Initialize (void)
             elementCommands, "1.0.7",
             "Adds/removes a number of elements to/from the current selection."
         );
+        err |= RegisterCommand<DeselectAllCommand> (
+            elementCommands, "1.8.1",
+            "Clears the selection in the current window."
+        );
+        err |= RegisterCommand<GetMarqueeCommand> (
+            elementCommands, "1.8.1",
+            "Gets the marquee of the current window: its shape (rectangle, rotated rectangle or polygon), whether it is multi-story, and its outline as a polygon. Returns the type 'none' when there is no marquee."
+        );
+        err |= RegisterCommand<SetMarqueeCommand> (
+            elementCommands, "1.8.1",
+            "Draws a marquee in the current window from a polygon or a box (optionally rotated), single- or multi-story. Called without polygon and box it removes the marquee."
+        );
         err |= RegisterCommand<FilterElementsCommand> (
             elementCommands, "1.0.7",
             "Keeps the elements that match all the given criteria: Archicad's flag filters (filters), layer (layerIndices), home story (floorIndices), element type (elementTypes) and hotlink (fromHotlink, hotlinkIds). Within one criterion any of the listed values matches; an omitted criterion does not filter."
