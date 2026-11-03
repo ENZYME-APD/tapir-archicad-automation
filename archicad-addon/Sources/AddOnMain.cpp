@@ -2740,7 +2740,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ConnectMEPElementsCommand> (
             mepCommands, "1.5.6",
-            "Connects MEP routing elements to other MEP elements or routes. Merges routes, splits routes or creates branch elements as needed. Archicad 27 does not report the merged, split or created elements. Available from Archicad 27."
+            "Connects MEP routing elements to other MEP elements or routes. Merges routes, splits routes or creates branch elements as needed. The first or last node of the 'connectToId' route must lie exactly on the 'routingElementId' route, so for a tee pass the main route as 'routingElementId' and the branch as 'connectToId'. A failed connection says which condition is not met. Archicad 27 does not report the merged, split or created elements. Available from Archicad 27."
         );
         err |= RegisterCommand<CheckMEPPortConnectabilityCommand> (
             mepCommands, "1.8.0",

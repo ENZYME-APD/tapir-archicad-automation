@@ -2482,6 +2482,35 @@ GS::ObjectState ModifyMEPPortsCommand::Execute (const GS::ObjectState& parameter
 #endif
 }
 
+#ifdef ServerMainVers_2700
+
+// Says which condition of ConnectLogically/Connect the two elements break, as far as it can be told without modifying them.
+static GS::UniString GetMEPConnectionFailureMessage (const ACAPI::Result<RoutingElement>& routingElement, const API_Guid& connectToGuid, const ACAPI::Error& error)
+{
+    GS::UniString message ("Failed to connect the elements. ");
+
+    ACAPI::Result<RoutingElement> connectToRoute = RoutingElement::Get (Adapter::UniqueID (connectToGuid));
+    if (connectToRoute.IsOk ()) {
+        if (routingElement->GetDomain () != connectToRoute->GetDomain ()) {
+            message += "The two routing elements belong to different domains.";
+        } else if (!(routingElement->GetMEPSystem () == connectToRoute->GetMEPSystem ())) {
+            message += "The two routing elements belong to different MEP systems.";
+        } else {
+            message += "The routing elements have no common point: the first or last node of 'connectToId' must lie exactly on 'routingElementId' (on its centerline). "
+                       "For a tee, pass the main route as 'routingElementId' and the branch route as 'connectToId'.";
+        }
+    } else {
+        message += "The connected port of the MEP element must match the routing element in domain and MEP system, lie on the routing element's first or last node and point in the opposite direction.";
+    }
+
+    if (!error.text.empty ()) {
+        message += GS::UniString (" Archicad: ") + error.text.c_str ();
+    }
+    return message;
+}
+
+#endif
+
 ConnectMEPElementsCommand::ConnectMEPElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -2505,11 +2534,11 @@ GS::Optional<GS::UniString> ConnectMEPElementsCommand::GetInputParametersSchema 
                     "properties": {
                         "routingElementId": {
                             "$ref": "#/ElementId",
-                            "description": "The routing element to connect."
+                            "description": "The routing element to connect to. When connecting two routes, the first or last node of the 'connectToId' route must lie exactly on this route (on its centerline, not within a tolerance). For a tee, this is the main route, which is split and gets the branch element."
                         },
                         "connectToId": {
                             "$ref": "#/ElementId",
-                            "description": "The MEP element or routing element to connect to."
+                            "description": "The MEP element or routing element connected to 'routingElementId'. For a tee, this is the branch route, whose first or last node lies on the main route. Two routes must have the same domain and MEP system; an MEP element's port must match the route in domain and MEP system, lie on its first or last node and point in the opposite direction."
                         }
                     },
                     "additionalProperties": false,
@@ -2580,7 +2609,7 @@ GS::ObjectState ConnectMEPElementsCommand::Execute (const GS::ObjectState& param
         }, "Connect MEP Elements");
 
         if (connectionError.has_value ()) {
-            connectionResults (CreateErrorResponse (connectionError->kind, "Failed to connect the elements."));
+            connectionResults (CreateErrorResponse (connectionError->kind, GetMEPConnectionFailureMessage (routingElement, GetGuidFromObjectState (*connectToId), *connectionError)));
             continue;
         }
         if (modifyResult.IsErr () || !connectionResult.has_value ()) {
@@ -2635,7 +2664,7 @@ GS::ObjectState ConnectMEPElementsCommand::Execute (const GS::ObjectState& param
         }, "Connect MEP Elements");
 
         if (connectionError.has_value ()) {
-            connectionResults (CreateErrorResponse (connectionError->kind, "Failed to connect the elements."));
+            connectionResults (CreateErrorResponse (connectionError->kind, GetMEPConnectionFailureMessage (routingElement, GetGuidFromObjectState (*connectToId), *connectionError)));
             continue;
         }
         if (modifyResult.IsErr ()) {
