@@ -5727,6 +5727,249 @@ GS::ObjectState	MoveElementsCommand::Execute (const GS::ObjectState& parameters,
     return response;
 }
 
+CopyElementsToDatabaseCommand::CopyElementsToDatabaseCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CopyElementsToDatabaseCommand::GetName () const
+{
+    return "CopyElementsToDatabase";
+}
+
+GS::Optional<GS::UniString> CopyElementsToDatabaseCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The 2D elements to copy: Line, PolyLine, Arc, Circle, Spline, Hotspot, Text, Hatch or Label (not associated with an element). Drawings are not copied yet: created from their own data they lose the link to their source view."
+            },
+            "sourceDatabaseId": {
+                "$ref": "#/DatabaseId",
+                "description": "The database the elements are in. Default is the current database."
+            },
+            "targetDatabaseId": {
+                "$ref": "#/DatabaseId",
+                "description": "The database to copy the elements into, e.g. a worksheet, a detail or a layout (see GetDatabases)."
+            },
+            "offset": {
+                "$ref": "#/Coordinate2D",
+                "description": "Optional vector the copies are moved by in the target database. Without it they keep the coordinates of the originals."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements", "targetDatabaseId"]
+    })";
+}
+
+GS::Optional<GS::UniString> CopyElementsToDatabaseCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementIdsOrErrors",
+                "description": "The new element of each given element, in the same order, or the reason it was not copied."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    })";
+}
+
+static bool IsCopyableToDatabase (API_ElemTypeID typeId)
+{
+    switch (typeId) {
+        case API_LineID:
+        case API_PolyLineID:
+        case API_ArcID:
+        case API_CircleID:
+        case API_SplineID:
+        case API_HotspotID:
+        case API_TextID:
+        case API_HatchID:
+        case API_LabelID:
+            return true;
+        default:
+            return false;
+    }
+}
+
+static GSErrCode ChangeCurrentDatabaseTo (const API_Guid& databaseId)
+{
+    API_DatabaseInfo database = DatabaseIdResolver::Instance ().GetDatabaseWithId (databaseId);
+    GSErrCode err = ACAPI_Window_GetDatabaseInfo (&database);
+    if (err != NoError) {
+        return err;
+    }
+    return ACAPI_Database_ChangeCurrentDatabase (&database);
+}
+
+// A worksheet or detail whose window was never opened, e.g. one just made by CreateWorksheets,
+// cannot be made the current database (APIERR_BADDATABASE) until its Project Map item has been
+// opened once, as ChangeWindow does it (#1602). Called outside the undoable command; returns
+// whether a window was opened, so the caller can bring the starting window back.
+static bool OpenDatabaseIfNeverOpened (const API_Guid& databaseId)
+{
+    API_DatabaseInfo startingDatabase = {};
+    if (ACAPI_Database_GetCurrentDatabase (&startingDatabase) != NoError) {
+        return false;
+    }
+    const GSErrCode err = ChangeCurrentDatabaseTo (databaseId);
+    ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+    if (err != APIERR_BADDATABASE) {
+        return false;
+    }
+#if defined (ServerMainVers_2700)
+    API_DatabaseInfo database = DatabaseIdResolver::Instance ().GetDatabaseWithId (databaseId);
+    if (ACAPI_Window_GetDatabaseInfo (&database) != NoError) {
+        return false;
+    }
+    const GS::Optional<API_Guid> projectMapItem = FindProjectMapItemOfWorksheetOrDetail (database);
+    if (projectMapItem.HasValue ()) {
+        const GS::UniString guidStr = APIGuidToString (projectMapItem.Get ());
+        return ACAPI_View_GoToView (guidStr.ToCStr ().Get ()) == NoError;
+    }
+#endif
+    return false;
+}
+
+// #819: copies 2D elements from one database into another (worksheet to worksheet, layout to
+// layout, ...). The elements are read with their memo in the source database and created from
+// them in the target, so every field the element has is kept without per-type code; the offset
+// is applied afterwards with the same drag MoveElements uses. Elements that reference others
+// of the source database (dimensions, associated labels) are refused, as those cannot exist
+// in the target.
+GS::ObjectState CopyElementsToDatabaseCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+    const API_Guid targetDatabaseId = GetGuidFromObjectState (*parameters.Get ("targetDatabaseId"));
+    const GS::ObjectState* sourceDatabaseIdOs = parameters.Get ("sourceDatabaseId");
+    API_Vector3D offset = {};
+    if (const GS::ObjectState* offsetOs = parameters.Get ("offset")) {
+        const API_Coord offset2D = Get2DCoordinateFromObjectState (*offsetOs);
+        offset.x = offset2D.x;
+        offset.y = offset2D.y;
+    }
+
+    struct Copy {
+        API_Element element = {};
+        API_ElementMemo memo = {};
+        GS::Optional<GS::ObjectState> result;
+    };
+    GS::Array<Copy> copies;
+    for (UIndex i = 0; i < elements.GetSize (); ++i) {
+        copies.Push (Copy ());
+    }
+    const GS::OnExit disposeMemos ([&copies] () {
+        for (Copy& copy : copies) {
+            ACAPI_DisposeElemMemoHdls (&copy.memo);
+        }
+    });
+
+    API_WindowInfo startingWindow = {};
+    const bool hasStartingWindow = ACAPI_Window_GetCurrentWindow (&startingWindow) == NoError;
+    bool openedWindow = OpenDatabaseIfNeverOpened (targetDatabaseId);
+    if (sourceDatabaseIdOs != nullptr) {
+        openedWindow = OpenDatabaseIfNeverOpened (GetGuidFromObjectState (*sourceDatabaseIdOs)) || openedWindow;
+    }
+    if (openedWindow && hasStartingWindow) {
+        ACAPI_Database_ChangeCurrentDatabase (&startingWindow);
+        ACAPI_Window_ChangeWindow (&startingWindow);
+    }
+
+    API_DatabaseInfo startingDatabase = {};
+    GSErrCode err = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the current database.");
+    }
+
+    err = ACAPI_CallUndoableCommand ("Copy Elements To Database", [&]() -> GSErrCode {
+        if (sourceDatabaseIdOs != nullptr) {
+            const GSErrCode sourceErr = ChangeCurrentDatabaseTo (GetGuidFromObjectState (*sourceDatabaseIdOs));
+            if (sourceErr != NoError) {
+                for (Copy& copy : copies) {
+                    copy.result = CreateErrorResponse (sourceErr, "Failed to switch to the source database.");
+                }
+                return NoError;
+            }
+        }
+
+        for (UIndex i = 0; i < elements.GetSize (); ++i) {
+            Copy& copy = copies[i];
+            const GS::ObjectState* elementId = elements[i].Get ("elementId");
+            copy.element.header.guid = elementId != nullptr ? GetGuidFromObjectState (*elementId) : APINULLGuid;
+            GSErrCode getErr = ACAPI_Element_Get (&copy.element);
+            if (getErr != NoError) {
+                copy.result = CreateErrorResponse (getErr, "Failed to find the element in the source database.");
+                continue;
+            }
+            const API_ElemTypeID typeId = GetElemTypeId (copy.element.header);
+            if (!IsCopyableToDatabase (typeId)) {
+                copy.result = CreateErrorResponse (APIERR_NOTSUPPORTED, "Elements of type " + GetElementTypeNonLocalizedName (typeId) + " cannot be copied to another database.");
+                continue;
+            }
+            if (typeId == API_LabelID && copy.element.label.parent != APINULLGuid) {
+                copy.result = CreateErrorResponse (APIERR_NOTSUPPORTED, "A label associated with an element cannot be copied to another database.");
+                continue;
+            }
+            getErr = ACAPI_Element_GetMemo (copy.element.header.guid, &copy.memo, APIMemoMask_All);
+            if (getErr != NoError) {
+                copy.result = CreateErrorResponse (getErr, "Failed to read the element's memo.");
+            }
+        }
+
+        const GSErrCode targetErr = ChangeCurrentDatabaseTo (targetDatabaseId);
+        if (targetErr != NoError) {
+            for (Copy& copy : copies) {
+                if (!copy.result.HasValue ()) {
+                    copy.result = CreateErrorResponse (targetErr, "Failed to switch to the target database.");
+                }
+            }
+            ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+            return NoError;
+        }
+
+        for (Copy& copy : copies) {
+            if (copy.result.HasValue ()) {
+                continue;
+            }
+            copy.element.header.guid = APINULLGuid;
+            copy.element.header.groupGuid = APINULLGuid;
+            copy.element.header.hotlinkGuid = APINULLGuid;
+            GSErrCode createErr = ACAPI_Element_Create (&copy.element, &copy.memo);
+            if (createErr != NoError) {
+                copy.result = CreateErrorResponse (createErr, "Failed to create the copy in the target database.");
+                continue;
+            }
+            if (offset.x != 0.0 || offset.y != 0.0) {
+                createErr = MoveElement (copy.element.header.guid, offset, false);
+                if (createErr != NoError) {
+                    copy.result = CreateErrorResponse (createErr, "The copy was created, but could not be moved by the offset.");
+                    continue;
+                }
+            }
+            copy.result = CreateElementIdObjectState (copy.element.header.guid);
+        }
+
+        ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+        return NoError;
+    });
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to copy the elements.");
+    }
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("elements");
+    for (const Copy& copy : copies) {
+        results (copy.result.HasValue () ? copy.result.Get () : CreateErrorResponse (APIERR_GENERAL, "The element was not copied."));
+    }
+    return response;
+}
+
 ElevateElementsCommand::ElevateElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
