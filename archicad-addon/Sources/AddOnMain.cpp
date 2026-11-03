@@ -2756,7 +2756,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyMEPPreferenceTablesCommand> (
             mepCommands, "1.8.0",
-            "Modifies the MEP preference tables of a domain, in the shape GetMEPPreferenceTables returns them: adds tables, changes their names, segmentation lengths (from Archicad 29) and row values and descriptions, deletes or empties rows, adds rows to the rectangular duct and cable carrier tables, deletes tables, and deletes reference ids from the reference set and angles from the angle set (from Archicad 29). Each table is changed in one undoable step. Available from Archicad 28."
+            "Modifies the MEP preference tables of a domain, in the shape GetMEPPreferenceTables returns them: adds tables, changes their names, segmentation lengths (from Archicad 29) and row values and descriptions, deletes or empties rows, adds rows to the rectangular duct and cable carrier tables, deletes tables, deletes reference ids from the reference set, and adds and deletes angles of the angle set (from Archicad 29). Each table is changed in one undoable step. Available from Archicad 28."
         );
         err |= RegisterCommand<GetMEPSystemGroupsCommand> (
             mepCommands, "1.7.2",
