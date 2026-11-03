@@ -904,7 +904,8 @@ GS::ObjectState CreateProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
             if (!projectInfoValue.IsEmpty ()) {
                 err = ACAPI_ProjectInfo_SetFieldValue (fieldGuid, projectInfoValue);
                 if (err != NoError) {
-                    // Roll back the empty field: the caller gets no id to clean it up with.
+                    // The item is reported as an error, so the field it created is removed again
+                    // rather than left behind empty with no id for the caller to find it by.
                     ACAPI_ProjectInfo_DeleteField (fieldGuid);
                     fieldsAdder (CreateProjectInfoErrorResponse (err, "Failed to set the initial value of the project information field"));
                     continue;
@@ -1042,6 +1043,13 @@ GS::ObjectState DeleteProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
 #ifdef ServerMainVers_3000
             if (autoTextsErr != NoError) {
                 executionResults (CreateFailedExecutionResult (autoTextsErr, "Failed to retrieve the project info fields."));
+                continue;
+            }
+
+            // Only the key of a project info or custom autotext may lead to a field: another
+            // autotext (a date or story one, say) could share a custom field's name.
+            if (!IsProjectInfoOrCustomAutoTextId (projectInfoId)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The id is not the id of a project info field."));
                 continue;
             }
 
@@ -3525,6 +3533,58 @@ GS::ObjectState SetGeoLocationCommand::Execute (const GS::ObjectState& parameter
     }
 
     return CreateSuccessfulExecutionResult ();
+}
+
+GetCoordinateOriginsCommand::GetCoordinateOriginsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetCoordinateOriginsCommand::GetName () const
+{
+    return "GetCoordinateOrigins";
+}
+
+GS::Optional<GS::UniString> GetCoordinateOriginsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "virtualOriginOffset": {
+                "$ref": "#/Coordinate2D",
+                "description": "The offset of the origin of the virtual coordinate system from the world origin. Archicad sets it after a project is opened when the model is far from the world origin. Missing when Archicad does not return it for the current window."
+            },
+            "userOrigin": {
+                "$ref": "#/Coordinate3D",
+                "description": "The user origin of the current database, relative to the origin of the virtual coordinate system. Missing when the current window has none (only floor plan, section, detail and 3D windows have one)."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::ObjectState GetCoordinateOriginsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GS::ObjectState response;
+
+    API_Coord offset = {};
+    const GSErrCode offsetErr = ACAPI_ProjectSetting_GetOffset (&offset);
+    if (offsetErr == NoError) {
+        response.Add ("virtualOriginOffset", Create2DCoordinateObjectState (offset));
+    }
+
+    API_Coord3D userOrigin = {};
+    const GSErrCode userOriginErr = ACAPI_Database_GetLocOrigo (&userOrigin);
+    if (userOriginErr == NoError) {
+        response.Add ("userOrigin", Create3DCoordinateObjectState (userOrigin));
+    }
+
+    if (offsetErr != NoError && userOriginErr != NoError) {
+        return CreateErrorResponse (offsetErr, "Failed to get the coordinate origins for the current window.");
+    }
+
+    return response;
 }
 
 // The fields of File > Info > Project Notes, in the order of API_ProjectNoteInfo.
