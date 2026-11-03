@@ -3616,6 +3616,21 @@ Response:
                 "fixedStampAngle": true,
                 "isManual": true,
                 "zCoordinate": 0,
+                "contourLine": {
+                    "use": false,
+                    "pen": 74,
+                    "lineTypeId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "coverFill": {
+                    "use": false,
+                    "fillId": {
+                        "guid": "<GUID>"
+                    },
+                    "foregroundPen": 94,
+                    "backgroundPen": -1
+                },
                 "polygonOutline": [
                     {
                         "x": 5.743478407,
@@ -3709,6 +3724,21 @@ Response:
                     "y": 0.825241124
                 },
                 "zCoordinate": 0,
+                "contourLine": {
+                    "use": false,
+                    "pen": 74,
+                    "lineTypeId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "coverFill": {
+                    "use": false,
+                    "fillId": {
+                        "guid": "<GUID>"
+                    },
+                    "foregroundPen": 94,
+                    "backgroundPen": -1
+                },
                 "polygonOutline": [
                     {
                         "x": 6.163901967,
@@ -10530,6 +10560,21 @@ Response:
                 "fixedStampAngle": true,
                 "isManual": true,
                 "zCoordinate": 3,
+                "contourLine": {
+                    "use": false,
+                    "pen": 74,
+                    "lineTypeId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "coverFill": {
+                    "use": false,
+                    "fillId": {
+                        "guid": "<GUID>"
+                    },
+                    "foregroundPen": 94,
+                    "backgroundPen": -1
+                },
                 "polygonOutline": [
                     {
                         "x": 5.743478407,
@@ -10623,6 +10668,21 @@ Response:
                     "y": 0.825241124
                 },
                 "zCoordinate": 3,
+                "contourLine": {
+                    "use": false,
+                    "pen": 74,
+                    "lineTypeId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "coverFill": {
+                    "use": false,
+                    "fillId": {
+                        "guid": "<GUID>"
+                    },
+                    "foregroundPen": 94,
+                    "backgroundPen": -1
+                },
                 "polygonOutline": [
                     {
                         "x": 6.163901967,
