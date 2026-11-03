@@ -183,7 +183,7 @@
             },
             "flangeSize": {
                 "type": "number",
-                "description": "The flange size of the segment. Only present when the segment has flanges."
+                "description": "The flange size of the segment (width for Ventilation, diameter for Piping). It is used only when the connection style is Flanged; Archicad 29 also returns it for other styles."
             },
             "connectionStyle": {
                 "$ref": "#/MEPConnectionStyle"
@@ -3921,7 +3921,7 @@
     },
     "MEPConnectionStyle": {
         "type": "string",
-        "description": "How the pieces of an MEP routing segment, or an MEP port, are connected.",
+        "description": "How the pieces of an MEP routing segment, or an MEP port, are connected. For pipes, the settings dialog of Archicad 29 shows SimpleBody as Welded, and Welded is refused on a pipe route.",
         "enum": [
             "SimpleBody",
             "Flanged",

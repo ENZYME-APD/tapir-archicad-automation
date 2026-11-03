@@ -1817,7 +1817,7 @@ GS::Optional<GS::UniString> ModifyMEPRoutingElementsCommand::GetInputParametersS
                         },
                         "flangeSize": {
                             "type": "number",
-                            "description": "New flange size applied to all segments."
+                            "description": "New flange size applied to all segments. Needs the Flanged connection style, which can be set in the same call."
                         },
                         "connectionStyle": {
                             "$ref": "#/MEPConnectionStyle",
@@ -2048,11 +2048,12 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
                     if (hasWallThickness) {
                         settersSucceeded &= modifier.SetWallThickness (wallThickness).IsOk ();
                     }
-                    if (hasFlangeSize) {
-                        settersSucceeded &= modifier.SetFlangeSize (flangeSize).IsOk ();
-                    }
+                    // The style first: a flange size is refused unless the style is already Flanged.
                     if (connectionStyle.has_value ()) {
                         settersSucceeded &= modifier.SetConnectionStyle (connectionStyle.value ()).IsOk ();
+                    }
+                    if (hasFlangeSize) {
+                        settersSucceeded &= modifier.SetFlangeSize (flangeSize).IsOk ();
                     }
                 }, "Modify Routing Segment");
                 success &= result.IsOk () && settersSucceeded;
