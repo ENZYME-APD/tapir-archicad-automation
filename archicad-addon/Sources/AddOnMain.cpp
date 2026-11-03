@@ -2062,7 +2062,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetReservationStatusOfElementsCommand> (
             teamworkCommands, "1.7.3",
-            "Returns the Teamwork reservation status of elements without reserving them: whether each element is free, reserved by the current user or reserved by another user, with the reserving user and the element's owner."
+            "Returns the Teamwork reservation status of elements without reserving them: whether each element is free, reserved by the current user or reserved by another user, with the reserving user. New elements stay reserved by the user who created them until they are released."
         );
         err |= RegisterCommand<GrantElementsCommand> (
             teamworkCommands, "1.7.3",
