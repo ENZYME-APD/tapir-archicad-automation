@@ -504,13 +504,88 @@ static void ApplyMEPPortDefaultBase (PortModifierT& modifier, const GS::ObjectSt
     }
 }
 
+// The domain of a port of a terminal, accessory, fitting or equipment default. GetDomainOfPort fails for
+// the ports of some piping library parts, so the port list (Archicad 30) and the typed getters are asked too.
+static std::optional<Domain> GetDomainOfMEPPortDefault (const ACAPI::MEP::ElementDefault& elemDefault, uint32_t portIndex)
+{
+    ACAPI::Result<Domain> portDomain = elemDefault.GetDomainOfPort (portIndex);
+    if (portDomain.IsOk ()) {
+        return portDomain.Unwrap ();
+    }
+#ifdef ServerMainVers_3000
+    const std::vector<PortDefaultBase> portDefaults = elemDefault.GetPortDefaults ();
+    if (portIndex < portDefaults.size ()) {
+        return portDefaults[portIndex].GetDomain ();
+    }
+#endif
+    if (elemDefault.GetVentilationPortDefault (portIndex).IsOk ()) {
+        return Domain::Ventilation;
+    }
+    if (elemDefault.GetPipingPortDefault (portIndex).IsOk ()) {
+        return Domain::Piping;
+    }
+    if (elemDefault.GetCableCarrierPortDefault (portIndex).IsOk ()) {
+        return Domain::CableCarrier;
+    }
+    return std::nullopt;
+}
+
+#ifdef ServerMainVers_3000
+static std::vector<VentilationPortDefault> GetMEPPortDefaultList (const ACAPI::MEP::ElementDefault& elemDefault, const VentilationPortDefault*)
+{
+    return elemDefault.GetVentilationPortDefaults ();
+}
+
+static std::vector<PipingPortDefault> GetMEPPortDefaultList (const ACAPI::MEP::ElementDefault& elemDefault, const PipingPortDefault*)
+{
+    return elemDefault.GetPipingPortDefaults ();
+}
+
+static std::vector<CableCarrierPortDefault> GetMEPPortDefaultList (const ACAPI::MEP::ElementDefault& elemDefault, const CableCarrierPortDefault*)
+{
+    return elemDefault.GetCableCarrierPortDefaults ();
+}
+#endif
+
+// Modifies a port of the given type. When the single port getter fails, Archicad 30 finds the port in the
+// list of the ports of its domain, where only the ports of the same domain come before it.
+template <typename PortDefaultT, typename ModifierFuncT>
+static bool ModifyMEPPortDefault (ACAPI::Result<PortDefaultT> portDefault, const ACAPI::MEP::ElementDefault& elemDefault, uint32_t portIndex, Domain domain, const ModifierFuncT& modifierFunc)
+{
+    if (portDefault.IsOk ()) {
+        return portDefault->Modify (modifierFunc).IsOk ();
+    }
+#ifdef ServerMainVers_3000
+    const std::vector<PortDefaultBase> portDefaults = elemDefault.GetPortDefaults ();
+    if (portIndex >= portDefaults.size () || portDefaults[portIndex].GetDomain () != domain) {
+        return false;
+    }
+    size_t indexInDomain = 0;
+    for (uint32_t i = 0; i < portIndex; ++i) {
+        if (portDefaults[i].GetDomain () == domain) {
+            ++indexInDomain;
+        }
+    }
+    std::vector<PortDefaultT> domainPortDefaults = GetMEPPortDefaultList (elemDefault, static_cast<const PortDefaultT*> (nullptr));
+    if (indexInDomain >= domainPortDefaults.size ()) {
+        return false;
+    }
+    return domainPortDefaults[indexInDomain].Modify (modifierFunc).IsOk ();
+#else
+    (void) elemDefault;
+    (void) portIndex;
+    (void) domain;
+    return false;
+#endif
+}
+
 // Changes one port of a terminal, accessory, fitting or equipment default before it is placed.
 // portData may be nullptr when only the MEP system is set. Returns an error message, or an empty string.
 static GS::UniString ApplyMEPPortDefault (const ACAPI::MEP::ElementDefault& elemDefault, uint32_t portIndex, const GS::ObjectState* portData, const std::optional<API_AttributeIndex>& mepSystem)
 {
-    ACAPI::Result<Domain> portDomain = elemDefault.GetDomainOfPort (portIndex);
-    if (portDomain.IsErr ()) {
-        return GS::UniString::Printf ("There is no port with portIndex %u.", portIndex);
+    const std::optional<Domain> portDomain = GetDomainOfMEPPortDefault (elemDefault, portIndex);
+    if (!portDomain.has_value ()) {
+        return GS::UniString::Printf ("The domain of port %u could not be found.", portIndex);
     }
 
     const bool hasHeight = portData != nullptr && portData->Contains ("height");
@@ -523,53 +598,41 @@ static GS::UniString ApplyMEPPortDefault (const ACAPI::MEP::ElementDefault& elem
     }
 
     bool modified = false;
-    switch (portDomain.Unwrap ()) {
+    switch (portDomain.value ()) {
         case Domain::Ventilation: {
             if (hasDiameter) {
                 return GS::UniString::Printf ("Port %u is a ventilation port, 'diameter' is only for piping ports.", portIndex);
             }
-            ACAPI::Result<VentilationPortDefault> portDefault = elemDefault.GetVentilationPortDefault (portIndex);
-            if (portDefault.IsErr ()) {
-                return GS::UniString::Printf ("Failed to get port %u.", portIndex);
-            }
-            modified = portDefault->Modify ([&](VentilationPortDefault::Modifier& modifier) {
+            modified = ModifyMEPPortDefault (elemDefault.GetVentilationPortDefault (portIndex), elemDefault, portIndex, Domain::Ventilation, [&](VentilationPortDefault::Modifier& modifier) {
                 ApplyMEPPortDefaultBase (modifier, portData, mepSystem);
                 if (hasHeight) {
                     modifier.SetHeight (height);
                 }
-            }).IsOk ();
+            });
             break;
         }
         case Domain::Piping: {
             if (hasHeight) {
                 return GS::UniString::Printf ("Port %u is a piping port, use 'diameter' instead of 'height'.", portIndex);
             }
-            ACAPI::Result<PipingPortDefault> portDefault = elemDefault.GetPipingPortDefault (portIndex);
-            if (portDefault.IsErr ()) {
-                return GS::UniString::Printf ("Failed to get port %u.", portIndex);
-            }
-            modified = portDefault->Modify ([&](PipingPortDefault::Modifier& modifier) {
+            modified = ModifyMEPPortDefault (elemDefault.GetPipingPortDefault (portIndex), elemDefault, portIndex, Domain::Piping, [&](PipingPortDefault::Modifier& modifier) {
                 ApplyMEPPortDefaultBase (modifier, portData, mepSystem);
                 if (hasDiameter) {
                     modifier.SetDiameter (diameter);
                 }
-            }).IsOk ();
+            });
             break;
         }
         case Domain::CableCarrier: {
             if (hasDiameter) {
                 return GS::UniString::Printf ("Port %u is a cable carrier port, 'diameter' is only for piping ports.", portIndex);
             }
-            ACAPI::Result<CableCarrierPortDefault> portDefault = elemDefault.GetCableCarrierPortDefault (portIndex);
-            if (portDefault.IsErr ()) {
-                return GS::UniString::Printf ("Failed to get port %u.", portIndex);
-            }
-            modified = portDefault->Modify ([&](CableCarrierPortDefault::Modifier& modifier) {
+            modified = ModifyMEPPortDefault (elemDefault.GetCableCarrierPortDefault (portIndex), elemDefault, portIndex, Domain::CableCarrier, [&](CableCarrierPortDefault::Modifier& modifier) {
                 ApplyMEPPortDefaultBase (modifier, portData, mepSystem);
                 if (hasHeight) {
                     modifier.SetHeight (height);
                 }
-            }).IsOk ();
+            });
             break;
         }
     }
@@ -631,8 +694,11 @@ static GS::Optional<GS::ObjectState> ApplyMEPElementData (DefaultT& elemDefault,
     const uint32_t portCount = elemDefault.GetPortCount ();
     if (mepSystem.has_value ()) {
         for (uint32_t portIndex = 0; portIndex < portCount; ++portIndex) {
-            ACAPI::Result<Domain> portDomain = elemDefault.GetDomainOfPort (portIndex);
-            if (portDomain.IsErr () || (domain.has_value () && portDomain.Unwrap () != domain.value ())) {
+            const std::optional<Domain> portDomain = GetDomainOfMEPPortDefault (elemDefault, portIndex);
+            if (!portDomain.has_value ()) {
+                return CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf ("The domain of port %u could not be found, so 'mepSystemId' could not be set. Nothing was placed.", portIndex));
+            }
+            if (domain.has_value () && portDomain.value () != domain.value ()) {
                 continue;
             }
             const GS::UniString error = ApplyMEPPortDefault (elemDefault, portIndex, nullptr, mepSystem);
@@ -1814,7 +1880,7 @@ GS::Optional<GS::UniString> CreateMEPElementsCommand::GetInputParametersSchema (
                         },
                         "libraryPartId": {
                             "$ref": "#/LibPartUnId",
-                            "description": "Optional library part to place instead of the one in the tool's settings, as listed by GetAvailableLibraryParts. Its ports replace the default ones, so 'ports' refers to the ports of this library part. If it is not found, the item fails and nothing is placed."
+                            "description": "Optional library part to place instead of the one in the tool's settings, as listed by GetAvailableLibraryParts. Its ports replace the default ones, so 'ports' refers to the ports of this library part. Its ports keep the MEP system of the library part, which may be none, so give 'mepSystemId' with it to connect it. If it is not found, the item fails and nothing is placed."
                         },
                         "xSize": {
                             "type": "number",
