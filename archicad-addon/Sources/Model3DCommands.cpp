@@ -4,6 +4,7 @@
 #ifdef ServerMainVers_2800
 #include "Model.hpp"
 #include "ModelElement.hpp"
+#include "ModelMeshBody.hpp"
 #include "Polygon2D.hpp"
 
 #include <optional>
@@ -119,6 +120,58 @@ static GS::ObjectState CreateCutPolygonObjectState (const Geometry::Polygon2D& p
     }
 
     return polygonOS;
+}
+
+// The surface type of every polygon of every body of one element of the model. The element is read
+// whole, because ACAPI_Polygon_PolygonId2SurfaceType needs the roofClass of a Roof.
+static GS::ObjectState CreateSurfaceTypesOfElement (const API_Guid& elemGuid, const ModelerAPI::Model& model)
+{
+    API_Element element = {};
+    element.header.guid = elemGuid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the element");
+    }
+
+    GS::ObjectState result;
+    const auto& polygons = result.AddList<GS::ObjectState> ("polygons");
+
+    const std::optional<Int32> modelIndex = model.GetElementIndex (APIGuid2GSGuid (elemGuid));
+    if (!modelIndex.has_value ()) {
+        return result;
+    }
+
+    ModelerAPI::Element modelElement;
+    model.GetElement (*modelIndex, &modelElement);
+
+    // ModelerAPI indexes the bodies and the polygons from 1; the output counts them from 0.
+    const Int32 bodyCount = modelElement.GetTessellatedBodyCount ();
+    for (Int32 bodyIdx = 1; bodyIdx <= bodyCount; ++bodyIdx) {
+        ModelerAPI::MeshBody body;
+        modelElement.GetTessellatedBody (bodyIdx, &body);
+
+        const Int32 polygonCount = body.GetPolygonCount ();
+        for (Int32 polygonIdx = 1; polygonIdx <= polygonCount; ++polygonIdx) {
+            ModelerAPI::Polygon polygon;
+            body.GetPolygon (polygonIdx, &polygon);
+
+            const Int32 polygonId = static_cast<Int32> (polygon.GetPolygonId ());
+            API_SurfaceTypeID surfaceType = {};
+            err = ACAPI_Polygon_PolygonId2SurfaceType (&element, &polygonId, &surfaceType);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to get the surface type of a polygon of the element");
+            }
+
+            GS::ObjectState polygonOS;
+            polygonOS.Add ("bodyIndex", bodyIdx - 1);
+            polygonOS.Add ("polygonIndex", polygonIdx - 1);
+            polygonOS.Add ("polygonId", polygonId);
+            polygonOS.Add ("surfaceType", static_cast<Int32> (surfaceType));
+            polygons (polygonOS);
+        }
+    }
+
+    return result;
 }
 
 #endif
@@ -779,6 +832,175 @@ GS::ObjectState GetCutPolygonsOfElementsCommand::Execute (const GS::ObjectState&
         } else {
             cutPolygons (result);
         }
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command is only supported in Archicad 28 or later.");
+#endif
+}
+
+GetSurfaceTypesOfElementsCommand::GetSurfaceTypesOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetSurfaceTypesOfElementsCommand::GetName () const
+{
+    return "GetSurfaceTypesOfElements";
+}
+
+GS::Optional<GS::UniString> GetSurfaceTypesOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetSurfaceTypesOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "surfaceTypes": {
+                "type": "array",
+                "description": "The polygons of the 3D model of each element with their surface types, aligned with the input, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "polygons": {
+                                    "type": "array",
+                                    "description": "Every polygon of every body of the element's 3D model, generated with separate components. Empty when the element has no 3D model.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "bodyIndex": {
+                                                "type": "integer",
+                                                "description": "The index of the body in the element, starting from 0."
+                                            },
+                                            "polygonIndex": {
+                                                "type": "integer",
+                                                "description": "The index of the polygon in the body, starting from 0."
+                                            },
+                                            "polygonId": {
+                                                "type": "integer",
+                                                "description": "The identifier of the polygon in the 3D model (ModelerAPI::Polygon::GetPolygonId)."
+                                            },
+                                            "surfaceType": {
+                                                "type": "integer",
+                                                "description": "The surface type of the polygon: the numeric value of API_SurfaceTypeID as ACAPI_Polygon_PolygonId2SurfaceType returns it."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "bodyIndex",
+                                            "polygonIndex",
+                                            "polygonId",
+                                            "surfaceType"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "polygons"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "surfaceTypes"
+        ]
+    })";
+}
+
+GS::ObjectState GetSurfaceTypesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    // The model is generated once for all found elements, so the elements are checked first.
+    // An unknown guid would make GenerateModelWithSeparateComponents fail for all of them
+    // (APIERR_BADID); a failed input keeps APINULLGuid and its error.
+    GS::Array<API_Guid> inputGuids;
+    GS::Array<GS::ObjectState> inputErrors;
+    GS::Array<API_Guid> elementGuids;
+    GS::HashSet<API_Guid> elementGuidSet;
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            inputGuids.Push (APINULLGuid);
+            inputErrors.Push (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        const GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            inputGuids.Push (APINULLGuid);
+            inputErrors.Push (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+
+        inputGuids.Push (elemHead.guid);
+        inputErrors.Push (GS::ObjectState ());
+        if (!elementGuidSet.Contains (elemHead.guid)) {
+            elementGuidSet.Add (elemHead.guid);
+            elementGuids.Push (elemHead.guid);
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& surfaceTypes = response.AddList<GS::ObjectState> ("surfaceTypes");
+    if (elementGuids.IsEmpty ()) {
+        for (const GS::ObjectState& inputError : inputErrors) {
+            surfaceTypes (inputError);
+        }
+        return response;
+    }
+
+    const TemporarySight temporarySight;
+    if (temporarySight.GetError () != NoError) {
+        return CreateErrorResponse (temporarySight.GetError (), "Failed to create a temporary sight for the 3D model");
+    }
+
+    GSErrCode err = ACAPI_ModelAccess_GenerateModelWithSeparateComponents (elementGuids);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to generate the 3D model of the elements");
+    }
+
+    ModelerAPI::Model model;
+    err = ACAPI_Sight_GetSelectedSightModel (model);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to read the 3D model of the elements");
+    }
+
+    for (UIndex i = 0; i < inputGuids.GetSize (); ++i) {
+        if (inputGuids[i] == APINULLGuid) {
+            surfaceTypes (inputErrors[i]);
+            continue;
+        }
+        surfaceTypes (CreateSurfaceTypesOfElement (inputGuids[i], model));
     }
 
     return response;

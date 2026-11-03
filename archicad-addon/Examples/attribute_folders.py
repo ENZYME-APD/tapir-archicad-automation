@@ -71,6 +71,17 @@ moveBackResult = aclib.RunTapirCommand ('MoveAttributesAndFolders', {
 })
 print ('Moved attributes back to the root folder: {}'.format (CountSuccesses (moveBackResult, 'attributeExecutionResults')))
 
+# Moving an attribute or a folder into the folder it is already in changes nothing and counts as moved,
+# so a script that applies a folder layout can run again.
+moveAgainResult = aclib.RunTapirCommand ('MoveAttributesAndFolders', {
+    'attributeIds': layerIds,
+    'targetFolder': {
+        'attributeType': 'Layer',
+        'path': []
+    }
+})
+print ('Moved again into the root folder they are in: {}'.format (CountSuccesses (moveAgainResult, 'attributeExecutionResults')))
+
 aclib.RunTapirCommand ('DeleteAttributes', {
     'attributesToDelete': [{'attributeType': 'Layer', 'attributeId': layerId} for layerId in layerIds]
 })
