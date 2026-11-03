@@ -57,6 +57,15 @@ static GS::ObjectState FlagsToObjectState (GSFlags flags)
     return os;
 }
 
+static void AddLinkTime (GS::ObjectState& link, const API_Guid& targetGuid, const API_Guid& operatorGuid)
+{
+    GSTime linkTime = 0;
+    UInt32 linkSubTime = 0;
+    if (ACAPI_Element_SolidLink_GetTime (targetGuid, operatorGuid, &linkTime, &linkSubTime) == NoError) {
+        link.Add ("linkTime", TIGetTimeString (linkTime));
+    }
+}
+
 // ---------------------------------------------------------------------------
 // CreateSolidElementLinks
 // ---------------------------------------------------------------------------
@@ -476,6 +485,7 @@ GS::ObjectState GetSolidElementLinksCommand::Execute (const GS::ObjectState& par
                     link.Add ("operatorId", CreateGuidObjectState (opGuid));
                     link.Add ("operation",  OperationToString (operation));
                     link.Add ("linkFlags",  FlagsToObjectState (flags));
+                    AddLinkTime (link, elemGuid, opGuid);
                     asTargetAdder (link);
                 }
             }
@@ -492,6 +502,7 @@ GS::ObjectState GetSolidElementLinksCommand::Execute (const GS::ObjectState& par
                     link.Add ("targetId",  CreateGuidObjectState (tGuid));
                     link.Add ("operation", OperationToString (operation));
                     link.Add ("linkFlags", FlagsToObjectState (flags));
+                    AddLinkTime (link, tGuid, elemGuid);
                     asOperatorAdder (link);
                 }
             }
@@ -784,6 +795,13 @@ GS::ObjectState GetElementTrimsCommand::Execute (const GS::ObjectState& paramete
         const auto& trims = item.AddList<GS::ObjectState> ("trims");
         GS::Array<API_Guid> trimmed;
         err = ACAPI_Element_Trim_GetTrimmedElements (guid, &trimmed);
+        // Only roofs and shells trim other elements: for any other element the
+        // API answers APIERR_BADELEMENTTYPE, which means it trims nothing, so
+        // its trimmedBy list is kept with an empty trims list.
+        if (err == APIERR_BADELEMENTTYPE) {
+            items (item);
+            continue;
+        }
         if (err != NoError) {
             items (CreateErrorResponse (err, "Failed to read the elements this element trims."));
             continue;

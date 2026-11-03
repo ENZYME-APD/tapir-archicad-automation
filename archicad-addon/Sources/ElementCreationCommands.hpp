@@ -27,6 +27,12 @@ const char* DimensionOriginToString (API_DimOriginID origin);
 bool ParseDimensionOriginString (const GS::UniString& origin, API_DimOriginID& result);
 API_JustID ParseJustificationString (const GS::UniString& justification);
 
+// Shared by CreateCurtainWallsCommand and ModifyCurtainWallsCommand (ExtendedElementCommands.cpp):
+// rewrite a column/row pattern (API_CWSegmentPatternData) from a CurtainWallPattern object, and the
+// pattern cells of a memo from CurtainWallPatternCell objects. Both return the reason on invalid input.
+GS::Optional<GS::UniString> ApplyCurtainWallPattern (const GS::ObjectState& patternOS, const char* fieldName, API_CWSegmentPatternData& pattern);
+GS::Optional<GS::UniString> ApplyCurtainWallPatternCells (const GS::Array<GS::ObjectState>& cells, const API_Element& element, API_ElementMemo& memo, bool patternChanged);
+
 class CreateElementsCommandBase : public CommandBase
 {
 public:
@@ -177,6 +183,16 @@ public:
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
 };
 
+// Railings along a 3D reference polyline with arc segments. Derived from CreateRailingsCommand for its
+// Execute, which creates each railing with its home story made active.
+class CreateRailingsFromPolylineCommand : public CreateRailingsCommand
+{
+public:
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+};
+
 class CreateLabelsCommand : public CreateElementsCommandBase
 {
 public:
@@ -252,6 +268,21 @@ public:
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
+
+class ModifyZonesCommand : public CommandBase
+{
+public:
+    ModifyZonesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+// Shared with SetDetailsOfElementsCommand (ElementCommands.cpp): applies the ZoneSettings
+// fields of the common schema (name, number, category, stamp and the levels) to the zone
+// and marks the changed fields in the mask. Returns an error response for an invalid field.
+GS::Optional<GS::ObjectState> ApplyZoneSettings (const GS::ObjectState& details, API_Element& element, API_Element& mask);
 
 class MeasureTextsCommand : public CommandBase
 {

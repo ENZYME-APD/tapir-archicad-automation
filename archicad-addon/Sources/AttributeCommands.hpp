@@ -22,6 +22,16 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class ImportAttributesFromProjectCommand : public CommandBase
+{
+public:
+    ImportAttributesFromProjectCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class GetBuildingMaterialPhysicalPropertiesCommand : public CommandBase
 {
 public:
@@ -47,6 +57,16 @@ class GetCurrentLayerCombinationCommand : public CommandBase
 public:
     GetCurrentLayerCombinationCommand ();
     virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class ActivateLayerCombinationCommand : public CommandBase
+{
+public:
+    ActivateLayerCombinationCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
@@ -107,6 +127,18 @@ class GetCurrentPenTableCommand : public CommandBase
 {
 public:
     GetCurrentPenTableCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+// Reads the pens in effect with ACAPI_Attribute_GetPen, which takes the AC27+ API_Pen.
+// Before AC27 it returns an error.
+class GetPensCommand : public CommandBase
+{
+public:
+    GetPensCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
@@ -305,6 +337,19 @@ class CreatePenTablesCommand : public CommandBase
 {
 public:
     CreatePenTablesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+// Changes single pens of the Pen Table in effect for the model views or the layouts, keeping every other pen
+// as it is. The pens of a Pen Table are written as a whole (see CreatePenTablesCommand), so the current pens
+// are read, the given ones are patched and the table is written back once.
+class ModifyPensCommand : public CommandBase
+{
+public:
+    ModifyPensCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;

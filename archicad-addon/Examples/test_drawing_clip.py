@@ -46,6 +46,7 @@ create_result = run("CreateDrawings", {"drawingsData": [{
     "layoutDatabaseId": layout_db_id,
     "name": "TestClipDrawing",
     "position": {"x": cx, "y": cy},
+    "modelOffset": {"x": 0.0, "y": 0.0},
     "clipPolygon": triangle,
 }]})
 print(f"CreateDrawings result: {create_result}")
@@ -65,6 +66,12 @@ for i, pt in enumerate(poly):
 
 assert after["details"].get("isCutWithFrame") is True, "isCutWithFrame should be True"
 assert len(poly) == 4, f"Expected 4 points (triangle + closing), got {len(poly)}"
+
+# The clip polygon does not move the content: pos is the given position, the point where the
+# origin of the source view lands (#1654)
+pos = after["details"]["pos"]
+print(f"pos: ({pos['x']:.6f}, {pos['y']:.6f})")
+assert abs(pos["x"] - cx) < 1e-6 and abs(pos["y"] - cy) < 1e-6, "pos should be the given position"
 
 # 5. Clear the crop again via SetDetailsOfElements with isCutWithFrame: false
 set_result = run("SetDetailsOfElements", {"elementsWithDetails": [{
