@@ -218,6 +218,11 @@ GSErrCode ExecuteActionForEachDatabase (
 // NoValue for any other database type or when the Project Map has no such item.
 GS::Optional<API_Guid> FindProjectMapItemOfWorksheetOrDetail (const API_DatabaseInfo& database);
 
+// The name and the reference ID of a Detail or Worksheet marker. A Worksheet element reports an
+// empty detailIdStr (Archicad 29) while its viewpoint has the ID, so both are taken from the
+// viewpoint's database when it can be read, and from the element otherwise.
+void GetDetailMarkerNameAndId (const API_Element& element, GS::UniString& name, GS::UniString& id);
+
 template<std::size_t N>
 bool SetCharProperty (const GS::ObjectState* os, const char* propertyKey, char (&targetProperty)[N])
 {
