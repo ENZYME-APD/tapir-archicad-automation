@@ -5946,6 +5946,20 @@ GS::ObjectState CopyElementsToDatabaseCommand::Execute (const GS::ObjectState& p
                 continue;
             }
             if (offset.x != 0.0 || offset.y != 0.0) {
+                // The drag reports NoError for a copy it may not edit (it keeps the source's layer
+                // and lock, which can be hidden or locked) and leaves it in place, so the copy is
+                // checked first, as MoveElements does.
+                const GS::Optional<GS::ObjectState> notEditableResult = GetFailedExecutionResultIfNotEditable (copy.element.header.guid, "moved by the offset");
+                if (notEditableResult.HasValue ()) {
+                    Int32 code = APIERR_GENERAL;
+                    GS::UniString message;
+                    if (const GS::ObjectState* error = notEditableResult->Get ("error")) {
+                        error->Get ("code", code);
+                        error->Get ("message", message);
+                    }
+                    copy.result = CreateErrorResponse (static_cast<GSErrCode> (code), "The copy was created at the coordinates of the original. " + message);
+                    continue;
+                }
                 createErr = MoveElement (copy.element.header.guid, offset, false);
                 if (createErr != NoError) {
                     copy.result = CreateErrorResponse (createErr, "The copy was created, but could not be moved by the offset.");
