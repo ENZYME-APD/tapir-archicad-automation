@@ -1903,14 +1903,6 @@ GSErrCode Initialize (void)
             libraryCommands, "1.5.0",
             "Lists library parts currently available to the project. Filter by typeId (e.g. 'Door', 'Window', 'Object', 'Lamp')."
         );
-        err |= RegisterCommand<GetLibraryPartIdentitiesCommand> (
-            libraryCommands, "1.8.1",
-            "Gets the unique ID (main and revision GUID), the reference GUID and the Teamwork lock status of library parts given by index or file path, and whether they are in a server library."
-        );
-        err |= RegisterCommand<CompareLibraryPartUnIdsCommand> (
-            libraryCommands, "1.8.1",
-            "Compares two library part unique IDs with Archicad's own comparison and tells whether their main and revision GUIDs are the same."
-        );
         err |= RegisterCommand<GetLibraryPartSectionsCommand> (
             libraryCommands, "1.8.1",
             "Lists the sections of library parts given by index: their four-character type code, sub-identifier, size and whether they are text (scripts, comments) or binary (previews)."
