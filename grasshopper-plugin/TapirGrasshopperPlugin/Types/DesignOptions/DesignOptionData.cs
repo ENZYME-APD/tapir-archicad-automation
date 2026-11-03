@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TapirGrasshopperPlugin.Types.Element;
 using TapirGrasshopperPlugin.Types.Generic;
 using TapirGrasshopperPlugin.Types.GuidObjects;
+using TapirGrasshopperPlugin.Types.Navigator;
 
 namespace TapirGrasshopperPlugin.Types.DesignOptions
 {
@@ -219,6 +220,31 @@ namespace TapirGrasshopperPlugin.Types.DesignOptions
         public List<DesignOptionForElement> DesignOptionForElements;
     }
 
+    public class DesignOptionCombinationOfView
+    {
+        [JsonProperty("navigatorItemId")]
+        public NavigatorGuid NavigatorItemId;
+
+        [JsonProperty("status")]
+        public string Status;
+
+        [JsonProperty("name")]
+        public string Name;
+
+        [JsonProperty("designOptionCombinationId")]
+        public DesignOptionCombinationGuid DesignOptionCombinationId;
+
+        // Set instead of the fields above when the view was not found.
+        [JsonProperty("error")]
+        public Error Error;
+    }
+
+    public class GetDesignOptionCombinationOfViewsResponse
+    {
+        [JsonProperty("designOptionCombinationOfViews")]
+        public List<DesignOptionCombinationOfView> DesignOptionCombinationOfViews;
+    }
+
     public class CanMoveElement
     {
         [JsonProperty("elementId")]
@@ -419,5 +445,27 @@ namespace TapirGrasshopperPlugin.Types.DesignOptions
     {
         [JsonProperty("designOptions")]
         public List<ReorderDesignOptionInSetParameter> DesignOptions;
+    }
+
+    public class NavigatorItemIdWithCombination
+    {
+        [JsonProperty("navigatorItemId")]
+        public NavigatorGuid NavigatorItemId;
+
+        [JsonProperty(
+            "designOptionCombinationId",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public DesignOptionCombinationGuid DesignOptionCombinationId;
+
+        [JsonProperty(
+            "mainModelOnly",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public bool? MainModelOnly;
+    }
+
+    public class SetDesignOptionCombinationOfViewsParameters
+    {
+        [JsonProperty("navigatorItemIdsWithCombination")]
+        public List<NavigatorItemIdWithCombination> NavigatorItemIdsWithCombination;
     }
 }

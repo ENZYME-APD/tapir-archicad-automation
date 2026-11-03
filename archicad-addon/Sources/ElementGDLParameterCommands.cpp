@@ -497,6 +497,22 @@ static bool GetArrayValueField (const GS::ObjectState& parameter, GS::Array<T>& 
     return false;
 }
 
+// On a curtain wall frame these parameters mirror the frame's contour (a1, a2, b1, b2, the
+// frameContour of GetDetailsOfElements), which Archicad derives from the frame's own settings:
+// ACAPI_LibraryPart_ChangeAParameter and ACAPI_Element_Change accept a written value, but
+// Archicad re-derives it from the contour, so nothing changes. They are rejected up front
+// instead of reporting a change that did not happen.
+static bool IsMirroredCurtainWallFrameSizeParameter (const char* name)
+{
+    static const char* const MirroredNames[] = { "A", "B", "ac_frameWidth", "ac_frameDepth" };
+    for (const char* mirroredName : MirroredNames) {
+        if (CHCompareCStrings (name, mirroredName) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 static bool SetParamValueString (API_ChangeParamType& changeParam,
                                  const GS::ObjectState& parameterDetails)
 {
@@ -960,7 +976,14 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
             GS::Array<GS::ObjectState> elemGdlParameters;
             elementWithGDLParameters.Get ("gdlParameters", elemGdlParameters);
 
+            const API_ElemTypeID elemTypeId = GetElemTypeId (element.header);
+
             err = ACAPI_LibraryPart_OpenParameters (&paramOwner);
+            if (err != NoError && elemTypeId == API_CurtainWallFrameID && element.cwFrame.libInd <= 0) {
+                // An invisible Boundary frame, for example: there is no library part to open the
+                // parameters of, so the frame has no GDL parameters to set.
+                errMessage = GS::UniString::Printf ("Curtain wall frame %T has no library part, so it has no GDL parameters", APIGuidToString (elemGuid).ToPrintf ());
+            }
             if (err == NoError) {
                 API_GetParamsType getParams = {};
                 GS::Array<GS::String> writtenNames;
@@ -1010,7 +1033,7 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                         if (elemGdlParametersItem.Get ("parameters", parameters)) {
                             // Legacy mode: old schema had nested list for parameters
                             for (const GS::ObjectState& parameter : parameters) {
-                                err = SetOneGDLParameter (parameter, elemGuid, getParams, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, xRatioPerA, yRatioPerB, pendingArrayChanges, errMessage);
+                                err = SetOneGDLParameter (parameter, elemGuid, elemTypeId, getParams, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, xRatioPerA, yRatioPerB, pendingArrayChanges, errMessage);
                                 if (err == NoError) {
                                     addWrittenName (parameter);
                                     err = ReadParametersAgain (getParams, elemGuid, errMessage);
@@ -1023,7 +1046,7 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                                 break;
                             }
                         } else {
-                            err = SetOneGDLParameter (elemGdlParametersItem, elemGuid, getParams, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, xRatioPerA, yRatioPerB, pendingArrayChanges, errMessage);
+                            err = SetOneGDLParameter (elemGdlParametersItem, elemGuid, elemTypeId, getParams, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, xRatioPerA, yRatioPerB, pendingArrayChanges, errMessage);
                             if (err == NoError) {
                                 addWrittenName (elemGdlParametersItem);
                                 err = ReadParametersAgain (getParams, elemGuid, errMessage);
@@ -1071,6 +1094,10 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                                 ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.width);
                                 ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.height);
                                 break;
+                            case API_CurtainWallFrameID:
+                                // The frame's size follows its contour, not A and B; a written A or B is
+                                // rejected in SetOneGDLParameter (see IsMirroredCurtainWallFrameSizeParameter).
+                                break;
                             default:
                                 // Not supported yet
                                 break;
@@ -1113,6 +1140,7 @@ GSErrCode
 SetGDLParametersOfElementsCommand::SetOneGDLParameter (
     const GS::ObjectState& parameter,
     const API_Guid& elemGuid,
+    API_ElemTypeID elemTypeId,
     const API_GetParamsType& getParams,
     const GS::HashTable<GS::String, API_AddParID>& gdlParametersTypeDictionary,
     const GS::HashTable<short, GS::String>& gdlParametersIndexNameDictionary,
@@ -1154,6 +1182,12 @@ SetGDLParametersOfElementsCommand::SetOneGDLParameter (
         errMessage = GS::UniString::Printf ("Invalid input: %s is not a GDL parameter of element %T", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
         return APIERR_BADPARS;
     }
+
+    if (elemTypeId == API_CurtainWallFrameID && IsMirroredCurtainWallFrameSizeParameter (changeParam.name)) {
+        errMessage = GS::UniString::Printf ("Invalid input: %s of curtain wall frame %T mirrors the frame's contour (frameContour in GetDetailsOfElements), which Archicad derives from the frame's settings, so it cannot be set through the GDL parameters; change it in the frame's settings in Archicad instead",changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
+        return APIERR_BADPARS;
+    }
+
     const bool isArrayParameter = (actParam->typeMod == API_ParArray);
 
     if (parameter.IsList (ParameterValueFieldName)) {
@@ -2570,6 +2604,222 @@ GS::ObjectState ChangeLibraryPartOfElementsCommand::Execute (const GS::ObjectSta
 
         return NoError;
     });
+
+    return response;
+}
+
+GetCalculatedParametersOfCurtainWallSubElementsCommand::GetCalculatedParametersOfCurtainWallSubElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetCalculatedParametersOfCurtainWallSubElementsCommand::GetName () const
+{
+    return "GetCalculatedParametersOfCurtainWallSubElements";
+}
+
+GS::Optional<GS::UniString> GetCalculatedParametersOfCurtainWallSubElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "elements": {
+            "$ref": "#/Elements"
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "elements"
+    ]
+})";
+}
+
+GS::Optional<GS::UniString> GetCalculatedParametersOfCurtainWallSubElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "calculatedParametersOfElements": {
+            "type": "array",
+            "description": "The calculated parameters of each given element, in the order of the input, or an error for an element that is not a curtain wall frame, panel, junction or accessory.",
+            "items": {
+                "type": "object",
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "properties": {
+                            "parameters": {
+                                "type": "array",
+                                "description": "The GDL parameters of the sub-element as Archicad calculated them for its place in the curtain wall.",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "The name of the parameter."
+                                        },
+                                        "displayName": {
+                                            "type": "string",
+                                            "description": "The display name of the parameter."
+                                        },
+                                        "index": {
+                                            "type": "integer",
+                                            "description": "The index of the parameter."
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "description": "The type of the parameter."
+                                        },
+                                        "dimension1": {
+                                            "type": "integer",
+                                            "description": "The 1st dimension of array (in case of array value)."
+                                        },
+                                        "dimension2": {
+                                            "type": "integer",
+                                            "description": "The 2nd dimension of array (in case of array value)."
+                                        },
+                                        "value": {
+                                            "description": "The value of the parameter."
+                                        },
+                                        "valueDescription": {
+                                            "type": "string",
+                                            "description": "The value description for numeric parameter."
+                                        },
+                                        "itemDescriptions": {
+                                            "type": "array",
+                                            "description": "Per-item text labels for an array-type parameter, one per array element in dim1xdim2 order. Only present when the library part defines them.",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "flags": {
+                                            "type": "array",
+                                            "description": "The flags of the parameter.",
+                                            "items": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "Hidden",
+                                                    "HiddenFromScript",
+                                                    "Disabled",
+                                                    "Child",
+                                                    "Unique",
+                                                    "Fixed",
+                                                    "BoldName",
+                                                    "Open"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "name",
+                                        "displayName",
+                                        "index",
+                                        "type",
+                                        "value",
+                                        "flags"
+                                    ]
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "parameters"
+                        ]
+                    },
+                    {
+                        "$ref": "#/ErrorItem"
+                    }
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "calculatedParametersOfElements"
+    ]
+})";
+}
+
+// The library part of a curtain wall frame, panel, junction or accessory; false for any other element.
+static bool GetCurtainWallSubElementLibInd (const API_Element& element, Int32& libInd)
+{
+    switch (GetElemTypeId (element.header)) {
+        case API_CurtainWallFrameID:        libInd = element.cwFrame.libInd;        return true;
+        case API_CurtainWallPanelID:        libInd = element.cwPanel.libInd;        return true;
+        case API_CurtainWallJunctionID:     libInd = element.cwJunction.libInd;     return true;
+        case API_CurtainWallAccessoryID:    libInd = element.cwAccessory.libInd;    return true;
+        default:                            return false;
+    }
+}
+
+GS::ObjectState GetCalculatedParametersOfCurtainWallSubElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& calculatedParametersListAdder = response.AddList<GS::ObjectState> ("calculatedParametersOfElements");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            calculatedParametersListAdder (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+
+        API_Element apiElement = {};
+        apiElement.header.guid = elemGuid;
+        GSErrCode err = ACAPI_Element_Get (&apiElement);
+        if (err != NoError) {
+            calculatedParametersListAdder (CreateErrorResponse (err, GS::UniString::Printf ("Not found element with guid %T!", APIGuidToString (elemGuid).ToPrintf ())));
+            continue;
+        }
+
+        Int32 libInd = 0;
+        if (!GetCurtainWallSubElementLibInd (apiElement, libInd)) {
+            calculatedParametersListAdder (CreateErrorResponse (APIERR_BADELEMENTTYPE, GS::UniString::Printf ("The element with guid %T is not a curtain wall frame, panel, junction or accessory.", APIGuidToString (elemGuid).ToPrintf ())));
+            continue;
+        }
+
+        API_AddParType** params = nullptr;
+        const GS::OnExit cleanup ([&]() {
+            if (params != nullptr) {
+                ACAPI_DisposeAddParHdl (&params);
+            }
+        });
+
+        err = ACAPI_CurtainWall_GetCWSubElemParams (&elemGuid, &params);
+        if (err != NoError || params == nullptr) {
+            calculatedParametersListAdder (CreateErrorResponse (err != NoError ? err : APIERR_GENERAL, GS::UniString::Printf ("Failed to get the calculated parameters of the element with guid %T!", APIGuidToString (elemGuid).ToPrintf ())));
+            continue;
+        }
+
+        const GS::HashTable<GS::String, GS::UniString> displayNames = GetParameterDisplayNames (libInd);
+
+        GS::ObjectState calculatedParameters;
+        const GSSize nParams = BMGetHandleSize ((GSHandle) params) / sizeof (API_AddParType);
+        const auto& parameterListAdder = calculatedParameters.AddList<GS::ObjectState> ("parameters");
+        for (GSIndex ii = 0; ii < nParams; ++ii) {
+            const API_AddParType& actParam = (*params)[ii];
+            if (actParam.typeID == APIParT_Separator) {
+                continue;
+            }
+
+            GS::ObjectState parameterDetails;
+            parameterDetails.Add ("name", actParam.name);
+            const GS::UniString* displayName = displayNames.GetPtr (GS::String (actParam.name));
+            parameterDetails.Add ("displayName", displayName != nullptr ? *displayName : GS::UniString (actParam.uDescname));
+            parameterDetails.Add ("index", actParam.index);
+            parameterDetails.Add ("type", ConvertAddParIDToString (actParam.typeID));
+            AddValueAndDescriptions (parameterDetails, actParam);
+            AddParameterFlags (parameterDetails, actParam);
+            parameterListAdder (parameterDetails);
+        }
+
+        calculatedParametersListAdder (calculatedParameters);
+    }
 
     return response;
 }
