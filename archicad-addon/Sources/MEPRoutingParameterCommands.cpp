@@ -636,9 +636,12 @@ static GS::ObjectState SetRoutingParametersOfRoutingElement (const ACAPI::MEP::U
     // Archicad reads the new tables back inside the command but keeps the old ones once it ends (fork
     // issue #10), so the read-back cannot tell which way works: the tables are also set on each segment
     // and node, and injected into them and into the route.
+    // Only the table goes to each segment: the other keys change the route's default, as without a table.
+    RoutingSegmentChanges segmentTableChange;
+    segmentTableChange.preferenceTableId = tables.segment;
     GS::Array<GS::UniString> notes;
-    SetTablesOnSegmentsAndNodes (*routingElement, segmentChanges, tables, notes);
-    InjectTablesIntoSegmentsAndNodes (*routingElement, segmentChanges, tables, notes);
+    SetTablesOnSegmentsAndNodes (*routingElement, segmentTableChange, tables, notes);
+    InjectTablesIntoSegmentsAndNodes (*routingElement, segmentTableChange, tables, notes);
     InjectTablesIntoRoute (*routingElement, segmentDefault, nodeDefault, notes);
     if (RouteUsesTables (*routingElement, tables)) {
         return CreateSuccessfulExecutionResult ();
