@@ -51,6 +51,8 @@
 #define ACAPI_Teamwork_GetTeamworkProjectDetails ACAPI_TeamworkControl_GetTeamworkProjectDetails
 #define ACAPI_Teamwork_GetHotlinkCacheManagementOwner ACAPI_TeamworkControl_GetHotlinkCacheManagementOwner
 #define ACAPI_Teamwork_HasConnection ACAPI_TeamworkControl_HasConnection
+#define ACAPI_Teamwork_HasCreateRight ACAPI_TeamworkControl_HasCreateRight
+#define ACAPI_Teamwork_HasDeleteModifyRight ACAPI_TeamworkControl_HasDeleteModifyRight
 #define ACAPI_Teamwork_ProjectSharing(par1) ACAPI_Environment (APIEnv_ProjectSharingID, par1)
 
 #ifdef ServerMainVers_2600
@@ -81,6 +83,7 @@ inline GSErrCode ACAPI_View_DeleteGhostRecord (const API_GhostRecord* ghostRecor
 }
 
 #define ACAPI_Selection_Select ACAPI_Element_Select
+#define ACAPI_Selection_DeselectAll ACAPI_Element_DeselectAll
 #define ACAPI_Grouping_GetConnectedElements ACAPI_Element_GetConnectedElements
 
 #define ACAPI_ElementLink_Link ACAPI_Element_Link
@@ -381,6 +384,23 @@ inline GSErrCode ACAPI_View_Zoom ()
 inline GSErrCode ACAPI_View_ZoomToElements (const GS::Array<API_Guid>* elemIds)
 {
     return ACAPI_Automate (APIDo_ZoomToElementsID, (void*) elemIds);
+}
+
+// Show Selection in 3D / Show All in 3D (APIdefs_Automate.h) take no parameters.
+inline GSErrCode ACAPI_View_ShowSelectionIn3D ()
+{
+    return ACAPI_Automate (APIDo_ShowSelectionIn3DID);
+}
+
+inline GSErrCode ACAPI_View_ShowAllIn3D ()
+{
+    return ACAPI_Automate (APIDo_ShowAllIn3DID);
+}
+
+// 3D styles (APIdefs_Environment.h): par1 the style names, par2 the current one.
+inline GSErrCode ACAPI_View_Get3DStyleList (GS::Array<GS::UniString>* styles, GS::UniString* current)
+{
+    return ACAPI_Environment (APIEnv_Get3DStyleListID, (void*) styles, (void*) current);
 }
 
 // APIDo_ZoomToSelectedID takes no parameters (APIdefs_Automate.h: "par1: --- par2: ---").
@@ -760,6 +780,36 @@ inline GSErrCode ACAPI_LibraryPart_CloseParameters ()
 inline GSErrCode ACAPI_LibraryPart_GetBuiltInLibpartUnId (short resId, char* unId)
 {
     return ACAPI_Goodies (APIAny_GetBuiltInLibpartUnIdID, (void*)(Int64)resId, unId);
+}
+
+inline GSErrCode ACAPI_LibraryPart_GetLibPartUnIDStr (const IO::Location* location, char* libPartUnId)
+{
+    return ACAPI_Environment (APIEnv_GetLibPartUnIDStrID, (void*) location, libPartUnId);
+}
+
+inline GSErrCode ACAPI_LibraryPart_GetLibPartRefGuid (const IO::Location* location, API_Guid* guid)
+{
+    return ACAPI_Environment (APIEnv_GetLibPartRefGuidID, (void*) location, guid);
+}
+
+inline GSErrCode ACAPI_LibraryPart_GetLibPartLockStatus (const IO::Location* location, API_LockableStatus* status, IO::Location* userCacheLibPartLocation = nullptr)
+{
+    return ACAPI_Environment (APIEnv_GetLibPartLockStatusID, (void*) location, status, userCacheLibPartLocation);
+}
+
+inline GSErrCode ACAPI_LibraryPart_CompareLibPartUnIds (const char* unIDStr1, const char* unIDStr2)
+{
+    return ACAPI_Goodies (APIAny_CompareLibPartUnIdsID, (void*) unIDStr1, (void*) unIDStr2);
+}
+
+inline bool ACAPI_Teamwork_IsServerLibPart (const IO::Location& location)
+{
+    return ACAPI_TeamworkControl_IsServerLibPart (location);
+}
+
+inline GSErrCode ACAPI_LibraryPart_GetLastValidEmbeddedLPName (GS::UniString* name, IO::Location* location)
+{
+    return ACAPI_Interface (APIIo_GetLastValidEmbeddedLPNameID, name, location);
 }
 
 inline GSErrCode ACAPI_LibraryManagement_RunGDLParScript (const API_Elem_Head* elemHead, UInt32 mask = 0)
@@ -1199,6 +1249,16 @@ inline GSErrCode TAPIR_ElemComponent_GetPropertyValuesByGuid (const API_ElemComp
     return ACAPI_Element_GetPropertyValuesByGuid (elemComponent, propertyDefinitions, properties);
 #else
     return ACAPI_ElemComponent_GetPropertyValuesByGuid (elemComponent, propertyDefinitions, properties);
+#endif
+}
+
+// The tool default of the generic variation of the element type.
+inline GSErrCode TAPIR_Element_GetPropertyValuesOfDefaultElemByGuid (API_ElemTypeID typeID, const GS::Array<API_Guid>& propertyGuids, GS::Array<API_Property>& properties)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_GetPropertyValuesOfDefaultElemByGuid (API_ElemType (typeID), propertyGuids, properties);
+#else
+    return ACAPI_Element_GetPropertyValuesOfDefaultElemByGuid (typeID, APIVarId_Generic, propertyGuids, properties);
 #endif
 }
 
