@@ -1822,4 +1822,12 @@
   <data name="GetGridElementDefaults" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetGridElementDefaults.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <!-- The Project Info group and field components share the icons of the
+       design option set and navigator components until their own are drawn. -->
+  <data name="RenameProjectInfoFields" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\RenameDesignOptions.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="MoveProjectInfoFields" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\MoveDesignOptionsToAnotherSet.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>

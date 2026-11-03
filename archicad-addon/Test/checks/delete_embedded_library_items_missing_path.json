@@ -1,0 +1,59 @@
+{
+  "title": "DeleteEmbeddedLibraryItems fails for a path that is not in the embedded library",
+  "minTapir": "1.7.4",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "folder to delete",
+      "command": "CreateFolderInEmbeddedLibrary",
+      "creates": false,
+      "params": {
+        "folderPath": "TapirCheck/DeleteMe"
+      },
+      "expect": [
+        { "path": "success", "eq": true, "name": "folder created" }
+      ]
+    },
+    {
+      "id": "[existing folder, bare file name, missing folder]",
+      "command": "DeleteEmbeddedLibraryItems",
+      "creates": false,
+      "params": {
+        "embeddedLibraryItems": [
+          { "path": "TapirCheck/DeleteMe" },
+          { "path": "TapirCheckDoesNotExist.gsm" },
+          { "path": "TapirCheckNoSuchFolder/NoPart.gsm" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "existing folder deleted" },
+        { "path": "executionResults[1].success", "eq": false, "name": "bare file name is not reported as deleted" },
+        { "path": "executionResults[2].success", "eq": false, "name": "missing folder is not reported as deleted" }
+      ]
+    },
+    {
+      "id": "same folder again",
+      "command": "DeleteEmbeddedLibraryItems",
+      "creates": false,
+      "params": {
+        "embeddedLibraryItems": [
+          { "path": "TapirCheck/DeleteMe" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "already deleted" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteEmbeddedLibraryItems",
+      "params": {
+        "embeddedLibraryItems": [
+          { "path": "TapirCheck" }
+        ]
+      }
+    }
+  ]
+}
