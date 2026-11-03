@@ -9568,7 +9568,7 @@ var gSchemaDefinitions = {
             },
             "anchorPoint": {
                 "$ref": "#/DrawingAnchorPoint",
-                "description": "Read-only: the node of the drawing's box placed at pos when useOwnOrigoAsAnchor is false. Not settable through this API - confirmed live that Archicad resets it to BottomLeft regardless of the value given, on both Create and Change; use useOwnOrigoAsAnchor to control the reference point reliably."
+                "description": "The node of the drawing's box placed at pos when useOwnOrigoAsAnchor is false. Settable through SetDetailsOfElements."
             },
             "offset": {
                 "$ref": "#/Coordinate2D",
@@ -11302,7 +11302,11 @@ var gSchemaDefinitions = {
             },
             "useOwnOrigoAsAnchor": {
                 "type": "boolean",
-                "description": "Place the drawing by its own origin instead of a node of its box. anchorPoint is not settable here: Archicad resets it to BottomLeft regardless of the value given, so this is the only reliable way to control the drawing's reference point."
+                "description": "Place the drawing by its own origin instead of a node of its box."
+            },
+            "anchorPoint": {
+                "$ref": "#/DrawingAnchorPoint",
+                "description": "The node of the drawing's box to place at pos when useOwnOrigoAsAnchor is false. Applied with a Graphisoft-confirmed workaround for an Archicad bug where setting it resets to BottomLeft otherwise: it is first set together with useOwnOrigoAsAnchor forced true, then, unless useOwnOrigoAsAnchor is also requested true, a second call sets useOwnOrigoAsAnchor back to false alone."
             },
             "angle": {
                 "type": "number",

@@ -2570,13 +2570,55 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             elem.drawing.pos = Get2DCoordinateFromObjectState (*posState);
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, pos);
                         }
-                        if (typeSpecificDetails->Get ("useOwnOrigoAsAnchor", elem.drawing.useOwnOrigoAsAnchor)) {
+                        GS::UniString anchorPointStr;
+                        if (typeSpecificDetails->Get ("anchorPoint", anchorPointStr)) {
+                            // Confirmed with Graphisoft support (Tamas): ACAPI_Element_Change resets
+                            // anchorPoint back to BottomLeft whenever it is changed together with
+                            // useOwnOrigoAsAnchor (or while useOwnOrigoAsAnchor is already false) in
+                            // one combined mask - including from this command, live-reproduced on
+                            // AC27/29. The documented workaround is two separate calls: first set the
+                            // new anchorPoint together with useOwnOrigoAsAnchor forced true, then, if
+                            // the Drawing should end up with its own origin NOT used as the anchor,
+                            // change useOwnOrigoAsAnchor alone, in a call whose mask excludes
+                            // anchorPoint. Applied here directly (not through the combined mask/elem
+                            // below) so the two ACAPI_Element_Change calls stay separate and in order.
+                            const API_AnchorID requestedAnchorPoint = AnchorIdFromString (anchorPointStr);
+                            bool requestedUseOwnOrigoAsAnchor = elem.drawing.useOwnOrigoAsAnchor;
+                            typeSpecificDetails->Get ("useOwnOrigoAsAnchor", requestedUseOwnOrigoAsAnchor);
+
+                            API_Element anchorElem = elem;
+                            API_Element anchorMask = {};
+                            ACAPI_ELEMENT_MASK_CLEAR (anchorMask);
+                            anchorElem.drawing.anchorPoint = requestedAnchorPoint;
+                            anchorElem.drawing.useOwnOrigoAsAnchor = true;
+                            ACAPI_ELEMENT_MASK_SET (anchorMask, API_DrawingType, anchorPoint);
+                            ACAPI_ELEMENT_MASK_SET (anchorMask, API_DrawingType, useOwnOrigoAsAnchor);
+                            err = ACAPI_Element_Change (&anchorElem, &anchorMask, nullptr, 0, true);
+                            if (err != NoError) {
+                                ACAPI_DisposeElemMemoHdls (&clipMemo);
+                                executionResults (CreateFailedExecutionResult (err, "Failed to set the anchor point of the drawing"));
+                                continue;
+                            }
+                            elem.drawing.anchorPoint = requestedAnchorPoint;
+                            elem.drawing.useOwnOrigoAsAnchor = true;
+
+                            if (!requestedUseOwnOrigoAsAnchor) {
+                                API_Element restoreElem = elem;
+                                API_Element restoreMask = {};
+                                ACAPI_ELEMENT_MASK_CLEAR (restoreMask);
+                                restoreElem.drawing.useOwnOrigoAsAnchor = false;
+                                ACAPI_ELEMENT_MASK_SET (restoreMask, API_DrawingType, useOwnOrigoAsAnchor);
+                                err = ACAPI_Element_Change (&restoreElem, &restoreMask, nullptr, 0, true);
+                                if (err != NoError) {
+                                    ACAPI_DisposeElemMemoHdls (&clipMemo);
+                                    executionResults (CreateFailedExecutionResult (err, "Failed to restore useOwnOrigoAsAnchor after setting the anchor point"));
+                                    continue;
+                                }
+                                elem.drawing.useOwnOrigoAsAnchor = false;
+                            }
+                        } else if (typeSpecificDetails->Get ("useOwnOrigoAsAnchor", elem.drawing.useOwnOrigoAsAnchor)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, useOwnOrigoAsAnchor);
                         }
-                        // anchorPoint is read-only here: confirmed live that ACAPI_Element_Change
-                        // resets it to BottomLeft regardless of the value given, so accepting a
-                        // write would silently do nothing while reporting success. Move the
-                        // Drawing's reference point with useOwnOrigoAsAnchor + pos instead.
                         const GS::ObjectState* modelOffsetState = typeSpecificDetails->Get ("modelOffset");
                         if (modelOffsetState != nullptr) {
                             elem.drawing.modelOffset = Get2DCoordinateFromObjectState (*modelOffsetState);
