@@ -719,6 +719,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.8.0",
             "Checks whether elements have a visible skin in a given Partial Structure Display mode (EntireStructure, CoreOnly, WithoutFinishes or StructureOnly), e.g. a finish-only slab has none in CoreOnly. The current window is not changed. The output is aligned with the input array of elements."
         );
+        err |= RegisterCommand<GetRoofPlanesCommand> (
+            elementCommands, "1.7.4",
+            "Gets the single planes of roofs, without changing the roofs. A multi-plane roof is decomposed by Archicad into its planes, each returned with its part identifier and its details as a single-plane roof (slope, pivot line, level, outline with arcs and holes); a single-plane roof is returned as its only plane. The output is aligned with the input array of elements."
+        );
         err |= RegisterCommand<GetCurtainWallAbsoluteBottomsCommand> (
             elementCommands, "1.8.0",
             "Gets the absolute bottom level of curtain walls or their subelements (segments, frames, panels, junctions, accessories). The output is aligned with the input array of elements."
