@@ -903,6 +903,19 @@ inline GSErrCode ACAPI_Navigator_GetLayoutBook (API_LayoutBook* book)
     return ACAPI_Database (APIDb_GetLayoutBookID, book);
 }
 
+// Drawing Manager data (APIdefs_Database.h): APIDb_CheckDrawingStatusID takes the drawing
+// guid as par1 and the status as par2; APIDb_GetDrawingLinkID takes the drawing guid as par1
+// and the API_DrawingLinkInfo to fill as par2.
+inline GSErrCode ACAPI_Drawing_CheckDrawingStatus (API_Guid* drawingGuid, Int32* status)
+{
+    return ACAPI_Database (APIDb_CheckDrawingStatusID, drawingGuid, status);
+}
+
+inline GSErrCode ACAPI_Drawing_GetDrawingLink (const API_Guid* drawingGuid, API_DrawingLinkInfo* drawingLinkInfo)
+{
+    return ACAPI_Database (APIDb_GetDrawingLinkID, (void*) drawingGuid, drawingLinkInfo);
+}
+
 // The renovation filter functions of ACAPI_Renovation.h (AC27+) are the
 // APIDb_*RenovationFilter* database functions (APIdefs_Database.h) and the
 // APIAny_GetRenovationFilterNameID goodie before that; the parameters are the same.
