@@ -326,6 +326,29 @@ static API_NumberingTypeValues DrawingNumberingTypeFromString (const GS::UniStri
     return APINumbering_ByLayout;
 }
 
+// API_PenTableUsageModeValues and API_DrawingType::penTableUsageMode/penTableIndex only
+// exist from Archicad 27 on.
+#ifdef ServerMainVers_2700
+static GS::UniString DrawingPenTableUsageModeToString (API_PenTableUsageModeValues mode)
+{
+    switch (mode) {
+        case APIPenTableUsageMode_UseModelPenTable: return "UseModelPenTable";
+        case APIPenTableUsageMode_UsePenTableIndex: return "UsePenTableIndex";
+        default:
+        case APIPenTableUsageMode_UseOwnPenTable:   return "UseOwnPenTable";
+    }
+}
+
+static API_PenTableUsageModeValues DrawingPenTableUsageModeFromString (const GS::UniString& str)
+{
+    if (str == "UseModelPenTable")
+        return APIPenTableUsageMode_UseModelPenTable;
+    if (str == "UsePenTableIndex")
+        return APIPenTableUsageMode_UsePenTableIndex;
+    return APIPenTableUsageMode_UseOwnPenTable;
+}
+#endif
+
 static GS::UniString StructureTypeToString (API_ModelElemStructureType structureType)
 {
     switch (structureType) {
@@ -2223,6 +2246,11 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
 
             case API_DrawingID: {
                 typeSpecificDetails.Add ("pos",           Create2DCoordinateObjectState (elem.drawing.pos));
+                // pos is where the reference point lands on the layout: the drawing's own origin
+                // when useOwnOrigoAsAnchor is set, otherwise the anchorPoint node of its box.
+                typeSpecificDetails.Add ("useOwnOrigoAsAnchor", elem.drawing.useOwnOrigoAsAnchor);
+                typeSpecificDetails.Add ("anchorPoint",   AnchorIdToString (elem.drawing.anchorPoint));
+                typeSpecificDetails.Add ("offset",        Create2DCoordinateObjectState (API_Coord { elem.drawing.offset.x, elem.drawing.offset.y }));
                 typeSpecificDetails.Add ("angle",         elem.drawing.angle);
                 typeSpecificDetails.Add ("ratio",         elem.drawing.ratio);
                 typeSpecificDetails.Add ("drawingScale",  elem.drawing.drawingScale);
@@ -2254,6 +2282,12 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("borderLineTypeIndex", GetAttributeIndex (elem.drawing.borderLineType));
                 typeSpecificDetails.Add ("borderPenIndex",      (Int32)elem.drawing.borderPen);
                 typeSpecificDetails.Add ("borderSize",          elem.drawing.borderSize);
+#ifdef ServerMainVers_2700
+                typeSpecificDetails.Add ("penTableUsageMode", DrawingPenTableUsageModeToString (elem.drawing.penTableUsageMode));
+                if (elem.drawing.penTableUsageMode == APIPenTableUsageMode_UsePenTableIndex) {
+                    typeSpecificDetails.Add ("penTableIndex", GetAttributeIndex (elem.drawing.penTableIndex));
+                }
+#endif
                 // Library part index of the title (API_DrawingTitle::libInd) - a negative/invalid
                 // index here means no title object is instantiated at all (nothing to show); setting
                 // it to a valid index (e.g. copied from another drawing) is what makes Archicad
@@ -2906,6 +2940,55 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             elem.drawing.pos = Get2DCoordinateFromObjectState (*posState);
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, pos);
                         }
+                        GS::UniString anchorPointStr;
+                        if (typeSpecificDetails->Get ("anchorPoint", anchorPointStr)) {
+                            // Confirmed with Graphisoft support (Tamas): ACAPI_Element_Change resets
+                            // anchorPoint back to BottomLeft whenever it is changed together with
+                            // useOwnOrigoAsAnchor (or while useOwnOrigoAsAnchor is already false) in
+                            // one combined mask - including from this command, live-reproduced on
+                            // AC27/29. The documented workaround is two separate calls: first set the
+                            // new anchorPoint together with useOwnOrigoAsAnchor forced true, then, if
+                            // the Drawing should end up with its own origin NOT used as the anchor,
+                            // change useOwnOrigoAsAnchor alone, in a call whose mask excludes
+                            // anchorPoint. Applied here directly (not through the combined mask/elem
+                            // below) so the two ACAPI_Element_Change calls stay separate and in order.
+                            const API_AnchorID requestedAnchorPoint = AnchorIdFromString (anchorPointStr);
+                            bool requestedUseOwnOrigoAsAnchor = elem.drawing.useOwnOrigoAsAnchor;
+                            typeSpecificDetails->Get ("useOwnOrigoAsAnchor", requestedUseOwnOrigoAsAnchor);
+
+                            API_Element anchorElem = elem;
+                            API_Element anchorMask = {};
+                            ACAPI_ELEMENT_MASK_CLEAR (anchorMask);
+                            anchorElem.drawing.anchorPoint = requestedAnchorPoint;
+                            anchorElem.drawing.useOwnOrigoAsAnchor = true;
+                            ACAPI_ELEMENT_MASK_SET (anchorMask, API_DrawingType, anchorPoint);
+                            ACAPI_ELEMENT_MASK_SET (anchorMask, API_DrawingType, useOwnOrigoAsAnchor);
+                            err = ACAPI_Element_Change (&anchorElem, &anchorMask, nullptr, 0, true);
+                            if (err != NoError) {
+                                ACAPI_DisposeElemMemoHdls (&clipMemo);
+                                executionResults (CreateFailedExecutionResult (err, "Failed to set the anchor point of the drawing"));
+                                continue;
+                            }
+                            elem.drawing.anchorPoint = requestedAnchorPoint;
+                            elem.drawing.useOwnOrigoAsAnchor = true;
+
+                            if (!requestedUseOwnOrigoAsAnchor) {
+                                API_Element restoreElem = elem;
+                                API_Element restoreMask = {};
+                                ACAPI_ELEMENT_MASK_CLEAR (restoreMask);
+                                restoreElem.drawing.useOwnOrigoAsAnchor = false;
+                                ACAPI_ELEMENT_MASK_SET (restoreMask, API_DrawingType, useOwnOrigoAsAnchor);
+                                err = ACAPI_Element_Change (&restoreElem, &restoreMask, nullptr, 0, true);
+                                if (err != NoError) {
+                                    ACAPI_DisposeElemMemoHdls (&clipMemo);
+                                    executionResults (CreateFailedExecutionResult (err, "Failed to restore useOwnOrigoAsAnchor after setting the anchor point"));
+                                    continue;
+                                }
+                                elem.drawing.useOwnOrigoAsAnchor = false;
+                            }
+                        } else if (typeSpecificDetails->Get ("useOwnOrigoAsAnchor", elem.drawing.useOwnOrigoAsAnchor)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, useOwnOrigoAsAnchor);
+                        }
                         const GS::ObjectState* modelOffsetState = typeSpecificDetails->Get ("modelOffset");
                         if (modelOffsetState != nullptr) {
                             elem.drawing.modelOffset = Get2DCoordinateFromObjectState (*modelOffsetState);
@@ -2955,6 +3038,18 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         if (typeSpecificDetails->Get ("titleLibraryPartIndex", elem.drawing.title.libInd)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, title.libInd);
                         }
+#ifdef ServerMainVers_2700
+                        GS::UniString penTableUsageModeStr;
+                        if (typeSpecificDetails->Get ("penTableUsageMode", penTableUsageModeStr)) {
+                            elem.drawing.penTableUsageMode = DrawingPenTableUsageModeFromString (penTableUsageModeStr);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, penTableUsageMode);
+                        }
+                        Int32 penTableIndex = 0;
+                        if (typeSpecificDetails->Get ("penTableIndex", penTableIndex) && penTableIndex > 0) {
+                            elem.drawing.penTableIndex = ACAPI_CreateAttributeIndex (penTableIndex);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, penTableIndex);
+                        }
+#endif
                     } break;
                     case API_TextID: {
                         const GS::ObjectState* position = typeSpecificDetails->Get ("position");

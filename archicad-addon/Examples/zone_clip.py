@@ -75,14 +75,35 @@ def wall_geometry_corners(details):
     ]
 
 
-def model_to_layout(mx, my, pos, angle, drawing_scale, model_offset):
-    """Transform a model-space coordinate to layout space."""
-    dx = (mx - model_offset["x"]) * drawing_scale
-    dy = (my - model_offset["y"]) * drawing_scale
-    cos_a = math.cos(angle)
-    sin_a = math.sin(angle)
-    lx = pos["x"] + dx * cos_a - dy * sin_a
-    ly = pos["y"] + dx * sin_a + dy * cos_a
+def model_to_layout(mx, my, offset, angle, drawing_scale, ratio, view_rotation,
+                     model_offset, is_cut_with_frame):
+    """
+    Transform a model-space coordinate to layout space, per API_DrawingType's
+    documented field semantics (not a fitted/calibrated formula):
+
+        paper = offset + drawingScale * ratio * R(angle + viewRotation) * (model + modelOffset)
+
+    - offset (API_DrawingType::offset, read-only): "If the drawing is clipped with frame
+      polygon offset is equal to pos else the subvector of pos and the coordinate of
+      anchor." Using offset instead of pos sidesteps the anchorPoint-write bug entirely —
+      offset already gives the real layout position of the model origin regardless of it.
+    - drawingScale * ratio: drawingScale is the view's own captured scale; ratio is the
+      additional "ratio of drawing size and original size" applied on top.
+    - angle + view_rotation: angle is the Drawing's own additional rotation on the layout;
+      view_rotation is the source view's own rotation (GetViewSettings.rotation), which is
+      already baked into what the Drawing captured/displays, so it must be added to recover
+      the transform from *raw* (unrotated) model coordinates.
+    - modelOffset only applies "if isCutWithFrame is true" per the DevKit doc; it shifts the
+      model content before scale/rotation, not the layout position.
+    """
+    mx = mx + (model_offset["x"] if is_cut_with_frame else 0.0)
+    my = my + (model_offset["y"] if is_cut_with_frame else 0.0)
+    scale = drawing_scale * ratio
+    total_angle = angle + view_rotation
+    cos_a = math.cos(total_angle)
+    sin_a = math.sin(total_angle)
+    lx = offset["x"] + scale * (mx * cos_a - my * sin_a)
+    ly = offset["y"] + scale * (mx * sin_a + my * cos_a)
     return {"x": lx, "y": ly}
 
 
@@ -247,19 +268,27 @@ drawing = drawings[0]
 print("    Drawing elementId: %s" % drawing["elementId"])
 
 drawing_dets = run("GetDetailsOfElements", {"elements": [drawing]})["detailsOfElements"][0]["details"]
-pos           = drawing_dets["pos"]
-angle         = drawing_dets.get("angle") or 0.0
-drawing_scale = drawing_dets.get("drawingScale") or 0.01
-model_offset  = drawing_dets.get("modelOffset") or {"x": 0.0, "y": 0.0}
+offset           = drawing_dets["offset"]
+angle            = drawing_dets.get("angle") or 0.0
+drawing_scale    = drawing_dets.get("drawingScale") or 0.01
+ratio            = drawing_dets.get("ratio") or 1.0
+model_offset     = drawing_dets.get("modelOffset") or {"x": 0.0, "y": 0.0}
+is_cut_with_frame = bool(drawing_dets.get("isCutWithFrame"))
+source_view_id   = drawing_dets["navigatorItemId"]
 
-print("    pos=%s  angle=%.4f  drawingScale=%s  modelOffset=%s" % (pos, angle, drawing_scale, model_offset))
+view_settings = run("GetViewSettings", {"navigatorItemIds": [{"navigatorItemId": source_view_id}]})
+view_rotation = view_settings["viewSettings"][0].get("rotation") or 0.0
+
+print("    offset=%s  angle=%.4f  drawingScale=%s  ratio=%s  viewRotation=%.4f  modelOffset=%s  isCutWithFrame=%s"
+      % (offset, angle, drawing_scale, ratio, view_rotation, model_offset, is_cut_with_frame))
 
 # ---------------------------------------------------------------------------
 # 5. Transform convex hull to layout space
 # ---------------------------------------------------------------------------
 
 clip_polygon = [
-    model_to_layout(mx, my, pos, angle, drawing_scale, model_offset)
+    model_to_layout(mx, my, offset, angle, drawing_scale, ratio, view_rotation,
+                     model_offset, is_cut_with_frame)
     for mx, my in hull_coords_model
 ]
 
