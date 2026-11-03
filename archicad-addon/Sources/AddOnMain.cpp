@@ -2025,6 +2025,10 @@ GSErrCode Initialize (void)
             navigatorCommands, "0.1.0",
             "Performs a publish operation on the currently opened project. Only the given publisher set will be published."
         );
+        err |= RegisterCommand<GetPublisherSetsCommand> (
+            navigatorCommands, "1.8.1",
+            "Returns the publisher sets of the project with their saved output: the local or LAN path, the Teamwork file server path, or the Internet host and directory name."
+        );
         err |= RegisterCommand<UpdateDrawingsCommand> (
             navigatorCommands, "1.1.4",
             "Performs a drawing update on the given elements."
