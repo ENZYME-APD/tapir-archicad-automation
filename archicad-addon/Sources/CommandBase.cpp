@@ -1112,6 +1112,58 @@ API_AttributeIndex GetAttributeIndexFromGuid (API_AttrTypeID typeID, API_Guid gu
     return attr.header.index;
 }
 
+static const char* ColumnVeneerTypeToString (API_VeneerTypeID venType)
+{
+    switch (venType) {
+        case APIVeneer_Finish: return "Finish";
+        case APIVeneer_Other:  return "Other";
+        case APIVeneer_Core:
+        default:               return "Core";
+    }
+}
+
+GS::ObjectState CreateColumnVeneerObjectState (const API_ColumnSegmentType& segment)
+{
+    GS::ObjectState veneer;
+    veneer.Add ("type", ColumnVeneerTypeToString (segment.venType));
+    veneer.Add ("thickness", segment.venThick);
+    if (segment.assemblySegmentData.modelElemStructureType == API_BasicStructure) {
+        veneer.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, segment.venBuildingMaterial)));
+    }
+    return veneer;
+}
+
+GS::Optional<GS::UniString> ApplyColumnVeneer (const GS::ObjectState& veneer, API_ColumnSegmentType& segment)
+{
+    API_VeneerTypeID venType = segment.venType;
+    GS::UniString typeStr;
+    if (veneer.Get ("type", typeStr)) {
+        if (typeStr == "Core") {
+            venType = APIVeneer_Core;
+        } else if (typeStr == "Finish") {
+            venType = APIVeneer_Finish;
+        } else if (typeStr == "Other") {
+            venType = APIVeneer_Other;
+        } else {
+            return GS::UniString ("Unknown veneer type '") + typeStr + "': use Core, Finish or Other.";
+        }
+    }
+
+    API_AttributeIndex venBuildingMaterial = segment.venBuildingMaterial;
+    const GS::ObjectState* buildingMaterialIdOs = veneer.Get ("buildingMaterialId");
+    if (buildingMaterialIdOs != nullptr) {
+        venBuildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialIdOs));
+        if (venBuildingMaterial == ACAPI_CreateAttributeIndex (-1)) {
+            return GS::UniString ("The veneer buildingMaterialId does not refer to an existing building material.");
+        }
+    }
+
+    segment.venType = venType;
+    segment.venBuildingMaterial = venBuildingMaterial;
+    veneer.Get ("thickness", segment.venThick);
+    return GS::NoValue;
+}
+
 GS::Optional<GS::UniString> GetFontNameFromIndex (short fontIndex)
 {
     // The legacy 8-bit name field loses characters; Archicad hands out the real Unicode name

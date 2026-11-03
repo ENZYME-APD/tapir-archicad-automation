@@ -8443,6 +8443,26 @@
             "materialsChained"
         ]
     },
+    "ColumnVeneer": {
+        "type": "object",
+        "description": "The veneer of a column segment. A thickness of 0 means no veneer. When writing, only the given fields change.",
+        "properties": {
+            "type": {
+                "type": "string",
+                "enum": [ "Core", "Finish", "Other" ]
+            },
+            "thickness": {
+                "type": "number",
+                "minimum": 0.0,
+                "description": "Thickness of the veneer; 0 removes it."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "Building material of the veneer. Archicad uses it only for a segment whose cross section is a building material, not a profile; read back only for such segments."
+            }
+        },
+        "additionalProperties": false
+    },
     "ColumnSegmentSurfaces": {
         "type": "object",
         "description": "The surfaces of a column segment.",
@@ -8456,6 +8476,9 @@
             "materialsChained": {
                 "type": "boolean",
                 "description": "Whether the surface materials are chained."
+            },
+            "veneer": {
+                "$ref": "#/ColumnVeneer"
             }
         },
         "additionalProperties": false,
@@ -8499,6 +8522,9 @@
             "profileId": {
                 "$ref": "#/AttributeId",
                 "description": "Present when the cross section uses a custom extruded profile rather than a building material."
+            },
+            "veneer": {
+                "$ref": "#/ColumnVeneer"
             }
         },
         "additionalProperties": false,
