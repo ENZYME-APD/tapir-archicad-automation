@@ -60,7 +60,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             InBoolean(
                 ElementMetadata.ReplaceExistingInputName,
-                ElementMetadata.ReplaceExistingDescription,
+                "Delete the zones created earlier by this component - found through the \"" +
+                ElementMetadata.ComponentGuidPropertyName + "\" metadata property - before the new " +
+                "zones are created, instead of keeping them as duplicates. (Before, because the new " +
+                "zones take the place of the old ones, and a zone overlapping another is refused.)",
                 false);
 
             SetOptionality(new[] { 2, 3, 4, 5 });
@@ -250,13 +253,20 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             var embedMetadata = da.GetOptional(6, true);
             var replaceExisting = da.GetOptional(7, false);
             var metadata = new ElementMetadata(this, ToAddOn, ToArchicad);
-            // The previous elements are collected before the creation (so the
-            // new elements are never in the set), but only deleted after it
-            // succeeded, so a failed run does not lose them.
-            JArray previousElements = null;
+            // Unlike the other creator components, the previous zones are
+            // deleted before the new ones are created, not after: a re-run
+            // sends the same polygons, so the new zones would overlap the
+            // previous ones, and CreateZones refuses a zone overlapping another
+            // on its story (Archicad would otherwise open a modal warning that
+            // blocks the API). Deleting after the creation would thus refuse
+            // every re-run item and delete the old zones anyway. A failed run
+            // can lose the previous zones this way, but they are the ones this
+            // very run regenerates; a failed delete keeps them and the items
+            // are then refused with the overlap error.
             if (replaceExisting)
             {
-                previousElements = metadata.FindPreviouslyCreatedElements();
+                metadata.DeletePreviouslyCreatedElements(
+                    metadata.FindPreviouslyCreatedElements());
             }
 
             if (!TryGetCadResponse(
@@ -271,10 +281,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (embedMetadata)
             {
                 metadata.StampCreatedElements(response);
-            }
-            if (replaceExisting)
-            {
-                metadata.DeletePreviouslyCreatedElements(previousElements);
             }
 
             CreateElementsComponentBase.SetCreatedElementsOutputs(da, response, 0, 1);

@@ -2,7 +2,8 @@ import aclib
 
 # Who has an element reserved can be asked without trying to reserve it: the status is read
 # from the element header, so nothing changes in the project. In a solo project the command
-# reports an error, because only Teamwork elements have a reservation.
+# reports an error, because only Teamwork elements have a reservation. New elements stay
+# reserved by the user who created them until they are released.
 walls = aclib.RunTapirCommand (
     'GetElementsByType', {
         'elementType': 'Wall'
