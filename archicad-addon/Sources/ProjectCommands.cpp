@@ -643,6 +643,135 @@ GS::ObjectState InterpretAutoTextsCommand::Execute (const GS::ObjectState& param
     return response;
 }
 
+#ifdef ServerMainVers_3000
+
+// Plain wording for the errors the ACAPI_ProjectInfo_* calls return (ACAPinc.h, "ProjectInfo
+// Group and Field Management", Archicad 30), so a caller sees why a change was refused without
+// an error table. APIERR_REFUSEDPAR means something else for every call, so its wording is the
+// caller's.
+static GS::ObjectState CreateProjectInfoErrorResponse (GSErrCode err, const GS::UniString& failedAction, const GS::UniString& refusedParReason = GS::UniString ())
+{
+    GS::UniString reason;
+    switch (err) {
+        case APIERR_BADID:           reason = "no Project Info group or field has the given id"; break;
+        case APIERR_NAMEALREADYUSED: reason = "the name is already used"; break;
+        case APIERR_NOACCESSRIGHT:   reason = "no access right: in Teamwork this needs the permission to modify Project Info"; break;
+        case APIERR_REFUSEDPAR:      reason = refusedParReason; break;
+        default:                     break;
+    }
+    return CreateErrorResponse (err, reason.IsEmpty () ? failedAction + "." : failedAction + ": " + reason + ".");
+}
+
+// The autotexts that can be fields of the Project Info groups: the built-in ones by their fixed
+// keys and every custom one, whose key starts with 'autotext-' whatever follows (the fields the
+// dialog adds get 'autotext-<section>-<n>', the ones created by the API 'autotext-<guid>').
+static bool IsProjectInfoOrCustomAutoTextId (const GS::UniString& autoTextId)
+{
+    return IsProjectInfoAutoTextId (autoTextId) || autoTextId.BeginsWith ("autotext-");
+}
+
+// The autotext key of a project info field with the given name, the key GetProjectInfoFields
+// returns and SetProjectInfoField takes. The Project Info API identifies a field by a guid and
+// the autotext API by a key, and nothing in the DevKit maps one to the other, so the two are
+// matched by the name the field shows on the UI - only when exactly one project info autotext
+// has it, as a wrong key would change another field.
+static GS::Optional<GS::UniString> FindProjectInfoAutoTextKey (const GS::Array<GS::ArrayFB<GS::UniString, 3>>& autoTexts, const GS::UniString& fieldName)
+{
+    GS::Optional<GS::UniString> foundKey;
+    for (const auto& autoText : autoTexts) {
+        if (autoText[0] != fieldName || !IsProjectInfoOrCustomAutoTextId (autoText[1])) {
+            continue;
+        }
+        if (foundKey.HasValue ()) {
+            return GS::NoValue;
+        }
+        foundKey = autoText[1];
+    }
+    return foundKey;
+}
+
+// The name a project info field shows on the UI, by its autotext key: the way back from the key
+// to the field of the Project Info API (see FindProjectInfoAutoTextKey). The caller checks the key
+// with IsProjectInfoOrCustomAutoTextId first, as another autotext may share a field's name.
+static GS::Optional<GS::UniString> FindProjectInfoAutoTextName (const GS::Array<GS::ArrayFB<GS::UniString, 3>>& autoTexts, const GS::UniString& autoTextKey)
+{
+    for (const auto& autoText : autoTexts) {
+        if (autoText[1] == autoTextKey) {
+            return autoText[0];
+        }
+    }
+    return GS::NoValue;
+}
+
+// The field of the Project Info API with the given UI name, searched in every group - only when
+// exactly one field has the name, for the same reason as in FindProjectInfoAutoTextKey. No value
+// means no field or more than one has it; a failed API call is returned as such.
+static GSErrCode FindProjectInfoFieldByName (const GS::UniString& fieldName, GS::Optional<API_Guid>& foundFieldGuid)
+{
+    foundFieldGuid = GS::NoValue;
+
+    std::vector<API_Guid> groupGuids;
+    GSErrCode err = ACAPI_ProjectInfo_GetGroups (groupGuids);
+    if (err != NoError) {
+        return err;
+    }
+
+    for (const API_Guid& groupGuid : groupGuids) {
+        std::vector<API_Guid> fieldGuids;
+        err = ACAPI_ProjectInfo_GetFields (groupGuid, fieldGuids);
+        if (err != NoError) {
+            return err;
+        }
+
+        for (const API_Guid& fieldGuid : fieldGuids) {
+            GS::UniString name;
+            GS::UniString value;
+            err = ACAPI_ProjectInfo_GetField (fieldGuid, name, value);
+            if (err != NoError) {
+                return err;
+            }
+            if (name != fieldName) {
+                continue;
+            }
+            if (foundFieldGuid.HasValue ()) {
+                foundFieldGuid = GS::NoValue;
+                return NoError;
+            }
+            foundFieldGuid = fieldGuid;
+        }
+    }
+
+    return NoError;
+}
+
+// The group a new field goes to when the caller names none: the first group of the Project Info
+// dialog (the one with the built-in project fields).
+static GSErrCode GetFirstProjectInfoGroup (API_Guid& groupGuid)
+{
+    std::vector<API_Guid> groupGuids;
+    const GSErrCode err = ACAPI_ProjectInfo_GetGroups (groupGuids);
+    if (err != NoError) {
+        return err;
+    }
+    if (groupGuids.empty ()) {
+        return APIERR_GENERAL;
+    }
+    groupGuid = groupGuids.front ();
+    return NoError;
+}
+
+static GS::ObjectState DeleteProjectInfoField (const API_Guid& fieldGuid)
+{
+    const GSErrCode err = ACAPI_ProjectInfo_DeleteField (fieldGuid);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to delete the project info field",
+            "the field is a fixed (built-in) field and cannot be deleted"));
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
+#endif
+
 GetNoteAutotextsCommand::GetNoteAutotextsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -897,7 +1026,7 @@ GS::Optional<GS::UniString> CreateProjectInfoFieldsCommand::GetRawResponseSchema
         "type": "object",
         "properties": {
             "fields": {
-                "$ref": "#/ProjectInfoFields"
+                "$ref": "#/CreatedProjectInfoFieldsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -929,8 +1058,67 @@ GS::ObjectState CreateProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
             projectInfoField.Get ("projectInfoValue", projectInfoValue);
 
 #ifdef ServerMainVers_3000
-            fieldsAdder (CreateErrorResponse (APIERR_NOTSUPPORTED, "TODO: this function was not migrated to AC30 yet. Failed to create project information field."));
+            // On the Project Info API of Archicad 30 (ACAPinc.h, "ProjectInfo Group and Field
+            // Management"), which replaces the autotext goodies the older versions use below.
+            // A given but unparseable group id is an error, not a silent fallback to the first group.
+            API_Guid groupGuid = APINULLGuid;
+            if (projectInfoField.Contains ("projectInfoGroupId")) {
+                groupGuid = GetGuidFromArrayItem ("projectInfoGroupId", projectInfoField);
+                if (groupGuid == APINULLGuid) {
+                    fieldsAdder (CreateErrorResponse (APIERR_BADPARS, "Invalid 'projectInfoGroupId' parameter."));
+                    continue;
+                }
+            } else {
+                const GSErrCode groupErr = GetFirstProjectInfoGroup (groupGuid);
+                if (groupErr != NoError) {
+                    fieldsAdder (CreateErrorResponse (groupErr, "Failed to find the Project Info group to create the field in."));
+                    continue;
+                }
+            }
+
+            API_Guid fieldGuid = APINULLGuid;
+            GSErrCode err = ACAPI_ProjectInfo_CreateField (groupGuid, projectInfoName, fieldGuid);
+            if (err != NoError) {
+                fieldsAdder (CreateProjectInfoErrorResponse (err, "Failed to create the project information field"));
+                continue;
+            }
+
+            // A new field starts empty, so an empty value needs no call.
+            if (!projectInfoValue.IsEmpty ()) {
+                err = ACAPI_ProjectInfo_SetFieldValue (fieldGuid, projectInfoValue);
+                if (err != NoError) {
+                    // The item is reported as an error, so the field it created is removed again
+                    // rather than left behind empty with no id for the caller to find it by.
+                    ACAPI_ProjectInfo_DeleteField (fieldGuid);
+                    fieldsAdder (CreateProjectInfoErrorResponse (err, "Failed to set the initial value of the project information field"));
+                    continue;
+                }
+            }
+
+            GS::ObjectState createdField;
+            createdField.Add ("projectInfoFieldId", CreateGuidObjectState (fieldGuid));
+
+            // The autotext key of the new field, for SetProjectInfoField, when it can be told
+            // (see FindProjectInfoAutoTextKey). The list is fetched after the creation so that it
+            // contains the new field.
+            GS::Array<GS::ArrayFB<GS::UniString, 3>> autoTexts;
+            if (ACAPI_AutoText_GetAutoTexts (&autoTexts, APIAutoText_All) == NoError) {
+                const GS::Optional<GS::UniString> autoTextKey = FindProjectInfoAutoTextKey (autoTexts, projectInfoName);
+                if (autoTextKey.HasValue ()) {
+                    createdField.Add ("projectInfoId", autoTextKey.Get ());
+                }
+            }
+
+            createdField.Add ("projectInfoName", projectInfoName);
+            createdField.Add ("projectInfoValue", projectInfoValue);
+            fieldsAdder (createdField);
 #else
+            // The autotext API knows no groups; a requested group is refused rather than ignored.
+            if (projectInfoField.Contains ("projectInfoGroupId")) {
+                fieldsAdder (CreateErrorResponse (APIERR_NOTSUPPORTED, "projectInfoGroupId requires Archicad 30 or newer."));
+                continue;
+            }
+
             GS::Guid guid;
             guid.Generate ();
             API_Guid dbKey = GSGuid2APIGuid (guid);
@@ -981,16 +1169,20 @@ GS::Optional<GS::UniString> DeleteProjectInfoFieldsCommand::GetInputParametersSc
         "properties": {
             "projectInfoIds": {
                 "type": "array",
-                "description": "List of project info field ids to delete. Only custom fields (ids starting with 'autotext-') can be deleted.",
+                "description": "List of project info field ids (autotext keys, as GetProjectInfoFields returns them) to delete. Only custom fields can be deleted. On Archicad 30 a key is matched to the field by its name, so it fails when more than one field has the name; delete such a field by its projectInfoFieldId instead.",
                 "items": {
                     "type": "string"
                 }
+            },
+            "projectInfoFieldIds": {
+                "type": "array",
+                "description": "List of fields of the Project Info groups to delete, by the ids GetProjectInfoGroups returns. Available from Archicad 30. Their results follow the results of projectInfoIds.",
+                "items": {
+                    "$ref": "#/ProjectInfoFieldIdArrayItem"
+                }
             }
         },
-        "additionalProperties": false,
-        "required": [
-            "projectInfoIds"
-        ]
+        "additionalProperties": false
     })";
 }
 
@@ -1013,18 +1205,56 @@ GS::Optional<GS::UniString> DeleteProjectInfoFieldsCommand::GetRawResponseSchema
 GS::ObjectState DeleteProjectInfoFieldsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::UniString> projectInfoIds;
-    if (!parameters.Get ("projectInfoIds", projectInfoIds) || projectInfoIds.IsEmpty ()) {
-        return CreateErrorResponse (APIERR_BADPARS, "projectInfoIds is missing or empty.");
+    parameters.Get ("projectInfoIds", projectInfoIds);
+    GS::Array<GS::ObjectState> projectInfoFieldIds;
+    parameters.Get ("projectInfoFieldIds", projectInfoFieldIds);
+    if (projectInfoIds.IsEmpty () && projectInfoFieldIds.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "projectInfoIds and projectInfoFieldIds are both missing or empty.");
     }
 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
     ACAPI_CallUndoableCommand ("DeleteProjectInfoFields", [&]() -> GSErrCode {
+#ifdef ServerMainVers_3000
+        // The autotext keys are matched to the fields of the Project Info API by name (see
+        // FindProjectInfoAutoTextKey); the list is fetched once, before the first deletion.
+        GS::Array<GS::ArrayFB<GS::UniString, 3>> autoTexts;
+        const GSErrCode autoTextsErr = ACAPI_AutoText_GetAutoTexts (&autoTexts, APIAutoText_All);
+#endif
         for (const GS::UniString& projectInfoId : projectInfoIds) {
 #ifdef ServerMainVers_3000
-            (void) projectInfoId; // suppress unused variable warning
-            executionResults (CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "TODO: this function was not migrated to AC30 yet. Failed to delete project info field."));
+            if (autoTextsErr != NoError) {
+                executionResults (CreateFailedExecutionResult (autoTextsErr, "Failed to retrieve the project info fields."));
+                continue;
+            }
+
+            // Only the key of a project info or custom autotext may lead to a field: another
+            // autotext (a date or story one, say) could share a custom field's name.
+            if (!IsProjectInfoOrCustomAutoTextId (projectInfoId)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The id is not the id of a project info field."));
+                continue;
+            }
+
+            const GS::Optional<GS::UniString> fieldName = FindProjectInfoAutoTextName (autoTexts, projectInfoId);
+            if (!fieldName.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "No project info field has the given id."));
+                continue;
+            }
+
+            GS::Optional<API_Guid> fieldGuid;
+            const GSErrCode err = FindProjectInfoFieldByName (fieldName.Get (), fieldGuid);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to retrieve the fields of the Project Info groups."));
+                continue;
+            }
+            if (!fieldGuid.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID,
+                    "The project info field cannot be matched by its name to exactly one field of the Project Info groups; delete it by its projectInfoFieldId."));
+                continue;
+            }
+
+            executionResults (DeleteProjectInfoField (fieldGuid.Get ()));
 #else
             if (!projectInfoId.BeginsWith ("autotext-")) {
                 executionResults (CreateFailedExecutionResult (APIERR_BADPARS,
@@ -1040,52 +1270,254 @@ GS::ObjectState DeleteProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
             }
 #endif
         }
+
+        for (const GS::ObjectState& projectInfoFieldId : projectInfoFieldIds) {
+#ifdef ServerMainVers_3000
+            const API_Guid fieldGuid = GetGuidFromArrayItem ("projectInfoFieldId", projectInfoFieldId);
+            if (fieldGuid == APINULLGuid) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'projectInfoFieldId' parameter."));
+                continue;
+            }
+
+            executionResults (DeleteProjectInfoField (fieldGuid));
+#else
+            (void) projectInfoFieldId; // suppress unused variable warning
+            executionResults (CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "projectInfoFieldIds requires Archicad 30 or newer."));
+#endif
+        }
+
         return NoError;
     });
 
     return response;
 }
 
+RenameProjectInfoFieldsCommand::RenameProjectInfoFieldsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RenameProjectInfoFieldsCommand::GetName () const
+{
+    return "RenameProjectInfoFields";
+}
+
+GS::Optional<GS::UniString> RenameProjectInfoFieldsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "projectInfoFields": {
+                "type": "array",
+                "description": "The fields of the Project Info groups to rename, each with its new name. Fixed (built-in) fields cannot be renamed.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "projectInfoFieldId": {
+                            "$ref": "#/ProjectInfoFieldId"
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The new name of the field. It must not be used by another field.",
+                            "minLength": 1
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "projectInfoFieldId",
+                        "name"
+                    ]
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoFields"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> RenameProjectInfoFieldsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState RenameProjectInfoFieldsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
 #ifdef ServerMainVers_3000
-
-// Plain wording for the errors the ACAPI_ProjectInfo_* calls return (ACAPinc.h, "ProjectInfo
-// Group and Field Management", Archicad 30), so a caller sees why a change was refused without
-// an error table. APIERR_REFUSEDPAR means something else for every call, so its wording is the
-// caller's.
-static GS::ObjectState CreateProjectInfoErrorResponse (GSErrCode err, const GS::UniString& failedAction, const GS::UniString& refusedParReason = GS::UniString ())
-{
-    GS::UniString reason;
-    switch (err) {
-        case APIERR_BADID:           reason = "no Project Info group or field has the given id"; break;
-        case APIERR_NAMEALREADYUSED: reason = "the name is already used"; break;
-        case APIERR_NOACCESSRIGHT:   reason = "no access right: in Teamwork this needs the permission to modify Project Info"; break;
-        case APIERR_REFUSEDPAR:      reason = refusedParReason; break;
-        default:                     break;
+    GS::Array<GS::ObjectState> projectInfoFields;
+    if (!parameters.Get ("projectInfoFields", projectInfoFields) || projectInfoFields.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "projectInfoFields is missing or empty.");
     }
-    return CreateErrorResponse (err, reason.IsEmpty () ? failedAction + "." : failedAction + ": " + reason + ".");
-}
 
-// The autotext key of a project info field with the given name, the key GetProjectInfoFields
-// returns and SetProjectInfoField takes. The Project Info API identifies a field by a guid and
-// the autotext API by a key, and nothing in the DevKit maps one to the other, so the two are
-// matched by the name the field shows on the UI - only when exactly one project info autotext
-// has it, as a wrong key would change another field.
-static GS::Optional<GS::UniString> FindProjectInfoAutoTextKey (const GS::Array<GS::ArrayFB<GS::UniString, 3>>& autoTexts, const GS::UniString& fieldName)
-{
-    GS::Optional<GS::UniString> foundKey;
-    for (const auto& autoText : autoTexts) {
-        if (autoText[0] != fieldName || !IsProjectInfoAutoTextId (autoText[1])) {
-            continue;
-        }
-        if (foundKey.HasValue ()) {
-            return GS::NoValue;
-        }
-        foundKey = autoText[1];
-    }
-    return foundKey;
-}
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    ACAPI_CallUndoableCommand ("RenameProjectInfoFields", [&]() -> GSErrCode {
+        for (const GS::ObjectState& projectInfoField : projectInfoFields) {
+            const API_Guid fieldGuid = GetGuidFromArrayItem ("projectInfoFieldId", projectInfoField);
+            if (fieldGuid == APINULLGuid) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'projectInfoFieldId' parameter."));
+                continue;
+            }
+
+            GS::UniString name;
+            if (!projectInfoField.Get ("name", name) || name.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "name is missing or empty."));
+                continue;
+            }
+
+            const GSErrCode err = ACAPI_ProjectInfo_RenameField (fieldGuid, name);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to rename the project info field",
+                    "the field is a fixed (built-in) field and cannot be renamed")));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 30 or newer.");
 #endif
+}
+
+MoveProjectInfoFieldsCommand::MoveProjectInfoFieldsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String MoveProjectInfoFieldsCommand::GetName () const
+{
+    return "MoveProjectInfoFields";
+}
+
+GS::Optional<GS::UniString> MoveProjectInfoFieldsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "projectInfoFields": {
+                "type": "array",
+                "description": "The fields of the Project Info groups to move, in the order the moves are made. A subfield of a calculated field cannot be moved on its own, it moves with its parent field.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "projectInfoFieldId": {
+                            "$ref": "#/ProjectInfoFieldId"
+                        },
+                        "projectInfoGroupId": {
+                            "$ref": "#/ProjectInfoGroupId",
+                            "description": "The group to move the field to. To reorder a field within its group, give its current group."
+                        },
+                        "beforeProjectInfoFieldId": {
+                            "$ref": "#/ProjectInfoFieldId",
+                            "description": "The field of the target group to move the field before. When omitted, the field is moved to the end of the group."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "projectInfoFieldId",
+                        "projectInfoGroupId"
+                    ]
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoFields"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> MoveProjectInfoFieldsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState MoveProjectInfoFieldsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    GS::Array<GS::ObjectState> projectInfoFields;
+    if (!parameters.Get ("projectInfoFields", projectInfoFields) || projectInfoFields.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "projectInfoFields is missing or empty.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("MoveProjectInfoFields", [&]() -> GSErrCode {
+        for (const GS::ObjectState& projectInfoField : projectInfoFields) {
+            const API_Guid fieldGuid = GetGuidFromArrayItem ("projectInfoFieldId", projectInfoField);
+            if (fieldGuid == APINULLGuid) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'projectInfoFieldId' parameter."));
+                continue;
+            }
+
+            const API_Guid toGroupGuid = GetGuidFromArrayItem ("projectInfoGroupId", projectInfoField);
+            if (toGroupGuid == APINULLGuid) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'projectInfoGroupId' parameter."));
+                continue;
+            }
+
+            // No 'beforeProjectInfoFieldId' is "to the end of the group", which the API takes as
+            // std::nullopt; a given but invalid one is an error, not a silent move to the end.
+            std::optional<API_Guid> beforeFieldGuid;
+            if (projectInfoField.Contains ("beforeProjectInfoFieldId")) {
+                const API_Guid beforeGuid = GetGuidFromArrayItem ("beforeProjectInfoFieldId", projectInfoField);
+                if (beforeGuid == APINULLGuid) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Invalid 'beforeProjectInfoFieldId' parameter."));
+                    continue;
+                }
+                beforeFieldGuid = beforeGuid;
+            }
+
+            const GSErrCode err = ACAPI_ProjectInfo_MoveField (fieldGuid, toGroupGuid, beforeFieldGuid);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to move the project info field",
+                    "the field is a subfield, which moves with its parent field")));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 30 or newer.");
+#endif
+}
 
 GetProjectInfoGroupsCommand::GetProjectInfoGroupsCommand () :
     CommandBase (CommonSchema::Used)
@@ -2091,17 +2523,16 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
         targetLevels.Push (level);
     }
 
-    // Levels are set in two steps, because Archicad anchors the story ladder on the active
-    // story: that one never moves, and every other story is positioned relative to it.
-    // Measured on a live AC29: APIStory_SetElevation moves only the story it names, and
-    // APIStory_SetHeight moves whichever side of the boundary is further from the anchor.
-    // Measured on a live AC28 (#747): APIStory_SetHeight moves the story above the
-    // boundary even when that one is the active story, so a story below the active one
-    // cannot be moved through the height of the boundary between them - the active story
-    // moves instead. The two agree on every boundary above the active story, so the active
-    // story is moved down to the lowest story whose level changes for the duration of the
-    // level pass; then no boundary below the anchor has to change at all. The previously
-    // active story is restored afterwards.
+    // Every story that is not on its requested level is made the active story and given
+    // its elevation directly. APIStory_SetElevation moves the story it names and nothing
+    // else, while which side of a boundary APIStory_SetHeight moves differs between
+    // Archicad versions (on Archicad 27 it moves the active story below the boundary, on
+    // Archicad 28 the story above it), so heights are not used here at all.
+    //
+    // A story never crosses a neighbour: the stories that go down are moved first, from
+    // the bottom up, so the one below has already reached its lower level or is still
+    // below its own higher one; then the stories that go up are moved from the top down,
+    // with the same argument mirrored. The previously active story is restored afterwards.
     const short originalActStory = storyInfo.actStory;
     bool actStoryMoved = false;
     const GS::OnExit restoreActStory ([&] () {
@@ -2113,99 +2544,37 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
         }
     });
 
-    bool hasChangingStory = false;
-    GS::UIndex lowestChangingStory = 0;
+    GS::Array<GS::UIndex> moveOrder;
     for (GS::UIndex i = 0; i < storyCount; ++i) {
-        if (std::abs (currentStories[i].level - targetLevels[i]) >= StoryLevelTolerance) {
-            hasChangingStory = true;
-            lowestChangingStory = i;
-            break;
+        if (targetLevels[i] <= currentStories[i].level - StoryLevelTolerance) {
+            moveOrder.Push (i);
+        }
+    }
+    for (GS::UIndex i = storyCount; i > 0; --i) {
+        if (targetLevels[i - 1] >= currentStories[i - 1].level + StoryLevelTolerance) {
+            moveOrder.Push (i - 1);
         }
     }
 
-    const bool actStoryIsValid = storyInfo.actStory >= storyInfo.firstStory && storyInfo.actStory <= storyInfo.lastStory;
-
-    if (hasChangingStory && actStoryIsValid && storyInfo.actStory > currentStories[lowestChangingStory].index) {
-        API_StoryCmdType storyCmd = {};
-        storyCmd.action = APIStory_GoTo;
-        storyCmd.index  = currentStories[lowestChangingStory].index;
-
-        // Where the active story cannot be switched (#748) this falls back to anchoring on
-        // the story which is active, and the final check reports the levels it could not
-        // set, exactly as before.
-        if (ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd) == NoError) {
-            err = RefreshStoryInfo (storyInfo);
-            if (err != NoError) {
-                BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-                return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
-            }
-            if (static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1) != storyCount) {
-                BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-                return CreateFailedExecutionResult (APIERR_GENERAL, "The story structure changed unexpectedly.");
-            }
-            TakeStorySnapshot (storyInfo, currentStories);
-            actStoryMoved = storyInfo.actStory != originalActStory;
+    for (const GS::UIndex i : moveOrder) {
+        API_StoryCmdType goToCmd = {};
+        goToCmd.action = APIStory_GoTo;
+        goToCmd.index  = currentStories[i].index;
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&goToCmd);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to make the story active to set its level.");
         }
-    }
+        actStoryMoved = currentStories[i].index != originalActStory;
 
-    // Step one puts the anchor on its requested level. It has to come first - moving the
-    // anchor afterwards would change the gap to its neighbour and undo a distance already
-    // set. The anchor is the active story, the only one SetElevation is known to move.
-    const GS::UIndex anchor =
-        (storyInfo.actStory >= storyInfo.firstStory && storyInfo.actStory <= storyInfo.lastStory)
-            ? static_cast<GS::UIndex> (storyInfo.actStory - storyInfo.firstStory)
-            : 0;
-
-    if (std::abs (currentStories[anchor].level - targetLevels[anchor]) >= StoryLevelTolerance) {
-        API_StoryCmdType storyCmd = {};
-        storyCmd.action    = APIStory_SetElevation;
-        storyCmd.index     = currentStories[anchor].index;
-        storyCmd.elevation = targetLevels[anchor];
-
-        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        API_StoryCmdType elevationCmd = {};
+        elevationCmd.action    = APIStory_SetElevation;
+        elevationCmd.index     = currentStories[i].index;
+        elevationCmd.elevation = targetLevels[i];
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&elevationCmd);
         if (err != NoError) {
             BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
             return CreateFailedExecutionResult (err, "Failed to change story elevation.");
-        }
-
-        err = RefreshStoryInfo (storyInfo);
-        if (err != NoError) {
-            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-            return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
-        }
-        if (static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1) != storyCount) {
-            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-            return CreateFailedExecutionResult (APIERR_GENERAL, "The story structure changed unexpectedly.");
-        }
-        TakeStorySnapshot (storyInfo, currentStories);
-    }
-
-    // Step two sets the distances, working outwards from the anchor in both directions so
-    // that every height is set against a story which is already on its requested level and
-    // positions exactly one story that is not.
-    for (GS::UIndex i = anchor; i + 1 < storyCount; ++i) {
-        API_StoryCmdType storyCmd = {};
-        storyCmd.action = APIStory_SetHeight;
-        storyCmd.index  = currentStories[i].index;
-        storyCmd.height = targetLevels[i + 1] - targetLevels[i];
-
-        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
-        if (err != NoError) {
-            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-            return CreateFailedExecutionResult (err, "Failed to change story height.");
-        }
-    }
-
-    for (GS::UIndex i = anchor; i > 0; --i) {
-        API_StoryCmdType storyCmd = {};
-        storyCmd.action = APIStory_SetHeight;
-        storyCmd.index  = currentStories[i - 1].index;
-        storyCmd.height = targetLevels[i] - targetLevels[i - 1];
-
-        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
-        if (err != NoError) {
-            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-            return CreateFailedExecutionResult (err, "Failed to change story height.");
         }
     }
 
@@ -2222,7 +2591,7 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
 
     // A structure which silently ended up somewhere else than requested is worse than an
     // error, so report the first level which could not be set, naming both levels so the
-    // message says what actually happened, and the story the ladder was anchored on.
+    // message says what actually happened, and the story that is active.
     for (GS::UIndex i = 0; i < storyCount; ++i) {
         if (std::abs (currentStories[i].level - targetLevels[i]) >= StoryLevelTolerance) {
             const GS::UniString message = GS::UniString::Printf (
@@ -3089,37 +3458,6 @@ GS::Optional<GS::UniString> GetSurveyPointTransformationCommand::GetRawResponseS
     })";
 }
 
-#ifdef ServerMainVers_2700
-// Inverts the affine transformation of a 3x4 API_Tranmat (rotation/scale part plus translation).
-static bool InvertTranmat (const API_Tranmat& tranmat, API_Tranmat& inverse)
-{
-    const double* m = tranmat.tmx;
-    const double c00 = m[5] * m[10] - m[6] * m[9];
-    const double c01 = m[6] * m[8] - m[4] * m[10];
-    const double c02 = m[4] * m[9] - m[5] * m[8];
-    const double det = m[0] * c00 + m[1] * c01 + m[2] * c02;
-    if (std::fabs (det) < 1e-12) {
-        return false;
-    }
-
-    double* r = inverse.tmx;
-    r[0]  = c00 / det;
-    r[1]  = (m[2] * m[9] - m[1] * m[10]) / det;
-    r[2]  = (m[1] * m[6] - m[2] * m[5]) / det;
-    r[4]  = c01 / det;
-    r[5]  = (m[0] * m[10] - m[2] * m[8]) / det;
-    r[6]  = (m[2] * m[4] - m[0] * m[6]) / det;
-    r[8]  = c02 / det;
-    r[9]  = (m[1] * m[8] - m[0] * m[9]) / det;
-    r[10] = (m[0] * m[5] - m[1] * m[4]) / det;
-
-    r[3]  = -(r[0] * m[3] + r[1] * m[7] + r[2] * m[11]);
-    r[7]  = -(r[4] * m[3] + r[5] * m[7] + r[6] * m[11]);
-    r[11] = -(r[8] * m[3] + r[9] * m[7] + r[10] * m[11]);
-    return true;
-}
-#endif
-
 GS::ObjectState GetSurveyPointTransformationCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2700
@@ -3286,6 +3624,58 @@ GS::ObjectState SetGeoLocationCommand::Execute (const GS::ObjectState& parameter
     return CreateSuccessfulExecutionResult ();
 }
 
+GetCoordinateOriginsCommand::GetCoordinateOriginsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetCoordinateOriginsCommand::GetName () const
+{
+    return "GetCoordinateOrigins";
+}
+
+GS::Optional<GS::UniString> GetCoordinateOriginsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "virtualOriginOffset": {
+                "$ref": "#/Coordinate2D",
+                "description": "The offset of the origin of the virtual coordinate system from the world origin. Archicad sets it after a project is opened when the model is far from the world origin. Missing when Archicad does not return it for the current window."
+            },
+            "userOrigin": {
+                "$ref": "#/Coordinate3D",
+                "description": "The user origin of the current database, relative to the origin of the virtual coordinate system. Missing when the current window has none (only floor plan, section, detail and 3D windows have one)."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::ObjectState GetCoordinateOriginsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GS::ObjectState response;
+
+    API_Coord offset = {};
+    const GSErrCode offsetErr = ACAPI_ProjectSetting_GetOffset (&offset);
+    if (offsetErr == NoError) {
+        response.Add ("virtualOriginOffset", Create2DCoordinateObjectState (offset));
+    }
+
+    API_Coord3D userOrigin = {};
+    const GSErrCode userOriginErr = ACAPI_Database_GetLocOrigo (&userOrigin);
+    if (userOriginErr == NoError) {
+        response.Add ("userOrigin", Create3DCoordinateObjectState (userOrigin));
+    }
+
+    if (offsetErr != NoError && userOriginErr != NoError) {
+        return CreateErrorResponse (offsetErr, "Failed to get the coordinate origins for the current window.");
+    }
+
+    return response;
+}
+
 // The fields of File > Info > Project Notes, in the order of API_ProjectNoteInfo.
 static const char* ProjectNotesPropertiesSchema = R"(
             "client": {
@@ -3318,11 +3708,11 @@ static const char* ProjectNotesPropertiesSchema = R"(
             },
             "architect": {
                 "type": "string",
-                "description": "Architect."
+                "description": "Architect: the full name of the Project Info contact. Archicad keeps it as name parts (title prefix, given, middle and family name, title suffix); SetProjectNotes puts a new value into the given name and clears the other parts, so it reads back unchanged. Use SetProjectInfoField to set the parts."
             },
             "draftsmen": {
                 "type": "string",
-                "description": "Draftsmen."
+                "description": "Draftsmen: the full name of the Project Info CAD technician, kept as name parts like architect."
             },
             "projectStatus": {
                 "type": "string",
@@ -3429,6 +3819,48 @@ GS::Optional<GS::UniString> SetProjectNotesCommand::GetRawResponseSchema () cons
     })";
 }
 
+// architect and draftsmen are the full names of two Project Info persons, which Archicad keeps as name parts.
+// ACAPI_ProjectSetting_ChangeProjectNotes writes the full name it is given into the given name and keeps the other
+// parts, so every write added a copy of the name (#1559, tested on Archicad 29). The parts are read before the
+// write and set afterwards: back to how they were for an unchanged name, or to the new name in the given name
+// alone, so the full name reads back as it was written.
+static const char* ProjectNotesNameParts[] = { "PREFIXTITLE", "GIVENNAME", "MIDDLENAME", "FAMILYNAME", "SUFFIXTITLE" };
+
+static GS::HashTable<GS::UniString, GS::UniString> GetProjectInfoAutoTexts ()
+{
+    GS::HashTable<GS::UniString, GS::UniString> values;
+    GS::Array<GS::ArrayFB<GS::UniString, 3>> autoTexts;
+    if (ACAPI_AutoText_GetAutoTexts (&autoTexts, APIAutoText_All) == NoError) {
+        for (const auto& autoText : autoTexts) {
+            values.Put (autoText[1], autoText[2]);
+        }
+    }
+    return values;
+}
+
+static GSErrCode SetNameParts (const GS::UniString& person, const GS::HashTable<GS::UniString, GS::UniString>& before, const GS::Optional<GS::UniString>& newFullName)
+{
+    const GS::HashTable<GS::UniString, GS::UniString> current = GetProjectInfoAutoTexts ();
+    for (const char* part : ProjectNotesNameParts) {
+        GS::UniString id = person + "_" + part;
+        if (!before.ContainsKey (id) || !current.ContainsKey (id)) {
+            continue;
+        }
+        GS::UniString value = before.Get (id);
+        if (newFullName.HasValue ()) {
+            value = GS::UniString (part) == "GIVENNAME" ? newFullName.Get () : GS::UniString ();
+        }
+        if (current.Get (id) != value) {
+            // An empty value is cleared with nullptr, see SetProjectInfoFieldCommand.
+            const GSErrCode err = ACAPI_AutoText_SetAnAutoText (&id, value.IsEmpty () ? nullptr : &value);
+            if (err != NoError) {
+                return err;
+            }
+        }
+    }
+    return NoError;
+}
+
 GS::ObjectState SetProjectNotesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     API_ProjectNoteInfo projectNotes = {};
@@ -3436,6 +3868,8 @@ GS::ObjectState SetProjectNotesCommand::Execute (const GS::ObjectState& paramete
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to get the project notes.");
     }
+    const API_ProjectNoteInfo notesBefore = projectNotes;
+    const GS::HashTable<GS::UniString, GS::UniString> autoTextsBefore = GetProjectInfoAutoTexts ();
 
     // Fields that are not given keep their current value. Longer texts are truncated to the field's length.
     bool hasAnyInput = false;
@@ -3457,11 +3891,35 @@ GS::ObjectState SetProjectNotesCommand::Execute (const GS::ObjectState& paramete
         return CreateFailedExecutionResult (APIERR_BADPARS, "No project notes field was given to change.");
     }
 
+    // A name counts as changed when the stored text changes; the new name is taken from the request, which keeps its
+    // non-ASCII characters (the project notes hold 8-bit text).
+    const auto getNewFullName = [&] (const char* key, const char* before, const char* after) -> GS::Optional<GS::UniString> {
+        GS::UniString requested;
+        if (strcmp (before, after) == 0 || !parameters.Get (key, requested)) {
+            return GS::NoValue;
+        }
+        return requested;
+    };
+    const GS::Optional<GS::UniString> newArchitect = getNewFullName ("architect", notesBefore.architect, projectNotes.architect);
+    const GS::Optional<GS::UniString> newDraftsmen = getNewFullName ("draftsmen", notesBefore.draftsmen, projectNotes.draftsmen);
+    // The name parts are set inside the same undoable command, so one Undo takes back the whole change.
+    bool namePartsFailed = false;
     err = ACAPI_CallUndoableCommand ("Change Project Notes", [&] () -> GSErrCode {
-        return ACAPI_ProjectSetting_ChangeProjectNotes (&projectNotes);
+        GSErrCode changeErr = ACAPI_ProjectSetting_ChangeProjectNotes (&projectNotes);
+        if (changeErr != NoError) {
+            return changeErr;
+        }
+        changeErr = SetNameParts ("CONTACT", autoTextsBefore, newArchitect);
+        if (changeErr == NoError) {
+            changeErr = SetNameParts ("CAD_TECHNICIAN", autoTextsBefore, newDraftsmen);
+        }
+        namePartsFailed = changeErr != NoError;
+        return changeErr;
     });
     if (err != NoError) {
-        return CreateFailedExecutionResult (err, "Failed to change the project notes.");
+        return CreateFailedExecutionResult (err, namePartsFailed ?
+            "Failed to set the name parts of the architect or the draftsmen in the project info." :
+            "Failed to change the project notes.");
     }
 
     return CreateSuccessfulExecutionResult ();
@@ -5576,6 +6034,10 @@ GS::Optional<GS::UniString> IFCFileOperationCommand::GetInputParametersSchema ()
             "elementsToExport": {
                 "$ref": "#/IFCElementsToExport",
                 "description": "Only for the save method, and only together with translatorName. The default is VisibleElementsOnAllStories."
+            },
+            "storyIndex": {
+                "type": "integer",
+                "description": "Only for the merge method: the story the first storey of the IFC file is placed on, the IFC's other storeys follow on the stories above it. Without it Archicad uses the active story of the floor plan. The active story and the current window are restored after the merge. See GetStories for the valid story indices."
             }
         },
         "additionalProperties": false,
@@ -5650,6 +6112,68 @@ GS::ObjectState IFCFileOperationCommand::Execute (const GS::ObjectState& paramet
         // The add-on path below has no element filter, so a filter without a translator
         // would be dropped without a word.
         return CreateFailedExecutionResult (APIERR_BADPARS, "elementsToExport is only valid together with translatorName");
+    }
+
+    // Without a dialog, a merge puts the first storey of the IFC file on the active story of
+    // the floor plan and the next storeys on the stories above it (#1616, tested on Archicad 29).
+    // So the requested story is made the active one for the merge, the same way ChangeWindow
+    // does it, and the previous story and window are restored afterwards.
+    Int32 storyIndex = 0;
+    const bool hasStoryIndex = parameters.Get ("storyIndex", storyIndex);
+    API_WindowInfo previousWindow = {};
+    bool windowSwitched = false;
+    short previousStory = 0;
+    bool storyChanged = false;
+    const GS::OnExit restoreStoryAndWindow ([&] () {
+        if (storyChanged) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = previousStory;
+            ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        }
+        if (windowSwitched) {
+            ACAPI_Window_ChangeWindow (&previousWindow);
+        }
+    });
+    if (hasStoryIndex) {
+        if (ioParams.method != IO_MERGE) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "storyIndex is only valid with the merge method");
+        }
+
+        API_StoryInfo storyInfo = {};
+        GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+        BMKillHandle (reinterpret_cast<GSHandle*> (&storyInfo.data));
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to retrieve stories info.");
+        }
+        if (storyIndex < storyInfo.firstStory || storyIndex > storyInfo.lastStory) {
+            return CreateFailedExecutionResult (APIERR_BADINDEX, "storyIndex is out of range; see GetStories for the valid story indices.");
+        }
+
+        if (ACAPI_Window_GetCurrentWindow (&previousWindow) == NoError && previousWindow.typeID != APIWind_FloorPlanID) {
+            API_WindowInfo floorPlanWindow = {};
+            floorPlanWindow.typeID = APIWind_FloorPlanID;
+            if (ACAPI_Window_GetDatabaseInfo (&floorPlanWindow) == NoError) {
+                ACAPI_Database_ChangeCurrentDatabase (&floorPlanWindow);
+            }
+            err = ACAPI_Window_ChangeWindow (&floorPlanWindow);
+            if (err != NoError) {
+                return CreateFailedExecutionResult (err, "Failed to change the window to the floor plan.");
+            }
+            windowSwitched = true;
+        }
+
+        if (storyIndex != storyInfo.actStory) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = static_cast<short> (storyIndex);
+            err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+            if (err != NoError) {
+                return CreateFailedExecutionResult (err, "Failed to change the active story to storyIndex.");
+            }
+            previousStory = storyInfo.actStory;
+            storyChanged = true;
+        }
     }
 
     ioParams.fileLoc = &ifcFileLocation;
@@ -6147,6 +6671,21 @@ GS::Optional<GS::UniString> CreateHotlinkInstancesCommand::GetRawResponseSchema 
     })";
 }
 
+// Whether the project has a layer with this index. A tool default can still name a layer that
+// has been deleted since; Archicad then refuses the new element with APIERR_BADINDEX.
+static bool LayerExists (const API_AttributeIndex& layer)
+{
+    API_Attribute attribute = {};
+    attribute.header.typeID = API_LayerID;
+    attribute.header.index = layer;
+    return ACAPI_Attribute_Get (&attribute) == NoError;
+}
+
+static GS::UniString NotALayerMessage (Int32 layerIndex)
+{
+    return GS::UniString::Printf ("layerIndex %d is not a layer of the project.", layerIndex);
+}
+
 GS::ObjectState CreateHotlinkInstancesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> hotlinkInstances;
@@ -6184,6 +6723,14 @@ GS::ObjectState CreateHotlinkInstancesCommand::Execute (const GS::ObjectState& p
             Int32 layerIndex = 0;
             if (instanceData.Get ("layerIndex", layerIndex) && layerIndex > 0) {
                 element.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
+                if (!LayerExists (element.header.layer)) {
+                    elements (CreateErrorResponse (APIERR_BADINDEX, NotALayerMessage (layerIndex)));
+                    continue;
+                }
+            } else if (!LayerExists (element.header.layer)) {
+                // The hotlink tool's default layer was deleted: every placement failed with
+                // APIERR_BADINDEX. Use the built-in Archicad layer instead, which cannot be deleted.
+                element.header.layer = ACAPI_CreateAttributeIndex (1);
             }
             Int32 floorIndex;
             if (instanceData.Get ("floorIndex", floorIndex)) {
@@ -6370,6 +6917,10 @@ GS::ObjectState ChangeHotlinkInstancesCommand::Execute (const GS::ObjectState& p
             Int32 layerIndex = 0;
             if (instanceData.Get ("layerIndex", layerIndex) && layerIndex > 0) {
                 element.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
+                if (!LayerExists (element.header.layer)) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADINDEX, NotALayerMessage (layerIndex)));
+                    continue;
+                }
                 ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
             }
 
