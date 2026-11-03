@@ -110,6 +110,9 @@ namespace TapirGrasshopperPlugin.Types.Navigator
 
         [JsonProperty("usePhotoRendering", NullValueHandling = NullValueHandling.Ignore)]
         public bool? UsePhotoRendering { get; set; }
+
+        [JsonProperty("renovationFilterName", NullValueHandling = NullValueHandling.Ignore)]
+        public string RenovationFilterName { get; set; }
     }
 
     public class ViewZoomBox
