@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-03 21:41 UTC",
+ "generatedAt": "2026-11-03 21:55 UTC",
  "versions": [
   25,
   26,
@@ -12,8 +12,8 @@
   "not applicable": 627,
   "done": 1860,
   "claimed": 47,
-  "merged": 138,
-  "in progress": 128,
+  "merged": 176,
+  "in progress": 90,
   "open": 77,
   "skipped": 2
  },
@@ -2756,12 +2756,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 781,
@@ -2848,12 +2843,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2945,20 +2935,12 @@
      "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
     },
     {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    },
-    {
      "number": 1618,
      "title": "SetDetailsOfElements: say why Archicad refused the element (hidden or locked layer)"
     },
     {
      "number": 1395,
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
-    },
-    {
-     "number": 900,
-     "title": "UpdateZones: optional list of Zones to update instead of the current selection"
     }
    ],
    "issues": []
@@ -2979,12 +2961,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3132,12 +3109,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3202,12 +3174,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3227,12 +3194,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3312,12 +3274,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1365,
-     "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3485,12 +3442,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3549,12 +3501,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1365,
-     "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3574,12 +3521,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4197,10 +4139,6 @@
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
     },
     {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    },
-    {
      "number": 1543,
      "title": "[5/6] Add UpdateLibraryPartSections and GetLibraryPart2DPrimitives"
     },
@@ -4221,24 +4159,12 @@
      "title": "[6/6] Add Get3DDocumentSettings and Set3DDocumentSettings"
     },
     {
-     "number": 1489,
-     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
-    },
-    {
      "number": 1470,
      "title": "Report failed creation transactions instead of returning element results"
     },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
-     "number": 1383,
-     "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
-    },
-    {
-     "number": 1365,
-     "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
     },
     {
      "number": 1292,
@@ -5007,14 +4933,6 @@
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
     },
     {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    },
-    {
-     "number": 1489,
-     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
@@ -5115,12 +5033,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 900,
-     "title": "UpdateZones: optional list of Zones to update instead of the current selection"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5151,18 +5064,6 @@
     {
      "number": 1640,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
-    },
-    {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    },
-    {
-     "number": 1489,
-     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
-    },
-    {
-     "number": 900,
-     "title": "UpdateZones: optional list of Zones to update instead of the current selection"
     }
    ],
    "issues": []
@@ -5258,12 +5159,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5286,12 +5182,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5314,12 +5205,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5365,12 +5251,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5393,12 +5274,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5444,12 +5320,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1423,
@@ -5477,12 +5348,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5505,12 +5371,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6004,10 +5865,6 @@
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
     },
     {
-     "number": 1383,
-     "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
-    },
-    {
      "number": 1234,
      "title": "Add GetGDLParametersOfLibraryParts: default GDL parameters of a library part"
     }
@@ -6032,12 +5889,7 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "memory management",
-   "pullRequests": [
-    {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6147,10 +5999,6 @@
      "title": "Drawing anchor placement, offset, and pen table control"
     },
     {
-     "number": 1383,
-     "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -6249,12 +6097,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1548,
-     "title": "GetElementsInDrawOrder crashes Archicad (AC26 and AC28), even without parameters"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_DrawOrder_DisposeCreationOrderTable",
@@ -6299,12 +6142,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1571,
-     "title": "Fix the GetElementsInDrawOrder crash: walk between DrawOrderInit and DrawOrderTerm"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6327,12 +6165,7 @@
    ],
    "status": "not applicable",
    "reason": "starts an internal draw order loop, only useful inside the command that walks it (#1074)",
-   "pullRequests": [
-    {
-     "number": 1571,
-     "title": "Fix the GetElementsInDrawOrder crash: walk between DrawOrderInit and DrawOrderTerm"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6355,12 +6188,7 @@
    ],
    "status": "not applicable",
    "reason": "ends an internal draw order loop, only useful inside the command that walks it (#1073)",
-   "pullRequests": [
-    {
-     "number": 1571,
-     "title": "Fix the GetElementsInDrawOrder crash: walk between DrawOrderInit and DrawOrderTerm"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7155,16 +6983,8 @@
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
     },
     {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    },
-    {
      "number": 1618,
      "title": "SetDetailsOfElements: say why Archicad refused the element (hidden or locked layer)"
-    },
-    {
-     "number": 1489,
-     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
     },
     {
      "number": 995,
@@ -7231,10 +7051,6 @@
     {
      "number": 1753,
      "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
-    },
-    {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     }
    ],
    "issues": [
@@ -7311,12 +7127,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1383,
-     "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1377,
@@ -7629,12 +7440,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 900,
-     "title": "UpdateZones: optional list of Zones to update instead of the current selection"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7727,10 +7533,6 @@
     {
      "number": 1618,
      "title": "SetDetailsOfElements: say why Archicad refused the element (hidden or locked layer)"
-    },
-    {
-     "number": 900,
-     "title": "UpdateZones: optional list of Zones to update instead of the current selection"
     }
    ],
    "issues": []
@@ -7775,10 +7577,6 @@
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
     },
     {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    },
-    {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     },
@@ -7789,10 +7587,6 @@
     {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
-    },
-    {
-     "number": 1489,
-     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
     },
     {
      "number": 1292,
@@ -8050,10 +7844,6 @@
     {
      "number": 1702,
      "title": "Add CreateShells: extruded, revolved and ruled shells"
-    },
-    {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     }
    ],
    "issues": [
@@ -8173,10 +7963,6 @@
     {
      "number": 1640,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
-    },
-    {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     },
     {
      "number": 1292,
@@ -8389,10 +8175,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    },
-    {
      "number": 1543,
      "title": "[5/6] Add UpdateLibraryPartSections and GetLibraryPart2DPrimitives"
     },
@@ -8402,7 +8184,7 @@
     },
     {
      "number": 1032,
-     "title": "[2/4] Add GetHotspotsOfElements: the hotspots of elements with their neig kind and subindex"
+     "title": "[2/4] Add GetSnapPointsOfElements: the snap points (hotspots) of any element with their neig kind"
     }
    ],
    "issues": []
@@ -8428,7 +8210,7 @@
    "pullRequests": [
     {
      "number": 1032,
-     "title": "[2/4] Add GetHotspotsOfElements: the hotspots of elements with their neig kind and subindex"
+     "title": "[2/4] Add GetSnapPointsOfElements: the snap points (hotspots) of any element with their neig kind"
     }
    ],
    "issues": []
@@ -8765,12 +8547,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 900,
-     "title": "UpdateZones: optional list of Zones to update instead of the current selection"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9876,12 +9653,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1712,
-     "title": "Add ReindexAttributes: move fills, line types, surfaces and building materials to new indices"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12114,12 +11886,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1626,
-     "title": "DeleteEmbeddedLibraryItems: fail for a path that is not in the embedded library"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12672,10 +12439,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1383,
-     "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
-    },
-    {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
     },
@@ -13055,10 +12818,6 @@
     {
      "number": 1395,
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
-    },
-    {
-     "number": 1383,
-     "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
     },
     {
      "number": 1234,
@@ -13467,10 +13226,6 @@
     {
      "number": 1543,
      "title": "[5/6] Add UpdateLibraryPartSections and GetLibraryPart2DPrimitives"
-    },
-    {
-     "number": 1383,
-     "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
     },
     {
      "number": 1273,
@@ -14660,10 +14415,6 @@
     {
      "number": 1640,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
-    },
-    {
-     "number": 1489,
-     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
     }
    ],
    "issues": []
@@ -14914,12 +14665,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1419,
-     "title": "Navigator: name the refused item type on delete, verify MoveNavigatorItem's position"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -15096,12 +14842,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1419,
-     "title": "Navigator: name the refused item type on delete, verify MoveNavigatorItem's position"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -15128,10 +14869,6 @@
     {
      "number": 1517,
      "title": "[6/6] Add Get3DDocumentSettings and Set3DDocumentSettings"
-    },
-    {
-     "number": 1419,
-     "title": "Navigator: name the refused item type on delete, verify MoveNavigatorItem's position"
     },
     {
      "number": 765,
@@ -15193,18 +14930,8 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1752,
-     "title": "Add GetPublisherSets: read the saved output of each publisher set"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1751,
-     "title": "Expose publisher set output path: read it, and change it without publishing"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_GetNavigatorSetNum",
@@ -15226,12 +14953,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1752,
-     "title": "Add GetPublisherSets: read the saved output of each publisher set"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -15602,12 +15324,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1419,
-     "title": "Navigator: name the refused item type on delete, verify MoveNavigatorItem's position"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17001,12 +16718,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1751,
-     "title": "Expose publisher set output path: read it, and change it without publishing"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ProjectOperation_Quit",
@@ -17144,12 +16856,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 900,
-     "title": "UpdateZones: optional list of Zones to update instead of the current selection"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17307,12 +17014,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 900,
-     "title": "UpdateZones: optional list of Zones to update instead of the current selection"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17554,10 +17256,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1365,
-     "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -17880,10 +17578,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1365,
-     "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
-    },
     {
      "number": 1147,
      "title": "[2/4] Add CheckPropertyValues command (ACAPI_Property_IsValidValue)"
@@ -18547,12 +18241,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 963,
-     "title": "[1/2] Add the DeselectAll, GetMarquee and SetMarquee commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18573,16 +18262,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 963,
-     "title": "[1/2] Add the DeselectAll, GetMarquee and SetMarquee commands"
-    },
-    {
-     "number": 900,
-     "title": "UpdateZones: optional list of Zones to update instead of the current selection"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18628,12 +18308,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 900,
-     "title": "UpdateZones: optional list of Zones to update instead of the current selection"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 314,
@@ -18659,12 +18334,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 963,
-     "title": "[1/2] Add the DeselectAll, GetMarquee and SetMarquee commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -21420,20 +21090,8 @@
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
     },
     {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    },
-    {
-     "number": 1489,
-     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
-    },
-    {
-     "number": 900,
-     "title": "UpdateZones: optional list of Zones to update instead of the current selection"
     }
    ],
    "issues": []
@@ -21767,12 +21425,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1365,
-     "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -21945,10 +21598,6 @@
     {
      "number": 1640,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
-    },
-    {
-     "number": 1571,
-     "title": "Fix the GetElementsInDrawOrder crash: walk between DrawOrderInit and DrawOrderTerm"
     },
     {
      "number": 1326,
@@ -27073,6 +26722,10 @@
      "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
     },
     {
+     "number": 1717,
+     "title": "Add GetAttributeIndexes; mark GetCurrentAttributeSetReader as not applicable"
+    },
+    {
      "number": 1703,
      "title": "Add CreateSkylights: place skylights in roofs and shells"
     },
@@ -27087,10 +26740,6 @@
     {
      "number": 1618,
      "title": "SetDetailsOfElements: say why Archicad refused the element (hidden or locked layer)"
-    },
-    {
-     "number": 1593,
-     "title": "Dimensions: add textFrame to the dimension creation commands"
     },
     {
      "number": 1537,
@@ -28611,12 +28260,12 @@
      "title": "CopyElementsToDatabase: copy 2D elements into another database (#819)"
     },
     {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+     "number": 1717,
+     "title": "Add GetAttributeIndexes; mark GetCurrentAttributeSetReader as not applicable"
     },
     {
-     "number": 1365,
-     "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
     {
      "number": 1292,
@@ -28636,7 +28285,7 @@
     },
     {
      "number": 1032,
-     "title": "[2/4] Add GetHotspotsOfElements: the hotspots of elements with their neig kind and subindex"
+     "title": "[2/4] Add GetSnapPointsOfElements: the snap points (hotspots) of any element with their neig kind"
     },
     {
      "number": 1019,
@@ -28645,10 +28294,6 @@
     {
      "number": 968,
      "title": "[1/3] Add Get/SetPropertyValuesOfElementDefaults"
-    },
-    {
-     "number": 963,
-     "title": "[1/2] Add the DeselectAll, GetMarquee and SetMarquee commands"
     }
    ],
    "issues": []
@@ -30130,14 +29775,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30223,14 +29863,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30264,14 +29899,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30305,14 +29935,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30328,14 +29953,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30541,16 +30161,12 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
     }
    ],
    "issues": []
@@ -30568,7 +30184,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -30582,10 +30198,6 @@
     {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
-    },
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
     }
    ],
    "issues": []
@@ -30639,14 +30251,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30698,14 +30305,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30738,14 +30340,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30760,14 +30357,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30783,14 +30375,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30806,14 +30393,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30829,14 +30411,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30924,14 +30501,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31032,14 +30604,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31091,14 +30658,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31114,14 +30676,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31942,10 +31499,6 @@
      "title": "[1/4] Add GetLibraryPartScripts"
     },
     {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    },
-    {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
     }
@@ -31971,10 +31524,6 @@
     {
      "number": 1502,
      "title": "[3/4] Add CopyLibraryParts command"
-    },
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
     },
     {
      "number": 1244,
@@ -32034,10 +31583,6 @@
     {
      "number": 1325,
      "title": "[1/6] Add GetGDLDate and SetGDLDate commands"
-    },
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
     },
     {
      "number": 1273,
@@ -32111,14 +31656,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32140,10 +31680,6 @@
     {
      "number": 1502,
      "title": "[3/4] Add CopyLibraryParts command"
-    },
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
     },
     {
      "number": 1244,
@@ -32171,10 +31707,6 @@
     {
      "number": 1717,
      "title": "Add GetAttributeIndexes; mark GetCurrentAttributeSetReader as not applicable"
-    },
-    {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
     },
     {
      "number": 1543,
@@ -32205,10 +31737,6 @@
      "title": "[1/4] Add GetLibraryPartScripts"
     },
     {
-     "number": 1383,
-     "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
-    },
-    {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
     },
@@ -32219,10 +31747,6 @@
     {
      "number": 1325,
      "title": "[1/6] Add GetGDLDate and SetGDLDate commands"
-    },
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
     },
     {
      "number": 1273,
@@ -32394,14 +31918,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32417,14 +31936,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32579,14 +32093,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32602,14 +32111,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32625,14 +32129,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32671,14 +32170,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32752,10 +32246,6 @@
     {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
-    },
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
     }
    ],
    "issues": [
@@ -32778,14 +32268,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32819,7 +32304,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -32833,10 +32318,6 @@
     {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
-    },
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
     },
     {
      "number": 1244,
@@ -32890,10 +32371,6 @@
      "title": "[1/4] Add GetLibraryPartScripts"
     },
     {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    },
-    {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
     }
@@ -32918,14 +32395,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32941,13 +32413,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    },
     {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
@@ -32973,13 +32441,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    },
     {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
@@ -33005,14 +32469,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -33060,14 +32519,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -33083,14 +32537,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -33106,14 +32555,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -33129,14 +32573,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -33152,14 +32591,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -33175,13 +32609,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    },
     {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
@@ -33202,14 +32632,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -33936,6 +33361,10 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
+     "number": 1717,
+     "title": "Add GetAttributeIndexes; mark GetCurrentAttributeSetReader as not applicable"
+    },
+    {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
     },
@@ -33980,10 +33409,6 @@
      "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
     },
     {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -34005,19 +33430,11 @@
     },
     {
      "number": 1032,
-     "title": "[2/4] Add GetHotspotsOfElements: the hotspots of elements with their neig kind and subindex"
+     "title": "[2/4] Add GetSnapPointsOfElements: the snap points (hotspots) of any element with their neig kind"
     },
     {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
-    },
-    {
-     "number": 963,
-     "title": "[1/2] Add the DeselectAll, GetMarquee and SetMarquee commands"
-    },
-    {
-     "number": 900,
-     "title": "UpdateZones: optional list of Zones to update instead of the current selection"
     }
    ],
    "issues": []
@@ -41350,14 +40767,6 @@
      "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands"
     },
     {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    },
-    {
-     "number": 1593,
-     "title": "Dimensions: add textFrame to the dimension creation commands"
-    },
-    {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
@@ -41372,14 +40781,6 @@
     {
      "number": 1395,
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
-    },
-    {
-     "number": 1383,
-     "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
-    },
-    {
-     "number": 1365,
-     "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
     },
     {
      "number": 1326,
@@ -41407,7 +40808,7 @@
     },
     {
      "number": 1032,
-     "title": "[2/4] Add GetHotspotsOfElements: the hotspots of elements with their neig kind and subindex"
+     "title": "[2/4] Add GetSnapPointsOfElements: the snap points (hotspots) of any element with their neig kind"
     },
     {
      "number": 1019,
@@ -41420,14 +40821,6 @@
     {
      "number": 968,
      "title": "[1/3] Add Get/SetPropertyValuesOfElementDefaults"
-    },
-    {
-     "number": 963,
-     "title": "[1/2] Add the DeselectAll, GetMarquee and SetMarquee commands"
-    },
-    {
-     "number": 900,
-     "title": "UpdateZones: optional list of Zones to update instead of the current selection"
     },
     {
      "number": 463,
@@ -49007,6 +48400,10 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
+     "number": 1717,
+     "title": "Add GetAttributeIndexes; mark GetCurrentAttributeSetReader as not applicable"
+    },
+    {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
     },
@@ -49051,10 +48448,6 @@
      "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
     },
     {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -49076,19 +48469,11 @@
     },
     {
      "number": 1032,
-     "title": "[2/4] Add GetHotspotsOfElements: the hotspots of elements with their neig kind and subindex"
+     "title": "[2/4] Add GetSnapPointsOfElements: the snap points (hotspots) of any element with their neig kind"
     },
     {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
-    },
-    {
-     "number": 963,
-     "title": "[1/2] Add the DeselectAll, GetMarquee and SetMarquee commands"
-    },
-    {
-     "number": 900,
-     "title": "UpdateZones: optional list of Zones to update instead of the current selection"
     }
    ],
    "issues": []
@@ -52892,6 +52277,10 @@
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
+     "number": 1717,
+     "title": "Add GetAttributeIndexes; mark GetCurrentAttributeSetReader as not applicable"
+    },
+    {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
     },
@@ -52936,10 +52325,6 @@
      "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
     },
     {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -52961,19 +52346,11 @@
     },
     {
      "number": 1032,
-     "title": "[2/4] Add GetHotspotsOfElements: the hotspots of elements with their neig kind and subindex"
+     "title": "[2/4] Add GetSnapPointsOfElements: the snap points (hotspots) of any element with their neig kind"
     },
     {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
-    },
-    {
-     "number": 963,
-     "title": "[1/2] Add the DeselectAll, GetMarquee and SetMarquee commands"
-    },
-    {
-     "number": 900,
-     "title": "UpdateZones: optional list of Zones to update instead of the current selection"
     }
    ],
    "issues": []
@@ -59789,20 +59166,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1752,
-     "title": "Add GetPublisherSets: read the saved output of each publisher set"
-    },
-    {
      "number": 1717,
      "title": "Add GetAttributeIndexes; mark GetCurrentAttributeSetReader as not applicable"
-    },
-    {
-     "number": 1635,
-     "title": "Add ReindexLayers: move layers to new indices without losing their elements (#1388)"
-    },
-    {
-     "number": 1365,
-     "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
     },
     {
      "number": 1292,
@@ -60925,10 +60290,6 @@
      "title": "[1/4] Add GetLibraryPartScripts"
     },
     {
-     "number": 1365,
-     "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
-    },
-    {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
     },
@@ -60939,10 +60300,6 @@
     {
      "number": 1325,
      "title": "[1/6] Add GetGDLDate and SetGDLDate commands"
-    },
-    {
-     "number": 1302,
-     "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
     },
     {
      "number": 1292,
