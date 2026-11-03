@@ -4,7 +4,9 @@ name: Discord Issue Bot
 # report or a feature request, files each as a GitHub issue, and replies on
 # Discord with the created issue number. Duplicate protection lives in the
 # script itself (a ✅ reaction on handled messages plus an issue search for
-# the message ID), so overlapping or re-run jobs are harmless.
+# the message ID), so overlapping or re-run jobs are harmless. A 👀 reaction
+# on one message per channel marks the last message checked; each run
+# continues after it.
 #
 # Setup and tuning: tools/discord-issue-bot/README.md. Until the secrets
 # and the DISCORD_CHANNEL_IDS variable are configured, runs exit quietly
@@ -23,6 +25,10 @@ on:
         description: Override how far back this run scans (e.g. after a schedule pause); empty uses the default
         type: string
         default: ''
+      cleanup_seen_marks:
+        description: Only remove the bot's 👀 reactions from every message except the newest per channel (left by versions that marked every checked message), without classifying
+        type: boolean
+        default: false
       triage_issues:
         description: Also start the Claude issue triage for these issue numbers (space-separated), e.g. to catch up on issues filed before it was dispatched automatically
         type: string
@@ -39,8 +45,8 @@ jobs:
     runs-on: ubuntu-latest
     # Each message is classified in its own CLI call (prompt-injection
     # isolation), so a raised-lookback catch-up run can take a while; the
-    # marks persist, so even a timed-out run keeps its progress and the
-    # next one continues where it stopped. The concurrency group queues
+    # 👀 checkpoint moves after every checked message, so even a timed-out
+    # run keeps its progress and the next one continues where it stopped. The concurrency group queues
     # the next scheduled run instead of overlapping.
     timeout-minutes: 60
     permissions:
@@ -99,6 +105,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
           LOOKBACK_MINUTES: ${{ inputs.lookback_minutes }}
+          CLEANUP_SEEN_MARKS: ${{ github.event_name == 'workflow_dispatch' && inputs.cleanup_seen_marks }}
 
   triage:
     # Issues created with the workflow's GITHUB_TOKEN start no workflow run,

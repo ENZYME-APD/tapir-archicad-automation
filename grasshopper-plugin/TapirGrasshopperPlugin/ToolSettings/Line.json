@@ -1,0 +1,95 @@
+{
+  "tool": "Line",
+  "elementType": "Line",
+  "archicadVersion": 29,
+  "commands": {
+    "get": "GetDetailsOfElements",
+    "getSchema": "LineDetails",
+    "create": "CreateLineElementsCommand"
+  },
+  "plainKeys": [
+    "favoriteName",
+    "layerIndex"
+  ],
+  "sources": {
+    "help": [
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-32.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-11.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-12.htm"
+    ],
+    "devkit": "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/tag/29.3000"
+  },
+  "fields": [
+    {
+      "get": "begCoordinate",
+      "set": "begCoordinate",
+      "apiMember": "API_LineType::begC",
+      "apiDescription": "Coordinate of the first point.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "endCoordinate",
+      "set": "endCoordinate",
+      "apiMember": "API_LineType::endC",
+      "apiDescription": "Coordinate of the second point.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "floorIndex",
+      "set": "floorInd",
+      "getFrom": "element",
+      "apiMember": "API_Elem_Head::floorInd",
+      "apiDescription": "The element belongs to this floor.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "zCoordinate",
+      "set": null,
+      "apiMember": null,
+      "apiDescription": "Absolute Z of the line (the level of its home story; output only).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "lineTypeId",
+      "set": "lineTypeId",
+      "apiMember": "API_LineType::ltypeInd",
+      "apiDescription": "Line type attribute index.",
+      "label": "Line Type",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-32.htm (text \"Select a Line type from the pop-up selection palette.\")",
+      "group": "General Settings",
+      "subgroup": null
+    },
+    {
+      "get": "linePenIndex",
+      "set": "linePenIndex",
+      "apiMember": "API_LineType::linePen",
+      "apiDescription": "(Overridden) pen attribute index.",
+      "label": "Pen",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-32.htm (text \"Type a Pen number (1-255) for the Line/Arc/Polyline/Spline.\")",
+      "group": "General Settings",
+      "subgroup": null
+    },
+    {
+      "get": "roomSeparator",
+      "set": "roomSeparator",
+      "apiMember": "API_LineType::roomSeparator",
+      "apiDescription": "Is this line a zone boundary?",
+      "label": "Zone Boundary",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-32.htm (text \"Check the Zone Boundary box to allow lines to delimit automatically placed Zones.\"; screenshots ArrowheadSettings.png and LineCategories.png \"Zone Boundary\")",
+      "group": "General Settings",
+      "subgroup": null
+    }
+  ]
+}

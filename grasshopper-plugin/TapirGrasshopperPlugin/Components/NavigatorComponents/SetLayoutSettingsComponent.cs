@@ -13,10 +13,12 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         public SetLayoutSettingsComponent()
             : base(
                 "SetLayoutSettings",
-                "Set settings of layouts, including Layout Info Panel custom data fields. " +
+                "Set settings of layouts, including their master layout and Layout Info Panel custom data fields. " +
                 "Each input item is a JSON object for one layout, e.g. " +
                 "{\"layoutNavigatorItemId\":{\"guid\":\"...\"},\"layoutName\":\"A-01\",\"customLayoutNumber\":\"01\"}. " +
-                "The layout is identified by layoutDatabaseId or layoutNavigatorItemId.",
+                "The layout is identified by layoutDatabaseId or layoutNavigatorItemId. " +
+                "The master layout of a layout is changed with masterNavigatorItemId, masterLayoutDatabaseId or masterLayoutName, e.g. " +
+                "{\"layoutNavigatorItemId\":{\"guid\":\"...\"},\"masterLayoutName\":\"A3 Landscape\"} (master layouts cannot be given one).",
                 GroupNames.Navigator)
         {
         }

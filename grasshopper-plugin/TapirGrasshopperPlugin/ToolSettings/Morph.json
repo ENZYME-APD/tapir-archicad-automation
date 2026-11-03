@@ -1,0 +1,419 @@
+{
+  "tool": "Morph",
+  "elementType": "Morph",
+  "archicadVersion": 29,
+  "commands": {
+    "get": "GetDetailsOfElements",
+    "getSchema": "MorphDetails",
+    "create": "CreateMorphsCommand",
+    "modify": "ModifyMorphsCommand"
+  },
+  "plainKeys": [
+    "elementId"
+  ],
+  "sources": {
+    "help": [
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-9.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-12.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-13.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-14.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-15.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-16.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-5.htm"
+    ],
+    "devkit": "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/tag/29.3000"
+  },
+  "fields": [
+    {
+      "get": "origin",
+      "set": "basePoint",
+      "apiMember": "API_MorphType::tranmat",
+      "apiDescription": "Tranmat of the morph element (its translation part: the absolute position of the morph).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": null,
+      "set": "translation",
+      "apiMember": "API_MorphType::tranmat",
+      "apiDescription": "Tranmat of the morph element (ModifyMorphs: moves the morph by this vector).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": null,
+      "set": "rotationDegreesZ",
+      "apiMember": "API_MorphType::tranmat",
+      "apiDescription": "Tranmat of the morph element (ModifyMorphs: rotates the morph around the Z axis, in degrees).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "xAxis",
+      "set": "xAxis",
+      "apiMember": "API_MorphType::tranmat",
+      "apiDescription": "Tranmat of the morph element (the X axis of its rotation part).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "yAxis",
+      "set": "yAxis",
+      "apiMember": "API_MorphType::tranmat",
+      "apiDescription": "Tranmat of the morph element (the Y axis of its rotation part).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "zAxis",
+      "set": "zAxis",
+      "apiMember": "API_MorphType::tranmat",
+      "apiDescription": "Tranmat of the morph element (the Z axis of its rotation part).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "body",
+      "set": "body",
+      "apiMember": "API_ElementMemo::morphBody",
+      "apiDescription": "Morph element (the body geometry, with API_MorphType::bodyType and edgeType).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": null,
+      "set": "size",
+      "apiMember": "API_ElementMemo::morphBody",
+      "apiDescription": "Morph element (CreateMorphs: builds a box of this size).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": null,
+      "set": "topExpansion",
+      "apiMember": "API_ElementMemo::morphBody",
+      "apiDescription": "Morph element (CreateMorphs: expands the top of the box on all four sides).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "floorIndex",
+      "set": "floorIndex",
+      "getFrom": "element",
+      "apiMember": "API_Elem_Head::floorInd",
+      "apiDescription": "The element belongs to this floor.",
+      "label": "Home Story",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-9.htm (heading \"Home Story\"; screenshot MorphSettingsSelected.png \"Home Story:\")",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "level",
+      "set": "level",
+      "apiMember": "API_MorphType::level",
+      "apiDescription": "Z position of the free shape.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "buildingMaterialId",
+      "set": "buildingMaterialId",
+      "apiMember": "API_MorphType::buildingMaterial",
+      "apiDescription": "Building Material index of morph's hatch.",
+      "label": "Building Material",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-9.htm (text \"Building Material: Use the pop-up to choose a Building Material for the Morph\"; screenshot MorphBMPopup.png)",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "isAutoOnStoryVisibility",
+      "set": "isAutoOnStoryVisibility",
+      "apiMember": "API_MorphType::isAutoOnStoryVisibility",
+      "apiDescription": "Is Auto On Story Visibility.",
+      "label": "Show on Stories",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-13.htm (heading \"Show On Stories\"); https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-9.htm (screenshot MorphSettingsSelected.png \"Show on Stories\")",
+      "group": "Floor Plan and Section",
+      "subgroup": "Floor Plan Display"
+    },
+    {
+      "get": "showContour",
+      "set": "showContour",
+      "apiMember": "API_MorphType::showContour",
+      "apiDescription": "The option to define which stories display the contour of the morph.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Floor Plan Display"
+    },
+    {
+      "get": "showFill",
+      "set": "showFill",
+      "apiMember": "API_MorphType::showFill",
+      "apiDescription": "The option to define which stories display the fill of the morph.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Floor Plan Display"
+    },
+    {
+      "get": "linkToSettings",
+      "set": "linkToSettings",
+      "apiMember": "API_MorphType::linkToSettings",
+      "apiDescription": "Mode of linking to home story.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "displayOption",
+      "set": "displayOption",
+      "apiMember": "API_MorphType::displayOption",
+      "apiDescription": "Display options of the element on the floor plan (see API_ElemDisplayOptionsID).",
+      "label": "Floor Plan Display",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-9.htm (screenshot MorphSettingsSelected.png \"Floor Plan Display\"); https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-14.htm (screenshot FPDisplay.png)",
+      "group": "Floor Plan and Section",
+      "subgroup": "Floor Plan Display"
+    },
+    {
+      "get": "viewDepthLimitation",
+      "set": "viewDepthLimitation",
+      "apiMember": "API_MorphType::viewDepthLimitation",
+      "apiDescription": "Defines the range within the element is shown on the floor plan (see API_ElemViewDepthLimitationsID).",
+      "label": "Show Projection",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-9.htm (screenshot MorphSettingsSelected.png \"Show Projection\"); https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-15.htm (heading \"Show Projection\")",
+      "group": "Floor Plan and Section",
+      "subgroup": "Floor Plan Display"
+    },
+    {
+      "get": "cutFillPen",
+      "set": "cutFillPen",
+      "apiMember": "API_MorphType::cutFillPen",
+      "apiDescription": "Cut fill pens set in the building material can be overridden on the element level.",
+      "label": "Cut Fill Foreground Pen",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-16.htm (screenshot SlabCutPenOverride.png \"Cut Fill Foreground Pen\")",
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "cutFillBackgroundPen",
+      "set": "cutFillBackgroundPen",
+      "apiMember": "API_MorphType::cutFillBackgroundPen",
+      "apiDescription": "Cut fill pens set in the building material can be overridden on the element level.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "cutLineType",
+      "set": "cutLineType",
+      "apiMember": "API_MorphType::cutLineType",
+      "apiDescription": "Line Type of the cut contour.",
+      "label": "Cut Line",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-9.htm (screenshot MorphSettingsSelected.png \"Cut Line\")",
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "cutLinePen",
+      "set": "cutLinePen",
+      "apiMember": "API_MorphType::cutLinePen",
+      "apiDescription": "Pen of the cut contour.",
+      "label": "Cut Line Pen",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-9.htm (screenshot MorphSettingsSelected.png \"Cut Line Pen\", the row is partly scrolled out)",
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "uncutLineType",
+      "set": "uncutLineType",
+      "apiMember": "API_MorphType::uncutLineType",
+      "apiDescription": "Line Type of the contour.",
+      "label": "Uncut Lines",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-14.htm (screenshot FPOutlines.png \"Uncut Lines\")",
+      "group": "Floor Plan and Section",
+      "subgroup": "Outlines"
+    },
+    {
+      "get": "uncutLinePen",
+      "set": "uncutLinePen",
+      "apiMember": "API_MorphType::uncutLinePen",
+      "apiDescription": "Pen of the contour.",
+      "label": "Uncut Line Pen",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-14.htm (screenshot FPOutlines.png \"Uncut Line Pen\")",
+      "group": "Floor Plan and Section",
+      "subgroup": "Outlines"
+    },
+    {
+      "get": "overheadLineType",
+      "set": "overheadLineType",
+      "apiMember": "API_MorphType::overheadLineType",
+      "apiDescription": "Line Type of view above (Floor plan only).",
+      "label": "Overhead Lines",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-14.htm (screenshot FPOutlines.png \"Overhead Lines\")",
+      "group": "Floor Plan and Section",
+      "subgroup": "Outlines"
+    },
+    {
+      "get": "overheadLinePen",
+      "set": "overheadLinePen",
+      "apiMember": "API_MorphType::overheadLinePen",
+      "apiDescription": "Pen of view above (Floor plan only).",
+      "label": "Overhead Line Pen",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-14.htm (screenshot FPOutlines.png \"Overhead Line Pen\")",
+      "group": "Floor Plan and Section",
+      "subgroup": "Outlines"
+    },
+    {
+      "get": "outlineContourDisplay",
+      "set": "outlineContourDisplay",
+      "apiMember": "API_MorphType::outlineContourDisplay",
+      "apiDescription": "Outline Contour Display.",
+      "label": "Outline Contour Display",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-9.htm (text \"Outlines: Outline Contour Display: Adds an outline contour around the morph element\")",
+      "group": "Floor Plan and Section",
+      "subgroup": "Outlines"
+    },
+    {
+      "get": "useCoverFillType",
+      "set": "useCoverFillType",
+      "apiMember": "API_MorphType::useCoverFillType",
+      "apiDescription": "Use Floor plan fill.",
+      "label": "Cover Fills",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-5.htm (text \"Check the Cover Fills box\"; screenshot CoverFillCheckbox.png)",
+      "group": "Floor Plan and Section",
+      "subgroup": "Cover Fills"
+    },
+    {
+      "get": "coverFillType",
+      "set": "coverFillType",
+      "apiMember": "API_MorphType::coverFillType",
+      "apiDescription": "Floor plan fill type.",
+      "label": "Cover Fill",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-5.htm (screenshot CoverFillCheckbox.png \"Cover Fill\")",
+      "group": "Floor Plan and Section",
+      "subgroup": "Cover Fills"
+    },
+    {
+      "get": "coverFillPen",
+      "set": "coverFillPen",
+      "apiMember": "API_MorphType::coverFillPen",
+      "apiDescription": "Floor plan fill pen.",
+      "label": "Cover Fill Pen",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-5.htm (screenshot CoverFillCheckbox.png \"Cover Fill Pen\")",
+      "group": "Floor Plan and Section",
+      "subgroup": "Cover Fills"
+    },
+    {
+      "get": "coverFillBGPen",
+      "set": "coverFillBGPen",
+      "apiMember": "API_MorphType::coverFillBGPen",
+      "apiDescription": "Floor plan fill background pen.",
+      "label": "Cover Fill Background Pen",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-5.htm (screenshot CoverFillCheckbox.png \"Cover Fill Background Pen\")",
+      "group": "Floor Plan and Section",
+      "subgroup": "Cover Fills"
+    },
+    {
+      "get": "coverFillOrientation",
+      "set": "coverFillOrientation",
+      "apiMember": "API_MorphType::coverFillOrientation",
+      "apiDescription": "Floor plan local origo type of fill.",
+      "label": "Cover Fill Orientation",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-5.htm (text \"Use the Cover Fill Orientation parameter\"; screenshot CoverFillCheckbox.png \"Cover Fill Orientation\")",
+      "group": "Floor Plan and Section",
+      "subgroup": "Cover Fills"
+    },
+    {
+      "get": "use3DHatching",
+      "set": "use3DHatching",
+      "apiMember": "API_MorphType::use3DHatching",
+      "apiDescription": "Floor plan fill from material.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cover Fills"
+    },
+    {
+      "get": "useDistortedCoverFill",
+      "set": "useDistortedCoverFill",
+      "apiMember": "API_MorphType::useDistortedCoverFill",
+      "apiDescription": "Show hatching as projected onto a plane.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cover Fills"
+    },
+    {
+      "get": "surfaceId",
+      "set": "surfaceId",
+      "apiMember": "API_MorphType::material",
+      "apiDescription": "Material override structure of non customized surfaces.",
+      "label": "Override Surface",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-9.htm (screenshot MorphSettingsSelected.png \"Override Surface:\", under \"Face(s):\")",
+      "group": "Model",
+      "subgroup": "Face(s)"
+    },
+    {
+      "get": "textureProjectionType",
+      "set": "textureProjectionType",
+      "apiMember": "API_MorphType::textureProjectionType",
+      "apiDescription": "Projection type of texture.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "textureProjectionCoords",
+      "set": "textureProjectionCoords",
+      "apiMember": "API_MorphType::textureProjectionCoords",
+      "apiDescription": "Texture projection coordinate system.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "castShadow",
+      "set": "castShadow",
+      "apiMember": "API_MorphType::castShadow",
+      "apiDescription": "Body casts shadow.",
+      "label": "Cast",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-9.htm (text \"Morph Shadows: Check one or both boxes\"; screenshot MorphSettingsSelected.png \"Morph Shadows:\" \"Cast\")",
+      "group": "Model",
+      "subgroup": "Morph Shadows"
+    },
+    {
+      "get": "receiveShadow",
+      "set": "receiveShadow",
+      "apiMember": "API_MorphType::receiveShadow",
+      "apiDescription": "Body receives shadow.",
+      "label": "Received",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-9.htm (screenshot MorphSettingsSelected.png \"Morph Shadows:\" \"Received\")",
+      "group": "Model",
+      "subgroup": "Morph Shadows"
+    }
+  ]
+}

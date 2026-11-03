@@ -11,7 +11,8 @@ Tests ALL options of:
   - GetLayoutSettings: full round-trip of all returned fields
   - SetLayoutSettings: all fields via layoutDatabaseId AND via layoutNavigatorItemId
   - RenameNavigatorItem
-  - MoveNavigatorItem: without and with previousNavigatorItemId (order verified)
+  - MoveNavigatorItem: without and with previousNavigatorItemId (order verified),
+                       and reordering within the same parent
   - DeleteNavigatorItems
 
 Note: layout subsets cannot be deleted via the ArchiCAD API (AC29 limitation).
@@ -349,6 +350,19 @@ assert find_by_name(all_items, SUBSET_A_RENAMED), f"'{SUBSET_A_RENAMED}' not fou
 print("   PASS: RenameNavigatorItem")
 
 
+# ── 8b. RenameNavigatorItem newId on a layout — sets its custom layout number ─
+print(f"\n8b. RenameNavigatorItem newId: '{LAYOUT_2}' -> 'T02-RN'...")
+res = run("RenameNavigatorItem", {
+    "navigatorItemId": layout_nav_id_2,
+    "newId":           "T02-RN",
+})
+assert res.get("success"), f"RenameNavigatorItem (newId) failed: {res}"
+s4 = run("GetLayoutSettings", {"layoutDatabaseIds": [{"databaseId": layout_db_id_2}]})["layoutSettings"][0]
+assert s4["customLayoutNumber"] == "T02-RN", f"newId route: customLayoutNumber={s4['customLayoutNumber']}"
+assert s4["customLayoutNumbering"], f"newId route: customLayoutNumbering={s4['customLayoutNumbering']}"
+print("   PASS: RenameNavigatorItem newId on a layout")
+
+
 # ── 9. MoveNavigatorItem L1 -> Subset B (no previousNavigatorItemId) ───────
 lb = get_lb_tree()
 all_items = collect_all(lb["navigatorTree"]["rootItem"]["children"])
@@ -391,9 +405,26 @@ assert idx_1 < idx_2, f"Expected L1 before L2 in Subset B, got: {order}"
 print(f"   PASS: previousNavigatorItemId respected — {LAYOUT_1}[{idx_1}] < {LAYOUT_2}[{idx_2}]")
 
 
+# ── 10b. MoveNavigatorItem L1 after L2 within Subset B (reorder in place) ──
+print(f"\n10b. MoveNavigatorItem: '{LAYOUT_1}' after '{LAYOUT_2}' within Subset B...")
+res = run("MoveNavigatorItem", {
+    "navigatorItemIdToMove":   layout_nav_id_1,
+    "parentNavigatorItemId":   subset_b_id,
+    "previousNavigatorItemId": layout_nav_id_2,   # same parent: reorder
+})
+assert res.get("success"), f"MoveNavigatorItem reorder failed: {res}"
+
+lb = get_lb_tree()
+order = children_order_of(lb["navigatorTree"]["rootItem"]["children"], SUBSET_B)
+idx_1 = order.index(LAYOUT_1)
+idx_2 = order.index(LAYOUT_2)
+assert idx_1 == idx_2 + 1, f"Expected L1 right after L2 in Subset B, got: {order}"
+print(f"   PASS: reordered within the same folder — {LAYOUT_2}[{idx_2}] < {LAYOUT_1}[{idx_1}]")
+
+
 # ── Visual check 2 ────────────────────────────────────────────────────────
 wait(
-    f"Layout Book — Subset B should contain '{LAYOUT_1}' then '{LAYOUT_2}' (in that order).\n"
+    f"Layout Book — Subset B should contain '{LAYOUT_2}' then '{LAYOUT_1}' (in that order).\n"
     f"             Subset A_RENAMED should contain only Subset C."
 )
 

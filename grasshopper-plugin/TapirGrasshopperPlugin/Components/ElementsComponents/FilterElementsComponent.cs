@@ -13,7 +13,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public FilterElementsComponent()
             : base(
                 "FilterElements",
-                "Filter elements.",
+                "Filter elements by Archicad's flag filters, layer, home story and element type. An element is kept when it matches all the given criteria.",
                 GroupNames.Elements)
         {
         }
@@ -29,7 +29,26 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 defaultValue: nameof(ElementFilter.NoFilter),
                 description: "Element filter.");
 
-            SetOptionality(1);
+            InIntegers(
+                "LayerIndices",
+                "Optional. Keep only the elements on one of these layers (layer attribute indices).");
+
+            InIntegers(
+                "FloorIndices",
+                "Optional. Keep only the elements whose home story has one of these indices.");
+
+            InTexts(
+                "ElementTypes",
+                "Optional. Keep only the elements of one of these types (connect an ElementsType value list).");
+
+            SetOptionality(
+                new[]
+                {
+                    1,
+                    2,
+                    3,
+                    4
+                });
         }
 
         protected override void AddOutputs()
@@ -45,6 +64,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             AddAsSource<ElementFilterValueList>(
                 document,
                 1);
+        }
+
+        private static List<T> NullIfEmpty<T>(
+            List<T> list)
+        {
+            return list == null || list.Count == 0 ? null : list;
         }
 
         protected override void Solve(
@@ -64,12 +89,29 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
+            // The optional criteria are empty lists when nothing is connected.
+            da.TryGetList(
+                2,
+                out List<int> layerIndices);
+
+            da.TryGetList(
+                3,
+                out List<int> floorIndices);
+
+            da.TryGetList(
+                4,
+                out List<string> elementTypes);
+
             var filterElements = new FilterElementsObject
             {
-                Elements = elements.Elements, Filters = filters
+                Elements = elements.Elements,
+                Filters = filters,
+                LayerIndices = NullIfEmpty(layerIndices),
+                FloorIndices = NullIfEmpty(floorIndices),
+                ElementTypes = NullIfEmpty(elementTypes)
             };
 
-            if (filterElements.Filters == null)
+            if (!filterElements.HasCriteria)
             {
                 da.SetDataList(
                     0,

@@ -1,0 +1,149 @@
+{
+  "tool": "Door",
+  "elementType": "Door",
+  "archicadVersion": 29,
+  "commands": {
+    "get": "GetDetailsOfElements",
+    "getSchema": "WindowDoorDetails",
+    "create": "CreateDoorsCommand",
+    "modify": "ModifyDoorsCommand"
+  },
+  "plainKeys": [
+    "elementId",
+    "favoriteName"
+  ],
+  "sources": {
+    "help": [
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-16.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-17.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-20.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-10.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-310.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-312.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-306.htm"
+    ],
+    "devkit": "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/tag/29.3000"
+  },
+  "fields": [
+    {
+      "get": "libPart",
+      "set": "libraryPartName",
+      "apiMember": "API_OpeningBaseType::libInd",
+      "apiDescription": "Index to the symbol in the library. If 0, an empty window/door/skylight hole is created.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "ownerElementId",
+      "set": "ownerWallId",
+      "apiMember": "API_WindowType::owner",
+      "apiDescription": "Reference to the container wall (see API_Guid).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "ownerElementType",
+      "set": null,
+      "apiMember": null,
+      "apiDescription": "Type of the owner element (read from the header of API_WindowType::owner).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "centerOffset",
+      "set": "centerOffset",
+      "apiMember": "API_WindowType::objLoc",
+      "apiDescription": "Location of the center of the window. If the container wall is polygonal, this value is not used.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "width",
+      "set": "width",
+      "apiMember": "API_OpeningBaseType::width",
+      "apiDescription": "Width of the opening.",
+      "label": "Width",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-17.htm (text \"Width: Enter Width of the opening here.\")",
+      "group": "Preview and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "height",
+      "set": "height",
+      "apiMember": "API_OpeningBaseType::height",
+      "apiDescription": "Vertical size of the opening.",
+      "label": "Height",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-17.htm (text \"Height: Enter Height of the opening here.\")",
+      "group": "Preview and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "sillHeight",
+      "set": "sillHeight",
+      "apiMember": "API_WindowType::lower",
+      "apiDescription": "Parapet height.",
+      "label": null,
+      "labelSource": null,
+      "group": "Preview and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": null,
+      "set": "reveal",
+      "apiMember": "API_WindowType::reveal",
+      "apiDescription": "True if the opening has reveal.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": null,
+      "set": "revealDepthOffset",
+      "apiMember": "API_WindowType::revealDepthOffset",
+      "apiDescription": "Inset from the clicked side of wall or core (according to revealDepthLocation).",
+      "label": "Reveal",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-17.htm (text \"Reveal: Enter the depth of the Door/Window Reveal\"; screenshot PreviewPositioning.png \"Reveal to Wall Core\" anchor above the field)",
+      "group": "Preview and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "reflected",
+      "set": "reflected",
+      "apiMember": "API_OpeningBaseType::reflected",
+      "apiDescription": "True if mirrored to Y axis.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "oSide",
+      "set": "oSide",
+      "apiMember": "API_OpeningBaseType::oSide",
+      "apiDescription": "True if mirrored to X axis.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "refSide",
+      "set": "refSide",
+      "apiMember": "API_OpeningBaseType::refSide",
+      "apiDescription": "True if mirrored to X axis (same as oSide).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    }
+  ]
+}

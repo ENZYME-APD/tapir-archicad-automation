@@ -63,9 +63,38 @@ namespace TapirGrasshopperPlugin.Types.Attributes
         [JsonProperty("name")]
         public string Name;
 
+        // The names of the attribute folders from the root folder down to the one holding
+        // the attribute; empty for the root folder and before Archicad 26.
+        [JsonProperty("folderPath")]
+        public List<string> FolderPath;
+
         // Seconds since 1970-01-01 00:00:00 UTC.
         [JsonProperty("modificationTime")]
         public long ModificationTime;
+
+        // Only from Archicad 30, and only for an attribute Archicad keeps a
+        // creation record of; null otherwise.
+        [JsonProperty("creationInfo")]
+        public AttributeCreationInfo CreationInfo;
+    }
+
+    public class AttributeCreationInfo
+    {
+        [JsonProperty("method")]
+        public string Method;
+
+        [JsonProperty("methodDescription")]
+        public string MethodDescription;
+
+        [JsonProperty("source")]
+        public string Source;
+
+        [JsonProperty("creatorUserName")]
+        public string CreatorUserName;
+
+        // Seconds since 1970-01-01 00:00:00 UTC.
+        [JsonProperty("creationTime")]
+        public long CreationTime;
     }
 
     public class AttributeDetailsObject

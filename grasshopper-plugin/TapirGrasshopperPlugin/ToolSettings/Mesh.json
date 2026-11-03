@@ -1,0 +1,165 @@
+{
+  "tool": "Mesh",
+  "elementType": "Mesh",
+  "archicadVersion": 29,
+  "commands": {
+    "get": "GetDetailsOfElements",
+    "getSchema": "MeshDetails",
+    "create": "CreateMeshesCommand",
+    "modify": "ModifyMeshesCommand"
+  },
+  "plainKeys": [
+    "elementId",
+    "favoriteName",
+    "meshData"
+  ],
+  "sources": {
+    "help": [
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-7.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-135.htm"
+    ],
+    "devkit": "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/tag/29.3000"
+  },
+  "fields": [
+    {
+      "get": "polygonCoordinates",
+      "set": "polygonCoordinates",
+      "apiMember": "API_MeshType::poly",
+      "apiDescription": "The polygon of the mesh.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "polygonArcs",
+      "set": "polygonArcs",
+      "apiMember": "API_MeshType::poly",
+      "apiDescription": "The polygon of the mesh.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "holes",
+      "set": "holes",
+      "apiMember": "API_MeshType::poly",
+      "apiDescription": "The polygon of the mesh.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "sublines",
+      "set": "sublines",
+      "apiMember": "API_MeshType::levelLines",
+      "apiDescription": "The level lines of the mesh.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "floorIndex",
+      "set": "floorIndex",
+      "apiMember": "API_Elem_Head::floorInd",
+      "apiDescription": "The element belongs to this floor.",
+      "label": "Home Story",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-7.htm (heading \"Home Story\"; screenshot MeshConstruction.png \"Home Story:\")",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "level",
+      "set": "level",
+      "apiMember": "API_MeshType::level",
+      "apiDescription": "Height of base plane of the mesh from the floor level.",
+      "label": "Offset to Home Story",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-7.htm (text \"Offset to Home Story: Set the height of the Mesh Reference Plane as measured from its Home Story\")",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "skirtLevel",
+      "set": "skirtLevel",
+      "apiMember": "API_MeshType::skirtLevel",
+      "apiDescription": "Distance of the mesh's bottom from the base plane of the mesh.",
+      "label": "Mesh Height",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-7.htm (text \"Mesh Height: Set the depth (if any) to which the Mesh will extend below the Mesh Reference Plane\")",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "skirtType",
+      "set": "skirtType",
+      "apiMember": "API_MeshType::skirt",
+      "apiDescription": "Skirt: 1 = yes; 2 = no bottom; 3 = no.",
+      "label": "Mesh Construction Method",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-7.htm (heading \"Mesh Construction Method\": Surface Only / Surface with Skirt / Solid Body; screenshot MeshConstruction.png)",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": null,
+      "set": "buildingMaterialId",
+      "apiMember": "API_MeshType::buildingMaterial",
+      "apiDescription": "Building Material index of mesh's hatch.",
+      "label": "Building Material",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-7.htm (text \"Building Material: Use the pop-up to choose a Building Material for the Mesh\")",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "ridges",
+      "set": "ridges",
+      "apiMember": "API_MeshType::smoothRidges",
+      "apiDescription": "How the connecting surfaces to be shown in the PhotoRendering window: APIRidge_AllSharp: all ridges sharp; APIRidge_AllSmooth: all ridges smooth; APIRidge_UserSharp: only the user defined ridges are sharp.",
+      "label": "3D Appearance",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-135.htm (heading \"3D Appearance\"; screenshot MeshModelPanel.png \"3D Appearance:\"); https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-7.htm (heading \"3D Appearance\")",
+      "group": "Model",
+      "subgroup": null
+    },
+    {
+      "get": "showLines",
+      "set": "showLines",
+      "apiMember": "API_MeshType::showLines",
+      "apiDescription": "False : hide secondary lines; true : show everything.",
+      "label": "Ridge Selection",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-7.htm (text \"Ridge Selection: Define whether to Show all Ridges or Show User-Defined Ridges\"); https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-135.htm (screenshot ShowMeshRidges.png \"Ridge Selection\")",
+      "group": "Floor Plan and Section",
+      "subgroup": "Outlines"
+    },
+    {
+      "get": "contourPen",
+      "set": "contourPen",
+      "apiMember": "API_MeshType::contPen",
+      "apiDescription": "Pen attribute index of the mesh's contour.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "levelPen",
+      "set": "levelPen",
+      "apiMember": "API_MeshType::levelPen",
+      "apiDescription": "Pen attribute index of the mesh's level lines.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "lineTypeIndex",
+      "set": "lineTypeIndex",
+      "apiMember": "API_MeshType::ltypeInd",
+      "apiDescription": "Line type attribute index of mesh's contour.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    }
+  ]
+}

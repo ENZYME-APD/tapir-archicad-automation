@@ -1,0 +1,114 @@
+{
+  "tool": "CurtainWall",
+  "elementType": "CurtainWall",
+  "archicadVersion": 29,
+  "commands": {
+    "get": "GetDetailsOfElements",
+    "getSchema": "CurtainWallDetails",
+    "create": "CreateCurtainWallsCommand"
+  },
+  "plainKeys": [
+    "favoriteName"
+  ],
+  "sources": {
+    "help": [
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-175.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-156.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-157.htm"
+    ],
+    "devkit": "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/tag/29.3000"
+  },
+  "fields": [
+    {
+      "get": null,
+      "set": "coordinates",
+      "apiMember": "API_ElementMemo::coords",
+      "apiDescription": "Coordinate array (used for polygons, spline coordinates, etc.). Each pair of consecutive coordinates is one segment of the curtain wall (API_CurtainWallType::nSegments).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "floorIndex",
+      "set": "floorIndex",
+      "getFrom": "element",
+      "apiMember": "API_Elem_Head::floorInd",
+      "apiDescription": "The element belongs to this floor.",
+      "label": "Home Story",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-175.htm (text \"Home Story: The Curtain Wall’s reference line is physically linked to its Home Story\"; screenshot CWGeomDefault.png \"Home Story:\")",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": null,
+      "set": "zCoordinate",
+      "apiMember": null,
+      "apiDescription": "Absolute Z of the curtain wall bottom (sets the home story and API_CurtainWallType::planeOffset).",
+      "label": "Bottom Elevation",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-175.htm (text \"Bottom Elevation [to Reference level]\")",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "height",
+      "set": "height",
+      "apiMember": "API_CurtainWallType::height",
+      "apiDescription": "Height of the curtain wall (input only).",
+      "label": "Curtain Wall Height",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-175.htm (text \"Curtain Wall Height\")",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "angle",
+      "set": null,
+      "apiMember": "API_CurtainWallType::angle",
+      "apiDescription": "Angle of the curtain wall (input only).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "flipped",
+      "set": null,
+      "apiMember": "API_CurtainWallType::flipped",
+      "apiDescription": "The curtain wall is flipped.",
+      "label": null,
+      "labelSource": null,
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": null,
+      "set": "primaryPattern",
+      "apiMember": "API_ElementMemo::cWSegPrimaryPattern",
+      "apiDescription": "Curtain Wall primary segment pattern.",
+      "label": "Columns",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-156.htm (screenshot SchemeSettingsDefault.png \"Columns:\")",
+      "group": "Grid Pattern and Preview",
+      "subgroup": null
+    },
+    {
+      "get": null,
+      "set": "secondaryPattern",
+      "apiMember": "API_ElementMemo::cWSegSecondaryPattern",
+      "apiDescription": "Curtain Wall secondary segment pattern.",
+      "label": "Rows",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-156.htm (screenshot SchemeSettingsDefault.png \"Rows:\")",
+      "group": "Grid Pattern and Preview",
+      "subgroup": null
+    },
+    {
+      "get": null,
+      "set": "cells",
+      "apiMember": "API_ElementMemo::cWSegPatternCells",
+      "apiDescription": "Curtain Wall segment pattern cells.",
+      "label": null,
+      "labelSource": null,
+      "group": "Grid Pattern and Preview",
+      "subgroup": null
+    }
+  ]
+}

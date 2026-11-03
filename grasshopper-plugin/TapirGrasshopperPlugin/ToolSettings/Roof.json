@@ -1,0 +1,193 @@
+{
+  "tool": "Roof",
+  "elementType": "Roof",
+  "archicadVersion": 29,
+  "commands": {
+    "get": "GetDetailsOfElements",
+    "getSchema": "RoofDetails",
+    "create": "CreateRoofsCommand",
+    "modify": "ModifyRoofsCommand"
+  },
+  "plainKeys": [
+    "elementId"
+  ],
+  "sources": {
+    "help": [
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-4.htm"
+    ],
+    "devkit": "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/tag/29.3000"
+  },
+  "fields": [
+    {
+      "get": "roofClass",
+      "set": null,
+      "apiMember": "API_RoofType::roofClass",
+      "apiDescription": "Roof class: API_PlaneRoofID: single-plane roof, use the API_PlaneRoofData member of the union; API_PolyRoofID: multi-plane roof, use the API_PolyRoofData member of the union.",
+      "label": "Roof Geometry Method",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-4.htm (text \"Roof Geometry Method: When defining default settings before creating a Roof, choose either Single-plane or Multi-plane Roof geometry\"; screenshot RoofGeometry.png)",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "polygonOutline",
+      "set": "polygonOutline",
+      "apiMember": "API_PlaneRoofData::poly",
+      "apiDescription": "The polygon of the roof slab, projected onto the horizontal plane (single-plane roof); for a multi-plane roof API_PolyRoofData::contourPolygon: the contour polygon that cuts the roof on the horizontal plane.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": null,
+      "set": "polygonCoordinates",
+      "apiMember": "API_PlaneRoofData::poly",
+      "apiDescription": "The polygon of the roof slab, projected onto the horizontal plane (single-plane roof); for a multi-plane roof API_PolyRoofData::contourPolygon: the contour polygon that cuts the roof on the horizontal plane.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "polygonArcs",
+      "set": "polygonArcs",
+      "apiMember": "API_PlaneRoofData::poly",
+      "apiDescription": "The polygon of the roof slab, projected onto the horizontal plane (single-plane roof); for a multi-plane roof API_PolyRoofData::contourPolygon: the contour polygon that cuts the roof on the horizontal plane.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "holes",
+      "set": "holes",
+      "apiMember": "API_PlaneRoofData::poly",
+      "apiDescription": "The polygon of the roof slab, projected onto the horizontal plane (single-plane roof); for a multi-plane roof API_PolyRoofData::contourPolygon: the contour polygon that cuts the roof on the horizontal plane.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "pivotLine",
+      "set": "pivotLine",
+      "apiMember": "API_PlaneRoofData::baseLine",
+      "apiDescription": "Base (pivot) line of the roof.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "pivotPolygonOutline",
+      "set": null,
+      "apiMember": "API_PolyRoofData::pivotPolygon",
+      "apiDescription": "The polygon constructed from the pivot edges of the roof planes. The actual data of the pivot polygon is held in the pivotPolyCoords, pivotPolyPends, pivotPolyParcs, and pivotPolyVertexIDs members of the API_ElementMemo structure.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "floorIndex",
+      "set": "floorIndex",
+      "getFrom": "element",
+      "apiMember": "API_Elem_Head::floorInd",
+      "apiDescription": "The element belongs to this floor.",
+      "label": "Home Story",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-4.htm (heading \"Home Story\"; screenshot RoofGeoPanel.png \"Home Story:\")",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "zCoordinate",
+      "set": null,
+      "apiMember": null,
+      "apiDescription": "Absolute Z of the roof's pivot line (derived from the home story and level).",
+      "label": "Absolute Pivot Elevation",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-4.htm (text \"Absolute Pivot Elevation [to Project Zero]: Enter a value here for the elevation of the pivot line\")",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "level",
+      "set": "level",
+      "apiMember": "API_ShellBaseType::level",
+      "apiDescription": "Base level of the element (reference line height in case of Roof elements) from the floor level.",
+      "label": null,
+      "labelSource": null,
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "thickness",
+      "set": "thickness",
+      "apiMember": "API_ShellBaseType::thickness",
+      "apiDescription": "Thickness of the element.",
+      "label": "Roof Thickness",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-4.htm (text \"Roof Thickness: Enter a value for the thickness of the roof pane\")",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "structureType",
+      "set": "structureType",
+      "apiMember": "API_ShellBaseType::modelElemStructureType",
+      "apiDescription": "The structure type of the shellBase.",
+      "label": "Roof Structure",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-4.htm (text \"Roof Structure: Click one of these icons to define the Roof as either Basic or Composite\")",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "buildingMaterialId",
+      "set": "buildingMaterialId",
+      "apiMember": "API_ShellBaseType::buildingMaterial",
+      "apiDescription": "Building Material index of shellBase's hatch. Used only, if structure type is API_BasicStrucure.",
+      "label": "Building Material",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-4.htm (text \"For a Basic Roof: Use the pop-up to choose its Building Material\"; screenshot BMPopupRoof.png)",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "compositeId",
+      "set": "compositeId",
+      "apiMember": "API_ShellBaseType::composite",
+      "apiDescription": "Composite index of shellBase. Used only, if structure type is API_CompositeStructure.",
+      "label": "Composite",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-4.htm (text \"For a Composite Roof: Use the pop-up to choose its Composite structure\"; screenshot CompPopupRoof.png)",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "angle",
+      "set": "angle",
+      "apiMember": "API_PlaneRoofData::angle",
+      "apiDescription": "Angle of the roof plane.",
+      "label": "Roof Pitch",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-4.htm (text \"Roof Pitch: Enter a value for the pitch (slant angle) of the roof\")",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "eavesOverhang",
+      "set": "eavesOverhang",
+      "apiMember": "API_PolyRoofData::eavesOverHang",
+      "apiDescription": "Eaves' extension outside the pivot polygon.",
+      "label": "Eaves Overhang",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-4.htm (text \"Eaves overhang: Offset: Enter a value for the distance of the eaves overhang from the pivot polygon\"; screenshot AddRoofLevel.png \"Eaves Overhang:\")",
+      "group": "Multi-plane Geometry",
+      "subgroup": null
+    },
+    {
+      "get": "levels",
+      "set": "levels",
+      "apiMember": "API_PolyRoofData::levelData",
+      "apiDescription": "Fixed-size array of API_RoofLevelData items (levelHeight: height of the level; levelAngle: angle of planes measured from horizontal on this level).",
+      "label": "Roof Levels",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-4.htm (text \"Roof levels: Use these controls to add one or more levels to a Multi-plane Roof\"; screenshot AddRoofLevel.png \"Roof Levels:\")",
+      "group": "Multi-plane Geometry",
+      "subgroup": null
+    }
+  ]
+}

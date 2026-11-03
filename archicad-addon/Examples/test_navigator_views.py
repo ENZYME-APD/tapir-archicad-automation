@@ -68,6 +68,20 @@ for deg, name in ANGLES:
     print(f"  Created '{name}' ({nav_id['guid']})")
 print(f"PASS: CreateViewsInViewMap -> {len(created)} independent views")
 
+# 2b. CreateViewsInViewMap with a View Map view as the source (#1656): the new
+# view is made from the view's Project Map item and gets the view's settings
+print("\n2b. CreateViewsInViewMap (View Map view as source)...")
+resp = run("CreateViewsInViewMap", {"viewsData": [{
+    "navigatorItemId":       created[0][2],
+    "parentNavigatorItemId": folder_id,
+    "name":                  "Test From View",
+}]})
+items_out = resp.get("navigatorItems", [])
+assert items_out and "navigatorItemId" in items_out[0], \
+    f"CreateViewsInViewMap from a View Map view failed: {items_out}"
+from_view_nav_id = items_out[0]["navigatorItemId"]
+print(f"PASS: CreateViewsInViewMap from a View Map view -> {from_view_nav_id['guid']}")
+
 # 3. SetViewRotation for each view
 print("\n3. SetViewRotation...")
 rot_resp = run("SetViewRotation", {"navigatorItemIdsWithRotation": [
@@ -196,6 +210,25 @@ if schedule_items:
     })
     assert not sched_res.get("success"), f"Schedule rename unexpectedly succeeded: {sched_res}"
     print(f"PASS: schedule rename refused: {sched_res['error']['message']}")
+    sched_id_res = run("RenameNavigatorItem", {
+        "navigatorItemId": schedule_items[0]["navigatorItemId"],
+        "newId":           "TAPIR-SCHEDULE-ID",
+    })
+    assert not sched_id_res.get("success"), f"Schedule newId unexpectedly succeeded: {sched_id_res}"
+    print(f"PASS: schedule newId refused: {sched_id_res['error']['message']}")
+
+# 6d. RenameNavigatorItem with newId — give the linked view a custom ID, which must
+#     show up as uiId with customUiId true (the View Settings "Custom" ID radio button)
+print("\n6d. RenameNavigatorItem (newId on a View Map item)...")
+id_res = run("RenameNavigatorItem", {
+    "navigatorItemId": clone_nav_id,
+    "newId":           "TAPIR-ID-01",
+})
+assert id_res.get("success"), f"RenameNavigatorItem (newId) failed: {id_res}"
+id_item = find_view_map_item(clone_nav_id)
+assert id_item and id_item["uiId"] == "TAPIR-ID-01" and id_item["customUiId"], \
+    f"Custom ID not applied: {id_item}"
+print(f"PASS: RenameNavigatorItem -> uiId '{id_item['uiId']}', customUiId true")
 
 # Visual check before cleanup
 print(
@@ -207,7 +240,7 @@ print(
 # 7. DeleteNavigatorItems — delete views + linked view, then test folder
 print("\n7. DeleteNavigatorItems (cleanup)...")
 all_view_ids = [{"navigatorItemId": nav_id} for _, _, nav_id in created] + \
-               [{"navigatorItemId": clone_nav_id}]
+               [{"navigatorItemId": clone_nav_id}, {"navigatorItemId": from_view_nav_id}]
 del_views = run("DeleteNavigatorItems", {"navigatorItemIds": all_view_ids})
 for i, r in enumerate(del_views["executionResults"]):
     assert r.get("success"), f"Delete view {i} failed: {r}"

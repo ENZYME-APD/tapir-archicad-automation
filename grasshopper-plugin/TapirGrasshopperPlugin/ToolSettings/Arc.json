@@ -1,0 +1,146 @@
+{
+  "tool": "Arc",
+  "elementType": "Arc",
+  "archicadVersion": 29,
+  "commands": {
+    "get": "GetDetailsOfElements",
+    "getSchema": "ArcDetails",
+    "create": "CreateArcsCommand"
+  },
+  "plainKeys": [
+    "favoriteName",
+    "layerIndex"
+  ],
+  "sources": {
+    "help": [
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-32.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-11.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-12.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-15.htm"
+    ],
+    "devkit": "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/tag/29.3000"
+  },
+  "fields": [
+    {
+      "get": "origin",
+      "set": "origin",
+      "apiMember": "API_ArcType::origC",
+      "apiDescription": "Coordinate of the center point.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "radius",
+      "set": "radius",
+      "apiMember": "API_ArcType::r",
+      "apiDescription": "Radius.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "begAngle",
+      "set": "begAngle",
+      "apiMember": "API_ArcType::begAng",
+      "apiDescription": "Beginning angle of the arc.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "endAngle",
+      "set": "endAngle",
+      "apiMember": "API_ArcType::endAng",
+      "apiDescription": "End angle of the arc.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "angle",
+      "set": null,
+      "apiMember": "API_ArcType::angle",
+      "apiDescription": "0.0, or the angle of the 'a' axis.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "ratio",
+      "set": null,
+      "apiMember": "API_ArcType::ratio",
+      "apiDescription": "1.0, or 'a/b' of the ellipse.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "reflected",
+      "set": null,
+      "apiMember": "API_ArcType::reflected",
+      "apiDescription": "Is the ellipse reflected onto the smaller axis?",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "floorIndex",
+      "set": "floorInd",
+      "getFrom": "element",
+      "apiMember": "API_Elem_Head::floorInd",
+      "apiDescription": "The element belongs to this floor.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "zCoordinate",
+      "set": null,
+      "apiMember": null,
+      "apiDescription": "Absolute Z of the arc (the level of its home story; output only).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "lineTypeId",
+      "set": "lineTypeId",
+      "apiMember": "API_ArcType::ltypeInd",
+      "apiDescription": "Line type attribute index.",
+      "label": "Line Type",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-32.htm (text \"Select a Line type from the pop-up selection palette.\")",
+      "group": "General Settings",
+      "subgroup": null
+    },
+    {
+      "get": "linePenIndex",
+      "set": "linePenIndex",
+      "apiMember": "API_ArcType::linePen",
+      "apiDescription": "(Overridden) pen attribute index.",
+      "label": "Pen",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-32.htm (text \"Type a Pen number (1-255) for the Line/Arc/Polyline/Spline.\")",
+      "group": "General Settings",
+      "subgroup": null
+    },
+    {
+      "get": "roomSeparator",
+      "set": "roomSeparator",
+      "apiMember": "API_ArcType::roomSeparator",
+      "apiDescription": "Is this arc a zone boundary?",
+      "label": "Zone Boundary",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-32.htm (text \"Check the Zone Boundary box to allow lines to delimit automatically placed Zones.\"; screenshots ArrowheadSettings.png and LineCategories.png \"Zone Boundary\")",
+      "group": "General Settings",
+      "subgroup": null
+    }
+  ]
+}

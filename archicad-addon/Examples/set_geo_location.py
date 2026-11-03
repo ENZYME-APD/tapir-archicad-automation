@@ -44,4 +44,32 @@ geoLocation = aclib.RunTapirCommand ('GetGeoLocation', debug = False)
 print ('Survey point position in the project after SetGeoLocation:')
 print (aclib.JsonDumpDictionary (geoLocation['surveyPoint']['positionInProject']))
 
+# The survey point can be shown or hidden, and locked so it cannot be moved
+# (the lock from Archicad 26; older versions leave 'isLocked' out of GetGeoLocation
+# and reject it in SetGeoLocation). Omitted fields stay unchanged.
+aclib.RunTapirCommand (
+    'SetGeoLocation', {
+        'surveyPoint': {
+            'isVisible': True
+        }
+    })
+
+geoLocation = aclib.RunTapirCommand ('GetGeoLocation', debug = False)
+print ('Survey point visible after SetGeoLocation: {}'.format (geoLocation['surveyPoint']['isVisible']))
+
+if 'isLocked' in geoLocation['surveyPoint']:
+    aclib.RunTapirCommand (
+        'SetGeoLocation', {
+            'surveyPoint': {
+                'isLocked': True
+            }
+        })
+
+    geoLocation = aclib.RunTapirCommand ('GetGeoLocation', debug = False)
+    print ('Survey point locked after SetGeoLocation: {}'.format (geoLocation['surveyPoint']['isLocked']))
+else:
+    print ('The survey point lock needs Archicad 26 or later.')
+
+# The original state includes the visibility and the lock, and a locked survey
+# point is unlocked before its position is restored.
 aclib.RunTapirCommand ('SetGeoLocation', originalGeoLocation, debug = False)

@@ -1,5 +1,6 @@
 #include "IssueCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "FileSystem.hpp"
 
 static API_IFCTranslatorIdentifier GetExportTranslator ()
 {
@@ -849,4 +850,134 @@ GS::ObjectState ImportIssuesFromBCFCommand::Execute (const GS::ObjectState& para
     }
 
     return CreateSuccessfulExecutionResult ();
+}
+
+ImportMarkupsFromPDFCommand::ImportMarkupsFromPDFCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ImportMarkupsFromPDFCommand::GetName () const
+{
+    return "ImportMarkupsFromPDF";
+}
+
+GS::Optional<GS::UniString> ImportMarkupsFromPDFCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "pdfFilePath": {
+                "type": "string",
+                "description": "The os path to the PDF file with the markups, including it's name."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "pdfFilePath"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ImportMarkupsFromPDFCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResult": {
+                "$ref": "#/ExecutionResult"
+            },
+            "issues": {
+                "$ref": "#/Issues",
+                "description": "The issues the import created. Empty when the import failed."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResult",
+            "issues"
+        ]
+    })";
+}
+
+// The response of ImportMarkupsFromPDF: the result of the import and the issues it created.
+static GS::ObjectState CreateImportMarkupsFromPDFResponse (const GS::ObjectState& executionResult, const GS::Array<API_Guid>& createdIssues)
+{
+    GS::ObjectState response;
+    response.Add ("executionResult", executionResult);
+    const auto& issues = response.AddList<GS::ObjectState> ("issues");
+    for (const API_Guid& guid : createdIssues) {
+        issues (CreateIssueIdObjectState (guid));
+    }
+    return response;
+}
+
+#ifdef ServerMainVers_2900
+// The guids of every issue of the project, in the order the Issue Manager lists them.
+static GSErrCode GetAllIssueGuids (GS::Array<API_Guid>& guids)
+{
+    GS::Array<API_MarkUpType> issues;
+    const GSErrCode err = ACAPI_Markup_GetList (APINULLGuid, &issues);
+    if (err != NoError) {
+        return err;
+    }
+    for (const API_MarkUpType& issue : issues) {
+        guids.Push (issue.guid);
+    }
+    return NoError;
+}
+#endif
+
+GS::ObjectState ImportMarkupsFromPDFCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString pdfFilePath;
+    if (!parameters.Get ("pdfFilePath", pdfFilePath)) {
+        return CreateImportMarkupsFromPDFResponse (CreateFailedExecutionResult (Error, "Invalid input parameters."), GS::Array<API_Guid> ());
+    }
+
+#ifdef ServerMainVers_2900
+    // The import runs silently, so a missing file would show no dialog: report it here instead.
+    const IO::Location pdfFileLocation (pdfFilePath);
+    bool pdfFileExists = false;
+    if (IO::fileSystem.Contains (pdfFileLocation, &pdfFileExists) != NoError || !pdfFileExists) {
+        return CreateImportMarkupsFromPDFResponse (CreateFailedExecutionResult (APIERR_BADPARS, "The PDF file does not exist."), GS::Array<API_Guid> ());
+    }
+
+    // ACAPI_Markup_ImportFromPDF reports nothing about the issues it creates, so they are
+    // the difference of the issue list before and after the import, as for the XML imports.
+    GS::Array<API_Guid> issuesBefore;
+    GSErrCode err = GetAllIssueGuids (issuesBefore);
+    if (err != NoError) {
+        return CreateImportMarkupsFromPDFResponse (CreateFailedExecutionResult (err, "Failed to retrieve the issues."), GS::Array<API_Guid> ());
+    }
+
+    err = ACAPI_CallUndoableCommand ("Import PDF markups", [&]() -> GSErrCode {
+        // silentMode: no dialog may block the JSON interface; the Issue Manager palette stays as it is.
+        return ACAPI_Markup_ImportFromPDF (pdfFileLocation, true, false);
+    });
+    if (err != NoError) {
+        return CreateImportMarkupsFromPDFResponse (CreateFailedExecutionResult (err, "Failed to import the markups of the PDF file."), GS::Array<API_Guid> ());
+    }
+
+    GS::Array<API_Guid> issuesAfter;
+    err = GetAllIssueGuids (issuesAfter);
+    if (err != NoError) {
+        return CreateImportMarkupsFromPDFResponse (CreateFailedExecutionResult (err, "The markups were imported, but the issues could not be retrieved."), GS::Array<API_Guid> ());
+    }
+
+    GS::HashSet<API_Guid> existingIssues;
+    for (const API_Guid& guid : issuesBefore) {
+        existingIssues.Add (guid);
+    }
+    GS::Array<API_Guid> createdIssues;
+    for (const API_Guid& guid : issuesAfter) {
+        if (!existingIssues.Contains (guid)) {
+            createdIssues.Push (guid);
+        }
+    }
+
+    return CreateImportMarkupsFromPDFResponse (CreateSuccessfulExecutionResult (), createdIssues);
+#else
+    return CreateImportMarkupsFromPDFResponse (CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer."), GS::Array<API_Guid> ());
+#endif
 }

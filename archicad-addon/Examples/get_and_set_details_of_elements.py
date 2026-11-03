@@ -28,6 +28,18 @@ for i in range(len(elements)):
                 }
             }
         })
+    elif detailsOfElements[i]['type'] == 'Zone' and not detailsOfElements[i]['details']['isManual']:
+        # An automatic zone also reports the point it was placed from (referencePosition);
+        # moving it changes where the zone is found when zones are next updated.
+        origReferencePosition = detailsOfElements[i]['details']['referencePosition']
+        elementWithChangedDetails['details'].update({
+            'typeSpecificDetails': {
+                'referencePosition': {
+                    'x': origReferencePosition['x'] + 0.1,
+                    'y': origReferencePosition['y'] + 0.1
+                }
+            }
+        })
 
     elementsWithChangedDetails.append (elementWithChangedDetails)
 

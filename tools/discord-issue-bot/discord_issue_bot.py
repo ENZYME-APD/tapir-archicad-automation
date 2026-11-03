@@ -14,6 +14,9 @@ safe to run repeatedly and safe to overlap runs:
 - After filing an issue the bot adds a white check mark reaction to the
   Discord message. A message that already carries the bot's own reaction is
   never processed again.
+- The bot's eyes reaction sits on one message per channel only: the last
+  message it checked. The next run continues with the messages after it,
+  so messages classified as not actionable are not classified again.
 - As a second guard it searches existing GitHub issues for the Discord
   message ID before creating a new one, so even a lost reaction cannot
   produce a duplicate issue.
@@ -21,6 +24,7 @@ safe to run repeatedly and safe to overlap runs:
 Whether a message is an actionable bug report or feature request is decided
 by Claude through the Claude Code CLI; plain conversation, questions and
 help requests are left alone.
+Consecutive messages of one author are read together as one report.
 
 Configuration (environment variables):
 
@@ -49,6 +53,11 @@ Configuration (environment variables):
   MIN_MESSAGE_LENGTH    Skip shorter messages. Default: 25.
   DRY_RUN               "true" to classify and log only, with no issue,
                         reaction or reply. Default: false.
+  CLEANUP_SEEN_MARKS    "true" to only remove the bot's eyes reactions from
+                        every message of each channel's history except the
+                        newest one (the checkpoint), then exit. For marks
+                        left by versions that marked every checked message.
+                        Default: false.
 """
 
 import dataclasses
@@ -68,7 +77,7 @@ import requests
 DISCORD_API = "https://discord.com/api/v10"
 GITHUB_API = "https://api.github.com"
 PROCESSED_MARK = "\N{WHITE HEAVY CHECK MARK}"   # an issue was filed for this message
-SEEN_MARK = "\N{EYES}"                          # classified as not actionable
+SEEN_MARK = "\N{EYES}"                          # the last message checked in the channel
 ISSUE_MARKER_PREFIX = "discord-message-id:"
 # The only author the bot ever files issues as (issues created with the
 # workflow's GITHUB_TOKEN); dedupe hits from any other author are hostile
@@ -125,14 +134,14 @@ not actionable.\
 # One message per model call, deliberately: in a shared batch a single
 # prompt-injected message could steer the verdict of every batch-mate,
 # and the "not actionable" results would suppress real reports under a
-# permanent seen mark. Isolation costs only per-call overhead - each
+# checkpoint. Isolation costs only per-call overhead - each
 # message is classified exactly once ever, batched or not - and the
 # chunked machinery below stays, so this is one constant to revisit if
 # volume ever demands batching again.
 CLASSIFIER_BATCH_SIZE = 1
 
-# An actionable classification below MIN_CONFIDENCE gets the permanent
-# "seen" mark like plain chat, so it is the one place a real report can be
+# An actionable classification below MIN_CONFIDENCE is passed by the
+# checkpoint like plain chat, so it is the one place a real report can be
 # lost with nothing but a log line. Cases at or above this floor are listed
 # in the workflow run's summary and appended to a rolling GitHub issue so
 # a maintainer can file them by hand.
@@ -146,9 +155,9 @@ BORDERLINE_ISSUE_TITLE = "Borderline Discord reports"
 BORDERLINE_ISSUE_BODY = """\
 The Tapir Discord issue bot appends a comment here whenever it sees
 messages that Claude judged actionable but with confidence below the
-threshold for filing an issue. They received the seen mark and will not
-be classified again, so this is their only trace: review them and file
-real issues by hand where the classifier was too cautious.
+threshold for filing an issue, and messages it could not classify at all.
+They count as checked and will not be classified again, so this is their
+only trace: review them and file real issues by hand where needed.
 
 Closing this issue archives it - the bot opens a fresh one when needed.
 
@@ -164,6 +173,15 @@ Closing this issue archives it - the bot opens a fresh one when needed.
 # single one carrying anything fails the run as a misconfiguration.
 EMPTY_CONTENT_FAILURE_COUNT = 5
 
+# How many 100-message pages a CLEANUP_SEEN_MARKS run reads per channel:
+# far more than the bot's lifetime of messages in the project's channels.
+CLEANUP_MAX_PAGES = 200
+
+# Consecutive messages of one author are read as one report. The newest
+# such run is left for the next scan while its last message is younger
+# than this, as its author may still be typing the rest of it.
+GROUP_QUIET_MINUTES = 10
+
 
 @dataclasses.dataclass
 class Config:
@@ -178,6 +196,7 @@ class Config:
     min_confidence: float
     min_message_length: int
     dry_run: bool
+    cleanup_seen_marks: bool
 
     @staticmethod
     def from_env():
@@ -209,6 +228,8 @@ class Config:
             min_confidence=_numeric_env("MIN_CONFIDENCE", "0.7", float),
             min_message_length=_numeric_env("MIN_MESSAGE_LENGTH", "25", int),
             dry_run=os.environ.get("DRY_RUN", "").strip().lower() in ("1", "true", "yes"),
+            cleanup_seen_marks=os.environ.get(
+                "CLEANUP_SEEN_MARKS", "").strip().lower() in ("1", "true", "yes"),
         )
         return config, []
 
@@ -299,18 +320,18 @@ class DiscordClient:
             channel_id, response.status_code, response.text[:200]))
         return None
 
-    def recent_messages(self, channel_id, since):
+    def recent_messages(self, channel_id, since, max_pages=20):
         """Messages in the channel newer than `since`, oldest first, or
         None when the channel could not be read at all.
 
         Paginates past the API's 100-message page size so a busy channel
-        does not silently lose the oldest part of a burst; capped at twenty
-        pages (2000 messages) as a safety limit, with a warning when the
-        cap cuts the window short.
+        does not silently lose the oldest part of a burst; capped at
+        `max_pages` pages (2000 messages by default) as a safety limit, with
+        a warning when the cap cuts the window short.
         """
         messages = []
         before = None
-        for page_index in range(20):
+        for page_index in range(max_pages):
             params = {"limit": 100}
             if before is not None:
                 params["before"] = before
@@ -342,9 +363,9 @@ class DiscordClient:
             # would be lost silently.
             if len(page) == 100:
                 log("WARNING: channel {} has more messages inside the "
-                    "lookback window than the 20-page scan limit - the "
+                    "lookback window than the {}-page scan limit - the "
                     "oldest part of the window was skipped and reports "
-                    "there will not become issues.".format(channel_id))
+                    "there will not become issues.".format(channel_id, max_pages))
         messages.reverse()
         return messages
 
@@ -362,6 +383,16 @@ class DiscordClient:
         if not response.ok:
             log("WARNING: could not add reaction to message {}: {} {}".format(
                 message_id, response.status_code, response.text[:200]))
+        return response.ok
+
+    def remove_mark(self, channel_id, message_id, emoji):
+        response = self._request(
+            "DELETE", "/channels/{}/messages/{}/reactions/{}/@me".format(
+                channel_id, message_id, urllib.parse.quote(emoji)))
+        if not response.ok:
+            log("WARNING: could not remove reaction from message {}: {} {}".format(
+                message_id, response.status_code, response.text[:200]))
+        return response.ok
 
     def reply(self, channel_id, message_id, content):
         response = self._request(
@@ -631,7 +662,7 @@ class ClassifierBase:
         # The model does not always honor the schema; a malformed field must
         # not abort the whole run, so coerce everything to the expected type.
         # actionable gates issue creation, and a string "false" is truthy.
-        # Suppressing a real report (the permanent seen mark) is worse than
+        # Suppressing a real report (checked, never looked at again) is worse than
         # letting one through to the confidence gate, so the common truthy
         # spellings all count.
         actionable = result.get("actionable")
@@ -749,28 +780,74 @@ def append_summary(line):
 
 
 def note_borderline(line, state):
-    """Record an actionable-but-under-threshold message: it is about to be
-    marked as seen and never revisited, so this is the maintainer's only
+    """Record an actionable-but-under-threshold message: it counts as
+    checked and is never revisited, so this is the maintainer's only
     trace of a possibly too-cautious call. Listed in the workflow run's
     step summary and collected for the rolling borderline-reports issue."""
     state["borderline"].append(line)
     append_summary(line)
 
 
-def is_candidate(message, config):
+def skip_reason(message, config):
+    """Why `message` is not classified, for the log, or None when it is."""
     author = message.get("author", {})
-    if author.get("bot") or author.get("system"):
-        return False
+    if author.get("bot"):
+        return "posted by a bot"
+    if author.get("system"):
+        return "a system message"
     if message.get("type", 0) not in (0, 19):  # DEFAULT and REPLY messages only
-        return False
-    content = message.get("content", "")
-    if len(content.strip()) < config.min_message_length:
+        return "not a regular message (type {})".format(message.get("type"))
+    content = message.get("content", "").strip()
+    if len(content) < config.min_message_length:
         # A screenshot with a short caption is a common way to report a
         # bug, so an attachment exempts the caption from the length gate.
         # A truly caption-less image still has nothing to classify.
-        if not (message.get("attachments") and content.strip()):
-            return False
-    return True
+        if message.get("attachments") and not content:
+            return "an attachment without text"
+        if not message.get("attachments"):
+            return "shorter than MIN_MESSAGE_LENGTH ({} < {} characters)".format(
+                len(content), config.min_message_length)
+    return None
+
+
+def is_human(message):
+    """A DEFAULT or REPLY message by a person: what group_messages reads."""
+    author = message.get("author", {})
+    return (not author.get("bot") and not author.get("system")
+            and message.get("type", 0) in (0, 19))
+
+
+def group_messages(messages):
+    """Split `messages` (oldest first) into runs of consecutive DEFAULT and
+    REPLY messages by one human author: a report is often typed as several
+    messages in a row. A message of another author, a bot, or of another
+    type ends a run and belongs to none."""
+    groups = []
+    current = []
+    for message in messages:
+        author = message.get("author", {})
+        if not is_human(message):
+            current = []
+            continue
+        if current and current[-1].get("author", {}).get("id") == author.get("id"):
+            current.append(message)
+        else:
+            current = [message]
+            groups.append(current)
+    return groups
+
+
+def merge_group(group):
+    """One message standing for a run of consecutive messages of one
+    author: the first message (its ID, author and jump link) carrying the
+    text and attachments of all of them."""
+    merged = dict(group[0])
+    merged["content"] = "\n".join(
+        message.get("content", "") for message in group
+        if message.get("content", "").strip())
+    merged["attachments"] = [attachment for message in group
+                             for attachment in message.get("attachments", [])]
+    return merged
 
 
 def build_issue_body(message, channel, classification):
@@ -809,7 +886,7 @@ def build_issue_body(message, channel, classification):
 def process_channel(channel_id, config, discord, github, classifier, state):
     if state["created"] >= config.max_issues_per_run:
         # Classifying candidates whose results could only be discarded
-        # wastes money; unmarked messages are picked up by the next run.
+        # wastes money; unchecked messages are picked up by the next run.
         log("Skipping channel {}: the issue limit for this run is already "
             "reached".format(channel_id))
         return
@@ -835,9 +912,6 @@ def process_channel(channel_id, config, discord, github, classifier, state):
                        "check the bot's Read Message History permission.".format(
                            str(channel_name).replace("`", "'"), channel_id))
         return
-    log("Channel #{}: {} message(s) in the last {} minutes".format(
-        channel_name, len(messages), config.lookback_minutes))
-
     human_messages = 0
     messages_with_signal = 0
     for message in messages:
@@ -856,40 +930,145 @@ def process_channel(channel_id, config, discord, github, classifier, state):
             "Content Intent is probably disabled in the Discord developer "
             "portal.".format(human_messages, channel_name))
 
-    candidates = []
-    messages_by_id = {}
+    # The bot's eyes reaction marks the last message checked in the
+    # channel; everything up to it is done, so only later messages are
+    # candidates. The newest one counts should an older one survive.
+    checkpoint = None
     for message in messages:
-        if not is_candidate(message, config):
+        if discord.has_mark(message, SEEN_MARK):
+            checkpoint = message
+    after_checkpoint = messages
+    if checkpoint is not None:
+        after_checkpoint = messages[messages.index(checkpoint) + 1:]
+    log("Channel #{}: {} message(s) in the last {} minutes, {} after the {} "
+        "checkpoint{}".format(
+            channel_name, len(messages), config.lookback_minutes,
+            len(after_checkpoint), SEEN_MARK,
+            "" if checkpoint is not None else " (none in the window)"))
+    for message in after_checkpoint:
+        # Belongs to no group below, so it would otherwise pass unlogged.
+        if not is_human(message):
+            log("  message {}: skipped, {}".format(
+                message["id"], skip_reason(message, config)))
+
+    # A candidate is a run of consecutive messages of one author, read as
+    # one report: classified together, filed as one issue under the first
+    # message's ID, and checked as a whole. A run that is no candidate (too
+    # short, an image without text) is checked without classifying it.
+    candidates = []
+    skipped = set()
+    groups_by_id = {}
+    merged_by_id = {}
+    groups = group_messages(after_checkpoint)
+    now = datetime.datetime.now(datetime.timezone.utc)
+    for group in groups:
+        posted = datetime.datetime.fromisoformat(group[-1]["timestamp"])
+        if (group is groups[-1] and group[-1] is after_checkpoint[-1]
+                and posted > now - datetime.timedelta(minutes=GROUP_QUIET_MINUTES)):
+            # Its author may still be typing; the next run reads it whole.
+            log("  message {}: left for the next run, its author may still be "
+                "typing (last message {} minute(s) ago, read after {} quiet "
+                "minutes)".format(group[0]["id"], int((now - posted).total_seconds() // 60),
+                                  GROUP_QUIET_MINUTES))
+            break
+        merged = merge_group(group)
+        groups_by_id[merged["id"]] = group
+        merged_by_id[merged["id"]] = merged
+        reason = skip_reason(merged, config)
+        if reason:
+            log("  message {}: skipped, {}".format(merged["id"], reason))
+            skipped.add(merged["id"])
+            candidates.append({"id": merged["id"]})
             continue
-        if discord.has_mark(message, PROCESSED_MARK, SEEN_MARK):
-            continue
-        author = message.get("author", {})
+        author = merged.get("author", {})
         candidates.append({
-            "id": message["id"],
+            "id": merged["id"],
             "channel": channel_name,
             "author": author.get("global_name") or author.get("username", "unknown"),
-            "content": message.get("content", ""),
+            "content": merged.get("content", ""),
         })
-        messages_by_id[message["id"]] = message
-    if not candidates:
-        return
+
+    # The checkpoint moves to the last message of each candidate checked.
+    # It moves right away, not at the end, so a run cut short by the job
+    # timeout keeps its progress. The new mark goes on first: if that
+    # fails, the old one stays, and an older checkpoint only costs some
+    # re-classification, never a skipped message. It never moves past a
+    # message left for the next run (the issue limit, a failed search or
+    # issue creation, the classifier not answering): the scan of the
+    # channel stops there, as everything after it would only be classified
+    # again by the next run, which starts at that message.
+    holder = checkpoint
+
+    def checked(message):
+        nonlocal holder
+        last = groups_by_id[message["id"]][-1]
+        if config.dry_run or last is holder:
+            return
+        if discord.add_mark(channel_id, last["id"], SEEN_MARK):
+            if holder is not None:
+                discord.remove_mark(channel_id, holder["id"], SEEN_MARK)
+            holder = last
+
+    def filed(message):
+        return any(discord.has_mark(part, PROCESSED_MARK)
+                   for part in groups_by_id[message["id"]])
 
     # Classify and act chunk by chunk: a run killed mid-way (the job
-    # timeout on a large backlog) keeps the marks and issues of every
-    # chunk already processed, bounding the rework to one batch.
+    # timeout on a large backlog) keeps the issues of every chunk already
+    # processed, bounding the rework to one batch.
     classifications = {}
     classified_until = 0
+    to_classify = []
+    for candidate in candidates:
+        if candidate["id"] in skipped or filed(merged_by_id[candidate["id"]]):
+            # Not classified at all, or filed by an earlier run that stopped
+            # before moving the checkpoint past it.
+            continue
+        to_classify.append(candidate)
 
-    for index, candidate in enumerate(candidates):
+    # A message the classifier gives no usable answer for waits for the
+    # next candidate's answer: when that comes, the classifier works and
+    # the message itself is the problem - it is skipped, with a trace for a
+    # maintainer, so one message cannot hold up the channel. When that one
+    # fails too, the classifier is down and the scan stops at the first.
+    unclassified = None
+
+    for candidate in candidates:
+        message = merged_by_id[candidate["id"]]
+        if candidate["id"] in skipped:
+            # Nothing to classify; passed like plain chat.
+            if unclassified is None:
+                checked(message)
+            continue
+        if filed(message):
+            # Filed by an earlier run; says nothing about the classifier.
+            if unclassified is None:
+                checked(message)
+            continue
+        index = to_classify.index(candidate)
         if index >= classified_until:
-            chunk = candidates[index:index + CLASSIFIER_BATCH_SIZE]
+            chunk = to_classify[index:index + CLASSIFIER_BATCH_SIZE]
             classifications.update(classifier.classify_batch(chunk))
             classified_until = index + len(chunk)
-        message = messages_by_id[candidate["id"]]
         classification = classifications.get(candidate["id"])
         if classification is None:
-            log("  message {}: classifier gave no usable answer, skipping".format(message["id"]))
+            if unclassified is not None:
+                log("  message {}: classifier gave no usable answer again - "
+                    "leaving the channel from message {} for the next run".format(
+                        message["id"], unclassified["id"]))
+                break
+            log("  message {}: classifier gave no usable answer".format(message["id"]))
+            unclassified = message
             continue
+        if unclassified is not None:
+            log("  message {}: skipped, the classifier answers for other "
+                "messages but not for this one".format(unclassified["id"]))
+            note_borderline(
+                "- Could not be classified, skipped: [jump to message]({})".format(
+                    message_jump_url(unclassified, channel)),
+                state)
+            checked(unclassified)
+            unclassified = None
         confidence = float(classification.get("confidence", 0.0))
         if not classification.get("actionable") or confidence < config.min_confidence:
             if classification.get("actionable") and confidence >= BORDERLINE_CONFIDENCE:
@@ -902,11 +1081,10 @@ def process_channel(channel_id, config, discord, github, classifier, state):
             else:
                 log("  message {}: not actionable (confidence {:.2f})".format(
                     message["id"], confidence))
-            # Marked so later runs inside the lookback window neither pay to
-            # re-classify it nor give a borderline message repeated chances
-            # to cross the confidence threshold.
-            if not config.dry_run:
-                discord.add_mark(channel_id, message["id"], SEEN_MARK)
+            # Checked, so later runs neither pay to re-classify it nor give
+            # a borderline message repeated chances to cross the confidence
+            # threshold.
+            checked(message)
             continue
 
         issue_type = classification.get("type") or "bug"
@@ -918,26 +1096,25 @@ def process_channel(channel_id, config, discord, github, classifier, state):
             log("  DRY RUN: would create a '{}' issue and reply on Discord".format(issue_type))
             continue
 
-        # Past the cap, only issue creation stops: the message stays
-        # unmarked so the next run files it, while the not-actionable
-        # results above still receive their mark - their classification is
-        # already paid for.
+        # Past the cap the scan of the channel stops: the next run files
+        # this message and continues after it.
         if state["created"] >= config.max_issues_per_run:
             log("  message {}: issue limit of {} for this run reached - left "
                 "for the next run".format(message["id"], config.max_issues_per_run))
-            continue
+            break
 
         existing = github.find_issue_for_message(message["id"])
         if existing is SEARCH_FAILED:
             # Unknown whether an issue exists - creating one now could file a
-            # duplicate. Leave the message unmarked; the next run retries.
+            # duplicate. Leave the message unchecked; the next run retries.
             log("  message {}: duplicate check unavailable, retrying next run".format(message["id"]))
             state["github_failures"] += 1
-            continue
+            break
         if existing is not None:
             log("  message {}: issue #{} already exists, marking as processed".format(
                 message["id"], existing["number"]))
             discord.add_mark(channel_id, message["id"], PROCESSED_MARK)
+            checked(message)
             continue
 
         label = "enhancement" if issue_type == "feature" else "bug"
@@ -945,7 +1122,7 @@ def process_channel(channel_id, config, discord, github, classifier, state):
         issue = github.create_issue(title, body, [label, "discord"])
         if issue is None:
             state["github_failures"] += 1
-            continue
+            break
         state["created"] += 1
         state["created_numbers"].append(issue["number"])
         log("  created issue #{}: {}".format(issue["number"], issue["html_url"]))
@@ -955,6 +1132,42 @@ def process_channel(channel_id, config, discord, github, classifier, state):
             channel_id, message["id"],
             "Thanks for the report! I filed it as GitHub issue **#{}**: {}".format(
                 issue["number"], issue["html_url"]))
+        checked(message)
+
+    if not config.dry_run:
+        # Older eyes reactions in the window, left by versions of the bot
+        # that marked every checked message, or by a failed removal.
+        for message in messages:
+            if (message is not holder and message is not checkpoint
+                    and discord.has_mark(message, SEEN_MARK)):
+                discord.remove_mark(channel_id, message["id"], SEEN_MARK)
+
+
+def cleanup_seen_marks(channel_id, config, discord):
+    """Remove the bot's eyes reaction from every message of the channel's
+    history except the newest one, which stays as the checkpoint. Earlier
+    versions of the bot marked every message they classified as not
+    actionable. Returns False when the channel could not be read."""
+    since = datetime.datetime(2000, 1, 1, tzinfo=datetime.timezone.utc)
+    messages = discord.recent_messages(channel_id, since, max_pages=CLEANUP_MAX_PAGES)
+    if messages is None:
+        return False
+    marked = [message for message in messages if discord.has_mark(message, SEEN_MARK)]
+    if not marked:
+        log("Channel {}: no eyes reactions of the bot".format(channel_id))
+        return True
+    log("Channel {}: removing the eyes reaction from {} message(s), keeping it on "
+        "message {}".format(channel_id, len(marked) - 1, marked[-1]["id"]))
+    if config.dry_run:
+        return True
+    removed = 0
+    for message in marked[:-1]:
+        if discord.remove_mark(channel_id, message["id"], SEEN_MARK):
+            removed += 1
+    log("Channel {}: removed {} of {}".format(channel_id, removed, len(marked) - 1))
+    append_summary("- Channel {}: removed the eyes reaction from {} of {} "
+                   "message(s)".format(channel_id, removed, len(marked) - 1))
+    return True
 
 
 def report_borderline(github, state):
@@ -1030,6 +1243,13 @@ def main():
         return 0
 
     discord = DiscordClient(config.discord_token)
+    if config.cleanup_seen_marks:
+        unreadable = [channel_id for channel_id in config.channel_ids
+                      if not cleanup_seen_marks(channel_id, config, discord)]
+        if unreadable:
+            log("ERROR: could not read channel(s) {}".format(", ".join(unreadable)))
+            return 1
+        return 0
     github = GitHubClient(config.github_token, config.repository)
     classifier = ClaudeCodeClassifier(config.model)
     state = {"created": 0, "created_numbers": [], "unreadable_channels": 0,

@@ -1,0 +1,216 @@
+{
+  "tool": "Slab",
+  "elementType": "Slab",
+  "archicadVersion": 29,
+  "commands": {
+    "get": "GetDetailsOfElements",
+    "getSchema": "SlabDetails",
+    "create": "CreateSlabsCommand",
+    "modify": "ModifySlabsCommand"
+  },
+  "plainKeys": [
+    "elementId",
+    "favoriteName"
+  ],
+  "sources": {
+    "help": [
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-6.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-12.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-16.htm"
+    ],
+    "devkit": "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/tag/29.3000"
+  },
+  "fields": [
+    {
+      "get": "polygonOutline",
+      "set": "polygonOutline",
+      "apiMember": "API_SlabType::poly",
+      "apiDescription": "Polygon of the slab.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": null,
+      "set": "polygonCoordinates",
+      "apiMember": "API_SlabType::poly",
+      "apiDescription": "Polygon of the slab.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "polygonArcs",
+      "set": "polygonArcs",
+      "apiMember": "API_SlabType::poly",
+      "apiDescription": "Polygon of the slab.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "holes",
+      "set": "holes",
+      "apiMember": "API_SlabType::poly",
+      "apiDescription": "Polygon of the slab.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "floorIndex",
+      "set": "floorIndex",
+      "getFrom": "element",
+      "apiMember": "API_Elem_Head::floorInd",
+      "apiDescription": "The element belongs to this floor.",
+      "label": "Home Story",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-6.htm (heading \"Home Story\"; screenshot CompSlabRefPlane.png \"Home Story:\")",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "zCoordinate",
+      "set": "zCoordinate",
+      "apiMember": null,
+      "apiDescription": "Absolute Z of the slab's reference plane (derived from the home story and level).",
+      "label": "Offset to Reference Level",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-6.htm (text \"Offset to Reference Level: Define an offset for the Slab’s reference plane from the given Reference level\")",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "level",
+      "set": "level",
+      "apiMember": "API_SlabType::level",
+      "apiDescription": "Distance of the reference level of the slab from the floor level.",
+      "label": null,
+      "labelSource": null,
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "offsetFromTop",
+      "set": null,
+      "apiMember": "API_SlabType::offsetFromTop",
+      "apiDescription": "Vertical distance between the reference level and the top of the slab (output only), see API_SlabReferencePlaneLocationID.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "thickness",
+      "set": "thickness",
+      "apiMember": "API_SlabType::thickness",
+      "apiDescription": "Thickness of the slab.",
+      "label": "Slab Thickness",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-6.htm (text \"Slab Thickness: Enter a value for the slab’s thickness\")",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "structureType",
+      "set": "structureType",
+      "apiMember": "API_SlabType::modelElemStructureType",
+      "apiDescription": "The structure type of the slab.",
+      "label": "Slab Structure",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-6.htm (heading \"Slab Structure\")",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "buildingMaterialId",
+      "set": "buildingMaterialId",
+      "apiMember": "API_SlabType::buildingMaterial",
+      "apiDescription": "Building Material index of slabs's hatch. Used only, if structure type is API_BasicStrucure.",
+      "label": "Building Material",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-6.htm (text \"For a Basic Slab: Use the pop-up to choose its Building Material\")",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "compositeId",
+      "set": "compositeId",
+      "apiMember": "API_SlabType::composite",
+      "apiDescription": "Composite index of slab. Used only, if structure type is API_CompositeStructure.",
+      "label": "Composite",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-6.htm (text \"For a Composite Slab: Use the pop-up to choose its Composite structure\")",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "referencePlaneLocation",
+      "set": "referencePlaneLocation",
+      "apiMember": "API_SlabType::referencePlaneLocation",
+      "apiDescription": "Location of the reference plane.",
+      "label": "Reference Plane",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-6.htm (heading \"Reference Plane\"; screenshot CompSlabRefPlane.png \"Reference Plane:\")",
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "cutFillPen",
+      "set": "cutFillPen",
+      "apiMember": "API_SlabType::cutFillPen",
+      "apiDescription": "Cut fill pens set in the used structure (building material, composite) can be overridden on the element level.",
+      "label": "Cut Fill Foreground Pen",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-16.htm (screenshot SlabCutPenOverride.png \"Cut Fill Foreground Pen\")",
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "cutFillBackgroundPen",
+      "set": "cutFillBackgroundPen",
+      "apiMember": "API_SlabType::cutFillBackgroundPen",
+      "apiDescription": "Cut fill pens set in the used structure (building material, composite) can be overridden on the element level.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "floorFill",
+      "set": "floorFill",
+      "apiMember": null,
+      "apiDescription": "Cover fill settings: API_SlabType::useFloorFill, floorFillPen, floorFillBGPen, floorFillInd, use3DHatching and hatchOrientation.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cover Fills"
+    },
+    {
+      "get": "topMaterial",
+      "set": "topMaterial",
+      "apiMember": "API_SlabType::topMat",
+      "apiDescription": "Top material attribute override structure.",
+      "label": null,
+      "labelSource": null,
+      "group": "Model",
+      "subgroup": null
+    },
+    {
+      "get": "sideMaterial",
+      "set": "sideMaterial",
+      "apiMember": "API_SlabType::sideMat",
+      "apiDescription": "Side material attribute override structure.",
+      "label": null,
+      "labelSource": null,
+      "group": "Model",
+      "subgroup": null
+    },
+    {
+      "get": "bottomMaterial",
+      "set": "bottomMaterial",
+      "apiMember": "API_SlabType::botMat",
+      "apiDescription": "Bottom material attribute override structure.",
+      "label": null,
+      "labelSource": null,
+      "group": "Model",
+      "subgroup": null
+    }
+  ]
+}

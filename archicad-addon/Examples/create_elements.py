@@ -110,6 +110,7 @@ aclib.RunTapirCommand ('CreateMeshes', {
 })
 
 # Two points make a straight stair, three or more an L or U shaped one.
+# treadDepth fixes the going, which is what decides the run length.
 aclib.RunTapirCommand ('CreateStairs', {
     'stairsData': [
         {
@@ -117,7 +118,8 @@ aclib.RunTapirCommand ('CreateStairs', {
                 { 'x': 60.0, 'y': 0.0 },
                 { 'x': 64.0, 'y': 0.0 }
             ],
-            'zCoordinate': 0.0
+            'zCoordinate': 0.0,
+            'treadDepth': 0.28
         }
     ]
 })
@@ -148,6 +150,28 @@ aclib.RunTapirCommand ('CreateZones', {
                     { 'x': 86.0, 'y': 0.0 },
                     { 'x': 86.0, 'y': 5.0 },
                     { 'x': 80.0, 'y': 5.0 }
+                ]
+            }
+        }
+    ]
+})
+
+# A zone whose area overlaps a zone already on the same story is refused with an
+# error naming that zone: Archicad would otherwise open a modal overlap warning
+# that blocks the API until someone clicks it. Zones that only share an edge are
+# fine. Pass 'allowOverlap': True in the item to create it regardless (and accept
+# the dialog). This one overlaps the office above, so its result is the error.
+aclib.RunTapirCommand ('CreateZones', {
+    'zonesData': [
+        {
+            'name': 'Overlapping',
+            'numberStr': '002',
+            'geometry': {
+                'polygonCoordinates': [
+                    { 'x': 83.0, 'y': 2.0 },
+                    { 'x': 90.0, 'y': 2.0 },
+                    { 'x': 90.0, 'y': 8.0 },
+                    { 'x': 83.0, 'y': 8.0 }
                 ]
             }
         }
@@ -270,6 +294,21 @@ aclib.RunTapirCommand ('CreateAssociativeDimensions', {
             'witnessPoints': [
                 { 'elementId': wallId, 'nodeId': 1 },
                 { 'elementId': wallId, 'nodeId': 2 }
+            ]
+        }
+    ]
+})
+
+# A witness point can also be static: given by its coordinate, it is not attached
+# to any element, like a point added by hand on empty space.
+aclib.RunTapirCommand ('CreateAssociativeDimensions', {
+    'dimensionsData': [
+        {
+            'referencePoint': { 'x': 0.0, 'y': -3.0 },
+            'direction': { 'x': 1.0, 'y': 0.0 },
+            'witnessPoints': [
+                { 'elementId': wallId, 'nodeId': 1 },
+                { 'coordinate': { 'x': 2.5, 'y': 0.0 } }
             ]
         }
     ]

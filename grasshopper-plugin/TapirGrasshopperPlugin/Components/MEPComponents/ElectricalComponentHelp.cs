@@ -303,9 +303,20 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             int index,
             string jsonKey)
         {
+            return AddIds<ElementGuid>(da, index, jsonKey);
+        }
+
+        // Identifiers of the given kind (element, attribute, MEP system
+        // group, ...), written as {"guid": ...}.
+        public bool AddIds<T>(
+            IGH_DataAccess da,
+            int index,
+            string jsonKey)
+            where T : GuidObject<T>, new()
+        {
             return Add<GH_ObjectWrapper>(da, index, jsonKey, v =>
             {
-                var id = GuidObject<ElementGuid>.CreateFromWrapper(v);
+                var id = GuidObject<T>.CreateFromWrapper(v);
                 return id == null ? null : new JObject { ["guid"] = id.Guid };
             });
         }

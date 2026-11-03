@@ -1,0 +1,269 @@
+{
+  "tool": "Column",
+  "elementType": "Column",
+  "archicadVersion": 29,
+  "commands": {
+    "get": "GetDetailsOfElements",
+    "getSchema": "ColumnDetails",
+    "create": "CreateColumnsCommand",
+    "modify": "ModifyColumnsCommand"
+  },
+  "plainKeys": [
+    "elementId",
+    "favoriteName"
+  ],
+  "sources": {
+    "help": [
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-33.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-34.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-26.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-36.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-12.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-16.htm"
+    ],
+    "devkit": "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/tag/29.3000"
+  },
+  "fields": [
+    {
+      "get": "origin",
+      "set": "origin",
+      "apiMember": "API_ColumnType::origoPos",
+      "apiDescription": "The position of the column",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": null,
+      "set": "coordinates",
+      "apiMember": "API_ColumnType::origoPos",
+      "apiDescription": "The position of the column, with the Z of its base (CreateColumns; sets the home story and bottomOffset).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "floorIndex",
+      "set": "floorIndex",
+      "getFrom": "element",
+      "apiMember": "API_Elem_Head::floorInd",
+      "apiDescription": "The element belongs to this floor.",
+      "label": "Home Story",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-33.htm (heading \"Home Story\"; screenshot ColumnPositioning.png \"Home Story:\")",
+      "group": "Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "zCoordinate",
+      "set": "zCoordinate",
+      "apiMember": null,
+      "apiDescription": "Absolute Z of the column base (derived from the home story and bottomOffset).",
+      "label": "Bottom Elevation",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-33.htm (heading \"Bottom Elevation [to Reference level]\")",
+      "group": "Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "bottomOffset",
+      "set": "bottomOffset",
+      "apiMember": "API_ColumnType::bottomOffset",
+      "apiDescription": "The column base level relative to the floor level",
+      "label": null,
+      "labelSource": null,
+      "group": "Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "height",
+      "set": "height",
+      "apiMember": "API_ColumnType::height",
+      "apiDescription": "The height of the column",
+      "label": "Column Height",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-33.htm (heading \"Column height\", in the Preview section; screenshot ColumnPositioning.png)",
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "relativeTopStory",
+      "set": "relativeTopStory",
+      "apiMember": "API_ColumnType::relativeTopStory",
+      "apiDescription": "The top linked story (relative to home story). Negative values are invalid. 0 = not top linked.",
+      "label": "Top Link",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-33.htm (heading \"Top Link\"; screenshot ColumnPositioning.png \"Top Link:\")",
+      "group": "Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "topOffset",
+      "set": "topOffset",
+      "apiMember": "API_ColumnType::topOffset",
+      "apiDescription": "The offset from top floor if column is top linked",
+      "label": "Offset from Top Linked Story",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-33.htm (heading \"Offset from Top Linked Story\")",
+      "group": "Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "isSlanted",
+      "set": "isSlanted",
+      "apiMember": "API_ColumnType::isSlanted",
+      "apiDescription": "Defines whether the column is slanted or vertical",
+      "label": null,
+      "labelSource": null,
+      "group": "Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "slantAngle",
+      "set": "slantAngle",
+      "apiMember": "API_ColumnType::slantAngle",
+      "apiDescription": "Slant angle (in radian)",
+      "label": "Column Slant Angle",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-33.htm (heading \"Column Slant Angle\")",
+      "group": "Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "slantDirectionAngle",
+      "set": "slantDirectionAngle",
+      "apiMember": "API_ColumnType::slantDirectionAngle",
+      "apiDescription": "The rotation angle of the slanted column on the horizontal plane (in radians)",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "wrapping",
+      "set": "wrapping",
+      "apiMember": "API_ColumnType::wrapping",
+      "apiDescription": "Defines the wall wrapping. If true, the wall wraps around the column.",
+      "label": "Wrapping Method",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-33.htm (heading \"Wrapping Method\")",
+      "group": "Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "coreAnchor",
+      "set": "coreAnchor",
+      "apiMember": "API_ColumnType::coreAnchor",
+      "apiDescription": "Anchor point of the core.",
+      "label": "Reference Axis of Core",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-34.htm (heading \"Reference Axis of Column Core\"; screenshot ColumnEndCutsPanel.png \"Reference Axis of Core:\")",
+      "group": "End Cuts and Reference Axis",
+      "subgroup": null
+    },
+    {
+      "get": "axisRotationAngle",
+      "set": "axisRotationAngle",
+      "apiMember": "API_ColumnType::axisRotationAngle",
+      "apiDescription": "The angle of rotation around the axis of the column (in radian)",
+      "label": "Axis Rotation",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-34.htm (text \"Axis Rotation: Set a rotation angle for the Column around its axis\"; screenshot ColumnEndCutsPanel.png \"Axis Rotation:\")",
+      "group": "End Cuts and Reference Axis",
+      "subgroup": null
+    },
+    {
+      "get": "isFlipped",
+      "set": "isFlipped",
+      "apiMember": "API_ColumnType::isFlipped",
+      "apiDescription": "Flipped column.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "width",
+      "set": "width",
+      "apiMember": "API_AssemblySegmentData::nominalWidth",
+      "apiDescription": "Nominal width of segment.",
+      "label": null,
+      "labelSource": null,
+      "group": "Structure",
+      "subgroup": null
+    },
+    {
+      "get": "depth",
+      "set": "depth",
+      "apiMember": "API_AssemblySegmentData::nominalHeight",
+      "apiDescription": "Nominal height of segment.",
+      "label": null,
+      "labelSource": null,
+      "group": "Structure",
+      "subgroup": null
+    },
+    {
+      "get": "isWidthAndHeightLinked",
+      "set": "isWidthAndHeightLinked",
+      "apiMember": "API_AssemblySegmentData::isWidthAndHeightLinked",
+      "apiDescription": "State of linking between width and height.",
+      "label": null,
+      "labelSource": null,
+      "group": "Structure",
+      "subgroup": null
+    },
+    {
+      "get": "circleBased",
+      "set": "circleBased",
+      "apiMember": "API_AssemblySegmentData::circleBased",
+      "apiDescription": "Defines whether the column is circular (true) or rectangular/profiled (false).",
+      "label": null,
+      "labelSource": null,
+      "group": "Structure",
+      "subgroup": null
+    },
+    {
+      "get": "buildingMaterialId",
+      "set": "buildingMaterialId",
+      "apiMember": "API_AssemblySegmentData::buildingMaterial",
+      "apiDescription": "Building Material index of column's hatch. Used only, if structure type is API_BasicStrucure.",
+      "label": "Building Material",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-26.htm (heading \"Building Material\": \"For a Rectangular or Circular Column: Use the pop-up to choose its Building Material\")",
+      "group": "Structure",
+      "subgroup": null
+    },
+    {
+      "get": "profileId",
+      "set": "profileId",
+      "apiMember": "API_AssemblySegmentData::profileAttr",
+      "apiDescription": "Attribute index of the extruded profile.",
+      "label": "Profile",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-26.htm (text \"For a Complex Profile column: Use the pop-up to choose its Profile\")",
+      "group": "Structure",
+      "subgroup": null
+    },
+    {
+      "get": "cutFillPen",
+      "set": "cutFillPen",
+      "apiMember": "API_ColumnType::cutFillPen",
+      "apiDescription": "Cut fill pens set in the used structure (building material, complex profile) can be overridden on the element level.",
+      "label": "Cut Fill Foreground Pen",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-16.htm (screenshot SlabCutPenOverride.png \"Cut Fill Foreground Pen\")",
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "cutFillBackgroundPen",
+      "set": "cutFillBackgroundPen",
+      "apiMember": "API_ColumnType::cutFillBackgroundPen",
+      "apiDescription": "Cut fill pens set in the used structure (building material, complex profile) can be overridden on the element level.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "coverFill",
+      "set": "coverFill",
+      "apiMember": null,
+      "apiDescription": "Cover fill settings: API_ColumnType::useCoverFill, useCoverFillFromSurface, coverFillOrientationComesFrom3D, coverFillType, coverFillForegroundPen, coverFillBackgroundPen, coverFillTransformationType and coverFillTransformation.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cover Fills"
+    }
+  ]
+}

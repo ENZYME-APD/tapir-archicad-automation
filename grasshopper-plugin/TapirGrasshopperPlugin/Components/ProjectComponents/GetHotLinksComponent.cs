@@ -1,8 +1,11 @@
-﻿using Grasshopper.Kernel;
+﻿using Grasshopper;
+using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
 using Newtonsoft.Json;
 using System;
 using System.Linq;
 using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Element;
 using TapirGrasshopperPlugin.Types.Project;
 
 namespace TapirGrasshopperPlugin.Components.ProjectComponents
@@ -54,6 +57,12 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             OutTexts(
                 "Types",
                 "Module or XRef, for each hotlink node in the order of Locations.");
+
+            OutGenericTree(
+                "Instances",
+                "Identifiers of the hotlink instance elements placed from each node " +
+                "(one branch per node, in the order of Locations); the input of " +
+                "ChangeHotlinkInstances and DeleteElements.");
         }
 
         protected override void Solve(
@@ -98,6 +107,34 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             da.SetDataList(
                 5,
                 nodes.Select(link => link.Type));
+
+            // One branch per node, empty when none is placed, so the branch
+            // index always matches the index in Locations.
+            var instances = new DataTree<ElementGuid>();
+            for (var i = 0; i < nodes.Count; i++)
+            {
+                var path = new GH_Path(i);
+                instances.EnsurePath(path);
+
+                if (nodes[i].Instances == null)
+                {
+                    continue;
+                }
+
+                foreach (var instance in nodes[i].Instances)
+                {
+                    if (instance?.ElementId != null)
+                    {
+                        instances.Add(
+                            instance.ElementId,
+                            path);
+                    }
+                }
+            }
+
+            da.SetDataTree(
+                6,
+                instances);
         }
     }
 }

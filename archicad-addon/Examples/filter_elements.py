@@ -39,3 +39,44 @@ for i in range (2):
         response = aclib.RunTapirCommand ('FilterElements', { 'elements': allElements, 'filters': [f for f in p] }, debug=False)
         print ('{} = {}'.format ('|'.join (p), len (response['elements'])))
     print ('-' * 30)
+
+# Filtering by layer, home story and element type (optional layerIndices, floorIndices and elementTypes inputs).
+# The results are compared to filtering the output of GetDetailsOfElements client-side, which they must match.
+detailsByGuid = {
+    element['elementId']['guid']: details
+    for element, details in zip (allElements, detailsOfElements)
+    if 'type' in details
+}
+
+def MostCommonValue (field):
+    counter = dict ()
+    for details in detailsByGuid.values ():
+        counter[details[field]] = counter.get (details[field], 0) + 1
+    return max (counter, key=lambda value: (counter[value], -value))
+
+def CheckFilterElements (criteria, predicate):
+    response = aclib.RunTapirCommand ('FilterElements', { 'elements': allElements, **criteria }, debug=False)
+    filteredGuids = sorted (element['elementId']['guid'] for element in response['elements'])
+    expectedGuids = sorted (guid for guid, details in detailsByGuid.items () if predicate (guid, details))
+    description = '+'.join (criteria.keys ())
+    if filteredGuids == expectedGuids:
+        print ('{} matches client-side filtering'.format (description))
+    else:
+        print ('{} DIFFERS from client-side filtering: {} vs {}'.format (description, len (filteredGuids), len (expectedGuids)))
+
+floorIndex = MostCommonValue ('floorIndex')
+layerIndex = MostCommonValue ('layerIndex')
+elementTypes = ['Wall', 'Column', 'Slab']
+
+CheckFilterElements ({ 'floorIndices': [floorIndex] },
+                     lambda guid, details: details['floorIndex'] == floorIndex)
+CheckFilterElements ({ 'layerIndices': [layerIndex] },
+                     lambda guid, details: details['layerIndex'] == layerIndex)
+CheckFilterElements ({ 'elementTypes': elementTypes },
+                     lambda guid, details: details['type'] in elementTypes)
+CheckFilterElements ({ 'floorIndices': [floorIndex], 'layerIndices': [layerIndex], 'elementTypes': elementTypes },
+                     lambda guid, details: details['floorIndex'] == floorIndex and details['layerIndex'] == layerIndex and details['type'] in elementTypes)
+editableGuids = set (element['elementId']['guid'] for element in aclib.RunTapirCommand ('FilterElements', { 'elements': allElements, 'filters': ['IsEditable'] }, debug=False)['elements'])
+CheckFilterElements ({ 'filters': ['IsEditable'], 'elementTypes': ['Wall'] },
+                     lambda guid, details: details['type'] == 'Wall' and guid in editableGuids)
+print ('-' * 30)
