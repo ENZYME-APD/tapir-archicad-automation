@@ -12,7 +12,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "ModifyRoofs",
                 "Modify multi-plane Roof elements. Only the connected optional inputs are changed on the elements. " +
                 "The roof levels, the outline polygon and holes can be modified through the AdditionalSettings " +
-                "input (levels, polygonOutline, polygonArcs, holes).",
+                "input (levels, polygonOutline, polygonArcs, holes, and pivotEdges: the angle, eaves overhang and gable of each edge).",
                 GroupNames.ElementModification)
         {
         }
