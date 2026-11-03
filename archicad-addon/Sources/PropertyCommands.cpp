@@ -2,6 +2,12 @@
 #include "MigrationHelper.hpp"
 #include "HashTable.hpp"
 #include <tuple>
+#include <cmath>
+#include <iomanip>
+#include <limits>
+#include <locale>
+#include <sstream>
+#include <string>
 
 using PropertyTypeTuple = std::tuple<API_PropertyCollectionType, API_VariantType, API_PropertyMeasureType>;
 
@@ -215,6 +221,102 @@ GSErrCode GetPropertyValueString (const API_Property& propertyValue, GS::UniStri
     }
 }
 
+// Keep enough significant digits to recover the double, then expand any exponent.
+// Fixed decimal precision would either round small values to zero or lose digits.
+// This also works with the C++14 toolchains used for older Archicad versions.
+static bool FormatPropertyRealValue (double value, std::string& result)
+{
+    if (!std::isfinite (value)) {
+        return false;
+    }
+
+    std::ostringstream stream;
+    stream.imbue (std::locale::classic ());
+    stream << std::setprecision (std::numeric_limits<double>::max_digits10) << value;
+    result = stream.str ();
+
+    const std::size_t exponentPos = result.find_first_of ("eE");
+    if (exponentPos == std::string::npos) {
+        return true;
+    }
+
+    // Move the decimal point by the exponent, padding with zeros when needed.
+    const int exponent = std::stoi (result.substr (exponentPos + 1));
+    const bool negative = result[0] == '-';
+    const std::size_t start = negative ? 1 : 0;
+    std::string digits = result.substr (start, exponentPos - start);
+    const std::size_t pointPos = digits.find ('.');
+    const int decimalPos = static_cast<int> (pointPos == std::string::npos ? digits.size () : pointPos) + exponent;
+    if (pointPos != std::string::npos) {
+        digits.erase (pointPos, 1);
+    }
+
+    result = negative ? "-" : "";
+    if (decimalPos <= 0) {
+        result += "0.";
+        result.append (static_cast<std::size_t> (-decimalPos), '0');
+        result += digits;
+    } else if (decimalPos >= static_cast<int> (digits.size ())) {
+        result += digits;
+        result.append (static_cast<std::size_t> (decimalPos) - digits.size (), '0');
+    } else {
+        digits.insert (static_cast<std::size_t> (decimalPos), 1, '.');
+        result += digits;
+    }
+    return true;
+}
+
+static GSErrCode GetPropertyValueStringInSIUnits (const API_Property& propertyValue, GS::UniString& resultString)
+{
+    const API_PropertyDefinition& definition = propertyValue.definition;
+    const bool isNumeric = definition.valueType == API_PropertyRealValueType ||
+                           definition.valueType == API_PropertyIntegerValueType;
+    const bool isScalarOrList = definition.collectionType == API_PropertySingleCollectionType ||
+                                definition.collectionType == API_PropertyListCollectionType;
+    const bool isUndefined = propertyValue.value.variantStatus == API_VariantStatusUserUndefined;
+    if (isUndefined || !isNumeric || !isScalarOrList) {
+        return GetPropertyValueString (propertyValue, resultString);
+    }
+
+    const auto formatVariant = [&] (const API_Variant& variant, GS::UniString& text) -> GSErrCode {
+        std::string number;
+        if (definition.valueType == API_PropertyIntegerValueType) {
+            number = std::to_string (variant.intValue);
+        } else {
+            // API measurements are already SI. Degrees are an intentional exception
+            // because SetPropertyValuesOfElements parses suffix-free angles as degrees.
+            constexpr double radiansToDegrees = 180.0 / 3.14159265358979323846;
+            const double value = definition.measureType == API_PropertyAngleMeasureType ?
+                variant.doubleValue * radiansToDegrees : variant.doubleValue;
+            if (!FormatPropertyRealValue (value, number)) {
+                return APIERR_BADPARS;
+            }
+        }
+        text = number.c_str ();
+        return NoError;
+    };
+
+    if (definition.collectionType == API_PropertySingleCollectionType) {
+        return formatVariant (propertyValue.value.singleVariant.variant, resultString);
+    }
+
+    resultString.Clear ();
+    bool first = true;
+    for (const API_Variant& variant : propertyValue.value.listVariant.variants) {
+        GS::UniString item;
+        const GSErrCode err = formatVariant (variant, item);
+        if (err != NoError) {
+            return err;
+        }
+        if (!first) {
+            resultString.Append ("; ");
+        }
+        resultString.Append (item);
+        first = false;
+    }
+    return NoError;
+}
+
 GetAllPropertiesCommand::GetAllPropertiesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -422,6 +524,11 @@ GS::Optional<GS::UniString> GetPropertyValuesOfElementsCommand::GetInputParamete
             "includeAvailability": {
                 "type": "boolean",
                 "description": "Adds isAvailable to each property value or error, telling whether the property is available for the element (for example by its classification). Default is false."
+            },
+            "useSIUnits": {
+                "type": "boolean",
+                "default": false,
+                "description": "Returns precise, locale-independent numeric strings in SI units, except degrees for angles. Default is false."
             }
         },
         "additionalProperties": false,
@@ -468,8 +575,9 @@ static GS::Array<API_Guid> GetPropertyGuids (const GS::Array<GS::ObjectState>& p
 // The {propertyValues: [...]} item of a PropertyValuesOrErrorArray: one value or error per
 // requested property, in the order of the request, from the properties fetched for one owner
 // (an element or an element component). With availabilityElemGuid each value or error also
-// gets isAvailable, whether the property is available for that element.
-static GS::ObjectState CreatePropertyValuesObjectState (const GS::Array<GS::ObjectState>& properties, const GS::Array<API_Property>& fetchedProperties, const API_Guid* availabilityElemGuid = nullptr)
+// gets isAvailable, whether the property is available for that element. With useSIUnits the
+// values are formatted in SI units instead of the project's working units.
+static GS::ObjectState CreatePropertyValuesObjectState (const GS::Array<GS::ObjectState>& properties, const GS::Array<API_Property>& fetchedProperties, const API_Guid* availabilityElemGuid = nullptr, bool useSIUnits = false)
 {
     GS::HashTable<API_Guid, const API_Property*> propertyMap;
     for (const API_Property& prop : fetchedProperties) {
@@ -509,7 +617,12 @@ static GS::ObjectState CreatePropertyValuesObjectState (const GS::Array<GS::Obje
         }
 
         GS::UniString propertyValueString;
-        const GSErrCode err = GetPropertyValueString (propertyValue, propertyValueString);
+        GSErrCode err = NoError;
+        if (useSIUnits) {
+            err = GetPropertyValueStringInSIUnits (propertyValue, propertyValueString);
+        } else {
+            err = GetPropertyValueString (propertyValue, propertyValueString);
+        }
 
         if (err != NoError) {
             addPropertyValue (CreateErrorResponse (err, "Failed to get property value as string"));
@@ -533,6 +646,9 @@ GS::ObjectState GetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
     bool includeAvailability = false;
     parameters.Get ("includeAvailability", includeAvailability);
 
+    bool useSIUnits = false;
+    parameters.Get ("useSIUnits", useSIUnits);
+
     GS::ObjectState response;
     const auto& propertyValuesForElements = response.AddList<GS::ObjectState> ("propertyValuesForElements");
 
@@ -554,7 +670,7 @@ GS::ObjectState GetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
             continue;
         }
 
-        propertyValuesForElements (CreatePropertyValuesObjectState (properties, fetchedProperties, includeAvailability ? &elemGuid : nullptr));
+        propertyValuesForElements (CreatePropertyValuesObjectState (properties, fetchedProperties, includeAvailability ? &elemGuid : nullptr, useSIUnits));
     }
 
     return response;
@@ -981,6 +1097,42 @@ GS::ObjectState GetPropertyValuesOfElementComponentsCommand::Execute (const GS::
     return response;
 }
 
+// Build a temporary value; a bad item leaves the property unchanged.
+static GSErrCode SetNumericListPropertyValueFromString (const GS::UniString& text, API_Property& property)
+{
+    const std::string input = text.ToCStr ().Get ();
+    if (input.find_first_not_of (" +-0123456789.eE;\t\r\n\f\v") != std::string::npos) {
+        return APIERR_BADPARS;
+    }
+    std::istringstream numbers (input);
+    numbers.imbue (std::locale::classic ());
+    API_PropertyValue value;
+    numbers >> std::ws;
+    while (!numbers.eof ()) {
+        API_Variant item;
+        item.type = property.definition.valueType;
+        if (item.type == API_PropertyIntegerValueType) {
+            if (!(numbers >> item.intValue)) {
+                return APIERR_BADPARS;
+            }
+        } else if (!(numbers >> item.doubleValue) || !std::isfinite (item.doubleValue)) {
+            return APIERR_BADPARS;
+        }
+        value.listVariant.variants.Push (item);
+        numbers >> std::ws;
+        if (numbers.eof ()) {
+            break;
+        }
+        if (numbers.get () != ';' || (numbers >> std::ws).eof ()) {
+            return APIERR_BADPARS;
+        }
+    }
+    property.value = value;
+    property.isDefault = false;
+    property.status = API_Property_HasValue;
+    return NoError;
+}
+
 SetPropertyValuesOfElementsCommand::SetPropertyValuesOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -997,7 +1149,8 @@ GS::Optional<GS::UniString> SetPropertyValuesOfElementsCommand::GetInputParamete
         "type": "object",
         "properties": {
             "elementPropertyValues": {
-                "$ref": "#/ElementPropertyValues"
+                "$ref": "#/ElementPropertyValues",
+                "description": "Unitless real and integer lists accept semicolon-separated numbers; an empty string sets an empty list. Invalid items reject the entire property write."
             }
         },
         "additionalProperties": false,
@@ -1088,17 +1241,33 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
 
             GS::Array<API_Property> propertyValues;
             const GSErrCode getErr = ACAPI_Element_GetPropertyValuesByGuid (elemGuid, properties, propertyValues);
+            if (getErr != NoError) {
+                for (const API_Guid& propertyGuid : properties) {
+                    results[resultIndices[GS::NewPair (elemGuid, propertyGuid)]] =
+                        CreateFailedExecutionResult (getErr, "Failed to get property values for element");
+                }
+                continue;
+            }
 
             for (API_Property& propertyValue : propertyValues) {
                 const auto guidPair = GS::NewPair (elemGuid, propertyValue.definition.guid);
                 auto& result = results[resultIndices[guidPair]];
 
-                if (getErr != NoError) {
-                    result = CreateFailedExecutionResult (getErr, "Failed to get property values for element");
+                const API_PropertyDefinition& definition = propertyValue.definition;
+                if (!ACAPI_Element_IsPropertyDefinitionValueEditable (elemGuid, definition.guid)) {
+                    result = CreateFailedExecutionResult (APIERR_READONLY, "Property value is read-only for element");
                     continue;
                 }
 
-                GSErrCode err = ACAPI_Property_SetPropertyValueFromString (propertyValuesForElements[guidPair], conversionUtils, &propertyValue);
+                const bool isNumericList = definition.collectionType == API_PropertyListCollectionType &&
+                    definition.measureType == API_PropertyDefaultMeasureType &&
+                    (definition.valueType == API_PropertyRealValueType || definition.valueType == API_PropertyIntegerValueType);
+                GSErrCode err;
+                if (isNumericList) {
+                    err = SetNumericListPropertyValueFromString (propertyValuesForElements[guidPair], propertyValue);
+                } else {
+                    err = ACAPI_Property_SetPropertyValueFromString (propertyValuesForElements[guidPair], conversionUtils, &propertyValue);
+                }
 
                 if (err != NoError) {
                     result = CreateFailedExecutionResult (err, "Failed to set property value for element");
@@ -1473,14 +1642,19 @@ GS::ObjectState SetPropertyValuesOfAttributesCommand::Execute (const GS::ObjectS
         const API_Guid attGuid = GetGuidFromObjectState (*attributeId);
         const API_Guid propertyGuid = GetGuidFromObjectState (*propertyId);
 
+        const auto guidPair = GS::NewPair (attGuid, propertyGuid);
+        if (resultIndices.ContainsKey (guidPair)) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "The same property of the same attribute is given more than once"));
+            continue;
+        }
+
         GS::Array<API_Guid>* properties;
         propertiesForAttributes.Add (attGuid, {}, &properties);
         properties->Push (propertyGuid);
 
-        const auto guidPair = GS::NewPair (attGuid, propertyGuid);
         propertyValuesForAttributes.Add (guidPair, propertyValueDisplayString);
         resultIndices.Add (guidPair, results.GetSize ());
-        results.PushNew ();
+        results.Push (CreateFailedExecutionResult (APIERR_BADPROPERTY, "The property is not available for the attribute"));
     }
 
     ACAPI_CallUndoableCommand ("SetPropertyValuesOfAttributesCommand", [&]() -> GSErrCode {
@@ -1493,29 +1667,37 @@ GS::ObjectState SetPropertyValuesOfAttributesCommand::Execute (const GS::ObjectS
             const GS::Array<API_Guid>& properties = *kv.value;
 #endif
 
-            GS::Array<API_Property> propertyValues;
+            const API_Attr_Head attrHead = GetAttributeHeadFromGuid (attGuid);
+            if (attrHead.typeID == API_ZombieAttrID) {
+                for (const API_Guid& propertyGuid : properties) {
+                    results[resultIndices[GS::NewPair (attGuid, propertyGuid)]] = CreateFailedExecutionResult (APIERR_BADID, "Attribute not found");
+                }
+                continue;
+            }
 
-            API_Attr_Head attrHead = GetAttributeHeadFromGuid (attGuid);
+            GS::Array<API_Property> propertyValues;
             const GSErrCode getErr = ACAPI_Attribute_GetPropertyValuesByGuid (attrHead, properties, propertyValues);
+            if (getErr != NoError) {
+                for (const API_Guid& propertyGuid : properties) {
+                    results[resultIndices[GS::NewPair (attGuid, propertyGuid)]] = CreateFailedExecutionResult (getErr, "Failed to get property values for attribute");
+                }
+                continue;
+            }
 
             for (API_Property& propertyValue : propertyValues) {
                 const auto guidPair = GS::NewPair (attGuid, propertyValue.definition.guid);
-                auto& result = results[resultIndices[guidPair]];
-
-                if (getErr != NoError) {
-                    result = CreateFailedExecutionResult (getErr, "Failed to get property values for attribute");
+                if (!resultIndices.ContainsKey (guidPair) || propertyValue.status == API_Property_NotAvailable) {
                     continue;
                 }
 
+                GS::ObjectState& result = results[resultIndices[guidPair]];
                 GSErrCode err = ACAPI_Property_SetPropertyValueFromString (propertyValuesForAttributes[guidPair], conversionUtils, &propertyValue);
-
                 if (err != NoError) {
                     result = CreateFailedExecutionResult (err, "Failed to set property value for attribute");
                     continue;
                 }
 
                 err = ACAPI_Attribute_SetProperty (attrHead, propertyValue);
-
                 if (err != NoError) {
                     result = CreateFailedExecutionResult (err, "Failed to set property value for attribute");
                     continue;
@@ -1760,6 +1942,113 @@ GS::ObjectState SetBuiltInPropertyValuesOfAttributesCommand::Execute (const GS::
     }
 
     return response;
+}
+
+SetPropertyValueOfAttributesCommand::SetPropertyValueOfAttributesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetPropertyValueOfAttributesCommand::GetName () const
+{
+    return "SetPropertyValueOfAttributes";
+}
+
+GS::Optional<GS::UniString> SetPropertyValueOfAttributesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "propertyId": {
+                "$ref": "#/PropertyId"
+            },
+            "propertyValue": {
+                "$ref": "#/PropertyValue"
+            },
+            "attributeIds": {
+                "$ref": "#/AttributeIds",
+                "description": "The attributes to set the value on. The property must be available for every one of them."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyId",
+            "propertyValue",
+            "attributeIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetPropertyValueOfAttributesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetPropertyValueOfAttributesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> attributeIds;
+    parameters.Get ("attributeIds", attributeIds);
+
+    GS::Array<API_Attr_Head> attrHeads;
+    for (const GS::ObjectState& attribute : attributeIds) {
+        const GS::ObjectState* attributeId = attribute.Get ("attributeId");
+        if (attributeId == nullptr) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "attributeId is missing");
+        }
+
+        const API_Attr_Head attrHead = GetAttributeHeadFromGuid (GetGuidFromObjectState (*attributeId));
+        if (attrHead.typeID == API_ZombieAttrID) {
+            return CreateFailedExecutionResult (APIERR_BADID, "Attribute not found");
+        }
+        attrHeads.Push (attrHead);
+    }
+    if (attrHeads.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "attributeIds is empty");
+    }
+
+    const GS::ObjectState* propertyId = parameters.Get ("propertyId");
+    if (propertyId == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "propertyId is missing");
+    }
+
+    const GS::ObjectState* propertyValue = parameters.Get ("propertyValue");
+    GS::UniString propertyValueDisplayString;
+    if (propertyValue == nullptr || !propertyValue->Get ("value", propertyValueDisplayString)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "value is missing from propertyValue");
+    }
+
+    API_PropertyDefinition definition;
+    definition.guid = GetGuidFromObjectState (*propertyId);
+    GSErrCode err = ACAPI_Property_GetPropertyDefinition (definition);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "property not found");
+    }
+
+    API_Property property;
+    property.definition = definition;
+    property.isDefault = false;
+    property.status = API_Property_HasValue;
+    property.value.variantStatus = API_VariantStatusNormal;
+
+    PropertyConversionUtils conversionUtils;
+    err = ACAPI_Property_SetPropertyValueFromString (propertyValueDisplayString, conversionUtils, &property);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "the value cannot be converted to the type of the property");
+    }
+
+    err = ACAPI_CallUndoableCommand ("SetPropertyValueOfAttributesCommand", [&]() -> GSErrCode {
+#ifdef ServerMainVers_2700
+        return ACAPI_Attribute_ModifyPropertyValue (property, attrHeads);
+#else
+        return ACAPI_AttributeList_ModifyPropertyValue (property, attrHeads);
+#endif
+    });
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to set the property value, no attribute was changed. The property may not be available for every given attribute.");
 }
 
 GetPropertyDefinitionsOfAttributesCommand::GetPropertyDefinitionsOfAttributesCommand () :

@@ -172,6 +172,7 @@ Response:
             },
             "index": 1,
             "name": "02 Drafting",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -180,6 +181,7 @@ Response:
             },
             "index": 3,
             "name": "06 Plans - Mechanical",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -188,6 +190,7 @@ Response:
             },
             "index": 4,
             "name": "07 Plans - Structural",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -196,6 +199,7 @@ Response:
             },
             "index": 5,
             "name": "09 Layouting",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -204,6 +208,7 @@ Response:
             },
             "index": 7,
             "name": "01 Site",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -212,6 +217,7 @@ Response:
             },
             "index": 8,
             "name": "04 Plans - Approval",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -220,6 +226,7 @@ Response:
             },
             "index": 10,
             "name": "08 Rendering",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -228,6 +235,7 @@ Response:
             },
             "index": 11,
             "name": "05 Plans - Detailed",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -236,6 +244,7 @@ Response:
             },
             "index": 14,
             "name": "03 Plans - Preliminary",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -244,6 +253,7 @@ Response:
             },
             "index": 16,
             "name": "10 Show 3D Zones as Solid",
+            "folderPath": [],
             "modificationTime": <TIME>
         }
     ]
