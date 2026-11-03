@@ -1562,7 +1562,7 @@ GSErrCode Initialize (void)
             "Returns the details of every attribute of the given type. From Archicad 30 an attribute that Archicad keeps a creation record of also carries creationInfo: how (method), from where (source), by whom and when it was created."
         );
         err |= RegisterCommand<GetAttributeIndexesCommand> (
-            attributeCommands, "1.7.4",
+            attributeCommands, "1.8.1",
             "Reports for each given attribute type how many attributes there are, the first valid and the highest index in use, and the free indexes between them (for example those of deleted attributes). Available from Archicad 27."
         );
         err |= RegisterCommand<GetAttributesFromProjectCommand> (
