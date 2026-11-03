@@ -51,6 +51,8 @@
 #define ACAPI_Teamwork_GetTeamworkProjectDetails ACAPI_TeamworkControl_GetTeamworkProjectDetails
 #define ACAPI_Teamwork_GetHotlinkCacheManagementOwner ACAPI_TeamworkControl_GetHotlinkCacheManagementOwner
 #define ACAPI_Teamwork_HasConnection ACAPI_TeamworkControl_HasConnection
+#define ACAPI_Teamwork_HasCreateRight ACAPI_TeamworkControl_HasCreateRight
+#define ACAPI_Teamwork_HasDeleteModifyRight ACAPI_TeamworkControl_HasDeleteModifyRight
 #define ACAPI_Teamwork_ProjectSharing(par1) ACAPI_Environment (APIEnv_ProjectSharingID, par1)
 
 #ifdef ServerMainVers_2600
@@ -805,6 +807,11 @@ inline bool ACAPI_Teamwork_IsServerLibPart (const IO::Location& location)
     return ACAPI_TeamworkControl_IsServerLibPart (location);
 }
 
+inline GSErrCode ACAPI_LibraryPart_GetLastValidEmbeddedLPName (GS::UniString* name, IO::Location* location)
+{
+    return ACAPI_Interface (APIIo_GetLastValidEmbeddedLPNameID, name, location);
+}
+
 inline GSErrCode ACAPI_LibraryManagement_RunGDLParScript (const API_Elem_Head* elemHead, UInt32 mask = 0)
 {
     return ACAPI_Goodies (APIAny_RunGDLParScriptID, (void*) elemHead, (void*) (GS::IntPtr) mask);
@@ -1220,6 +1227,16 @@ inline GSErrCode TAPIR_Element_SetPropertiesOfDefaultElem (const API_Elem_Head& 
     return ACAPI_Element_SetPropertiesOfDefaultElem (elemHead.type, properties);
 #else
     return ACAPI_Element_SetPropertiesOfDefaultElem (elemHead.typeID, elemHead.variationID, properties);
+#endif
+}
+
+// The tool default of the generic variation of the element type.
+inline GSErrCode TAPIR_Element_GetPropertyValuesOfDefaultElemByGuid (API_ElemTypeID typeID, const GS::Array<API_Guid>& propertyGuids, GS::Array<API_Property>& properties)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_GetPropertyValuesOfDefaultElemByGuid (API_ElemType (typeID), propertyGuids, properties);
+#else
+    return ACAPI_Element_GetPropertyValuesOfDefaultElemByGuid (typeID, APIVarId_Generic, propertyGuids, properties);
 #endif
 }
 
