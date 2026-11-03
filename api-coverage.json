@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-03 16:06 UTC",
+ "generatedAt": "2026-11-03 17:30 UTC",
  "versions": [
   25,
   26,
@@ -11,10 +11,10 @@
  "counts": {
   "not applicable": 627,
   "done": 1868,
-  "claimed": 50,
-  "in progress": 245,
+  "claimed": 51,
+  "in progress": 229,
   "open": 70,
-  "merged": 17,
+  "merged": 32,
   "skipped": 2
  },
  "items": [
@@ -6383,6 +6383,10 @@
      "title": "CreateWindows, CreateDoors: create without a marker when the marker defaults cannot be read"
     },
     {
+     "number": 1671,
+     "title": "Drawing anchor placement, offset, and pen table control"
+    },
+    {
      "number": 1642,
      "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
     },
@@ -7752,6 +7756,10 @@
      "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
     },
     {
+     "number": 1671,
+     "title": "Drawing anchor placement, offset, and pen table control"
+    },
+    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
@@ -8145,6 +8153,10 @@
     {
      "number": 1714,
      "title": "Curtain wall segments, frames and panels: homeStoryLevel, and say what their z is measured from"
+    },
+    {
+     "number": 1671,
+     "title": "Drawing anchor placement, offset, and pen table control"
     },
     {
      "number": 1640,
@@ -9198,14 +9210,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1336,
-     "title": "[1/3] Add GetPropertyValuesOfElementDefaults command (property values of tool defaults)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13091,13 +13098,9 @@
    "olderNames": [
     "APIAny_CompareLibPartUnIdsID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1373,
-     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
-    },
     {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
@@ -13197,10 +13200,6 @@
     {
      "number": 1383,
      "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
-    },
-    {
-     "number": 1373,
-     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
     },
     {
      "number": 1364,
@@ -13369,14 +13368,9 @@
    "olderNames": [
     "APIIo_GetLastValidEmbeddedLPNameID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1373,
-     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13397,13 +13391,9 @@
    "olderNames": [
     "APIEnv_GetLibPartLockStatusID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1373,
-     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
-    },
     {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
@@ -13437,13 +13427,9 @@
    "olderNames": [
     "APIEnv_GetLibPartRefGuidID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1373,
-     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
-    },
     {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
@@ -13510,13 +13496,9 @@
    "olderNames": [
     "APIEnv_GetLibPartUnIDStrID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1373,
-     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
-    },
     {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
@@ -15832,7 +15814,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1752,
+     "title": "Add GetPublisherSets: read the saved output of each publisher set"
+    }
+   ],
    "issues": [
     {
      "number": 1751,
@@ -15860,7 +15847,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1752,
+     "title": "Add GetPublisherSets: read the saved output of each publisher set"
+    }
+   ],
    "issues": []
   },
   {
@@ -18187,14 +18179,9 @@
    "olderNames": [
     "APIAny_CheckPropertyExpressionStringID"
    ],
-   "status": "in progress",
+   "status": "claimed",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1146,
-     "title": "[1/4] Add CheckPropertyExpressions and GetPropertyExpressionReferences"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1145,
@@ -20033,14 +20020,9 @@
    "olderNames": [
     "ACAPI_TeamworkControl_HasCreateRight"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1452,
-     "title": "[3/5] Add GetTeamworkRightsOfObjects command"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20061,14 +20043,9 @@
    "olderNames": [
     "ACAPI_TeamworkControl_HasDeleteModifyRight"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1452,
-     "title": "[3/5] Add GetTeamworkRightsOfObjects command"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20117,13 +20094,9 @@
    "olderNames": [
     "ACAPI_TeamworkControl_IsServerLibPart"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1373,
-     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
-    },
     {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
@@ -23382,10 +23355,6 @@
      "title": "[2/5] Add GetTeamworkAccessRights command"
     },
     {
-     "number": 1373,
-     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
-    },
-    {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
     },
@@ -23443,10 +23412,6 @@
     {
      "number": 1642,
      "title": "Add SetMarkerLibraryPartOfElements: switch the marker of windows and doors (replaces #1383)"
-    },
-    {
-     "number": 1373,
-     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
     },
     {
      "number": 1364,
@@ -24038,12 +24003,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1373,
-     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
@@ -29947,10 +29907,6 @@
      "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
     },
     {
-     "number": 1336,
-     "title": "[1/3] Add GetPropertyValuesOfElementDefaults command (property values of tool defaults)"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -31443,20 +31399,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1272,
-     "title": "Add GetLibraryPartMetadata command (description, keywords, author, placeable)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1250,
-     "title": "Expose ACAPI::Library::GSMObject metadata (description, keywords, author, placeable)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GSMObject::GetBackwardMigrationScript",
@@ -31546,20 +31492,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1272,
-     "title": "Add GetLibraryPartMetadata command (description, keywords, author, placeable)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1250,
-     "title": "Expose ACAPI::Library::GSMObject metadata (description, keywords, author, placeable)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GSMObject::GetForwardMigrationScript",
@@ -31638,20 +31574,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1272,
-     "title": "Add GetLibraryPartMetadata command (description, keywords, author, placeable)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1250,
-     "title": "Expose ACAPI::Library::GSMObject metadata (description, keywords, author, placeable)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GSMObject::GetLicense",
@@ -32375,20 +32301,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1272,
-     "title": "Add GetLibraryPartMetadata command (description, keywords, author, placeable)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1250,
-     "title": "Expose ACAPI::Library::GSMObject metadata (description, keywords, author, placeable)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GSMObject::IsInSubTypeOf",
@@ -32426,20 +32342,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1272,
-     "title": "Add GetLibraryPartMetadata command (description, keywords, author, placeable)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1250,
-     "title": "Expose ACAPI::Library::GSMObject metadata (description, keywords, author, placeable)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GSMObject::IsPlaceable",
@@ -32454,20 +32360,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1272,
-     "title": "Add GetLibraryPartMetadata command (description, keywords, author, placeable)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1250,
-     "title": "Expose ACAPI::Library::GSMObject metadata (description, keywords, author, placeable)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GSMObject::IsSubType",
@@ -33342,10 +33238,6 @@
      "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
     },
     {
-     "number": 1272,
-     "title": "Add GetLibraryPartMetadata command (description, keywords, author, placeable)"
-    },
-    {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
     }
@@ -33424,10 +33316,6 @@
      "title": "[1/4] Add GetLibraryPartScripts"
     },
     {
-     "number": 1373,
-     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
-    },
-    {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
     },
@@ -33450,10 +33338,6 @@
     {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
-    },
-    {
-     "number": 1272,
-     "title": "Add GetLibraryPartMetadata command (description, keywords, author, placeable)"
     },
     {
      "number": 1244,
@@ -33629,10 +33513,6 @@
      "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
     },
     {
-     "number": 1373,
-     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
-    },
-    {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
     },
@@ -33655,10 +33535,6 @@
     {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
-    },
-    {
-     "number": 1272,
-     "title": "Add GetLibraryPartMetadata command (description, keywords, author, placeable)"
     },
     {
      "number": 1244,
@@ -34196,10 +34072,6 @@
     {
      "number": 1302,
      "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    },
-    {
-     "number": 1272,
-     "title": "Add GetLibraryPartMetadata command (description, keywords, author, placeable)"
     }
    ],
    "issues": [
@@ -34336,10 +34208,6 @@
     {
      "number": 1302,
      "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
-    },
-    {
-     "number": 1272,
-     "title": "Add GetLibraryPartMetadata command (description, keywords, author, placeable)"
     },
     {
      "number": 1244,
@@ -35526,10 +35394,6 @@
      "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
     },
     {
-     "number": 1373,
-     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
-    },
-    {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
     },
@@ -35560,10 +35424,6 @@
     {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
-    },
-    {
-     "number": 1272,
-     "title": "Add GetLibraryPartMetadata command (description, keywords, author, placeable)"
     },
     {
      "number": 1244,
@@ -43798,10 +43658,6 @@
     {
      "number": 1362,
      "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
-    },
-    {
-     "number": 1336,
-     "title": "[1/3] Add GetPropertyValuesOfElementDefaults command (property values of tool defaults)"
     },
     {
      "number": 1326,
@@ -52312,10 +52168,6 @@
      "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
     },
     {
-     "number": 1373,
-     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
-    },
-    {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
     },
@@ -52346,10 +52198,6 @@
     {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
-    },
-    {
-     "number": 1272,
-     "title": "Add GetLibraryPartMetadata command (description, keywords, author, placeable)"
     },
     {
      "number": 1244,
@@ -56971,10 +56819,6 @@
      "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
     },
     {
-     "number": 1373,
-     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
-    },
-    {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
     },
@@ -57005,10 +56849,6 @@
     {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
-    },
-    {
-     "number": 1272,
-     "title": "Add GetLibraryPartMetadata command (description, keywords, author, placeable)"
     },
     {
      "number": 1244,
@@ -64229,6 +64069,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1752,
+     "title": "Add GetPublisherSets: read the saved output of each publisher set"
+    },
+    {
      "number": 1717,
      "title": "Add GetAttributeIndexes; mark GetCurrentAttributeSetReader as not applicable"
     },
@@ -64263,10 +64107,6 @@
     {
      "number": 1362,
      "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
-    },
-    {
-     "number": 1336,
-     "title": "[1/3] Add GetPropertyValuesOfElementDefaults command (property values of tool defaults)"
     },
     {
      "number": 1292,
@@ -65402,10 +65242,6 @@
      "title": "[1/4] Add GetLibraryPartScripts"
     },
     {
-     "number": 1373,
-     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
-    },
-    {
      "number": 1365,
      "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
     },
@@ -65426,10 +65262,6 @@
      "title": "[1/4] Add GetLibraryPartIdentities and CompareLibraryPartUnIds"
     },
     {
-     "number": 1336,
-     "title": "[1/3] Add GetPropertyValuesOfElementDefaults command (property values of tool defaults)"
-    },
-    {
      "number": 1325,
      "title": "[1/6] Add GetGDLDate and SetGDLDate commands"
     },
@@ -65444,10 +65276,6 @@
     {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
-    },
-    {
-     "number": 1272,
-     "title": "Add GetLibraryPartMetadata command (description, keywords, author, placeable)"
     },
     {
      "number": 1244,
