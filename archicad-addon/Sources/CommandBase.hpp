@@ -210,6 +210,15 @@ API_Guid GetAttributeGuidFromIndex (API_AttrTypeID typeID, API_AttributeIndex in
 API_Attr_Head GetAttributeHeadFromGuid (API_Guid guid);
 API_AttributeIndex GetAttributeIndexFromGuid (API_AttrTypeID typeID, API_Guid guid);
 
+// The veneer of a column segment (#1044): type ("Core", "Finish" or "Other"), thickness and,
+// for a segment with a building material cross section, the building material of the veneer.
+// A thickness of 0 means no veneer. CreateColumns and ModifyColumns apply one veneer object to
+// every segment of the column, as they do with the cross section fields.
+GS::ObjectState CreateColumnVeneerObjectState (const API_ColumnSegmentType& segment);
+// Applies the given fields of veneer to segment; returns an error message for an unknown type or
+// building material, and changes nothing then.
+GS::Optional<GS::UniString> ApplyColumnVeneer (const GS::ObjectState& veneer, API_ColumnSegmentType& segment);
+
 // Text and Label fields reference fonts by index (from 1), which is what the commands carry as
 // fontIndex. These map that index to and from the font's name (the name the Text tool's font list
 // shows), through the Font API from Archicad 27 and the Font attributes (API_FontID) before. The

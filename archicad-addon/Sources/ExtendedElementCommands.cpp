@@ -2752,7 +2752,8 @@ bool ApplyBeamDetails (API_Element& element, API_Element& mask, const GS::Object
     return changed;
 }
 
-static bool ApplyColumnSectionToMemo (API_Guid elemGuid, const GS::ObjectState& details)
+// errorMessage is set when a given field is invalid; it stays empty when Archicad refused the change.
+static bool ApplyColumnSectionToMemo (API_Guid elemGuid, const GS::ObjectState& details, GS::UniString& errorMessage)
 {
     auto width = GetOptionalDouble (details, "width");
     auto depth = GetOptionalDouble (details, "depth");
@@ -2762,7 +2763,8 @@ static bool ApplyColumnSectionToMemo (API_Guid elemGuid, const GS::ObjectState& 
     const bool hasIsWidthAndHeightLinked = details.Get ("isWidthAndHeightLinked", isWidthAndHeightLinked);
     const GS::ObjectState* buildingMaterialIdOs = details.Get ("buildingMaterialId");
     const GS::ObjectState* profileIdOs = details.Get ("profileId");
-    if (!width.HasValue () && !depth.HasValue () && !hasCircleBased && !hasIsWidthAndHeightLinked && buildingMaterialIdOs == nullptr && profileIdOs == nullptr) {
+    const GS::ObjectState* veneerOs = details.Get ("veneer");
+    if (!width.HasValue () && !depth.HasValue () && !hasCircleBased && !hasIsWidthAndHeightLinked && buildingMaterialIdOs == nullptr && profileIdOs == nullptr && veneerOs == nullptr) {
         return true;
     }
 
@@ -2774,6 +2776,13 @@ static bool ApplyColumnSectionToMemo (API_Guid elemGuid, const GS::ObjectState& 
 
     const GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.columnSegments)) / sizeof (API_ColumnSegmentType);
     for (GSSize i = 0; i < nSegments; ++i) {
+        if (veneerOs != nullptr) {
+            const GS::Optional<GS::UniString> veneerError = ApplyColumnVeneer (*veneerOs, memo.columnSegments[i]);
+            if (veneerError.HasValue ()) {
+                errorMessage = veneerError.Get ();
+                return false;
+            }
+        }
         API_AssemblySegmentData& segment = memo.columnSegments[i].assemblySegmentData;
         if (hasIsWidthAndHeightLinked) {
             segment.isWidthAndHeightLinked = isWidthAndHeightLinked;
@@ -8877,6 +8886,7 @@ GS::Optional<GS::UniString> ModifyColumnsCommand::GetInputParametersSchema () co
                         "circleBased": { "type": "boolean", "description": "True for a round column cross section, false for rectangular. Ignored once profileId switches the column to a custom profile shape. Applied to all segments." },
                         "buildingMaterialId": { "$ref": "#/AttributeId", "description": "Cross section building material (round or rectangular, per circleBased). Applied to all segments." },
                         "profileId": { "$ref": "#/AttributeId", "description": "Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments." },
+                        "veneer": { "$ref": "#/ColumnVeneer", "description": "Veneer of the column (type, thickness, building material); only the given fields change, thickness 0 removes it. Applied to all segments." },
                         "cutFillPen": { "$ref": "#/OverriddenPen" },
                         "cutFillBackgroundPen": { "$ref": "#/OverriddenPen" },
                         "coverFill": { "$ref": "#/CoverFill" }
@@ -8920,10 +8930,21 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
                 continue;
             }
 
+            // Checked before anything changes, so an invalid veneer leaves the column as it was.
+            const GS::ObjectState* veneerOs = item.Get ("veneer");
+            if (veneerOs != nullptr) {
+                API_ColumnSegmentType probe = {};
+                const GS::Optional<GS::UniString> veneerError = ApplyColumnVeneer (*veneerOs, probe);
+                if (veneerError.HasValue ()) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, veneerError.Get ()));
+                    continue;
+                }
+            }
+
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
             const bool changed = ApplyColumnDetails (element, mask, item, stories);
-            const bool hasSectionFields = item.Contains ("width") || item.Contains ("depth") || item.Contains ("isWidthAndHeightLinked") || item.Contains ("circleBased") || item.Contains ("buildingMaterialId") || item.Contains ("profileId");
+            const bool hasSectionFields = item.Contains ("width") || item.Contains ("depth") || item.Contains ("isWidthAndHeightLinked") || item.Contains ("circleBased") || item.Contains ("buildingMaterialId") || item.Contains ("profileId") || item.Contains ("veneer");
             if (!changed && !hasSectionFields) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No column fields to modify."));
                 continue;
@@ -8938,8 +8959,11 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
             }
 
             if (hasSectionFields) {
-                bool sectionOk = ApplyColumnSectionToMemo (element.header.guid, item);
-                results.Push (sectionOk ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify column cross section."));
+                GS::UniString sectionError;
+                bool sectionOk = ApplyColumnSectionToMemo (element.header.guid, item, sectionError);
+                results.Push (sectionOk ? CreateSuccessfulExecutionResult () : sectionError.IsEmpty ()
+                    ? CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify column cross section.")
+                    : CreateFailedExecutionResult (APIERR_BADPARS, sectionError));
                 continue;
             }
 

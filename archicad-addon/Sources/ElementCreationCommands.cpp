@@ -333,6 +333,10 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                             "$ref": "#/AttributeId",
                             "description": "Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments."
                         },
+                        "veneer": {
+                            "$ref": "#/ColumnVeneer",
+                            "description": "Veneer of the column (type, thickness, building material); the fields not given come from the tool defaults or favoriteName, thickness 0 creates the column without veneer. Applied to all segments."
+                        },
                         "floorIndex": {
                             "type": "integer",
                             "description": "Optional floor index. If omitted, derived from the coordinate's z value."
@@ -406,9 +410,17 @@ GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (A
     const GS::ObjectState* buildingMaterialIdOs = parameters.Get ("buildingMaterialId");
     const GS::ObjectState* profileIdOs = parameters.Get ("profileId");
 
-    if ((hasWidth || hasDepth || hasCircleBased || hasIsWidthAndHeightLinked || buildingMaterialIdOs != nullptr || profileIdOs != nullptr) && memo.columnSegments != nullptr) {
+    const GS::ObjectState* veneerOs = parameters.Get ("veneer");
+
+    if ((hasWidth || hasDepth || hasCircleBased || hasIsWidthAndHeightLinked || buildingMaterialIdOs != nullptr || profileIdOs != nullptr || veneerOs != nullptr) && memo.columnSegments != nullptr) {
         GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.columnSegments)) / sizeof (API_ColumnSegmentType);
         for (GSSize i = 0; i < nSegments; ++i) {
+            if (veneerOs != nullptr) {
+                const GS::Optional<GS::UniString> veneerError = ApplyColumnVeneer (*veneerOs, memo.columnSegments[i]);
+                if (veneerError.HasValue ()) {
+                    return CreateErrorResponse (APIERR_BADPARS, veneerError.Get ());
+                }
+            }
             API_AssemblySegmentData& segment = memo.columnSegments[i].assemblySegmentData;
             if (hasIsWidthAndHeightLinked) {
                 segment.isWidthAndHeightLinked = isWidthAndHeightLinked;
