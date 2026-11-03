@@ -1,5 +1,6 @@
 #include "NavigatorCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "Base64Converter.hpp"
 #include "Transformation2D.hpp"
 #include "Matrix2.hpp"
 #include "TM.h"
@@ -593,6 +594,487 @@ GS::ObjectState GetModelViewOptionsCommand::Execute (const GS::ObjectState& /*pa
     return response;
 }
 
+FindModelViewOptionCommand::FindModelViewOptionCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String FindModelViewOptionCommand::GetName () const
+{
+    return "FindModelViewOption";
+}
+
+GS::Optional<GS::UniString> FindModelViewOptionCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "description": "The model view option combination to find, given by id or by name.",
+        "properties": {
+            "modelViewOptionId": {
+                "type": "object",
+                "description": "The identifier of the model view option combination.",
+                "properties": {
+                    "guid": {
+                        "$ref": "#/Guid"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "guid"
+                ]
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the model view option combination, as shown in Document > Model View > Model View Options."
+            }
+        },
+        "additionalProperties": false,
+        "oneOf": [
+            {
+                "required": [
+                    "modelViewOptionId"
+                ]
+            },
+            {
+                "required": [
+                    "name"
+                ]
+            }
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> FindModelViewOptionCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "description": "The model view option combination found.",
+        "properties": {
+            "index": {
+                "type": "integer",
+                "description": "The index of the model view option combination."
+            },
+            "modelViewOptionId": {
+                "type": "object",
+                "description": "The identifier of the model view option combination.",
+                "properties": {
+                    "guid": {
+                        "$ref": "#/Guid"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "guid"
+                ]
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the model view option combination."
+            },
+            "flags": {
+                "type": "integer",
+                "description": "The flags of the model view option combination, as Archicad returns them."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "index",
+            "modelViewOptionId",
+            "name",
+            "flags"
+        ]
+    })";
+}
+
+GS::ObjectState FindModelViewOptionCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    API_ModelViewOptions_Head searchHead = {};
+    API_Guid guidToSearch = APINULLGuid;
+    GS::UniString nameToSearch;
+
+    const GS::ObjectState* modelViewOptionIdOS = parameters.Get ("modelViewOptionId");
+    if (modelViewOptionIdOS != nullptr) {
+        guidToSearch = GetGuidFromObjectState (*modelViewOptionIdOS);
+        if (guidToSearch == APINULLGuid) {
+            return CreateErrorResponse (APIERR_BADPARS, "modelViewOptionId is corrupt or missing.");
+        }
+        searchHead.guid = guidToSearch;
+    } else if (parameters.Get ("name", nameToSearch)) {
+        searchHead.uniStringNamePtr = &nameToSearch;
+    } else {
+        return CreateErrorResponse (APIERR_BADPARS, "Either modelViewOptionId or name is required.");
+    }
+
+    GSErrCode err = ACAPI_Navigator_ModelViewOptions_Search (&searchHead);
+
+    // The search is documented with the name only; when it does not find the guid, the
+    // combinations are walked through the way GetModelViewOptions reads them.
+    if (guidToSearch != APINULLGuid && (err != NoError || searchHead.guid != guidToSearch)) {
+        err = APIERR_BADID;
+
+        UInt32 count = 0;
+        ACAPI_Navigator_ModelViewOptions_GetNum (count);
+
+        for (UInt32 i = 1; i <= count; ++i) {
+            API_ModelViewOptionsType modelViewOption = {};
+            modelViewOption.head.index = i;
+
+            if (ACAPI_Navigator_ModelViewOptions_Get (&modelViewOption) == NoError && modelViewOption.head.guid == guidToSearch) {
+                searchHead.index = modelViewOption.head.index;
+                err = NoError;
+                break;
+            }
+        }
+    }
+
+    if (err != NoError) {
+        if (modelViewOptionIdOS != nullptr) {
+            return CreateErrorResponse (err, "No model view option combination has the given modelViewOptionId.");
+        }
+        return CreateErrorResponse (err, "No model view option combination is named '" + nameToSearch + "'.");
+    }
+
+    // The combination is read back by its index, so the name is returned as Archicad carries it.
+    GS::UniString name;
+    API_ModelViewOptionsType modelViewOption = {};
+    modelViewOption.head.index = searchHead.index;
+    modelViewOption.head.uniStringNamePtr = &name;
+
+    err = ACAPI_Navigator_ModelViewOptions_Get (&modelViewOption);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to read the model view option combination found.");
+    }
+    if (guidToSearch != APINULLGuid && modelViewOption.head.guid != guidToSearch) {
+        return CreateErrorResponse (APIERR_BADID, "No model view option combination has the given modelViewOptionId.");
+    }
+
+    GS::ObjectState response;
+    response.Add ("index", static_cast<Int32> (modelViewOption.head.index));
+    response.Add ("modelViewOptionId", CreateGuidObjectState (modelViewOption.head.guid));
+    response.Add ("name", name);
+    response.Add ("flags", static_cast<Int32> (modelViewOption.head.flags));
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Available from Archicad 27.");
+#endif
+}
+
+namespace {
+
+// Writes every field of an API_ViewOptions into a JSON object.
+struct ViewOptionsWriter {
+    GS::ObjectState* current;
+
+    template<class F>
+    void Group (const char* name, F fill)
+    {
+        GS::ObjectState child;
+        GS::ObjectState* parent = current;
+        current = &child;
+        fill ();
+        current = parent;
+        current->Add (name, child);
+    }
+    void Number (const char* name, char& value) { current->Add (name, (Int32) value); }
+    void Number (const char* name, short& value) { current->Add (name, (Int32) value); }
+    void Flag (const char* name, bool& value) { current->Add (name, value); }
+    void Attribute (const char* name, API_AttributeIndex& value) { current->Add (name, (Int32) GetAttributeIndex (value)); }
+};
+
+// Reads the given fields of a JSON object into an API_ViewOptions, leaving the others as they are.
+struct ViewOptionsReader {
+    const GS::ObjectState* current;
+
+    template<class F>
+    void Group (const char* name, F apply)
+    {
+        const GS::ObjectState* child = current->Get (name);
+        if (child == nullptr) {
+            return;
+        }
+        const GS::ObjectState* parent = current;
+        current = child;
+        apply ();
+        current = parent;
+    }
+    void Number (const char* name, char& value)
+    {
+        Int32 number = 0;
+        if (current->Get (name, number)) {
+            value = (char) number;
+        }
+    }
+    void Number (const char* name, short& value)
+    {
+        Int32 number = 0;
+        if (current->Get (name, number)) {
+            value = (short) number;
+        }
+    }
+    void Flag (const char* name, bool& value)
+    {
+        bool flag = false;
+        if (current->Get (name, flag)) {
+            value = flag;
+        }
+    }
+    void Attribute (const char* name, API_AttributeIndex& value)
+    {
+        Int32 number = 0;
+        if (current->Get (name, number)) {
+            value = ACAPI_CreateAttributeIndex (number);
+        }
+    }
+};
+
+// The one list of fields shared by reading and writing. The gdlOptions pointer and the fillers are left out.
+template<class Visitor>
+void VisitViewOptions (Visitor& v, API_ViewOptions& viewOptions)
+{
+    API_ModelViewOptions& model = viewOptions.modelViewOpt;
+    v.Group ("modelViewOptions", [&] () {
+        v.Number ("doorMode", model.doorMode);
+        v.Number ("windowMode", model.windowMode);
+        v.Number ("skylightMode", model.skylightMode);
+        v.Number ("sectionMarker", model.sectionMarker);
+        v.Number ("beamMethod", model.beamMethod);
+        v.Number ("roofShellMode", model.roofShellMode);
+        v.Number ("showColumnSymbol", model.showColumnSymbol);
+        v.Number ("slabMethod", model.slabMethod);
+        v.Flag ("coluHiddenlineUnderSlabs", model.coluHiddenlineUnderSlabs);
+        v.Flag ("beamHiddenlineUnderSlabs", model.beamHiddenlineUnderSlabs);
+        v.Flag ("zoneHideZoneStamp", model.zoneHideZoneStamp);
+        v.Group ("curtainWall", [&] () {
+            API_CurtainWallModelViewOptions& cw = model.curtainWallModelViewOptions;
+            v.Number ("cwFrameDetailLevel", cw.cwFrameDetailLevel);
+            v.Number ("cwPanelDetailLevel", cw.cwPanelDetailLevel);
+            v.Number ("cwJunctionDetailLevel", cw.cwJunctionDetailLevel);
+            v.Number ("cwAccessoryDetailLevel", cw.cwAccessoryDetailLevel);
+        });
+        v.Group ("stair", [&] () {
+            API_StairModelViewOptions& stair = model.stairModelViewOptions;
+            v.Number ("stair3DDetailLevel", stair.stair3DDetailLevel);
+            v.Number ("stairFloorPlanVisualization", stair.stairFloorPlanVisualization);
+            v.Flag ("showStairHeadroom", stair.showStairHeadroom);
+            v.Flag ("stairFloorPlanCompWalkingLine", stair.stairFloorPlanCompWalkingLine);
+            v.Flag ("stairFloorPlanCompNumbering", stair.stairFloorPlanCompNumbering);
+            v.Flag ("stairFloorPlanCompUPDOWNText", stair.stairFloorPlanCompUPDOWNText);
+            v.Flag ("stairFloorPlanCompDescription", stair.stairFloorPlanCompDescription);
+            v.Flag ("stairFloorPlanCompTreadAccessories", stair.stairFloorPlanCompTreadAccessories);
+            v.Flag ("stairFloorPlanCompStructureBeamSupport", stair.stairFloorPlanCompStructureBeamSupport);
+            v.Flag ("stairFloorPlanCompStructureStringers", stair.stairFloorPlanCompStructureStringers);
+            v.Flag ("stairFloorPlanCompStructureCantilevered", stair.stairFloorPlanCompStructureCantilevered);
+            v.Flag ("stairReflectedCompWalkingLine", stair.stairReflectedCompWalkingLine);
+            v.Flag ("stairReflectedCompDescription", stair.stairReflectedCompDescription);
+            v.Flag ("stairReflectedCompStructureBeamSupport", stair.stairReflectedCompStructureBeamSupport);
+            v.Flag ("stairReflectedCompStructureStringers", stair.stairReflectedCompStructureStringers);
+            v.Flag ("stairReflectedCompStructureCantilevered", stair.stairReflectedCompStructureCantilevered);
+            v.Attribute ("stairSchemeSurfaceIndex", stair.stairSchemeSurfaceIndex);
+            v.Attribute ("stairSchemeCutLineIndex", stair.stairSchemeCutLineIndex);
+            v.Number ("stairSchemeCutLinePenIndex", stair.stairSchemeCutLinePenIndex);
+            v.Attribute ("stairSchemeUncutLineIndex", stair.stairSchemeUncutLineIndex);
+            v.Number ("stairSchemeUncutLinePenIndex", stair.stairSchemeUncutLinePenIndex);
+        });
+        v.Group ("railing", [&] () {
+            API_RailingModelViewOptions& railing = model.railingModelViewOptions;
+            v.Number ("railing3DDetailLevel", railing.railing3DDetailLevel);
+            v.Flag ("railing2DDisplayCompPosts", railing.railing2DDisplayCompPosts);
+            v.Flag ("railing2DDisplayCompTopRail", railing.railing2DDisplayCompTopRail);
+            v.Flag ("railing2DDisplayCompHandrails", railing.railing2DDisplayCompHandrails);
+            v.Flag ("railing2DDisplayCompRails", railing.railing2DDisplayCompRails);
+            v.Flag ("railing2DDisplayCompInnerPosts", railing.railing2DDisplayCompInnerPosts);
+            v.Flag ("railing2DDisplayCompBalusters", railing.railing2DDisplayCompBalusters);
+            v.Flag ("railing2DDisplayCompPanels", railing.railing2DDisplayCompPanels);
+            v.Attribute ("railingSchemeSurfaceIndex", railing.railingSchemeSurfaceIndex);
+            v.Attribute ("railingSchemeCutLineIndex", railing.railingSchemeCutLineIndex);
+            v.Number ("railingSchemeCutLinePenIndex", railing.railingSchemeCutLinePenIndex);
+            v.Attribute ("railingSchemeUncutLineIndex", railing.railingSchemeUncutLineIndex);
+            v.Number ("railingSchemeUncutLinePenIndex", railing.railingSchemeUncutLinePenIndex);
+        });
+    });
+
+    API_OnScreenViewOptions& screen = viewOptions.onScreenViewOpt;
+    v.Group ("onScreenViewOptions", [&] () {
+        v.Number ("wallMode", screen.wallMode);
+        v.Flag ("showRoofPivLine", screen.showRoofPivLine);
+        v.Flag ("showFillHandles", screen.showFillHandles);
+        v.Number ("lineWeight", screen.lineWeight);
+        v.Number ("textMode", screen.textMode);
+        v.Number ("figureMode", screen.figureMode);
+        v.Flag ("showExtrudedBodies", screen.showExtrudedBodies);
+        v.Number ("camPathViewMode", screen.camPathViewMode);
+        v.Number ("wallMethod", screen.wallMethod);
+        v.Flag ("showMarkerRange", screen.showMarkerRange);
+        v.Number ("filldrawingMode", screen.filldrawingMode);
+        v.Flag ("splineMode", screen.splineMode);
+        v.Flag ("showDrawingFrames", screen.showDrawingFrames);
+        v.Flag ("showMasterItems", screen.showMasterItems);
+        v.Flag ("boldCutLines", screen.boldCutLines);
+        v.Flag ("showSourceMarkerBound", screen.showSourceMarkerBound);
+        v.Flag ("showDimensionAllLines", screen.showDimensionAllLines);
+        v.Flag ("showOpeningCuttingBodies", screen.showOpeningCuttingBodies);
+        v.Flag ("showOpeningReferences", screen.showOpeningReferences);
+    });
+}
+
+// The GDL model view options pointer filled by ACAPI_Navigator_GetViewOptions belongs to the caller.
+void DisposeViewOptions (API_ViewOptions& viewOptions)
+{
+    if (viewOptions.modelViewOpt.gdlOptions != nullptr) {
+        ACAPI_FreeGDLModelViewOptionsPtr (&viewOptions.modelViewOpt.gdlOptions);
+        viewOptions.modelViewOpt.gdlOptions = nullptr;
+    }
+}
+
+}
+
+GetViewOptionsCommand::GetViewOptionsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetViewOptionsCommand::GetName () const
+{
+    return "GetViewOptions";
+}
+
+GS::Optional<GS::UniString> GetViewOptionsCommand::GetRawResponseSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "modelViewOptionIndex": {
+            "type": "integer",
+            "description": "The index of the model view option combination the window applies. Matches the order of GetModelViewOptions, starting from 1."
+        },
+        "viewOptions": {
+            "type": "object",
+            "description": "The model view options and the on-screen view options, every field by its API_ViewOptions name. Values are the numeric API constants; attribute indices are plain integers.",
+            "properties": {
+                "modelViewOptions": {
+                    "type": "object",
+                    "description": "Fields of API_ModelViewOptions, with the curtainWall, stair and railing parts as nested objects.",
+                    "additionalProperties": true
+                },
+                "onScreenViewOptions": {
+                    "type": "object",
+                    "description": "Fields of API_OnScreenViewOptions.",
+                    "additionalProperties": true
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "modelViewOptions",
+                "onScreenViewOptions"
+            ]
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "modelViewOptionIndex",
+        "viewOptions"
+    ]
+})";
+}
+
+GS::ObjectState GetViewOptionsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_ViewOptions viewOptions = {};
+    short modelViewOptionIndex = 0;
+    const GSErrCode err = ACAPI_Navigator_GetViewOptions (&viewOptions, &modelViewOptionIndex);
+    if (err != NoError) {
+        DisposeViewOptions (viewOptions);
+        return CreateErrorResponse (err, "Failed to get the view options. Is a plan window open?");
+    }
+
+    GS::ObjectState viewOptionsOS;
+    ViewOptionsWriter writer { &viewOptionsOS };
+    VisitViewOptions (writer, viewOptions);
+    DisposeViewOptions (viewOptions);
+
+    GS::ObjectState response;
+    response.Add ("modelViewOptionIndex", (Int32) modelViewOptionIndex);
+    response.Add ("viewOptions", viewOptionsOS);
+    return response;
+}
+
+SetViewOptionsCommand::SetViewOptionsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String SetViewOptionsCommand::GetName () const
+{
+    return "SetViewOptions";
+}
+
+GS::Optional<GS::UniString> SetViewOptionsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "modelViewOptionIndex": {
+            "type": "integer",
+            "description": "Switches the window to the model view option combination with this index (see GetModelViewOptions, starting from 1). Without viewOptions only the combination is switched.",
+            "minimum": 1
+        },
+        "viewOptions": {
+            "type": "object",
+            "description": "The fields to change, named as in the response of GetViewOptions. Fields not given keep their current value.",
+            "properties": {
+                "modelViewOptions": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "onScreenViewOptions": {
+                    "type": "object",
+                    "additionalProperties": true
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false
+})";
+}
+
+GS::ObjectState SetViewOptionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    Int32 requestedIndex = 0;
+    const bool switchCombination = parameters.Get ("modelViewOptionIndex", requestedIndex);
+    const GS::ObjectState* viewOptionsOS = parameters.Get ("viewOptions");
+
+    if (!switchCombination && viewOptionsOS == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "Give modelViewOptionIndex, viewOptions or both.");
+    }
+
+    short modelViewOptionIndex = (short) requestedIndex;
+    GSErrCode err = NoError;
+
+    if (viewOptionsOS == nullptr) {
+        err = ACAPI_Navigator_ChangeViewOptions (nullptr, &modelViewOptionIndex);
+    } else {
+        API_ViewOptions viewOptions = {};
+        short currentIndex = 0;
+        err = ACAPI_Navigator_GetViewOptions (&viewOptions, &currentIndex);
+        if (err != NoError) {
+            DisposeViewOptions (viewOptions);
+            return CreateErrorResponse (err, "Failed to get the view options. Is a plan window open?");
+        }
+
+        ViewOptionsReader reader { viewOptionsOS };
+        VisitViewOptions (reader, viewOptions);
+
+        err = ACAPI_Navigator_ChangeViewOptions (&viewOptions, switchCombination ? &modelViewOptionIndex : nullptr);
+        DisposeViewOptions (viewOptions);
+    }
+
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to change the view options. Check the model view option index and that a plan window is open.");
+    }
+
+    return {};
+}
+
 GetViewSettingsCommand::GetViewSettingsCommand () :
     CommandBase (CommonSchema::Used)
 {}
@@ -869,6 +1351,26 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
             continue;
         }
 
+        // Archicad keeps the old dimension standard without an error when the name given is
+        // not one of the project, so the view is read back to report whether it was applied.
+        GS::UniString requestedDimensionStyle;
+        if (viewSettingsOS->Get ("dimensionStyle", requestedDimensionStyle) && !requestedDimensionStyle.IsEmpty ()) {
+            API_NavigatorView changedNavigatorView = {};
+            err = ACAPI_Navigator_GetNavigatorView (&navigatorItem, &changedNavigatorView);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "The view settings were written, but the view could not be read back to check the dimensionStyle."));
+                continue;
+            }
+
+            const GS::UniString appliedDimensionStyle (changedNavigatorView.dimName);
+            if (appliedDimensionStyle.Compare (GS::UniString (navigatorView.dimName), CaseInsensitive) != GS::UniString::Equal) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADNAME,
+                    "The dimensionStyle '" + requestedDimensionStyle + "' was not applied, the view still uses '" + appliedDimensionStyle +
+                    "'. Probably the project has no dimension standard with this name. The other view settings given were written."));
+                continue;
+            }
+        }
+
         executionResults (CreateSuccessfulExecutionResult ());
     }
 
@@ -1046,6 +1548,205 @@ GS::ObjectState SetActiveGraphicalOverrideCombinationCommand::Execute (const GS:
     (void) parameters;
     return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "Available from Archicad 30.");
 #endif
+}
+
+struct RenovationFilter {
+    API_Guid      guid;
+    GS::UniString name;
+};
+
+// Every renovation filter of the project with its name. A filter whose name cannot be
+// read is still listed, with an empty name, so its guid stays usable.
+static GSErrCode GetRenovationFilters (GS::Array<RenovationFilter>& renovationFilters)
+{
+    GS::Array<API_Guid> renovationFilterGuids;
+    GSErrCode err = ACAPI_Renovation_GetRenovationFilters (&renovationFilterGuids);
+    if (err != NoError) {
+        return err;
+    }
+
+    for (const API_Guid& guid : renovationFilterGuids) {
+        GS::UniString name;
+        if (ACAPI_Renovation_GetRenovationFilterName (&guid, &name) != NoError) {
+            name.Clear ();
+        }
+        renovationFilters.Push ({ guid, name });
+    }
+
+    return NoError;
+}
+
+GetRenovationFiltersCommand::GetRenovationFiltersCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetRenovationFiltersCommand::GetName () const
+{
+    return "GetRenovationFilters";
+}
+
+GS::Optional<GS::UniString> GetRenovationFiltersCommand::GetRawResponseSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "renovationFilters": {
+            "type": "array",
+            "description": "Every renovation filter of the project.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "renovationFilterId": {
+                        "$ref": "#/GuidId",
+                        "description": "Identifier of the renovation filter. The same identifier is the renovationFilterGuid of GetViewSettings and SetViewSettings."
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the renovation filter."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "renovationFilterId",
+                    "name"
+                ]
+            }
+        },
+        "activeRenovationFilterId": {
+            "$ref": "#/GuidId",
+            "description": "Identifier of the renovation filter of the current window. Absent when the current window has none or it could not be read."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "renovationFilters"
+    ]
+})";
+}
+
+GS::ObjectState GetRenovationFiltersCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<RenovationFilter> renovationFilters;
+    GSErrCode err = GetRenovationFilters (renovationFilters);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the renovation filters of the project.");
+    }
+
+    GS::ObjectState response;
+    const auto& renovationFilterList = response.AddList<GS::ObjectState> ("renovationFilters");
+    for (const RenovationFilter& renovationFilter : renovationFilters) {
+        renovationFilterList (GS::ObjectState (
+            "renovationFilterId", CreateGuidObjectState (renovationFilter.guid),
+            "name", renovationFilter.name));
+    }
+
+    API_Guid activeRenovationFilterGuid = APINULLGuid;
+    if (ACAPI_Renovation_GetActualRenovationFilter (&activeRenovationFilterGuid) == NoError && activeRenovationFilterGuid != APINULLGuid) {
+        response.Add ("activeRenovationFilterId", CreateGuidObjectState (activeRenovationFilterGuid));
+    }
+
+    return response;
+}
+
+SetActiveRenovationFilterCommand::SetActiveRenovationFilterCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String SetActiveRenovationFilterCommand::GetName () const
+{
+    return "SetActiveRenovationFilter";
+}
+
+GS::Optional<GS::UniString> SetActiveRenovationFilterCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "renovationFilterId": {
+                "$ref": "#/GuidId",
+                "description": "Identifier of the renovation filter, as listed by GetRenovationFilters. Takes precedence over name when both are given."
+            },
+            "name": {
+                "type": "string",
+                "description": "Name of the renovation filter. An exact match wins over a case-insensitive one.",
+                "minLength": 1
+            }
+        },
+        "additionalProperties": false,
+        "anyOf": [
+            { "required": ["renovationFilterId"] },
+            { "required": ["name"] }
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetActiveRenovationFilterCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetActiveRenovationFilterCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<RenovationFilter> renovationFilters;
+    GSErrCode err = GetRenovationFilters (renovationFilters);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get the renovation filters of the project.");
+    }
+
+    API_Guid renovationFilterGuid = APINULLGuid;
+    const GS::ObjectState* renovationFilterIdOS = parameters.Get ("renovationFilterId");
+    if (renovationFilterIdOS != nullptr) {
+        renovationFilterGuid = GetGuidFromObjectState (*renovationFilterIdOS);
+        if (renovationFilterGuid == APINULLGuid) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "renovationFilterId is corrupt or missing.");
+        }
+        bool found = false;
+        for (const RenovationFilter& renovationFilter : renovationFilters) {
+            if (renovationFilter.guid == renovationFilterGuid) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            return CreateFailedExecutionResult (APIERR_BADID, "The project has no renovation filter with this renovationFilterId. List them with GetRenovationFilters.");
+        }
+    } else {
+        GS::UniString name;
+        if (!parameters.Get ("name", name)) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "Either renovationFilterId or name is required.");
+        }
+
+        GS::UniString availableNames;
+        API_Guid caseInsensitiveMatch = APINULLGuid;
+        for (const RenovationFilter& renovationFilter : renovationFilters) {
+            if (renovationFilter.name == name) {
+                renovationFilterGuid = renovationFilter.guid;
+                break;
+            }
+            if (caseInsensitiveMatch == APINULLGuid && renovationFilter.name.Compare (name, CaseInsensitive) == GS::UniString::Equal) {
+                caseInsensitiveMatch = renovationFilter.guid;
+            }
+            if (!availableNames.IsEmpty ()) {
+                availableNames += ", ";
+            }
+            availableNames += "\"" + renovationFilter.name + "\"";
+        }
+        if (renovationFilterGuid == APINULLGuid) {
+            renovationFilterGuid = caseInsensitiveMatch;
+        }
+        if (renovationFilterGuid == APINULLGuid) {
+            return CreateFailedExecutionResult (APIERR_BADNAME, "The project has no renovation filter named \"" + name + "\". Its renovation filters: " + availableNames);
+        }
+    }
+
+    err = ACAPI_Renovation_SetActualRenovationFilter (&renovationFilterGuid);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to set the renovation filter of the current window.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
 }
 
 // Trace & Reference of the floor plan. API_GhostStoryType (ACAPI_View_GetGhostStorySettings)
@@ -1979,7 +2680,7 @@ GS::Optional<GS::UniString> SetZoomCommand::GetInputParametersSchema () const
         "properties": {
             "zoomBox": {
                 "$ref": "#/Zoom",
-                "description": "The area to zoom the current 2D window to, in model coordinates (meters). The window keeps its aspect ratio, so the shown area may be larger than the box."
+                "description": "The area to zoom the current 2D window to, in model coordinates (meters). The window keeps its aspect ratio, so the shown area may be larger than the box. The rotation of the window is kept as it is."
             }
         },
         "additionalProperties": false,
@@ -2020,7 +2721,17 @@ GS::ObjectState SetZoomCommand::Execute (const GS::ObjectState& parameters, GS::
         return CreateFailedExecutionResult (APIERR_BADDATABASE, "The current window is the 3D window; SetZoom works only in 2D windows.");
     }
 
-    err = ACAPI_View_SetZoom (&zoomBox);
+    // Without a transformation matrix ACAPI_View_SetZoom resets the rotation of the
+    // window (for example of a rotated floor plan) to zero, so the current one is
+    // read and passed back to keep the rotation as it is (issue #1692).
+    API_Box     currentZoomBox = {};
+    API_Tranmat currentTranmat = {};
+    err = ACAPI_View_GetZoom (&currentZoomBox, &currentTranmat);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get the current zoom and rotation of the current window.");
+    }
+
+    err = ACAPI_View_SetZoom (&zoomBox, &currentTranmat);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to set the zoom of the current window.");
     }
@@ -2220,7 +2931,7 @@ GS::Optional<GS::UniString> CreateViewsInViewMapCommand::GetInputParametersSchem
                     "properties": {
                         "navigatorItemId": {
                             "$ref": "#/NavigatorItemId",
-                            "description": "Source navigator item whose database and settings are copied."
+                            "description": "Source navigator item whose database and settings are copied: a Project Map item, or a View Map view (e.g. a story view). A View Map view is created from its Project Map source (sourceNavigatorItemId in GetNavigatorItemTree), then gets the view's own view settings, name and ID."
                         },
                         "parentNavigatorItemId": {
                             "$ref": "#/NavigatorItemId",
@@ -2256,6 +2967,26 @@ GS::Optional<GS::UniString> CreateViewsInViewMapCommand::GetRawResponseSchema ()
         "additionalProperties": false,
         "required": ["navigatorItems"]
     })";
+}
+
+// Frees what ACAPI_Navigator_GetNavigatorView allocates for a view with
+// custom settings (as the DevKit's Navigator_Test example does).
+static void FreeNavigatorView (API_NavigatorView& navigatorView)
+{
+    if (navigatorView.modelViewOpt != nullptr) {
+        ACAPI_FreeGDLModelViewOptionsPtr (&navigatorView.modelViewOpt->gdlOptions);
+        BMKillPtr ((GSPtr*) &navigatorView.modelViewOpt);
+    }
+#ifdef ServerMainVers_2700
+    delete navigatorView.layerStats;
+    navigatorView.layerStats = nullptr;
+    delete navigatorView.pens;
+    navigatorView.pens = nullptr;
+#else
+    BMKillHandle ((GSHandle*) &navigatorView.layerStats);
+    BMKillPtr ((GSPtr*) &navigatorView.pens);
+#endif
+    BMKillPtr ((GSPtr*) &navigatorView.dimPrefs);
 }
 
 GS::ObjectState CreateViewsInViewMapCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -2295,12 +3026,25 @@ GS::ObjectState CreateViewsInViewMapCommand::Execute (const GS::ObjectState& par
             continue;
         }
 
+        // A View Map view cannot be cloned to the View Map (#1656): clone the
+        // Project Map item behind it instead, and copy the view's own settings
+        // onto the new view afterwards. Project Map items have no source.
+        API_NavigatorItem sourceView = {};
+        bool sourceIsView = false;
+        if (ACAPI_Navigator_GetNavigatorItem (&sourceGuid, &sourceView) == NoError &&
+            sourceView.sourceGuid != APINULLGuid) {
+            sourceIsView = true;
+            sourceGuid   = sourceView.sourceGuid;
+        }
+
         // Step 1: clone from Project Map (only reliable way to create a
         // floor-plan View Map item)
         API_Guid createdGuid = APINULLGuid;
         GSErrCode err = ACAPI_Navigator_CloneProjectMapItemToViewMap (&sourceGuid, &parentGuid, &createdGuid);
         if (err != NoError) {
-            navigatorItems (CreateErrorResponse (err, "Failed to clone navigator item to view map."));
+            navigatorItems (CreateErrorResponse (err, sourceIsView
+                ? "Failed to clone the Project Map item behind the source view to view map."
+                : "Failed to clone navigator item to view map."));
             continue;
         }
 
@@ -2317,6 +3061,15 @@ GS::ObjectState CreateViewsInViewMapCommand::Execute (const GS::ObjectState& par
         createdItem.mapId         = API_PublicViewMap;
         createdItem.isIndependent = true;
 
+        // A source view's name and ID default to the view's, not to those of
+        // the Project Map item it was created from.
+        if (sourceIsView) {
+            GS::ucscpy (createdItem.uName, sourceView.uName);
+            createdItem.customName = sourceView.customName;
+            CHTruncate (sourceView.uiId, createdItem.uiId, GS::ArraySize (createdItem.uiId));
+            createdItem.customUiId = sourceView.customUiId;
+        }
+
         GS::UniString newName;
         if (item.Get ("name", newName) && !newName.IsEmpty ()) {
             GS::ucscpy (createdItem.uName, newName.ToUStr ());
@@ -2324,6 +3077,27 @@ GS::ObjectState CreateViewsInViewMapCommand::Execute (const GS::ObjectState& par
         }
 
         ACAPI_Navigator_ChangeNavigatorItem (&createdItem);
+
+        // Step 4: give a view copied from a View Map view that view's settings
+        // (layer combination, scale, model view options, zoom, ...) instead of
+        // the Project Map item's defaults.
+        if (sourceIsView) {
+            sourceView.mapId = API_PublicViewMap;
+            API_NavigatorView sourceViewSettings = {};
+            err = ACAPI_Navigator_GetNavigatorView (&sourceView, &sourceViewSettings);
+            if (err == NoError) {
+                err = ACAPI_Navigator_ChangeNavigatorView (&createdItem, &sourceViewSettings);
+            }
+            FreeNavigatorView (sourceViewSettings);
+            if (err != NoError) {
+                // Do not leave a view with the wrong settings behind that the
+                // caller never gets the id of.
+                bool silentMode = true;
+                ACAPI_Navigator_DeleteNavigatorView (&createdGuid, &silentMode);
+                navigatorItems (CreateErrorResponse (err, "Failed to copy the view settings of the source view onto the new view."));
+                continue;
+            }
+        }
 
         navigatorItems (CreateIdObjectState ("navigatorItemId", createdGuid));
     }
@@ -3031,6 +3805,13 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
         }
     }
 
+    // Best-effort flush of the navigator state just changed above; see the same call in
+    // DeleteNavigatorItemsCommand::Execute for why (issue #1428). Error intentionally ignored.
+    // ACAPI_Database_RedrawCurrentDatabase only exists from AC27 on.
+#ifdef ServerMainVers_2700
+    ACAPI_Database_RedrawCurrentDatabase ();
+#endif
+
     return CreateSuccessfulExecutionResult ();
 }
 
@@ -3091,6 +3872,15 @@ static bool IsProjectMapWorksheetOrDetail (const API_Guid& guid, const API_Navig
 
 GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    // Flush any pending navigator state from a preceding Create/Rename before walking the
+    // tree below: a database create or rename followed immediately by a delete has been seen
+    // to crash ArchiCAD internally (ProjectManager::FindGroup type-compatibility violation,
+    // see issue #1428); this is a best-effort mitigation, its error is intentionally ignored.
+    // ACAPI_Database_RedrawCurrentDatabase only exists from AC27 on.
+#ifdef ServerMainVers_2700
+    ACAPI_Database_RedrawCurrentDatabase ();
+#endif
+
     GS::Array<GS::ObjectState> navigatorItemIds;
     parameters.Get ("navigatorItemIds", navigatorItemIds);
 
@@ -3128,6 +3918,12 @@ GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& par
             failureMessage = "Failed to delete the worksheet or detail. Only independent worksheets and details can be deleted; delete a marker-linked one by deleting its marker.";
         } else if (navItem.itemType == API_SubSetNavItem) {
             err = APIERR_NOTSUPPORTED;
+        } else if (navItem.mapId == API_ProjectMap) {
+            // ACAPI_Navigator_DeleteNavigatorVPItem deletes only the viewpoints of this
+            // add-on (CreateAddOnViewpoints) and answers APIERR_BADID for any other one;
+            // the API cannot delete Archicad's own Project Map viewpoints.
+            err = ACAPI_Navigator_DeleteNavigatorVPItem (&guid);
+            failureMessage = "Failed to delete the Project Map viewpoint. Only the viewpoints the Tapir Add-On created (CreateAddOnViewpoints) can be deleted; Archicad's own Project Map items, such as schedules, cannot be deleted through the API.";
         } else {
             bool silentMode = true;
             err = ACAPI_Navigator_DeleteNavigatorView (&guid, &silentMode);
@@ -3442,4 +4238,773 @@ GS::ObjectState GetNavigatorParentItemsCommand::Execute (const GS::ObjectState& 
     }
 
     return response;
+}
+
+// ─── SetMasterLayoutContext ───────────────────────────────────────────────────
+
+SetMasterLayoutContextCommand::SetMasterLayoutContextCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String SetMasterLayoutContextCommand::GetName () const
+{
+    return "SetMasterLayoutContext";
+}
+
+GS::Optional<GS::UniString> SetMasterLayoutContextCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "layoutDatabaseId": {
+                "$ref": "#/DatabaseId"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["layoutDatabaseId"]
+    })";
+}
+
+GS::Optional<GS::UniString> SetMasterLayoutContextCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+// ACAPI_Navigator_SetMasterLayoutOnLayout does not assign a master layout to a
+// layout. Its DevKit remark: when the current database is a master layout, it
+// sets the layout whose values (autotexts, etc.) the master layout shows.
+GS::ObjectState SetMasterLayoutContextCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    const API_Guid layoutDatabaseGuid = GetGuidFromArrayItem ("layoutDatabaseId", parameters);
+    if (layoutDatabaseGuid == APINULLGuid) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "layoutDatabaseId is corrupt or missing.");
+    }
+
+    API_DatabaseInfo currentDb = {};
+    GSErrCode err = ACAPI_Database_GetCurrentDatabase (&currentDb);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get the current database.");
+    }
+    if (currentDb.typeID != APIWind_MasterLayoutID) {
+        return CreateFailedExecutionResult (APIERR_BADDATABASE, "The current window must be a master layout.");
+    }
+
+    API_DatabaseInfo layoutDb = DatabaseIdResolver::Instance ().GetDatabaseWithId (layoutDatabaseGuid);
+    err = ACAPI_Window_GetDatabaseInfo (&layoutDb);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get the database of layoutDatabaseId.");
+    }
+    if (layoutDb.typeID != APIWind_LayoutID) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "layoutDatabaseId is not the database of a layout.");
+    }
+
+    API_DatabaseUnId layoutDatabaseUnId = layoutDb.databaseUnId;
+    err = ACAPI_Navigator_SetMasterLayoutOnLayout (&layoutDatabaseUnId);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to set the layout context of the master layout.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+#else
+    (void) parameters;
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "Available from Archicad 27.");
+#endif
+}
+
+// ─── Add-on viewpoints ────────────────────────────────────────────────────────
+
+// The Project Map items an add-on creates through the API (roots, groups and
+// leaf nodes), read with ACAPI_Navigator_GetNavigatorVP*. They are identified
+// by their guid, given as {"viewpointId": {"guid": ...}}.
+
+static const char* AddOnViewpointIdsSchema = R"({
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "viewpointId": {
+                "type": "object",
+                "description": "The identifier of an add-on viewpoint item.",
+                "properties": {
+                    "guid": { "$ref": "#/Guid" }
+                },
+                "additionalProperties": false,
+                "required": ["guid"]
+            }
+        },
+        "additionalProperties": false,
+        "required": ["viewpointId"]
+    }
+})";
+
+#ifdef ServerMainVers_2700
+static GS::ObjectState CreateViewpointIdArrayItem (const API_Guid& guid)
+{
+    return GS::ObjectState ("viewpointId", CreateGuidObjectState (guid));
+}
+
+static GS::UniString AddOnViewpointTypeToString (API_NavigatorAddOnViewPointTypeID itemType)
+{
+    switch (itemType) {
+        case API_NavigatorAddOnViewPointRootID:  return "Root";
+        case API_NavigatorAddOnViewPointGroupID: return "Group";
+        case API_NavigatorAddOnViewPointNodeID:  return "Leaf";
+        default:                                 return "Undefined";
+    }
+}
+#endif
+
+GetAddOnViewpointRootsCommand::GetAddOnViewpointRootsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetAddOnViewpointRootsCommand::GetName () const
+{
+    return "GetAddOnViewpointRoots";
+}
+
+GS::Optional<GS::UniString> GetAddOnViewpointRootsCommand::GetRawResponseSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {
+            "viewpointIds": )") + AddOnViewpointIdsSchema + R"(
+        },
+        "additionalProperties": false,
+        "required": ["viewpointIds"]
+    })";
+}
+
+GS::ObjectState GetAddOnViewpointRootsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<API_Guid> rootGuids;
+    const GSErrCode err = ACAPI_Navigator_GetNavigatorVPRootGroups (&rootGuids);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the add-on viewpoint roots.");
+    }
+
+    GS::ObjectState response;
+    const auto& viewpointIds = response.AddList<GS::ObjectState> ("viewpointIds");
+    for (const API_Guid& rootGuid : rootGuids) {
+        viewpointIds (CreateViewpointIdArrayItem (rootGuid));
+    }
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Available from Archicad 27.");
+#endif
+}
+
+GetAddOnViewpointChildrenCommand::GetAddOnViewpointChildrenCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetAddOnViewpointChildrenCommand::GetName () const
+{
+    return "GetAddOnViewpointChildren";
+}
+
+GS::Optional<GS::UniString> GetAddOnViewpointChildrenCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "viewpointId": {
+                "type": "object",
+                "description": "The add-on viewpoint root or group to list the children of.",
+                "properties": {
+                    "guid": { "$ref": "#/Guid" }
+                },
+                "additionalProperties": false,
+                "required": ["guid"]
+            }
+        },
+        "additionalProperties": false,
+        "required": ["viewpointId"]
+    })";
+}
+
+GS::Optional<GS::UniString> GetAddOnViewpointChildrenCommand::GetRawResponseSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {
+            "viewpointIds": )") + AddOnViewpointIdsSchema + R"(
+        },
+        "additionalProperties": false,
+        "required": ["viewpointIds"]
+    })";
+}
+
+GS::ObjectState GetAddOnViewpointChildrenCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    const API_Guid guid = GetGuidFromArrayItem ("viewpointId", parameters);
+    if (guid == APINULLGuid) {
+        return CreateErrorResponse (APIERR_BADPARS, "viewpointId is corrupt or missing.");
+    }
+
+    GS::Array<API_Guid> childrenGuids;
+    const GSErrCode err = ACAPI_Navigator_GetNavigatorVPItemChildren (&guid, &childrenGuids);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the children of the add-on viewpoint.");
+    }
+
+    GS::ObjectState response;
+    const auto& viewpointIds = response.AddList<GS::ObjectState> ("viewpointIds");
+    for (const API_Guid& childGuid : childrenGuids) {
+        viewpointIds (CreateViewpointIdArrayItem (childGuid));
+    }
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Available from Archicad 27.");
+#endif
+}
+
+GetAddOnViewpointsCommand::GetAddOnViewpointsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetAddOnViewpointsCommand::GetName () const
+{
+    return "GetAddOnViewpoints";
+}
+
+GS::Optional<GS::UniString> GetAddOnViewpointsCommand::GetInputParametersSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {
+            "viewpointIds": )") + AddOnViewpointIdsSchema + R"(
+        },
+        "additionalProperties": false,
+        "required": ["viewpointIds"]
+    })";
+}
+
+GS::Optional<GS::UniString> GetAddOnViewpointsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "viewpoints": {
+                "type": "array",
+                "description": "The details of each given add-on viewpoint item, in the order of the input, or an error for an item that cannot be read.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "viewpointId": {
+                                    "type": "object",
+                                    "description": "The identifier of the add-on viewpoint item.",
+                                    "properties": {
+                                        "guid": { "$ref": "#/Guid" }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": ["guid"]
+                                },
+                                "parentViewpointId": {
+                                    "type": "object",
+                                    "description": "The identifier of the root or group the item is in. Missing when Archicad reports no parent, as for a root.",
+                                    "properties": {
+                                        "guid": { "$ref": "#/Guid" }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": ["guid"]
+                                },
+                                "itemType": {
+                                    "type": "string",
+                                    "description": "Whether the item is a root, a group or a leaf node.",
+                                    "enum": ["Root", "Group", "Leaf", "Undefined"]
+                                },
+                                "displayId": {
+                                    "type": "string",
+                                    "description": "The ID shown for the item in the Project Map."
+                                },
+                                "displayName": {
+                                    "type": "string",
+                                    "description": "The name shown for the item in the Project Map."
+                                },
+                                "viewSettingsFlags": {
+                                    "type": "integer",
+                                    "description": "The view settings flags of the item, as Archicad stores them (a bit field)."
+                                },
+                                "data": {
+                                    "type": "string",
+                                    "description": "The data the add-on attached to the item, base64 encoded. Empty when there is none."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["viewpointId", "itemType", "displayId", "displayName", "viewSettingsFlags", "data"]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["viewpoints"]
+    })";
+}
+
+GS::ObjectState GetAddOnViewpointsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> viewpointIds;
+    parameters.Get ("viewpointIds", viewpointIds);
+
+    GS::ObjectState response;
+    const auto& viewpoints = response.AddList<GS::ObjectState> ("viewpoints");
+
+    for (const GS::ObjectState& viewpointIdOS : viewpointIds) {
+        const API_Guid guid = GetGuidFromArrayItem ("viewpointId", viewpointIdOS);
+        if (guid == APINULLGuid) {
+            viewpoints (CreateErrorResponse (APIERR_BADPARS, "viewpointId is corrupt or missing."));
+            continue;
+        }
+
+        // The struct owns its data handle and disposes of it.
+        API_NavigatorAddOnViewPointData viewPointData;
+        viewPointData.guid = guid;
+        const GSErrCode err = ACAPI_Navigator_GetNavigatorVPItem (&viewPointData);
+        if (err != NoError) {
+            viewpoints (CreateErrorResponse (err, "Failed to get the add-on viewpoint."));
+            continue;
+        }
+
+        GS::UniString data;
+        if (viewPointData.data != nullptr) {
+            data = Base64Converter::Encode (*viewPointData.data, BMGetHandleSize (viewPointData.data));
+            data.DeleteAll (GS::UniChar (char ('\n')));
+        }
+
+        GS::ObjectState viewpointOS;
+        viewpointOS.Add ("viewpointId", CreateGuidObjectState (guid));
+        if (viewPointData.parentGuid != APINULLGuid) {
+            viewpointOS.Add ("parentViewpointId", CreateGuidObjectState (viewPointData.parentGuid));
+        }
+        viewpointOS.Add ("itemType",          AddOnViewpointTypeToString (viewPointData.itemType));
+        viewpointOS.Add ("displayId",         viewPointData.displayId);
+        viewpointOS.Add ("displayName",       viewPointData.displayName);
+        viewpointOS.Add ("viewSettingsFlags", static_cast<Int64> (viewPointData.viewSettingsFlags));
+        viewpointOS.Add ("data",              data);
+        viewpoints (viewpointOS);
+    }
+
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Available from Archicad 27.");
+#endif
+}
+
+// ─── Creating and changing add-on viewpoints ──────────────────────────────────
+
+#ifdef ServerMainVers_2700
+static bool AddOnViewpointTypeFromString (const GS::UniString& itemTypeStr, API_NavigatorAddOnViewPointTypeID& itemType)
+{
+    if (itemTypeStr == "Root") {
+        itemType = API_NavigatorAddOnViewPointRootID;
+    } else if (itemTypeStr == "Group") {
+        itemType = API_NavigatorAddOnViewPointGroupID;
+    } else if (itemTypeStr == "Leaf") {
+        itemType = API_NavigatorAddOnViewPointNodeID;
+    } else {
+        return false;
+    }
+    return true;
+}
+
+// Decodes standard base64 (padding optional, whitespace ignored) into a new
+// handle; an empty string gives nullptr. The caller owns the handle.
+static bool CreateHandleFromBase64 (const GS::UniString& base64, GSHandle& handle)
+{
+    handle = nullptr;
+
+    const auto base64CStr = base64.ToCStr (CC_UTF8);
+    const char* text = base64CStr.Get ();
+
+    GS::Array<char> bytes;
+    UInt32 buffer = 0;
+    Int32 bitCount = 0;
+    bool paddingReached = false;
+    for (const char* c = text; *c != '\0'; ++c) {
+        const char ch = *c;
+        if (ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n') {
+            continue;
+        }
+        if (ch == '=') {
+            paddingReached = true;
+            continue;
+        }
+        if (paddingReached) {
+            return false;
+        }
+
+        UInt32 value = 0;
+        if (ch >= 'A' && ch <= 'Z') {
+            value = static_cast<UInt32> (ch - 'A');
+        } else if (ch >= 'a' && ch <= 'z') {
+            value = static_cast<UInt32> (ch - 'a' + 26);
+        } else if (ch >= '0' && ch <= '9') {
+            value = static_cast<UInt32> (ch - '0' + 52);
+        } else if (ch == '+') {
+            value = 62;
+        } else if (ch == '/') {
+            value = 63;
+        } else {
+            return false;
+        }
+
+        buffer = ((buffer << 6) | value) & 0xFFFFFF;
+        bitCount += 6;
+        if (bitCount >= 8) {
+            bitCount -= 8;
+            bytes.Push (static_cast<char> ((buffer >> bitCount) & 0xFF));
+        }
+    }
+    // A single leftover character carries fewer than 8 bits: not valid base64.
+    if (bitCount >= 6) {
+        return false;
+    }
+
+    if (bytes.IsEmpty ()) {
+        return true;
+    }
+
+    handle = BMAllocateHandle (static_cast<GSSize> (bytes.GetSize ()), ALLOCATE_CLEAR, 0);
+    if (handle == nullptr) {
+        return false;
+    }
+    for (UIndex i = 0; i < bytes.GetSize (); ++i) {
+        (*handle)[i] = bytes[i];
+    }
+    return true;
+}
+
+// Sets the fields given in the item (displayId, displayName, viewSettingsFlags,
+// data) on viewPointData and leaves the others. Returns an error message for an
+// invalid value, an empty string otherwise.
+static GS::UniString ApplyAddOnViewpointFields (const GS::ObjectState& item, API_NavigatorAddOnViewPointData& viewPointData)
+{
+    GS::UniString displayId;
+    if (item.Get ("displayId", displayId)) {
+        viewPointData.displayId = displayId;
+    }
+
+    GS::UniString displayName;
+    if (item.Get ("displayName", displayName)) {
+        viewPointData.displayName = displayName;
+    }
+
+    Int64 viewSettingsFlags = 0;
+    if (item.Get ("viewSettingsFlags", viewSettingsFlags)) {
+        if (viewSettingsFlags < 0 || viewSettingsFlags > static_cast<Int64> (0xFFFFFFFFu)) {
+            return "viewSettingsFlags must be between 0 and 4294967295.";
+        }
+        viewPointData.viewSettingsFlags = static_cast<UInt32> (viewSettingsFlags);
+    }
+
+    GS::UniString data;
+    if (item.Get ("data", data)) {
+        GSHandle dataHandle = nullptr;
+        if (!CreateHandleFromBase64 (data, dataHandle)) {
+            return "data is not valid base64.";
+        }
+        // The struct owns its data handle and disposes of it.
+        BMKillHandle (&viewPointData.data);
+        viewPointData.data = dataHandle;
+    }
+
+    return GS::UniString ();
+}
+#endif
+
+CreateAddOnViewpointsCommand::CreateAddOnViewpointsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String CreateAddOnViewpointsCommand::GetName () const
+{
+    return "CreateAddOnViewpoints";
+}
+
+GS::Optional<GS::UniString> CreateAddOnViewpointsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "viewpoints": {
+                "type": "array",
+                "description": "The add-on viewpoint items to create. The identifier of a new root or group is only known from the response, so create the parents in an earlier call.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "itemType": {
+                            "type": "string",
+                            "description": "Whether to create a root, a group or a leaf node. Roots and groups can't be created in a Teamwork project.",
+                            "enum": ["Root", "Group", "Leaf"]
+                        },
+                        "parentViewpointId": {
+                            "type": "object",
+                            "description": "The root or group to create the item in. Required for a group or a leaf node, ignored for a root.",
+                            "properties": {
+                                "guid": { "$ref": "#/Guid" }
+                            },
+                            "additionalProperties": false,
+                            "required": ["guid"]
+                        },
+                        "displayId": {
+                            "type": "string",
+                            "description": "The ID shown for the item in the Project Map."
+                        },
+                        "displayName": {
+                            "type": "string",
+                            "description": "The name shown for the item in the Project Map."
+                        },
+                        "viewSettingsFlags": {
+                            "type": "integer",
+                            "description": "The view settings flags of a leaf node, as Archicad stores them (a bit field). Ignored for a root or a group.",
+                            "minimum": 0,
+                            "maximum": 4294967295
+                        },
+                        "data": {
+                            "type": "string",
+                            "description": "Data to attach to the item, base64 encoded."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["itemType"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["viewpoints"]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateAddOnViewpointsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "viewpoints": {
+                "type": "array",
+                "description": "The identifier of each created item, in the order of the input, or an error for an item that could not be created.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "viewpointId": {
+                                    "type": "object",
+                                    "description": "The identifier of the created add-on viewpoint item.",
+                                    "properties": {
+                                        "guid": { "$ref": "#/Guid" }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": ["guid"]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["viewpointId"]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["viewpoints"]
+    })";
+}
+
+GS::ObjectState CreateAddOnViewpointsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> items;
+    parameters.Get ("viewpoints", items);
+
+    GS::ObjectState response;
+    const auto& viewpoints = response.AddList<GS::ObjectState> ("viewpoints");
+
+    for (const GS::ObjectState& item : items) {
+        GS::UniString itemTypeStr;
+        item.Get ("itemType", itemTypeStr);
+
+        // The struct owns its data handle and disposes of it. Its guid stays
+        // APINULLGuid, so Archicad generates the guid of the new item.
+        API_NavigatorAddOnViewPointData viewPointData;
+        if (!AddOnViewpointTypeFromString (itemTypeStr, viewPointData.itemType)) {
+            viewpoints (CreateErrorResponse (APIERR_BADPARS, "itemType must be Root, Group or Leaf."));
+            continue;
+        }
+
+        if (viewPointData.itemType != API_NavigatorAddOnViewPointRootID) {
+            viewPointData.parentGuid = GetGuidFromArrayItem ("parentViewpointId", item);
+            if (viewPointData.parentGuid == APINULLGuid) {
+                viewpoints (CreateErrorResponse (APIERR_BADPARS, "parentViewpointId is corrupt or missing; a group or a leaf node needs it."));
+                continue;
+            }
+        }
+
+        const GS::UniString fieldError = ApplyAddOnViewpointFields (item, viewPointData);
+        if (!fieldError.IsEmpty ()) {
+            viewpoints (CreateErrorResponse (APIERR_BADPARS, fieldError));
+            continue;
+        }
+
+        const GSErrCode err = ACAPI_Navigator_CreateNavigatorVPItem (&viewPointData);
+        if (err == APIERR_NOACCESSRIGHT) {
+            viewpoints (CreateErrorResponse (err, "Roots and groups can't be created in a Teamwork project."));
+            continue;
+        }
+        if (err != NoError) {
+            viewpoints (CreateErrorResponse (err, "Failed to create the add-on viewpoint."));
+            continue;
+        }
+
+        viewpoints (CreateViewpointIdArrayItem (viewPointData.guid));
+    }
+
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Available from Archicad 27.");
+#endif
+}
+
+ChangeAddOnViewpointsCommand::ChangeAddOnViewpointsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String ChangeAddOnViewpointsCommand::GetName () const
+{
+    return "ChangeAddOnViewpoints";
+}
+
+GS::Optional<GS::UniString> ChangeAddOnViewpointsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "viewpoints": {
+                "type": "array",
+                "description": "The add-on viewpoint items to change. Only the given fields are changed.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "viewpointId": {
+                            "type": "object",
+                            "description": "The identifier of the add-on viewpoint item to change.",
+                            "properties": {
+                                "guid": { "$ref": "#/Guid" }
+                            },
+                            "additionalProperties": false,
+                            "required": ["guid"]
+                        },
+                        "displayId": {
+                            "type": "string",
+                            "description": "The ID shown for the item in the Project Map."
+                        },
+                        "displayName": {
+                            "type": "string",
+                            "description": "The name shown for the item in the Project Map."
+                        },
+                        "viewSettingsFlags": {
+                            "type": "integer",
+                            "description": "The view settings flags of the item, as Archicad stores them (a bit field).",
+                            "minimum": 0,
+                            "maximum": 4294967295
+                        },
+                        "data": {
+                            "type": "string",
+                            "description": "Data to attach to the item, base64 encoded. It replaces the attached data; an empty string removes it."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["viewpointId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["viewpoints"]
+    })";
+}
+
+GS::Optional<GS::UniString> ChangeAddOnViewpointsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+GS::ObjectState ChangeAddOnViewpointsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> items;
+    parameters.Get ("viewpoints", items);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& item : items) {
+        const API_Guid guid = GetGuidFromArrayItem ("viewpointId", item);
+        if (guid == APINULLGuid) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "viewpointId is corrupt or missing."));
+            continue;
+        }
+
+        // Read the item first, so the fields that are not given keep their
+        // values. The struct owns its data handle and disposes of it.
+        API_NavigatorAddOnViewPointData viewPointData;
+        viewPointData.guid = guid;
+        GSErrCode err = ACAPI_Navigator_GetNavigatorVPItem (&viewPointData);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to get the add-on viewpoint."));
+            continue;
+        }
+
+        const GS::UniString fieldError = ApplyAddOnViewpointFields (item, viewPointData);
+        if (!fieldError.IsEmpty ()) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, fieldError));
+            continue;
+        }
+
+        err = ACAPI_Navigator_ChangeNavigatorVPItem (&viewPointData);
+        if (err == APIERR_NOACCESSRIGHT) {
+            executionResults (CreateFailedExecutionResult (err, "Roots and groups can't be changed in a Teamwork project."));
+            continue;
+        }
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to change the add-on viewpoint."));
+            continue;
+        }
+
+        executionResults (CreateSuccessfulExecutionResult ());
+    }
+
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Available from Archicad 27.");
+#endif
 }

@@ -198,7 +198,7 @@
     },
     {
       "get": "flipped",
-      "set": null,
+      "set": "flipped",
       "apiMember": "API_WallType::flipped",
       "apiDescription": "If true then the wall is mirrored to the reference line. (true == APIWdir_Left or APIWdir_LCenter ; false == APIWdir_Right or APIWdir_Center in the old API_WallDirID enum).",
       "label": null,
