@@ -935,6 +935,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.8.0",
             "Gets the 2D hotspots of the given library part instances (Objects, Lamps, Windows, Doors, Skylights, Zones, Curtain Wall parts, etc.), e.g. to dimension to them."
         );
+        err |= RegisterCommand<SetMarkerLibraryPartOfElementsCommand> (
+            elementCommands, "1.8.1",
+            "Changes which library part the marker of the given Window and Door elements uses, given by its name (find the available ones with GetAvailableLibraryParts); only a marker library part for the opening's type is accepted. The marker gets the new library part's default parameters, which SetMarkerParametersOfElements can change afterwards; the opening's own settings are left as they are."
+        );
         err |= RegisterCommand<RunParameterScriptOfElementsCommand> (
             elementCommands, "1.7.3",
             "Runs the parameter script of the library part of the given elements (objects, lamps, windows, doors, etc.), so that parameter values that depend on other parameters are updated, e.g. after SetGDLParametersOfElements."
