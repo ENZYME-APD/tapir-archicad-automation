@@ -1485,6 +1485,74 @@ GS::String GetLibrariesCommand::GetName () const
     return "GetLibraries";
 }
 
+#ifdef ServerMainVers_2800
+// The Library Manager's library at the location of an API_LibraryInfo. Several
+// built-in libraries share one location, so the name decides between them; a
+// location that stays ambiguous gives nothing.
+static const ACAPI::Library::Library* FindManagerLibrary (const std::vector<ACAPI::Library::Library>& managerLibraries, const API_LibraryInfo& lib)
+{
+    const ACAPI::Library::Library* found = nullptr;
+    bool ambiguous = false;
+    for (const ACAPI::Library::Library& library : managerLibraries) {
+        auto location = library.GetLocation ();
+        if (location.IsErr () || !SameLocation (location.Unwrap (), lib.location)) {
+            continue;
+        }
+        auto name = library.GetName ();
+        if (name.IsOk () && name.Unwrap () == lib.name) {
+            return &library;
+        }
+        ambiguous = ambiguous || found != nullptr;
+        found = &library;
+    }
+    return ambiguous ? nullptr : found;
+}
+
+// The package information of a library, or nothing when it is not a package.
+// A value the API cannot read is left out.
+static GS::Optional<GS::ObjectState> GetLibraryPackage (const ACAPI::Library::Library& library)
+{
+    auto isPackage = library.IsPackage ();
+    if (isPackage.IsErr () || !isPackage.Unwrap ()) {
+        return {};
+    }
+
+    GS::ObjectState package;
+    auto packageId = library.GetPackageID ();
+    if (packageId.IsOk ()) {
+        package.Add ("packageId", packageId.Unwrap ().ToUniString ());
+    }
+    auto mainVersion = library.GetPackageMainVersion ();
+    if (mainVersion.IsOk ()) {
+        package.Add ("mainVersion", mainVersion.Unwrap ());
+    }
+    auto subVersion = library.GetPackageSubVersion ();
+    if (subVersion.IsOk ()) {
+        package.Add ("subVersion", subVersion.Unwrap ());
+    }
+    auto minArchicadVersion = library.GetPackageMinACVersion ();
+    if (minArchicadVersion.IsOk ()) {
+        package.Add ("minArchicadVersion", minArchicadVersion.Unwrap ());
+    }
+    auto minArchicadBuildNumber = library.GetPackageMinACBuildNumber ();
+    if (minArchicadBuildNumber.IsOk ()) {
+        package.Add ("minArchicadBuildNumber", minArchicadBuildNumber.Unwrap ());
+    }
+    auto dependencies = library.GetPackageDependencies ();
+    if (dependencies.IsOk ()) {
+        const auto& dependencyAdder = package.AddList<GS::ObjectState> ("dependencies");
+        for (const auto& dependency : dependencies.Unwrap ()) {
+            GS::ObjectState dependencyData;
+            dependencyData.Add ("name", std::get<0> (dependency));
+            dependencyData.Add ("packageId", std::get<1> (dependency).ToUniString ());
+            dependencyData.Add ("version", std::get<2> (dependency));
+            dependencyAdder (dependencyData);
+        }
+    }
+    return package;
+}
+#endif
+
 GS::ObjectState GetLibrariesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<API_LibraryInfo> libs;
@@ -1493,6 +1561,16 @@ GS::ObjectState GetLibrariesCommand::Execute (const GS::ObjectState& /*parameter
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to retrive libraries.");
     }
+
+#ifdef ServerMainVers_2800
+    // Package information is optional: without the Library Manager the list is
+    // returned as before.
+    std::vector<ACAPI::Library::Library> managerLibraries;
+    auto libraryManager = ACAPI::Library::GetLibraryManager ();
+    if (libraryManager.IsOk ()) {
+        managerLibraries = libraryManager->FindLibraries (ACAPI::Library::SelectAllLibraries);
+    }
+#endif
 
     GS::ObjectState response;
     const auto& listAdder = response.AddList<GS::ObjectState> ("libraries");
@@ -1539,6 +1617,15 @@ GS::ObjectState GetLibrariesCommand::Execute (const GS::ObjectState& /*parameter
         libraryData.Add ("readOnly", lib.readOnly);
         libraryData.Add ("twServerUrl", twServerUrl);
         libraryData.Add ("urlWebLibrary", urlWebLibrary);
+#ifdef ServerMainVers_2800
+        const ACAPI::Library::Library* managerLibrary = FindManagerLibrary (managerLibraries, lib);
+        if (managerLibrary != nullptr) {
+            const GS::Optional<GS::ObjectState> package = GetLibraryPackage (*managerLibrary);
+            if (package.HasValue ()) {
+                libraryData.Add ("package", *package);
+            }
+        }
+#endif
         listAdder (libraryData);
     }
 
@@ -1567,6 +1654,60 @@ GS::ObjectState ReloadLibrariesCommand::Execute (const GS::ObjectState& /*parame
     GSErrCode err = ACAPI_ProjectOperation_ReloadLibraries ();
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to reload libraries.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+CheckLibrariesCommand::CheckLibrariesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CheckLibrariesCommand::GetName () const
+{
+    return "CheckLibraries";
+}
+
+GS::Optional<GS::UniString> CheckLibrariesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState CheckLibrariesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GSErrCode err = ACAPI_LibraryManagement_CheckLibraries ();
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to check libraries.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+ResetLibrariesCommand::ResetLibrariesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ResetLibrariesCommand::GetName () const
+{
+    return "ResetLibraries";
+}
+
+GS::Optional<GS::UniString> ResetLibrariesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState ResetLibrariesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GSErrCode err = ACAPI_LibraryManagement_ResetLibraries ();
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to reset libraries.");
     }
 
     return CreateSuccessfulExecutionResult ();
@@ -1758,6 +1899,129 @@ GS::ObjectState GetAvailableLibraryPartsCommand::Execute (const GS::ObjectState&
     response.Add ("skippedCount", skippedCount);
 
     return response;
+}
+
+GetLibraryPartOriginalLocationsCommand::GetLibraryPartOriginalLocationsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetLibraryPartOriginalLocationsCommand::GetName () const
+{
+    return "GetLibraryPartOriginalLocations";
+}
+
+GS::Optional<GS::UniString> GetLibraryPartOriginalLocationsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "description": "The library parts to look up.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "index": {
+                            "type": "integer",
+                            "description": "The index of the library part, as returned by GetAvailableLibraryParts."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "index"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryParts"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetLibraryPartOriginalLocationsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "locations": {
+                "type": "array",
+                "description": "The original location of each given library part, in the order of the input.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "path": {
+                                    "type": "string",
+                                    "description": "The path of the file the library part originally came from, e.g. before it was embedded into the project."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "path"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "locations"
+        ]
+    })";
+}
+
+GS::ObjectState GetLibraryPartOriginalLocationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    Int32 partCount = 0;
+    GSErrCode err = ACAPI_LibraryPart_GetNum (&partCount);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to enumerate library parts.");
+    }
+
+    GS::Array<GS::ObjectState> libraryParts;
+    parameters.Get ("libraryParts", libraryParts);
+
+    GS::ObjectState response;
+    const auto& locationAdder = response.AddList<GS::ObjectState> ("locations");
+
+    for (const GS::ObjectState& libraryPart : libraryParts) {
+        Int32 index = 0;
+        if (!libraryPart.Get ("index", index)) {
+            locationAdder (CreateErrorResponse (APIERR_BADPARS, "index is missing."));
+            continue;
+        }
+        if (index < 1 || index > partCount) {
+            locationAdder (CreateErrorResponse (APIERR_BADINDEX, "There is no library part with the given index."));
+            continue;
+        }
+
+        IO::Location origLocation;
+        err = ACAPI_LibraryManagement_GetLibPartOrigLocation (&index, &origLocation);
+        if (err != NoError) {
+            locationAdder (CreateErrorResponse (err, "Failed to get the original location of the library part."));
+            continue;
+        }
+
+        GS::ObjectState location;
+        location.Add ("path", origLocation.ToDisplayText ());
+        locationAdder (location);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
 }
 
 IsUsableGDLStringCommand::IsUsableGDLStringCommand () :
@@ -2222,5 +2486,99 @@ GS::ObjectState SetLibraryPartMetadataCommand::Execute (const GS::ObjectState& p
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
+}
+
+OpenLibraryPartInEditorCommand::OpenLibraryPartInEditorCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String OpenLibraryPartInEditorCommand::GetName () const
+{
+    return "OpenLibraryPartInEditor";
+}
+
+GS::Optional<GS::UniString> OpenLibraryPartInEditorCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the loaded library part to open: its fileName (with extension, e.g. 'My Object.gsm') or its documentName, as returned by GetAvailableLibraryParts.",
+                "minLength": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> OpenLibraryPartInEditorCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState OpenLibraryPartInEditorCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::UniString name;
+    if (!parameters.Get ("name", name) || name.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'name' parameter.");
+    }
+
+    Int32 partCount = 0;
+    GSErrCode err = ACAPI_LibraryPart_GetNum (&partCount);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to enumerate library parts.");
+    }
+
+    // The library part is looked up among the parts GetAvailableLibraryParts lists,
+    // by its fileName or its documentName.
+    API_LibPart libPart = {};
+    bool found = false;
+    for (Int32 i = 1; i <= partCount && !found; ++i) {
+        libPart = {};
+        libPart.index = i;
+        if (ACAPI_LibraryPart_Get (&libPart) != NoError) {
+            // libPart.location is not allocated on failure.
+            continue;
+        }
+
+        found = GS::UniString (libPart.file_UName) == name || GS::UniString (libPart.docu_UName) == name;
+        if (!found) {
+            delete libPart.location;
+            libPart.location = nullptr;
+        }
+    }
+
+    if (!found) {
+        return CreateFailedExecutionResult (APIERR_BADPARS,"No loaded library part with the name '" + name + "'. Use the fileName or documentName returned by GetAvailableLibraryParts.");
+    }
+
+    // Archicad tries the document name first, then the file at the location.
+    API_OpenLibPartInfo openLibPartInfo = {};
+    openLibPartInfo.libPartLoc = libPart.location;
+    openLibPartInfo.docName = libPart.docu_UName;
+    openLibPartInfo.debugGDL = false;
+
+    err = ACAPI_LibraryManagement_OpenLibraryPart (&openLibPartInfo);
+
+    delete libPart.location;
+    libPart.location = nullptr;
+
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to open the library part '" + name + "' in the library part editor.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
 #endif
 }

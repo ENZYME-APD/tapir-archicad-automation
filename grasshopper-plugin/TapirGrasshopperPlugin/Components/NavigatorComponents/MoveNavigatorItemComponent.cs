@@ -1,6 +1,8 @@
 ﻿using Grasshopper.Kernel;
+using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Generic;
 using TapirGrasshopperPlugin.Types.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
@@ -12,9 +14,8 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         public MoveNavigatorItem()
             : base(
                 "MoveNavigatorItem",
-                "Moves the given navigator item under the parentNavigatorItemId in the navigator tree. " +
-                "If previousNavigatorItemId is not given then inserts it at the first place under the new parent. " +
-                "If it is given then inserts it after this navigator item.",
+                "Moves a navigator item to a new parent in the navigator tree, or to a new position within its " +
+                "current parent. Fails when Archicad does not put the item where it was asked to.",
                 GroupNames.Navigator)
         {
         }
@@ -23,18 +24,26 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         {
             InGeneric(
                 "NavigatorItemIds",
-                "Identifier of navigator items to move.");
+                "Identifier of the navigator item to move.");
 
             InGeneric(
                 "ParentNavigatorItemId",
-                "Moves the given navigator item under the parentNavigatorItemId in the navigator tree.");
+                "The new parent of the item. It can be the item's current parent, to change the order of the " +
+                "items in it.");
 
             InGeneric(
                 "PreviousNavigatorItemId",
-                "Moves the given navigator item after this navigator item. " +
-                "By default it moves it at the first place under the new parent.");
+                "Optional child of ParentNavigatorItemId that the item is placed right after. Without it an " +
+                "item moved within its own parent goes to the end of it.");
 
             SetOptionality(2);
+        }
+
+        protected override void AddOutputs()
+        {
+            OutText(
+                nameof(ExecutionResult.Message),
+                ExecutionResult.Doc);
         }
 
         protected override void Solve(
@@ -61,15 +70,36 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 previousNavigatorItemId = null;
             }
 
-            SetCadValues(
-                CommandName,
-                new
-                {
-                    navigatorItemIdToMove,
-                    parentNavigatorItemId,
-                    previousNavigatorItemId
-                },
-                ToArchicad);
+            var parameters = new JObject
+            {
+                ["navigatorItemIdToMove"] = JObject.FromObject(navigatorItemIdToMove),
+                ["parentNavigatorItemId"] = JObject.FromObject(parentNavigatorItemId)
+            };
+
+            if (previousNavigatorItemId != null)
+            {
+                parameters["previousNavigatorItemId"] =
+                    JObject.FromObject(previousNavigatorItemId);
+            }
+
+            if (!TryGetConvertedCadValues(
+                    CommandName,
+                    parameters,
+                    ToAddOn,
+                    ExecutionResult.Deserialize,
+                    out ExecutionResult response))
+            {
+                return;
+            }
+
+            if (!response.Success)
+            {
+                this.AddError(response.Message());
+            }
+
+            da.SetData(
+                0,
+                response.Message());
         }
 
         protected override System.Drawing.Bitmap Icon =>

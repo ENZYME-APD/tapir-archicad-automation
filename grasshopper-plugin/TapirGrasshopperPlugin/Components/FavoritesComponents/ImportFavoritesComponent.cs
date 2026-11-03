@@ -22,7 +22,8 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
         {
             InText(
                 "Path",
-                "Absolute path on the Archicad host to a Favorites file (.prefs) or folder.");
+                "Absolute path on the Archicad host to a Favorites file (.prefs) or folder; with the xml " +
+                "Format the folder of Favorite files, with legacyPRF the .prf file.");
 
             InTexts(
                 "TargetFolder",
@@ -35,9 +36,21 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
 
             InText(
                 "ConflictPolicy",
-                "How to resolve name conflicts: Error, Skip, Overwrite or Append. Default Overwrite.");
+                "How to resolve name conflicts. The prefs format takes Error, Skip, Overwrite or Append, " +
+                "default Overwrite. The xml and legacyPRF formats take Error, Skip, OverwriteExisting or " +
+                "RenameNew, default Error.");
 
-            SetOptionality(new[] { 1, 2, 3 });
+            InText(
+                "Format",
+                "prefs (default), xml (a folder of Favorite files, as ExportFavorites writes it) or " +
+                "legacyPRF (a .prf file). xml and legacyPRF require Archicad 29 or newer; with them an " +
+                "empty TargetFolder keeps the folders stored with the Favorites.");
+
+            InTexts(
+                "FileNames",
+                "Only with the xml format: the Favorite files of the folder to import. Empty = all of them.");
+
+            SetOptionality(new[] { 1, 2, 3, 4, 5 });
         }
 
         protected override void AddOutputs()
@@ -83,6 +96,22 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
                 !string.IsNullOrEmpty(conflictPolicy))
             {
                 input.ConflictPolicy = conflictPolicy;
+            }
+
+            if (da.TryGet(
+                    4,
+                    out string format) &&
+                !string.IsNullOrEmpty(format))
+            {
+                input.Format = format;
+            }
+
+            if (da.TryGetList(
+                    5,
+                    out List<string> fileNames) &&
+                fileNames.Count > 0)
+            {
+                input.FileNames = fileNames;
             }
 
             if (!TryGetCadResponse(

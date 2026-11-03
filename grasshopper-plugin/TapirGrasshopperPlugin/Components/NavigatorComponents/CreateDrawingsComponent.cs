@@ -49,7 +49,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
             InGenericTree(
                 "ClipPolygons",
-                "Clip polygon points for each drawing (one branch per drawing, at least 3 points; empty branch = no clipping). Optional.");
+                "Clip polygon points for each drawing, in layout coordinates like Position (one branch per drawing, at least 3 points; empty branch = no clipping). Optional.");
 
             InTexts(
                 "NameTypes",

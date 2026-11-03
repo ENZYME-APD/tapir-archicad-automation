@@ -1,36 +1,19 @@
 pushd %~dp0
-python download_and_unzip.py https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/25.3002/API.Development.Kit.WIN.25.3002.zip ..\Build\DevKits\AC25
-python download_and_unzip.py https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/26.3000/API.Development.Kit.WIN.26.3000.zip ..\Build\DevKits\AC26
-python download_and_unzip.py https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/27.3001/API.Development.Kit.WIN.27.3001.zip ..\Build\DevKits\AC27
-python download_and_unzip.py https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/28.3001/API.Development.Kit.WIN.28.3001.zip ..\Build\DevKits\AC28
-python download_and_unzip.py https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/29.3000/API.Development.Kit.WIN.29.3000.zip ..\Build\DevKits\AC29
-python download_and_unzip.py https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/30.3000/API.Development.Kit.WIN.30.3000.zip ..\Build\DevKits\AC30
-
-cmake -B ../Build/AC25 -G "Visual Studio 18 2026" -A "x64" -T "v142" -DAC_VERSION=25 -DAC_API_DEVKIT_DIR="..\Build\DevKits\AC25\Support" .. || goto :error
-cmake --build ../Build/AC25 --config Debug || goto :error
-cmake --build ../Build/AC25 --config RelWithDebInfo || goto :error
-
-cmake -B ../Build/AC26 -G "Visual Studio 18 2026" -A "x64" -T "v142" -DAC_VERSION=26 -DAC_API_DEVKIT_DIR="..\Build\DevKits\AC26\Support" .. || goto :error
-cmake --build ../Build/AC26 --config Debug || goto :error
-cmake --build ../Build/AC26 --config RelWithDebInfo || goto :error
-
-cmake -B ../Build/AC27 -G "Visual Studio 18 2026" -A "x64" -T "v142" -DAC_VERSION=27 -DAC_API_DEVKIT_DIR="..\Build\DevKits\AC27\Support" .. || goto :error
-cmake --build ../Build/AC27 --config Debug || goto :error
-cmake --build ../Build/AC27 --config RelWithDebInfo || goto :error
-
-cmake -B ../Build/AC28 -G "Visual Studio 18 2026" -A "x64" -T "v142" -DAC_VERSION=28 -DAC_API_DEVKIT_DIR="..\Build\DevKits\AC28\Support" .. || goto :error
-cmake --build ../Build/AC28 --config Debug || goto :error
-cmake --build ../Build/AC28 --config RelWithDebInfo || goto :error
-
-cmake -B ../Build/AC29 -G "Visual Studio 18 2026" -A "x64" -T "v143" -DAC_VERSION=29 -DAC_API_DEVKIT_DIR="..\Build\DevKits\AC29\Support" .. || goto :error
-cmake --build ../Build/AC29 --config Debug || goto :error
-cmake --build ../Build/AC29 --config RelWithDebInfo || goto :error
-
-cmake -B ../Build/AC30 -G "Visual Studio 18 2026" -A "x64" -T "v143" -DAC_VERSION=30 -DAC_API_DEVKIT_DIR="..\Build\DevKits\AC30\Support" .. || goto :error
-cmake --build ../Build/AC30 --config Debug || goto :error
-cmake --build ../Build/AC30 --config RelWithDebInfo || goto :error
+rem Every Archicad version in ..\devkits.json, as "<version> <DevKit URL>" lines.
+for /f "tokens=1,2" %%a in ('python ..\..\tools\devkits.py lines WIN') do (
+    call :build %%a %%b || goto :error
+)
 
 popd
+exit /b 0
+
+:build
+python download_and_unzip.py %2 ..\Build\DevKits\AC%1 || exit /b 1
+set toolset=v143
+if %1 LSS 29 set toolset=v142
+cmake -B ../Build/AC%1 -G "Visual Studio 18 2026" -A "x64" -T "%toolset%" -DAC_VERSION=%1 -DAC_API_DEVKIT_DIR="..\Build\DevKits\AC%1\Support" .. || exit /b 1
+cmake --build ../Build/AC%1 --config Debug || exit /b 1
+cmake --build ../Build/AC%1 --config RelWithDebInfo || exit /b 1
 exit /b 0
 
 :error
