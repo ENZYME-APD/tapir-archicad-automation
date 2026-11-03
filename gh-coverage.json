@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-03 18:48 UTC",
+ "generatedAt": "2026-11-03 19:14 UTC",
  "counts": {
   "done": 564,
   "open": 85,
@@ -13606,12 +13606,7 @@
     "navigatorItemIds"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1113,
-     "title": "Add Get/SetDesignOptionCombinationOfViews commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13636,12 +13631,7 @@
     "navigatorItemIdsWithCombination.navigatorItemId"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1113,
-     "title": "Add Get/SetDesignOptionCombinationOfViews commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {

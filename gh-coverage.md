@@ -34,7 +34,7 @@ Parameters of the 576 used commands: 🟢 526 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-03 18:48 UTC.
+Updated 2026-11-03 19:14 UTC.
 
 | | Status |
 |---|---|
@@ -658,8 +658,8 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `ReorderDesignOptionsInSet` 🟢 3/3 parameters – `ReorderDesignOptionsInSetComponent`
 - ✅ `CanMoveElementsToDesignOptions` 🟢 1/1 parameters – `CanMoveElementsToDesignOptionsComponent`
 - ✅ `DuplicateDesignOptionCombinations` 🟢 1/1 parameters – `DuplicateDesignOptionCombinationsComponent`
-- 🔀 `GetDesignOptionCombinationOfViews` 🟢 1/1 parameters – `GetDesignOptionCombinationOfViewsComponent` — [#1113](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1113 "Add Get/SetDesignOptionCombinationOfViews commands")
-- 🔀 `SetDesignOptionCombinationOfViews` 🟢 4/4 parameters – `SetDesignOptionCombinationOfViewsComponent` — [#1113](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1113 "Add Get/SetDesignOptionCombinationOfViews commands")
+- 🔀 `GetDesignOptionCombinationOfViews` 🟢 1/1 parameters – `GetDesignOptionCombinationOfViewsComponent`
+- 🔀 `SetDesignOptionCombinationOfViews` 🟢 4/4 parameters – `SetDesignOptionCombinationOfViewsComponent`
 - ⬜ `GetHotlinkDesignOptionTableDetails`
 
 ## Keynote Commands
