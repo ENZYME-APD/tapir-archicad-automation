@@ -1440,6 +1440,10 @@ GSErrCode Initialize (void)
             propertyCommands, "1.8.0",
             "Sets built-in property values of attributes, writing the values of each attribute together. Custom properties are refused; set them with SetPropertyValuesOfAttributes. Returns one execution result per value."
         );
+        err |= RegisterCommand<SetPropertyValueOfAttributesCommand> (
+            propertyCommands, "1.8.1",
+            "Sets one property value on several attributes (for example Building Materials) in one undo step. If the property is not available for any of the given attributes, no attribute is changed."
+        );
         err |= RegisterCommand<GetPropertyDefinitionsOfAttributesCommand> (
             propertyCommands, "1.7.3",
             "Returns the property definitions of the given attributes (for example Building Materials): the user defined, the fundamental built-in, or all of them."
