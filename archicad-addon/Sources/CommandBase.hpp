@@ -50,6 +50,8 @@ GS::ObjectState CreateFailedExecutionResult (GSErrCode errorCode, const GS::UniS
 GS::ObjectState CreateFailedExecutionResult (const GS::ObjectState& errorResponse);
 GS::ObjectState CreateSuccessfulExecutionResult ();
 GS::UniString DescribeDefinitionChangeError (GSErrCode err);
+// One of "Free", "Editable", "Locked", "NotAvailable", "NotExist".
+const char* LockableStatusToString (API_LockableStatus status);
 
 // Adds {"guid": ...} to `list` for every guid in `from` that is not in `minus`. The import
 // commands use it to report what an import created and removed.
