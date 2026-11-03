@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-03 03:04 UTC",
+ "generatedAt": "2026-11-03 08:37 UTC",
  "versions": [
   25,
   26,
@@ -12,8 +12,9 @@
   "not applicable": 627,
   "done": 1868,
   "claimed": 50,
-  "in progress": 263,
-  "open": 69,
+  "in progress": 248,
+  "open": 70,
+  "merged": 14,
   "skipped": 2
  },
  "items": [
@@ -928,12 +929,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -954,12 +950,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1006,12 +997,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1032,12 +1018,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1084,12 +1065,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1110,12 +1086,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1136,12 +1107,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1162,12 +1128,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1188,12 +1149,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1214,12 +1170,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1240,12 +1191,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1323,12 +1269,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1368,12 +1309,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1394,12 +1330,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1420,12 +1351,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1446,12 +1372,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1474,12 +1395,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1525,12 +1441,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1553,12 +1464,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1581,12 +1487,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1693,12 +1594,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1721,12 +1617,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1749,12 +1640,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1777,12 +1663,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1828,12 +1709,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1856,12 +1732,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1884,12 +1755,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1912,12 +1778,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1940,12 +1801,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1968,12 +1824,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2065,12 +1916,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2093,12 +1939,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2190,12 +2031,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2218,12 +2054,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2414,12 +2245,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2598,12 +2424,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2797,12 +2618,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2890,12 +2706,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2918,12 +2729,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2944,12 +2750,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3192,10 +2993,6 @@
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
     },
     {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    },
-    {
      "number": 916,
      "title": "Add ActivateLayerCombination command and Grasshopper component"
     },
@@ -3300,12 +3097,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3471,10 +3263,6 @@
     {
      "number": 1026,
      "title": "[3/4] Add folderPath to GetAttributesByType"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -3597,10 +3385,6 @@
     {
      "number": 1365,
      "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -3644,12 +3428,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3691,12 +3470,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3717,12 +3491,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3743,12 +3512,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3769,12 +3533,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3923,12 +3682,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4034,12 +3788,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4118,12 +3867,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4643,10 +4387,6 @@
      "title": "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30"
     },
     {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    },
-    {
      "number": 1010,
      "title": "[2/3] Project Info fields on Archicad 30: rename and move fields, create in a group, delete by field id"
     },
@@ -4657,10 +4397,6 @@
     {
      "number": 968,
      "title": "[1/3] Add Get/SetPropertyValuesOfElementDefaults"
-    },
-    {
-     "number": 912,
-     "title": "Add ElevateElements command (vertical move)"
     }
    ],
    "issues": [
@@ -4968,12 +4704,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5015,12 +4746,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5041,12 +4767,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5092,10 +4813,6 @@
     {
      "number": 1052,
      "title": "Graphic override criterion: library part element types, new fields and operators (on top of #994)"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -5467,10 +5184,6 @@
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
     },
     {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
@@ -5589,10 +5302,6 @@
      "title": "Add Get2DBoundingBoxes: 2D boxes of texts, hatches, drawings and polylines on any database"
     },
     {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    },
-    {
      "number": 900,
      "title": "UpdateZones: optional list of Zones to update instead of the current selection"
     }
@@ -5643,10 +5352,6 @@
     {
      "number": 1489,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     },
     {
      "number": 900,
@@ -6054,12 +5759,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6105,12 +5805,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -6526,10 +6221,6 @@
     {
      "number": 1086,
      "title": "Add GetCalculatedParametersOfCurtainWallSubElements (ACAPI_CurtainWall_GetCWSubElemParams)"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -6678,10 +6369,6 @@
     {
      "number": 1237,
      "title": "Add ReadFavoritesFile command (ACAPI_Favorite_Read)"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     },
     {
      "number": 995,
@@ -6944,12 +6631,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6995,10 +6677,6 @@
     {
      "number": 1509,
      "title": "[4/6] Add GetDrawingPrimitivesOfElements"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": [
@@ -7028,12 +6706,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7149,12 +6822,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7200,12 +6868,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7452,12 +7115,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7499,12 +7157,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7525,12 +7178,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7555,10 +7203,6 @@
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -7793,16 +7437,8 @@
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
     },
     {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
-    },
-    {
-     "number": 918,
-     "title": "Add the ModifyOpenings command"
     },
     {
      "number": 834,
@@ -7848,12 +7484,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8006,12 +7637,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8088,10 +7714,6 @@
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": [
@@ -8129,16 +7751,8 @@
      "title": "CreateMorphs, ModifyMorphs: say when the morph's layer is hidden"
     },
     {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    },
-    {
      "number": 827,
      "title": "CreateZones refuses an overlapping zone instead of opening the modal warning (#822)"
-    },
-    {
-     "number": 750,
-     "title": "CreateStairs: pin an explicit treadDepth in the stair rules so it takes effect"
     }
    ],
    "issues": [
@@ -8153,10 +7767,6 @@
     {
      "number": 567,
      "title": "CreateAssociativeDimensionsOnSection still returns ghost GUIDs: the #512 guard was not applied to it (Interior Elevation, 1.5.8)"
-    },
-    {
-     "number": 425,
-     "title": "CreateStairs: stepNum / treadDepth / riserHeight are ignored — run length is fixed regardless of parameters"
     }
    ]
   },
@@ -8252,10 +7862,6 @@
     {
      "number": 1711,
      "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -8344,10 +7950,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 912,
-     "title": "Add ElevateElements command (vertical move)"
-    },
     {
      "number": 900,
      "title": "UpdateZones: optional list of Zones to update instead of the current selection"
@@ -8447,10 +8049,6 @@
      "title": "SetDetailsOfElements: say why Archicad refused the element (hidden or locked layer)"
     },
     {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    },
-    {
      "number": 900,
      "title": "UpdateZones: optional list of Zones to update instead of the current selection"
     }
@@ -8537,16 +8135,8 @@
      "title": "Add GetCalculatedParametersOfCurtainWallSubElements (ACAPI_CurtainWall_GetCWSubElemParams)"
     },
     {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
-    },
-    {
-     "number": 918,
-     "title": "Add the ModifyOpenings command"
     },
     {
      "number": 827,
@@ -8611,12 +8201,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8879,12 +8464,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9078,12 +8658,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9208,14 +8783,6 @@
     {
      "number": 1032,
      "title": "[2/4] Add GetHotspotsOfElements: the hotspots of elements with their neig kind and subindex"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    },
-    {
-     "number": 954,
-     "title": "Add Get3DStyles and ShowElementsIn3D commands"
     }
    ],
    "issues": []
@@ -9272,10 +8839,6 @@
     {
      "number": 1281,
      "title": "Add GetRoofPlanes: the single planes of multi-plane roofs"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     },
     {
      "number": 463,
@@ -9425,12 +8988,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9737,12 +9295,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9765,12 +9318,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9791,12 +9339,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9840,12 +9383,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9891,10 +9429,6 @@
     {
      "number": 1019,
      "title": "Add element component commands: list components and read their properties"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     },
     {
      "number": 968,
@@ -10060,12 +9594,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10086,12 +9615,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10112,12 +9636,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10164,12 +9683,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10213,12 +9727,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10455,12 +9964,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10544,12 +10048,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10612,12 +10111,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10638,12 +10132,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -10915,10 +10404,6 @@
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": [
@@ -10993,12 +10478,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11441,12 +10921,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11478,10 +10953,6 @@
     {
      "number": 1510,
      "title": "[3/6] Create elements from analytical members"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -12105,12 +11576,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12133,12 +11599,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12184,12 +11645,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12208,12 +11664,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12232,12 +11683,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1268,
@@ -12265,12 +11711,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12364,12 +11805,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12392,12 +11828,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12420,12 +11851,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12442,12 +11868,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12470,12 +11891,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13416,12 +12832,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13524,10 +12935,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    },
-    {
      "number": 834,
      "title": "SetGDLParametersOfElements: reject the mirrored size parameters of curtain wall frames"
     }
@@ -13624,12 +13031,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13780,10 +13182,6 @@
     {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -13808,12 +13206,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14158,10 +13551,6 @@
     {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -14234,10 +13623,6 @@
     {
      "number": 1234,
      "title": "Add GetGDLParametersOfLibraryParts: default GDL parameters of a library part"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -14466,12 +13851,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14663,10 +14043,6 @@
     {
      "number": 1234,
      "title": "Add GetGDLParametersOfLibraryParts: default GDL parameters of a library part"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": [
@@ -16263,10 +15639,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    },
-    {
      "number": 765,
      "title": "RenameNavigatorItem: set a view's ID with newId and fail when the ID is kept"
     }
@@ -16324,10 +15696,6 @@
     {
      "number": 1419,
      "title": "Navigator: name the refused item type on delete, verify MoveNavigatorItem's position"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -16364,10 +15732,6 @@
     {
      "number": 1419,
      "title": "Navigator: name the refused item type on delete, verify MoveNavigatorItem's position"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     },
     {
      "number": 765,
@@ -16429,12 +15793,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16600,12 +15959,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16787,12 +16141,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16846,10 +16195,6 @@
     {
      "number": 1419,
      "title": "Navigator: name the refused item type on delete, verify MoveNavigatorItem's position"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": [
@@ -18132,12 +17477,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18160,12 +17500,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18188,12 +17523,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18216,12 +17546,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18326,10 +17651,6 @@
     {
      "number": 1518,
      "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -18508,10 +17829,6 @@
      "title": "SetStories: set every story's level directly with SetElevation"
     },
     {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    },
-    {
      "number": 900,
      "title": "UpdateZones: optional list of Zones to update instead of the current selection"
     }
@@ -18687,10 +18004,6 @@
     {
      "number": 1634,
      "title": "IFCFileOperation: storyIndex for merge, so the IFC's storeys no longer follow the active story (#1616)"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     },
     {
      "number": 900,
@@ -18972,10 +18285,6 @@
      "title": "[1/4] Add CheckPropertyExpressions and GetPropertyExpressionReferences"
     },
     {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    },
-    {
      "number": 968,
      "title": "[1/3] Add Get/SetPropertyValuesOfElementDefaults"
     }
@@ -19110,10 +18419,6 @@
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -19224,12 +18529,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1145,
@@ -19313,10 +18613,6 @@
     {
      "number": 1147,
      "title": "[2/4] Add CheckPropertyValues command (ACAPI_Property_IsValidValue)"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     },
     {
      "number": 968,
@@ -19744,12 +19040,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20000,7 +19291,7 @@
    "olderNames": [
     "ACAPI_Element_DeselectAll"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -20014,10 +19305,6 @@
     {
      "number": 963,
      "title": "[1/2] Add the DeselectAll, GetMarquee and SetMarquee commands"
-    },
-    {
-     "number": 954,
-     "title": "Add Get3DStyles and ShowElementsIn3D commands"
     }
    ],
    "issues": []
@@ -20080,12 +19367,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20112,10 +19394,6 @@
     {
      "number": 1706,
      "title": "UpdateZones: optional list of the Zones to update"
-    },
-    {
-     "number": 954,
-     "title": "Add Get3DStyles and ShowElementsIn3D commands"
     },
     {
      "number": 900,
@@ -20513,12 +19791,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20541,12 +19814,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20620,12 +19888,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 791,
@@ -20653,12 +19916,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20681,12 +19939,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20709,12 +19962,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20861,12 +20109,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20975,12 +20218,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -21121,12 +20359,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -21455,12 +20688,7 @@
    ],
    "status": "not applicable",
    "reason": "interactive input from the user",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -21506,12 +20734,7 @@
    ],
    "status": "not applicable",
    "reason": "interactive input from the user",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -21557,12 +20780,7 @@
    ],
    "status": "not applicable",
    "reason": "interactive input from the user",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -21585,12 +20803,7 @@
    ],
    "status": "not applicable",
    "reason": "interactive input from the user",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -21732,12 +20945,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 876,
@@ -21826,12 +21034,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -21854,12 +21057,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -21905,12 +21103,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -22039,12 +21232,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -22122,12 +21310,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 876,
@@ -22216,12 +21399,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -22242,14 +21420,9 @@
    "olderNames": [
     "APIEnv_Get3DStyleListID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 954,
-     "title": "Add Get3DStyles and ShowElementsIn3D commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -22272,12 +21445,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -22316,12 +21484,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -22482,12 +21645,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -22729,14 +21887,9 @@
     "APIDo_ShowAllIn3DID",
     "APIIo_ShowAllIn3DID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 954,
-     "title": "Add Get3DStyles and ShowElementsIn3D commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -22758,14 +21911,9 @@
     "APIDo_ShowSelectionIn3DID",
     "APIIo_ShowSelectionIn3DID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 954,
-     "title": "Add Get3DStyles and ShowElementsIn3D commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -22937,10 +22085,6 @@
      "title": "IFCFileOperation: storyIndex for merge, so the IFC's storeys no longer follow the active story (#1616)"
     },
     {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
@@ -22990,12 +22134,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -23050,10 +22189,6 @@
     {
      "number": 1634,
      "title": "IFCFileOperation: storyIndex for merge, so the IFC's storeys no longer follow the active story (#1616)"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -23102,10 +22237,6 @@
     {
      "number": 1489,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     },
     {
      "number": 995,
@@ -23413,12 +22544,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -23435,12 +22561,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -23482,12 +22603,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -23503,12 +22619,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -23563,10 +22674,6 @@
     {
      "number": 1004,
      "title": "Let PhotoRender set the image size and resolution, report the current rendering scene"
-    },
-    {
-     "number": 954,
-     "title": "Add Get3DStyles and ShowElementsIn3D commands"
     }
    ],
    "issues": [
@@ -23589,12 +22696,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -23610,12 +22712,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -23631,12 +22728,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -23652,12 +22744,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24246,10 +23333,6 @@
     {
      "number": 1004,
      "title": "Let PhotoRender set the image size and resolution, report the current rendering scene"
-    },
-    {
-     "number": 954,
-     "title": "Add Get3DStyles and ShowElementsIn3D commands"
     },
     {
      "number": 916,
@@ -25205,12 +24288,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1145,
@@ -25231,12 +24309,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1145,
@@ -26270,10 +25343,6 @@
     {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -26382,12 +25451,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -26405,12 +25469,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -26428,12 +25487,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -26451,12 +25505,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -26474,12 +25523,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -26503,10 +25547,6 @@
     {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -26536,10 +25576,6 @@
     {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -26730,10 +25766,6 @@
     {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -26760,10 +25792,6 @@
     {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -26811,10 +25839,6 @@
     {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -26910,10 +25934,6 @@
     {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -26945,10 +25965,6 @@
     {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -27190,12 +26206,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27280,12 +26291,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27353,12 +26359,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27392,12 +26393,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27475,10 +26471,6 @@
     {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -27497,12 +26489,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27628,10 +26615,6 @@
     {
      "number": 1518,
      "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -27650,12 +26633,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27689,12 +26667,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27711,12 +26684,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27750,12 +26718,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27807,10 +26770,6 @@
     {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -27841,10 +26800,6 @@
     {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -27901,10 +26856,6 @@
     {
      "number": 1518,
      "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -28308,12 +27259,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -29272,20 +28218,8 @@
      "title": "Graphic override criterion: library part element types, new fields and operators (on top of #994)"
     },
     {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
-    },
-    {
-     "number": 918,
-     "title": "Add the ModifyOpenings command"
-    },
-    {
-     "number": 750,
-     "title": "CreateStairs: pin an explicit treadDepth in the stair rules so it takes effect"
     },
     {
      "number": 463,
@@ -30621,12 +29555,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30645,12 +29574,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30785,12 +29709,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30969,20 +29888,12 @@
      "title": "Add element component commands: list components and read their properties"
     },
     {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    },
-    {
      "number": 968,
      "title": "[1/3] Add Get/SetPropertyValuesOfElementDefaults"
     },
     {
      "number": 963,
      "title": "[1/2] Add the DeselectAll, GetMarquee and SetMarquee commands"
-    },
-    {
-     "number": 912,
-     "title": "Add ElevateElements command (vertical move)"
     }
    ],
    "issues": []
@@ -30999,14 +29910,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "open",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31023,12 +29929,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31115,10 +30016,6 @@
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -31141,10 +30038,6 @@
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": [
@@ -31180,10 +30073,6 @@
     {
      "number": 1237,
      "title": "Add ReadFavoritesFile command (ACAPI_Favorite_Read)"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": [
@@ -31207,12 +30096,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31260,10 +30144,6 @@
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": [
@@ -31287,12 +30167,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31313,10 +30188,6 @@
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -31335,12 +30206,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31357,12 +30223,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31450,12 +30311,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31472,12 +30328,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31494,12 +30345,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31520,10 +30366,6 @@
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -31542,12 +30384,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31564,12 +30401,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1231,
@@ -31591,12 +30423,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31613,12 +30440,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31635,12 +30457,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31679,12 +30496,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31749,10 +30561,6 @@
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -31796,12 +30604,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31889,12 +30692,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -34779,10 +33577,6 @@
      "title": "Add GetCalculatedParametersOfCurtainWallSubElements (ACAPI_CurtainWall_GetCWSubElemParams)"
     },
     {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    },
-    {
      "number": 916,
      "title": "Add ActivateLayerCombination command and Grasshopper component"
     }
@@ -35889,12 +34683,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35912,12 +34701,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35934,12 +34718,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35957,12 +34736,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35980,12 +34754,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36002,12 +34771,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36024,12 +34788,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36046,12 +34805,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36069,12 +34823,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36091,12 +34840,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36113,12 +34857,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36134,12 +34873,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36155,12 +34889,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36176,12 +34905,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36197,12 +34921,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36637,10 +35356,6 @@
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    },
-    {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
     },
     {
      "number": 1537,
@@ -44577,6 +43292,10 @@
      "title": "Dimensions: add textFrame to the dimension creation commands"
     },
     {
+     "number": 1574,
+     "title": "Set3DProjectionSettings: set an axonometry as well as a perspective"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -44657,10 +43376,6 @@
      "title": "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30"
     },
     {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    },
-    {
      "number": 1010,
      "title": "[2/3] Project Info fields on Archicad 30: rename and move fields, create in a group, delete by field id"
     },
@@ -44673,20 +43388,8 @@
      "title": "[1/2] Add the DeselectAll, GetMarquee and SetMarquee commands"
     },
     {
-     "number": 954,
-     "title": "Add Get3DStyles and ShowElementsIn3D commands"
-    },
-    {
-     "number": 918,
-     "title": "Add the ModifyOpenings command"
-    },
-    {
      "number": 916,
      "title": "Add ActivateLayerCombination command and Grasshopper component"
-    },
-    {
-     "number": 912,
-     "title": "Add ElevateElements command (vertical move)"
     },
     {
      "number": 900,
@@ -44695,10 +43398,6 @@
     {
      "number": 827,
      "title": "CreateZones refuses an overlapping zone instead of opening the modal warning (#822)"
-    },
-    {
-     "number": 750,
-     "title": "CreateStairs: pin an explicit treadDepth in the stair rules so it takes effect"
     },
     {
      "number": 463,
@@ -52828,10 +51527,6 @@
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    },
-    {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
@@ -57223,10 +55918,6 @@
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    },
-    {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
@@ -59243,10 +57934,6 @@
     {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -63986,10 +62673,6 @@
      "title": "CreateOpenings: put the bottom edge on basePoint.z on every Archicad 29 build"
     },
     {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    },
-    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -64040,10 +62723,6 @@
     {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -64349,14 +63028,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -64377,14 +63051,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -64405,14 +63074,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -64457,10 +63121,6 @@
      "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"
     },
     {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    },
-    {
      "number": 1510,
      "title": "[3/6] Create elements from analytical members"
     },
@@ -64499,10 +63159,6 @@
     {
      "number": 1019,
      "title": "Add element component commands: list components and read their properties"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     },
     {
      "number": 968,
@@ -64671,14 +63327,6 @@
     {
      "number": 1636,
      "title": "Add GetClassificationSystems command"
-    },
-    {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    },
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": [
@@ -64817,12 +63465,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1306,
@@ -64908,12 +63551,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -65328,12 +63966,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -65349,14 +63982,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -65395,14 +64023,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -65423,14 +64046,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -65471,12 +64089,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -65492,14 +64105,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -65540,12 +64148,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -65563,12 +64166,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -65584,14 +64182,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -65630,14 +64223,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -65664,10 +64252,6 @@
     {
      "number": 1641,
      "title": "SetPropertyValueOfAttributes, clearer results of SetPropertyValuesOfAttributes (replaces #1365)"
-    },
-    {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
     },
     {
      "number": 1537,
@@ -65766,10 +64350,6 @@
      "title": "Add element component commands: list components and read their properties"
     },
     {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    },
-    {
      "number": 968,
      "title": "[1/3] Add Get/SetPropertyValuesOfElementDefaults"
     }
@@ -65809,12 +64389,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -66186,14 +64761,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1542,
-     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,

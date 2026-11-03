@@ -1,13 +1,14 @@
 {
- "generatedAt": "2026-11-03 03:04 UTC",
+ "generatedAt": "2026-11-03 08:37 UTC",
  "counts": {
   "done": 563,
-  "open": 70,
+  "open": 72,
   "in progress": 7,
+  "merged": 4,
   "not applicable": 1
  },
  "parameters": {
-  "all": 514,
+  "all": 518,
   "partial": 4,
   "json": 45
  },
@@ -1295,12 +1296,7 @@
     "newAndReset"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1440,12 +1436,7 @@
     "source"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1547,12 +1538,7 @@
     "name"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2347,13 +2333,12 @@
     "fields"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
+    {
+     "number": 1736,
+     "title": "Walls / Walls_API GH components: every element fails with \"elementId is missing\""
+    },
     {
      "number": 639,
      "title": "Feature request for GetDetailsOfElements"
@@ -2406,13 +2391,13 @@
     "elementsWithDetails.elementId"
    ],
    "missingParameters": [],
-   "pullRequests": [
+   "pullRequests": [],
+   "issues": [
     {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+     "number": 1736,
+     "title": "Walls / Walls_API GH components: every element fails with \"elementId is missing\""
     }
-   ],
-   "issues": []
+   ]
   },
   {
    "id": "SetElementInfoStrings",
@@ -2704,12 +2689,7 @@
     "z"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2883,12 +2863,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3239,12 +3214,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3493,6 +3463,31 @@
    "issues": []
   },
   {
+   "id": "ElevateElements",
+   "group": "Element Commands",
+   "version": "1.7.4",
+   "brief": "Moves elements vertically by a given offset in meters, like Edit > Move > Elevate. An element that cannot be edited (its layer is hidden or locked, it is locked, or it is not available in teamwork) gets a failed execution result naming the reason instead of being skipped silently.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "ElevateElementsComponent",
+     "path": "Components/ElementsComponents/ElevateElementsComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "elementsWithElevations",
+    "elementsWithElevations.copy",
+    "elementsWithElevations.elementId",
+    "elementsWithElevations.elevation"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "RotateElements",
    "group": "Element Commands",
    "version": "1.5.3",
@@ -3544,12 +3539,7 @@
     "elementsWithMirrorAxes.mirrorAxis.endPoint"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3968,12 +3958,7 @@
     "wallsData.zCoordinate"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5214,12 +5199,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5241,12 +5221,7 @@
     "includeParameters"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5277,12 +5252,7 @@
    "missingParameters": [
     "gridElements.lengthMode"
    ],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5502,12 +5472,7 @@
     "wallsWithDetails.zoneRel"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5702,6 +5667,32 @@
     "doorsWithDetails.revealDepthOffset",
     "doorsWithDetails.sillHeight",
     "doorsWithDetails.width"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ModifyOpenings",
+   "group": "Element Commands",
+   "version": "1.7.4",
+   "brief": "Modifies Opening elements: the width, the height and the base point CreateOpenings takes. Needs Archicad 28 or earlier; in Archicad 29 and later every item fails with a message pointing to SetOpeningDetails, which changes the size and the position of an opening there.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "ModifyOpeningsComponent",
+     "path": "Components/ElementsComponents/ModifyOpeningsComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 5,
+   "coveredParameters": [
+    "openingsWithDetails",
+    "openingsWithDetails.basePoint",
+    "openingsWithDetails.elementId",
+    "openingsWithDetails.height",
+    "openingsWithDetails.width"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -6288,12 +6279,7 @@
     "groups"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6953,12 +6939,7 @@
     "source.toolDefault"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6982,12 +6963,7 @@
     "source.toolDefault"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7009,12 +6985,7 @@
     "favoriteName"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7037,12 +7008,7 @@
     "targetFolder"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7163,13 +7129,13 @@
     "elementPropertyValues"
    ],
    "missingParameters": [],
-   "pullRequests": [
+   "pullRequests": [],
+   "issues": [
     {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+     "number": 1736,
+     "title": "Walls / Walls_API GH components: every element fails with \"elementId is missing\""
     }
-   ],
-   "issues": []
+   ]
   },
   {
    "id": "GetPropertyValuesOfAttributes",
@@ -7659,12 +7625,7 @@
     "attributeIds"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7688,12 +7649,7 @@
     "attributeClassifications.classificationId"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7731,12 +7687,7 @@
     "elementTypes"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7760,12 +7711,7 @@
     "elementDefaultClassifications.elementType"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9779,6 +9725,36 @@
    "issues": []
   },
   {
+   "id": "GetIFCSpatialStructure",
+   "group": "IFC Commands",
+   "version": "1.7.4",
+   "brief": "Returns the IfcProject, IfcSite and IfcBuilding objects of the project's IFC model (hash value, IFC type and GlobalId), and for the given elements the index of the story they are assigned to in the IFC model. Available from Archicad 28.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetIFCAssignments",
+   "group": "IFC Commands",
+   "version": "1.7.4",
+   "brief": "Returns the IFC assignments of the project: the root IFC groups, and for each object the objects assigned to it (children) and the objects it is assigned to (parents). Each object is given by its hash value, its element where it belongs to one, its IFC type and its GlobalId. Available from Archicad 28.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetLibraries",
    "group": "Library Commands",
    "version": "1.0.1",
@@ -10346,12 +10322,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10417,12 +10388,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10445,12 +10411,7 @@
     "userId"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11206,12 +11167,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11235,12 +11191,7 @@
     "name"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11260,12 +11211,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11288,12 +11234,7 @@
     "renovationFilterId"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11313,12 +11254,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11346,12 +11282,7 @@
     "storyIndex"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11714,6 +11645,48 @@
    "issues": []
   },
   {
+   "id": "Get3DStyles",
+   "group": "Navigator Commands",
+   "version": "1.7.4",
+   "brief": "Gets the names of the 3D styles of the project and the name of the current one, which the 3D window uses.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "Get3DStylesComponent",
+     "path": "Components/NavigatorComponents/Get3DStylesComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ShowElementsIn3D",
+   "group": "Navigator Commands",
+   "version": "1.7.4",
+   "brief": "Opens the 3D window on the given elements, as Show Selection in 3D does: they become the selection and only they are shown. Without elements it shows every element, as Show All in 3D does.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "ShowElementsIn3DComponent",
+     "path": "Components/NavigatorComponents/ShowElementsIn3DComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetDocumentFrom3DDefaults",
    "group": "Navigator Commands",
    "version": "1.8.0",
@@ -11911,12 +11884,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11939,12 +11907,7 @@
     "keepSelection"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12403,12 +12366,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12662,12 +12620,7 @@
     "pdfFilePath"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13271,12 +13224,7 @@
     "designOptionId"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13300,12 +13248,7 @@
     "designOptionSets.designOptionSetId"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13329,12 +13272,7 @@
     "designOptions.designOptionId"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14134,12 +14072,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14162,12 +14095,7 @@
     "systemGroupsData.name"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14193,12 +14121,7 @@
     "physicalSystemsData.systemGroupId"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1011,
-     "title": "Support Archicad 29 and 30 in ModifyOpenings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
