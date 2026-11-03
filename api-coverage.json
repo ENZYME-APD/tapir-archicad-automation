@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-03 21:55 UTC",
+ "generatedAt": "2026-11-03 23:07 UTC",
  "versions": [
   25,
   26,
@@ -4127,10 +4127,6 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
-     "number": 1745,
-     "title": "CopyElementsToDatabase: copy 2D elements into another database (#819)"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
@@ -4925,10 +4921,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1745,
-     "title": "CopyElementsToDatabase: copy 2D elements into another database (#819)"
-    },
-    {
      "number": 1640,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
     },
@@ -5057,10 +5049,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1745,
-     "title": "CopyElementsToDatabase: copy 2D elements into another database (#819)"
-    },
     {
      "number": 1640,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
@@ -5981,10 +5969,6 @@
     {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
-    },
-    {
-     "number": 1745,
-     "title": "CopyElementsToDatabase: copy 2D elements into another database (#819)"
     },
     {
      "number": 1744,
@@ -7255,12 +7239,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1745,
-     "title": "CopyElementsToDatabase: copy 2D elements into another database (#819)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
@@ -7556,10 +7535,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1745,
-     "title": "CopyElementsToDatabase: copy 2D elements into another database (#819)"
-    },
     {
      "number": 1744,
      "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
@@ -8237,10 +8212,6 @@
     {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
-    },
-    {
-     "number": 1745,
-     "title": "CopyElementsToDatabase: copy 2D elements into another database (#819)"
     },
     {
      "number": 463,
@@ -12353,12 +12324,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1353,
-     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12618,12 +12584,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1353,
-     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12646,12 +12607,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1353,
-     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12707,12 +12663,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1353,
-     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18959,12 +18910,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1353,
-     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20508,12 +20454,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1745,
-     "title": "CopyElementsToDatabase: copy 2D elements into another database (#819)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20944,10 +20885,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1745,
-     "title": "CopyElementsToDatabase: copy 2D elements into another database (#819)"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
@@ -21048,12 +20985,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1745,
-     "title": "CopyElementsToDatabase: copy 2D elements into another database (#819)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -21077,10 +21009,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1745,
-     "title": "CopyElementsToDatabase: copy 2D elements into another database (#819)"
-    },
     {
      "number": 1744,
      "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
@@ -21595,10 +21523,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1640,
-     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
-    },
     {
      "number": 1326,
      "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
@@ -22132,10 +22056,6 @@
      "title": "[2/5] Add GetTeamworkAccessRights command"
     },
     {
-     "number": 1353,
-     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
-    },
-    {
      "number": 1325,
      "title": "[1/6] Add GetGDLDate and SetGDLDate commands"
     }
@@ -22170,10 +22090,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1353,
-     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
-    },
     {
      "number": 1326,
      "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
@@ -28255,10 +28171,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1745,
-     "title": "CopyElementsToDatabase: copy 2D elements into another database (#819)"
-    },
     {
      "number": 1717,
      "title": "Add GetAttributeIndexes; mark GetCurrentAttributeSetReader as not applicable"
@@ -40721,10 +40633,6 @@
     {
      "number": 1747,
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
-    },
-    {
-     "number": 1745,
-     "title": "CopyElementsToDatabase: copy 2D elements into another database (#819)"
     },
     {
      "number": 1744,

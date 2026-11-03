@@ -1,13 +1,13 @@
 {
- "generatedAt": "2026-11-03 21:55 UTC",
+ "generatedAt": "2026-11-03 23:07 UTC",
  "counts": {
   "done": 567,
   "open": 99,
-  "merged": 16,
+  "merged": 17,
   "not applicable": 1
  },
  "parameters": {
-  "all": 526,
+  "all": 527,
   "partial": 11,
   "json": 46
  },
@@ -3621,6 +3621,31 @@
     "elementsWithMoveVectors.moveVector.x",
     "elementsWithMoveVectors.moveVector.y",
     "elementsWithMoveVectors.moveVector.z"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "CopyElementsToDatabase",
+   "group": "Element Commands",
+   "version": "1.8.1",
+   "brief": "Copies 2D elements (lines, polylines, arcs, circles, splines, hotspots, texts, hatches, independent labels) from one database into another, e.g. from a worksheet into another worksheet, a detail or a layout, optionally moved by an offset. Returns the new elements in the order of the given ones.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "CopyElementsToDatabaseComponent",
+     "path": "Components/ElementsComponents/CopyElementsToDatabaseComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "elements",
+    "offset",
+    "sourceDatabaseId",
+    "targetDatabaseId"
    ],
    "missingParameters": [],
    "pullRequests": [],
