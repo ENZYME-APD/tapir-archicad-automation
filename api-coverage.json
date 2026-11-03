@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-03 19:14 UTC",
+ "generatedAt": "2026-11-03 21:05 UTC",
  "versions": [
   25,
   26,
@@ -6304,6 +6304,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1753,
+     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
+    },
+    {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
@@ -7464,6 +7468,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1753,
+     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
+    },
     {
      "number": 1731,
      "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
@@ -10311,6 +10319,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1753,
+     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
+    },
     {
      "number": 1731,
      "title": "Set the reference ID of sections: CreateSections id/favoriteName, ModifySections (#1662)"
@@ -27628,6 +27640,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1753,
+     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
+    },
+    {
      "number": 1749,
      "title": "ModifyMEPPreferenceTables: add anglesToAdd; read whole-number angles"
     },
@@ -29068,7 +29084,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1753,
+     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
+    }
+   ],
    "issues": []
   },
   {
@@ -29165,6 +29186,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1753,
+     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
+    },
+    {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     }
@@ -29187,6 +29212,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1753,
+     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
+    },
+    {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     }
@@ -29207,7 +29236,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1753,
+     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
+    }
+   ],
    "issues": []
   },
   {
@@ -29246,7 +29280,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1753,
+     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -29411,7 +29450,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1753,
+     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
+    }
+   ],
    "issues": []
   },
   {
@@ -29451,6 +29495,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1753,
+     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
+    },
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
@@ -29574,7 +29622,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1753,
+     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
+    }
+   ],
    "issues": []
   },
   {
@@ -29842,6 +29895,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1753,
+     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
+    },
+    {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     }
@@ -30036,6 +30093,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1753,
+     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
+    },
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
@@ -42467,6 +42528,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1753,
+     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
+    },
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
