@@ -87,6 +87,10 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 "SegmentPreferenceTableGuids",
                 "Identifier of the preference table each routing segment uses " +
                 "(see GetMEPPreferenceTables; one branch per element).");
+
+            OutIntegers(
+                "FloorIndices",
+                "Home story index of each routing element.");
         }
 
         private static ElementGuidWrapper ElementIdOf(
@@ -142,6 +146,7 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             var errors = new List<string>();
             var segmentReferenceIds = new DataTree<object>();
             var segmentPreferenceTables = new DataTree<object>();
+            var floorIndices = new List<object>();
 
             var items = response["routingElements"] as JArray ?? new JArray();
             for (var i = 0; i < items.Count; i++)
@@ -163,11 +168,13 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                     errors.Add(item["error"]?["message"]?.ToString() ?? "");
                     domains.Add(null);
                     mepSystemGuids.Add(null);
+                    floorIndices.Add(null);
                     continue;
                 }
 
                 errors.Add("");
                 domains.Add(item["domain"]?.ToString());
+                floorIndices.Add(item["floorIndex"]?.Value<int>());
                 var mepSystemGuid = item["mepSystemId"]?["guid"]?.ToString();
                 mepSystemGuids.Add(
                     mepSystemGuid == null
@@ -220,6 +227,7 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             da.SetDataList(9, errors);
             da.SetDataTree(10, segmentReferenceIds);
             da.SetDataTree(11, segmentPreferenceTables);
+            da.SetDataList(12, floorIndices);
         }
 
         protected override System.Drawing.Bitmap Icon =>
