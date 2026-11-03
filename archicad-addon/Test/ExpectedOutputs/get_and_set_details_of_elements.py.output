@@ -3616,6 +3616,21 @@ Response:
                 "fixedStampAngle": true,
                 "isManual": true,
                 "zCoordinate": 0,
+                "contourLine": {
+                    "use": false,
+                    "pen": 74,
+                    "lineTypeId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "coverFill": {
+                    "use": false,
+                    "fillId": {
+                        "guid": "<GUID>"
+                    },
+                    "foregroundPen": 94,
+                    "backgroundPen": -1
+                },
                 "polygonOutline": [
                     {
                         "x": 5.743478407,
@@ -3709,6 +3724,21 @@ Response:
                     "y": 0.825241124
                 },
                 "zCoordinate": 0,
+                "contourLine": {
+                    "use": false,
+                    "pen": 74,
+                    "lineTypeId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "coverFill": {
+                    "use": false,
+                    "fillId": {
+                        "guid": "<GUID>"
+                    },
+                    "foregroundPen": 94,
+                    "backgroundPen": -1
+                },
                 "polygonOutline": [
                     {
                         "x": 6.163901967,
@@ -4015,7 +4045,8 @@ Response:
                     "y": 0,
                     "z": 0
                 },
-                "gridAngle": 0
+                "gridAngle": 0,
+                "homeStoryLevel": 0
             }
         },
         {
@@ -4052,7 +4083,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Boundary Frame",
-                "type": "Boundary"
+                "type": "Boundary",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -4089,7 +4121,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Boundary Frame",
-                "type": "Boundary"
+                "type": "Boundary",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -4126,7 +4159,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Boundary Frame",
-                "type": "Boundary"
+                "type": "Boundary",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -4163,7 +4197,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Boundary Frame",
-                "type": "Boundary"
+                "type": "Boundary",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -4200,7 +4235,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Mullion Frame",
-                "type": "Custom"
+                "type": "Custom",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -4237,7 +4273,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Transom Frame",
-                "type": "Custom"
+                "type": "Custom",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -4274,7 +4311,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Boundary Frame",
-                "type": "Boundary"
+                "type": "Boundary",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -4311,7 +4349,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Transom Frame",
-                "type": "Custom"
+                "type": "Custom",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -4348,7 +4387,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Boundary Frame",
-                "type": "Boundary"
+                "type": "Boundary",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -4385,7 +4425,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Mullion Frame",
-                "type": "Custom"
+                "type": "Custom",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -4422,7 +4463,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Transom Frame",
-                "type": "Custom"
+                "type": "Custom",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -4459,7 +4501,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Boundary Frame",
-                "type": "Boundary"
+                "type": "Boundary",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -4496,7 +4539,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Boundary Frame",
-                "type": "Boundary"
+                "type": "Boundary",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -4533,7 +4577,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Transom Frame",
-                "type": "Custom"
+                "type": "Custom",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -4570,7 +4615,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Boundary Frame",
-                "type": "Boundary"
+                "type": "Boundary",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -4607,7 +4653,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Boundary Frame",
-                "type": "Boundary"
+                "type": "Boundary",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -4644,7 +4691,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Mullion Frame",
-                "type": "Custom"
+                "type": "Custom",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -4706,7 +4754,8 @@ Response:
                 "isHidden": false,
                 "isDegenerate": false,
                 "segmentIndex": 0,
-                "className": "Distinct Panel"
+                "className": "Distinct Panel",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -4768,7 +4817,8 @@ Response:
                 "isHidden": false,
                 "isDegenerate": false,
                 "segmentIndex": 0,
-                "className": "Distinct Panel"
+                "className": "Distinct Panel",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -4830,7 +4880,8 @@ Response:
                 "isHidden": false,
                 "isDegenerate": false,
                 "segmentIndex": 0,
-                "className": "Main Panel"
+                "className": "Main Panel",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -4892,7 +4943,8 @@ Response:
                 "isHidden": false,
                 "isDegenerate": false,
                 "segmentIndex": 0,
-                "className": "Distinct Panel"
+                "className": "Distinct Panel",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -4954,7 +5006,8 @@ Response:
                 "isHidden": false,
                 "isDegenerate": false,
                 "segmentIndex": 0,
-                "className": "Distinct Panel"
+                "className": "Distinct Panel",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -5016,7 +5069,8 @@ Response:
                 "isHidden": false,
                 "isDegenerate": false,
                 "segmentIndex": 0,
-                "className": "Distinct Panel"
+                "className": "Distinct Panel",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -10530,6 +10584,21 @@ Response:
                 "fixedStampAngle": true,
                 "isManual": true,
                 "zCoordinate": 3,
+                "contourLine": {
+                    "use": false,
+                    "pen": 74,
+                    "lineTypeId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "coverFill": {
+                    "use": false,
+                    "fillId": {
+                        "guid": "<GUID>"
+                    },
+                    "foregroundPen": 94,
+                    "backgroundPen": -1
+                },
                 "polygonOutline": [
                     {
                         "x": 5.743478407,
@@ -10623,6 +10692,21 @@ Response:
                     "y": 0.825241124
                 },
                 "zCoordinate": 3,
+                "contourLine": {
+                    "use": false,
+                    "pen": 74,
+                    "lineTypeId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "coverFill": {
+                    "use": false,
+                    "fillId": {
+                        "guid": "<GUID>"
+                    },
+                    "foregroundPen": 94,
+                    "backgroundPen": -1
+                },
                 "polygonOutline": [
                     {
                         "x": 6.163901967,
@@ -10793,7 +10877,8 @@ Response:
                     "y": 0,
                     "z": 0
                 },
-                "gridAngle": 0
+                "gridAngle": 0,
+                "homeStoryLevel": 0
             }
         },
         {
@@ -10830,7 +10915,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Boundary Frame",
-                "type": "Boundary"
+                "type": "Boundary",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -10867,7 +10953,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Boundary Frame",
-                "type": "Boundary"
+                "type": "Boundary",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -10904,7 +10991,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Boundary Frame",
-                "type": "Boundary"
+                "type": "Boundary",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -10941,7 +11029,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Boundary Frame",
-                "type": "Boundary"
+                "type": "Boundary",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -10978,7 +11067,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Mullion Frame",
-                "type": "Custom"
+                "type": "Custom",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -11015,7 +11105,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Transom Frame",
-                "type": "Custom"
+                "type": "Custom",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -11052,7 +11143,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Boundary Frame",
-                "type": "Boundary"
+                "type": "Boundary",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -11089,7 +11181,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Transom Frame",
-                "type": "Custom"
+                "type": "Custom",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -11126,7 +11219,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Boundary Frame",
-                "type": "Boundary"
+                "type": "Boundary",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -11163,7 +11257,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Mullion Frame",
-                "type": "Custom"
+                "type": "Custom",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -11200,7 +11295,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Transom Frame",
-                "type": "Custom"
+                "type": "Custom",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -11237,7 +11333,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Boundary Frame",
-                "type": "Boundary"
+                "type": "Boundary",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -11274,7 +11371,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Boundary Frame",
-                "type": "Boundary"
+                "type": "Boundary",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -11311,7 +11409,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Transom Frame",
-                "type": "Custom"
+                "type": "Custom",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -11348,7 +11447,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Boundary Frame",
-                "type": "Boundary"
+                "type": "Boundary",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -11385,7 +11485,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Boundary Frame",
-                "type": "Boundary"
+                "type": "Boundary",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -11422,7 +11523,8 @@ Response:
                 },
                 "segmentIndex": 0,
                 "className": "Mullion Frame",
-                "type": "Custom"
+                "type": "Custom",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -11484,7 +11586,8 @@ Response:
                 "isHidden": false,
                 "isDegenerate": false,
                 "segmentIndex": 0,
-                "className": "Distinct Panel"
+                "className": "Distinct Panel",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -11546,7 +11649,8 @@ Response:
                 "isHidden": false,
                 "isDegenerate": false,
                 "segmentIndex": 0,
-                "className": "Distinct Panel"
+                "className": "Distinct Panel",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -11608,7 +11712,8 @@ Response:
                 "isHidden": false,
                 "isDegenerate": false,
                 "segmentIndex": 0,
-                "className": "Main Panel"
+                "className": "Main Panel",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -11670,7 +11775,8 @@ Response:
                 "isHidden": false,
                 "isDegenerate": false,
                 "segmentIndex": 0,
-                "className": "Distinct Panel"
+                "className": "Distinct Panel",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -11732,7 +11838,8 @@ Response:
                 "isHidden": false,
                 "isDegenerate": false,
                 "segmentIndex": 0,
-                "className": "Distinct Panel"
+                "className": "Distinct Panel",
+                "homeStoryLevel": 0
             }
         },
         {
@@ -11794,7 +11901,8 @@ Response:
                 "isHidden": false,
                 "isDegenerate": false,
                 "segmentIndex": 0,
-                "className": "Distinct Panel"
+                "className": "Distinct Panel",
+                "homeStoryLevel": 0
             }
         },
         {

@@ -89,6 +89,18 @@ GS::ObjectState CreateSuccessfulExecutionResult ()
         "success", true);
 }
 
+const char* LockableStatusToString (API_LockableStatus status)
+{
+    switch (status) {
+        case APILockableStatus_Free:         return "Free";
+        case APILockableStatus_Editable:     return "Editable";
+        case APILockableStatus_Locked:       return "Locked";
+        case APILockableStatus_NotAvailable: return "NotAvailable";
+        case APILockableStatus_NotExist:
+        default:                             return "NotExist";
+    }
+}
+
 // Plain wording for the errors the Change* / Import property and classification calls
 // return, so a caller sees why a definition edit was refused without an error table.
 GS::UniString DescribeDefinitionChangeError (GSErrCode err)
@@ -169,7 +181,16 @@ std::vector<PolygonData> GetPolygonsFromMemoCoords (const API_Guid& elemGuid, bo
     API_ElementMemo memo = {};
     const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
     const UInt64 mask = includeZCoords ? APIMemoMask_Polygon | APIMemoMask_MeshPolyZ : APIMemoMask_Polygon;
-    if (ACAPI_Element_GetMemo (elemGuid, &memo, mask) != NoError || memo.coords == nullptr) {
+    if (ACAPI_Element_GetMemo (elemGuid, &memo, mask) != NoError) {
+        return {};
+    }
+
+    return GetPolygonsFromMemoCoords (memo, includeZCoords);
+}
+
+std::vector<PolygonData> GetPolygonsFromMemoCoords (const API_ElementMemo& memo, bool includeZCoords)
+{
+    if (memo.coords == nullptr) {
         return {};
     }
 
@@ -202,7 +223,7 @@ std::vector<PolygonData> GetPolygonsFromMemoCoords (const API_Guid& elemGuid, bo
 
     const GSSize nArcs = BMhGetSize (reinterpret_cast<GSHandle> (memo.parcs)) / sizeof (API_PolyArc);
     for (GSIndex iArc = 0; iArc < nArcs; ++iArc) {
-        API_PolyArc& arc = (*memo.parcs)[iArc];
+        API_PolyArc arc = (*memo.parcs)[iArc];
         GSIndex iPoly = 0;
         for (; iPoly < nPolys; ++iPoly) {
             const auto& startEndPair = startEndIndices[iPoly];
@@ -633,12 +654,11 @@ void AddPolygonFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, co
     }
 }
 
-void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName, bool includeZCoords)
+static void AddPolygonWithHoles (const std::vector<PolygonData>& polygons, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName, bool includeZCoords)
 {
     const auto& coords = os.AddList<GS::ObjectState> (coordsFieldName);
     const auto& holes = os.AddList<GS::ObjectState> (holesArrayFieldName);
 
-    const auto polygons = GetPolygonsFromMemoCoords (elemGuid, includeZCoords);
     if (polygons.empty ()) {
         return;
     }
@@ -694,6 +714,16 @@ void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectStat
     }
 }
 
+void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName, bool includeZCoords)
+{
+    AddPolygonWithHoles (GetPolygonsFromMemoCoords (elemGuid, includeZCoords), os, coordsFieldName, arcsFieldName, holesArrayFieldName, holeCoordsFieldName, holeArcsFieldName, includeZCoords);
+}
+
+void AddPolygonWithHolesFromMemoCoords (const API_ElementMemo& memo, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName, bool includeZCoords)
+{
+    AddPolygonWithHoles (GetPolygonsFromMemoCoords (memo, includeZCoords), os, coordsFieldName, arcsFieldName, holesArrayFieldName, holeCoordsFieldName, holeArcsFieldName, includeZCoords);
+}
+
 bool GetHoleGeometry (const GS::ObjectState& holeOs, GS::Array<GS::ObjectState>& outCoords, GS::Array<GS::ObjectState>& outArcs)
 {
     if (!holeOs.Get ("polygonCoordinates", outCoords) && !holeOs.Get ("polygonOutline", outCoords)) { //support legacy polygonCoordinates key
@@ -720,6 +750,83 @@ GS::Optional<GS::UniString> ValidateHoles (const GS::Array<GS::ObjectState>& hol
         }
     }
     return {};
+}
+
+// Hatch is a CLOSED polygon (unlike PolyLine): coords[0] dummy is (0,0) not
+// (-1,0), and every contour (the main outline, plus each hole) needs its own
+// explicit closing vertex duplicating that contour's first point, whose vertexID
+// also duplicates that first point's ID. Vertex IDs restart at 1 for EACH contour
+// (not continued sequentially across contours) - confirmed live: global numbering
+// across contours reproducibly failed with APIERR_BADPOLY for a hatch with holes,
+// per-contour numbering works. The holes are expected to be checked by ValidateHoles.
+// Returns false (with poly untouched) when the memo handles could not be allocated.
+bool BuildHatchPolygonMemo (const GS::Array<GS::ObjectState>& coordinates, const GS::Array<GS::ObjectState>& arcs, const GS::Array<GS::ObjectState>& holes, API_Polygon& poly, API_ElementMemo& memo)
+{
+    // Each contour: N unique coords -> N+1 stored coords (with closing duplicate).
+    Int32 totalCoords = (Int32) coordinates.GetSize () + 1;
+    Int32 totalArcs = (Int32) arcs.GetSize ();
+    GS::Array<GS::Array<GS::ObjectState>> holeCoordsList;
+    GS::Array<GS::Array<GS::ObjectState>> holeArcsList;
+    for (const GS::ObjectState& hole : holes) {
+        GS::Array<GS::ObjectState> holeCoords, holeArcs;
+        if (GetHoleGeometry (hole, holeCoords, holeArcs) && holeCoords.GetSize () >= 3) {
+            totalCoords += (Int32) holeCoords.GetSize () + 1;
+            totalArcs += (Int32) holeArcs.GetSize ();
+            holeCoordsList.Push (holeCoords);
+            holeArcsList.Push (holeArcs);
+        }
+    }
+    const Int32 nSubPolys = 1 + (Int32) holeCoordsList.GetSize ();
+
+    memo.coords    = reinterpret_cast<API_Coord**>   (BMAllocateHandle ((totalCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    memo.pends     = reinterpret_cast<Int32**>       (BMAllocateHandle ((nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0));
+    memo.parcs     = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (totalArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+    memo.vertexIDs = reinterpret_cast<UInt32**>      (BMAllocateHandle ((totalCoords + 1) * sizeof (UInt32), ALLOCATE_CLEAR, 0));
+    if (memo.coords == nullptr || memo.pends == nullptr || memo.vertexIDs == nullptr) {
+        return false;
+    }
+
+    Int32 maxContourUnique = (Int32) coordinates.GetSize ();
+    for (const auto& hc : holeCoordsList) {
+        maxContourUnique = GS::Max (maxContourUnique, (Int32) hc.GetSize ());
+    }
+    (*memo.coords)[0] = { 0.0, 0.0 };
+    (*memo.vertexIDs)[0] = (UInt32) maxContourUnique;
+    (*memo.pends)[0] = 0;
+
+    Int32 iCoord = 0;
+    Int32 iArc = 0;
+    Int32 subPolyIndex = 1;
+
+    auto writeContour = [&] (const GS::Array<GS::ObjectState>& contourCoords, const GS::Array<GS::ObjectState>& contourArcs) {
+        const Int32 firstIndex = iCoord + 1;
+        const Int32 nUniqueLocal = (Int32) contourCoords.GetSize ();
+        for (Int32 i = 0; i < nUniqueLocal; ++i) {
+            ++iCoord;
+            (*memo.coords)[iCoord] = Get2DCoordinateFromObjectState (contourCoords[i]);
+            (*memo.vertexIDs)[iCoord] = (UInt32) (i + 1); // per-contour, restarts at 1
+        }
+        ++iCoord;
+        (*memo.coords)[iCoord] = (*memo.coords)[firstIndex]; // closing duplicate
+        (*memo.vertexIDs)[iCoord] = (*memo.vertexIDs)[firstIndex];
+        (*memo.pends)[subPolyIndex++] = iCoord;
+
+        if (memo.parcs != nullptr) {
+            const GS::Array<API_PolyArc> localArcs = GetPolyArcs (contourArcs, firstIndex);
+            for (const API_PolyArc& a : localArcs)
+                (*memo.parcs)[iArc++] = a;
+        }
+    };
+
+    writeContour (coordinates, arcs);
+    for (UIndex i = 0; i < holeCoordsList.GetSize (); ++i) {
+        writeContour (holeCoordsList[i], holeArcsList[i]);
+    }
+
+    poly.nCoords   = totalCoords;
+    poly.nSubPolys = nSubPolys;
+    poly.nArcs     = totalArcs;
+    return true;
 }
 
 GS::ObjectState CreateIdObjectState (const GS::String& idFieldName, const API_Guid& guid)
@@ -755,6 +862,84 @@ bool GetColor (const GS::ObjectState& objectState, const GS::String& fieldName, 
     outColor = GetColorFromObjectState(colorOS);
 
     return true;
+}
+
+// A list of numbers read with ObjectState::Get<GS::Array<double>> does not convert integer items
+// (their bit pattern is taken as a double), so the items are collected one by one.
+class DoubleListCollector : public GS::ObjectState::Processor
+{
+public:
+    virtual void IntFound (const GS::String&, Int64 value) override
+    {
+        values.Push (static_cast<double> (value));
+    }
+
+    virtual void UIntFound (const GS::String&, UInt64 value) override
+    {
+        values.Push (static_cast<double> (value));
+    }
+
+    virtual void RealFound (const GS::String&, double value) override
+    {
+        values.Push (value);
+    }
+
+    virtual void BoolFound (const GS::String&, bool) override
+    {
+        failed = true;
+    }
+
+    virtual void StringFound (const GS::String&, const GS::UniString&) override
+    {
+        failed = true;
+    }
+
+    virtual bool ObjectFound (const GS::String&, const GS::ObjectState&) override
+    {
+        failed = true;
+        return false;
+    }
+
+    virtual bool ListFound (const GS::String&) override
+    {
+        return !failed;
+    }
+
+    virtual void ListEntered (const GS::String&) override
+    {
+        if (++depth > 1) {
+            failed = true;
+        }
+    }
+
+    virtual void ListExited (const GS::String&) override
+    {
+        --depth;
+    }
+
+    bool Get (GS::Array<double>& outValues) const
+    {
+        if (failed) {
+            return false;
+        }
+        outValues = values;
+        return true;
+    }
+
+private:
+    GS::Array<double> values;
+    Int32 depth = 0;
+    bool failed = false;
+};
+
+bool GetDoubleList (const GS::ObjectState& parameters, const char* fieldName, GS::Array<double>& outValues)
+{
+    if (!parameters.IsList (fieldName)) {
+        return false;
+    }
+    DoubleListCollector collector;
+    parameters.Enumerate (fieldName, collector);
+    return collector.Get (outValues);
 }
 
 Stories GetStories ()
@@ -1035,6 +1220,58 @@ API_AttributeIndex GetAttributeIndexFromGuid (API_AttrTypeID typeID, API_Guid gu
     return attr.header.index;
 }
 
+static const char* ColumnVeneerTypeToString (API_VeneerTypeID venType)
+{
+    switch (venType) {
+        case APIVeneer_Finish: return "Finish";
+        case APIVeneer_Other:  return "Other";
+        case APIVeneer_Core:
+        default:               return "Core";
+    }
+}
+
+GS::ObjectState CreateColumnVeneerObjectState (const API_ColumnSegmentType& segment)
+{
+    GS::ObjectState veneer;
+    veneer.Add ("type", ColumnVeneerTypeToString (segment.venType));
+    veneer.Add ("thickness", segment.venThick);
+    if (segment.assemblySegmentData.modelElemStructureType == API_BasicStructure) {
+        veneer.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, segment.venBuildingMaterial)));
+    }
+    return veneer;
+}
+
+GS::Optional<GS::UniString> ApplyColumnVeneer (const GS::ObjectState& veneer, API_ColumnSegmentType& segment)
+{
+    API_VeneerTypeID venType = segment.venType;
+    GS::UniString typeStr;
+    if (veneer.Get ("type", typeStr)) {
+        if (typeStr == "Core") {
+            venType = APIVeneer_Core;
+        } else if (typeStr == "Finish") {
+            venType = APIVeneer_Finish;
+        } else if (typeStr == "Other") {
+            venType = APIVeneer_Other;
+        } else {
+            return GS::UniString ("Unknown veneer type '") + typeStr + "': use Core, Finish or Other.";
+        }
+    }
+
+    API_AttributeIndex venBuildingMaterial = segment.venBuildingMaterial;
+    const GS::ObjectState* buildingMaterialIdOs = veneer.Get ("buildingMaterialId");
+    if (buildingMaterialIdOs != nullptr) {
+        venBuildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialIdOs));
+        if (venBuildingMaterial == ACAPI_CreateAttributeIndex (-1)) {
+            return GS::UniString ("The veneer buildingMaterialId does not refer to an existing building material.");
+        }
+    }
+
+    segment.venType = venType;
+    segment.venBuildingMaterial = venBuildingMaterial;
+    veneer.Get ("thickness", segment.venThick);
+    return GS::NoValue;
+}
+
 GS::Optional<GS::UniString> GetFontNameFromIndex (short fontIndex)
 {
     // The legacy 8-bit name field loses characters; Archicad hands out the real Unicode name
@@ -1169,6 +1406,31 @@ GSErrCode ExecuteActionForEachDatabase (
     return NoError;
 }
 
+GS::Optional<API_Guid> FindProjectMapItemOfWorksheetOrDetail (const API_DatabaseInfo& database)
+{
+    API_NavigatorItem filterItem = {};
+    if (database.typeID == APIWind_WorksheetID) {
+        filterItem.itemType = API_WorksheetDrawingNavItem;
+    } else if (database.typeID == APIWind_DetailID) {
+        filterItem.itemType = API_DetailDrawingNavItem;
+    } else {
+        return {};
+    }
+    filterItem.mapId           = API_ProjectMap;
+    filterItem.db.databaseUnId = database.databaseUnId;
+
+    GS::Array<API_NavigatorItem> results;
+    if (ACAPI_Navigator_SearchNavigatorItem (&filterItem, &results) != NoError) {
+        return {};
+    }
+    for (const API_NavigatorItem& result : results) {
+        if (result.itemType == filterItem.itemType) {
+            return result.guid;
+        }
+    }
+    return {};
+}
+
 bool LoadElementHeaderByGuid (const API_Guid& elementGuid, API_Elem_Head& elementHeader)
 {
     elementHeader = {};
@@ -1183,6 +1445,55 @@ bool DoesElementExist (const API_Guid& elementGuid, API_ElemTypeID expectedTypeI
         return false;
     }
     return GetElemTypeId (header) == expectedTypeId;
+}
+
+GSErrCode GetLayerChangeError (const API_AttributeIndex& layer, GS::UniString& reason)
+{
+    API_Attribute layerAttr = {};
+    layerAttr.header.typeID = API_LayerID;
+    layerAttr.header.index = layer;
+    if (ACAPI_Attribute_Get (&layerAttr) != NoError) {
+        return NoError;
+    }
+    if ((layerAttr.header.flags & APILay_Locked) != 0) {
+        reason = "its layer is locked";
+        return APIERR_LOCKEDLAY;
+    }
+    if ((layerAttr.header.flags & APILay_Hidden) != 0) {
+        reason = "its layer is hidden";
+        return APIERR_HIDDENLAY;
+    }
+    return NoError;
+}
+
+
+// Inverts the affine transformation of a 3x4 API_Tranmat (rotation/scale part plus translation).
+bool InvertTranmat (const API_Tranmat& tranmat, API_Tranmat& inverse)
+{
+    const double* m = tranmat.tmx;
+    const double c00 = m[5] * m[10] - m[6] * m[9];
+    const double c01 = m[6] * m[8] - m[4] * m[10];
+    const double c02 = m[4] * m[9] - m[5] * m[8];
+    const double det = m[0] * c00 + m[1] * c01 + m[2] * c02;
+    if (std::fabs (det) < 1e-12) {
+        return false;
+    }
+
+    double* r = inverse.tmx;
+    r[0]  = c00 / det;
+    r[1]  = (m[2] * m[9] - m[1] * m[10]) / det;
+    r[2]  = (m[1] * m[6] - m[2] * m[5]) / det;
+    r[4]  = c01 / det;
+    r[5]  = (m[0] * m[10] - m[2] * m[8]) / det;
+    r[6]  = (m[2] * m[4] - m[0] * m[6]) / det;
+    r[8]  = c02 / det;
+    r[9]  = (m[1] * m[8] - m[0] * m[9]) / det;
+    r[10] = (m[0] * m[5] - m[1] * m[4]) / det;
+
+    r[3]  = -(r[0] * m[3] + r[1] * m[7] + r[2] * m[11]);
+    r[7]  = -(r[4] * m[3] + r[5] * m[7] + r[6] * m[11]);
+    r[11] = -(r[8] * m[3] + r[9] * m[7] + r[10] * m[11]);
+    return true;
 }
 
 

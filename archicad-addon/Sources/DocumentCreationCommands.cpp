@@ -34,6 +34,19 @@ GS::ObjectState CreateNavigatorItemsResponse (const GS::Array<GS::ObjectState>& 
     return response;
 }
 
+// The id of a new worksheet or detail database, with the navigatorItemId of its Project Map item,
+// so that the new item can be opened with ChangeWindow or placed with CreateDrawings without
+// reading the whole Project Map (#1602). Without the item only the databaseId is returned.
+GS::ObjectState CreateNewWorksheetOrDetailObjectState (const API_DatabaseInfo& dbInfo)
+{
+    GS::ObjectState result = CreateDatabaseIdObjectState (DatabaseIdResolver::Instance ().GetIdOfDatabase (dbInfo));
+    const GS::Optional<API_Guid> navigatorItemId = FindProjectMapItemOfWorksheetOrDetail (dbInfo);
+    if (navigatorItemId.HasValue ()) {
+        result.Add ("navigatorItemId", CreateGuidObjectState (navigatorItemId.Get ()));
+    }
+    return result;
+}
+
 bool GetItems (const GS::ObjectState& parameters, const char* fieldName, GS::Array<GS::ObjectState>& outItems, GS::ObjectState& errorResponse)
 {
     if (!parameters.Get (fieldName, outItems)) {
@@ -406,7 +419,34 @@ GS::Optional<GS::UniString> CreateDetailsCommand::GetInputParametersSchema () co
 
 GS::Optional<GS::UniString> CreateDetailsCommand::GetRawResponseSchema () const
 {
-    return R"({"type":"object","properties":{"databases":{"$ref":"#/DatabaseIdsOrErrors"}},"additionalProperties":false,"required":["databases"]})";
+    return R"({
+        "type": "object",
+        "properties": {
+            "databases": {
+                "type": "array",
+                "description": "One item per input item, in the same order.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "databaseId": { "$ref": "#/DatabaseId" },
+                                "navigatorItemId": {
+                                    "$ref": "#/NavigatorItemId",
+                                    "description": "The Project Map item of the new database, for ChangeWindow or CreateDrawings. Missing when the item could not be found."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["databaseId"]
+                        },
+                        { "$ref": "#/ErrorItem" }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["databases"]
+    })";
 }
 
 GS::ObjectState CreateDetailsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -430,7 +470,7 @@ GS::ObjectState CreateDetailsCommand::Execute (const GS::ObjectState& parameters
             continue;
         }
 
-        databases.Push (CreateDatabaseIdObjectState (DatabaseIdResolver::Instance ().GetIdOfDatabase (dbInfo)));
+        databases.Push (CreateNewWorksheetOrDetailObjectState (dbInfo));
     }
     return CreateDatabasesResponse (databases);
 }
@@ -494,7 +534,7 @@ GS::ObjectState CreateWorksheetsCommand::Execute (const GS::ObjectState& paramet
             continue;
         }
 
-        databases.Push (CreateDatabaseIdObjectState (DatabaseIdResolver::Instance ().GetIdOfDatabase (dbInfo)));
+        databases.Push (CreateNewWorksheetOrDetailObjectState (dbInfo));
     }
     return CreateDatabasesResponse (databases);
 }
@@ -543,9 +583,9 @@ GS::Optional<GS::UniString> CreateLayoutCommand::GetInputParametersSchema () con
                                 "topMargin":                { "type": "number" },
                                 "rightMargin":              { "type": "number" },
                                 "bottomMargin":             { "type": "number" },
-                                "customLayoutNumber":       { "type": "string" },
-                                "customLayoutNumbering":    { "type": "boolean" },
-                                "doNotIncludeInNumbering":  { "type": "boolean" },
+                                "customLayoutNumber":       { "type": "string", "description": "The layout's own number, used when customLayoutNumbering is true. It only replaces this layout's displayed number: the layout still counts in its subset's numbering, so the sheets after it are renumbered. Use doNotIncludeInNumbering to leave it out." },
+                                "customLayoutNumbering":    { "type": "boolean", "description": "Use customLayoutNumber instead of the automatic number. Does not leave the layout out of the subset's numbering; see doNotIncludeInNumbering." },
+                                "doNotIncludeInNumbering":  { "type": "boolean", "description": "Leave the new layout out of its subset's automatic numbering, so the numbers of the other sheets do not change." },
                                 "displayMasterLayoutBelow": { "type": "boolean" }
                             },
                             "additionalProperties": false
@@ -563,7 +603,32 @@ GS::Optional<GS::UniString> CreateLayoutCommand::GetInputParametersSchema () con
 
 GS::Optional<GS::UniString> CreateLayoutCommand::GetRawResponseSchema () const
 {
-    return CreateDetailsCommand ().GetRawResponseSchema ();
+    return R"({
+        "type": "object",
+        "properties": {
+            "databases": {
+                "type": "array",
+                "items": {
+                    "oneOf": [
+                        { "$ref": "#/DatabaseIdArrayItem" },
+                        { "$ref": "#/ErrorItem" },
+                        {
+                            "type": "object",
+                            "description": "The layout was created, but it could not be moved to the place asked for by previousNavigatorItemId or position: it stays where Archicad put it.",
+                            "properties": {
+                                "databaseId": { "$ref": "#/DatabaseId" },
+                                "error":      { "$ref": "#/Error" }
+                            },
+                            "additionalProperties": false,
+                            "required": ["databaseId", "error"]
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["databases"]
+    })";
 }
 
 GS::ObjectState CreateLayoutCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -622,6 +687,14 @@ GS::ObjectState CreateLayoutCommand::Execute (const GS::ObjectState& parameters,
                         continue;
                     }
                 }
+
+                // Best-effort flush of the navigator/database state just created above: a new
+                // database followed soon after by a RenameNavigatorItem + DeleteNavigatorItems
+                // has been seen to crash ArchiCAD internally (issue #1428). Error ignored.
+                // ACAPI_Database_RedrawCurrentDatabase only exists from AC27 on.
+#ifdef ServerMainVers_2700
+                ACAPI_Database_RedrawCurrentDatabase ();
+#endif
             }
         }
 
@@ -708,7 +781,11 @@ GS::ObjectState CreateLayoutCommand::Execute (const GS::ObjectState& parameters,
             GS::UniString placeErrorMessage;
             const GSErrCode placeErr = PlaceNewLayout (newLayoutGuid.Get (), parentNavGuid, previousOS, position, placeErrorMessage);
             if (placeErr != NoError) {
-                databases.Push (CreateErrorResponse (placeErr, placeErrorMessage));
+                // The layout exists, so its id is returned with the error: without it the
+                // caller could only find it by name (#1586)
+                GS::ObjectState placedWithError = CreateErrorResponse (placeErr, placeErrorMessage);
+                placedWithError.Add ("databaseId", CreateGuidObjectState (newLayoutGuid.Get ()));
+                databases.Push (placedWithError);
                 continue;
             }
         }
@@ -1030,7 +1107,10 @@ GS::Optional<GS::UniString> CreateDrawingsCommand::GetInputParametersSchema () c
                             "$ref": "#/DrawingNameType",
                             "description": "Defaults to CustomName when name is given, otherwise to the Drawing tool's current default."
                         },
-                        "position": { "$ref": "#/Coordinate2D" },
+                        "position": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "Where the Drawing is placed on the layout, in meters; this becomes its pos. Without clipPolygon it is the lower left corner of the Drawing (before rotation). With clipPolygon it is the point where the origin of the source view lands (on a floor plan the project origin): a model point (x, y) appears at position + scale * drawing scale * (x, y), rotated by angle, and the clipPolygon chooses which part is shown."
+                        },
                         "scale": {
                             "type": "number",
                             "exclusiveMinimum": 0.0,
@@ -1042,17 +1122,17 @@ GS::Optional<GS::UniString> CreateDrawingsCommand::GetInputParametersSchema () c
                         },
                         "drawingScale": {
                             "type": "number",
-                            "description": "The nominal scale of the drawing. Defaults to the Drawing tool's current default."
+                            "description": "Ignored: Archicad takes the scale from the source view (API_DrawingType::drawingScale is output only). GetDetailsOfElements returns the scale the Drawing got."
                         },
                         "modelOffset": {
                             "$ref": "#/Coordinate2D",
-                            "description": "Offset of the model origin within the drawing. Defaults to the Drawing tool's current default."
+                            "description": "Offset of the model origin within the drawing, in model meters. Archicad uses it only with clipPolygon and then adds modelOffset * drawing scale (times scale, rotated by angle) to the new Drawing's pos; without clipPolygon it is ignored. Defaults to the Drawing tool's current default."
                         },
                         "clipPolygon": {
                             "type": "array",
                             "items": { "$ref": "#/Coordinate2D" },
                             "minItems": 3,
-                            "description": "Optional polygon to clip the drawing with, in layout coordinates (meters on the layout, the same coordinate system as position) - not the coordinates of the source view's model. Stored as given: position, angle, scale and modelOffset are not applied to it."
+                            "description": "Optional polygon to clip the drawing with, in layout coordinates (meters on the layout, the same coordinate system as position) - not the coordinates of the source view's model. Stored as given: position, angle, scale and modelOffset are not applied to it, and it does not move the content (see position)."
                         }
                     },
                     "additionalProperties": false,
@@ -1095,6 +1175,15 @@ static bool IsPlaceableAsDrawing (API_NavigatorItemTypeID itemType)
         default:
             return false;
     }
+}
+
+// A vector given in the Drawing's own coordinates (as the clip polygon's corner or the model
+// offset times the drawing scale), as it lands on the layout: times ratio, rotated by angle.
+static API_Coord DrawingVectorOnLayout (const API_DrawingType& drawing, const API_Coord& v)
+{
+    const double c = cos (drawing.angle);
+    const double s = sin (drawing.angle);
+    return { drawing.ratio * (c * v.x - s * v.y), drawing.ratio * (s * v.x + c * v.y) };
 }
 
 // Creates a single Drawing from a "drawingsData"-shaped item (navigatorItemId, position, optional
@@ -1194,6 +1283,21 @@ static GS::ObjectState CreateOneDrawing (const GS::ObjectState& item)
                 (*memo.coords)[i + 1] = Get2DCoordinateFromObjectState (clipCoords[i]);
             (*memo.coords)[nClip + 1] = (*memo.coords)[1];
             (*memo.pends)[1] = nClip + 1;
+
+            // When a clipped Drawing is created, Archicad keeps the clip polygon where it is
+            // given but takes the lower left corner of its bounding box off pos (times ratio,
+            // rotated by angle), so the content moved away from the clip and the window could
+            // show nothing (#1654). Adding that corner beforehand leaves pos at position, which
+            // for a clipped Drawing is where the source view's origin lands. Archicad also adds
+            // the model offset times the drawing scale to pos (see the modelOffset description).
+            API_Coord clipMin = (*memo.coords)[1];
+            for (Int32 i = 2; i <= nClip; ++i) {
+                clipMin.x = std::min (clipMin.x, (*memo.coords)[i].x);
+                clipMin.y = std::min (clipMin.y, (*memo.coords)[i].y);
+            }
+            const API_Coord shift = DrawingVectorOnLayout (element.drawing, clipMin);
+            element.drawing.pos.x += shift.x;
+            element.drawing.pos.y += shift.y;
         }
     }
     err = ACAPI_Element_Create (&element, &memo);
@@ -1482,7 +1586,18 @@ GS::ObjectState ChangeDrawingLinkCommand::Execute (const GS::ObjectState& parame
             newDrawingItem.Add ("navigatorItemId", *navigatorItemIdState);
             newDrawingItem.Add ("name", GS::UniString (oldElement.drawing.name));
             newDrawingItem.Add ("nameType", DrawingNameTypeToString (oldElement.drawing.nameType));
-            newDrawingItem.Add ("position", Create2DCoordinateObjectState (oldElement.drawing.pos));
+            // Archicad adds the model offset (times the drawing scale) to the pos of a new
+            // clipped Drawing: take it off first, so the new Drawing gets the old pos when both
+            // sources have the same scale.
+            API_Coord position = oldElement.drawing.pos;
+            if (!oldClipCoords.IsEmpty ()) {
+                const API_Coord offset = DrawingVectorOnLayout (oldElement.drawing, {
+                    oldElement.drawing.modelOffset.x * oldElement.drawing.drawingScale,
+                    oldElement.drawing.modelOffset.y * oldElement.drawing.drawingScale });
+                position.x -= offset.x;
+                position.y -= offset.y;
+            }
+            newDrawingItem.Add ("position", Create2DCoordinateObjectState (position));
             newDrawingItem.Add ("scale", oldElement.drawing.ratio);
             newDrawingItem.Add ("angle", oldElement.drawing.angle);
             newDrawingItem.Add ("drawingScale", oldElement.drawing.drawingScale);
@@ -1745,7 +1860,10 @@ GS::Optional<GS::UniString> SetLayoutSettingsCommand::GetInputParametersSchema (
                     "properties": {
                         "layoutDatabaseId":         { "$ref": "#/DatabaseId" },
                         "layoutNavigatorItemId":    { "$ref": "#/NavigatorItemId" },
-                        "layoutName":               { "type": "string" },
+                        "layoutName": {
+                            "type": "string",
+                            "description": "The new name of the layout or master layout (its database name, as returned by GetDatabases and GetLayoutSettings). A custom name of its Navigator item is changed with RenameNavigatorItem instead."
+                        },
                         "horizontalSize":           { "type": "number" },
                         "verticalSize":             { "type": "number" },
                         "leftMargin":               { "type": "number" },
@@ -1873,6 +1991,33 @@ GS::ObjectState SetLayoutSettingsCommand::Execute (const GS::ObjectState& parame
             }
         }
 
+        // ACAPI_Navigator_ChangeLayoutSets does not modify the name of the layout (see its DevKit
+        // documentation), so the name is changed through the layout's database, and checked afterwards.
+        GS::UniString requestedLayoutName;
+        if (item.Get ("layoutName", requestedLayoutName)) {
+            API_DatabaseInfo layoutDbInfo = dbInfo;
+            err = ACAPI_Window_GetDatabaseInfo (&layoutDbInfo);
+            if (err != NoError) {
+                executionResults.Push (CreateFailedExecutionResult (err, "Failed to get the database of the layout."));
+                continue;
+            }
+            if (GS::UniString (layoutDbInfo.name) != requestedLayoutName) {
+                SetUCharProperty (&item, "layoutName", layoutDbInfo.name);
+                err = ACAPI_Database_ModifyDatabase (&layoutDbInfo);
+                if (err != NoError) {
+                    executionResults.Push (CreateFailedExecutionResult (err, "Failed to change the name of the layout."));
+                    continue;
+                }
+                API_DatabaseInfo verifyDbInfo = dbInfo;
+                err = ACAPI_Window_GetDatabaseInfo (&verifyDbInfo);
+                if (err != NoError || GS::UniString (verifyDbInfo.name) != requestedLayoutName) {
+                    executionResults.Push (CreateFailedExecutionResult (APIERR_GENERAL,
+                        "The name of the layout was not changed to the requested layoutName."));
+                    continue;
+                }
+            }
+        }
+
         API_LayoutInfo layoutInfo = {};
         err = ACAPI_Navigator_GetLayoutSets (&layoutInfo, &dbInfo.databaseUnId);
         if (err != NoError) {
@@ -1880,11 +2025,6 @@ GS::ObjectState SetLayoutSettingsCommand::Execute (const GS::ObjectState& parame
             continue;
         }
 
-#ifdef ServerMainVers_2600
-        SetUCharProperty (&item, "layoutName", layoutInfo.layoutName);
-#else
-        SetCharProperty (&item, "layoutName", layoutInfo.layoutName);
-#endif
         item.Get ("horizontalSize",          layoutInfo.sizeX);
         item.Get ("verticalSize",            layoutInfo.sizeY);
         item.Get ("leftMargin",              layoutInfo.leftMargin);

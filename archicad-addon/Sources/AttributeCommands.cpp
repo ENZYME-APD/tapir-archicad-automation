@@ -13,6 +13,8 @@
 #ifdef ServerMainVers_3000
 #include <optional>
 #endif
+#include <cstdlib>
+#include <limits>
 
 // Before AC27, API_AttributeIndex is a plain integer typedef with no IsPositive() method; AC27+ replaced it with
 // a class. Kept local (rather than in the shared MigrationHelper shim) since it is only used in this file.
@@ -170,6 +172,60 @@ static API_AttrTypeID ConvertAttributeTypeStringToID (const GS::UniString& typeS
     return API_ZombieAttrID;
 }
 
+#ifdef ServerMainVers_2600
+
+// Attribute folders exist from AC26. API_Attr_Head does not tell the folder of an attribute, so the folder tree
+// of the type is walked once from its root and the path of every attribute it holds is collected by guid.
+// An attribute the walk does not reach is reported in the root folder.
+static void CollectAttributeFolderPaths (const API_AttributeFolder& folder, GS::HashTable<API_Guid, GS::Array<GS::UniString>>& folderPathsByAttribute)
+{
+    API_AttributeFolderContent content;
+    if (ACAPI_Attribute_GetFolderContent (folder, content) != NoError) {
+        return;
+    }
+    // API_AttributeFolderContent::attributeIds holds GS::Guid values, API_Attr_Head::guid is an API_Guid.
+    for (const GS::Guid& attributeId : content.attributeIds) {
+        folderPathsByAttribute.Put (GSGuid2APIGuid (attributeId), folder.path);
+    }
+    // The path of a subfolder is not trusted to be filled in full: a subfolder without a path is resolved by its guid,
+    // and one whose path is not one level below its parent gets the parent path plus its own name.
+    for (const API_AttributeFolder& subFolder : content.subFolders) {
+        API_AttributeFolder resolvedSubFolder = subFolder;
+        resolvedSubFolder.typeID = folder.typeID;
+        if (resolvedSubFolder.path.IsEmpty ()) {
+            if (ACAPI_Attribute_GetFolder (resolvedSubFolder) != NoError || resolvedSubFolder.path.IsEmpty ()) {
+                continue;
+            }
+        }
+        if (resolvedSubFolder.path.GetSize () != folder.path.GetSize () + 1) {
+            GS::Array<GS::UniString> path = folder.path;
+            path.Push (resolvedSubFolder.path.GetLast ());
+            resolvedSubFolder.path = path;
+        }
+        CollectAttributeFolderPaths (resolvedSubFolder, folderPathsByAttribute);
+    }
+}
+
+static GS::HashTable<API_Guid, GS::Array<GS::UniString>> GetAttributeFolderPaths (API_AttrTypeID typeID)
+{
+    GS::HashTable<API_Guid, GS::Array<GS::UniString>> folderPathsByAttribute;
+    API_AttributeFolder rootFolder;
+    rootFolder.typeID = typeID;
+    // API_AttributeFolder::guid is a GS::Guid (unlike API_Attr_Head::guid), so the root folder is selected by GS::NULLGuid.
+    rootFolder.guid = GS::NULLGuid;
+    if (ACAPI_Attribute_GetFolder (rootFolder) == NoError) {
+        // Archicad returns the root folder with its localized name ("Layers", "Ebenen") as its path, and the
+        // subfolders below it with that name in front. folderPath leaves the root out, so it starts empty here
+        // and every subfolder is rebuilt from its parent; the paths then work as targetFolder of
+        // MoveAttributesAndFolders.
+        rootFolder.path.Clear ();
+        CollectAttributeFolderPaths (rootFolder, folderPathsByAttribute);
+    }
+    return folderPathsByAttribute;
+}
+
+#endif
+
 GetAttributesByTypeCommand::GetAttributesByTypeCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -220,11 +276,25 @@ GS::ObjectState GetAttributesByTypeCommand::Execute (const GS::ObjectState& para
     GS::Array<API_Attribute> attrs;
     ACAPI_Attribute_GetAttributesByType (typeID, attrs);
 
+#ifdef ServerMainVers_2600
+    const GS::HashTable<API_Guid, GS::Array<GS::UniString>> folderPathsByAttribute = GetAttributeFolderPaths (typeID);
+#endif
+
     for (API_Attribute& attr : attrs) {
         GS::ObjectState attributeDetails;
         attributeDetails.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         attributeDetails.Add ("index", GetAttributeIndex (attr.header.index));
         attributeDetails.Add ("name", GetAttributeName (attr.header));
+        // The folder path is always present: empty for the root folder, and always empty before AC26,
+        // which has no attribute folders.
+        GS::Array<GS::UniString> folderPath;
+#ifdef ServerMainVers_2600
+        folderPathsByAttribute.Get (attr.header.guid, &folderPath);
+#endif
+        const auto& folderPathList = attributeDetails.AddList<GS::UniString> ("folderPath");
+        for (const GS::UniString& folderName : folderPath) {
+            folderPathList (folderName);
+        }
         // API_Attr_Head::modiTime is a GSTime (seconds since 1970-01-01 00:00:00 UTC) in a UInt64,
         // the same stamp the Attribute Manager writes as ModiTime into its XML export.
         attributeDetails.Add ("modificationTime", static_cast<Int64> (attr.header.modiTime));
@@ -264,7 +334,7 @@ GS::Optional<GS::UniString> GetAttributesFromProjectCommand::GetInputParametersS
             },
             "attributeTypes": {
                 "type": "array",
-                "description": "The attribute types to read.",
+                "description": "The attribute types to read. Layer, Surface, BuildingMaterial and MEPSystem cannot be read from a file that is not open; they get an error item.",
                 "items": {
                     "$ref": "#/AttributeType"
                 },
@@ -328,6 +398,20 @@ GS::Optional<GS::UniString> GetAttributesFromProjectCommand::GetRawResponseSchem
     })";
 }
 
+#ifdef ServerMainVers_2700
+// ACAPI_Attribute_GetAttributesFromProject returns NoError and an empty list for these types
+// (tested on Archicad 29 with .pln and .tpl files that contain them, see #1582), so an empty list of
+// one of them means "not read", not "the file has none". A non-empty list is still passed through,
+// in case an Archicad version reads them.
+static bool IsNotReadFromProjectFileWhenEmpty (API_AttrTypeID typeID)
+{
+    return typeID == API_LayerID ||
+        typeID == API_MaterialID ||
+        typeID == API_BuildingMaterialID ||
+        typeID == API_MEPSystemID;
+}
+#endif
+
 GS::ObjectState GetAttributesFromProjectCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2700
@@ -381,6 +465,9 @@ GS::ObjectState GetAttributesFromProjectCommand::Execute (const GS::ObjectState&
         if (err != NoError) {
             attributesByType (CreateErrorResponse (err,
                 GS::UniString::Printf ("Failed to read the %T attributes of the project file.", typeStr.ToPrintf ())));
+        } else if (loaded.IsEmpty () && IsNotReadFromProjectFileWhenEmpty (typeID)) {
+            attributesByType (CreateErrorResponse (APIERR_NOTSUPPORTED,
+                GS::UniString::Printf ("Archicad returned no %T attributes from the project file. It does not read this type from a file that is not open; open the file and use GetAttributesByType instead.", typeStr.ToPrintf ())));
         } else {
             attributesByType (typeResult);
         }
@@ -390,6 +477,304 @@ GS::ObjectState GetAttributesFromProjectCommand::Execute (const GS::ObjectState&
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_GENERAL, "GetAttributesFromProject needs Archicad 27 or later.");
+#endif
+}
+
+ImportAttributesFromProjectCommand::ImportAttributesFromProjectCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ImportAttributesFromProjectCommand::GetName () const
+{
+    return "ImportAttributesFromProject";
+}
+
+GS::Optional<GS::UniString> ImportAttributesFromProjectCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "projectFilePath": {
+                "type": "string",
+                "description": "The absolute path of the project or template file (for example .pln or .tpl) to import the attributes from.",
+                "minLength": 1
+            },
+            "attributeTypes": {
+                "type": "array",
+                "description": "The attribute types to import. Line, Fill, ZoneCategory, PenTable and OperationProfile can be imported. The other types fail with an error item: Archicad does not read Layer, Surface, BuildingMaterial and MEPSystem from a closed file, and a Composite, Profile or LayerCombination refers to such attributes by their index in the source file.",
+                "items": {
+                    "$ref": "#/AttributeType"
+                },
+                "minItems": 1
+            },
+            "attributeNames": {
+                "type": "array",
+                "description": "Import only the attributes with these names. All attributes of the given types are imported when it is omitted.",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "overwriteExisting": {
+                "type": "boolean",
+                "description": "What happens to an attribute whose name already exists in the open project. false (default): it is skipped and the existing attribute is kept. true: the existing attribute is overwritten with the imported definition and keeps its index and guid."
+            },
+            "dryRun": {
+                "type": "boolean",
+                "description": "If true, nothing is changed: the response reports what an import would do."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectFilePath",
+            "attributeTypes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ImportAttributesFromProjectCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "oneOf": [
+            {
+                "type": "object",
+                "properties": {
+                    "attributesByType": {
+                        "type": "array",
+                        "description": "One item per requested attribute type, in the order of attributeTypes.",
+                        "items": {
+                            "type": "object",
+                            "oneOf": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "attributeType": {
+                                            "$ref": "#/AttributeType"
+                                        },
+                                        "attributes": {
+                                            "type": "array",
+                                            "description": "One item per imported (or, with dryRun, importable) attribute of the source file.",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "The name of the attribute in the source file."
+                                                    },
+                                                    "sourceIndex": {
+                                                        "type": "integer",
+                                                        "description": "The index of the attribute in the source file. Archicad hands out a new guid for the attributes of another file on every read, so they are identified by name and index."
+                                                    },
+                                                    "result": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "created",
+                                                            "overwritten",
+                                                            "skipped",
+                                                            "failed"
+                                                        ],
+                                                        "description": "created: new in the open project. overwritten: an attribute of the same name was overwritten. skipped: an attribute of the same name exists and overwriteExisting is false. failed: see error. With dryRun the result is what an import would do."
+                                                    },
+                                                    "attributeId": {
+                                                        "$ref": "#/AttributeId",
+                                                        "description": "The attribute in the open project. Missing when it was not created (failed, or created with dryRun)."
+                                                    },
+                                                    "error": {
+                                                        "$ref": "#/Error"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "name",
+                                                    "sourceIndex",
+                                                    "result"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "attributeType",
+                                        "attributes"
+                                    ]
+                                },
+                                {
+                                    "$ref": "#/ErrorItem"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "attributesByType"
+                ]
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    })";
+}
+
+#ifdef ServerMainVers_2700
+// The types an import brings over complete. ACAPI_Attribute_GetAttributesFromProject returns nothing
+// for Layer, Surface, BuildingMaterial and MEPSystem (#1582). A Composite, Profile or LayerCombination
+// refers to building materials, fills or layers by their index in the source file, and those indexes
+// would point at unrelated attributes of the open project.
+static bool IsImportableAttributeType (API_AttrTypeID typeID)
+{
+    switch (typeID) {
+        case API_LinetypeID:
+        case API_FilltypeID:
+        case API_ZoneCatID:
+        case API_PenTableID:
+        case API_OperationProfileID:
+            return true;
+        default:
+            return false;
+    }
+}
+
+// Looks the attribute up by name, as the Create* commands do with overwriteExisting.
+static bool FindAttributeByName (API_AttrTypeID typeID, const GS::UniString& name, API_Attr_Head& found)
+{
+    GS::UniString nameCopy = name;
+    API_Attribute attr = {};
+    attr.header.typeID = typeID;
+    attr.header.uniStringNamePtr = &nameCopy;
+    const bool exists = (ACAPI_Attribute_Get (&attr) == NoError);
+    if (exists) {
+        found = attr.header;
+        found.uniStringNamePtr = nullptr;
+    }
+    DisposeAttribute (attr);
+    return exists;
+}
+
+#endif
+
+GS::ObjectState ImportAttributesFromProjectCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::UniString projectFilePath;
+    if (!parameters.Get ("projectFilePath", projectFilePath) || projectFilePath.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "projectFilePath is missing.");
+    }
+    const IO::Location location (projectFilePath);
+    bool exists = false;
+    if (IO::fileSystem.Contains (location, &exists) != NoError || !exists) {
+        return CreateErrorResponse (APIERR_BADPARS,
+            GS::UniString::Printf ("The file '%T' does not exist.", projectFilePath.ToPrintf ()));
+    }
+
+    GS::Array<GS::UniString> attributeTypes;
+    parameters.Get ("attributeTypes", attributeTypes);
+    GS::Array<GS::UniString> attributeNames;
+    const bool filterByName = parameters.Get ("attributeNames", attributeNames);
+    bool overwriteExisting = false;
+    parameters.Get ("overwriteExisting", overwriteExisting);
+    bool dryRun = false;
+    parameters.Get ("dryRun", dryRun);
+
+    GS::ObjectState response;
+    const auto& attributesByType = response.AddList<GS::ObjectState> ("attributesByType");
+
+    for (const GS::UniString& typeStr : attributeTypes) {
+        const API_AttrTypeID typeID = ConvertAttributeTypeStringToID (typeStr);
+        if (typeID == API_ZombieAttrID) {
+            attributesByType (CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid attributeType '%T'.", typeStr.ToPrintf ())));
+            continue;
+        }
+        if (!IsImportableAttributeType (typeID)) {
+            attributesByType (CreateErrorResponse (APIERR_NOTSUPPORTED,
+                GS::UniString::Printf ("%T attributes cannot be imported: Archicad does not read Layer, Surface, BuildingMaterial and MEPSystem attributes from a closed file, and Composite, Profile and LayerCombination attributes refer to such attributes by their index in the source file.", typeStr.ToPrintf ())));
+            continue;
+        }
+
+        GS::Array<GS::Pair<API_Attribute, API_AttributeDefExt>> loaded;
+        const GSErrCode loadErr = ACAPI_Attribute_GetAttributesFromProject (location, typeID, &loaded);
+        if (loadErr != NoError) {
+            for (GS::Pair<API_Attribute, API_AttributeDefExt>& item : loaded) {
+                ACAPI_DisposeAttrDefsHdlsExt (&item.second);
+                DisposeAttribute (item.first);
+            }
+            attributesByType (CreateErrorResponse (loadErr,
+                GS::UniString::Printf ("Failed to read the %T attributes of the project file.", typeStr.ToPrintf ())));
+            continue;
+        }
+
+        GS::ObjectState typeResult;
+        typeResult.Add ("attributeType", typeStr);
+        const auto& attributes = typeResult.AddList<GS::ObjectState> ("attributes");
+        for (GS::Pair<API_Attribute, API_AttributeDefExt>& item : loaded) {
+            API_Attribute& attr = item.first;
+            // Only the legacy 8-bit name comes with an attribute of another file (see GetAttributesFromProject).
+            GS::UniString name (attr.header.name);
+            if (filterByName && !attributeNames.Contains (name)) {
+                ACAPI_DisposeAttrDefsHdlsExt (&item.second);
+                DisposeAttribute (attr);
+                continue;
+            }
+
+            GS::ObjectState attributeResult;
+            attributeResult.Add ("name", name);
+            attributeResult.Add ("sourceIndex", GetAttributeIndex (attr.header.index));
+
+            API_Attr_Head existing = {};
+            const bool nameExists = FindAttributeByName (typeID, name, existing);
+            if (nameExists && !overwriteExisting) {
+                attributeResult.Add ("result", "skipped");
+                attributeResult.Add ("attributeId", CreateGuidObjectState (existing.guid));
+            } else if (dryRun) {
+                attributeResult.Add ("result", nameExists ? "overwritten" : "created");
+                if (nameExists) {
+                    attributeResult.Add ("attributeId", CreateGuidObjectState (existing.guid));
+                }
+            } else {
+                attr.header.uniStringNamePtr = &name;
+                GSErrCode err = NoError;
+                if (nameExists) {
+                    // Overwritten in place: the attribute keeps its index and guid, so the elements and
+                    // attributes of the open project that refer to it keep doing so.
+                    attr.header.index = existing.index;
+                    attr.header.guid = existing.guid;
+                    err = ACAPI_Attribute_ModifyExt (&attr, &item.second);
+                } else {
+                    // The guid that comes with the attribute is not the one stored in the source file:
+                    // ACAPI_Attribute_GetAttributesFromProject hands out a new one on every read. So the
+                    // new attribute gets its own guid from Archicad.
+                    attr.header.guid = APINULLGuid;
+                    err = ACAPI_Attribute_CreateExt (&attr, &item.second);
+                }
+                attr.header.uniStringNamePtr = nullptr;
+
+                if (err != NoError) {
+                    attributeResult.Add ("result", "failed");
+                    GS::ObjectState error;
+                    error.Add ("code", err);
+                    error.Add ("message", nameExists ? "Failed to overwrite the attribute." : "Failed to create the attribute.");
+                    attributeResult.Add ("error", error);
+                } else {
+                    attributeResult.Add ("result", nameExists ? "overwritten" : "created");
+                    attributeResult.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
+                }
+            }
+            attributes (attributeResult);
+
+            ACAPI_DisposeAttrDefsHdlsExt (&item.second);
+            DisposeAttribute (attr);
+        }
+
+        attributesByType (typeResult);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_GENERAL, "ImportAttributesFromProject needs Archicad 27 or later.");
 #endif
 }
 
@@ -638,6 +1023,65 @@ GS::ObjectState GetCurrentLayerCombinationCommand::Execute (const GS::ObjectStat
     response.Add ("layerCombinationId", CreateGuidObjectState (attribute.header.guid));
     response.Add ("name", name);
     return response;
+}
+
+ActivateLayerCombinationCommand::ActivateLayerCombinationCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ActivateLayerCombinationCommand::GetName () const
+{
+    return "ActivateLayerCombination";
+}
+
+GS::Optional<GS::UniString> ActivateLayerCombinationCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeId": {
+                "$ref": "#/AttributeId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeId"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ActivateLayerCombinationCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState ActivateLayerCombinationCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::ObjectState attributeId;
+    if (!parameters.Get ("attributeId", attributeId)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing parameter: attributeId.");
+    }
+
+    API_Attribute attribute = {};
+    attribute.header.typeID = API_LayerCombID;
+    attribute.header.guid = GetGuidFromObjectState (attributeId);
+    GSErrCode err = ACAPI_Attribute_Get (&attribute);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Layer combination not found.");
+    }
+
+    // Applies the combination to the current window, like choosing it in the
+    // Quick Layers palette; the saved views are left as they are.
+    API_AttributeIndex layerCombIndex = attribute.header.index;
+    err = ACAPI_Navigator_ChangeCurrLayerComb (&layerCombIndex);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to activate the layer combination in the current window.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
 }
 
 static GS::UniString LineItemTypeToString (API_LtypItemID itemType)
@@ -930,7 +1374,9 @@ GS::ObjectState GetFillsCommand::Execute (const GS::ObjectState& parameters, GS:
         if (wantsField.Wants ("angle")) {
             fill.Add ("angle", attr.filltype.hAngle);
         }
-        if (wantsField.Wants ("bitPattern") && attr.filltype.subType == APIFill_Vector) {
+        // A percent fill (a Solid fill below 100 %) has a bitmap pattern too, so it is returned for Solid
+        // fills as well and a fill read here can be passed to CreateFills unchanged.
+        if (wantsField.Wants ("bitPattern") && (attr.filltype.subType == APIFill_Vector || attr.filltype.subType == APIFill_Solid)) {
             fill.Add ("bitPattern", GetBitPatternHex (attr.filltype.bitPat));
         }
         bool isGradient = (attr.filltype.subType == APIFill_LinearGradient || attr.filltype.subType == APIFill_RadialGradient);
@@ -939,6 +1385,15 @@ GS::ObjectState GetFillsCommand::Execute (const GS::ObjectState& parameters, GS:
         }
         if (wantsField.Wants ("gradientEnd") && isGradient) {
             fill.Add ("gradientEnd", Create2DCoordinateObjectState (attr.filltype.c2));
+        }
+        // For Symbol fills c1/c2 are the offset vectors of the repeating motif (X1/Y1 and X2/Y2 in the Fill Types
+        // dialog); without them a copied symbol fill draws every motif on top of the other.
+        bool isSymbol = (attr.filltype.subType == APIFill_Symbol);
+        if (wantsField.Wants ("symbolOffset1") && isSymbol) {
+            fill.Add ("symbolOffset1", Create2DCoordinateObjectState (attr.filltype.c1));
+        }
+        if (wantsField.Wants ("symbolOffset2") && isSymbol) {
+            fill.Add ("symbolOffset2", Create2DCoordinateObjectState (attr.filltype.c2));
         }
         if (wantsField.Wants ("percent")) {
             fill.Add ("percent", attr.filltype.percent);
@@ -956,7 +1411,7 @@ GS::ObjectState GetFillsCommand::Execute (const GS::ObjectState& parameters, GS:
 
         bool wantsLineItems = wantsField.Wants ("lineItems") && attr.filltype.subType == APIFill_Vector;
         bool wantsSymbolGeometry = attr.filltype.subType == APIFill_Symbol &&
-            (wantsField.Wants ("symbolLines") || wantsField.Wants ("symbolArcs") || wantsField.Wants ("symbolHotspots"));
+            (wantsField.Wants ("symbolLines") || wantsField.Wants ("symbolArcs") || wantsField.Wants ("symbolHotspots") || wantsField.Wants ("symbolSolidFills"));
         if (wantsLineItems || wantsSymbolGeometry) {
             API_AttributeDefExt fillDefs = {};
             if (ACAPI_Attribute_GetDefExt (API_FilltypeID, attr.header.index, &fillDefs) == NoError) {
@@ -1005,6 +1460,43 @@ GS::ObjectState GetFillsCommand::Execute (const GS::ObjectState& parameters, GS:
                     const auto& symbolHotspotsList = fill.AddList<GS::ObjectState> ("symbolHotspots");
                     for (Int32 i = 0; i < count; ++i) {
                         symbolHotspotsList (Create2DCoordinateObjectState ((*fillDefs.sfill_Items.sfill_HotSpots)[i]));
+                    }
+                }
+                if (wantsField.Wants ("symbolSolidFills") && attr.filltype.subType == APIFill_Symbol && fillDefs.sfill_Items.sfill_SolidFills != nullptr) {
+                    // The polygons' coordinates, contour ends and arcs are stored one polygon after the
+                    // other in three shared handles, each polygon in the layout of an element polygon:
+                    // nCoords + 1 coordinates and nSubPolys + 1 contour ends, slot 0 unused (0).
+                    // Slot 0 is skipped, so each polygon reads as closed contours with 1-based ends,
+                    // like coordinates/subPolygons elsewhere in Tapir.
+                    const auto& items = fillDefs.sfill_Items;
+                    Int32 count = (Int32) (BMGetHandleSize ((GSHandle) items.sfill_SolidFills) / sizeof (API_Polygon));
+                    count = GS::Min (count, attr.filltype.filNumb);
+                    const Int32 coordCount = items.sfill_FillCoords != nullptr ? (Int32) (BMGetHandleSize ((GSHandle) items.sfill_FillCoords) / sizeof (API_Coord)) : 0;
+                    const Int32 subPolyCount = items.sfill_SubPolys != nullptr ? (Int32) (BMGetHandleSize ((GSHandle) items.sfill_SubPolys) / sizeof (Int32)) : 0;
+                    const Int32 arcCount = items.sfill_PolyArcs != nullptr ? (Int32) (BMGetHandleSize ((GSHandle) items.sfill_PolyArcs) / sizeof (API_PolyArc)) : 0;
+                    Int32 coordOffset = 0;
+                    Int32 subPolyOffset = 0;
+                    Int32 arcOffset = 0;
+                    const auto& solidFillsList = fill.AddList<GS::ObjectState> ("symbolSolidFills");
+                    for (Int32 i = 0; i < count; ++i) {
+                        const API_Polygon& polygon = (*items.sfill_SolidFills)[i];
+                        GS::ObjectState solidFill;
+                        const auto& coordinatesList = solidFill.AddList<GS::ObjectState> ("coordinates");
+                        for (Int32 j = 1; j <= polygon.nCoords && coordOffset + j < coordCount; ++j) {
+                            coordinatesList (Create2DCoordinateObjectState ((*items.sfill_FillCoords)[coordOffset + j]));
+                        }
+                        const auto& subPolygonsList = solidFill.AddList<Int32> ("subPolygons");
+                        for (Int32 j = 1; j <= polygon.nSubPolys && subPolyOffset + j < subPolyCount; ++j) {
+                            subPolygonsList ((*items.sfill_SubPolys)[subPolyOffset + j]);
+                        }
+                        const auto& arcsList = solidFill.AddList<GS::ObjectState> ("arcs");
+                        for (Int32 j = 0; j < polygon.nArcs && arcOffset + j < arcCount; ++j) {
+                            arcsList (CreatePolyArcObjectState ((*items.sfill_PolyArcs)[arcOffset + j]));
+                        }
+                        coordOffset += polygon.nCoords + 1;
+                        subPolyOffset += polygon.nSubPolys + 1;
+                        arcOffset += polygon.nArcs;
+                        solidFillsList (solidFill);
                     }
                 }
                 ACAPI_DisposeAttrDefsHdlsExt (&fillDefs);
@@ -1517,6 +2009,108 @@ GS::ObjectState GetCurrentPenTableCommand::Execute (const GS::ObjectState& /*par
 #endif
 
     return response;
+}
+
+GetPensCommand::GetPensCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetPensCommand::GetName () const
+{
+    return "GetPens";
+}
+
+GS::Optional<GS::UniString> GetPensCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "indices": {
+                "type": "array",
+                "description": "The indices of the pens to return, from 1 to the number of pens (GetCurrentPenTable returns penCount). If omitted, every pen is returned.",
+                "items": {
+                    "type": "integer"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetPensCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "pens": {
+                "type": "array",
+                "description": "The pens in effect in the current window, or errors. The order is that of the given indices.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "$ref": "#/PenTablePen"
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "pens"
+        ]
+    })";
+}
+
+GS::ObjectState GetPensCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    UInt32 penCount = 0;
+    GSErrCode err = ACAPI_Attribute_GetPenNum (penCount);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the number of pens.");
+    }
+
+    GS::Array<Int32> indices;
+    if (!parameters.Get ("indices", indices)) {
+        for (UInt32 i = 1; i <= penCount; ++i) {
+            indices.Push ((Int32) i);
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& pens = response.AddList<GS::ObjectState> ("pens");
+
+    for (const Int32 index : indices) {
+        if (index < 1 || (UInt32) index > penCount) {
+            pens (CreateErrorResponse (APIERR_BADINDEX, GS::UniString::Printf ("Invalid pen index %d, it must be between 1 and %u.", index, penCount)));
+            continue;
+        }
+
+        API_Pen pen = {};
+        pen.index = (short) index;
+        err = ACAPI_Attribute_GetPen (pen);
+        if (err != NoError) {
+            pens (CreateErrorResponse (err, GS::UniString::Printf ("Failed to get the pen %d.", index)));
+            continue;
+        }
+
+        pens (GS::ObjectState (
+            "index", (Int32) pen.index,
+            "color", GS::ObjectState ("red", pen.rgb.f_red, "green", pen.rgb.f_green, "blue", pen.rgb.f_blue),
+            "width", pen.width,
+            "description", GS::UniString (pen.description)));
+    }
+
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
 }
 
 GetProfilesCommand::GetProfilesCommand () :
@@ -3130,10 +3724,37 @@ static GS::Optional<GS::ObjectState> GetAttributeFolderFromObjectState (const GS
 }
 
 // Resolves folder.guid (a GS::Guid, not an API_Guid) from its typeID and path; false when no folder exists on that path.
+// ACAPI_Attribute_GetFolder writes the folder's full path back, with the localized name of the root folder
+// in front ("Ebenen" in a German Archicad). Callers keep the requested path for their messages and checks.
 static bool FindAttributeFolder (API_AttributeFolder& folder)
 {
     folder.guid = GS::Guid ();
     return ACAPI_Attribute_GetFolder (folder) == NoError && !folder.guid.IsNull ();
+}
+
+// ACAPI_Attribute_Move fails for an attribute or a folder that is already directly in the target folder.
+// Moving it there changes nothing, so the command reports it as a success; a script that applies a folder
+// layout can then run again. The folder is read again first: for the root folder Archicad reports no guid,
+// and the content is found from what ACAPI_Attribute_GetFolder returns.
+static bool IsDirectlyInAttributeFolder (const API_AttributeFolder& targetFolder, const GS::Guid& attributeGuid, const GS::Guid& folderGuid)
+{
+    API_AttributeFolder folder = targetFolder;
+    if (ACAPI_Attribute_GetFolder (folder) != NoError) {
+        return false;
+    }
+    API_AttributeFolderContent content;
+    if (ACAPI_Attribute_GetFolderContent (folder, content) != NoError) {
+        return false;
+    }
+    if (!attributeGuid.IsNull ()) {
+        return content.attributeIds.Contains (attributeGuid);
+    }
+    for (const API_AttributeFolder& subFolder : content.subFolders) {
+        if (subFolder.guid == folderGuid) {
+            return true;
+        }
+    }
+    return false;
 }
 
 #endif
@@ -3284,16 +3905,17 @@ GS::ObjectState DeleteAttributeFoldersCommand::Execute (const GS::ObjectState& p
             executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The root folder cannot be deleted."));
             continue;
         }
+        const GS::UniString requestedPath = GetAttributeFolderPathString (folder.path);
         if (!FindAttributeFolder (folder)) {
             executionResults (CreateFailedExecutionResult (APIERR_BADID,
-                GS::UniString::Printf ("Attribute folder '%T' not found.", GetAttributeFolderPathString (folder.path).ToPrintf ())));
+                GS::UniString::Printf ("Attribute folder '%T' not found.", requestedPath.ToPrintf ())));
             continue;
         }
 
         const GSErrCode err = ACAPI_Attribute_DeleteFolder (folder);
         if (err != NoError) {
             executionResults (CreateFailedExecutionResult (err,
-                GS::UniString::Printf ("Failed to delete attribute folder '%T'.", GetAttributeFolderPathString (folder.path).ToPrintf ())));
+                GS::UniString::Printf ("Failed to delete attribute folder '%T'.", requestedPath.ToPrintf ())));
             continue;
         }
 
@@ -3399,16 +4021,17 @@ GS::ObjectState RenameAttributeFoldersCommand::Execute (const GS::ObjectState& p
             continue;
         }
 
+        const GS::UniString requestedPath = GetAttributeFolderPathString (folder.path);
         if (!FindAttributeFolder (folder)) {
             executionResults (CreateFailedExecutionResult (APIERR_BADID,
-                GS::UniString::Printf ("Attribute folder '%T' not found.", GetAttributeFolderPathString (folder.path).ToPrintf ())));
+                GS::UniString::Printf ("Attribute folder '%T' not found.", requestedPath.ToPrintf ())));
             continue;
         }
 
         const GSErrCode err = ACAPI_Attribute_RenameFolder (folder, newName);
         if (err != NoError) {
             executionResults (CreateFailedExecutionResult (err,
-                GS::UniString::Printf ("Failed to rename attribute folder '%T'.", GetAttributeFolderPathString (folder.path).ToPrintf ())));
+                GS::UniString::Printf ("Failed to rename attribute folder '%T'.", requestedPath.ToPrintf ())));
             continue;
         }
 
@@ -3491,10 +4114,11 @@ GS::ObjectState MoveAttributesAndFoldersCommand::Execute (const GS::ObjectState&
     }
     // The root folder (empty path) always exists: its guid is looked up as well, and stays null when the API reports
     // none for it, so the target is identified either way.
+    const GS::Array<GS::UniString> requestedTargetPath = targetFolder.path;
     if (!FindAttributeFolder (targetFolder)) {
-        if (!targetFolder.path.IsEmpty ()) {
+        if (!requestedTargetPath.IsEmpty ()) {
             return CreateErrorResponse (APIERR_BADID,
-                GS::UniString::Printf ("Target attribute folder '%T' not found.", GetAttributeFolderPathString (targetFolder.path).ToPrintf ()));
+                GS::UniString::Printf ("Target attribute folder '%T' not found.", GetAttributeFolderPathString (requestedTargetPath).ToPrintf ()));
         }
         targetFolder.guid = GS::Guid ();
     }
@@ -3524,7 +4148,7 @@ GS::ObjectState MoveAttributesAndFoldersCommand::Execute (const GS::ObjectState&
         GS::Array<GS::Guid> attributesToMove;
         attributesToMove.Push (APIGuid2GSGuid (GetGuidFromAttributesArrayItem (attributeIdItem)));
         const GSErrCode err = ACAPI_Attribute_Move (noFolders, attributesToMove, targetFolder);
-        if (err != NoError) {
+        if (err != NoError && !IsDirectlyInAttributeFolder (targetFolder, attributesToMove[0], GS::Guid ())) {
             attributeExecutionResults (CreateFailedExecutionResult (err, "Failed to move the attribute."));
             continue;
         }
@@ -3548,10 +4172,11 @@ GS::ObjectState MoveAttributesAndFoldersCommand::Execute (const GS::ObjectState&
             continue;
         }
 
-        // A folder's own subtree starts with its path: moving it there would make it its own ancestor.
-        bool targetIsInsideFolder = targetFolder.path.GetSize () >= folder.path.GetSize ();
+        // A folder's own subtree starts with its path: moving it there would make it its own ancestor. Compared with
+        // the requested target path, since the found target's path starts with the root folder's name.
+        bool targetIsInsideFolder = requestedTargetPath.GetSize () >= folder.path.GetSize ();
         for (UIndex i = 0; targetIsInsideFolder && i < folder.path.GetSize (); ++i) {
-            targetIsInsideFolder = (targetFolder.path[i] == folder.path[i]);
+            targetIsInsideFolder = (requestedTargetPath[i] == folder.path[i]);
         }
         if (targetIsInsideFolder) {
             folderExecutionResults (CreateFailedExecutionResult (APIERR_BADPARS,
@@ -3559,18 +4184,19 @@ GS::ObjectState MoveAttributesAndFoldersCommand::Execute (const GS::ObjectState&
             continue;
         }
 
+        const GS::UniString requestedPath = GetAttributeFolderPathString (folder.path);
         if (!FindAttributeFolder (folder)) {
             folderExecutionResults (CreateFailedExecutionResult (APIERR_BADID,
-                GS::UniString::Printf ("Attribute folder '%T' not found.", GetAttributeFolderPathString (folder.path).ToPrintf ())));
+                GS::UniString::Printf ("Attribute folder '%T' not found.", requestedPath.ToPrintf ())));
             continue;
         }
 
         GS::Array<API_AttributeFolder> foldersToMove;
         foldersToMove.Push (folder);
         const GSErrCode err = ACAPI_Attribute_Move (foldersToMove, noAttributes, targetFolder);
-        if (err != NoError) {
+        if (err != NoError && !IsDirectlyInAttributeFolder (targetFolder, GS::Guid (), folder.guid)) {
             folderExecutionResults (CreateFailedExecutionResult (err,
-                GS::UniString::Printf ("Failed to move attribute folder '%T'.", GetAttributeFolderPathString (folder.path).ToPrintf ())));
+                GS::UniString::Printf ("Failed to move attribute folder '%T'.", requestedPath.ToPrintf ())));
             continue;
         }
 
@@ -3613,6 +4239,24 @@ GS::Optional<GS::UniString> CreateAttributesCommandBase::GetRawResponseSchema ()
     })";
 }
 
+// The "index" of an attribute to overwrite. The input schemas of the Create<Attribute> commands
+// declare it as a string, which never read into an Int32, so the index used to be ignored.
+static bool GetIndexToOverwrite (const GS::ObjectState& data, Int32& index)
+{
+    GS::UniString indexStr;
+    if (!data.Get ("index", indexStr)) {
+        return false;
+    }
+    const auto indexCStr = indexStr.ToCStr ();
+    char* end = nullptr;
+    const long value = std::strtol (indexCStr.Get (), &end, 10);
+    if (end == indexCStr.Get () || *end != '\0' || value < 0 || value > std::numeric_limits<Int32>::max ()) {
+        return false;
+    }
+    index = static_cast<Int32> (value);
+    return true;
+}
+
 GS::ObjectState CreateAttributesCommandBase::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> dataArray;
@@ -3638,7 +4282,7 @@ GS::ObjectState CreateAttributesCommandBase::Execute (const GS::ObjectState& par
             attr.header.guid = GetGuidFromAttributesArrayItem (data);
 
             Int32 index = -1;
-            if (data.Get ("index", index) && index >= 0) {
+            if (GetIndexToOverwrite (data, index)) {
                 attr.header.index = ACAPI_CreateAttributeIndex (index);
             }
         }
@@ -4003,13 +4647,13 @@ GS::Optional<GS::UniString> CreateLayerCombinationsCommand::GetInputParametersSc
                             "description": "Name. If overwriteExisting is true, then the existing Layer Combination with the given name will be overwritten."
                         },
                         "layers": {
-                            "$ref": "#/LayersOfLayerCombination"
+                            "$ref": "#/LayersOfLayerCombination",
+                            "description": "Layer states to set. Layers not listed keep their current state when overwriting an existing Layer Combination (or get the default visible/unlocked state for a new one), so this can be omitted to e.g. only rename an existing Layer Combination."
                         }
                     },
                     "additionalProperties": false,
                     "required" : [
-                        "name",
-                        "layers"
+                        "name"
                     ]
                 }
             },
@@ -4419,9 +5063,17 @@ GS::Optional<GS::UniString> CreateFillsCommand::GetInputParametersSchema () cons
                             "description": "Gradient end point (LinearGradient/RadialGradient fills only).",
                             "$ref": "#/Coordinate2D"
                         },
+                        "symbolOffset1": {
+                            "description": "First offset vector of the repeating symbol motif, X1/Y1 in the Fill Types dialog (Symbol fills only).",
+                            "$ref": "#/Coordinate2D"
+                        },
+                        "symbolOffset2": {
+                            "description": "Second offset vector of the repeating symbol motif, X2/Y2 in the Fill Types dialog (Symbol fills only).",
+                            "$ref": "#/Coordinate2D"
+                        },
                         "percent": {
                             "type": "number",
-                            "description": "Translucency percentage [0..1] (gradient and some Solid fills)."
+                            "description": "Translucency percentage [0..1] (gradient and Solid fills). A Solid fill with a percent below 1 is created as a percent fill (like the 25 % fill), 1 makes it a full Solid fill."
                         },
                         "texture": {
                             "description": "Used for Image and gradient fills. Only name, rotationAngle, xSize, ySize, mirrorX, and mirrorY are used for Fills.",
@@ -4453,6 +5105,13 @@ GS::Optional<GS::UniString> CreateFillsCommand::GetInputParametersSchema () cons
                             "description": "Hotspot coordinates of the fill's repeating symbol pattern (Symbol fills only).",
                             "items": {
                                 "$ref": "#/Coordinate2D"
+                            }
+                        },
+                        "symbolSolidFills": {
+                            "type": "array",
+                            "description": "Filled polygons of the fill's repeating symbol pattern (Symbol fills only), as GetFills returns them.",
+                            "items": {
+                                "$ref": "#/FillSymbolSolidFill"
                             }
                         }
                     },
@@ -4529,7 +5188,7 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
             fill.header.guid = GetGuidFromAttributesArrayItem (data);
 
             Int32 index = -1;
-            if (data.Get ("index", index) && index >= 0) {
+            if (GetIndexToOverwrite (data, index)) {
                 fill.header.index = ACAPI_CreateAttributeIndex (index);
             }
         }
@@ -4617,7 +5276,13 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
         data.Get ("horizontalSpacing", fill.filltype.hXSpac);
         data.Get ("verticalSpacing", fill.filltype.hYSpac);
         data.Get ("angle", fill.filltype.hAngle);
-        data.Get ("percent", fill.filltype.percent);
+        // Archicad keeps the percent of a Solid fill only when isPercentFill is set. The DevKit documents
+        // it as output-only, but ACAPI_Attribute_CreateExt and ModifyExt read it: without it the fill
+        // comes out as a full Solid fill with percent 1 (#1613). It is only set when percent is given, so
+        // a Solid fill created or overwritten without percent stays as before.
+        if (data.Get ("percent", fill.filltype.percent) && fill.filltype.subType == APIFill_Solid) {
+            fill.filltype.isPercentFill = fill.filltype.percent < 1.0;
+        }
 
         GS::UniString bitPattern;
         if (data.Get ("bitPattern", bitPattern)) {
@@ -4629,6 +5294,13 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
         }
         if (const GS::ObjectState* gradientEnd = data.Get ("gradientEnd")) {
             fill.filltype.c2 = Get2DCoordinateFromObjectState (*gradientEnd);
+        }
+        // Same c1/c2 fields, under the names GetFills returns them for Symbol fills.
+        if (const GS::ObjectState* symbolOffset1 = data.Get ("symbolOffset1")) {
+            fill.filltype.c1 = Get2DCoordinateFromObjectState (*symbolOffset1);
+        }
+        if (const GS::ObjectState* symbolOffset2 = data.Get ("symbolOffset2")) {
+            fill.filltype.c2 = Get2DCoordinateFromObjectState (*symbolOffset2);
         }
 
         GS::ObjectState textureObj;
@@ -4710,8 +5382,7 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
 
         // Symbol fill geometry (sfill_Lines/sfill_Arcs/sfill_HotSpots) only exists in API_AttributeDefExt, which
         // is why CreateFills uses the Ext create/modify functions instead of the CreateAttributesCommandBase
-        // pattern used by the other simple attribute types. Solid-fill sub-polygons within a symbol fill
-        // (sfill_SolidFills) are not supported - not used by any real-world example seen so far.
+        // pattern used by the other simple attribute types.
         GS::Array<GS::ObjectState> symbolLines;
         if (data.Get ("symbolLines", symbolLines)) {
             UInt32 nItems = symbolLines.GetSize ();
@@ -4760,6 +5431,79 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
                 fillDefs.sfill_Items.sfill_HotSpots = (API_Coord**) BMAllocateHandle (nItems * sizeof (API_Coord), ALLOCATE_CLEAR, 0);
                 for (UInt32 i = 0; i < nItems; ++i) {
                     (*fillDefs.sfill_Items.sfill_HotSpots)[i] = Get2DCoordinateFromObjectState (symbolHotspots[i]);
+                }
+            }
+        }
+
+        // Filled polygons of the symbol (e.g. the solid parts of an insulation pattern): written back
+        // into the three shared handles in the same order and layout GetFills reads them from
+        // (slot 0 of each polygon's coordinates and contour ends stays unused, i.e. 0).
+        GS::Array<GS::ObjectState> symbolSolidFills;
+        if (data.Get ("symbolSolidFills", symbolSolidFills)) {
+            const UInt32 nItems = symbolSolidFills.GetSize ();
+            fill.filltype.filNumb = (Int32) nItems;
+            // Replace the polygons seeded from the fill being overwritten as a whole.
+            BMKillHandle ((GSHandle*) &fillDefs.sfill_Items.sfill_SolidFills);
+            BMKillHandle ((GSHandle*) &fillDefs.sfill_Items.sfill_FillCoords);
+            BMKillHandle ((GSHandle*) &fillDefs.sfill_Items.sfill_SubPolys);
+            BMKillHandle ((GSHandle*) &fillDefs.sfill_Items.sfill_PolyArcs);
+
+            if (nItems > 0) {
+                GS::Array<GS::Array<GS::ObjectState>> coordinates;
+                GS::Array<GS::Array<Int32>> subPolygons;
+                GS::Array<GS::Array<GS::ObjectState>> arcs;
+                UInt32 totalCoords = 0;
+                UInt32 totalSubPolys = 0;
+                UInt32 totalArcs = 0;
+                for (UInt32 i = 0; i < nItems; ++i) {
+                    coordinates.Push (GS::Array<GS::ObjectState> ());
+                    subPolygons.Push (GS::Array<Int32> ());
+                    arcs.Push (GS::Array<GS::ObjectState> ());
+                    symbolSolidFills[i].Get ("coordinates", coordinates[i]);
+                    symbolSolidFills[i].Get ("subPolygons", subPolygons[i]);
+                    symbolSolidFills[i].Get ("arcs", arcs[i]);
+                    totalCoords += coordinates[i].GetSize () + 1;
+                    totalSubPolys += subPolygons[i].GetSize () + 1;
+                    totalArcs += arcs[i].GetSize ();
+                }
+
+                fillDefs.sfill_Items.sfill_SolidFills = (API_Polygon**) BMAllocateHandle (nItems * sizeof (API_Polygon), ALLOCATE_CLEAR, 0);
+                if (totalCoords > 0) {
+                    fillDefs.sfill_Items.sfill_FillCoords = (API_Coord**) BMAllocateHandle (totalCoords * sizeof (API_Coord), ALLOCATE_CLEAR, 0);
+                }
+                if (totalSubPolys > 0) {
+                    fillDefs.sfill_Items.sfill_SubPolys = (Int32**) BMAllocateHandle (totalSubPolys * sizeof (Int32), ALLOCATE_CLEAR, 0);
+                }
+                if (totalArcs > 0) {
+                    fillDefs.sfill_Items.sfill_PolyArcs = (API_PolyArc**) BMAllocateHandle (totalArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0);
+                }
+
+                UInt32 coordOffset = 0;
+                UInt32 subPolyOffset = 0;
+                UInt32 arcOffset = 0;
+                for (UInt32 i = 0; i < nItems; ++i) {
+                    API_Polygon& polygon = (*fillDefs.sfill_Items.sfill_SolidFills)[i];
+                    polygon.nCoords = (Int32) coordinates[i].GetSize ();
+                    polygon.nSubPolys = (Int32) subPolygons[i].GetSize ();
+                    polygon.nArcs = (Int32) arcs[i].GetSize ();
+                    for (UInt32 j = 0; j < coordinates[i].GetSize (); ++j) {
+                        (*fillDefs.sfill_Items.sfill_FillCoords)[coordOffset + 1 + j] = Get2DCoordinateFromObjectState (coordinates[i][j]);
+                    }
+                    for (UInt32 j = 0; j < subPolygons[i].GetSize (); ++j) {
+                        (*fillDefs.sfill_Items.sfill_SubPolys)[subPolyOffset + 1 + j] = subPolygons[i][j];
+                    }
+                    for (UInt32 j = 0; j < arcs[i].GetSize (); ++j) {
+                        API_PolyArc& arc = (*fillDefs.sfill_Items.sfill_PolyArcs)[arcOffset + j];
+                        arcs[i][j].Get ("begIndex", arc.begIndex);
+                        arcs[i][j].Get ("endIndex", arc.endIndex);
+                        arcs[i][j].Get ("arcAngle", arc.arcAngle);
+                        // GetFills returns them 0 based (CreatePolyArcObjectState), Archicad counts from the unused slot 0.
+                        arc.begIndex += 1;
+                        arc.endIndex += 1;
+                    }
+                    coordOffset += coordinates[i].GetSize () + 1;
+                    subPolyOffset += subPolygons[i].GetSize () + 1;
+                    arcOffset += arcs[i].GetSize ();
                 }
             }
         }
@@ -5460,7 +6204,7 @@ GS::ObjectState CreatePenTablesCommand::Execute (const GS::ObjectState& paramete
             penTable.header.guid = GetGuidFromAttributesArrayItem (penTableData);
 
             Int32 index = -1;
-            if (penTableData.Get ("index", index) && index >= 0) {
+            if (GetIndexToOverwrite (penTableData, index)) {
                 penTable.header.index = ACAPI_CreateAttributeIndex (index);
             }
         }
@@ -5592,7 +6336,7 @@ GS::ObjectState CreatePenTablesCommand::Execute (const GS::ObjectState& paramete
             penTable.header.guid = GetGuidFromAttributesArrayItem (penTableData);
 
             Int32 index = -1;
-            if (penTableData.Get ("index", index) && index >= 0) {
+            if (GetIndexToOverwrite (penTableData, index)) {
                 penTable.header.index = ACAPI_CreateAttributeIndex (index);
             }
         }
@@ -5692,6 +6436,172 @@ GS::ObjectState CreatePenTablesCommand::Execute (const GS::ObjectState& paramete
     return response;
 }
 #endif
+
+ModifyPensCommand::ModifyPensCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyPensCommand::GetName () const
+{
+    return "ModifyPens";
+}
+
+GS::Optional<GS::UniString> ModifyPensCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "pens": {
+                "type": "array",
+                "description": "The pens to change in the active Pen Table. Only the given fields (color, width, description) of a listed pen are changed; every other pen of the table is left as it is.",
+                "items": {
+                    "$ref": "#/PenData"
+                }
+            },
+            "target": {
+                "type": "string",
+                "description": "Which active Pen Table to change: the one in effect for the model views (the default) or the one in effect for the layouts. The two can be the same Pen Table.",
+                "enum": [
+                    "model",
+                    "layout"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "pens"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyPensCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+// The pens of a Pen Table can only be written as a whole (ACAPI_Attribute_ModifyExt with the full pen array,
+// the way CreatePenTables overwrites a table), so the current array is read with ACAPI_Attribute_GetDefExt,
+// the given pens are patched in memory and the table is written back once. Before AC27 the array is an
+// old-style handle of API_PenType elements instead of a GS::Array<API_Pen>; the fields used here (rgb, width,
+// description) have the same names in both, so only the element count needs a version-specific line.
+// Which table is active is read from inEffectForModel/inEffectForLayout, as GetPenTables reports them.
+GS::ObjectState ModifyPensCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> pens;
+    parameters.Get ("pens", pens);
+
+    GS::UniString target = "model";
+    parameters.Get ("target", target);
+    const bool forLayout = (target == "layout");
+
+    GS::UniString penTableName;
+    API_Attribute penTable = {};
+    bool found = false;
+    GS::Array<API_Attribute> penTables;
+    ACAPI_Attribute_GetAttributesByType (API_PenTableID, penTables);
+    for (API_Attribute& candidate : penTables) {
+        if (!found) {
+            API_Attribute attr = {};
+            attr.header.typeID = API_PenTableID;
+            attr.header.index = candidate.header.index;
+            attr.header.uniStringNamePtr = &penTableName;
+            if (ACAPI_Attribute_Get (&attr) == NoError &&
+                (forLayout ? attr.penTable.inEffectForLayout : attr.penTable.inEffectForModel)) {
+                penTable = attr;
+                found = true;
+            }
+        }
+        DisposeAttribute (candidate);
+    }
+
+    if (!found) {
+        return CreateErrorResponse (APIERR_BADID, forLayout
+            ? "No Pen Table is active for the layouts."
+            : "No Pen Table is active for the model views.");
+    }
+
+    API_AttributeDefExt penTableDefs = {};
+    GSErrCode err = ACAPI_Attribute_GetDefExt (API_PenTableID, penTable.header.index, &penTableDefs);
+    if (err != NoError || penTableDefs.penTable_Items == nullptr) {
+        ACAPI_DisposeAttrDefsHdlsExt (&penTableDefs);
+        return CreateErrorResponse (err != NoError ? err : APIERR_GENERAL, "Failed to read the pens of the active Pen Table.");
+    }
+
+#ifdef ServerMainVers_2700
+    const Int32 penCount = (Int32) penTableDefs.penTable_Items->GetSize ();
+#else
+    const Int32 penCount = (Int32) (BMGetHandleSize ((GSHandle) penTableDefs.penTable_Items) / sizeof (API_PenType));
+#endif
+
+    struct PenResult {
+        bool          failed = false;
+        GSErrCode     errorCode = NoError;
+        GS::UniString errorMessage;
+    };
+    std::vector<PenResult> penResults;
+    bool anyPenChanged = false;
+
+    for (const GS::ObjectState& penData : pens) {
+        PenResult result;
+
+        Int32 penIndex = 0;
+        if (!penData.Get ("index", penIndex) || penIndex < 1 || penIndex > penCount) {
+            result.failed = true;
+            result.errorCode = APIERR_BADINDEX;
+            result.errorMessage = GS::UniString::Printf ("index must be between 1 and %d.", penCount);
+            penResults.push_back (result);
+            continue;
+        }
+
+        double width = 0.0;
+        if (penData.Get ("width", width) && width < 0.0) {
+            result.failed = true;
+            result.errorCode = APIERR_BADPARS;
+            result.errorMessage = "width must not be negative.";
+            penResults.push_back (result);
+            continue;
+        }
+
+        auto& pen = (*penTableDefs.penTable_Items)[penIndex - 1];
+        GetColor (penData, "color", pen.rgb);
+        penData.Get ("width", pen.width);
+        SetCharProperty (&penData, "description", pen.description);
+        anyPenChanged = true;
+        penResults.push_back (result);
+    }
+
+    GSErrCode modifyErr = NoError;
+    if (anyPenChanged) {
+        modifyErr = ACAPI_Attribute_ModifyExt (&penTable, &penTableDefs);
+    }
+    ACAPI_DisposeAttrDefsHdlsExt (&penTableDefs);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    for (const PenResult& result : penResults) {
+        if (result.failed) {
+            executionResults (CreateFailedExecutionResult (result.errorCode, result.errorMessage));
+        } else if (modifyErr != NoError) {
+            executionResults (CreateFailedExecutionResult (modifyErr, "Failed to modify the active Pen Table. In a Teamwork project the PenTables lockable object set must be reserved first (see ReserveLockableObjectSet)."));
+        } else {
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+    }
+
+    return response;
+}
 
 CreateProfilesCommand::CreateProfilesCommand () :
     CommandBase (CommonSchema::Used)
@@ -5873,7 +6783,7 @@ GS::ObjectState CreateProfilesCommand::Execute (const GS::ObjectState& parameter
             profile.header.guid = GetGuidFromAttributesArrayItem (profileData);
 
             Int32 index = -1;
-            if (profileData.Get ("index", index) && index >= 0) {
+            if (GetIndexToOverwrite (profileData, index)) {
                 profile.header.index = ACAPI_CreateAttributeIndex (index);
             }
         }
@@ -6076,7 +6986,7 @@ GS::Optional<GS::UniString> CreateCompositesCommand::GetInputParametersSchema ()
                         },
                         "useWith": {
                             "type": "array",
-                            "description" : "Array of types the composite can used with.",
+                            "description" : "Array of types the composite can used with. If omitted when overwriting an existing Composite, its current setting is kept.",
                             "items": {
                                 "type": "string",
                                 "description": "Element type (Wall, Slab, Roof, or Shell)"
@@ -6084,7 +6994,7 @@ GS::Optional<GS::UniString> CreateCompositesCommand::GetInputParametersSchema ()
                         },
                         "skins": {
                             "type": "array",
-                            "description" : "Array of skin data.",
+                            "description" : "Array of skin data. Required when creating a new Composite. If omitted when overwriting an existing Composite, its current skins are kept.",
                             "items" : {
                                 "type": "object",
                                 "description" : "Data to represent a skin.",
@@ -6116,7 +7026,7 @@ GS::Optional<GS::UniString> CreateCompositesCommand::GetInputParametersSchema ()
                         },
                         "separators": {
                             "type": "array",
-                            "description" : "Array of skin separator data. The number of items must be the number of skins plus one.",
+                            "description" : "Array of skin separator data. The number of items must be the number of skins plus one. Required when creating a new Composite. If omitted when overwriting an existing Composite, its current separators are kept (only possible if the number of skins does not change).",
                             "items" : {
                                 "type": "object",
                                 "description" : "Data to represent a skin separator.",
@@ -6139,9 +7049,7 @@ GS::Optional<GS::UniString> CreateCompositesCommand::GetInputParametersSchema ()
                     },
                     "additionalProperties": false,
                     "required" : [
-                        "name",
-                        "skins",
-                        "separators"
+                        "name"
                     ]
                 }
             },
@@ -6198,7 +7106,7 @@ GS::ObjectState CreateCompositesCommand::Execute (const GS::ObjectState& paramet
             composite.header.guid = GetGuidFromAttributesArrayItem (compositeData);
 
             Int32 index = -1;
-            if (compositeData.Get ("index", index) && index >= 0) {
+            if (GetIndexToOverwrite (compositeData, index)) {
                 composite.header.index = ACAPI_CreateAttributeIndex (index);
             }
         }
@@ -6216,82 +7124,122 @@ GS::ObjectState CreateCompositesCommand::Execute (const GS::ObjectState& paramet
             composite.header.uniStringNamePtr = &name;
         }
 
+        // useWith is only applied when given: a modify that omits it (e.g. a pure rename) keeps the
+        // Composite's current Wall/Slab/Roof/Shell flags, already loaded by ACAPI_Attribute_Get above,
+        // instead of clearing all of them.
         GS::Array<GS::UniString> useWith;
-        compositeData.Get ("useWith", useWith);
-        composite.header.flags &= ~APICWall_ForWall;
-        composite.header.flags &= ~APICWall_ForSlab;
-        composite.header.flags &= ~APICWall_ForRoof;
-        composite.header.flags &= ~APICWall_ForShell;
-        for (const GS::UniString& useWithStr : useWith) {
-            if (useWithStr == "Wall") {
-                composite.header.flags |= APICWall_ForWall;
-            } else if (useWithStr == "Slab") {
-                composite.header.flags |= APICWall_ForSlab;
-            } else if (useWithStr == "Roof") {
-                composite.header.flags |= APICWall_ForRoof;
-            } else if (useWithStr == "Shell") {
-                composite.header.flags |= APICWall_ForShell;
+        if (compositeData.Get ("useWith", useWith)) {
+            composite.header.flags &= ~APICWall_ForWall;
+            composite.header.flags &= ~APICWall_ForSlab;
+            composite.header.flags &= ~APICWall_ForRoof;
+            composite.header.flags &= ~APICWall_ForShell;
+            for (const GS::UniString& useWithStr : useWith) {
+                if (useWithStr == "Wall") {
+                    composite.header.flags |= APICWall_ForWall;
+                } else if (useWithStr == "Slab") {
+                    composite.header.flags |= APICWall_ForSlab;
+                } else if (useWithStr == "Roof") {
+                    composite.header.flags |= APICWall_ForRoof;
+                } else if (useWithStr == "Shell") {
+                    composite.header.flags |= APICWall_ForShell;
+                }
             }
         }
 
         GS::Array<GS::ObjectState> skins;
-        compositeData.Get ("skins", skins);
+        bool hasSkins = compositeData.Get ("skins", skins);
 
         GS::Array<GS::ObjectState> separators;
-        compositeData.Get ("separators", separators);
+        bool hasSeparators = compositeData.Get ("separators", separators);
 
-        if (skins.IsEmpty ()) {
+        // skins/separators are only required for a brand new Composite. When overwriting an existing
+        // one, whichever of the two is omitted is taken from its current definition, so a rename or a
+        // useWith-only change does not have to resend the whole skin structure. nComps/totalThick are
+        // already the existing values here (filled by ACAPI_Attribute_Get above).
+        if (!doesExist && (!hasSkins || !hasSeparators)) {
+            attributeIds (CreateErrorResponse (APIERR_BADPARS, "skins and separators are required when creating a new Composite."));
+            continue;
+        }
+
+        UInt32 componentCount = hasSkins ? skins.GetSize () : (UInt32) composite.compWall.nComps;
+        if (componentCount == 0) {
             attributeIds (CreateErrorResponse (Error, "Skin array is empty."));
             continue;
         }
-        if (separators.GetSize () != skins.GetSize () + 1) {
+        if (hasSeparators && separators.GetSize () != componentCount + 1) {
             attributeIds (CreateErrorResponse (Error, "Invalid separator count."));
             continue;
         }
-
-        UInt32 componentCount = skins.GetSize ();
-        double totalThickness = 0.0;
-        compositeDefs.cwall_compItems = (API_CWallComponent**) BMAllocateHandle (componentCount * sizeof (API_CWallComponent), ALLOCATE_CLEAR, 0);
-        for (UInt32 i = 0; i < componentCount; i++) {
-            const GS::ObjectState& skinData = skins[i];
-            API_CWallComponent& compData = (*compositeDefs.cwall_compItems)[i];
-
-            GS::UniString type;
-            skinData.Get ("type", type);
-            if (type == "Core") {
-                compData.flagBits |= APICWallComp_Core;
-            } else if (type == "Finish") {
-                compData.flagBits |= APICWallComp_Finish;
-            }
-
-            GS::ObjectState buildingMaterialId;
-            skinData.Get ("buildingMaterialId", buildingMaterialId);
-            API_AttributeIndex buildingMaterialIndex;
-            if (GetAttributeIndexFromAttributeId (buildingMaterialId, API_BuildingMaterialID, buildingMaterialIndex)) {
-                compData.buildingMaterial = buildingMaterialIndex;
-            }
-
-            skinData.Get ("framePen", compData.framePen);
-            skinData.Get ("thickness", compData.fillThick);
-            totalThickness += compData.fillThick;
+        if (!hasSeparators && componentCount != (UInt32) composite.compWall.nComps) {
+            attributeIds (CreateErrorResponse (APIERR_BADPARS, "separators are required when the number of skins changes."));
+            continue;
         }
 
-        composite.compWall.nComps = (short) componentCount;
-        composite.compWall.totalThick = totalThickness;
+        if (!hasSkins || !hasSeparators) {
+            API_AttributeDefExt existingDefs = {};
+            if (ACAPI_Attribute_GetDefExt (API_CompWallID, composite.header.index, &existingDefs) != NoError) {
+                attributeIds (CreateErrorResponse (Error, "Failed to read the existing Composite's skins."));
+                continue;
+            }
+            // Take ownership of the kept handles (nulled in existingDefs so they are not disposed twice),
+            // compositeDefs is disposed as a whole once the Composite has been modified.
+            if (!hasSkins) {
+                compositeDefs.cwall_compItems = existingDefs.cwall_compItems;
+                existingDefs.cwall_compItems = nullptr;
+            }
+            if (!hasSeparators) {
+                compositeDefs.cwall_compLItems = existingDefs.cwall_compLItems;
+                existingDefs.cwall_compLItems = nullptr;
+            }
+            ACAPI_DisposeAttrDefsHdlsExt (&existingDefs);
+        }
 
-        compositeDefs.cwall_compLItems = (API_CWallLineComponent**) BMAllocateHandle ((componentCount + 1) * sizeof (API_CWallLineComponent), ALLOCATE_CLEAR, 0);
-        for (UInt32 i = 0; i < componentCount + 1; i++) {
-            const GS::ObjectState& separatorData = separators[i];
-            API_CWallLineComponent& lineData = (*compositeDefs.cwall_compLItems)[i];
+        if (hasSkins) {
+            double totalThickness = 0.0;
+            compositeDefs.cwall_compItems = (API_CWallComponent**) BMAllocateHandle (componentCount * sizeof (API_CWallComponent), ALLOCATE_CLEAR, 0);
+            for (UInt32 i = 0; i < componentCount; i++) {
+                const GS::ObjectState& skinData = skins[i];
+                API_CWallComponent& compData = (*compositeDefs.cwall_compItems)[i];
 
-            GS::ObjectState lineTypeId;
-            separatorData.Get ("lineTypeId", lineTypeId);
-            API_AttributeIndex lineTypeIndex;
-            if (GetAttributeIndexFromAttributeId (lineTypeId, API_LinetypeID, lineTypeIndex)) {
-                lineData.ltypeInd = lineTypeIndex;
+                GS::UniString type;
+                skinData.Get ("type", type);
+                if (type == "Core") {
+                    compData.flagBits |= APICWallComp_Core;
+                } else if (type == "Finish") {
+                    compData.flagBits |= APICWallComp_Finish;
+                }
+
+                GS::ObjectState buildingMaterialId;
+                skinData.Get ("buildingMaterialId", buildingMaterialId);
+                API_AttributeIndex buildingMaterialIndex;
+                if (GetAttributeIndexFromAttributeId (buildingMaterialId, API_BuildingMaterialID, buildingMaterialIndex)) {
+                    compData.buildingMaterial = buildingMaterialIndex;
+                }
+
+                skinData.Get ("framePen", compData.framePen);
+                skinData.Get ("thickness", compData.fillThick);
+                totalThickness += compData.fillThick;
             }
 
-            separatorData.Get ("linePen", lineData.linePen);
+            composite.compWall.nComps = (short) componentCount;
+            composite.compWall.totalThick = totalThickness;
+        }
+
+        if (hasSeparators) {
+            compositeDefs.cwall_compLItems = (API_CWallLineComponent**) BMAllocateHandle ((componentCount + 1) * sizeof (API_CWallLineComponent), ALLOCATE_CLEAR, 0);
+            for (UInt32 i = 0; i < componentCount + 1; i++) {
+                const GS::ObjectState& separatorData = separators[i];
+                API_CWallLineComponent& lineData = (*compositeDefs.cwall_compLItems)[i];
+
+                GS::ObjectState lineTypeId;
+                separatorData.Get ("lineTypeId", lineTypeId);
+                API_AttributeIndex lineTypeIndex;
+                if (GetAttributeIndexFromAttributeId (lineTypeId, API_LinetypeID, lineTypeIndex)) {
+                    lineData.ltypeInd = lineTypeIndex;
+                }
+
+                separatorData.Get ("linePen", lineData.linePen);
+            }
         }
 
         if (doesExist) {

@@ -139,13 +139,16 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             return string.Concat(words) + "_JSON";
         }
 
+        // The group is the one Graphisoft puts the tool in: Design Tools by
+        // default, Document Tools for the documentation tools.
         protected ElementToolComponent(
             string name,
-            string description)
+            string description,
+            string subCategory = null)
             : base(
                 name,
                 description,
-                GroupNames.DesignTools)
+                subCategory ?? GroupNames.DesignTools)
         {
             CapsuleButtonTexts = new List<string> { "Refresh", "Execute", "Create" };
         }
@@ -359,7 +362,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
 
             var parameters = new JObject
             {
-                ["elements"] = new JArray(indices.Select(i => ElementIdObject(guids[i])))
+                ["elements"] = new JArray(indices.Select(i => ElementItemObject(guids[i])))
             };
             if (!TryGetCadResponse("GetDetailsOfElements", parameters, ToAddOn, out var response))
             {
@@ -872,7 +875,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
 
             var parameters = new JObject
             {
-                ["elements"] = new JArray(indices.Select(i => ElementIdObject(guids[i]))),
+                ["elements"] = new JArray(indices.Select(i => ElementItemObject(guids[i]))),
                 ["fields"] = new JArray("type")
             };
             if (!TryGetCadResponse("GetDetailsOfElements", parameters, ToAddOn, out var response))
@@ -925,6 +928,14 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             string guid)
         {
             return new JObject { ["guid"] = guid };
+        }
+
+        // An item of an "elements" array (ElementIdArrayItem):
+        // { "elementId": { "guid": ... } }.
+        protected static JObject ElementItemObject(
+            string guid)
+        {
+            return new JObject { ["elementId"] = ElementIdObject(guid) };
         }
 
         private static T ItemOf<T>(
