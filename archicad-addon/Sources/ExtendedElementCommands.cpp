@@ -473,6 +473,9 @@ GSErrCode PrepareWindowOrDoorDefaults (API_ElemTypeID elemTypeId, API_Element& e
 // element type than `expectedTypeId` (e.g. passing a Window favorite
 // to CreateDoors). Otherwise returns the underlying Favorite_Get /
 // ChangeDefaultsExt error code.
+//
+// CreateSections uses it too: a Section is the other markered type
+// created from a favorite.
 static GSErrCode ApplyWindowOrDoorFavoriteToDefaults (const GS::ObjectState& data, API_ElemTypeID expectedTypeId)
 {
     GS::UniString favoriteName;
@@ -9502,6 +9505,86 @@ GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters,
     });
 }
 
+template <USize N>
+static void CopySectionString (GS::uchar_t (&target)[N], const GS::UniString& source)
+{
+    GS::ucsncpy (target, source.ToUStr (), N);
+    target[N - 1] = 0;
+}
+
+// Applies the item's optional "favoriteName" to the Section tool defaults, marker included,
+// and restores the defaults read before it when this object goes out of scope. Favorites can
+// only be applied through the tool defaults, which are global, so without the restore the
+// user's next section placed by hand would take the favorite too. Keep it alive until the
+// section is created.
+class SectionDefaultsWithFavorite {
+public:
+    ~SectionDefaultsWithFavorite ();
+    GSErrCode ApplyFavorite (const GS::ObjectState& data);
+
+private:
+    API_Element snapshot = {};
+    API_ElementMemo snapshotMemo = {};
+    API_SubElement snapshotMarker = {};
+    bool restore = false;
+};
+
+// The element, its memo and its marker are restored. The classification, category and
+// property defaults that ApplyWindowOrDoorFavoriteToDefaults replays stay untouched: a Section
+// cannot be classified and has no element categories or user-defined properties in Archicad,
+// so a Section favorite carries none of them.
+SectionDefaultsWithFavorite::~SectionDefaultsWithFavorite ()
+{
+    if (restore) {
+        API_Element mask;
+        ACAPI_ELEMENT_MASK_SETFULL (mask);
+        ACAPI_ELEMENT_MASK_SETFULL (snapshotMarker.mask);
+        ACAPI_Element_ChangeDefaultsExt (&snapshot, &snapshotMemo, &mask, 1UL, &snapshotMarker);
+    }
+    ACAPI_DisposeElemMemoHdls (&snapshotMemo);
+    ACAPI_DisposeElemMemoHdls (&snapshotMarker.memo);
+}
+
+GSErrCode SectionDefaultsWithFavorite::ApplyFavorite (const GS::ObjectState& data)
+{
+    GS::UniString favoriteName;
+    if (!data.Get ("favoriteName", favoriteName) || favoriteName.IsEmpty ()) {
+        return NoError;
+    }
+
+#ifdef ServerMainVers_2600
+    snapshot.header.type = API_CutPlaneID;
+#else
+    snapshot.header.typeID = API_CutPlaneID;
+#endif
+    snapshotMarker.subType = APISubElement_MainMarker;
+    GSErrCode err = ACAPI_Element_GetDefaultsExt (&snapshot, &snapshotMemo, 1UL, &snapshotMarker);
+    if (err != NoError) {
+        return err;
+    }
+    restore = true;
+
+    err = ApplyWindowOrDoorFavoriteToDefaults (data, API_CutPlaneID);
+    if (err != NoError) {
+        return err;
+    }
+
+    // Read with its marker, the favorite put the section on layer 1 instead of its own
+    // (Archicad 29). Applied once more the way ApplyFavoritesToElementDefaults does it,
+    // without the marker, the section takes the favorite's layer.
+    API_Favorite favorite;
+    favorite.name = favoriteName;
+    favorite.memo.New ();
+    err = ACAPI_Favorite_Get (&favorite);
+    if (err == NoError) {
+        API_Element mask;
+        ACAPI_ELEMENT_MASK_SETFULL (mask);
+        err = ACAPI_Element_ChangeDefaults (&favorite.element, favorite.memo.GetPtr (), &mask);
+    }
+    ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
+    return err;
+}
+
 CreateSectionsCommand::CreateSectionsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -9526,6 +9609,11 @@ GS::Optional<GS::UniString> CreateSectionsCommand::GetInputParametersSchema () c
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
                         "depth": { "type": "number", "description": "The distance of the depth line from the section line, on the left of the start to end direction, which is the direction the section looks in. Default is 1." },
                         "name": { "type": "string" },
+                        "id": { "type": "string", "description": "The reference ID shown in the section marker and in the Project Map. A '/' splits it between the start and the end marker. Without it the section takes the ID of the Section tool defaults, or none with a favoriteName, as a Section favorite carries no ID." },
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "Optional name of a Section favorite to base the new section on, marker included. Its settings are applied first, then the explicitly given fields override them. The Section tool defaults are restored afterwards."
+                        },
                         "floorIndex": { "type": "integer" }
                     },
                     "additionalProperties": false,
@@ -9577,7 +9665,24 @@ GS::ObjectState CreateSectionsCommand::Execute (const GS::ObjectState& parameter
 #endif
             marker.subType = static_cast<API_SubElementType> (APISubElement_MainMarker);
 
-            GSErrCode err = ACAPI_Element_GetDefaultsExt (&element, &memo, 1UL, &marker);
+            SectionDefaultsWithFavorite defaults;
+            GSErrCode err = defaults.ApplyFavorite (data);
+            if (err != NoError) {
+                GS::UniString favoriteName;
+                data.Get ("favoriteName", favoriteName);
+                // The code itself is in the error's "code"; only these two have a known reason.
+                GS::UniString reason = "Archicad refused it";
+                if (err == APIERR_REFUSEDPAR) {
+                    reason = "it is not a Section favorite";
+                } else if (err == APIERR_BADNAME) {
+                    reason = "no favorite with this exact name was found";
+                }
+                elements.Push (CreateErrorResponse (err,
+                    "Failed to apply favoriteName '" + favoriteName + "' to the Section defaults: " + reason + "."));
+                continue;
+            }
+
+            err = ACAPI_Element_GetDefaultsExt (&element, &memo, 1UL, &marker);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to prepare section defaults."));
                 continue;
@@ -9598,6 +9703,11 @@ GS::ObjectState CreateSectionsCommand::Execute (const GS::ObjectState& parameter
             GS::UniString name;
             if (data.Get ("name", name)) {
                 GS::ucscpy (element.cutPlane.segment.cutPlName, name.ToUStr ().Get ());
+            }
+
+            GS::UniString id;
+            if (data.Get ("id", id)) {
+                CopySectionString (element.cutPlane.segment.cutPlIdStr, id);
             }
 
             const double dx = endCoord.x - startCoord.x;
@@ -9641,6 +9751,162 @@ GS::ObjectState CreateSectionsCommand::Execute (const GS::ObjectState& parameter
                 continue;
             }
             elements.Push (CreateElementIdObjectState (element.header.guid));
+        }
+    });
+}
+
+ModifySectionsCommand::ModifySectionsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifySectionsCommand::GetName () const
+{
+    return "ModifySections";
+}
+
+GS::Optional<GS::UniString> ModifySectionsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "sectionsWithDetails": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId", "description": "A Section or an Elevation." },
+                        "name": { "type": "string", "description": "The new name, shown in the Project Map." },
+                        "id": { "type": "string", "description": "The new reference ID, shown in the marker and in the Project Map. A '/' splits it between the start and the end marker." }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["sectionsWithDetails"]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifySectionsCommand::GetRawResponseSchema () const
+{
+    return ModifyWallsCommand ().GetRawResponseSchema ();
+}
+
+GS::ObjectState ModifySectionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> items;
+    auto error = GetElementArray (parameters, "sectionsWithDetails", items);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+
+    return ExecuteModifyWithResults ("Modify Sections", [&](GS::Array<GS::ObjectState>& results) {
+        for (const auto& item : items) {
+            if (item.Get ("elementId") == nullptr) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
+                continue;
+            }
+
+            GS::UniString name;
+            GS::UniString id;
+            const bool hasName = item.Get ("name", name);
+            const bool hasId = item.Get ("id", id);
+            if (!hasName && !hasId) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Nothing to change: give 'name' or 'id'."));
+                continue;
+            }
+
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to load the element."));
+                continue;
+            }
+
+            // An Elevation keeps its name and ID in the same segment as a Section
+            // (API_ElevationType is API_CutPlaneType).
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+            API_SectionSegment* segment = nullptr;
+            switch (GetElemTypeId (element.header)) {
+                case API_CutPlaneID:
+                    segment = &element.cutPlane.segment;
+                    if (hasName) {
+                        ACAPI_ELEMENT_MASK_SET (mask, API_CutPlaneType, segment.cutPlName);
+                    }
+                    if (hasId) {
+                        ACAPI_ELEMENT_MASK_SET (mask, API_CutPlaneType, segment.cutPlIdStr);
+                    }
+                    break;
+                case API_ElevationID:
+                    segment = &element.elevation.segment;
+                    if (hasName) {
+                        ACAPI_ELEMENT_MASK_SET (mask, API_ElevationType, segment.cutPlName);
+                    }
+                    if (hasId) {
+                        ACAPI_ELEMENT_MASK_SET (mask, API_ElevationType, segment.cutPlIdStr);
+                    }
+                    break;
+                default:
+                    break;
+            }
+            if (segment == nullptr) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADID, "The element is not a Section or an Elevation."));
+                continue;
+            }
+
+            if (hasName) {
+                CopySectionString (segment->cutPlName, name);
+            }
+            if (hasId) {
+                CopySectionString (segment->cutPlIdStr, id);
+            }
+
+            // ACAPI_Element_ChangeParameters returns NoError on a hidden or locked layer and
+            // changes nothing, so the layer is checked first.
+            API_Attribute layerAttr = {};
+            layerAttr.header.typeID = API_LayerID;
+            layerAttr.header.index = element.header.layer;
+            if (ACAPI_Attribute_Get (&layerAttr) == NoError) {
+                if ((layerAttr.header.flags & APILay_Locked) != 0) {
+                    results.Push (CreateFailedExecutionResult (APIERR_LOCKEDLAY, "The section was not changed, because its layer is locked."));
+                    continue;
+                }
+                if ((layerAttr.header.flags & APILay_Hidden) != 0) {
+                    results.Push (CreateFailedExecutionResult (APIERR_HIDDENLAY, "The section was not changed, because its layer is hidden."));
+                    continue;
+                }
+            }
+
+            // ACAPI_Element_Change returns NoError for the name and the ID of a Section but leaves
+            // them as they were (Archicad 29). The DevKit's Element_Test changes the ID of Sections
+            // and Elevations with ACAPI_Element_ChangeParameters, which does apply them.
+            err = ACAPI_Element_ChangeParameters ({element.header.guid}, &element, nullptr, &mask);
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to change the section."));
+                continue;
+            }
+
+            // Read back, so a value Archicad did not take is reported instead of a success.
+            API_Element changed = {};
+            changed.header.guid = element.header.guid;
+            err = ACAPI_Element_Get (&changed);
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to read the section back after the change."));
+                continue;
+            }
+            const API_SectionSegment& changedSegment = GetElemTypeId (changed.header) == API_ElevationID
+                ? changed.elevation.segment
+                : changed.cutPlane.segment;
+            if ((hasName && GS::UniString (changedSegment.cutPlName) != GS::UniString (segment->cutPlName)) ||
+                (hasId && GS::UniString (changedSegment.cutPlIdStr) != GS::UniString (segment->cutPlIdStr))) {
+                results.Push (CreateFailedExecutionResult (APIERR_REFUSEDPAR, "Archicad did not apply the new name or ID."));
+                continue;
+            }
+            results.Push (CreateSuccessfulExecutionResult ());
         }
     });
 }

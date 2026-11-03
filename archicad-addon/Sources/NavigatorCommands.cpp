@@ -3599,7 +3599,16 @@ static GSErrCode RenameViewpointElement (const API_DatabaseInfo& dbInfo, const G
             return APIERR_NOTSUPPORTED;
     }
 
-    err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+    // ACAPI_Element_Change returns NoError for the name and the ID of a Section, an
+    // Elevation, a Detail or a Worksheet but leaves them as they were (Archicad 29), which
+    // the read-back in RenameNavigatorItemCommand then reported as a refused rename.
+    // ACAPI_Element_ChangeParameters applies them, as the DevKit's Element_Test does.
+    const API_ElemTypeID typeId = GetElemTypeId (element.header);
+    if (typeId == API_CutPlaneID || typeId == API_ElevationID || typeId == API_DetailID || typeId == API_WorksheetID) {
+        err = ACAPI_Element_ChangeParameters ({element.header.guid}, &element, nullptr, &mask);
+    } else {
+        err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+    }
     if (err != NoError) {
         failureMessage = "Failed to rename the element behind the navigator item.";
     }
