@@ -40,6 +40,7 @@ private:
     static GSErrCode SetOneGDLParameter (
         const GS::ObjectState& parameter,
         const API_Guid& elemGuid,
+        API_ElemTypeID elemTypeId,
         const API_GetParamsType& getParams,
         const GS::HashTable<GS::String, API_AddParID>& gdlParametersTypeDictionary,
         const GS::HashTable<short, GS::String>& gdlParametersIndexNameDictionary,
@@ -101,10 +102,35 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+// The parameters of a curtain wall frame, panel, junction or accessory as Archicad calculated
+// them for its place in the curtain wall (ACAPI_CurtainWall_GetCWSubElemParams), which
+// GetGDLParametersOfElements, reading the parameters the sub-element was set up with, does not give.
+class GetCalculatedParametersOfCurtainWallSubElementsCommand : public CommandBase
+{
+public:
+    GetCalculatedParametersOfCurtainWallSubElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class GetHotspotsOfElementsCommand : public CommandBase
 {
 public:
     GetHotspotsOfElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+// Replaces the library part of the marker itself (which stamp is drawn), where
+// SetMarkerParametersOfElements only changes values within the one already assigned.
+class SetMarkerLibraryPartOfElementsCommand : public CommandBase
+{
+public:
+    SetMarkerLibraryPartOfElementsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
