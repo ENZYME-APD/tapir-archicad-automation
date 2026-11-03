@@ -23044,7 +23044,7 @@
     },
     "ModelViewOptionById": {
         "type": "object",
-        "description": "Selects a model view option combination by identifier; a name may also be supplied.",
+        "description": "Selects a model view option combination by identifier.",
         "properties": {
             "modelViewOptionId": {
                 "$ref": "#/ModelViewOptionId"
@@ -23061,7 +23061,7 @@
     },
     "ModelViewOptionByName": {
         "type": "object",
-        "description": "Selects a model view option combination by name; an identifier may also be supplied.",
+        "description": "Selects a model view option combination by name.",
         "properties": {
             "modelViewOptionId": {
                 "$ref": "#/ModelViewOptionId"
