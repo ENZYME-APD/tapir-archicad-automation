@@ -306,9 +306,13 @@ static GS::UniString GetTeamworkUserName (short userId)
     return userName;
 }
 
-// The element reservation is in the element header: userId is the member who owns the element
-// and lockId is the member who has it reserved (0 when nobody has). ACAPI_Teamwork_GetLockableStatus
-// is for lockable object sets only, not for elements.
+// The element reservation is in the element header: in Teamwork, userId is the owner of the
+// element, which is the member who has it reserved, 0 when nobody has (the DevKit's Element_Test
+// example reports an element as out of my workspace when userId differs from the current user,
+// and APIReservationChangeHandlerProc calls the reserving member the Teamwork owner). New elements
+// are reserved by the member who created them until they are released. lockId is not the
+// reservation, it is the Lock state of the element (Edit > Locking), a bool in a solo project.
+// ACAPI_Teamwork_GetLockableStatus is for lockable object sets only, not for elements.
 
 GetReservationStatusOfElementsCommand::GetReservationStatusOfElementsCommand () :
     CommandBase (CommonSchema::NotUsed)
@@ -373,7 +377,7 @@ GS::Optional<GS::UniString> GetReservationStatusOfElementsCommand::GetRawRespons
                                 },
                                 "owner": {
                                     "type": "object",
-                                    "description": "The user who owns the element in Teamwork, usually the one who created it. Left out when the element has no owner.",
+                                    "description": "The Teamwork owner of the element. In Teamwork the owner is the user who has reserved the element, so this is the same user as reservedBy; kept for compatibility. Left out when the element is free.",
                                     "properties": {
                                         "userId": {
                                             "type": "number"
@@ -443,16 +447,14 @@ GS::ObjectState GetReservationStatusOfElementsCommand::Execute (const GS::Object
             continue;
         }
 
-        const short lockerId = elemHead.lockId;
-        const short ownerId = elemHead.userId;
+        const short reserverId = elemHead.userId;
 
         GS::ObjectState reservationStatus ("status",
-            lockerId == 0 ? "Free" : (lockerId == currentUserId ? "Editable" : "Locked"));
-        if (lockerId != 0) {
-            reservationStatus.Add ("reservedBy", createUserObjectState (lockerId));
-        }
-        if (ownerId != 0) {
-            reservationStatus.Add ("owner", createUserObjectState (ownerId));
+            reserverId == 0 ? "Free" : (reserverId == currentUserId ? "Editable" : "Locked"));
+        if (reserverId != 0) {
+            const GS::ObjectState reserver = createUserObjectState (reserverId);
+            reservationStatus.Add ("reservedBy", reserver);
+            reservationStatus.Add ("owner", reserver);
         }
         reservationStatuses (reservationStatus);
     }
@@ -566,18 +568,6 @@ static void AddConflictingUsers (GS::ObjectState& response, const GS::PagedArray
 static GS::ObjectState CreateUnknownLockableObjectSetError (const GS::UniString& objectSetName)
 {
     return CreateErrorResponse (APIERR_BADPARS, "No lockable object set named '" + objectSetName + "' was found. Check the name and that the project is a Teamwork project.");
-}
-
-static const char* LockableStatusToString (API_LockableStatus status)
-{
-    switch (status) {
-        case APILockableStatus_Free:         return "Free";
-        case APILockableStatus_Editable:     return "Editable";
-        case APILockableStatus_Locked:       return "Locked";
-        case APILockableStatus_NotAvailable: return "NotAvailable";
-        case APILockableStatus_NotExist:
-        default:                             return "NotExist";
-    }
 }
 
 ReserveLockableObjectSetCommand::ReserveLockableObjectSetCommand () :
@@ -1158,4 +1148,98 @@ GS::ObjectState RemoveLibrariesFromBIMcloudCommand::Execute (const GS::ObjectSta
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "RemoveLibrariesFromBIMcloud requires Archicad 29 or newer.");
 #endif
+}
+
+GetTeamworkRightsOfObjectsCommand::GetTeamworkRightsOfObjectsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetTeamworkRightsOfObjectsCommand::GetName () const
+{
+    return "GetTeamworkRightsOfObjects";
+}
+
+GS::Optional<GS::UniString> GetTeamworkRightsOfObjectsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "objectIds": {
+                "type": "array",
+                "description": "The objects to check, by guid, for example element guids.",
+                "items": {
+                    "$ref": "#/GuidId"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "objectIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetTeamworkRightsOfObjectsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "rights": {
+                "type": "array",
+                "description": "One item per input object, in the same order.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "canCreate": {
+                                    "type": "boolean",
+                                    "description": "Whether the current user has the right to create objects of this kind."
+                                },
+                                "canDeleteModify": {
+                                    "type": "boolean",
+                                    "description": "Whether the current user has the right to delete or modify the object."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "canCreate",
+                                "canDeleteModify"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "rights"
+        ]
+    })";
+}
+
+GS::ObjectState GetTeamworkRightsOfObjectsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> objectIds;
+    parameters.Get ("objectIds", objectIds);
+
+    GS::ObjectState response;
+    const auto& rights = response.AddList<GS::ObjectState> ("rights");
+
+    for (const GS::ObjectState& objectId : objectIds) {
+        const API_Guid guid = GetGuidFromObjectState (objectId);
+        if (guid == APINULLGuid) {
+            rights (CreateErrorResponse (APIERR_BADPARS, "The guid is missing or not valid."));
+            continue;
+        }
+
+        rights (GS::ObjectState ("canCreate", ACAPI_Teamwork_HasCreateRight (guid),
+                                 "canDeleteModify", ACAPI_Teamwork_HasDeleteModifyRight (guid)));
+    }
+
+    return response;
 }
