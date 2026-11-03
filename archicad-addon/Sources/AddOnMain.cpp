@@ -2986,6 +2986,11 @@ GSErrCode Initialize (void)
             analyticalCommands, "1.8.0",
             "Creates analytical point, edge and surface loads from their settings, loaded member part and custom data, as GetAnalyticalLoads returns them, in one undo step. Available from Archicad 26."
         );
+
+        err |= RegisterCommand<CreateElementsFromAnalyticalMembersCommand> (
+            analyticalCommands, "1.7.4",
+            "Creates elements (beams, columns, walls, slabs, roofs) from the given curve, surface or segmented surface members, in the form GetAnalyticalMemberDetails returns them, optionally with the settings of a favorite, in one undo step. Returns the new elements and, from Archicad 26, the mapping of their edges and vertices to member parts."
+        );
         AddCommandGroup (analyticalCommands);
     }
 
