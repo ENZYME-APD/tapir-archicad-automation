@@ -402,28 +402,6 @@ namespace TapirGrasshopperPlugin.Types.DesignOptions
         public List<RenameDesignOptionCombinationParameter> DesignOptionCombinations;
     }
 
-    public class NavigatorItemIdWithCombination
-    {
-        [JsonProperty("navigatorItemId")]
-        public NavigatorGuid NavigatorItemId;
-
-        [JsonProperty(
-            "designOptionCombinationId",
-            NullValueHandling = NullValueHandling.Ignore)]
-        public DesignOptionCombinationGuid DesignOptionCombinationId;
-
-        [JsonProperty(
-            "mainModelOnly",
-            NullValueHandling = NullValueHandling.Ignore)]
-        public bool? MainModelOnly;
-    }
-
-    public class SetDesignOptionCombinationOfViewsParameters
-    {
-        [JsonProperty("navigatorItemIdsWithCombination")]
-        public List<NavigatorItemIdWithCombination> NavigatorItemIdsWithCombination;
-    }
-
     public class SetDefaultDesignOptionParameters
     {
         // Null selects the Main Model as the default.
@@ -467,5 +445,27 @@ namespace TapirGrasshopperPlugin.Types.DesignOptions
     {
         [JsonProperty("designOptions")]
         public List<ReorderDesignOptionInSetParameter> DesignOptions;
+    }
+
+    public class NavigatorItemIdWithCombination
+    {
+        [JsonProperty("navigatorItemId")]
+        public NavigatorGuid NavigatorItemId;
+
+        [JsonProperty(
+            "designOptionCombinationId",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public DesignOptionCombinationGuid DesignOptionCombinationId;
+
+        [JsonProperty(
+            "mainModelOnly",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public bool? MainModelOnly;
+    }
+
+    public class SetDesignOptionCombinationOfViewsParameters
+    {
+        [JsonProperty("navigatorItemIdsWithCombination")]
+        public List<NavigatorItemIdWithCombination> NavigatorItemIdsWithCombination;
     }
 }

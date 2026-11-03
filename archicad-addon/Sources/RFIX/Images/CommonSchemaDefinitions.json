@@ -3909,6 +3909,31 @@
         ],
         "description": "How the drawing's title ID is assigned (Identification tabpage of the Drawing Settings dialog)."
     },
+    "DrawingStatus": {
+        "type": "string",
+        "enum": [
+            "UpToDate",
+            "Modified",
+            "Unknown"
+        ],
+        "description": "The Drawing Manager's Status column: UpToDate (OK) when the drawing matches its source, Modified when the source changed since the drawing was last updated, Unknown when the status cannot be determined (e.g. a missing external source)."
+    },
+    "DrawingLinkType": {
+        "type": "string",
+        "enum": [
+            "InternalView",
+            "ExternalView",
+            "Drawing",
+            "DXF_DWG",
+            "PDF",
+            "Image",
+            "PlotMaker",
+            "AddOn",
+            "Unknown",
+            "Other"
+        ],
+        "description": "The kind of source a drawing is linked to (the Drawing Manager's Source column): a view of this project (InternalView), a view of another Archicad project file (ExternalView), a drawing file, a DWG/DXF file, a PDF, an image, a PlotMaker file, an Add-On generated drawing, or an unknown/other source."
+    },
     "MEPCrossSectionShape": {
         "type": "string",
         "description": "Shape of an MEP routing segment's cross section or of an MEP port.",
@@ -3978,6 +4003,242 @@
         "enum": [
             "AllRelevantStories",
             "HomeStoryOnly"
+        ]
+    },
+    "MEPPortDefaultDetails": {
+        "type": "object",
+        "description": "The settings of one port of an MEP tool default. Each field is present only where the port's domain and the Archicad version have it.",
+        "properties": {
+            "index": {
+                "type": "integer",
+                "description": "The index of the port in the default."
+            },
+            "domain": {
+                "$ref": "#/MEPDomain"
+            },
+            "name": {
+                "type": "string"
+            },
+            "shape": {
+                "$ref": "#/MEPCrossSectionShape"
+            },
+            "width": {
+                "type": "number"
+            },
+            "height": {
+                "type": "number",
+                "description": "The height of a ventilation or cable carrier port."
+            },
+            "diameter": {
+                "type": "number",
+                "description": "The diameter of a piping port."
+            },
+            "wallThickness": {
+                "type": "number",
+                "description": "The wall thickness of a piping or ventilation port."
+            },
+            "flowDirection": {
+                "$ref": "#/MEPFlowDirection",
+                "description": "The flow direction of a piping or ventilation port."
+            },
+            "flangeSize": {
+                "type": "number",
+                "description": "The flange size of a piping or ventilation port, when it has flanges. Available from Archicad 30."
+            },
+            "connectionStyle": {
+                "$ref": "#/MEPConnectionStyle",
+                "description": "Available from Archicad 30."
+            },
+            "mepSystemId": {
+                "$ref": "#/AttributeId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "index",
+            "domain"
+        ]
+    },
+    "MEPElementDefaultDetails": {
+        "type": "object",
+        "description": "The settings of a terminal, accessory, fitting or equipment tool default.",
+        "properties": {
+            "libraryPartId": {
+                "$ref": "#/LibPartUnId",
+                "description": "The library part the tool places."
+            },
+            "ports": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/MEPPortDefaultDetails"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryPartId",
+            "ports"
+        ]
+    },
+    "MEPDomainToolDefaults": {
+        "type": "object",
+        "description": "The current settings of the MEP tools of one domain. A tool whose default Archicad does not give for the domain is left out; a setting is left out where the Archicad version does not have it.",
+        "properties": {
+            "domain": {
+                "$ref": "#/MEPDomain"
+            },
+            "routingElement": {
+                "type": "object",
+                "description": "The routing tool default.",
+                "properties": {
+                    "mepSystemId": {
+                        "$ref": "#/AttributeId"
+                    },
+                    "branchPreferenceTableId": {
+                        "$ref": "#/Guid"
+                    },
+                    "cutPlanePosition": {
+                        "$ref": "#/MEPCutPlanePosition"
+                    },
+                    "floorPlanDisplayOption": {
+                        "$ref": "#/MEPFloorPlanDisplayOption"
+                    },
+                    "showProjection": {
+                        "$ref": "#/MEPShowProjection"
+                    },
+                    "onStoryVisibility": {
+                        "$ref": "#/MEPOnStoryVisibility"
+                    },
+                    "routingSegment": {
+                        "type": "object",
+                        "description": "The segment default of the routing tool.",
+                        "properties": {
+                            "crossSectionShape": {
+                                "$ref": "#/MEPCrossSectionShape"
+                            },
+                            "crossSectionWidth": {
+                                "type": "number"
+                            },
+                            "crossSectionHeight": {
+                                "type": "number"
+                            },
+                            "crossSectionReferenceId": {
+                                "type": "integer"
+                            },
+                            "preferenceTableId": {
+                                "$ref": "#/Guid"
+                            },
+                            "anchor": {
+                                "type": "string",
+                                "description": "The anchor point of the cross section, with the values of GetMEPRoutingElements."
+                            },
+                            "referenceLineOffsetX": {
+                                "type": "number"
+                            },
+                            "referenceLineOffsetY": {
+                                "type": "number"
+                            },
+                            "wallThickness": {
+                                "type": "number"
+                            },
+                            "flangeSize": {
+                                "type": "number"
+                            },
+                            "connectionStyle": {
+                                "$ref": "#/MEPConnectionStyle"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": []
+                    },
+                    "routingNode": {
+                        "type": "object",
+                        "description": "The node default of the routing tool.",
+                        "properties": {
+                            "preferredTransitionPlacement": {
+                                "$ref": "#/MEPPreferredTransitionPlacement"
+                            },
+                            "elbow": {
+                                "type": "object",
+                                "description": "The elbow default. Available from Archicad 29.",
+                                "properties": {
+                                    "factorRadius": {
+                                        "type": "number"
+                                    },
+                                    "preferenceTableId": {
+                                        "$ref": "#/Guid"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": []
+                            },
+                            "transition": {
+                                "type": "object",
+                                "description": "The transition default.",
+                                "properties": {
+                                    "angle": {
+                                        "type": "number"
+                                    },
+                                    "offsetY": {
+                                        "type": "number"
+                                    },
+                                    "offsetZ": {
+                                        "type": "number"
+                                    },
+                                    "preferenceTableId": {
+                                        "$ref": "#/Guid",
+                                        "description": "Available from Archicad 29."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": []
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": []
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "mepSystemId",
+                    "routingSegment",
+                    "routingNode"
+                ]
+            },
+            "flexibleSegment": {
+                "type": "object",
+                "description": "The flexible segment tool default.",
+                "properties": {
+                    "shape": {
+                        "$ref": "#/MEPCrossSectionShape"
+                    },
+                    "width": {
+                        "type": "number"
+                    },
+                    "height": {
+                        "type": "number"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "shape",
+                    "width",
+                    "height"
+                ]
+            },
+            "terminal": {
+                "$ref": "#/MEPElementDefaultDetails"
+            },
+            "accessory": {
+                "$ref": "#/MEPElementDefaultDetails"
+            },
+            "fitting": {
+                "$ref": "#/MEPElementDefaultDetails"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "domain"
         ]
     },
     "MEPPreferenceTableDomain": {
@@ -4622,6 +4883,10 @@
             "projectInfoValue": {
                 "type": "string",
                 "description": "Initial value of the project info field."
+            },
+            "projectInfoGroupId": {
+                "$ref": "#/ProjectInfoGroupId",
+                "description": "The Project Info group to create the field in. Available from Archicad 30, where the field goes to the first group when omitted; on older versions giving it is an error."
             }
         },
         "additionalProperties": false,
@@ -6467,6 +6732,25 @@
             "$ref": "#/ProjectInfoGroupIdOrError"
         }
     },
+    "CreatedProjectInfoFieldOrError": {
+        "type": "object",
+        "description": "A created project info field or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/CreatedProjectInfoField"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "CreatedProjectInfoFieldsOrErrors": {
+        "type": "array",
+        "description": "A list of created project info fields or errors, one per requested field.",
+        "items": {
+            "$ref": "#/CreatedProjectInfoFieldOrError"
+        }
+    },
     "ElementClassificationItemArray": {
         "description": "A wrapper containing a list of element classification identifiers or errors.",
         "properties": {
@@ -6525,6 +6809,13 @@
                     "TableValue"
                 ]
             },
+            "enumerationReference": {
+                "type": "array",
+                "description": "For an enumerated value, the values of the enumeration it refers to (IfcPropertyEnumeration), each as a string. Available from Archicad 28; left out when the property has none.",
+                "items": {
+                    "type": "string"
+                }
+            },
             "source": {
                 "type": "string",
                 "description": "Where the property comes from: preview for the properties mapped by the preview IFC export translator, local for the IFC properties stored in the element. Available from Archicad 28.",
@@ -6539,6 +6830,32 @@
             "propertySetName",
             "name",
             "value"
+        ]
+    },
+    "IFCObject": {
+        "type": "object",
+        "description": "An object of the IFC model of the project, as the IFC API of Archicad 28 and later identifies it.",
+        "properties": {
+            "hashValue": {
+                "type": "integer",
+                "description": "The hash value of the IFC object identifier (ObjectID::GenerateHashValue), for matching the objects of one response to each other. It is not stable between sessions; use elementId or globalId to identify an object."
+            },
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "The element the IFC object belongs to. Left out when Archicad reports no element for it."
+            },
+            "ifcType": {
+                "type": "string",
+                "description": "The IFC entity type of the object, for example IfcWall. Left out when Archicad does not report it."
+            },
+            "globalId": {
+                "type": "string",
+                "description": "The IFC GlobalId of the object. Left out when Archicad does not report it."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hashValue"
         ]
     },
     "ElementIFCProperties": {
@@ -7615,6 +7932,10 @@
             "renovationFilterGuid": {
                 "$ref": "#/GuidId",
                 "description": "Identifier of the renovation filter applied to the view."
+            },
+            "renovationFilterName": {
+                "type": "string",
+                "description": "Name of the renovation filter applied to the view. Read-only (GetViewSettings): present together with renovationFilterGuid when the name could be resolved; set the filter via renovationFilterGuid."
             },
             "d3styleName": {
                 "type": "string",
@@ -9851,6 +10172,26 @@
                 "type": "number",
                 "description": "Border size of the drawing (API_DrawingType::borderSize), in meters."
             },
+            "manualUpdate": {
+                "type": "boolean",
+                "description": "The Drawing Manager's Update Type: true for Manual, false for Automatic. Read-only."
+            },
+            "storedInProject": {
+                "type": "boolean",
+                "description": "The Drawing Manager's Stored in Project column: whether the drawing's content is stored in the project file. Read-only."
+            },
+            "status": {
+                "$ref": "#/DrawingStatus",
+                "description": "The Drawing Manager's Status column. Read-only; absent when Archicad could not check the drawing."
+            },
+            "linkType": {
+                "$ref": "#/DrawingLinkType",
+                "description": "The Drawing Manager's Source column: what kind of source the drawing is linked to. Read-only; absent when the link could not be read."
+            },
+            "linkPath": {
+                "type": "string",
+                "description": "Path of the drawing's external source file (the Drawing Manager's Path column). Present only when the source is a file (external view, DWG/DXF, PDF, image, ...). Read-only."
+            },
             "titleLibraryPartIndex": {
                 "type": "number",
                 "description": "Library part index of the drawing title (API_DrawingTitle::libInd). A negative/invalid index means no title object is instantiated; setting it to a valid index (e.g. copied from another drawing) makes Archicad create the title's own placed element."
@@ -9878,6 +10219,8 @@
             "borderLineTypeIndex",
             "borderPenIndex",
             "borderSize",
+            "manualUpdate",
+            "storedInProject",
             "titleLibraryPartIndex"
         ]
     },
@@ -12090,6 +12433,32 @@
         "additionalProperties": false,
         "required": [
             "projectInfoId",
+            "projectInfoName",
+            "projectInfoValue"
+        ]
+    },
+    "CreatedProjectInfoField": {
+        "type": "object",
+        "properties": {
+            "projectInfoId": {
+                "type": "string",
+                "description": "The id of the project info field: its autotext key, as GetProjectInfoFields returns it and SetProjectInfoField takes it. On Archicad 30 it is given only when exactly one project info autotext has the name of the new field, and omitted otherwise."
+            },
+            "projectInfoFieldId": {
+                "$ref": "#/ProjectInfoFieldId",
+                "description": "The id of the field in the Project Info groups, as GetProjectInfoGroups returns it. Available from Archicad 30."
+            },
+            "projectInfoName": {
+                "type": "string",
+                "description": "The name of the project info field visible on UI."
+            },
+            "projectInfoValue": {
+                "type": "string",
+                "description": "The value of the project info field."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
             "projectInfoName",
             "projectInfoValue"
         ]

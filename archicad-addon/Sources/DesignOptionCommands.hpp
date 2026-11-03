@@ -199,26 +199,6 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
-class GetDesignOptionCombinationOfViewsCommand : public CommandBase
-{
-public:
-    GetDesignOptionCombinationOfViewsCommand ();
-    virtual GS::String GetName () const override;
-    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
-    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
-};
-
-class SetDesignOptionCombinationOfViewsCommand : public CommandBase
-{
-public:
-    SetDesignOptionCombinationOfViewsCommand ();
-    virtual GS::String GetName () const override;
-    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
-    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
-};
-
 class GetHotlinkDesignOptionTableDetailsCommand : public CommandBase
 {
 public:
@@ -258,6 +238,27 @@ public:
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
+
+class GetDesignOptionCombinationOfViewsCommand : public CommandBase
+{
+public:
+    GetDesignOptionCombinationOfViewsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class SetDesignOptionCombinationOfViewsCommand : public CommandBase
+{
+public:
+    SetDesignOptionCombinationOfViewsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 
 class CanMoveElementsToDesignOptionsCommand : public CommandBase
 {

@@ -16,7 +16,7 @@ namespace TapirGrasshopperPlugin.Components.DesignOptionsComponents
         public SetDesignOptionCombinationOfViewsComponent()
             : base(
                 "SetDesignOptionCombinationOfViews",
-                "Set the design option combination the given views show, or make them show only the main model. Available from Archicad 29.",
+                "Set the design option combination the given views show, or make them show only the main model. Available from Archicad 27.",
                 GroupNames.DesignOptions)
         {
         }
