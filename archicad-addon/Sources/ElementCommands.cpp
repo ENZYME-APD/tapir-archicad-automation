@@ -41,6 +41,83 @@ static void AddPivotPolygonFromMemo (const API_Guid& guid, GS::ObjectState& os)
     ACAPI_DisposeElemMemoHdls (&memo);
 }
 
+static GS::UniString StructureTypeToString (API_ModelElemStructureType structureType);
+static void AddShellBaseSurfaces (const API_ShellBaseType& base, GS::ObjectState& os);
+
+// The RoofDetails of a roof. The polygon is read from partMemo when given (a plane
+// of a decomposed multi-plane roof, which has no memo of its own), else from the
+// memo of the element with this guid.
+static void AddRoofDetails (const API_RoofType& roof, const API_Guid& guid, short floorInd, const API_ElementMemo* partMemo, const Stories& stories, GS::ObjectState& os)
+{
+    const API_ShellBaseType& base = roof.shellBase;
+    os.Add ("roofClass", roof.roofClass == API_PolyRoofID ? "MultiPlane" : "SinglePlane");
+    os.Add ("structureType", StructureTypeToString (base.modelElemStructureType));
+    os.Add ("thickness", base.thickness);
+    os.Add ("level", base.level);
+    os.Add ("zCoordinate", GetZPos (floorInd, base.level, stories));
+    if (StructureTypeToString (base.modelElemStructureType) == "Composite") {
+        os.Add ("compositeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_CompWallID, base.composite)));
+    } else {
+        os.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, base.buildingMaterial)));
+    }
+    AddShellBaseSurfaces (base, os);
+    if (roof.roofClass == API_PlaneRoofID) {
+        os.Add ("angle", roof.u.planeRoof.angle);
+        GS::ObjectState pivotLine;
+        pivotLine.Add ("begin", Create2DCoordinateObjectState (roof.u.planeRoof.baseLine.c1));
+        pivotLine.Add ("end", Create2DCoordinateObjectState (roof.u.planeRoof.baseLine.c2));
+        os.Add ("pivotLine", pivotLine);
+    } else {
+        os.Add ("eavesOverhang", roof.u.polyRoof.eavesOverHang);
+        const auto& levels = os.AddList<GS::ObjectState> ("levels");
+        for (short i = 0; i < roof.u.polyRoof.levelNum && i < 16; ++i) {
+            GS::ObjectState level;
+            level.Add ("height", roof.u.polyRoof.levelData[i].levelHeight);
+            level.Add ("angle", roof.u.polyRoof.levelData[i].levelAngle);
+            levels (level);
+        }
+        if (partMemo == nullptr) {
+            AddPivotPolygonFromMemo (guid, os);
+        }
+    }
+    // the roof's own polygon: the plane roof's outline, the multi-plane roof's contour
+    if (partMemo != nullptr) {
+        AddPolygonWithHolesFromMemoCoords (*partMemo, os, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
+    } else {
+        AddPolygonWithHolesFromMemoCoords (guid, os, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
+    }
+}
+
+// Collects the single-plane parts ACAPI_Element_Decompose generates for a multi-plane
+// roof. The part element and memo are only borrowed for the call (Archicad disposes
+// the memo afterwards), so everything is serialized right here.
+class RoofPlaneCollector : public API_ElementDecomposerInterface
+{
+public:
+    RoofPlaneCollector (short floorInd, const Stories& stories) :
+        floorInd (floorInd),
+        stories (stories)
+    {
+    }
+
+    virtual GSErrCode GeneratePartElement (const API_Guid& guid, const API_ElemPartId& partId, const API_Element& partElem, const API_ElementMemo& partMemo) override
+    {
+        GS::ObjectState plane;
+        plane.Add ("partId", GS::ObjectState ("main", partId.main, "sub", partId.sub));
+        GS::ObjectState details;
+        AddRoofDetails (partElem.roof, guid, floorInd, &partMemo, stories, details);
+        plane.Add ("details", details);
+        planes.Push (plane);
+        return NoError;
+    }
+
+    GS::Array<GS::ObjectState> planes;
+
+private:
+    const short     floorInd;
+    const Stories&  stories;
+};
+
 // The surfaces of a Roof or Shell are in its API_ShellBaseType, in the same
 // API_OverriddenAttribute shape as the Wall's and the Slab's (#1672).
 static void AddShellBaseSurfaces (const API_ShellBaseType& base, GS::ObjectState& os)
@@ -324,6 +401,68 @@ static API_NumberingTypeValues DrawingNumberingTypeFromString (const GS::UniStri
     if (str == "CustomNumber")
         return APINumbering_CustomNum;
     return APINumbering_ByLayout;
+}
+
+// The status ACAPI_Drawing_CheckDrawingStatus reports is the Drawing Manager's Status column:
+// 1 is OK (the drawing is up to date with its source), 0 is Modified (the source changed since
+// the drawing was last updated). Anything else (-1, e.g. a source that cannot be checked, like
+// a missing external file) is reported as Unknown.
+static GS::UniString DrawingStatusToString (Int32 status)
+{
+    switch (status) {
+        case 1:  return "UpToDate";
+        case 0:  return "Modified";
+        default: return "Unknown";
+    }
+}
+
+// The Drawing Manager's Source column (API_DrawingLinkTypeID).
+static GS::UniString DrawingLinkTypeToString (API_DrawingLinkTypeID linkType)
+{
+    switch (linkType) {
+        case API_DrawingLink_InternalViewID: return "InternalView";
+        case API_DrawingLink_ExternalViewID: return "ExternalView";
+        case API_DrawingLink_DrawingID:      return "Drawing";
+        case API_DrawingLink_DXF_DWGID:      return "DXF_DWG";
+        case API_DrawingLink_PDFID:          return "PDF";
+        case API_DrawingLink_ImageID:        return "Image";
+        case API_DrawingLink_PMKID:          return "PlotMaker";
+        case API_DrawingLink_APIID:          return "AddOn";
+        case API_DrawingLink_UnknownID:      return "Unknown";
+        default:                             return "Other";
+    }
+}
+
+// Adds the Drawing Manager columns that are not stored in API_DrawingType itself:
+// status (ACAPI_Drawing_CheckDrawingStatus), and the source link type and path
+// (ACAPI_Drawing_GetDrawingLink). Each is left out when its API call fails.
+static void AddDrawingManagerDetails (const API_Guid& drawingGuid, GS::ObjectState& os)
+{
+    API_Guid guid = drawingGuid;
+    Int32 status = 0;
+    if (ACAPI_Drawing_CheckDrawingStatus (&guid, &status) == NoError) {
+        os.Add ("status", DrawingStatusToString (status));
+    }
+
+    API_DrawingLinkInfo linkInfo = {};
+    const GSErrCode linkErr = ACAPI_Drawing_GetDrawingLink (&drawingGuid, &linkInfo);
+    // linkPath (an IO::Location) and viewPath (a GSPtr) are allocated by the API and owned by
+    // the caller - released the same way as in the DevKit's Database_Control example, also
+    // when the call fails.
+    const GS::OnExit linkInfoGuard ([&linkInfo] () {
+        delete linkInfo.linkPath;
+        if (linkInfo.viewPath != nullptr) {
+            BMKillPtr (&linkInfo.viewPath);
+        }
+    });
+    if (linkErr != NoError) {
+        return;
+    }
+
+    os.Add ("linkType", DrawingLinkTypeToString (linkInfo.linkTypeID));
+    if (linkInfo.linkPath != nullptr) {
+        os.Add ("linkPath", linkInfo.linkPath->ToDisplayText ());
+    }
 }
 
 static GS::UniString StructureTypeToString (API_ModelElemStructureType structureType)
@@ -2254,6 +2393,11 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("borderLineTypeIndex", GetAttributeIndex (elem.drawing.borderLineType));
                 typeSpecificDetails.Add ("borderPenIndex",      (Int32)elem.drawing.borderPen);
                 typeSpecificDetails.Add ("borderSize",          elem.drawing.borderSize);
+                // Drawing Manager columns: Update Type and Stored in Project come from the element
+                // itself, Status and Source from their own API calls.
+                typeSpecificDetails.Add ("manualUpdate",    elem.drawing.manualUpdate);
+                typeSpecificDetails.Add ("storedInProject", elem.drawing.storedInProject);
+                AddDrawingManagerDetails (elem.header.guid, typeSpecificDetails);
                 // Library part index of the title (API_DrawingTitle::libInd) - a negative/invalid
                 // index here means no title object is instantiated at all (nothing to show); setting
                 // it to a valid index (e.g. copied from another drawing) is what makes Archicad
@@ -2272,40 +2416,10 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 AddMorphBodyFromMemo (elem, typeSpecificDetails);
                 break;
 
-            case API_RoofID: {
-                const API_ShellBaseType& base = elem.roof.shellBase;
-                typeSpecificDetails.Add ("roofClass", elem.roof.roofClass == API_PolyRoofID ? "MultiPlane" : "SinglePlane");
-                typeSpecificDetails.Add ("structureType", StructureTypeToString (base.modelElemStructureType));
-                typeSpecificDetails.Add ("thickness", base.thickness);
-                typeSpecificDetails.Add ("level", base.level);
-                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, base.level, stories));
-                if (StructureTypeToString (base.modelElemStructureType) == "Composite") {
-                    typeSpecificDetails.Add ("compositeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_CompWallID, base.composite)));
-                } else {
-                    typeSpecificDetails.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, base.buildingMaterial)));
-                }
-                AddShellBaseSurfaces (base, typeSpecificDetails);
-                if (elem.roof.roofClass == API_PlaneRoofID) {
-                    typeSpecificDetails.Add ("angle", elem.roof.u.planeRoof.angle);
-                    GS::ObjectState pivotLine;
-                    pivotLine.Add ("begin", Create2DCoordinateObjectState (elem.roof.u.planeRoof.baseLine.c1));
-                    pivotLine.Add ("end", Create2DCoordinateObjectState (elem.roof.u.planeRoof.baseLine.c2));
-                    typeSpecificDetails.Add ("pivotLine", pivotLine);
-                } else {
-                    typeSpecificDetails.Add ("eavesOverhang", elem.roof.u.polyRoof.eavesOverHang);
-                    const auto& levels = typeSpecificDetails.AddList<GS::ObjectState> ("levels");
-                    for (short i = 0; i < elem.roof.u.polyRoof.levelNum && i < 16; ++i) {
-                        GS::ObjectState level;
-                        level.Add ("height", elem.roof.u.polyRoof.levelData[i].levelHeight);
-                        level.Add ("angle", elem.roof.u.polyRoof.levelData[i].levelAngle);
-                        levels (level);
-                    }
-                    AddPivotPolygonFromMemo (elem.header.guid, typeSpecificDetails);
-                }
-                // the roof's own polygon: the plane roof's outline, the multi-plane roof's contour
-                AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
+            case API_RoofID:
+                AddRoofDetails (elem.roof, elem.header.guid, elem.header.floorInd, nullptr, stories, typeSpecificDetails);
                 AddEdgeSideMaterialsFromMemo (elem.header.guid, typeSpecificDetails);
-            } break;
+                break;
 
             case API_ShellID: {
                 // The structure, as for roofs: both keep it in an API_ShellBaseType (#1663).
@@ -5727,6 +5841,130 @@ GS::ObjectState	MoveElementsCommand::Execute (const GS::ObjectState& parameters,
     return response;
 }
 
+ElevateElementsCommand::ElevateElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ElevateElementsCommand::GetName () const
+{
+    return "ElevateElements";
+}
+
+GS::Optional<GS::UniString> ElevateElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementsWithElevations": {
+                "type": "array",
+                "description": "The elements with elevation offset pairs.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "elevation": {
+                            "type": "number",
+                            "description" : "The vertical offset in meters to move the element by, like Edit > Move > Elevate. A positive value moves the element up, a negative value moves it down. The home story of the element does not change."
+                        },
+                        "copy": {
+                            "type": "boolean",
+                            "description" : "Optional parameter. If true, then a copy of the element will be elevated. By default it's false."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "elevation"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementsWithElevations"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ElevateElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+static GSErrCode ElevateElement (const API_Guid& elemGuid, double elevation, bool withCopy)
+{
+    GS::Array<API_Neig> elementsToEdit = { API_Neig (elemGuid) };
+
+    API_EditPars editPars = {};
+    editPars.typeID = APIEdit_Elevate;
+    editPars.endC.z = elevation;
+    editPars.withDelete = !withCopy;
+
+    return ACAPI_Element_Edit (&elementsToEdit, editPars);
+}
+
+GS::ObjectState	ElevateElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementsWithElevations;
+    parameters.Get ("elementsWithElevations", elementsWithElevations);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("Elevate Elements", [&]() -> GSErrCode {
+        for (const GS::ObjectState& elementWithElevation : elementsWithElevations) {
+            const GS::ObjectState* elementId = elementWithElevation.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            double elevation = 0.0;
+            if (!elementWithElevation.Get ("elevation", elevation)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elevation is missing"));
+                continue;
+            }
+
+            const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+
+            bool copy = false;
+            elementWithElevation.Get ("copy", copy);
+
+            const GS::Optional<GS::ObjectState> notEditableResult = GetFailedExecutionResultIfNotEditable (elemGuid, "elevated");
+            if (notEditableResult.HasValue ()) {
+                executionResults (*notEditableResult);
+                continue;
+            }
+
+            const GSErrCode err = ElevateElement (elemGuid, elevation, copy);
+            if (err != NoError) {
+                const GS::UniString errorMsg = GS::UniString::Printf ("Failed to elevate element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
+                executionResults (CreateFailedExecutionResult (err, errorMsg));
+            } else {
+                executionResults (CreateSuccessfulExecutionResult ());
+            }
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
 static GSErrCode RotateElement (const API_Guid& elemGuid, const API_Coord& beginPoint, const API_Coord& endPoint, const API_Coord& origin, bool withCopy)
 {
     GS::Array<API_Neig> elementsToEdit = { API_Neig (elemGuid) };
@@ -7439,6 +7677,153 @@ GS::ObjectState GetVisibleSkinStatusCommand::Execute (const GS::ObjectState& par
     return response;
 }
 
+GetRoofPlanesCommand::GetRoofPlanesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetRoofPlanesCommand::GetName () const
+{
+    return "GetRoofPlanes";
+}
+
+GS::Optional<GS::UniString> GetRoofPlanesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetRoofPlanesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "roofPlanesOfElements": {
+                "type": "array",
+                "description": "The planes of each roof, aligned with the input, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "planes": {
+                                    "type": "array",
+                                    "description": "The single planes of the roof: the planes Archicad decomposes a multi-plane roof into, or the roof itself for a single-plane roof.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "partId": {
+                                                "type": "object",
+                                                "description": "Archicad's identifier of the plane within the multi-plane roof (API_ElemPartId). Missing for a single-plane roof.",
+                                                "properties": {
+                                                    "main": {
+                                                        "type": "number",
+                                                        "description": "The main part of Archicad's identifier of the plane (API_ElemPartId main)."
+                                                    },
+                                                    "sub": {
+                                                        "type": "number",
+                                                        "description": "The sub part of Archicad's identifier of the plane (API_ElemPartId sub)."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "main",
+                                                    "sub"
+                                                ]
+                                            },
+                                            "details": {
+                                                "$ref": "#/RoofDetails",
+                                                "description": "The plane as a single-plane roof: slope, pivot line, level and outline."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "details"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "planes"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "roofPlanesOfElements"
+        ]
+    })";
+}
+
+GS::ObjectState GetRoofPlanesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& roofPlanesOfElements = response.AddList<GS::ObjectState> ("roofPlanesOfElements");
+
+    const Stories stories = GetStories ();
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            roofPlanesOfElements (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Element elem = {};
+        elem.header.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_Get (&elem);
+        if (err != NoError) {
+            roofPlanesOfElements (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+        if (GetElemTypeId (elem.header) != API_RoofID) {
+            roofPlanesOfElements (CreateErrorResponse (APIERR_BADPARS, "The element is not a Roof"));
+            continue;
+        }
+
+        GS::ObjectState roofPlanes;
+        const auto& planes = roofPlanes.AddList<GS::ObjectState> ("planes");
+        if (elem.roof.roofClass == API_PlaneRoofID) {
+            GS::ObjectState details;
+            AddRoofDetails (elem.roof, elem.header.guid, elem.header.floorInd, nullptr, stories, details);
+            planes (GS::ObjectState ("details", details));
+        } else {
+            RoofPlaneCollector collector (elem.header.floorInd, stories);
+            err = ACAPI_Element_Decompose (elem.header.guid, &collector);
+            if (err != NoError) {
+                roofPlanesOfElements (CreateErrorResponse (err, "Failed to decompose the roof into its planes"));
+                continue;
+            }
+            for (const GS::ObjectState& plane : collector.planes) {
+                planes (plane);
+            }
+        }
+        roofPlanesOfElements (roofPlanes);
+    }
+
+    return response;
+}
+
 GetElementAtCoordinateCommand::GetElementAtCoordinateCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -8554,6 +8939,101 @@ GS::ObjectState Get3DModelCountsCommand::Execute (const GS::ObjectState& /*param
 #else
     return CreateErrorResponse (APIERR_GENERAL, "Get3DModelCounts is available from Archicad 27.");
 #endif
+}
+
+// DeleteUserDataOfElements
+
+// ACAPI_UserData_DeleteUserData is the Archicad 27+ name (ACAPinc.h); Archicad 25/26 call the same
+// function ACAPI_Element_DeleteUserData.
+static GSErrCode TAPIR_UserData_DeleteUserData (API_Elem_Head* elemHead)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_UserData_DeleteUserData (elemHead);
+#else
+    return ACAPI_Element_DeleteUserData (elemHead);
+#endif
+}
+
+DeleteUserDataOfElementsCommand::DeleteUserDataOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeleteUserDataOfElementsCommand::GetName () const
+{
+    return "DeleteUserDataOfElements";
+}
+
+GS::Optional<GS::UniString> DeleteUserDataOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteUserDataOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result per element, aligned with the input."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteUserDataOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    // Archicad keeps the user data of an element per add-on, so this deletes only what this
+    // add-on stored on the element.
+    ACAPI_CallUndoableCommand ("DeleteUserDataOfElements", [&] () -> GSErrCode {
+        for (const GS::ObjectState& element : elements) {
+            const GS::ObjectState* elementId = element.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            API_Elem_Head elemHead = {};
+            elemHead.guid = GetGuidFromObjectState (*elementId);
+            GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to find the element"));
+                continue;
+            }
+
+            err = TAPIR_UserData_DeleteUserData (&elemHead);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to delete the user data of the element."));
+            } else {
+                executionResults (CreateSuccessfulExecutionResult ());
+            }
+        }
+        return NoError;
+    });
+
+    return response;
 }
 
 // GetTextureCoordinates
