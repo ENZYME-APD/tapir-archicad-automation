@@ -214,6 +214,10 @@ inline GSErrCode ACAPI_ModelAccess_GetTextureCoord (API_TexCoordPars* texCoordPa
 #define ACAPI_Navigator_GetLayoutSets(par1, par2) ACAPI_Environment (APIEnv_GetLayoutSetsID, par1, par2)
 #define ACAPI_Navigator_GetCurrLayerComb(par1) ACAPI_Environment (APIEnv_GetCurrLayerCombID, par1)
 #define ACAPI_Drawing_GetNumberingGridLines(par1) ACAPI_Environment (APIEnv_GetNumberingGridLinesID, reinterpret_cast<void*> (par1))
+// The current window's layer combination (APIdefs_Environment.h): par1 is the
+// API_AttributeIndex of the layer combination to apply.
+#define ACAPI_Navigator_ChangeCurrLayerComb(par1) ACAPI_Environment (APIEnv_ChangeCurrLayerCombID, par1)
+
 #define ACAPI_Navigator_GetViewOptions(par1, par2) ACAPI_Environment (APIEnv_GetViewOptionsID, par1, par2)
 #define ACAPI_Navigator_ChangeViewOptions(par1, par2) ACAPI_Environment (APIEnv_ChangeViewOptionsID, par1, par2)
 #define ACAPI_Database_NewDatabase(par1) ACAPI_Database (APIDb_NewDatabaseID, par1)
