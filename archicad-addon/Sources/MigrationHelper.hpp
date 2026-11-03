@@ -1230,6 +1230,16 @@ inline GSErrCode TAPIR_Element_SetPropertiesOfDefaultElem (const API_Elem_Head& 
 #endif
 }
 
+// The tool default of the generic variation of the element type.
+inline GSErrCode TAPIR_Element_GetPropertyValuesOfDefaultElemByGuid (API_ElemTypeID typeID, const GS::Array<API_Guid>& propertyGuids, GS::Array<API_Property>& properties)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_GetPropertyValuesOfDefaultElemByGuid (API_ElemType (typeID), propertyGuids, properties);
+#else
+    return ACAPI_Element_GetPropertyValuesOfDefaultElemByGuid (typeID, APIVarId_Generic, propertyGuids, properties);
+#endif
+}
+
 // Runs one check of the Action Center: ACAPI_Window_Check from AC27,
 // ACAPI_ActionCenter_Check before. Both only return an error code.
 inline GSErrCode TAPIR_Window_ActionCenterCheck (API_ActionCenterItemID item)
