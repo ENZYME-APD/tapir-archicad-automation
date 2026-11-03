@@ -11076,7 +11076,7 @@ static GS::UniString GetDetailMarkerItemSchema ()
                 "items": { "$ref": "#/Coordinate2D" },
                 "minItems": 3
             },
-            "clipPolygonArcs": {
+            "polygonArcs": {
                 "type": "array",
                 "description": "Optional arcs of the boundary, with indices into clipPolygon.",
                 "items": { "$ref": "#/PolyArc" }
@@ -11146,7 +11146,7 @@ static GS::ObjectState ExecuteCreateDetailMarkers (const GS::ObjectState& parame
             GS::Array<GS::ObjectState> clipPolygon;
             GS::Array<GS::ObjectState> clipPolygonArcs;
             data.Get ("clipPolygon", clipPolygon);
-            data.Get ("clipPolygonArcs", clipPolygonArcs);
+            data.Get ("polygonArcs", clipPolygonArcs);
             if (clipPolygon.GetSize () < 3) {
                 elements.Push (CreateErrorResponse (APIERR_BADPARS, "'clipPolygon' needs at least 3 points."));
                 continue;
@@ -11295,7 +11295,7 @@ GS::Optional<GS::UniString> ModifyDetailMarkersCommand::GetInputParametersSchema
                             "items": { "$ref": "#/Coordinate2D" },
                             "minItems": 3
                         },
-                        "clipPolygonArcs": {
+                        "polygonArcs": {
                             "type": "array",
                             "description": "Optional arcs of the new boundary, with indices into clipPolygon.",
                             "items": { "$ref": "#/PolyArc" }
@@ -11333,7 +11333,7 @@ GS::ObjectState ModifyDetailMarkersCommand::Execute (const GS::ObjectState& para
             const bool hasName = item.Get ("name", name);
             const bool hasId = item.Get ("id", id);
             const bool hasClipPolygon = item.Get ("clipPolygon", clipPolygon);
-            item.Get ("clipPolygonArcs", clipPolygonArcs);
+            item.Get ("polygonArcs", clipPolygonArcs);
             if (!hasName && !hasId && !hasClipPolygon) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Nothing to change: give 'name', 'id' or 'clipPolygon'."));
                 continue;
