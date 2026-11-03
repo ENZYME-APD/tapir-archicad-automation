@@ -33,6 +33,7 @@
 #include "ExtendedElementCommands.hpp"
 #include "Model3DCommands.hpp"
 #include "ElementGroupingCommands.hpp"
+#include "RenderingCommands.hpp"
 #include "AttributeCommands.hpp"
 #include "TeamworkCommands.hpp"
 #include "IssueCommands.hpp"
@@ -62,7 +63,6 @@
 #include "PolygonCommands.hpp"
 #include "ViewAndPlaceSettingsCommands.hpp"
 #include "DrawingPrimitiveCommands.hpp"
-#include "RenderingCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -493,17 +493,9 @@ GSErrCode Initialize (void)
             projectCommands, "1.6.0",
             "Saves the open project as an archive (.pla) file, with the library parts it uses inside."
         );
-        err |= RegisterCommand<SaveCurrentWindowAsImageCommand> (
-            projectCommands, "1.7.2",
-            "Saves what the current window shows as an image file (png, jpg, bmp, tiff or gif), as File > Save as does with a picture format. Master layout windows are not supported: save a layout that uses the master layout instead."
-        );
-        err |= RegisterCommand<GetCurrentViewImageCommand> (
-            projectCommands, "1.7.3",
-            "Returns what the 3D window, or the PhotoRendering window, shows as a base64 encoded png or jpg image with its size in pixels, without writing a file. Available from Archicad 30."
-        );
         err |= RegisterCommand<GetRenderingScenesCommand> (
             projectCommands, "1.8.0",
-            "Gets the names of the rendering scenes of the project, as the Scene list of the PhotoRendering Settings palette shows them."
+            "Gets the names of the rendering scenes of the project (the Scene list of the PhotoRendering Settings palette), the most recently used first, and the name of the current scene."
         );
         err |= RegisterCommand<SetCurrentRenderingSceneCommand> (
             projectCommands, "1.8.0",
@@ -511,7 +503,15 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<PhotoRenderCommand> (
             projectCommands, "1.8.0",
-            "Renders the 3D model with the current rendering scene, or with the given one, as Document > Creative Imaging > PhotoRender Projection does, and saves the image to a file (png, jpg, bmp, tiff or gif). The image size and quality come from the scene."
+            "Renders the 3D model with the current rendering scene, or with the given one, as Document > Creative Imaging > PhotoRender Projection does, and saves the image to a file (png, jpg, bmp, tiff or gif). The image size, resolution and quality come from the scene; a width, height or resolution given here is used for this render only, the scene is not changed."
+        );
+        err |= RegisterCommand<SaveCurrentWindowAsImageCommand> (
+            projectCommands, "1.7.2",
+            "Saves what the current window shows as an image file (png, jpg, bmp, tiff or gif), as File > Save as does with a picture format. Master layout windows are not supported: save a layout that uses the master layout instead."
+        );
+        err |= RegisterCommand<GetCurrentViewImageCommand> (
+            projectCommands, "1.7.3",
+            "Returns what the 3D window, or the PhotoRendering window, shows as a base64 encoded png or jpg image with its size in pixels, without writing a file. Available from Archicad 30."
         );
         err |= RegisterCommand<GetCalculationUnitsCommand> (
             projectCommands, "1.4.0",
