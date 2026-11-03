@@ -8553,6 +8553,56 @@ var gCommands = [{
         ]
     }
             },{
+                "name": "ElevateElements",
+                "version": "1.7.4",
+                "description": "Moves elements vertically by a given offset in meters, like Edit > Move > Elevate. An element that cannot be edited (its layer is hidden or locked, it is locked, or it is not available in teamwork) gets a failed execution result naming the reason instead of being skipped silently.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elementsWithElevations": {
+                "type": "array",
+                "description": "The elements with elevation offset pairs.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "elevation": {
+                            "type": "number",
+                            "description" : "The vertical offset in meters to move the element by, like Edit > Move > Elevate. A positive value moves the element up, a negative value moves it down. The home story of the element does not change."
+                        },
+                        "copy": {
+                            "type": "boolean",
+                            "description" : "Optional parameter. If true, then a copy of the element will be elevated. By default it's false."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "elevation"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementsWithElevations"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            },{
                 "name": "RotateElements",
                 "version": "1.5.3",
                 "description": "Rotates elements around a reference point. An element that cannot be edited (its layer is hidden or locked, it is locked, or it is not available in teamwork) gets a failed execution result naming the reason instead of being skipped silently.",
@@ -9685,17 +9735,17 @@ var gCommands = [{
                         },
                         "stepNum": {
                             "type": "integer",
-                            "description": "Number of risers (steps).",
+                            "description": "Number of risers (steps). Advisory: Archicad computes the step layout from totalHeight and the stair rules, so the created stair may not have this many risers.",
                             "minimum": 1
                         },
                         "riserHeight": {
                             "type": "number",
-                            "description": "Height of each riser.",
+                            "description": "Height of each riser. Advisory: Archicad computes the step layout from totalHeight and the stair rules, so the created stair may not use this riser height.",
                             "exclusiveMinimum": 0.0
                         },
                         "treadDepth": {
                             "type": "number",
-                            "description": "Depth (going) of each tread.",
+                            "description": "Depth (going) of each tread. Pinned as a fixed going in the stair rules, so the run length follows from the number of treads; the standard's combined riser/going rules (2R+G, R+G, R/G) are not applied to this stair.",
                             "exclusiveMinimum": 0.0
                         },
                         "finishVisible": {
@@ -13411,6 +13461,32 @@ var gCommands = [{
     },
                 "outputScheme": {"type":"object","properties":{"executionResults":{"$ref":"#/ExecutionResults"}},"additionalProperties":false,"required":["executionResults"]}
             },{
+                "name": "ModifyOpenings",
+                "version": "1.7.4",
+                "description": "Modifies Opening elements: the width, the height and the base point CreateOpenings takes. Needs Archicad 28 or earlier; in Archicad 29 and later every item fails with a message pointing to SetOpeningDetails, which changes the size and the position of an opening there.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "openingsWithDetails": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "basePoint": { "$ref": "#/Coordinate3D", "description": "New base point of the opening: its bottom left corner in world space, the same point CreateOpenings takes." },
+                        "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "New width of the opening." },
+                        "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "New height of the opening. The bottom edge stays where it is, the opening grows or shrinks upwards." }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["openingsWithDetails"]
+    },
+                "outputScheme": {"type":"object","properties":{"executionResults":{"$ref":"#/ExecutionResults"}},"additionalProperties":false,"required":["executionResults"]}
+            },{
                 "name": "ModifyMorphs",
                 "version": "1.4.0",
                 "description": "Modifies Morph elements based on the given parameters.",
@@ -16978,6 +17054,164 @@ var gCommands = [{
     },
                 "outputScheme": {
         "$ref": "#/ExecutionResult"
+    }
+            },{
+                "name": "GetPropertyEditability",
+                "version": "1.7.4",
+                "description": "Tells whether the values of the given properties can be modified, and whether the properties are visible, for the given elements. Also tells whether they can be modified in the tool defaults of element types (from Archicad 26) and in the default values of the property definitions themselves. Unknown elements, element types and properties are reported as errors, not as locked properties.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "properties": {
+                "$ref": "#/PropertyIds"
+            },
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "Checks whether the value of each property can be modified for these elements, and whether each property is visible for them."
+            },
+            "elementTypes": {
+                "type": "array",
+                "description": "Checks whether the value of each property can be modified in the tool default of these element types.",
+                "items": {
+                    "$ref": "#/ElementType"
+                }
+            },
+            "propertyDefinitionDefaults": {
+                "type": "boolean",
+                "description": "When true, checks whether the default value of each property definition can be modified. This is the default value of the property definition itself, not the tool default of an element type."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "properties"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "description": "Only the lists that were asked for are present.",
+        "properties": {
+            "editabilityOfElements": {
+                "type": "array",
+                "description": "Present when elements were given. The order of the outer list is that of the given elements. The order of the inner lists are that of the given properties.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "propertyEditabilities": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "oneOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "editable": {
+                                                        "type": "boolean",
+                                                        "description": "Whether the value of the property can be modified for the element. False for example for read-only properties or expressions with cyclic references."
+                                                    },
+                                                    "visible": {
+                                                        "type": "boolean",
+                                                        "description": "Whether the property is visible for the element."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "editable",
+                                                    "visible"
+                                                ]
+                                            },
+                                            {
+                                                "$ref": "#/ErrorItem"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "propertyEditabilities"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            },
+            "editabilityOfElementTypeDefaults": {
+                "type": "array",
+                "description": "Present when elementTypes were given. The order of the outer list is that of the given element types. The order of the inner lists are that of the given properties.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "propertyEditabilities": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "oneOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "editable": {
+                                                        "type": "boolean",
+                                                        "description": "Whether the value of the property can be modified in the tool default of the element type."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "editable"
+                                                ]
+                                            },
+                                            {
+                                                "$ref": "#/ErrorItem"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "propertyEditabilities"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            },
+            "editabilityOfPropertyDefinitionDefaults": {
+                "type": "array",
+                "description": "Present when propertyDefinitionDefaults is true. The order is that of the given properties.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "editable": {
+                                    "type": "boolean",
+                                    "description": "Whether the default value of the property definition can be modified."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "editable"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false
     }
             },{
                 "name": "GetPropertyAvailabilityOfDefaults",
@@ -21300,6 +21534,136 @@ var gCommands = [{
             "executionResults"
         ]
     }
+            },{
+                "name": "GetIFCSpatialStructure",
+                "version": "1.7.4",
+                "description": "Returns the IfcProject, IfcSite and IfcBuilding objects of the project's IFC model (hash value, IFC type and GlobalId), and for the given elements the index of the story they are assigned to in the IFC model. Available from Archicad 28.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "Elements to get the IFC story index of. Optional."
+            }
+        },
+        "additionalProperties": false
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "project": {
+                "$ref": "#/IFCObject",
+                "description": "The IfcProject object. Left out when Archicad does not report it."
+            },
+            "site": {
+                "$ref": "#/IFCObject",
+                "description": "The IfcSite object. Left out when Archicad does not report it."
+            },
+            "building": {
+                "$ref": "#/IFCObject",
+                "description": "The IfcBuilding object. Left out when Archicad does not report it."
+            },
+            "elements": {
+                "type": "array",
+                "description": "The story of each given element in the IFC model, in the order of the input. Left out when no elements were given.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementId": {
+                                    "$ref": "#/ElementId"
+                                },
+                                "storyIndex": {
+                                    "type": "integer",
+                                    "description": "The index of the story the element is assigned to in the IFC model."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementId",
+                                "storyIndex"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false
+    }
+            },{
+                "name": "GetIFCAssignments",
+                "version": "1.7.4",
+                "description": "Returns the IFC assignments of the project: the root IFC groups, and for each object the objects assigned to it (children) and the objects it is assigned to (parents). Each object is given by its hash value, its element where it belongs to one, its IFC type and its GlobalId. Available from Archicad 28.",
+                "inputScheme": null,
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "rootGroups": {
+                "type": "array",
+                "description": "The IFC groups (e.g. IfcGroup, IfcZone, IfcSystem) that are not assigned to another group.",
+                "items": {
+                    "$ref": "#/IFCObject"
+                }
+            },
+            "childObjects": {
+                "type": "array",
+                "description": "Each IFC object that has objects assigned to it, with those objects.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "object": {
+                            "$ref": "#/IFCObject"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/IFCObject"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "object",
+                        "children"
+                    ]
+                }
+            },
+            "parentObjects": {
+                "type": "array",
+                "description": "Each IFC object that is assigned to other objects, with those objects.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "object": {
+                            "$ref": "#/IFCObject"
+                        },
+                        "parents": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/IFCObject"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "object",
+                        "parents"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "rootGroups",
+            "childObjects",
+            "parentObjects"
+        ]
+    }
             }]
         },{
             "name": "Library Commands",
@@ -23347,7 +23711,14 @@ var gCommands = [{
                             "$ref": "#/DrawingNameType",
                             "description": "Defaults to CustomName when name is given, otherwise to the Drawing tool's current default."
                         },
-                        "position": { "$ref": "#/Coordinate2D" },
+                        "position": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "Where the Drawing's reference point is placed on the layout: its own origin when useOwnOrigoAsAnchor is true, otherwise the anchorPoint node of its box."
+                        },
+                        "useOwnOrigoAsAnchor": {
+                            "type": "boolean",
+                            "description": "Place the Drawing by its own origin instead of a node of its box. Defaults to the Drawing tool's current default. anchorPoint is not settable here: Archicad resets it to BottomLeft regardless of the value given, so the Drawing is always created with the Center anchor it has always used, unless useOwnOrigoAsAnchor is given."
+                        },
                         "scale": {
                             "type": "number",
                             "exclusiveMinimum": 0.0,
@@ -24869,6 +25240,50 @@ var gCommands = [{
     "required": [
         "perspective"
     ]
+},
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
+                "name": "Get3DStyles",
+                "version": "1.7.4",
+                "description": "Gets the names of the 3D styles of the project and the name of the current one, which the 3D window uses.",
+                "inputScheme": null,
+                "outputScheme": {
+    "type": "object",
+    "properties": {
+        "styleNames": {
+            "type": "array",
+            "description": "The names of the 3D styles of the project.",
+            "items": {
+                "type": "string"
+            }
+        },
+        "currentStyleName": {
+            "type": "string",
+            "description": "The name of the current 3D style, the one the 3D window uses."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "styleNames",
+        "currentStyleName"
+    ]
+}
+            },{
+                "name": "ShowElementsIn3D",
+                "version": "1.7.4",
+                "description": "Opens the 3D window on the given elements, as Show Selection in 3D does: they become the selection and only they are shown. Without elements it shows every element, as Show All in 3D does.",
+                "inputScheme": {
+    "type": "object",
+    "properties": {
+        "elements": {
+            "$ref": "#/Elements",
+            "description": "The elements to show in 3D. They become the selection, replacing the current one. Missing or empty: every element is shown, as Show All in 3D does."
+        }
+    },
+    "additionalProperties": false,
+    "required": []
 },
                 "outputScheme": {
         "$ref": "#/ExecutionResult"

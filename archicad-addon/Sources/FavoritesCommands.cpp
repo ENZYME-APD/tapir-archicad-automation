@@ -1611,6 +1611,42 @@ static GSErrCode RestoreHomeStory (const API_Element& elementBefore)
     return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
 }
 
+// A Drawing Favorite's anchorPoint does not survive ACAPI_Element_ChangeParameters: same
+// Archicad bug Graphisoft support (Tamas) confirmed for ACAPI_Element_Change on
+// SetDetailsOfElements (see ElementCommands.cpp) - anchorPoint resets to BottomLeft whenever
+// it is changed together with useOwnOrigoAsAnchor, or while useOwnOrigoAsAnchor is already
+// false, in the same combined-mask call. The full mask this command applies the Favorite with
+// covers both fields at once, so it hits the same reset. Reapplied here with the same
+// two-call workaround, right after the Favorite's settings have been applied.
+static GSErrCode FixDrawingAnchorPointAfterFavorite (const API_Guid& targetGuid, const API_DrawingType& favoriteDrawing)
+{
+    API_Element element = {};
+    element.header.guid = targetGuid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    element.drawing.anchorPoint = favoriteDrawing.anchorPoint;
+    element.drawing.useOwnOrigoAsAnchor = true;
+    ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, anchorPoint);
+    ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, useOwnOrigoAsAnchor);
+    err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+    if (err != NoError) {
+        return err;
+    }
+
+    if (!favoriteDrawing.useOwnOrigoAsAnchor) {
+        ACAPI_ELEMENT_MASK_CLEAR (mask);
+        element.drawing.useOwnOrigoAsAnchor = false;
+        ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, useOwnOrigoAsAnchor);
+        err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+    }
+    return err;
+}
+
 ApplyFavoritesToElementsCommand::ApplyFavoritesToElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -1812,6 +1848,9 @@ GS::ObjectState ApplyFavoritesToElementsCommand::Execute (const GS::ObjectState&
                     err = ACAPI_Element_ChangeParameters (targetGuids, &favorite.element, memoToApply, &mask);
                     if (err == NoError) {
                         err = RestoreHomeStory (targetElement);
+                    }
+                    if (err == NoError && GetElemTypeId (targetElement.header) == API_DrawingID) {
+                        err = FixDrawingAnchorPointAfterFavorite (targetGuid, favorite.element.drawing);
                     }
                 }
             }
