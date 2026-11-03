@@ -1454,6 +1454,10 @@ GSErrCode Initialize (void)
             propertyCommands, "1.6.0",
             "Imports a Property Manager XML export, with the given policy for names that already exist. Returns the property definitions it created and removed."
         );
+        err |= RegisterCommand<GetPropertyValuesOfElementDefaultsCommand> (
+            propertyCommands, "1.7.4",
+            "Returns the values of the given properties in the current tool default of an element type, which new elements of that type get. It reads the native tool default of the generic variation of the type, not a Favorite that is not applied. A property that is not available for the tool default is reported as an error."
+        );
         err |= RegisterCommand<ModifyPropertyValueOfElementsCommand> (
             propertyCommands, "1.8.0",
             "Sets one property value on all the given elements in a single step. If the property is not available for any of the elements, none of them is changed. Available from Archicad 27."
@@ -1951,6 +1955,18 @@ GSErrCode Initialize (void)
             libraryCommands, "1.8.0",
             "Creates a new library part file (.gsm) of the given loaded subtype, inheriting its parameters, and reports whether it is loaded with its index and names. Available from Archicad 28."
         );
+        err |= RegisterCommand<GetLibraryPartIdentitiesCommand> (
+            libraryCommands, "1.7.4",
+            "Gets the unique ID (main and revision GUID), the reference GUID and the Teamwork lock status of library parts given by index or file path, and whether they are in a server library."
+        );
+        err |= RegisterCommand<CompareLibraryPartUnIdsCommand> (
+            libraryCommands, "1.7.4",
+            "Compares two library part unique IDs with Archicad's own comparison and tells whether their main and revision GUIDs are the same."
+        );
+        err |= RegisterCommand<GetLastValidEmbeddedLibraryPartNameCommand> (
+            libraryCommands, "1.7.4",
+            "Gets the name and file path of the last valid library part of the embedded library."
+        );
         err |= RegisterCommand<OpenLibraryPartInEditorCommand> (
             libraryCommands, "1.8.0",
             "Opens a loaded library part, given by its fileName or documentName as returned by GetAvailableLibraryParts, in Archicad's library part editor. Available from Archicad 27."
@@ -2023,6 +2039,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<RemoveLibrariesFromBIMcloudCommand> (
             teamworkCommands, "1.8.0",
             "Removes libraries, given by name, from a folder of a BIMcloud or Teamwork server. Returns a result per library. Available from Archicad 29."
+        );
+        err |= RegisterCommand<GetTeamworkRightsOfObjectsCommand> (
+            teamworkCommands, "1.7.4",
+            "Returns for each given object, for example an element, whether the current Teamwork user has the right to create objects of its kind and to delete or modify it."
         );
         AddCommandGroup (teamworkCommands);
     }
