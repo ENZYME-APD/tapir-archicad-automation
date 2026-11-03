@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 66 % | 80 | 53 |  | 7 | 1 | 19 | 2 | 57 |
 | C++ API (ACAPI::, IFCAPI::) | 85 % | 1435 | 1215 | 10 | 176 | 32 | 2 |  | 392 |
 
-Archicad 25–30 DevKits; updated 2026-11-03 10:02 UTC.
+Archicad 25–30 DevKits; updated 2026-11-03 11:19 UTC.
 
 | | Status |
 |---|---|
@@ -642,7 +642,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 - ✅ `ACAPI_Teamwork_FindLockableObjectSet` – Retrieves the unique identifier of a lockable object set with a string identifier. <sub>(was `ACAPI_TeamworkControl_FindLockableObjectSet`)</sub>
 - ✅ `ACAPI_Teamwork_GetHotlinkCacheManagementOwner` – Provides the current owner of the Hotlink/XRef Management in Teamwork mode. <sub>(was `ACAPI_TeamworkControl_GetHotlinkCacheManagementOwner`)</sub>
-- ✅ `ACAPI_Teamwork_GetLockableStatus` – Retrieves the reservation status of a lockable object set. <sub>(was `ACAPI_TeamworkControl_GetLockableStatus`)</sub>
+- ✅ `ACAPI_Teamwork_GetLockableStatus` – Retrieves the reservation status of a lockable object set. <sub>(was `ACAPI_TeamworkControl_GetLockableStatus`)</sub> — [#1739](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1739 "Fix GetReservationStatusOfElements reporting reserved elements as Free")
 - 🚧 `ACAPI_Teamwork_GetTWAccessRight` – Returns if the current user has the specified access right. <sub>(was `APIEnv_GetTWAccessRightID`)</sub> — [#1449](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1449 "[2/5] Add GetTeamworkAccessRights command")
 - ✅ `ACAPI_Teamwork_GetTWOwner` – Retrieves the TeamWork owner of a given database. <sub>(was `APIDb_GetTWOwnerID`)</sub>
 - ✅ `ACAPI_Teamwork_GetTeamworkProjectDetails` – Extracts details from the given location about the teamwork project. <sub>(was `ACAPI_TeamworkControl_GetTeamworkProjectDetails`)</sub> — [#791](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/791 "Add a way to open a Teamwork/BIMcloud project, not just local .pln/.pla files")

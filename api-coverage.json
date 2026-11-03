@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-03 10:02 UTC",
+ "generatedAt": "2026-11-03 11:19 UTC",
  "versions": [
   25,
   26,
@@ -19814,7 +19814,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1739,
+     "title": "Fix GetReservationStatusOfElements reporting reserved elements as Free"
+    }
+   ],
    "issues": []
   },
   {
