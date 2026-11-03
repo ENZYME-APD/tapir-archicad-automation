@@ -398,14 +398,15 @@ static std::optional<ACAPI::Error> ApplyRoutingNodeDefaults (RoutingNodeDefault&
 
     ElbowDefault elbowDefault = nodeDefault.GetElbowDefault ();
     if (elbowDefaults != nullptr) {
-        GS::UniString preferenceTableIdStr;
+        API_Guid preferenceTableGuid = APINULLGuid;
         double factorRadius = 0.0;
-        const bool hasPreferenceTableId = elbowDefaults->Get ("preferenceTableId", preferenceTableIdStr);
+        // An unreadable preferenceTableId is rejected by the caller before this runs.
+        const bool hasPreferenceTableId = GetOptionalGuidField (*elbowDefaults, "preferenceTableId", preferenceTableGuid) == OptionalGuidField::Valid;
         const bool hasFactorRadius = elbowDefaults->Get ("factorRadius", factorRadius);
         elbowDefault.Modify ([&](ElbowDefault::Modifier& modifier) {
             // The preference table first, the radius factor is meant for the new table.
             if (hasPreferenceTableId) {
-                ACAPI::Result<void> result = modifier.SetPreferenceTable (Adapter::UniqueID (APIGuidFromString (preferenceTableIdStr.ToCStr ())));
+                ACAPI::Result<void> result = modifier.SetPreferenceTable (Adapter::UniqueID (preferenceTableGuid));
                 if (result.IsErr () && !firstError.has_value ()) {
                     firstError = result.UnwrapErr ();
                 }
@@ -421,10 +422,10 @@ static std::optional<ACAPI::Error> ApplyRoutingNodeDefaults (RoutingNodeDefault&
 
     TransitionDefault transitionDefault = nodeDefault.GetTransitionDefault ();
     if (transitionDefaults != nullptr) {
-        GS::UniString preferenceTableIdStr;
-        if (transitionDefaults->Get ("preferenceTableId", preferenceTableIdStr)) {
+        API_Guid preferenceTableGuid = APINULLGuid;
+        if (GetOptionalGuidField (*transitionDefaults, "preferenceTableId", preferenceTableGuid) == OptionalGuidField::Valid) {
             transitionDefault.Modify ([&](TransitionDefault::Modifier& modifier) {
-                ACAPI::Result<void> result = modifier.SetPreferenceTable (Adapter::UniqueID (APIGuidFromString (preferenceTableIdStr.ToCStr ())));
+                ACAPI::Result<void> result = modifier.SetPreferenceTable (Adapter::UniqueID (preferenceTableGuid));
                 if (result.IsErr () && !firstError.has_value ()) {
                     firstError = result.UnwrapErr ();
                 }
@@ -1472,6 +1473,25 @@ GS::ObjectState CreateMEPRoutingElementsCommand::Execute (const GS::ObjectState&
             }
 #endif
 
+            // The preference table ids are checked before anything is placed: a value that is not a
+            // guid string (e.g. {"guid": ...}) would otherwise be ignored and the default table used.
+            API_Guid preferenceTableGuid = APINULLGuid;
+            const OptionalGuidField preferenceTableIdField = GetOptionalGuidField (routingElementData, "preferenceTableId", preferenceTableGuid);
+            if (preferenceTableIdField == OptionalGuidField::Invalid) {
+                elements (CreateErrorResponse (APIERR_BADPARS, "The 'preferenceTableId' parameter must be a guid string; nothing was placed."));
+                continue;
+            }
+            if (nodeDefaults != nullptr) {
+                const GS::ObjectState* elbowDefaults = nodeDefaults->Get ("elbow");
+                const GS::ObjectState* transitionDefaults = nodeDefaults->Get ("transition");
+                API_Guid unusedGuid = APINULLGuid;
+                if ((elbowDefaults != nullptr && GetOptionalGuidField (*elbowDefaults, "preferenceTableId", unusedGuid) == OptionalGuidField::Invalid) ||
+                    (transitionDefaults != nullptr && GetOptionalGuidField (*transitionDefaults, "preferenceTableId", unusedGuid) == OptionalGuidField::Invalid)) {
+                    elements (CreateErrorResponse (APIERR_BADPARS, "A 'preferenceTableId' of 'defaults.routingNode' must be a guid string; nothing was placed."));
+                    continue;
+                }
+            }
+
             ACAPI::Result<RoutingElementDefault> routingElementDefault = CreateRoutingElementDefault (domain.value ());
             if (routingElementDefault.IsErr ()) {
                 elements (CreateErrorResponse (routingElementDefault.UnwrapErr ().kind, "Failed to create the routing element default."));
@@ -1494,18 +1514,17 @@ GS::ObjectState CreateMEPRoutingElementsCommand::Execute (const GS::ObjectState&
             double height = 0.0;
             GS::UniString shapeStr;
             Int32 referenceId = -1;
-            GS::UniString preferenceTableIdStr;
             const bool hasWidth = routingElementData.Get ("crossSectionWidth", width);
             const bool hasHeight = routingElementData.Get ("crossSectionHeight", height);
             const bool hasShape = routingElementData.Get ("crossSectionShape", shapeStr);
             const bool hasReferenceId = routingElementData.Get ("crossSectionReferenceId", referenceId);
-            const bool hasPreferenceTableId = routingElementData.Get ("preferenceTableId", preferenceTableIdStr);
+            const bool hasPreferenceTableId = preferenceTableIdField == OptionalGuidField::Valid;
             if (hasWidth || hasHeight || hasShape || hasReferenceId || hasPreferenceTableId) {
                 segmentDefault.Modify ([&](RoutingSegmentDefault::Modifier& modifier) {
                     // The preference table is set before the reference id, because the reference id is
                     // resolved against the table the segment uses.
                     if (hasPreferenceTableId) {
-                        modifier.SetPreferenceTableId (Adapter::UniqueID (APIGuidFromString (preferenceTableIdStr.ToCStr ())));
+                        modifier.SetPreferenceTableId (Adapter::UniqueID (preferenceTableGuid));
                     }
                     if (hasShape) {
                         const std::optional<ConnectorShape> shape = ConnectorShapeFromString (shapeStr);
@@ -1917,6 +1936,17 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
             continue;
         }
 
+        // A preference table id that is not a guid string (e.g. {"guid": ...}) would otherwise be
+        // ignored with success, so it fails the item before anything is changed.
+        API_Guid branchPreferenceTableGuid = APINULLGuid;
+        API_Guid preferenceTableGuid = APINULLGuid;
+        const OptionalGuidField branchPreferenceTableIdField = GetOptionalGuidField (routingElementData, "branchPreferenceTableId", branchPreferenceTableGuid);
+        const OptionalGuidField preferenceTableIdField = GetOptionalGuidField (routingElementData, "preferenceTableId", preferenceTableGuid);
+        if (branchPreferenceTableIdField == OptionalGuidField::Invalid || preferenceTableIdField == OptionalGuidField::Invalid) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The 'preferenceTableId' and 'branchPreferenceTableId' parameters must be guid strings."));
+            continue;
+        }
+
         GS::UniString cutPlanePositionStr;
         GS::UniString floorPlanDisplayOptionStr;
         GS::UniString showProjectionStr;
@@ -1977,11 +2007,10 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
         }
 #endif
 
-        GS::UniString branchPreferenceTableIdStr;
-        if (routingElementData.Get ("branchPreferenceTableId", branchPreferenceTableIdStr)) {
+        if (branchPreferenceTableIdField == OptionalGuidField::Valid) {
             bool setterSucceeded = true;
             ACAPI::Result<void> result = routingElement->Modify ([&](RoutingElement::Modifier& modifier) {
-                setterSucceeded = modifier.SetBranchPreferenceTableId (Adapter::UniqueID (APIGuidFromString (branchPreferenceTableIdStr.ToCStr ()))).IsOk ();
+                setterSucceeded = modifier.SetBranchPreferenceTableId (Adapter::UniqueID (branchPreferenceTableGuid)).IsOk ();
             }, "Modify Branch Preference Table of Routing Element");
             success &= result.IsOk () && setterSucceeded;
         }
@@ -1990,12 +2019,11 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
         double height = 0.0;
         GS::UniString shapeStr;
         Int32 referenceId = -1;
-        GS::UniString preferenceTableIdStr;
         const bool hasWidth = routingElementData.Get ("crossSectionWidth", width);
         const bool hasHeight = routingElementData.Get ("crossSectionHeight", height);
         const bool hasShape = routingElementData.Get ("crossSectionShape", shapeStr);
         const bool hasReferenceId = routingElementData.Get ("crossSectionReferenceId", referenceId);
-        const bool hasPreferenceTableId = routingElementData.Get ("preferenceTableId", preferenceTableIdStr);
+        const bool hasPreferenceTableId = preferenceTableIdField == OptionalGuidField::Valid;
         GS::UniString anchorStr;
         double referenceLineOffsetX = 0.0;
         double referenceLineOffsetY = 0.0;
@@ -2019,7 +2047,7 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
                     // Same order as in CreateMEPRoutingElements: table first, then the reference id
                     // that is resolved against it.
                     if (hasPreferenceTableId) {
-                        modifier.SetPreferenceTableId (Adapter::UniqueID (APIGuidFromString (preferenceTableIdStr.ToCStr ())));
+                        modifier.SetPreferenceTableId (Adapter::UniqueID (preferenceTableGuid));
                     }
                     if (hasShape) {
                         const std::optional<ConnectorShape> shape = ConnectorShapeFromString (shapeStr);

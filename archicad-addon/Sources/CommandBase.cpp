@@ -112,6 +112,20 @@ API_Guid GetGuidFromObjectState (const GS::ObjectState& os)
     return APIGuidFromString (guid.ToCStr ());
 }
 
+OptionalGuidField GetOptionalGuidField (const GS::ObjectState& os, const GS::String& name, API_Guid& guid)
+{
+    guid = APINULLGuid;
+    if (!os.Contains (name)) {
+        return OptionalGuidField::NotGiven;
+    }
+    GS::String guidStr;
+    if (!os.Get (name, guidStr)) {
+        return OptionalGuidField::Invalid;
+    }
+    guid = APIGuidFromString (guidStr.ToCStr ());
+    return guid == APINULLGuid ? OptionalGuidField::Invalid : OptionalGuidField::Valid;
+}
+
 API_Guid GetGuidFromArrayItem (const GS::String& idFieldName, const GS::ObjectState& os)
 {
     GS::ObjectState idField;
