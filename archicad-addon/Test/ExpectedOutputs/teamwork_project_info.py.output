@@ -1,0 +1,8 @@
+Command: GetTeamworkProjectInfo
+Parameters:
+{}
+Response:
+{
+    "isTeamwork": false,
+    "isOnline": false
+}

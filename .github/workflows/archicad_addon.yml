@@ -18,26 +18,29 @@ on:
         default: release-signing
 
 jobs:
-  # When adding or removing an Archicad version in the matrices below, or an
-  # installer job, also update EXPECTED_ASSETS in weekly_release.yml - it is
-  # the number of release assets (Win + Mac per version, plus the Win + Mac
-  # installer executables) the weekly release waits for before publishing.
+  # The Archicad versions to build, from archicad-addon/devkits.json (the one
+  # list of supported versions; tools/devkits.py validates it). weekly_release.yml
+  # counts the release assets from the same list: Win + Mac per version, plus
+  # the Win + Mac installer executables - update it when adding an installer job.
+  devkits:
+    runs-on: ubuntu-latest
+    outputs:
+      win: ${{ steps.list.outputs.win }}
+      mac: ${{ steps.list.outputs.mac }}
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+    - name: Read the DevKit list
+      id: list
+      run: |
+        echo "win=$(python3 tools/devkits.py matrix WIN)" >> "$GITHUB_OUTPUT"
+        echo "mac=$(python3 tools/devkits.py matrix MAC)" >> "$GITHUB_OUTPUT"
+
   build_win:
+    needs: devkits
     strategy:
       matrix:
-        params:
-          - acVersion: 25
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/25.3002/API.Development.Kit.WIN.25.3002.zip
-          - acVersion: 26
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/26.3000/API.Development.Kit.WIN.26.3000.zip
-          - acVersion: 27
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/27.3001/API.Development.Kit.WIN.27.3001.zip
-          - acVersion: 28
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/28.3001/API.Development.Kit.WIN.28.3001.zip
-          - acVersion: 29
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/29.3000/API.Development.Kit.WIN.29.3000.zip
-          - acVersion: 30
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/30.3000/API.Development.Kit.WIN.30.3000.zip
+        params: ${{ fromJSON(needs.devkits.outputs.win) }}
     runs-on: [ windows-2022 ]
     steps:
     - name: Checkout Repo
@@ -73,21 +76,10 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
 
   build_mac:
+    needs: devkits
     strategy:
       matrix:
-        params:
-          - acVersion: 25
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/25.3002/API.Development.Kit.MAC.25.3002.zip
-          - acVersion: 26
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/26.3000/API.Development.Kit.MAC.26.3000.zip
-          - acVersion: 27
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/27.3001/API.Development.Kit.MAC.27.3001.zip
-          - acVersion: 28
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/28.3001/API.Development.Kit.MAC.28.3001.zip
-          - acVersion: 29
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/29.3000/API.Development.Kit.MAC.29.3000.zip
-          - acVersion: 30
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/30.3000/API.Development.Kit.MAC.30.3000.zip
+        params: ${{ fromJSON(needs.devkits.outputs.mac) }}
     runs-on: ${{ matrix.params.acVersion < 26 && 'macos-15-intel' || 'macos-latest' }}
     steps:
     - name: Checkout repo

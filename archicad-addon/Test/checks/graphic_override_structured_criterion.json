@@ -1,6 +1,7 @@
 {
   "title": "Graphic override rules with a structured criterion, rule groups and combination delete",
   "minTapir": "1.7.2",
+  "minArchicad": "27",
   "steps": [
     {
       "id": "create with criterion",
@@ -260,18 +261,6 @@
     }
   ],
   "teardown": [
-    {
-      "command": "DeleteGraphicOverrideRules",
-      "params": {
-        "graphicOverrideRuleIds": [
-          {
-            "graphicOverrideRuleId": {
-              "guid": "${rule}"
-            }
-          }
-        ]
-      }
-    },
     {
       "command": "DeleteGraphicOverrideRuleGroups",
       "params": {
