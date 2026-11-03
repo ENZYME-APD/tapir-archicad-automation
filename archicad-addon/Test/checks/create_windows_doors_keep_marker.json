@@ -1,0 +1,97 @@
+{
+  "title": "CreateWindows and CreateDoors still place the tool's marker when it can be read",
+  "minTapir": "1.7.4",
+  "steps": [
+    {
+      "id": "host wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": { "x": 900.0, "y": 900.0 },
+            "endCoordinate": { "x": 906.0, "y": 900.0 },
+            "zCoordinate": 0.0,
+            "height": 3.0,
+            "thickness": 0.3
+          }
+        ]
+      },
+      "save": {
+        "wall": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "window",
+      "command": "CreateWindows",
+      "params": {
+        "windowsData": [
+          {
+            "ownerWallId": { "guid": "${wall}" },
+            "centerOffset": 1.5,
+            "sillHeight": 0.9,
+            "width": 1.0,
+            "height": 1.2
+          }
+        ]
+      },
+      "save": {
+        "window": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "window created"
+        }
+      ]
+    },
+    {
+      "id": "door",
+      "command": "CreateDoors",
+      "params": {
+        "doorsData": [
+          {
+            "ownerWallId": { "guid": "${wall}" },
+            "centerOffset": 4.5,
+            "sillHeight": 0.0,
+            "width": 0.9,
+            "height": 2.1
+          }
+        ]
+      },
+      "save": {
+        "door": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "door created"
+        }
+      ]
+    },
+    {
+      "id": "markers",
+      "command": "GetMarkerParametersOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${window}" } },
+          { "elementId": { "guid": "${door}" } }
+        ]
+      },
+      "expect": [
+        {
+          "path": "markerParametersOfElements[0].parameters",
+          "exists": true,
+          "name": "window has its marker"
+        },
+        {
+          "path": "markerParametersOfElements[1].parameters",
+          "exists": true,
+          "name": "door has its marker"
+        }
+      ]
+    }
+  ]
+}

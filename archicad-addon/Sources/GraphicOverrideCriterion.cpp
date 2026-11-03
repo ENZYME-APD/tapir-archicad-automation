@@ -31,14 +31,11 @@ static const char* kDrawingElemClassGuid = "FD699EDF-F0A1-4728-87B8-092C09E4DE71
 
 struct ElemTypeInfo { const char* name; const char* refId; const char* mainGuid; const char* revGuid; };
 
-// Only element types created with a fixed, non-library-part tool are listed here: their
-// ElemCreatorToolUnID guids are all-zero (no GDL library part backs them), so ElemRegistryRefId
-// alone identifies the type reliably. Library-part-based tools (Door, Window, Object, Lamp, Zone,
-// Label, Grid, and most MEP part types) were confirmed THIS session to use a real MainGuid/RevGuid
-// pointing at Archicad's built-in library part - and that guid was confirmed to differ between the
-// DevKit's own sample (an older Archicad build) and this live project for the exact same tool
-// (Door), meaning it is not a portable constant. Hardcoding it here would only work on the Archicad
-// version/build it was captured from, so those types are intentionally left unsupported for now.
+// Every element type is identified by its ElemRegistryRefId alone, with an all-zero
+// ElemCreatorToolUnID. For library part based tools (Door, Window, Object, Lamp, Zone, Label, Grid,
+// MEP parts) the criteria editor also writes the tool's library subtype, whose revision differs
+// between library versions; the registry code alone still matches every element of the tool, see
+// the comment above the library part based entries.
 static const ElemTypeInfo kElemTypeTable[] = {
     { "Wall",              "1463897138", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
     { "Column",            "1129270357", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
@@ -80,6 +77,34 @@ static const ElemTypeInfo kElemTypeTable[] = {
     { "DuctRouting",        "1296323141", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
     { "CableCarrierRouting","1296257605", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
     { "PipeRouting",        "1297109573", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
+    // Library part based tools and MEP parts. The criteria editor also writes the tool's library
+    // subtype as ElemCreatorToolUnID, but the registry code alone matches every element of the tool
+    // (checked live on Archicad 27 and 29 with the override Archicad actually applies to each element:
+    // Window, Door, Zone, Label, Object, Lamp, GridElement), and the subtype's revision differs
+    // between library versions. Codes: APIVarId_* in APIdefs_Elements.h, the others read from rules
+    // made in the criteria editor.
+    { "Window",              "1464421956", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
+    { "Door",                "1146048338", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
+    { "Zone",                "1380929357", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
+    { "Label",               "1279345228", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
+    { "Object",              "1398361410", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
+    { "Lamp",                "1279870792", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
+    { "GridElement",         "1196574028", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
+    { "Skylight",            "1397446988", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
+    { "CornerWindow",        "1129469764", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
+    { "WallEnd",             "1463895374", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
+    { "DuctBranch",          "1296323653", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
+    { "DuctTerminal",        "1296323666", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
+    { "DuctAccessory",       "1296318787", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
+    { "DuctFitting",         "1296320073", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
+    { "DuctFlexibleSegment", "1296320083", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
+    { "CableCarrierBranch",  "1296258117", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
+    { "CableCarrierFitting", "1296254537", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
+    { "PipeBranch",          "1297110085", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
+    { "PipeTerminal",        "1297110098", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
+    { "PipeAccessory",       "1297105219", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
+    { "PipeFitting",         "1297106505", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
+    { "Equipment",           "1162958153", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
 };
 
 // User strings (values, property and group names, classification item IDs and system names) go
@@ -119,14 +144,11 @@ static GS::UniString ElemTypeCriterionXML (const ElemTypeInfo& info)
          + "</ElemTypeCriterion>";
 }
 
-// CriteriaOperatorEnum values were confirmed live by creating one rule per operator in ArchiCAD's
-// own criteria editor and reading back which value each produced: 1 = "is not" (plain), 10 = "has
-// value", 11 = "has no value", 12 = "is" (confirmed identical to "is in the branch of" - ArchiCAD
-// treats them as the same operator for a hierarchical Classification property), 13 = "is the
-// direct child of", 14 = "is not in the branch of", 15 = "is not the direct child of". 12/"is" is
-// what the built-in "Classification - X" system rules use; 14 (not just 11 - "has no value" is a
-// different, unrelated operator) is its natural negation, matching an item and all its descendants
-// resp. excluding all of them.
+// CriteriaOperatorEnum values, read in the criteria editor and checked on classified elements:
+// 0 is (this item exactly), 1 is not, 10 has a value, 11 has no value (both ignore the item but
+// need one), 12 is in the branch of (the item and its descendants, what the built-in
+// "Classification - X" rules use), 13 is a direct child of, 14 is not in the branch of, 15 is not a
+// direct child of.
 //
 // The classification SYSTEM is named, not identified by guid (HasNameId, like every custom
 // property), and a mismatched name silently discards the whole criterion. The criteria editor
@@ -152,7 +174,8 @@ static bool ContainsClassificationItemId (const GS::Array<API_ClassificationItem
 }
 
 // requested: a system's name or its "<name> - <version>" label. Not given: the only system of the
-// project that contains itemId; an error when none or several do.
+// project that contains itemId (or the only system at all when itemId is empty); an error when none
+// or several do.
 static bool ResolveClassificationSystemLabel (const GS::UniString& itemId, const GS::UniString& requested, GS::UniString& outLabel, GS::UniString& outError)
 {
     GS::Array<API_ClassificationSystem> systems;
@@ -168,7 +191,7 @@ static bool ResolveClassificationSystemLabel (const GS::UniString& itemId, const
             continue;
         }
         GS::Array<API_ClassificationItem> roots;
-        if (ACAPI_Classification_GetClassificationSystemRootItems (system.guid, roots) == NoError && ContainsClassificationItemId (roots, itemId))
+        if (itemId.IsEmpty () || (ACAPI_Classification_GetClassificationSystemRootItems (system.guid, roots) == NoError && ContainsClassificationItemId (roots, itemId)))
             candidates.Push (label);
     }
     if (!requested.IsEmpty ()) {
@@ -179,13 +202,33 @@ static bool ResolveClassificationSystemLabel (const GS::UniString& itemId, const
         outLabel = candidates[0];
         return true;
     }
+    if (itemId.IsEmpty ()) {
+        outError = candidates.IsEmpty () ? "The project has no classification system." : "The project has several classification systems: give 'classificationSystem'.";
+        return false;
+    }
     outError = candidates.IsEmpty ()
         ? "No classification system of the project contains the item '" + itemId + "'."
         : "Several classification systems contain the item '" + itemId + "': give 'classificationSystem'.";
     return false;
 }
 
-static GS::UniString ClassificationCriterionXML (const GS::UniString& itemId, bool isNot, const GS::UniString& systemName)
+// The ID of the first root item of the system with this label. "has a value" / "has no value" ignore
+// the item, but Archicad drops the whole condition when it is empty, like the editor that always
+// keeps one.
+static GS::UniString FirstClassificationItemId (const GS::UniString& systemLabel)
+{
+    GS::Array<API_ClassificationSystem> systems;
+    ACAPI_Classification_GetClassificationSystems (systems);
+    for (const API_ClassificationSystem& system : systems) {
+        GS::Array<API_ClassificationItem> roots;
+        if (ClassificationSystemLabel (system) == systemLabel && ACAPI_Classification_GetClassificationSystemRootItems (system.guid, roots) == NoError && !roots.IsEmpty ())
+            return roots[0].id;
+    }
+    return GS::UniString ();
+}
+
+// op: see the operator comment above ClassificationSystemLabel.
+static GS::UniString ClassificationCriterionXML (const GS::UniString& itemId, int op, const GS::UniString& systemName)
 {
     return GS::UniString ("<ClassGuid>") + kPropertyClassGuid + "</ClassGuid>"
          + "<PropertyCriterion Mv=\"6\" Sv=\"0\">"
@@ -200,7 +243,7 @@ static GS::UniString ClassificationCriterionXML (const GS::UniString& itemId, bo
          +                 "<HasNameId>true</HasNameId><Name>ClassificationSystemPropertyDefinitionGroup</Name>"
          +             "</PropertyDefinitionGroupUserId>"
          +         "</PropertyDefinitionUserId>"
-         +         GS::UniString (isNot ? "<CriteriaOperatorEnum>14</CriteriaOperatorEnum>" : "<CriteriaOperatorEnum>12</CriteriaOperatorEnum>")
+         +         "<CriteriaOperatorEnum>" + GS::UniString::Printf ("%d", op) + "</CriteriaOperatorEnum>"
          +         "<ClassificationValue><ClassificationItemUserID>" + XmlEscape (itemId) + "</ClassificationItemUserID></ClassificationValue>"
          +     "</VBEF::ConditionIO>"
          + "</PropertyCriterion>";
@@ -432,6 +475,28 @@ static GS::UniString ProfileParameterHeaderByNameXML (const GS::UniString& prope
          +         "<Name>" + kProfileParameterGroupName + "</Name>"
          +     "</PropertyDefinitionGroupUserId>"
          + "</PropertyDefinitionUserId>";
+}
+
+// A profile parameter that holds one value per profile component sits in its own by-name group and
+// stores a NumListVariant inside <ProfileParameterValueList> (read from a rule made in the editor,
+// where only "is" was offered for it).
+static GS::UniString ProfileParameterListCriterionXML (const GS::UniString& propertyName, double value)
+{
+    return GS::UniString ("<ClassGuid>") + kPropertyClassGuid + "</ClassGuid>"
+         + "<PropertyCriterion Mv=\"6\" Sv=\"0\"><VBEF::ConditionIO Mv=\"2\" Sv=\"0\">"
+         + "<PropertyDefinitionUserId Version=\"2\">"
+         +     "<PrimaryId>1</PrimaryId><HasGuidId>false</HasGuidId>"
+         +     "<Guid>00000000-0000-0000-0000-000000000000</Guid><HasNameId>true</HasNameId>"
+         +     "<Name>" + XmlEscape (propertyName) + "</Name>"
+         +     "<PropertyDefinitionGroupUserId Version=\"2\">"
+         +         "<PrimaryId>1</PrimaryId><HasGuidId>false</HasGuidId>"
+         +         "<Guid>00000000-0000-0000-0000-000000000000</Guid><HasNameId>true</HasNameId>"
+         +         "<Name>ListTypeProfileParameterPropertyDefinitionGroup</Name>"
+         +     "</PropertyDefinitionGroupUserId>"
+         + "</PropertyDefinitionUserId>"
+         + "<CriteriaOperatorEnum>0</CriteriaOperatorEnum>"
+         + "<ProfileParameterValueList><Value><Variant Type=\"NumListVariant\"><Status>Normal</Status><ValueArray><ValueItem>" + GS::UniString::Printf ("%.15g", value) + "</ValueItem></ValueArray></Variant></Value></ProfileParameterValueList>"
+         + "</VBEF::ConditionIO></PropertyCriterion>";
 }
 
 // numOp: 0==, 1=not-equal, 2=less-than, 3=greater-than, 4=less-or-equal, 5=greater-or-equal.
@@ -881,10 +946,9 @@ static const char* kStairMinHeadroomPropertyGuid       = "2F893F86-7AAE-45A2-883
 static const char* kStairInvalidHeightPropertyGuid     = "99822D1B-DB8F-43A4-A0E7-AD151C790608"; // Geometrie group
 static const char* kStairDefaultWidthPropertyGuid      = "DBD410FF-55E3-45CD-BDF6-73903377B406"; // Geometrie group
 static const char* kStairSlopePropertyGuid             = "01FBABBB-5B2B-41EE-9782-E675AA3A0858"; // Geometrie group
-// "Regles et normes" (Rules and Standards) group - brand new, first seen on Stair. Unlike the
-// well-established Geometrie/Positioning groups, none of these 7 fields got an exhaustive 6-operator
-// test live (all captured with a single "=" or "contains" row) - equals-only for now, matching
-// exactly what was captured, rather than assuming the same 6-op range as other numeric groups.
+// "Regles et normes" (Rules and Standards) group, first seen on Stair. The criteria editor shows
+// all 6 comparison operators (=, !=, <, >, <=, >=) for its numeric fields; the per-flight count is a
+// list value and keeps "is" only.
 static const char* kStairRulesGroupGuid          = "9056DEE6-79CD-479E-B272-DC3AF25C784A";
 static const char* kStairMaxRiserHeightPropertyGuid = "A9630A1F-96EB-4EA6-AC20-118159E87402";
 static const char* kStairMinRiserHeightPropertyGuid = "FDEA5248-5DDE-4C40-8EA0-F426483E4C87";
@@ -912,6 +976,58 @@ static const char* kLineTypeAttrPropertyGuid     = "E8523625-0F5C-45DE-8A64-FD94
 // "Stylo Contour Hachure" (hatch contour pen) - unlike the generic "Stylo" field above (contains/does
 // not contain only), this one is is/is-not (numOp 0/1), like the wallXxx pen fields.
 static const char* kHatchContourPenPropertyGuid  = "58AA86FB-238C-4406-BDBF-D51345B68000";
+
+// Fields read from rules made in the criteria editor of Archicad 29 (one rule per tool, one row per
+// criterion, then one rule per value to read each label). Only the operators the editor offered in
+// those rules are exposed. Archicad 27 drops the two MEP fields and profileParameterList: they come
+// from later versions. The MEP system field ("Systeme MEP") is not offered: on Archicad 29 the value
+// the editor stores is not the MEP system's attribute index.
+static const char* kMeshEdgePenPropertyGuid            = "2F9EEA27-1EC6-4A97-842A-316711A9EBC9"; // Plan et Coupe
+static const char* kMeshSkirtSurfacePropertyGuid       = "6E408207-3694-45F1-BA3C-47CF1908D829"; // Surface et Materiaux
+static const char* kMorphBodyTypePropertyGuid          = "F3660383-BA08-4D4C-B980-52151726CF08"; // Construction
+static const char* kBeamCrossSectionTypePropertyGuid   = "1672FA80-BA17-47E5-9534-5F03667A085F"; // Geometrie
+static const char* kTextAlignmentPropertyGuid          = "65447A7E-F3ED-4745-AF2B-69F4FDBEF3A0"; // Plan et Coupe
+static const char* kTextStylePropertyGuid              = "62EB6A8A-BE4E-44AE-9D82-955DEA25D201"; // Plan et Coupe
+static const char* kTextLineSpacingPropertyGuid        = "E0086C44-E61D-42A4-96E4-C26D0D10FED2"; // Plan et Coupe
+static const char* kDimensionMarkerSizePropertyGuid    = "0E052983-4375-4EDA-88D1-7353072BC80E"; // Geometrie
+static const char* kDimensionMarkerPenPropertyGuid     = "F82DF163-F43F-43AF-9B33-4B87CD7A7A74"; // Plan et Coupe
+static const char* kDimensionMarkerPenListPropertyGuid = "5BD213D1-669A-4553-80C8-E86C2956F781"; // Plan et Coupe
+static const char* kDimensionPointerPenPropertyGuid    = "6FE1182D-D8B7-4324-9BB6-C767EA812512"; // Plan et Coupe
+static const char* kDimensionPointerLineTypePropertyGuid = "927D1625-305C-43A4-9B43-3FED6E109E45"; // Plan et Coupe
+static const char* kHatchCategoryPropertyGuid          = "1114CD0A-6BF8-4A4D-8386-B0D5ECDEB35B"; // Plan et Coupe
+static const char* kStairRisersPerFlightPropertyGuid   = "D1323E5E-20FA-4919-BA73-319444F388FB"; // Regles et normes
+static const char* kOpeningShapePropertyGuid           = "CD42AD05-5E0B-461D-928A-31DD2FBEB0E7"; // Geometrie
+static const char* kOpeningLimitsPropertyGuid          = "9CAEF363-1C79-44AC-A7D3-AAFC667F1DF0"; // Geometrie
+static const char* kOpeningOrientationPropertyGuid     = "486C8DA7-A3AA-4E0C-898C-625BA0CF2B71"; // Geometrie
+static const char* kRenovationStatusPropertyGuid       = "9CF14061-6E9C-45BE-BD8F-D3BCF59D218E"; // ID et Categories group1
+static const char* kVariantSetNamePropertyGuid         = "59634BB2-6D8C-4A4B-B349-172F4157974B"; // ID et Categories group4
+static const char* kVariantNamePropertyGuid            = "114FC56B-160D-4CCF-91F1-EAD505051C9A"; // ID et Categories group4
+static const char* kMepCommonPropertyGroupGuid         = "85599253-0EF2-4CA9-8086-A49B507DA053";
+static const char* kMepOpenConnectionPropertyGuid      = "51C349F2-F113-4B50-9FB5-D9610C14B12F";
+// Renovation status values are built-in status guids, identical in every project.
+static const char* kRenovationExistingGuid      = "615A6BBB-1B83-FF46-57B3-683CFDD57EBF";
+static const char* kRenovationToBeDemolishedGuid = "57E66097-9C38-8012-D9C7-0CA01AA5EB1E";
+static const char* kRenovationNewGuid           = "913BE5A9-C24C-DD41-AE08-079792A58CF6";
+
+struct EnumValue {
+    const char* name;
+    int         value;
+};
+
+// Maps an enum name of the schema to the raw value Archicad stores; false with outError when unknown.
+static bool FindEnumValue (const char* fieldName, const GS::UniString& name, const EnumValue* values, int count, int& outValue, GS::UniString& outError)
+{
+    GS::UniString allowed;
+    for (int i = 0; i < count; ++i) {
+        if (name == values[i].name) {
+            outValue = values[i].value;
+            return true;
+        }
+        allowed += GS::UniString (i == 0 ? "" : ", ") + values[i].name;
+    }
+    outError = GS::UniString ("Invalid ") + fieldName + " '" + name + "'. Must be one of: " + allowed + ".";
+    return false;
+}
 
 static GS::UniString NumPropertyCriterionXML (const char* propertyGuid, double value, int numOp, const char* groupGuid)
 {
@@ -1052,8 +1168,26 @@ static bool IsFontNode (const GS::ObjectState& node)
     return node.Get ("fontIs", dummyStr) || node.Get ("fontContains", dummyStr) || node.Get ("fontNotContains", dummyStr);
 }
 
-// True only if EVERY leaf reachable from node (through any and/or nesting) is a Stylo Texte or
-// Police field - the only two kinds of leaf that don't need the default 3D-model-element anchor.
+// Fields of text, dimension and hatch elements: like Stylo Texte and Police, they only apply to 2D
+// drawing elements, so the default 3D-model-element anchor would make the rule match nothing.
+static bool IsDrawingOnlyFieldNode (const GS::ObjectState& node)
+{
+    static const char* kDrawingOnlyFields[] = {
+        "textAlignment", "textStyle", "textLineSpacing", "hatchCategory",
+        "dimensionMarkerSize", "dimensionMarkerSizeNot", "dimensionMarkerSizeLessThan", "dimensionMarkerSizeGreaterThan",
+        "dimensionMarkerSizeLessOrEqual", "dimensionMarkerSizeGreaterOrEqual",
+        "dimensionMarkerPen", "dimensionMarkerPenContains", "dimensionPointerPenContains", "dimensionPointerLineTypeContains"
+    };
+    for (const char* field : kDrawingOnlyFields) {
+        if (node.Contains (field))
+            return true;
+    }
+    return false;
+}
+
+// True only if EVERY leaf reachable from node (through any and/or nesting) is a 2D-only field
+// (Stylo Texte, Police and the fields of IsDrawingOnlyFieldNode) - the only kinds of leaf that
+// don't need the default 3D-model-element anchor.
 static bool AllLeavesAreTextPenOrFont (const GS::ObjectState& node)
 {
     GS::Array<GS::ObjectState> children;
@@ -1064,7 +1198,7 @@ static bool AllLeavesAreTextPenOrFont (const GS::ObjectState& node)
         }
         return true;
     }
-    return IsTextPenNode (node) || IsFontNode (node);
+    return IsTextPenNode (node) || IsFontNode (node) || IsDrawingOnlyFieldNode (node);
 }
 
 // outIsSelfRooting is set true only when outXML already represents a complete, real multi-item
@@ -1130,15 +1264,46 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
         return true;
     }
 
-    if (node.Get ("classification", classification) || node.Get ("classificationNot", classificationNot)) {
-        const bool isNot = !classificationNot.IsEmpty ();
-        const GS::UniString& itemId = isNot ? classificationNot : classification;
-        GS::UniString requestedSystem, classificationSystem;
-        node.Get ("classificationSystem", requestedSystem);
-        if (!ResolveClassificationSystemLabel (itemId, requestedSystem, classificationSystem, outError))
-            return false;
-        outXML = WrapAsTrivialGroup (ClassificationCriterionXML (itemId, isNot, classificationSystem));
-        return true;
+    {
+        static const char* kClassificationFields[] = { "classification", "classificationNot", "classificationIs", "classificationIsNot", "classificationChildOf", "classificationNotChildOf" };
+        static const int   kClassificationOps[]    = { 12,               14,                  0,                  1,                     13,                      15 };
+        for (int i = 0; i < 6; ++i) {
+            GS::UniString itemId;
+            if (!node.Get (kClassificationFields[i], itemId)) {
+                continue;
+            }
+            if (itemId.IsEmpty ()) {
+                outError = GS::UniString ("'") + kClassificationFields[i] + "' needs a Classification System item ID. Use classificationHasValue or classificationHasNoValue to test any item of a system.";
+                return false;
+            }
+            GS::UniString requestedSystem, classificationSystem;
+            node.Get ("classificationSystem", requestedSystem);
+            if (!ResolveClassificationSystemLabel (itemId, requestedSystem, classificationSystem, outError))
+                return false;
+            outXML = WrapAsTrivialGroup (ClassificationCriterionXML (itemId, kClassificationOps[i], classificationSystem));
+            return true;
+        }
+        // "has a value" / "has no value" in a system: Archicad ignores the item for these operators.
+        static const char* kValueFields[] = { "classificationHasValue", "classificationHasNoValue" };
+        static const int   kValueOps[]    = { 10,                       11 };
+        for (int i = 0; i < 2; ++i) {
+            bool flag = false;
+            if (!node.Get (kValueFields[i], flag)) {
+                continue;
+            }
+            GS::UniString requestedSystem, classificationSystem;
+            node.Get ("classificationSystem", requestedSystem);
+            if (!ResolveClassificationSystemLabel (GS::UniString (), requestedSystem, classificationSystem, outError))
+                return false;
+            const GS::UniString anyItemId = FirstClassificationItemId (classificationSystem);
+            if (anyItemId.IsEmpty ()) {
+                outError = "The classification system '" + classificationSystem + "' has no item.";
+                return false;
+            }
+            const int op = flag ? kValueOps[i] : kValueOps[1 - i];
+            outXML = WrapAsTrivialGroup (ClassificationCriterionXML (anyItemId, op, classificationSystem));
+            return true;
+        }
     }
 
     if (node.Get ("all3DTypes", all3DTypes) && all3DTypes) {
@@ -2382,43 +2547,191 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
         return true;
     if (TryEmitNumField (node, "stairSlope", kStairSlopePropertyGuid, outXML, kWallGeometryGroupGuid))
         return true;
-    double stairMaxRiserHeight = 0.0;
-    if (node.Get ("stairMaxRiserHeight", stairMaxRiserHeight)) {
-        outXML = WrapAsTrivialGroup (NumPropertyCriterionXML (kStairMaxRiserHeightPropertyGuid, stairMaxRiserHeight, 0, kStairRulesGroupGuid));
+    if (TryEmitNumField (node, "stairMaxRiserHeight", kStairMaxRiserHeightPropertyGuid, outXML, kStairRulesGroupGuid))
         return true;
-    }
-    double stairMinRiserHeight = 0.0;
-    if (node.Get ("stairMinRiserHeight", stairMinRiserHeight)) {
-        outXML = WrapAsTrivialGroup (NumPropertyCriterionXML (kStairMinRiserHeightPropertyGuid, stairMinRiserHeight, 0, kStairRulesGroupGuid));
+    if (TryEmitNumField (node, "stairMinRiserHeight", kStairMinRiserHeightPropertyGuid, outXML, kStairRulesGroupGuid))
         return true;
-    }
-    double stairMaxGoing = 0.0;
-    if (node.Get ("stairMaxGoing", stairMaxGoing)) {
-        outXML = WrapAsTrivialGroup (NumPropertyCriterionXML (kStairMaxGoingPropertyGuid, stairMaxGoing, 0, kStairRulesGroupGuid));
+    if (TryEmitNumField (node, "stairMaxGoing", kStairMaxGoingPropertyGuid, outXML, kStairRulesGroupGuid))
         return true;
-    }
-    double stairMinGoing = 0.0;
-    if (node.Get ("stairMinGoing", stairMinGoing)) {
-        outXML = WrapAsTrivialGroup (NumPropertyCriterionXML (kStairMinGoingPropertyGuid, stairMinGoing, 0, kStairRulesGroupGuid));
+    if (TryEmitNumField (node, "stairMinGoing", kStairMinGoingPropertyGuid, outXML, kStairRulesGroupGuid))
         return true;
-    }
-    int stairRiserCount = 0;
-    if (node.Get ("stairRiserCount", stairRiserCount)) {
-        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kStairRiserCountPropertyGuid, stairRiserCount, 0, kStairRulesGroupGuid));
+    if (TryEmitIntField (node, "stairRiserCount", kStairRiserCountPropertyGuid, outXML, kStairRulesGroupGuid))
         return true;
-    }
-    int stairStepCount = 0;
-    if (node.Get ("stairStepCount", stairStepCount)) {
-        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kStairStepCountPropertyGuid, stairStepCount, 0, kStairRulesGroupGuid));
+    if (TryEmitIntField (node, "stairStepCount", kStairStepCountPropertyGuid, outXML, kStairRulesGroupGuid))
         return true;
-    }
     int stairStepCountPerFlight = 0;
     if (node.Get ("stairStepCountPerFlight", stairStepCountPerFlight)) {
         outXML = WrapAsTrivialGroup (IntListCriterionXML (kStairStepCountPerFlightPropertyGuid, stairStepCountPerFlight, 0, kStairRulesGroupGuid));
         return true;
     }
 
+    static const EnumValue kMorphBodyTypes[]       = { { "NonSolid", 0 }, { "Solid", 1 } };
+    static const EnumValue kBeamCrossSections[]    = { { "Rectangular", 0 }, { "Profiled", 1 }, { "Circular", 2 } };
+    static const EnumValue kTextAlignments[]       = { { "Left", 0 }, { "Center", 1 }, { "Right", -1 }, { "Justified", 20 } };
+    static const EnumValue kTextStyles[]           = { { "Bold", 1 }, { "Italic", 2 }, { "Underline", 4 }, { "Strikethrough", 256 }, { "Superscript", 512 }, { "Subscript", 1024 } };
+    static const EnumValue kHatchCategories[]      = { { "Drafting", 1 }, { "Cover", 2 }, { "Cut", 3 }, { "BuildingMaterialCut", 4 }, { "SurfaceColor", 5 }, { "SurfaceCover", 6 }, { "SurfaceTexture", 7 } };
+    static const EnumValue kOpeningShapes[]        = { { "Square", 0 }, { "Rectangle", 1 }, { "Circle", 2 }, { "Ellipse", 3 }, { "Polygonal", 4 } };
+    static const EnumValue kOpeningLimits[]        = { { "Infinite", 0 }, { "BothSides", 1 }, { "OneSide", 2 } };
+    static const EnumValue kOpeningOrientations[]  = { { "Vertical", 0 }, { "Horizontal", 1 }, { "Aligned", 2 }, { "Custom", 3 } };
+
+    // Enum fields stored as a bare IntVariant, "is" and, where the editor offers it, "is not".
+    struct BareEnumField {
+        const char*      field;
+        const char*      notField;
+        const char*      propertyGuid;
+        const char*      groupGuid;
+        const EnumValue* values;
+        int              count;
+    };
+    static const BareEnumField kBareEnumFields[] = {
+        { "morphBodyType",      "morphBodyTypeNot",      kMorphBodyTypePropertyGuid,        kConstructionPropertyGroupGuid, kMorphBodyTypes,      2 },
+        { "beamCrossSectionType", nullptr,               kBeamCrossSectionTypePropertyGuid, kWallGeometryGroupGuid,         kBeamCrossSections,   3 },
+        { "hatchCategory",      nullptr,                 kHatchCategoryPropertyGuid,        kPlanSectionPropertyGroupGuid,  kHatchCategories,     7 },
+        { "openingShape",       "openingShapeNot",       kOpeningShapePropertyGuid,         kWallGeometryGroupGuid,         kOpeningShapes,       5 },
+        { "openingLimits",      "openingLimitsNot",      kOpeningLimitsPropertyGuid,        kWallGeometryGroupGuid,         kOpeningLimits,       3 },
+        { "openingOrientation", "openingOrientationNot", kOpeningOrientationPropertyGuid,   kWallGeometryGroupGuid,         kOpeningOrientations, 4 },
+    };
+    for (const BareEnumField& f : kBareEnumFields) {
+        GS::UniString name;
+        const bool isNot = f.notField != nullptr && node.Get (f.notField, name);
+        if (!isNot && !node.Get (f.field, name)) {
+            continue;
+        }
+        int value = 0;
+        if (!FindEnumValue (f.field, name, f.values, f.count, value, outError))
+            return false;
+        outXML = WrapAsTrivialGroup (IntEqualsPropertyCriterionXML (f.propertyGuid, value, f.groupGuid, isNot));
+        return true;
+    }
+
+    GS::UniString textAlignment;
+    if (node.Get ("textAlignment", textAlignment)) {
+        int value = 0;
+        if (!FindEnumValue ("textAlignment", textAlignment, kTextAlignments, 4, value, outError))
+            return false;
+        outXML = WrapAsTrivialGroup (IntListCriterionXML (kTextAlignmentPropertyGuid, value, 0, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    // The text style is one value made of flags; the rule matches texts with exactly these styles.
+    GS::Array<GS::UniString> textStyle;
+    if (node.Get ("textStyle", textStyle)) {
+        int mask = 0;
+        for (const GS::UniString& style : textStyle) {
+            int bit = 0;
+            if (!FindEnumValue ("textStyle", style, kTextStyles, 6, bit, outError))
+                return false;
+            mask |= bit;
+        }
+        outXML = WrapAsTrivialGroup (IntListCriterionXML (kTextStylePropertyGuid, mask, 0, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    int textLineSpacing = 0;
+    if (node.Get ("textLineSpacing", textLineSpacing)) {
+        outXML = WrapAsTrivialGroup (IntListCriterionXML (kTextLineSpacingPropertyGuid, textLineSpacing, 0, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+
+    int meshEdgePen = 0;
+    if (node.Get ("meshEdgePen", meshEdgePen)) {
+        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kMeshEdgePenPropertyGuid, meshEdgePen, 0, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    GS::UniString meshSkirtSurface, meshSkirtSurfaceNot;
+    if (node.Get ("meshSkirtSurface", meshSkirtSurface) || node.Get ("meshSkirtSurfaceNot", meshSkirtSurfaceNot)) {
+        const bool isNot = !meshSkirtSurfaceNot.IsEmpty ();
+        const GS::UniString& name = isNot ? meshSkirtSurfaceNot : meshSkirtSurface;
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_MaterialID, name, idx)) {
+            outError = "Unknown surface '" + name + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexEqualsModelViewCriterionXML (kMeshSkirtSurfacePropertyGuid, idx, isNot, kSurfaceMaterialPropertyGroupGuid));
+        return true;
+    }
+
+    if (TryEmitNumField (node, "dimensionMarkerSize", kDimensionMarkerSizePropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    int dimensionMarkerPen = 0;
+    if (node.Get ("dimensionMarkerPen", dimensionMarkerPen)) {
+        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kDimensionMarkerPenPropertyGuid, dimensionMarkerPen, 0, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    int dimensionMarkerPenContains = 0;
+    if (node.Get ("dimensionMarkerPenContains", dimensionMarkerPenContains)) {
+        outXML = WrapAsTrivialGroup (IntListCriterionXML (kDimensionMarkerPenListPropertyGuid, dimensionMarkerPenContains, 6, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    int dimensionPointerPenContains = 0;
+    if (node.Get ("dimensionPointerPenContains", dimensionPointerPenContains)) {
+        outXML = WrapAsTrivialGroup (IntListCriterionXML (kDimensionPointerPenPropertyGuid, dimensionPointerPenContains, 6, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    GS::UniString dimensionPointerLineTypeContains;
+    if (node.Get ("dimensionPointerLineTypeContains", dimensionPointerLineTypeContains)) {
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_LinetypeID, dimensionPointerLineTypeContains, idx)) {
+            outError = "Unknown line type '" + dimensionPointerLineTypeContains + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexContainsModelViewCriterionXML (kDimensionPointerLineTypePropertyGuid, idx, false, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+
+    int stairRisersPerFlight = 0;
+    if (node.Get ("stairRisersPerFlight", stairRisersPerFlight)) {
+        outXML = WrapAsTrivialGroup (IntListCriterionXML (kStairRisersPerFlightPropertyGuid, stairRisersPerFlight, 0, kStairRulesGroupGuid));
+        return true;
+    }
+
+    GS::UniString renovationStatus;
+    if (node.Get ("renovationStatus", renovationStatus)) {
+        const char* statusGuid = nullptr;
+        if (renovationStatus == "Existing")             statusGuid = kRenovationExistingGuid;
+        else if (renovationStatus == "ToBeDemolished")  statusGuid = kRenovationToBeDemolishedGuid;
+        else if (renovationStatus == "New")             statusGuid = kRenovationNewGuid;
+        else {
+            outError = "Invalid renovationStatus '" + renovationStatus + "'. Must be one of: Existing, ToBeDemolished, New.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (GuidEqualsPropertyCriterionXML (kRenovationStatusPropertyGuid, statusGuid, false, kIdCategoryGroupGuid1, true));
+        return true;
+    }
+
+    GS::UniString variantSetNameContains;
+    if (node.Get ("variantSetNameContains", variantSetNameContains)) {
+        outXML = WrapAsTrivialGroup (StringModelViewCriterionXML (kVariantSetNamePropertyGuid, variantSetNameContains, 6, kIdCategoryGroupGuid4));
+        return true;
+    }
+    GS::UniString variantNameContains;
+    if (node.Get ("variantNameContains", variantNameContains)) {
+        outXML = WrapAsTrivialGroup (StringModelViewCriterionXML (kVariantNamePropertyGuid, variantNameContains, 6, kIdCategoryGroupGuid4));
+        return true;
+    }
+
+    bool mepOpenConnection = false;
+    if (node.Get ("mepOpenConnection", mepOpenConnection)) {
+        outXML = WrapAsTrivialGroup (BoolModelViewCriterionXML (kMepOpenConnectionPropertyGuid, mepOpenConnection, kMepCommonPropertyGroupGuid));
+        return true;
+    }
+
+    GS::ObjectState profileParameterList;
+    if (node.Get ("profileParameterList", profileParameterList)) {
+        GS::UniString paramName;
+        double value = 0.0;
+        if (!profileParameterList.Get ("name", paramName) || paramName.IsEmpty () || !profileParameterList.Get ("equals", value)) {
+            outError = "'profileParameterList' requires a non-empty 'name' and 'equals'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (ProfileParameterListCriterionXML (paramName, value));
+        return true;
+    }
+
     outError = "A criterion node must contain exactly one of: and, or, elementType, classification, classificationNot, "
+               "classificationIs, classificationIsNot, classificationChildOf, classificationNotChildOf, classificationHasValue, classificationHasNoValue, "
+               "morphBodyType(Not), beamCrossSectionType, hatchCategory, openingShape(Not), openingLimits(Not), openingOrientation(Not), "
+               "textAlignment, textStyle, textLineSpacing, meshEdgePen, meshSkirtSurface(Not), dimensionMarkerSize(...), dimensionMarkerPen, "
+               "dimensionMarkerPenContains, dimensionPointerPenContains, dimensionPointerLineTypeContains, stairRisersPerFlight, renovationStatus, "
+               "variantSetNameContains, variantNameContains, mepOpenConnection, profileParameterList, "
                "all3DTypes, all2DTypes, missingAttributes, missingLibraryPart, layer, layerNot, layerLocked, layerVisible, layerCombination, "
                "layerCombinationNot, layerNameIs, layerNameIsNot, layerNameContains, layerNameNotContains, layerNameStartsWith, layerNameEndsWith, "
                "compositeStructure, compositeStructureNot, complexProfile, complexProfileNot, compositeStructureNameIs, compositeStructureNameIsNot, "
