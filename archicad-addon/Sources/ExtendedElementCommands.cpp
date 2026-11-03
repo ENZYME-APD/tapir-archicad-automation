@@ -10153,7 +10153,7 @@ GS::ObjectState GetOpeningFloorPlanParametersCommand::Execute (const GS::ObjectS
             continue;
         }
         GS::ObjectState details;
-        details.Add ("elementId", CreateGuidObjectState (openingGuid));
+        details.Add ("elementId", CreateGuidObjectState (GSGuid2APIGuid (opening->GetElemId ().GetGuid ())));
         details.Add ("floorPlanParameters", CreateOpeningFloorPlanParametersObjectState (opening->GetFloorPlanParameters ()));
         openings (details);
     }
