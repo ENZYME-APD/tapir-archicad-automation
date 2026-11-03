@@ -29,6 +29,16 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class GetElementsInCreationOrderCommand : public CommandBase
+{
+public:
+    GetElementsInCreationOrderCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class GetDetailsOfElementsCommand : public CommandBase
 {
 public:
@@ -43,6 +53,16 @@ class SetDetailsOfElementsCommand : public CommandBase
 {
 public:
     SetDetailsOfElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class SetElementInfoStringsCommand : public CommandBase
+{
+public:
+    SetElementInfoStringsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
@@ -275,6 +295,16 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class ElevateElementsCommand : public CommandBase
+{
+public:
+    ElevateElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class RotateElementsCommand : public CommandBase
 {
 public:
@@ -349,6 +379,16 @@ class Get3DGeometryOfElementsCommand : public CommandBase
 {
 public:
     Get3DGeometryOfElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetSkylightHolePolygonsCommand : public CommandBase
+{
+public:
+    GetSkylightHolePolygonsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
@@ -463,11 +503,31 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class GetTextureCoordinatesCommand : public CommandBase
+{
+public:
+    GetTextureCoordinatesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 
 class GetQuantitiesOfElementsCommand : public CommandBase
 {
 public:
     GetQuantitiesOfElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetCurtainWallAbsoluteBottomsCommand : public CommandBase
+{
+public:
+    GetCurtainWallAbsoluteBottomsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;

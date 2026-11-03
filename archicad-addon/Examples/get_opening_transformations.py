@@ -1,9 +1,11 @@
 import aclib
 
-# Read the placement of every Opening in the project with GetOpeningTransformations, without changing
-# them. globalToLocal is the matrix Archicad returns; origin and the axes are in world coordinates,
-# derived from its inverse (localToGlobal).
+# Read the placement of every Opening and Window in the project with GetOpeningTransformations, without
+# changing them. origin and the axes are in world coordinates, from localToGlobal: for a Window (or Door,
+# Skylight) the matrix Archicad returns, for an Opening the one built from its geometry, with the origin
+# at its anchor point. globalToLocal is the inverse.
 openings = aclib.RunCommand ('API.GetElementsByType', {'elementType': 'Opening'})['elements']
+openings += aclib.RunCommand ('API.GetElementsByType', {'elementType': 'Window'})['elements']
 
 transformations = aclib.RunTapirCommand ('GetOpeningTransformations', {'elements': openings}, debug = False)['openingTransformations']
 
@@ -15,9 +17,6 @@ print ('openings={}'.format (len (transformations)))
 for transformation in transformations:
     if 'error' in transformation:
         print ('error: {}'.format (transformation['error']['message']))
-        continue
-    if 'origin' not in transformation:
-        print ('not invertible, determinant={}'.format (round (transformation['determinant'], 6)))
         continue
     print ('origin={} xAxis={} yAxis={} zAxis={} mirrored={}'.format (
         Rounded (transformation['origin']),
