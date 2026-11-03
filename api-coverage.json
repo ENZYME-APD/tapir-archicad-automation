@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-03 01:44 UTC",
+ "generatedAt": "2026-11-03 01:50 UTC",
  "versions": [
   25,
   26,
@@ -6690,6 +6690,10 @@
    ],
    "issues": [
     {
+     "number": 1733,
+     "title": "ModifyCurtainWalls: height is never applied, and pattern changes report success without changing the wall"
+    },
+    {
      "number": 1230,
      "title": "Expose ACAPI_Favorite_Read (read the contents of a favorites file or folder)"
     }
@@ -7803,6 +7807,10 @@
    ],
    "issues": [
     {
+     "number": 1733,
+     "title": "ModifyCurtainWalls: height is never applied, and pattern changes report success without changing the wall"
+    },
+    {
      "number": 1226,
      "title": "Expose ACAPI_Element_ChangeMore (apply one masked change to many elements, like multi-select + settings)"
     },
@@ -8078,7 +8086,12 @@
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1733,
+     "title": "ModifyCurtainWalls: height is never applied, and pattern changes report success without changing the wall"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_Create",
@@ -8533,6 +8546,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1733,
+     "title": "ModifyCurtainWalls: height is never applied, and pattern changes report success without changing the wall"
+    },
     {
      "number": 1580,
      "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
@@ -9250,6 +9267,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1733,
+     "title": "ModifyCurtainWalls: height is never applied, and pattern changes report success without changing the wall"
+    },
     {
      "number": 1580,
      "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
