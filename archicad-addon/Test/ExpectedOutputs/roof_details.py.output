@@ -61,6 +61,44 @@ Response:
                         "y": 100
                     }
                 ],
+                "pivotEdges": [
+                    {
+                        "levels": [
+                            {
+                                "angle": 0.436332313,
+                                "eavesOverhang": 0.45,
+                                "angleType": "Sloped"
+                            }
+                        ]
+                    },
+                    {
+                        "levels": [
+                            {
+                                "angle": 0.436332313,
+                                "eavesOverhang": 0.45,
+                                "angleType": "Sloped"
+                            }
+                        ]
+                    },
+                    {
+                        "levels": [
+                            {
+                                "angle": 0.436332313,
+                                "eavesOverhang": 0.45,
+                                "angleType": "Sloped"
+                            }
+                        ]
+                    },
+                    {
+                        "levels": [
+                            {
+                                "angle": 0.436332313,
+                                "eavesOverhang": 0.45,
+                                "angleType": "Sloped"
+                            }
+                        ]
+                    }
+                ],
                 "polygonOutline": [
                     {
                         "x": 99.549999999,
@@ -139,3 +177,7 @@ Response:
         }
     ]
 }
+['Sloped']
+['Sloped']
+['Sloped']
+['Sloped']

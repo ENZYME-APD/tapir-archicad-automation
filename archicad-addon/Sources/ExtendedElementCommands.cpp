@@ -7954,7 +7954,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         "holes": { "$ref": "#/Holes2D" },
                         "pivotEdges": {
                             "type": "array",
-                            "description": "The roof planes of each edge of the pivot polygon, one item per edge in the order GetDetailsOfElements reports them. Only the given fields change; an item without levels keeps its edge. Cannot be combined with polygonOutline.",
+                            "description": "The roof planes of each edge of the pivot polygon, one item per edge in the order GetDetailsOfElements reports them (the outline, then each hole). Only the given fields change; an item without levels keeps its edge. Cannot be combined with polygonOutline.",
                             "items": {
                                 "type": "object",
                                 "properties": {

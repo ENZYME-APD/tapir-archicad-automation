@@ -8198,7 +8198,7 @@
             },
             "pivotEdges": {
                 "type": "array",
-                "description": "Multi-plane roofs only: the roof planes of each edge of the pivot polygon, item i belonging to the edge from vertex i to vertex i + 1 of pivotPolygonOutline.",
+                "description": "Multi-plane roofs only: the roof planes of each edge of the pivot polygon. Item i belongs to the edge from vertex i to vertex i + 1 of pivotPolygonOutline; for a pivot polygon with holes, the edges of each hole follow, contour by contour.",
                 "items": {
                     "type": "object",
                     "properties": {
