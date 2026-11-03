@@ -1,34 +1,34 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="760" height="254" viewBox="0 0 760 254" role="img" aria-label="Tapir commands in Grasshopper: 568 of 653 (86 %)">
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="254" viewBox="0 0 760 254" role="img" aria-label="Tapir commands in Grasshopper: 576 of 665 (86 %)">
 <rect x="0.5" y="0.5" width="759" height="253" rx="8" fill="#22262c" stroke="#3d444d"/>
 <defs>
 <pattern id="claimed" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#33373d"/><rect width="3" height="6" fill="#256abf"/></pattern>
 </defs>
 <text x="24" y="34" font-size="15" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3">Tapir commands in Grasshopper</text>
 <text x="24" y="84" font-size="44" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3">86 %</text>
-<text x="168" y="64" font-size="15" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3"><tspan font-weight="600">568 of 653</tspan> Tapir commands have a Grasshopper component</text>
-<text x="168" y="85" font-size="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">7 more in open pull requests, 0 claimed by open issues, 78 open</text>
+<text x="168" y="64" font-size="15" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3"><tspan font-weight="600">576 of 665</tspan> Tapir commands have a Grasshopper component</text>
+<text x="168" y="85" font-size="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">4 more in open pull requests, 0 claimed by open issues, 85 open</text>
 <clipPath id="bar104"><rect x="24" y="104" width="712" height="14" rx="7.0"/></clipPath>
 <rect x="24" y="104" width="712" height="14" rx="7.0" fill="#33373d"/>
-<rect x="24.0" y="104" width="615.0" height="14" fill="#9ec5f4" clip-path="url(#bar104)"/>
-<rect x="639.0" y="104" width="4.4" height="14" fill="#5598e7" clip-path="url(#bar104)"/>
-<rect x="643.3" y="104" width="7.6" height="14" fill="#256abf" clip-path="url(#bar104)"/>
+<rect x="24.0" y="104" width="603.9" height="14" fill="#9ec5f4" clip-path="url(#bar104)"/>
+<rect x="627.9" y="104" width="12.8" height="14" fill="#5598e7" clip-path="url(#bar104)"/>
+<rect x="640.7" y="104" width="4.3" height="14" fill="#256abf" clip-path="url(#bar104)"/>
 <rect x="24.0" y="134" width="10" height="10" rx="2" fill="#9ec5f4" stroke="#3d444d"/>
 <text x="39.0" y="143" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">used on main <tspan style="fill:#e6edf3">564</tspan></text>
-<rect x="168.5" y="134" width="10" height="10" rx="2" fill="#5598e7" stroke="#3d444d"/>
-<text x="183.5" y="143" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">not yet released <tspan style="fill:#e6edf3">4</tspan></text>
-<rect x="327.0" y="134" width="10" height="10" rx="2" fill="#256abf" stroke="#3d444d"/>
-<text x="342.0" y="143" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">in a pull request <tspan style="fill:#e6edf3">7</tspan></text>
-<rect x="492.5" y="134" width="10" height="10" rx="2" fill="url(#claimed)" stroke="#3d444d"/>
-<text x="507.5" y="143" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">claimed in an issue <tspan style="fill:#e6edf3">0</tspan></text>
+<rect x="166.8" y="134" width="10" height="10" rx="2" fill="#5598e7" stroke="#3d444d"/>
+<text x="181.8" y="143" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">not yet released <tspan style="fill:#e6edf3">12</tspan></text>
+<rect x="330.5" y="134" width="10" height="10" rx="2" fill="#256abf" stroke="#3d444d"/>
+<text x="345.5" y="143" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">in a pull request <tspan style="fill:#e6edf3">4</tspan></text>
+<rect x="494.2" y="134" width="10" height="10" rx="2" fill="url(#claimed)" stroke="#3d444d"/>
+<text x="509.2" y="143" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">claimed in an issue <tspan style="fill:#e6edf3">0</tspan></text>
 <rect x="672.0" y="134" width="10" height="10" rx="2" fill="#33373d" stroke="#3d444d"/>
-<text x="687.0" y="143" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">open <tspan style="fill:#e6edf3">78</tspan></text>
+<text x="687.0" y="143" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">open <tspan style="fill:#e6edf3">85</tspan></text>
 <text x="24" y="187" font-size="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3">Parameters</text>
 <clipPath id="params"><rect x="180" y="176" width="400" height="12" rx="6"/></clipPath>
 <rect x="180" y="176" width="400" height="12" rx="6" fill="#33373d"/>
-<rect x="180.0" y="176" width="364.8" height="12" fill="#9ec5f4" clip-path="url(#params)"/>
-<rect x="544.8" y="176" width="31.7" height="12" fill="#5598e7" clip-path="url(#params)"/>
+<rect x="180.0" y="176" width="365.3" height="12" fill="#9ec5f4" clip-path="url(#params)"/>
+<rect x="545.3" y="176" width="31.2" height="12" fill="#5598e7" clip-path="url(#params)"/>
 <rect x="576.5" y="176" width="3.5" height="12" fill="#256abf" clip-path="url(#params)"/>
 <text x="736" y="187" font-size="13" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3"><tspan font-weight="600">91 %</tspan><tspan style="fill:#9198a1"> complete</tspan></text>
-<text x="180" y="208" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">518 with every parameter, 45 with the rest through a JSON input, 5 with some missing</text>
-<text x="24" y="238" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">Not applicable and skipped commands are left out. Updated 2026-11-03 17:30 UTC.</text>
+<text x="180" y="208" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">526 with every parameter, 45 with the rest through a JSON input, 5 with some missing</text>
+<text x="24" y="238" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">Not applicable and skipped commands are left out. Updated 2026-11-03 18:48 UTC.</text>
 </svg>

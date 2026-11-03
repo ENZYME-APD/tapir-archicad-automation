@@ -1,14 +1,14 @@
 {
- "generatedAt": "2026-11-03 17:30 UTC",
+ "generatedAt": "2026-11-03 18:48 UTC",
  "counts": {
   "done": 564,
-  "open": 78,
-  "in progress": 7,
-  "merged": 4,
+  "open": 85,
+  "merged": 12,
+  "in progress": 4,
   "not applicable": 1
  },
  "parameters": {
-  "all": 518,
+  "all": 526,
   "partial": 5,
   "json": 45
  },
@@ -737,7 +737,7 @@
    "id": "CreateProjectInfoFields",
    "group": "Project Commands",
    "version": "1.5.2",
-   "brief": "Creates one or more custom project info fields.",
+   "brief": "Creates one or more custom project info fields. From Archicad 30 the Project Info group of each field can be given; without it the field goes to the first group.",
    "status": "done",
    "reason": "",
    "components": [
@@ -759,7 +759,7 @@
    "id": "DeleteProjectInfoFields",
    "group": "Project Commands",
    "version": "1.5.4",
-   "brief": "Deletes one or more custom project info fields. Hardcoded fields cannot be deleted.",
+   "brief": "Deletes one or more custom project info fields, by their autotext keys or, from Archicad 30, by the ids of the fields of the Project Info groups. Hardcoded fields cannot be deleted.",
    "status": "done",
    "reason": "",
    "components": [
@@ -769,9 +769,59 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 1,
+   "parameterCount": 2,
    "coveredParameters": [
+    "projectInfoFieldIds",
     "projectInfoIds"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "RenameProjectInfoFields",
+   "group": "Project Commands",
+   "version": "1.7.4",
+   "brief": "Renames custom fields of the Project Info groups. Fixed (built-in) fields cannot be renamed. Available from Archicad 30.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "RenameProjectInfoFieldsComponent",
+     "path": "Components/ProjectComponents/RenameProjectInfoFieldsComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "projectInfoFields",
+    "projectInfoFields.name",
+    "projectInfoFields.projectInfoFieldId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "MoveProjectInfoFields",
+   "group": "Project Commands",
+   "version": "1.7.4",
+   "brief": "Moves fields of the Project Info groups to a group, before another field of it or to its end. A subfield of a calculated field moves with its parent field. Available from Archicad 30.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "MoveProjectInfoFieldsComponent",
+     "path": "Components/ProjectComponents/MoveProjectInfoFieldsComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "projectInfoFields",
+    "projectInfoFields.beforeProjectInfoFieldId",
+    "projectInfoFields.projectInfoFieldId",
+    "projectInfoFields.projectInfoGroupId"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -1444,19 +1494,19 @@
    "group": "Project Commands",
    "version": "1.8.0",
    "brief": "Gets the names of the rendering scenes of the project, as the Scene list of the PhotoRendering Settings palette shows them.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetRenderingScenesComponent",
+     "path": "Components/ProjectComponents/GetRenderingScenesComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1022,
-     "title": "[2/2] Add Grasshopper components for GetRenderingScenes, SetCurrentRenderingScene and PhotoRender"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1464,19 +1514,21 @@
    "group": "Project Commands",
    "version": "1.8.0",
    "brief": "Makes the given rendering scene the current one, as selecting it in the PhotoRendering Settings palette does.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1022,
-     "title": "[2/2] Add Grasshopper components for GetRenderingScenes, SetCurrentRenderingScene and PhotoRender"
+     "name": "SetCurrentRenderingSceneComponent",
+     "path": "Components/ProjectComponents/SetCurrentRenderingSceneComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "sceneName"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1484,19 +1536,23 @@
    "group": "Project Commands",
    "version": "1.8.0",
    "brief": "Renders the 3D model with the current rendering scene, or with the given one, as Document > Creative Imaging > PhotoRender Projection does, and saves the image to a file (png, jpg, bmp, tiff or gif). The image size and quality come from the scene.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1022,
-     "title": "[2/2] Add Grasshopper components for GetRenderingScenes, SetCurrentRenderingScene and PhotoRender"
+     "name": "PhotoRenderComponent",
+     "path": "Components/ProjectComponents/PhotoRenderComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "format",
+    "imageFilePath",
+    "sceneName"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1897,6 +1953,21 @@
     "dateTime",
     "location"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetCoordinateOrigins",
+   "group": "Project Commands",
+   "version": "1.7.4",
+   "brief": "Gets the offset of the virtual coordinate system origin from the world origin, and the user origin of the current database. Use it to tell which origin the coordinates of different sources (elements, views, survey point) are relative to.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -2731,6 +2802,21 @@
    "issues": []
   },
   {
+   "id": "GetRoofPlanes",
+   "group": "Element Commands",
+   "version": "1.7.4",
+   "brief": "Gets the single planes of roofs, without changing the roofs. A multi-plane roof is decomposed by Archicad into its planes, each returned with its part identifier and its details as a single-plane roof (slope, pivot line, level, outline with arcs and holes); a single-plane roof is returned as its only plane. The output is aligned with the input array of elements.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetCurtainWallAbsoluteBottoms",
    "group": "Element Commands",
    "version": "1.8.0",
@@ -2838,6 +2924,21 @@
    ],
    "parameters": "all",
    "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "DeleteUserDataOfElements",
+   "group": "Element Commands",
+   "version": "1.7.4",
+   "brief": "Deletes the user data this add-on stored on the given elements. Archicad keeps the user data of an element per add-on, so the data of other add-ons is left as it is. All deletions are one undo step. The output has one execution result per element, aligned with the input array of elements.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
@@ -3686,7 +3787,7 @@
    "id": "SetGDLParametersOfElements",
    "group": "Element Commands",
    "version": "1.5.7",
-   "brief": "Sets the given GDL parameters of the given elements. An element Archicad does not let the user edit (its layer locked, the element locked, or not reserved by the user in Teamwork) gets a failed execution result naming that reason, whatever the parameter. The parameters are read back after the change, and a written parameter Archicad did not keep (e.g. one it sets from the element's own settings, like AC_TextSize_1 of a label) gives a failed execution result naming it.",
+   "brief": "Sets the given GDL parameters of the given elements. An element Archicad does not let the user edit (its layer locked, the element locked, or not reserved by the user in Teamwork) gets a failed execution result naming that reason, whatever the parameter. On a Curtain Wall Frame, A, B, ac_frameWidth and ac_frameDepth mirror the frame's contour, which Archicad derives from the frame's settings, so they are rejected instead of reporting a change that does not take effect; a frame without a library part (an invisible Boundary frame, for example) has no GDL parameters. The parameters are read back after the change, and a written parameter Archicad did not keep (e.g. one it sets from the element's own settings, like AC_TextSize_1 of a label) gives a failed execution result naming it.",
    "status": "done",
    "reason": "",
    "components": [
@@ -3810,6 +3911,21 @@
     "elementsWithLibraryPart.libraryPart.index",
     "elementsWithLibraryPart.libraryPart.name"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetCalculatedParametersOfCurtainWallSubElements",
+   "group": "Element Commands",
+   "version": "1.7.4",
+   "brief": "Gets the GDL parameters (name, type, value) of the given Curtain Wall Frame, Panel, Junction and Accessory elements as Archicad calculated them for their place in the curtain wall. GetGDLParametersOfElements returns the parameters the sub-element was set up with instead.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -4814,7 +4930,7 @@
    "id": "CreateZones",
    "group": "Element Commands",
    "version": "1.1.8",
-   "brief": "Creates Zone elements based on the given parameters.",
+   "brief": "Creates Zone elements based on the given parameters. An item whose area would overlap an existing Zone on the same story fails with an error naming that Zone instead of opening Archicad's modal overlap warning, unless its allowOverlap is true.",
    "status": "done",
    "reason": "",
    "components": [
@@ -4824,7 +4940,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 18,
+   "parameterCount": 19,
    "coveredParameters": [
     "zonesData",
     "zonesData.bottomOffset",
@@ -4837,6 +4953,7 @@
     "zonesData.stampPosition"
    ],
    "missingParameters": [
+    "zonesData.allowOverlap",
     "zonesData.contourLine",
     "zonesData.coverFill",
     "zonesData.fixedStampAngle",
@@ -6849,6 +6966,21 @@
    "issues": []
   },
   {
+   "id": "ReadFavoritesFile",
+   "group": "Favorites Commands",
+   "version": "1.7.4",
+   "brief": "Read the Favorites of a .prefs file or folder without importing them, returning the name, element type and folder of each. Nothing in the project changes, so the result can be compared with the project's Favorites before ImportFavorites.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "CreateFavoriteFolder",
    "group": "Favorites Commands",
    "version": "1.8.0",
@@ -8726,6 +8858,28 @@
    "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ActivateLayerCombination",
+   "group": "Attribute Commands",
+   "version": "1.7.4",
+   "brief": "Activates the given layer combination in the current window, like choosing it in the Quick Layers palette. Saved views are not changed.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "ActivateLayerCombinationComponent",
+     "path": "Components/AttributesComponents/ActivateLayerCombinationComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "attributeId"
+   ],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -10885,7 +11039,7 @@
    "id": "CreateLayout",
    "group": "Navigator Commands",
    "version": "1.4.0",
-   "brief": "Creates Layouts and their backing master layouts. Archicad inserts a new layout at the first place of its subset, renumbering the sheets after it; previousNavigatorItemId or position 'last' places it after an existing sheet or at the end instead. A custom layout number does not leave the layout out of the numbering; layoutParameters.doNotIncludeInNumbering does.",
+   "brief": "Creates Layouts and their backing master layouts. Archicad inserts a new layout at the first place of its subset, renumbering the sheets after it; previousNavigatorItemId or position 'last' places it after an existing sheet or at the end instead. A custom layout number does not leave the layout out of the numbering; layoutParameters.doNotIncludeInNumbering does. A layout that was created but could not be placed is returned with both its databaseId and the error.",
    "status": "done",
    "reason": "",
    "components": [
@@ -13434,6 +13588,63 @@
    "issues": []
   },
   {
+   "id": "GetDesignOptionCombinationOfViews",
+   "group": "Design Options Commands",
+   "version": "1.7.4",
+   "brief": "Retrieves which design option combination the given views show: only the main model, a combination, a custom set of design options or a deleted combination. Available from Archicad 27.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "GetDesignOptionCombinationOfViewsComponent",
+     "path": "Components/DesignOptionsComponents/GetDesignOptionCombinationOfViewsComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "navigatorItemIds"
+   ],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1113,
+     "title": "Add Get/SetDesignOptionCombinationOfViews commands"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "SetDesignOptionCombinationOfViews",
+   "group": "Design Options Commands",
+   "version": "1.7.4",
+   "brief": "Sets the design option combination the given views show, or makes them show only the main model. Available from Archicad 27.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "SetDesignOptionCombinationOfViewsComponent",
+     "path": "Components/DesignOptionsComponents/SetDesignOptionCombinationOfViewsComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "navigatorItemIdsWithCombination",
+    "navigatorItemIdsWithCombination.designOptionCombinationId",
+    "navigatorItemIdsWithCombination.mainModelOnly",
+    "navigatorItemIdsWithCombination.navigatorItemId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1113,
+     "title": "Add Get/SetDesignOptionCombinationOfViews commands"
+    }
+   ],
+   "issues": []
+  },
+  {
    "id": "GetHotlinkDesignOptionTableDetails",
    "group": "Design Options Commands",
    "version": "1.8.0",
@@ -14307,6 +14518,36 @@
     "physicalSystems",
     "physicalSystems.physicalSystemId"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetMEPToolDefaults",
+   "group": "MEP Commands",
+   "version": "1.7.4",
+   "brief": "Retrieves the current settings of the MEP tools per domain, without changing them: the routing tool (MEP system, branch preference table, floor plan display settings from Archicad 29, and its segment, node, elbow (from Archicad 29) and transition defaults), the flexible segment tool, and the library part and port settings of the terminal, accessory, fitting and equipment tools. Available from Archicad 28.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "TransferMEPSettings",
+   "group": "MEP Commands",
+   "version": "1.7.4",
+   "brief": "Picks up the settings of an MEP element and injects them into other MEP elements of the same type and domain, like Archicad's pick up and inject parameters. Works for routing elements, terminals, accessories, equipment, fittings, flexible segments, branches, take-offs and (from Archicad 30) electrical panels and devices. Each target is changed in its own undoable step. Available from Archicad 28.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
