@@ -1,6 +1,6 @@
 import aclib
 
-# Sets one value of a custom text property on all walls in a single step (Archicad 27 or newer).
+# Sets one value of a custom text property on all walls in a single step.
 # If the property is not available for any of the walls, none of them is changed.
 # The original values are restored at the end.
 

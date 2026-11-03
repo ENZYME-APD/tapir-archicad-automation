@@ -1,6 +1,6 @@
 import aclib
 
-# Makes a custom property available for all walls, then unavailable again (Archicad 27 only).
+# Makes a custom property available for all walls, then unavailable again (Archicad 25, 26 and 27).
 # This changes the availability of the property in the project, so run it on a test project.
 
 properties = aclib.RunTapirCommand ('GetAllProperties', {}, debug = False)['properties']
