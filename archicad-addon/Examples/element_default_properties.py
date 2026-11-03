@@ -24,10 +24,10 @@ elementIdPropertyId = aclib.RunCommand ('API.GetPropertyIds', {'properties': [
 
 # --- read the current default ------------------------------------------------------
 response = run ('GetPropertyValuesOfElementDefaults', {
-    'elementTypes': ['Wall'],
+    'elementType': 'Wall',
     'properties': [{'propertyId': elementIdPropertyId}]
 })
-previousDefault = firstValue (response['propertyValuesForElementDefaults'][0])
+previousDefault = firstValue (response)
 print ('Default Element ID of the Wall tool: {}'.format (previousDefault))
 
 # --- set a new default -------------------------------------------------------------
@@ -62,12 +62,12 @@ else:
 # the common schema's ElementType enum rejects unknown names before the command runs).
 customPropertyId = aclib.RunCommand ('API.GetPropertyIds', {'properties': [
     {'type': 'UserDefined', 'localizedName': ['Tapir Group', 'Tapir Custom']}]})['properties'][0]['propertyId']
-response = run ('GetPropertyValuesOfElementDefaults', {
-    'elementTypes': ['Wall', 'Column'],
-    'properties': [{'propertyId': customPropertyId}]
-})
-for elementType, propertyValues in zip (['Wall', 'Column'], response['propertyValuesForElementDefaults']):
-    print ('Custom property of the {} tool defaults: {}'.format (elementType, firstValue (propertyValues)))
+for elementType in ['Wall', 'Column']:
+    response = run ('GetPropertyValuesOfElementDefaults', {
+        'elementType': elementType,
+        'properties': [{'propertyId': customPropertyId}]
+    })
+    print ('Custom property of the {} tool defaults: {}'.format (elementType, firstValue (response)))
 
 # --- restore the previous default ------------------------------------------------------
 if not previousDefault.startswith ('error: '):
