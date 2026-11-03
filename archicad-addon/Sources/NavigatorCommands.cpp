@@ -4,6 +4,7 @@
 #include "Transformation2D.hpp"
 #include "Matrix2.hpp"
 #include "TM.h"
+#include <memory>
 
 static GS::HashTable<GS::UniString, API_Guid> GetPublisherSetNameGuidTable()
 {
@@ -108,6 +109,116 @@ GS::ObjectState PublishPublisherSetCommand::Execute(const GS::ObjectState& param
     }
 
     return {};
+}
+
+GetPublisherSetsCommand::GetPublisherSetsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetPublisherSetsCommand::GetName () const
+{
+    return "GetPublisherSets";
+}
+
+GS::Optional<GS::UniString> GetPublisherSetsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "publisherSets": {
+                "type": "array",
+                "description": "The publisher sets of the project, in the order of the Publisher Sets map.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the publisher set."
+                        },
+                        "rootNavigatorItemId": {
+                            "$ref": "#/NavigatorItemId",
+                            "description": "The navigator item ID of the root of the publisher set."
+                        },
+                        "path": {
+                            "type": "string",
+                            "description": "The saved local or LAN output path, when the set is published to files. When it is also uploaded to a Teamwork file server, this is the temporary local path."
+                        },
+                        "twFileServerPath": {
+                            "type": "string",
+                            "description": "The saved output path on the Teamwork file server, when the set is published to files onto a file server."
+                        },
+                        "host": {
+                            "type": "string",
+                            "description": "The saved host name, when the set is published to the Internet."
+                        },
+                        "dirName": {
+                            "type": "string",
+                            "description": "The saved directory name on the host, when the set is published to the Internet."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "rootNavigatorItemId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "publisherSets"
+        ]
+    })";
+}
+
+GS::ObjectState GetPublisherSetsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    Int32 numberOfPublisherSets = 0;
+    GSErrCode err = ACAPI_Navigator_GetNavigatorSetNum (&numberOfPublisherSets);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get the number of publisher sets.");
+    }
+
+    GS::ObjectState response;
+    const auto& publisherSets = response.AddList<GS::ObjectState> ("publisherSets");
+
+    for (Int32 ii = 0; ii < numberOfPublisherSets; ++ii) {
+        API_NavigatorSet set = {};
+        set.mapId = API_PublisherSets;
+        set.wantsExtraInfo = true;
+        err = ACAPI_Navigator_GetNavigatorSet (&set, &ii);
+
+        // The publishing parameters are allocated by Archicad and owned by the caller.
+        std::unique_ptr<IO::Location> path (set.path);
+        std::unique_ptr<IO::Location> twFileServerPath (set.twFileServerPath);
+        std::unique_ptr<GS::UniString> host (set.host);
+        std::unique_ptr<GS::UniString> dirName (set.dirName);
+
+        if (err != NoError) {
+            continue;
+        }
+
+        GS::ObjectState setOS;
+        // Converted as GetPublisherSetNameGuidTable does, so the name can be passed to PublishPublisherSet.
+        setOS.Add ("name", GS::UniString (set.name));
+        setOS.Add ("rootNavigatorItemId", CreateGuidObjectState (set.rootGuid));
+        if (path != nullptr) {
+            setOS.Add ("path", path->ToDisplayText ());
+        }
+        if (twFileServerPath != nullptr) {
+            setOS.Add ("twFileServerPath", twFileServerPath->ToDisplayText ());
+        }
+        if (host != nullptr) {
+            setOS.Add ("host", *host);
+        }
+        if (dirName != nullptr) {
+            setOS.Add ("dirName", *dirName);
+        }
+        publisherSets (setOS);
+    }
+
+    return response;
 }
 
 UpdateDrawingsCommand::UpdateDrawingsCommand() :
