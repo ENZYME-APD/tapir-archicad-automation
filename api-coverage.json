@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-04 02:35 UTC",
+ "generatedAt": "2026-11-04 04:57 UTC",
  "versions": [
   25,
   26,
@@ -4126,6 +4126,10 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1757,
+     "title": "ImportFavorites: run the import in an undoable command so Teamwork projects keep it"
+    },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
@@ -9790,7 +9794,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1757,
+     "title": "ImportFavorites: run the import in an undoable command so Teamwork projects keep it"
+    }
+   ],
    "issues": []
   },
   {
@@ -28745,7 +28754,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1757,
+     "title": "ImportFavorites: run the import in an undoable command so Teamwork projects keep it"
+    }
+   ],
    "issues": []
   },
   {
@@ -28762,7 +28776,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1757,
+     "title": "ImportFavorites: run the import in an undoable command so Teamwork projects keep it"
+    }
+   ],
    "issues": []
   },
   {
@@ -28779,7 +28798,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1757,
+     "title": "ImportFavorites: run the import in an undoable command so Teamwork projects keep it"
+    }
+   ],
    "issues": []
   },
   {
