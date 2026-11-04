@@ -2894,7 +2894,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateMEPTakeOffsCommand> (
             mepCommands, "1.8.1",
-            "Creates MEP take-offs on the given routing segments, at a distance from the beginning of the segment and optionally rotated around its axis, with the current settings of the Take-Off tool of their domain, optionally with their length. Available from Archicad 28."
+            "Creates MEP take-offs on the given routing segments, at a distance from the beginning of the segment (not more than its length) and optionally rotated around its axis by a multiple of 90 degrees, with the current settings of the Take-Off tool of their domain (by default the domain of the segment's routing element), optionally with their length and without insulation, which apply only to what is created. Archicad only has Ventilation take-offs. Available from Archicad 28."
         );
         err |= RegisterCommand<ModifyMEPElementsCommand> (
             mepCommands, "1.8.1",
