@@ -22,7 +22,7 @@ roofs = aclib.RunTapirCommand (
     })
 singlePlaneRoof, multiPlaneRoof = [element['elementId'] for element in roofs['elements']]
 
-# One skylight in the single-plane roof, one in each of two planes of the multi-plane roof.
+# One anchor in the single-plane roof and two on opposite sides of the multi-plane roof.
 aclib.RunTapirCommand (
     'CreateSkylights', {
         'skylightsData': [

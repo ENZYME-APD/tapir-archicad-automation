@@ -1082,7 +1082,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateSkylightsCommand> (
             elementCommands, "1.7.4",
-            "Creates Skylight elements in single- and multi-plane roofs and in shells, at a floor plan position of the owner. The skylight is placed on the owner's surface and turned to its slope; width, height, anchor point and library part are optional, the rest comes from the Skylight tool defaults or a favorite."
+            "Creates Skylight elements with a roof or shell owner and a floor plan anchor position. Width, height, anchor point and library part are optional; other settings come from the Skylight tool defaults or a favorite. Surface placement is handled by Archicad and has not yet been verified for this command."
         );
         err |= RegisterCommand<CreateRailingsCommand> (
             elementCommands, "1.8.0",

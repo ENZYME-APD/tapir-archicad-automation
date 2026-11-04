@@ -5451,7 +5451,7 @@ GS::Optional<GS::UniString> CreateSkylightsCommand::GetInputParametersSchema () 
                     },
                     "anchorPosition": {
                         "$ref": "#/Coordinate2D",
-                        "description": "Floor plan position of the skylight's anchor point. The skylight is placed on the owner's surface above it and turned to its slope; in a multi-plane roof that is the roof plane over this position."
+                        "description": "Global XY coordinates of the skylight's anchor point. Passed to Archicad with the owner and Skylight tool defaults or favorite settings; automatic height and roof-plane selection have not yet been verified for this command."
                     },
                     "anchorPoint": {
                         "type": "string",
