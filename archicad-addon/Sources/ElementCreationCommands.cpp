@@ -3632,19 +3632,52 @@ GS::ObjectState ChangeTextContentCommand::Execute (const GS::ObjectState& parame
                 continue;
             }
 
+            // API_ContentPars has no count member: Archicad takes the number of pieces to change from the sizes
+            // of the from, range, content and separator blocks, which the DevKit marks as GSPtr (the struct's
+            // comments in the AC25 header), so they must be memory manager blocks from BMpAll. Stack and
+            // std::vector memory made Archicad refuse every change, even an insertion at 0 (#1860). separator
+            // holds the end (byte) position of each piece in the concatenated content; with one piece it is
+            // the content's length. The content is passed as UTF-8, terminated; that Archicad reads it as UTF-8
+            // and not in the system code page is unverified, so non-ASCII content must be checked in Archicad.
+            const auto contentCStr = content.ToCStr (CC_UTF8);
+            const Int32 contentLength = Strlen32 (contentCStr.Get ());
+            Int32* fromBlock = reinterpret_cast<Int32*> (BMpAll (sizeof (Int32)));
+            Int32* rangeBlock = reinterpret_cast<Int32*> (BMpAll (sizeof (Int32)));
+            Int32* separatorBlock = reinterpret_cast<Int32*> (BMpAll (sizeof (Int32)));
+            char* contentBlock = reinterpret_cast<char*> (BMpAll (contentLength + 1));
+            const GS::OnExit blocksGuard ([&] () {
+                for (GSPtr block : { reinterpret_cast<GSPtr> (fromBlock), reinterpret_cast<GSPtr> (rangeBlock), reinterpret_cast<GSPtr> (separatorBlock), reinterpret_cast<GSPtr> (contentBlock) }) {
+                    if (block != nullptr) {
+                        BMpFree (block);
+                    }
+                }
+            });
+            if (fromBlock == nullptr || rangeBlock == nullptr || separatorBlock == nullptr || contentBlock == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_MEMFULL, "Failed to allocate the content change."));
+                continue;
+            }
+            *fromBlock = from;
+            *rangeBlock = range;
+            *separatorBlock = contentLength;
+            std::copy (contentCStr.Get (), contentCStr.Get () + contentLength + 1, contentBlock);
+
             API_ContentPars contentPars = {};
             contentPars.head = element.header;
-            // from and range are in/out pointers, content a terminated C string (char*, as the builds show); all
-            // kept alive for the call. The content is passed as UTF-8; that Archicad reads it as UTF-8 and not in
-            // the system code page is unverified, so non-ASCII content must be checked in Archicad.
-            contentPars.from = &from;
-            contentPars.range = &range;
-            const auto contentCStr = content.ToCStr (CC_UTF8);
-            std::vector<char> contentChars (contentCStr.Get (), contentCStr.Get () + Strlen32 (contentCStr.Get ()) + 1);
-            contentPars.content = contentChars.data ();
+            contentPars.from = fromBlock;
+            contentPars.range = rangeBlock;
+            contentPars.content = contentBlock;
+            contentPars.separator = separatorBlock;
 
             err = ACAPI_Element_ChangeContent (&contentPars);
-            executionResults (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to change the content (a range over more than one paragraph or a from past the end of the content is refused)."));
+            if (err == NoError) {
+                executionResults (CreateSuccessfulExecutionResult ());
+            } else if (err == APIERR_PAROVERLAP) {
+                executionResults (CreateFailedExecutionResult (err, "The range reaches over a line end into another paragraph."));
+            } else if (err == APIERR_PAROVERFLOW) {
+                executionResults (CreateFailedExecutionResult (err, "from is past the end of the content."));
+            } else {
+                executionResults (CreateFailedExecutionResult (err, "Failed to change the content."));
+            }
         }
         return NoError;
     });
