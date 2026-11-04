@@ -2853,10 +2853,16 @@ static bool ApplyColumnSectionToMemo (API_Guid elemGuid, const GS::ObjectState& 
         }
         if (profileIdOs != nullptr) {
             segment.modelElemStructureType = API_ProfileStructure;
+            segment.profileType = APISect_Poly;
             segment.profileAttr = GetAttributeIndexFromGuid (API_ProfileID, GetGuidFromObjectState (*profileIdOs));
             segment.circleBased = false;
         } else if (buildingMaterialIdOs != nullptr) {
             segment.modelElemStructureType = API_BasicStructure;
+            // A profiled segment keeps APISect_Poly, and with it its profile, unless the cross
+            // section is reset too (#1810, same as walls in #531).
+            if (segment.profileType == APISect_Poly) {
+                segment.profileType = APISect_Normal;
+            }
             segment.buildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialIdOs));
         }
     }
@@ -2901,10 +2907,15 @@ static bool ApplyBeamSectionToMemo (API_Guid elemGuid, const GS::ObjectState& de
         }
         if (profileIdOs != nullptr) {
             segment.modelElemStructureType = API_ProfileStructure;
+            segment.profileType = APISect_Poly;
             segment.profileAttr = GetAttributeIndexFromGuid (API_ProfileID, GetGuidFromObjectState (*profileIdOs));
             segment.circleBased = false;
         } else if (buildingMaterialIdOs != nullptr) {
             segment.modelElemStructureType = API_BasicStructure;
+            // See ApplyColumnSectionToMemo (#1810).
+            if (segment.profileType == APISect_Poly) {
+                segment.profileType = APISect_Normal;
+            }
             segment.buildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialIdOs));
         }
     }
