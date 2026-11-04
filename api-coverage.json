@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-04 18:16 UTC",
+ "generatedAt": "2026-11-04 18:58 UTC",
  "versions": [
   25,
   26,
@@ -5764,6 +5764,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1899,
+     "title": "CreateDoors/CreateWindows: set libraryPartName on the element, not the tool defaults"
+    },
+    {
      "number": 1703,
      "title": "Add CreateSkylights: place skylights in roofs and shells"
     },
@@ -6651,7 +6655,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1900,
+     "title": "[4/6] Share one helper among the grouping commands that list ids per item"
+    }
+   ],
    "issues": []
   },
   {
@@ -6958,6 +6967,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1899,
+     "title": "CreateDoors/CreateWindows: set libraryPartName on the element, not the tool defaults"
+    },
     {
      "number": 1826,
      "title": "CreateMorphs: favoriteName, layerIndex and id per item"
@@ -10719,7 +10732,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1900,
+     "title": "[4/6] Share one helper among the grouping commands that list ids per item"
+    }
+   ],
    "issues": []
   },
   {
@@ -10788,7 +10806,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1900,
+     "title": "[4/6] Share one helper among the grouping commands that list ids per item"
+    }
+   ],
    "issues": []
   },
   {
@@ -12102,7 +12125,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1899,
+     "title": "CreateDoors/CreateWindows: set libraryPartName on the element, not the tool defaults"
+    }
+   ],
    "issues": []
   },
   {
@@ -12191,7 +12219,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1899,
+     "title": "CreateDoors/CreateWindows: set libraryPartName on the element, not the tool defaults"
+    }
+   ],
    "issues": []
   },
   {
@@ -12326,7 +12359,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1899,
+     "title": "CreateDoors/CreateWindows: set libraryPartName on the element, not the tool defaults"
+    }
+   ],
    "issues": []
   },
   {
@@ -12884,7 +12922,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1899,
+     "title": "CreateDoors/CreateWindows: set libraryPartName on the element, not the tool defaults"
+    }
+   ],
    "issues": []
   },
   {
@@ -13048,6 +13091,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1899,
+     "title": "CreateDoors/CreateWindows: set libraryPartName on the element, not the tool defaults"
+    },
     {
      "number": 1703,
      "title": "Add CreateSkylights: place skylights in roofs and shells"
@@ -38883,6 +38930,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1900,
+     "title": "[4/6] Share one helper among the grouping commands that list ids per item"
+    },
     {
      "number": 1896,
      "title": "[3/6] Share one helper for MoveElements, ElevateElements, RotateElements and MirrorElements"
