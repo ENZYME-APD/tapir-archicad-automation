@@ -21,7 +21,7 @@ if len (unIds) >= 2:
 if libraryParts:
     response = aclib.RunTapirCommand ('GetLibraryPartSections', {
         'libraryParts': [{'index': libraryParts[0]['index']}]
-    }, debug = False)
+    })
     print (response)
 
     sections = response['libraryParts'][0].get ('sections', [])
@@ -31,7 +31,7 @@ if libraryParts:
             'index': libraryParts[0]['index'],
             'sectionType': textSections[0]['sectionType'],
             'subIdent': textSections[0]['subIdent']
-        }, debug = False)
+        })
         print (response)
 
 response = aclib.RunTapirCommand ('GetLastValidEmbeddedLibraryPartName', {}, debug = False)
