@@ -335,9 +335,13 @@
             "mepSystemId": {
                 "$ref": "#/AttributeId"
             },
+            "floorIndex": {
+                "type": "integer",
+                "description": "The index of the home story of the routing element (see GetStories)."
+            },
             "offsetFromHomeStory": {
                 "type": "number",
-                "description": "The offset of the routing element from its home story."
+                "description": "The offset of the lowest node of the routing element from the level of its home story."
             },
             "branchPreferenceTableId": {
                 "$ref": "#/Guid",
