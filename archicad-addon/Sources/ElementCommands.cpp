@@ -130,6 +130,71 @@ static void AddShellBaseSurfaces (const API_ShellBaseType& base, GS::ObjectState
     os.Add ("materialsChained", base.materialsChained);
 }
 
+static GS::UniString ShellBaseCutBodyTypeToString (API_ShellBaseCutBodyTypeID cutBodyType)
+{
+    switch (cutBodyType) {
+        case APIShellBaseCutBody_Editable:            return "Editable";
+        case APIShellBaseCutBody_ContoursDown:        return "ContoursDown";
+        case APIShellBaseCutBody_PivotLinesDown:      return "PivotLinesDown";
+        case APIShellBaseCutBody_UpwardsExtrusion:    return "UpwardsExtrusion";
+        case APIShellBaseCutBody_DownwardsExtrusion:  return "DownwardsExtrusion";
+        default:                                      return "Editable";
+    }
+}
+
+// The floor plan and section settings of a Roof or Shell, kept in its API_ShellBaseType
+// (#1787), with the Wall's key names. Before Archicad 27 the cut fill pens are an
+// API_PenOverrideType instead of two API_OverriddenPen, read into the same shape.
+static void AddShellBaseFloorPlanAndSection (const API_ShellBaseType& base, GS::ObjectState& os)
+{
+    os.Add ("displayOption", ElemDisplayOptionToString (base.displayOption));
+    os.Add ("viewDepthLimitation", ViewDepthLimitationToString (base.viewDepthLimitation));
+    os.Add ("isAutoOnStoryVisibility", base.isAutoOnStoryVisibility);
+    os.Add ("visibility", CreateStoryVisibilityObjectState (base.visibilityCont));
+    os.Add ("fillVisibility", CreateStoryVisibilityObjectState (base.visibilityFill));
+    os.Add ("cutBodyType", ShellBaseCutBodyTypeToString (base.cutBodyType));
+#ifdef ServerMainVers_2700
+    os.Add ("cutFillPen", CreateOverriddenPenObjectState (base.cutFillPen));
+    os.Add ("cutFillBackgroundPen", CreateOverriddenPenObjectState (base.cutFillBackgroundPen));
+#else
+    GS::ObjectState cutFillPenOs ("overridden", base.penOverride.overrideCutFillPen);
+    if (base.penOverride.overrideCutFillPen) {
+        cutFillPenOs.Add ("penIndex", (Int32) base.penOverride.cutFillPen);
+    }
+    os.Add ("cutFillPen", cutFillPenOs);
+    GS::ObjectState cutFillBackgroundPenOs ("overridden", base.penOverride.overrideCutFillBackgroundPen);
+    if (base.penOverride.overrideCutFillBackgroundPen) {
+        cutFillBackgroundPenOs.Add ("penIndex", (Int32) base.penOverride.cutFillBackgroundPen);
+    }
+    os.Add ("cutFillBackgroundPen", cutFillBackgroundPenOs);
+#endif
+    os.Add ("sectionContourPen", (Int32) base.sectContPen);
+    if (base.sectContLtype != APIInvalidAttributeIndex) {
+        os.Add ("sectionContourLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, base.sectContLtype)));
+    }
+    os.Add ("contourPen", (Int32) base.pen);
+    if (base.ltypeInd != APIInvalidAttributeIndex) {
+        os.Add ("contourLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, base.ltypeInd)));
+    }
+    os.Add ("aboveViewLinePen", (Int32) base.aboveViewLinePen);
+    if (base.aboveViewLineType != APIInvalidAttributeIndex) {
+        os.Add ("aboveViewLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, base.aboveViewLineType)));
+    }
+
+    GS::ObjectState floorFillOs;
+    floorFillOs.Add ("use", base.useFloorFill);
+    floorFillOs.Add ("foregroundPen", (Int32) base.floorFillPen);
+    floorFillOs.Add ("backgroundPen", (Int32) base.floorFillBGPen);
+    if (base.floorFillInd != APIInvalidAttributeIndex) {
+        floorFillOs.Add ("fillId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_FilltypeID, base.floorFillInd)));
+    }
+    floorFillOs.Add ("use3DHatching", base.use3DHatching);
+    floorFillOs.Add ("useFillLocBaseLine", base.useFillLocBaseLine);
+    floorFillOs.Add ("useSlantedFill", base.useSlantedFill);
+    floorFillOs.Add ("orientation", CreateHatchOrientationObjectState (base.hatchOrientation));
+    os.Add ("floorFill", floorFillOs);
+}
+
 // The custom side surfaces of a Roof's polygon edges (APIMemoMask_SideMaterials), one per
 // edge in the order of polygonOutline and then of each hole: sideMaterials[i] belongs to the
 // edge from coords[i] to coords[i + 1], so index 0 and the closing vertex of each sub-polygon
@@ -2621,6 +2686,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 } else {
                     typeSpecificDetails.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, base.buildingMaterial)));
                 }
+                AddShellBaseFloorPlanAndSection (base, typeSpecificDetails);
             } break;
 
             case API_HotlinkID: {

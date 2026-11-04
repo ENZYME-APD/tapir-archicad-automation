@@ -8936,6 +8936,62 @@
             },
             "compositeId": {
                 "$ref": "#/AttributeId"
+            },
+            "displayOption": {
+                "$ref": "#/DisplayOption"
+            },
+            "viewDepthLimitation": {
+                "$ref": "#/ViewDepthLimitation"
+            },
+            "isAutoOnStoryVisibility": {
+                "type": "boolean",
+                "description": "When true, Archicad recomputes the story visibility automatically from the shell's vertical extent."
+            },
+            "visibility": {
+                "$ref": "#/StoryVisibility",
+                "description": "The stories the shell's contour is shown on (API_ShellBaseType::visibilityCont)."
+            },
+            "fillVisibility": {
+                "$ref": "#/StoryVisibility",
+                "description": "The stories the shell's cover fill is shown on (API_ShellBaseType::visibilityFill)."
+            },
+            "cutBodyType": {
+                "type": "string",
+                "enum": [ "Editable", "ContoursDown", "PivotLinesDown", "UpwardsExtrusion", "DownwardsExtrusion" ],
+                "description": "How the body is extended for connections (Model panel). A shell uses Editable, UpwardsExtrusion or DownwardsExtrusion."
+            },
+            "cutFillPen": {
+                "$ref": "#/OverriddenPen"
+            },
+            "cutFillBackgroundPen": {
+                "$ref": "#/OverriddenPen"
+            },
+            "sectionContourPen": {
+                "type": "integer",
+                "description": "Pen of the contour of the cut surfaces (API_ShellBaseType::sectContPen)."
+            },
+            "sectionContourLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the contour of the cut surfaces (API_ShellBaseType::sectContLtype)."
+            },
+            "contourPen": {
+                "type": "integer",
+                "description": "Pen of the shell's uncut contour on the floor plan (API_ShellBaseType::pen)."
+            },
+            "contourLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the shell's uncut contour on the floor plan (API_ShellBaseType::ltypeInd)."
+            },
+            "aboveViewLinePen": {
+                "type": "integer",
+                "description": "Pen used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup."
+            },
+            "aboveViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup - pairs with aboveViewLinePen."
+            },
+            "floorFill": {
+                "$ref": "#/ShellBaseFloorFill"
             }
         },
         "additionalProperties": false,
@@ -14009,6 +14065,41 @@
             "orientation": {
                 "$ref": "#/HatchOrientation",
                 "description": "Orientation of the cover fill. On a Slab, Archicad applies only the type through the API: it resets the origin and the distortion matrix, so ModifySlabs reports a given origin or matrix that did not stick as a failure."
+            }
+        },
+        "additionalProperties": false
+    },
+    "ShellBaseFloorFill": {
+        "type": "object",
+        "description": "Floor plan cover fill settings of a Roof or Shell (API_ShellBaseType).",
+        "properties": {
+            "use": {
+                "type": "boolean",
+                "description": "Whether the cover fill is shown on the floor plan."
+            },
+            "foregroundPen": {
+                "type": "integer"
+            },
+            "backgroundPen": {
+                "type": "integer"
+            },
+            "fillId": {
+                "$ref": "#/AttributeId"
+            },
+            "use3DHatching": {
+                "type": "boolean",
+                "description": "Use the fill of the surface material (Vectorial 3D Hatch) as the cover fill."
+            },
+            "useFillLocBaseLine": {
+                "type": "boolean",
+                "description": "Align the cover fill with the pivot line instead of the fill handle."
+            },
+            "useSlantedFill": {
+                "type": "boolean",
+                "description": "Distort the cover fill to show the slope as seen from above."
+            },
+            "orientation": {
+                "$ref": "#/HatchOrientation"
             }
         },
         "additionalProperties": false
