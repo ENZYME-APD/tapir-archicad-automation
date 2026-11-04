@@ -146,7 +146,9 @@
             "ACAPI::MEP::PipeBranchPreferenceTable::Modifier::SetBranchOffsetByKey": "ignores the branch angle and changes the first row with the same reference ids (#1740, b2640243); SetMEPPreferenceTableRows sets branch rows by index instead",
             "ACAPI::MEP::PipeBranchPreferenceTable::Modifier::SetConnectionLengthByKey": "ignores the branch angle and changes the first row with the same reference ids (#1740, b2640243); SetMEPPreferenceTableRows sets branch rows by index instead",
             "ACAPI::MEP::PhysicalSystem::Create": "has no id getter for the new system; CreateMEPPhysicalSystems uses SystemGroup::Modifier::Add, which returns the new id directly",
-            "ACAPI::MEP::Bend::Modify": "does not compile against the Archicad 27 DevKit: Bend::Modifier does not derive from ACAPI::ModifierBase, which ExecuteUndoableScope requires (Archicad 27 only)"
+            "ACAPI::MEP::Bend::Modify": "does not compile against the Archicad 27 DevKit: Bend::Modifier does not derive from ACAPI::ModifierBase, which ExecuteUndoableScope requires (Archicad 27 only)",
+            "ACAPI_ElemComponent_GetPropertyValue": "Archicad 25/26 only; returns the same component property values as ACAPI_ElemComponent_GetPropertyValuesByGuid, which GetPropertyValuesOfElementComponents uses (#1019)",
+            "ACAPI_ElemComponent_GetPropertyValues": "Archicad 25/26 only; returns the same component property values as ACAPI_ElemComponent_GetPropertyValuesByGuid, which GetPropertyValuesOfElementComponents uses (#1019)"
         },
         "patterns": {}
     }
