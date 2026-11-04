@@ -3496,7 +3496,6 @@ GS::Optional<GS::UniString> ModifyPropertyValueOfElementsCommand::GetRawResponse
 
 GS::ObjectState ModifyPropertyValueOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-#ifdef ServerMainVers_2700
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
 
@@ -3543,16 +3542,16 @@ GS::ObjectState ModifyPropertyValueOfElementsCommand::Execute (const GS::ObjectS
     }
 
     err = ACAPI_CallUndoableCommand ("ModifyPropertyValueOfElementsCommand", [&]() -> GSErrCode {
+#ifdef ServerMainVers_2700
         return ACAPI_Property_ModifyPropertyValue (property, elemGuids);
+#else
+        return ACAPI_ElementList_ModifyPropertyValue (property, elemGuids);
+#endif
     });
 
     return err == NoError
         ? CreateSuccessfulExecutionResult ()
         : CreateFailedExecutionResult (err, "Failed to set the property value, no element was changed. The property may not be available for every given element.");
-#else
-    UNUSED_PARAMETER (parameters);
-    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
-#endif
 }
 
 GetPropertyExpressionReferencesCommand::GetPropertyExpressionReferencesCommand () :
@@ -4061,7 +4060,7 @@ GS::ObjectState GetPropertyAvailabilityOfDefaultsCommand::Execute (const GS::Obj
 #endif
 }
 
-#if defined (ServerMainVers_2700) && !defined (ServerMainVers_2800)
+#ifndef ServerMainVers_2800
 static bool GetPropertyAvailabilityParameters (const GS::ObjectState& parameters, GS::Array<API_Guid>& elemGuids, API_PropertyDefinition& definition, GS::ObjectState& failedResult)
 {
     GS::Array<GS::ObjectState> elements;
@@ -4136,7 +4135,7 @@ GS::Optional<GS::UniString> MakePropertyAvailableForElementsCommand::GetRawRespo
 
 GS::ObjectState MakePropertyAvailableForElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-#if defined (ServerMainVers_2700) && !defined (ServerMainVers_2800)
+#ifndef ServerMainVers_2800
     GS::Array<API_Guid> elemGuids;
     API_PropertyDefinition definition;
     GS::ObjectState failedResult;
@@ -4145,7 +4144,11 @@ GS::ObjectState MakePropertyAvailableForElementsCommand::Execute (const GS::Obje
     }
 
     GSErrCode err = ACAPI_CallUndoableCommand ("MakePropertyAvailableForElements", [&]() -> GSErrCode {
+#ifdef ServerMainVers_2700
         return ACAPI_Property_AddProperty (definition, elemGuids);
+#else
+        return ACAPI_ElementList_AddProperty (definition, elemGuids);
+#endif
     });
 
     return err == NoError
@@ -4153,7 +4156,7 @@ GS::ObjectState MakePropertyAvailableForElementsCommand::Execute (const GS::Obje
         : CreateFailedExecutionResult (err, "Failed to make the property available for the given elements.");
 #else
     UNUSED_PARAMETER (parameters);
-    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command is available only in Archicad 27.");
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command is available only in Archicad 25, 26 and 27. The Archicad API of later versions has no function to change the availability of a property for elements directly.");
 #endif
 }
 
@@ -4197,7 +4200,7 @@ GS::Optional<GS::UniString> MakePropertyUnavailableForElementsCommand::GetRawRes
 
 GS::ObjectState MakePropertyUnavailableForElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-#if defined (ServerMainVers_2700) && !defined (ServerMainVers_2800)
+#ifndef ServerMainVers_2800
     GS::Array<API_Guid> elemGuids;
     API_PropertyDefinition definition;
     GS::ObjectState failedResult;
@@ -4206,7 +4209,11 @@ GS::ObjectState MakePropertyUnavailableForElementsCommand::Execute (const GS::Ob
     }
 
     GSErrCode err = ACAPI_CallUndoableCommand ("MakePropertyUnavailableForElements", [&]() -> GSErrCode {
+#ifdef ServerMainVers_2700
         return ACAPI_Property_DeleteProperty (definition.guid, elemGuids);
+#else
+        return ACAPI_ElementList_DeleteProperty (definition.guid, elemGuids);
+#endif
     });
 
     return err == NoError
@@ -4214,6 +4221,6 @@ GS::ObjectState MakePropertyUnavailableForElementsCommand::Execute (const GS::Ob
         : CreateFailedExecutionResult (err, "Failed to make the property unavailable for the given elements.");
 #else
     UNUSED_PARAMETER (parameters);
-    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command is available only in Archicad 27.");
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command is available only in Archicad 25, 26 and 27. The Archicad API of later versions has no function to change the availability of a property for elements directly.");
 #endif
 }
