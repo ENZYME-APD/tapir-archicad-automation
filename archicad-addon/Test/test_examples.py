@@ -47,6 +47,8 @@ EXAMPLES_NOT_SMOKE_TESTED = {
     'UploadLibrariesToBIMcloud', 'RemoveLibrariesFromBIMcloud',
     # Opens the GDL editor, a window of its own.
     'OpenLibraryPartInEditor',
+    # Runs a local HTTP server and waits for the element events Archicad sends to it.
+    'SetElementNotificationClient',
 }
 
 def IsQuitScript (fileName):
