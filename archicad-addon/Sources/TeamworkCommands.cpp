@@ -120,7 +120,9 @@ GS::ObjectState GetTeamworkProjectInfoCommand::Execute (const GS::ObjectState& /
         return response;
     }
 
-    response.Add ("isOnline", ACAPI_Teamwork_HasConnection ());
+    // ACAPI_Teamwork_HasConnection only tells that the project is a Teamwork project;
+    // ACAPI_Teamwork_IsOnline tells whether this client works online with the server.
+    response.Add ("isOnline", ACAPI_Teamwork_IsOnline ());
     response.Add ("userId", projectInfo.userId);
 
     GS::UniString serverUrl;
@@ -882,7 +884,7 @@ GS::ObjectState GetTeamworkStatusCommand::Execute (const GS::ObjectState& /*para
 
     const bool isShared = projectInfo.teamwork;
     GS::ObjectState response ("isShared", isShared,
-                              "isOnline", isShared && ACAPI_Teamwork_HasConnection ());
+                              "isOnline", isShared && ACAPI_Teamwork_IsOnline ());
     if (!isShared) {
         return response;
     }

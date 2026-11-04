@@ -1,6 +1,7 @@
 """Cuts the first walls with a horizontal plane 1 m above project zero with GetCutPolygonsOfElements.
 
-Returns the building material, cut area and cut polygons of each body. Needs at least one Wall. Requires Archicad 28 or later.
+Returns the building material, cut area and cut polygons of each body. Needs at least one Wall. On Archicad 25-27
+the building materials are left out.
 """
 import aclib
 

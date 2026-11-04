@@ -41,9 +41,8 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
                 response.Value<bool?>("isVisible"));
         }
 
-        // Shares the icon of ArchicadLocation until it gets its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.ArchicadLocation;
+            Properties.Resources.GetArchicadVisibility;
 
         public override Guid ComponentGuid =>
             new Guid("5c01721d-0694-4c15-864b-a0bdac271ca3");

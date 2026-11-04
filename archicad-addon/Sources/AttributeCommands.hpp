@@ -155,6 +155,18 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+// The writing twin of GetPens: changes the pens in effect with ACAPI_Attribute_ModifyPen (AC27+).
+// Before AC27 it returns an error.
+class SetPensCommand : public CommandBase
+{
+public:
+    SetPensCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class GetProfilesCommand : public CommandBase
 {
 public:

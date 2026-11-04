@@ -73,9 +73,8 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 JsonOutputHelp.GuidOf(response["dimensionStandardId"]));
         }
 
-        // Shares the icon of GetDimensionStandards (GetCalculationUnits) until it gets its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetCalculationUnits;
+            Properties.Resources.FindDimensionStandard;
 
         public override Guid ComponentGuid =>
             new Guid("2584ea3f-f039-44dc-92c9-ab375554eb8f");

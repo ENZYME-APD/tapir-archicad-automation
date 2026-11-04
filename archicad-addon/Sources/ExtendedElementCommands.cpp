@@ -580,6 +580,60 @@ void FillDimensionDefaults (API_Element& element, const API_Coord& referencePoin
     element.dimension.direction = direction;
 }
 
+static bool ParseDimensionAppearanceString (const GS::UniString& appearance, API_AppearID& result)
+{
+    if (appearance == "Linear") {
+        result = APIApp_Normal;
+    } else if (appearance == "Cumulative") {
+        result = APIApp_Cumu;
+    } else if (appearance == "Baseline") {
+        result = APIApp_CumuSv;
+    } else if (appearance == "Elevation") {
+        result = APIApp_Elev;
+    } else {
+        return false;
+    }
+    return true;
+}
+
+static GS::UniString DimensionAppearanceToString (API_AppearID appearance)
+{
+    switch (appearance) {
+        case APIApp_Cumu:   return "Cumulative";
+        case APIApp_CumuSv: return "Baseline";
+        case APIApp_Elev:   return "Elevation";
+        default:            return "Linear";
+    }
+}
+
+// The dimension creation commands always made linear dimensions (APIApp_Normal, set by
+// FillDimensionDefaults), whatever the favorite or the tool defaults say, so existing scripts
+// keep getting them. The item's optional "appearance" chooses another type, and
+// "elevationOrigin" the level an Elevation dimension measures from, named as the DimensionOrigin
+// of CreateLevelDimensions; without it the favorite's or the tool's origin is kept (#1662).
+static GS::Optional<GS::ObjectState> ApplyDimensionAppearance (const GS::ObjectState& data, API_Element& element)
+{
+    GS::UniString appearance;
+    if (data.Get ("appearance", appearance)) {
+        API_AppearID appearID = APIApp_Normal;
+        if (!ParseDimensionAppearanceString (appearance, appearID)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'appearance' value: " + appearance);
+        }
+        element.dimension.dimAppear = appearID;
+    }
+    GS::UniString elevationOrigin;
+    if (data.Get ("elevationOrigin", elevationOrigin)) {
+        // The schema can't reject an unknown value behind "$ref": "#/DimensionOrigin", so it is
+        // checked here, as CreateLevelDimensions does.
+        API_DimOriginID origin = APIDimOrigin_ProjectZero;
+        if (!ParseDimensionOriginString (elevationOrigin, origin)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'elevationOrigin' value: " + elevationOrigin);
+        }
+        element.dimension.ed_origin = origin;
+    }
+    return {};
+}
+
 // Reads the Dimension tool defaults into element and memo, with the item's optional
 // "favoriteName" applied to them first (#1390), then the item's optional "textHeight",
 // "textPen" and "textFrame" (#1592) applied to defNote, which both creation paths copy into
@@ -4321,9 +4375,18 @@ GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () con
                         },
                         "baseLinePoints": {
                             "type": "array",
-                            "description": "2D coordinates of the stair baseline polyline. Whether the baseline runs along the left edge, the right edge or the center of the flight is the Stair tool's baseline position, taken from the tool defaults or favoriteName: with the baseline on the left edge, the flight lies to the right of it, looking from the first point to the last. The first point is kept; the length of the flight comes from the riser count and going, so the flight does not necessarily end at the last point given. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.",
+                            "description": "2D coordinates of the stair baseline polyline. Whether the baseline runs along the left edge, the right edge or the center of the flight is the Stair tool's baseline position, taken from baselinePosition, or else from the tool defaults or favoriteName: with the baseline on the left edge, the flight lies to the right of it, looking from the first point to the last. The first point is kept; the length of the flight comes from the riser count and going, so the flight does not necessarily end at the last point given. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.",
                             "items": { "$ref": "#/Coordinate2D" },
                             "minItems": 2
+                        },
+                        "baselinePosition": {
+                            "type": "string",
+                            "enum": ["Left", "Right", "Center"],
+                            "description": "Optional. Where the baseline runs on the flight, looking from the first point to the last. Left: along the left edge, the flight lies to the right of the baseline. Right: along the right edge, the flight lies to the left of it. Center: along the middle of the flight. Without it the baseline position of the Stair tool defaults (or of favoriteName) is used."
+                        },
+                        "baselineOffset": {
+                            "type": "number",
+                            "description": "Optional. The offset of the baseline from the flight edge that baselinePosition names (Left or Right); not used with Center. Without it the offset of the Stair tool defaults (or of favoriteName) is kept."
                         },
                         "zCoordinate": {
                             "type": "number",
@@ -4421,6 +4484,14 @@ static bool StairSegmentTypeFromString (const GS::UniString& str, API_StairSegme
     return false;
 }
 
+static bool StairBaselinePositionFromString (const GS::UniString& str, API_LinePositionID& position)
+{
+    if (str == "Left")   { position = APILP_Left;   return true; }
+    if (str == "Right")  { position = APILP_Right;  return true; }
+    if (str == "Center") { position = APILP_Center; return true; }
+    return false;
+}
+
 static bool StairTurnTypeFromString (const GS::UniString& str, API_StairTurnTypeID& type)
 {
     if (str == "None")           { type = APIST_NoTurn;             return true; }
@@ -4490,6 +4561,23 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
     auto flightWidth = GetOptionalDouble (parameters, "flightWidth");
     if (flightWidth.HasValue ()) {
         element.stair.flightWidth = flightWidth.Get ();
+    }
+
+    // The edge of the flight the baseline runs on. Without it the Stair tool defaults decide,
+    // and a multi-segment baseline that turns towards the flight's side failed where its
+    // mirror image was created (#578). The DevKit's Do_CreateStair example sets APILP_Center
+    // before ACAPI_Element_Create.
+    GS::UniString baselinePosition;
+    if (parameters.Get ("baselinePosition", baselinePosition)) {
+        API_LinePositionID position = APILP_Center;
+        if (!StairBaselinePositionFromString (baselinePosition, position)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid baselinePosition: it must be Left, Right or Center.");
+        }
+        element.stair.baselinePosition = position;
+    }
+    auto baselineOffset = GetOptionalDouble (parameters, "baselineOffset");
+    if (baselineOffset.HasValue ()) {
+        element.stair.baselineOffset = baselineOffset.Get ();
     }
 
     Int32 stepNum = 0;
@@ -6879,6 +6967,15 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsCommand::GetInputParamete
                             "type": "boolean",
                             "description": "Optional frame around the dimension texts (true: framed, false: not framed), applied to every witness point after favoriteName. Without it the Dimension tool's setting is used."
                         },
+                        "appearance": {
+                            "type": "string",
+                            "enum": ["Linear", "Cumulative", "Baseline", "Elevation"],
+                            "description": "Optional dimension type, as in the Dimension Settings. Defaults to Linear, whatever favoriteName or the Dimension tool defaults say. Elevation gives level marks, e.g. on a vertical chain in a section."
+                        },
+                        "elevationOrigin": {
+                            "$ref": "#/DimensionOrigin",
+                            "description": "Optional level an Elevation dimension measures from. Defaults to the one of favoriteName or the Dimension tool defaults."
+                        },
                         "referencePoint": { "$ref": "#/Coordinate2D" },
                         "direction": { "$ref": "#/Coordinate2D" },
                         "floorIndex": { "type": "number" },
@@ -6978,6 +7075,11 @@ GS::ObjectState CreateAssociativeDimensionsCommand::Execute (const GS::ObjectSta
                 Get2DCoordinateFromObjectState (*data.Get ("referencePoint")),
                 {directionCoord.x, directionCoord.y}
             );
+            auto appearanceError = ApplyDimensionAppearance (data, element);
+            if (appearanceError.HasValue ()) {
+                elements.Push (appearanceError.Get ());
+                continue;
+            }
 
             auto error = PopulateAssociativeDimensionMemo (witnessPoints, element, memo);
             if (error.HasValue ()) {
@@ -7041,6 +7143,15 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsOnSectionCommand::GetInpu
                         "textFrame": {
                             "type": "boolean",
                             "description": "Optional frame around the dimension texts (true: framed, false: not framed), applied to every witness point after favoriteName. Without it the Dimension tool's setting is used."
+                        },
+                        "appearance": {
+                            "type": "string",
+                            "enum": ["Linear", "Cumulative", "Baseline", "Elevation"],
+                            "description": "Optional dimension type, as in the Dimension Settings. Defaults to Linear, whatever favoriteName or the Dimension tool defaults say. Elevation gives level marks, e.g. on a vertical chain in a section."
+                        },
+                        "elevationOrigin": {
+                            "$ref": "#/DimensionOrigin",
+                            "description": "Optional level an Elevation dimension measures from. Defaults to the one of favoriteName or the Dimension tool defaults."
                         },
                         "sectionElementId": {
                             "$ref": "#/ElementId",
@@ -7154,6 +7265,11 @@ GS::ObjectState CreateAssociativeDimensionsOnSectionCommand::Execute (const GS::
                 Get2DCoordinateFromObjectState (*data.Get ("referencePoint")),
                 {directionCoord.x, directionCoord.y}
             );
+            auto appearanceError = ApplyDimensionAppearance (data, element);
+            if (appearanceError.HasValue ()) {
+                elements.Push (appearanceError.Get ());
+                continue;
+            }
 
             auto error = PopulateAssociativeDimensionMemo (witnessPoints, element, memo);
 
@@ -7219,6 +7335,15 @@ GS::Optional<GS::UniString> CreateWallThicknessDimensionsCommand::GetInputParame
                         "textFrame": {
                             "type": "boolean",
                             "description": "Optional frame around the dimension texts (true: framed, false: not framed), applied to every witness point after favoriteName. Without it the Dimension tool's setting is used."
+                        },
+                        "appearance": {
+                            "type": "string",
+                            "enum": ["Linear", "Cumulative", "Baseline", "Elevation"],
+                            "description": "Optional dimension type, as in the Dimension Settings. Defaults to Linear, whatever favoriteName or the Dimension tool defaults say. Elevation gives level marks, e.g. on a vertical chain in a section."
+                        },
+                        "elevationOrigin": {
+                            "$ref": "#/DimensionOrigin",
+                            "description": "Optional level an Elevation dimension measures from. Defaults to the one of favoriteName or the Dimension tool defaults."
                         },
                         "wallId": { "$ref": "#/ElementId" },
                         "referencePoint": { "$ref": "#/Coordinate2D" },
@@ -7298,6 +7423,11 @@ GS::ObjectState CreateWallThicknessDimensionsCommand::Execute (const GS::ObjectS
             element.dimension.horizontalText = false;
             element.dimension.refC = Get2DCoordinateFromObjectState (*data.Get ("referencePoint"));
             element.dimension.direction = {directionCoord.x, directionCoord.y};
+            auto appearanceError = ApplyDimensionAppearance (data, element);
+            if (appearanceError.HasValue ()) {
+                elements.Push (appearanceError.Get ());
+                continue;
+            }
             element.dimension.nDimElem = 2;
 
             memo.dimElems = reinterpret_cast<API_DimElem**> (BMhAllClear (element.dimension.nDimElem * sizeof (API_DimElem)));
@@ -8594,6 +8724,8 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
         dimensionData.Add ("elementId", CreateGuidObjectState (element.header.guid));
         dimensionData.Add ("direction", Create2DCoordinateObjectState (element.dimension.direction));
         dimensionData.Add ("dimensionLinePosition", Create2DCoordinateObjectState (element.dimension.refC));
+        dimensionData.Add ("appearance", DimensionAppearanceToString (element.dimension.dimAppear));
+        dimensionData.Add ("elevationOrigin", GS::UniString (DimensionOriginToString (element.dimension.ed_origin)));
 
         const auto& witnessPoints = dimensionData.AddList<GS::ObjectState> ("witnessPoints");
 

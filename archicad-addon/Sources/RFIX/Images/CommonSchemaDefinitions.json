@@ -53,6 +53,86 @@
             "$ref": "#/ElementIdOrError"
         }
     },
+    "ComponentId": {
+        "type": "object",
+        "description": "The identifier of a component (one building material skin or profile part) of an element. It identifies the component only together with its element.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "ElementComponentId": {
+        "type": "object",
+        "description": "The identifier of a component of an element: the element and the component within it.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "componentId": {
+                "$ref": "#/ComponentId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "componentId"
+        ]
+    },
+    "ElementComponentIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "elementComponentId": {
+                "$ref": "#/ElementComponentId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementComponentId"
+        ]
+    },
+    "ElementComponents": {
+        "type": "array",
+        "description": "A list of element components.",
+        "items": {
+            "$ref": "#/ElementComponentIdArrayItem"
+        }
+    },
+    "ElementComponentsArrayItem": {
+        "type": "object",
+        "properties": {
+            "elementComponents": {
+                "$ref": "#/ElementComponents"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementComponents"
+        ]
+    },
+    "ElementComponentsOrError": {
+        "type": "object",
+        "description": "The components of an element or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElementComponentsArrayItem"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ElementComponentsOrErrorArray": {
+        "type": "array",
+        "description": "A list of element component lists or errors.",
+        "items": {
+            "$ref": "#/ElementComponentsOrError"
+        }
+    },
     "ElementTrims": {
         "type": "object",
         "description": "The trims of one element: the roofs and shells trimming it, and the elements it trims.",
@@ -366,7 +446,12 @@
                 "$ref": "#/AttributeId"
             },
             "isPhysicallyConnected": {
-                "type": "boolean"
+                "type": "boolean",
+                "description": "Whether the port is physically connected to another port. Available from Archicad 28."
+            },
+            "isConnected": {
+                "type": "boolean",
+                "description": "Whether the port is connected to another port. Archicad 27 only; from Archicad 28 see isPhysicallyConnected."
             },
             "connectionStyle": {
                 "$ref": "#/MEPConnectionStyle",
@@ -409,8 +494,7 @@
             "width",
             "height",
             "domain",
-            "mepSystemId",
-            "isPhysicallyConnected"
+            "mepSystemId"
         ]
     },
     "MEPElementPorts": {
@@ -447,6 +531,43 @@
         "items": {
             "$ref": "#/MEPElementPortsOrError"
         }
+    },
+    "MEPFlexibleSegmentPolyline": {
+        "type": "array",
+        "description": "The geometry of a polyline MEP flexible segment: its line and spline parts in order, which alternate and connect at their ends. Available from Archicad 28.",
+        "items": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "A straight line from 'begin' to 'end', or a spline through 'controlPoints'.",
+                    "enum": [
+                        "Line",
+                        "Spline"
+                    ]
+                },
+                "begin": {
+                    "$ref": "#/Coordinate3D",
+                    "description": "The beginning of a line part."
+                },
+                "end": {
+                    "$ref": "#/Coordinate3D",
+                    "description": "The end of a line part."
+                },
+                "controlPoints": {
+                    "type": "array",
+                    "description": "The control points of a spline part.",
+                    "items": {
+                        "$ref": "#/Coordinate3D"
+                    }
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "type"
+            ]
+        },
+        "minItems": 1
     },
     "MEPConnectionResult": {
         "type": "object",
@@ -4070,7 +4191,7 @@
     },
     "MEPPortDefaultDetails": {
         "type": "object",
-        "description": "The settings of one port of an MEP tool default. Each field is present only where the port's domain and the Archicad version have it.",
+        "description": "The settings of one port of an MEP tool default. Each field is present only where the port's domain and the Archicad version have it: Archicad 27 gives only the index and the shape.",
         "properties": {
             "index": {
                 "type": "integer",
@@ -4118,17 +4239,20 @@
         },
         "additionalProperties": false,
         "required": [
-            "index",
-            "domain"
+            "index"
         ]
     },
     "MEPElementDefaultDetails": {
         "type": "object",
-        "description": "The settings of a terminal, accessory, fitting or equipment tool default.",
+        "description": "The settings of a terminal, accessory, fitting, equipment or branch tool default.",
         "properties": {
             "libraryPartId": {
                 "$ref": "#/LibPartUnId",
                 "description": "The library part the tool places."
+            },
+            "insulationThickness": {
+                "type": "number",
+                "description": "The insulation thickness, when the default has insulation."
             },
             "ports": {
                 "type": "array",
@@ -4223,7 +4347,7 @@
                             },
                             "elbow": {
                                 "type": "object",
-                                "description": "The elbow default. Available from Archicad 29.",
+                                "description": "The elbow default: Archicad 27 gives its radius factor (it calls elbows bends), Archicad 28 none, Archicad 29 and later both values.",
                                 "properties": {
                                     "factorRadius": {
                                         "type": "number"
@@ -4268,9 +4392,37 @@
                     "routingNode"
                 ]
             },
+            "rigidSegment": {
+                "type": "object",
+                "description": "The rigid segment default of the routing tool.",
+                "properties": {
+                    "shape": {
+                        "$ref": "#/MEPCrossSectionShape",
+                        "description": "Archicad 27 and 28."
+                    },
+                    "width": {
+                        "type": "number",
+                        "description": "Archicad 27 and 28."
+                    },
+                    "height": {
+                        "type": "number",
+                        "description": "Archicad 27 and 28."
+                    },
+                    "insulationThickness": {
+                        "type": "number",
+                        "description": "The insulation thickness, when the default has insulation."
+                    }
+                },
+                "additionalProperties": false,
+                "required": []
+            },
+            "branch": {
+                "$ref": "#/MEPElementDefaultDetails",
+                "description": "The branch default of the routing tool."
+            },
             "flexibleSegment": {
                 "type": "object",
-                "description": "The flexible segment tool default.",
+                "description": "The flexible segment tool default. Archicad 27 has it in the Ventilation domain only.",
                 "properties": {
                     "shape": {
                         "$ref": "#/MEPCrossSectionShape"
@@ -7182,6 +7334,14 @@
                 "type": "string",
                 "description": "The description of the classification reference. Given from Archicad 29."
             },
+            "sort": {
+                "type": "string",
+                "description": "The sort key of the classification reference (its Sort attribute). Given from Archicad 29, missing when it has no value."
+            },
+            "relAssociatesClassificationName": {
+                "type": "string",
+                "description": "The name of the IfcRelAssociatesClassification relationship that links the reference to the element. Given from Archicad 28, missing when it is empty."
+            },
             "referencedSource": {
                 "type": "object",
                 "description": "The classification (IfcClassification) the reference belongs to.",
@@ -7200,15 +7360,15 @@
                     },
                     "editionDate": {
                         "type": "string",
-                        "description": "The edition date of the classification. Given only in Archicad 25, 26 and 27, missing when it has no value."
+                        "description": "The edition date of the classification. Missing when it has no value."
                     },
                     "description": {
                         "type": "string",
-                        "description": "The description of the classification. Given only in Archicad 25, 26 and 27, missing when it has no value."
+                        "description": "The description of the classification. Missing when it has no value."
                     },
                     "location": {
                         "type": "string",
-                        "description": "The location of the classification, for example a URL. Given only in Archicad 25, 26 and 27, missing when it has no value."
+                        "description": "The location of the classification, for example a URL. Missing when it has no value."
                     }
                 },
                 "additionalProperties": false,
@@ -10996,6 +11156,16 @@
             "hotlinkId"
         ]
     },
+    "ElementDetailsAdditionalField": {
+        "type": "string",
+        "description": "An extra field of the details of an element, returned only when requested.",
+        "enum": [
+            "infoString",
+            "compoundInfoString",
+            "libraryPartUnId",
+            "creatorToolUnId"
+        ]
+    },
     "RevisionIssueId": {
         "type": "object",
         "description": "The identifier of a revision issue.",
@@ -13313,6 +13483,15 @@
             },
             "dimensionLinePosition": {
                 "$ref": "#/Coordinate2D"
+            },
+            "appearance": {
+                "type": "string",
+                "enum": ["Linear", "Cumulative", "Baseline", "Elevation"],
+                "description": "The dimension type, as in the Dimension Settings."
+            },
+            "elevationOrigin": {
+                "$ref": "#/DimensionOrigin",
+                "description": "The level an Elevation dimension measures from (kept for the other types too)."
             },
             "witnessPoints": {
                 "type": "array",
