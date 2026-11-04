@@ -4457,7 +4457,7 @@ GS::ObjectState EditHierarchicalElementCommand::Execute (const GS::ObjectState& 
     // A complete operation: it must not run inside ACAPI_CallUndoableCommand, so it is called directly.
     const GSErrCode err = ACAPI_HierarchicalEditing_EditHierarchicalElem (&elemGuid);
     if (err == APIERR_REFUSEDCMD) {
-        return CreateFailedExecutionResult (err, "Archicad refused to enter the hierarchical editing mode; it may already be in an editing mode. Finish it first with FinishHierarchicalEditing.");
+        return CreateFailedExecutionResult (err, "Archicad refused to enter the hierarchical editing mode; it may already be in an editing mode. Leave that mode in Archicad first.");
     }
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to open the element in hierarchical editing mode; it must be a Curtain Wall, Stair, Railing, Beam or Column.");
