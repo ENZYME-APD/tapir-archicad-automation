@@ -263,7 +263,10 @@ twin); new work on an element tool follows these rules:
   values the commands cannot write, so a JSON read by Refresh can always be fed back.
 - **Three buttons, one set of JSON objects:** *Refresh* reads (`GetDetailsOfElements`), *Execute*
   writes, *Create* makes new elements (the tool's `Create<Type>` command, starting from the tool
-  defaults or the `FavoriteName` input). Writing and creating only happen on a button press; the
+  defaults or the `FavoriteName` input). A tool component may remember the elements its *Create*
+  made (saved with the .gh file; Walls does, `CanUpdateCreatedElements`): the next *Create* then
+  modifies them instead of making new ones, and reports one that was deleted as an error rather
+  than recreating it (#521). Writing and creating only happen on a button press; the
   component ignores `AutoExecute`, only *Refresh* may run automatically. Clear the request flags
   inside `SolveInstance`, where they are used, not after `ExpireSolution (true)`.
 - **One JSON input and output per dialog panel:** the Group name without spaces + `_JSON`

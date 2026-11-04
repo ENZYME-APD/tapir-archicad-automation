@@ -3166,6 +3166,110 @@
             "z"
         ]
     },
+    "CoordinateSystem3D": {
+        "type": "object",
+        "description": "A coordinate system in 3D: an origin and three axes. What is left out keeps its default; give all three axes together or none.",
+        "properties": {
+            "origin": {
+                "$ref": "#/Coordinate3D",
+                "description": "The origin of the coordinate system."
+            },
+            "xAxis": {
+                "$ref": "#/Coordinate3D",
+                "description": "The X axis of the coordinate system."
+            },
+            "yAxis": {
+                "$ref": "#/Coordinate3D",
+                "description": "The Y axis of the coordinate system."
+            },
+            "zAxis": {
+                "$ref": "#/Coordinate3D",
+                "description": "The Z axis of the coordinate system."
+            }
+        },
+        "additionalProperties": false
+    },
+    "ShellEdgeTrim": {
+        "type": "object",
+        "description": "How a shell edge is cut.",
+        "properties": {
+            "trimType": {
+                "type": "string",
+                "enum": ["Vertical", "Perpendicular", "Horizontal", "CustomAngle"],
+                "description": "Vertical, Perpendicular or Horizontal to the shell, or at 'angle' (CustomAngle)."
+            },
+            "angle": {
+                "type": "number",
+                "description": "The trim angle in radians. Only CustomAngle uses it; pi/2 by default."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "trimType"
+        ]
+    },
+    "ShellProfile": {
+        "type": "object",
+        "description": "A profile polyline of a shell, in the XY plane of its coordinate system.",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "description": "The points of the polyline.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 2
+            },
+            "arcs": {
+                "type": "array",
+                "description": "Arc segments of the polyline, with indices into coordinates; index len(coordinates) is the first point again, which closes the polyline.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "closed": {
+                "type": "boolean",
+                "description": "Whether the segment from the last point back to the first one is part of the profile. False by default."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinates"
+        ]
+    },
+    "ShellCutPolygon": {
+        "type": "object",
+        "description": "A closed polygon cutting a shell: its clipping contour or a hole.",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "description": "The points of the polygon, in the XY plane of 'plane'.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 3
+            },
+            "arcs": {
+                "type": "array",
+                "description": "Arc segments of the polygon, with indices into coordinates.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "plane": {
+                "$ref": "#/CoordinateSystem3D",
+                "description": "The plane of the polygon, in the coordinates of the shell's base plane: a hole is extruded from it along its Z axis. The base plane itself by default."
+            },
+            "depth": {
+                "type": "number",
+                "description": "Required for holes, ignored for the clipping contour: how far the cutting body is extruded from the polygon's plane, along its Z axis (negative values cut downwards)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinates"
+        ]
+    },
     "AxonometryProjectionType": {
         "type": "string",
         "description": "The projection type of an axonometric 3D projection, the projMod of the Archicad API. Archicad works out the transformation matrix of every type but Custom from the type and the azimuth. XY is the top view and Bottom the view from below. YZ and XZ are both the side view (an elevation), looking from the azimuth. Frontal, Monometric, Isometric and Dimetric are the predefined axonometries, and FrontalBottom, MonometricBottom, IsometricBottom and DimetricBottom the same seen from below; an Isometric at azimuth 270 is the isometric from the south-east (X axis at -30 degrees, Y at 30, Z at 90). Custom keeps the transformation matrix as given. Parallel cannot be set: Archicad makes it Custom.",
@@ -3848,6 +3952,15 @@
             "ToFloorPlanRange",
             "ToAbsoluteLimit",
             "EntireElement"
+        ]
+    },
+    "ElemProjectionMode": {
+        "type": "string",
+        "description": "Floor plan projection mode of an element part (API_ElemProjectionModesID).",
+        "enum": [
+            "Symbolic",
+            "Projected",
+            "Hybrid"
         ]
     },
     "TextureProjectionType": {
@@ -4910,7 +5023,7 @@
             },
             "preview": {
                 "type": "boolean",
-                "description": "Whether this is the preview translator, the one the IFC properties of elements are previewed with."
+                "description": "Whether this is the first item of Archicad's translator list, which the Archicad API documents as the preview translator (the one the IFC properties of elements are previewed with). No API identifies the preview translator otherwise, and in some projects the IFC Translators dialog shows another translator as the preview one."
             }
         },
         "additionalProperties": false,
@@ -8936,6 +9049,62 @@
             },
             "compositeId": {
                 "$ref": "#/AttributeId"
+            },
+            "displayOption": {
+                "$ref": "#/DisplayOption"
+            },
+            "viewDepthLimitation": {
+                "$ref": "#/ViewDepthLimitation"
+            },
+            "isAutoOnStoryVisibility": {
+                "type": "boolean",
+                "description": "When true, Archicad recomputes the story visibility automatically from the shell's vertical extent."
+            },
+            "visibility": {
+                "$ref": "#/StoryVisibility",
+                "description": "The stories the shell's contour is shown on (API_ShellBaseType::visibilityCont)."
+            },
+            "fillVisibility": {
+                "$ref": "#/StoryVisibility",
+                "description": "The stories the shell's cover fill is shown on (API_ShellBaseType::visibilityFill)."
+            },
+            "cutBodyType": {
+                "type": "string",
+                "enum": [ "Editable", "ContoursDown", "PivotLinesDown", "UpwardsExtrusion", "DownwardsExtrusion" ],
+                "description": "How the body is extended for connections (Model panel). A shell uses Editable, UpwardsExtrusion or DownwardsExtrusion."
+            },
+            "cutFillPen": {
+                "$ref": "#/OverriddenPen"
+            },
+            "cutFillBackgroundPen": {
+                "$ref": "#/OverriddenPen"
+            },
+            "sectionContourPen": {
+                "type": "integer",
+                "description": "Pen of the contour of the cut surfaces (API_ShellBaseType::sectContPen)."
+            },
+            "sectionContourLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the contour of the cut surfaces (API_ShellBaseType::sectContLtype)."
+            },
+            "contourPen": {
+                "type": "integer",
+                "description": "Pen of the shell's uncut contour on the floor plan (API_ShellBaseType::pen)."
+            },
+            "contourLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the shell's uncut contour on the floor plan (API_ShellBaseType::ltypeInd)."
+            },
+            "aboveViewLinePen": {
+                "type": "integer",
+                "description": "Pen used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup."
+            },
+            "aboveViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup - pairs with aboveViewLinePen."
+            },
+            "floorFill": {
+                "$ref": "#/ShellBaseFloorFill"
             }
         },
         "additionalProperties": false,
@@ -9532,6 +9701,65 @@
             "revealDepthOffset": {
                 "type": "number",
                 "description": "Distance the frame plane is moved across the wall thickness, along the wall normal. The same value ModifyWindows and ModifyDoors take."
+            },
+            "displayOption": {
+                "$ref": "#/DisplayOption"
+            },
+            "pen": {
+                "type": "integer",
+                "description": "Pen of the opening's floor plan symbol (API_OpeningBaseType::pen); used unless useObjectPens is true."
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the opening's floor plan symbol (API_OpeningBaseType::ltypeInd); used unless useObjectLineTypes is true."
+            },
+            "cutLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the cut lines of the opening (API_OpeningBaseType::cutLineType)."
+            },
+            "sectionFillId": {
+                "$ref": "#/AttributeId",
+                "description": "Fill of the section of the opening (API_OpeningBaseType::sectFill); used unless useObjectSectionAttributes is true."
+            },
+            "sectionFillPen": {
+                "type": "integer",
+                "description": "Pen of the fill of the section of the opening (API_OpeningBaseType::sectFillPen)."
+            },
+            "sectionFillBackgroundPen": {
+                "type": "integer",
+                "description": "Background pen of the fill of the section of the opening (API_OpeningBaseType::sectBGPen)."
+            },
+            "sectionContourPen": {
+                "type": "integer",
+                "description": "Contour pen of the fill of the section of the opening (API_OpeningBaseType::sectContPen)."
+            },
+            "aboveViewLinePen": {
+                "type": "integer",
+                "description": "Pen used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup. Corresponds to the \"Overhead Line Pens\" value in the Door/Window Settings dialog."
+            },
+            "aboveViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup. Corresponds to the \"Overhead Lines\" value in the Door/Window Settings dialog."
+            },
+            "belowViewLinePen": {
+                "type": "integer",
+                "description": "Pen of the uncut lines of the opening (API_OpeningBaseType::belowViewLinePen)."
+            },
+            "belowViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type used when \"OutLines Only\" is selected from the \"Floor Plan Display\" popup. Corresponds to the \"Uncut Lines\" value in the Door/Window Settings dialog."
+            },
+            "useObjectPens": {
+                "type": "boolean",
+                "description": "Use the pens defined in the library part instead of 'pen'."
+            },
+            "useObjectLineTypes": {
+                "type": "boolean",
+                "description": "Use the line types defined in the library part instead of 'lineTypeId'."
+            },
+            "useObjectSectionAttributes": {
+                "type": "boolean",
+                "description": "Use the section attributes defined in the library part instead of 'sectionFillId'/'sectionFillPen'/'sectionFillBackgroundPen'/'sectionContourPen'."
             }
         },
         "additionalProperties": false,
@@ -9918,6 +10146,22 @@
                 "items": {
                     "type": "number"
                 }
+            },
+            "visibility": {
+                "$ref": "#/StoryVisibility",
+                "description": "The stories the railing is shown on (API_RailingType::visibility)."
+            },
+            "isAutoOnStoryVisibility": {
+                "type": "boolean",
+                "description": "When true, Archicad recomputes 'visibility' automatically from the actual elevation of the railing (API_RailingType::isAutoOnStoryVisibility)."
+            },
+            "referenceLinePen": {
+                "type": "integer",
+                "description": "Pen index of the railing's reference line (API_RailingType::referenceLinePen)."
+            },
+            "contourPen": {
+                "type": "integer",
+                "description": "Pen index of the railing's contour line (API_RailingType::contourPen)."
             }
         },
         "additionalProperties": false,
@@ -9926,7 +10170,11 @@
             "bottomOffset",
             "zCoordinate",
             "height",
-            "segmentHeights"
+            "segmentHeights",
+            "visibility",
+            "isAutoOnStoryVisibility",
+            "referenceLinePen",
+            "contourPen"
         ]
     },
     "CurtainWallDetails": {
@@ -9946,13 +10194,106 @@
             "angle": {
                 "type": "number",
                 "description": "The rotation angle of the curtain wall in radians."
+            },
+            "displayOption": {
+                "$ref": "#/DisplayOption"
+            },
+            "viewDepthLimitation": {
+                "$ref": "#/ViewDepthLimitation"
+            },
+            "visibility": {
+                "$ref": "#/StoryVisibility"
+            },
+            "isAutoOnStoryVisibility": {
+                "type": "boolean",
+                "description": "When true, Archicad recomputes 'visibility' automatically from the curtain wall's vertical extent."
+            },
+            "cutProjectionMode": {
+                "$ref": "#/ElemProjectionMode",
+                "description": "Projection mode of the cut part of the curtain wall on the floor plan (API_CurtainWallType::cutProjectionMode)."
+            },
+            "uncutProjectionMode": {
+                "$ref": "#/ElemProjectionMode",
+                "description": "Projection mode of the uncut part (below the cut plane) of the curtain wall on the floor plan (API_CurtainWallType::uncutProjectionMode)."
+            },
+            "overheadProjectionMode": {
+                "$ref": "#/ElemProjectionMode",
+                "description": "Projection mode of the overhead part (above the cut plane) of the curtain wall on the floor plan (API_CurtainWallType::overheadProjectionMode)."
+            },
+            "cutFillPen": {
+                "$ref": "#/OverriddenPen",
+                "description": "Cut fill foreground pen; the building material's pen can be overridden on the element level. Before Archicad 27 always reported as not overridden."
+            },
+            "cutFillBackgroundPen": {
+                "$ref": "#/OverriddenPen",
+                "description": "Cut fill background pen; the building material's pen can be overridden on the element level. Before Archicad 27 always reported as not overridden."
+            },
+            "frameCutLinePen": {
+                "type": "integer",
+                "description": "Pen index of the cut part of the frames on the floor plan (API_CurtainWallType::frameCutLinePen)."
+            },
+            "frameCutLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the cut part of the frames on the floor plan (API_CurtainWallType::frameCutLineType). Omitted when not set."
+            },
+            "panelCutLinePen": {
+                "type": "integer",
+                "description": "Pen index of the cut part of the panels on the floor plan (API_CurtainWallType::panelCutLinePen)."
+            },
+            "panelCutLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the cut part of the panels on the floor plan (API_CurtainWallType::panelCutLineType). Omitted when not set."
+            },
+            "useFrameTypesAttributes": {
+                "type": "boolean",
+                "description": "The frames use the attributes of their frame types instead of frameCutLinePen/frameCutLineTypeId."
+            },
+            "usePanelTypesAttributes": {
+                "type": "boolean",
+                "description": "The panels use the attributes of their panel types instead of panelCutLinePen/panelCutLineTypeId."
+            },
+            "pen": {
+                "type": "integer",
+                "description": "The pen index of the curtain wall (API_CurtainWallType::pen)."
+            },
+            "belowViewLinePen": {
+                "type": "integer",
+                "description": "Pen index of the curtain wall's view below the cut plane on the floor plan, the uncut lines (API_CurtainWallType::uncutLinePen)."
+            },
+            "belowViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the curtain wall's view below the cut plane on the floor plan, the uncut lines (API_CurtainWallType::uncutLineType). Omitted when not set."
+            },
+            "aboveViewLinePen": {
+                "type": "integer",
+                "description": "Pen index of the curtain wall's view above the cut plane on the floor plan, the overhead lines (API_CurtainWallType::overheadLinePen)."
+            },
+            "aboveViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the curtain wall's view above the cut plane on the floor plan, the overhead lines (API_CurtainWallType::overheadLineType). Omitted when not set."
             }
         },
         "additionalProperties": false,
         "required": [
             "height",
             "flipped",
-            "angle"
+            "angle",
+            "displayOption",
+            "viewDepthLimitation",
+            "visibility",
+            "isAutoOnStoryVisibility",
+            "cutProjectionMode",
+            "uncutProjectionMode",
+            "overheadProjectionMode",
+            "cutFillPen",
+            "cutFillBackgroundPen",
+            "frameCutLinePen",
+            "panelCutLinePen",
+            "useFrameTypesAttributes",
+            "usePanelTypesAttributes",
+            "pen",
+            "belowViewLinePen",
+            "aboveViewLinePen"
         ]
     },
     "CurtainWallSegmentDetails": {
@@ -10902,7 +11243,7 @@
     },
     "StairDetails": {
         "type": "object",
-        "description": "The settings of a Stair element, the ones CreateStairs takes. The finishes and the structure are modeled by the Stair's subelements (risers, treads and structures), which GetSubelementsOfHierarchicalElements lists.",
+        "description": "The settings of a Stair element: the ones CreateStairs takes, and its floor plan and section display (stairDisplayType and the fields after it), which no command writes yet. The finishes and the structure are modeled by the Stair's subelements (risers, treads and structures), which GetSubelementsOfHierarchicalElements lists.",
         "properties": {
             "stepNum": {
                 "type": "integer",
@@ -10995,6 +11336,234 @@
                     "additionalProperties": false,
                     "required": ["turnType", "landingStartEdgeOffset", "landingEndEdgeOffset", "minLandingStartEdgeOffset", "minLandingEndEdgeOffset"]
                 }
+            },
+            "stairDisplayType": {
+                "type": "string",
+                "description": "Whether the floor plan display of the stair is set in the stair itself (Custom) or comes from the Model View Options (ByModelViewOptions) (API_StairType::stairDisplayType).",
+                "enum": ["Custom", "ByModelViewOptions", "Unknown"]
+            },
+            "floorPlanLayout": {
+                "$ref": "#/StairLayout",
+                "description": "The floor plan display of the stair's components (API_StairType::fpdLayout)."
+            },
+            "reflectedCeilingPlanLayout": {
+                "$ref": "#/StairLayout",
+                "description": "The reflected ceiling plan display of the stair's components (API_StairType::rcpdLayout)."
+            },
+            "structureVisibility": {
+                "type": "boolean",
+                "description": "Whether the structure of the stair is shown on the floor plan (API_StairType::structureVisibility)."
+            },
+            "structureSymbols": {
+                "type": "array",
+                "description": "The symbol lines and fills of the stair's structure, one item per structure type and view (API_StairType::structSymbData).",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "structureType": {
+                            "type": "string",
+                            "enum": ["UnderStructure", "Stringer", "Unknown"]
+                        },
+                        "view": {
+                            "$ref": "#/StairSymbolView"
+                        },
+                        "visibleLineTypeId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Line type of the visible structure lines; left out when not set."
+                        },
+                        "visibleLinePen": {
+                            "type": "integer"
+                        },
+                        "hiddenLineTypeId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Line type of the hidden structure lines; left out when not set."
+                        },
+                        "hiddenLinePen": {
+                            "type": "integer"
+                        },
+                        "visibleFillId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Fill type of the visible structure; left out when not set."
+                        },
+                        "visibleFillPen": {
+                            "type": "integer"
+                        },
+                        "visibleFillBackgroundPen": {
+                            "type": "integer"
+                        },
+                        "hiddenFillId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Fill type of the hidden structure; left out when not set."
+                        },
+                        "hiddenFillPen": {
+                            "type": "integer"
+                        },
+                        "hiddenFillBackgroundPen": {
+                            "type": "integer"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["structureType", "view", "visibleLinePen", "hiddenLinePen", "visibleFillPen", "visibleFillBackgroundPen", "hiddenFillPen", "hiddenFillBackgroundPen"]
+                }
+            },
+            "monolithStructureSymbols": {
+                "type": "array",
+                "description": "The symbol lines and fills of a monolithic structure, one item per view and visible or hidden part (API_StairType::monolithStructureSymbolData).",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "view": {
+                            "$ref": "#/StairSymbolView"
+                        },
+                        "part": {
+                            "$ref": "#/StairSymbolPart"
+                        },
+                        "goingLineTypeId": {
+                            "$ref": "#/AttributeId"
+                        },
+                        "goingLinePen": {
+                            "type": "integer"
+                        },
+                        "goingNosingLineTypeId": {
+                            "$ref": "#/AttributeId"
+                        },
+                        "goingNosingLinePen": {
+                            "type": "integer"
+                        },
+                        "connectionLineTypeId": {
+                            "$ref": "#/AttributeId"
+                        },
+                        "connectionLinePen": {
+                            "type": "integer"
+                        },
+                        "connectionDetailLineTypeId": {
+                            "$ref": "#/AttributeId"
+                        },
+                        "connectionDetailLinePen": {
+                            "type": "integer"
+                        },
+                        "drainingFillId": {
+                            "$ref": "#/AttributeId"
+                        },
+                        "drainingFillPen": {
+                            "type": "integer"
+                        },
+                        "drainingFillBackgroundPen": {
+                            "type": "integer"
+                        },
+                        "contourLineTypeId": {
+                            "$ref": "#/AttributeId"
+                        },
+                        "contourLinePen": {
+                            "type": "integer"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["view", "part", "goingLinePen", "goingNosingLinePen", "connectionLinePen", "connectionDetailLinePen", "drainingFillPen", "drainingFillBackgroundPen", "contourLinePen"]
+                }
+            },
+            "structureVisibilityOnStories": {
+                "type": "array",
+                "description": "Which structure symbols are shown on which of the stair's relevant stories, one item per view (API_StairType::structureVisibilityOnStories).",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "view": {
+                            "$ref": "#/StairSymbolView"
+                        },
+                        "uniformSymbolRepresentationEnabled": {
+                            "type": "boolean"
+                        },
+                        "stories": {
+                            "type": "array",
+                            "description": "One item per story range relative to the stair's relevant stories (API_StairStructSymbRelevantStoriesID).",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "relevantStories": {
+                                        "type": "string",
+                                        "enum": ["AllStories", "BelowRelevant", "BottomRelevant", "MiddleRelevant", "TopRelevant", "AboveRelevant", "Unknown"]
+                                    },
+                                    "structures": {
+                                        "type": "array",
+                                        "description": "Whether the lines of each structure are shown, per visible or hidden part.",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "part": {
+                                                    "$ref": "#/StairSymbolPart"
+                                                },
+                                                "structure": {
+                                                    "type": "string",
+                                                    "enum": ["Beam", "Cantilevered", "Stringer", "Monolith", "Unknown"]
+                                                },
+                                                "visible": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "required": ["part", "structure", "visible"]
+                                        }
+                                    },
+                                    "fills": {
+                                        "type": "array",
+                                        "description": "Whether the fills of each structure type are shown, per visible or hidden part.",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "part": {
+                                                    "$ref": "#/StairSymbolPart"
+                                                },
+                                                "structureType": {
+                                                    "type": "string",
+                                                    "enum": ["UnderStructure", "Stringer", "Unknown"]
+                                                },
+                                                "visible": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "required": ["part", "structureType", "visible"]
+                                        }
+                                    },
+                                    "monolithParts": {
+                                        "type": "array",
+                                        "description": "Which parts of a monolithic structure are shown, per visible or hidden part.",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "part": {
+                                                    "$ref": "#/StairSymbolPart"
+                                                },
+                                                "connectionVisible": {
+                                                    "type": "boolean"
+                                                },
+                                                "drainingVisible": {
+                                                    "type": "boolean"
+                                                },
+                                                "landingLineVisible": {
+                                                    "type": "boolean"
+                                                },
+                                                "structureGoingVisible": {
+                                                    "type": "boolean"
+                                                },
+                                                "structureGoingNosingVisible": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "required": ["part", "connectionVisible", "drainingVisible", "landingLineVisible", "structureGoingVisible", "structureGoingNosingVisible"]
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": ["relevantStories", "structures", "fills", "monolithParts"]
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["view", "uniformSymbolRepresentationEnabled", "stories"]
+                }
             }
         },
         "additionalProperties": false,
@@ -11009,6 +11578,169 @@
             "finishVisible",
             "baseLinePoints"
         ]
+    },
+    "StairSymbolView": {
+        "type": "string",
+        "description": "The view a stair structure symbol setting belongs to (API_StairStructSymbViewID).",
+        "enum": ["FloorPlan", "CeilingPlan", "Unknown"]
+    },
+    "StairSymbolPart": {
+        "type": "string",
+        "description": "Whether a stair structure symbol setting is for the visible or the hidden part of the structure (API_StairStructSymbPartID).",
+        "enum": ["Visible", "Hidden", "Unknown"]
+    },
+    "StairLayout": {
+        "type": "object",
+        "description": "The floor plan or reflected ceiling plan display of a Stair's components (API_StairLayoutData).",
+        "properties": {
+            "visibility": {
+                "$ref": "#/StoryVisibility"
+            },
+            "isAutoOnStoryVisibility": {
+                "type": "boolean"
+            },
+            "storyVisibility": {
+                "type": "string",
+                "description": "The stories the stair is shown on.",
+                "enum": ["HomeStoryOnly", "HomeAndOneStoryUp", "HomeAndOneStoryDown", "HomeAndOneStoryUpAndDown", "OneStoryUp", "OneStoryDown", "AllStories", "AllRelevantStories", "AllRelevantAndOneStoryUp", "AllRelevantAndOneStoryDown", "Unknown"]
+            },
+            "gridTypeAbove": {
+                "$ref": "#/StairGridType",
+                "description": "The symbol shown on the stories above the stair's relevant stories."
+            },
+            "gridTypeTop": {
+                "$ref": "#/StairGridType",
+                "description": "The symbol shown on the top relevant story."
+            },
+            "gridTypeMiddle": {
+                "$ref": "#/StairGridType",
+                "description": "The symbol shown on the middle relevant stories."
+            },
+            "gridTypeBottom": {
+                "$ref": "#/StairGridType",
+                "description": "The symbol shown on the bottom relevant story."
+            },
+            "gridTypeBelow": {
+                "$ref": "#/StairGridType",
+                "description": "The symbol shown on the stories below the stair's relevant stories."
+            },
+            "showWalkingLine": {
+                "type": "boolean"
+            },
+            "showNumbering": {
+                "type": "boolean"
+            },
+            "showUpDownText": {
+                "type": "boolean"
+            },
+            "showDescription": {
+                "type": "boolean"
+            },
+            "showStructure": {
+                "type": "boolean"
+            },
+            "breakLineAngleType": {
+                "type": "string",
+                "enum": ["AngleToVertical", "AngleToHorizontal", "NumberOfGoings", "Unknown"]
+            },
+            "breakLineAngle": {
+                "type": "number",
+                "description": "The angle of the break line, used when breakLineAngleType is AngleToVertical or AngleToHorizontal."
+            },
+            "breakLineAngleNumberOfGoings": {
+                "type": "integer",
+                "description": "The number of goings the break line crosses, used when breakLineAngleType is NumberOfGoings."
+            },
+            "breakLineDistance": {
+                "type": "number",
+                "description": "The gap of the break line."
+            },
+            "breakLinePositionType": {
+                "type": "string",
+                "enum": ["FloorPlanCutPlaneHeight", "CustomHeight", "AtNthRiser", "Unknown"]
+            },
+            "upperBreakLineCustomPosition": {
+                "type": "number",
+                "description": "The height of the upper break line, used when breakLinePositionType is CustomHeight."
+            },
+            "lowerBreakLineCustomPosition": {
+                "type": "number",
+                "description": "The height of the lower break line, used when breakLinePositionType is CustomHeight."
+            },
+            "upperBreakLineNthRiserPosition": {
+                "type": "integer",
+                "description": "The riser of the upper break line, used when breakLinePositionType is AtNthRiser."
+            },
+            "lowerBreakLineNthRiserPosition": {
+                "type": "integer",
+                "description": "The riser of the lower break line, used when breakLinePositionType is AtNthRiser."
+            },
+            "overrideLineType": {
+                "type": "boolean",
+                "description": "Whether lineTypeId overrides the line types of the stair's components."
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The override line type; left out when not set."
+            },
+            "overridePen": {
+                "type": "boolean",
+                "description": "Whether pen overrides the line pens of the stair's components."
+            },
+            "pen": {
+                "type": "integer"
+            },
+            "overrideSymbolFill": {
+                "type": "boolean",
+                "description": "Whether symbolFillId and its pens override the symbol fills of the stair's components."
+            },
+            "symbolFillId": {
+                "$ref": "#/AttributeId",
+                "description": "The override symbol fill type; left out when not set."
+            },
+            "symbolFillPen": {
+                "type": "integer"
+            },
+            "symbolFillBackgroundPen": {
+                "type": "integer"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "visibility",
+            "isAutoOnStoryVisibility",
+            "storyVisibility",
+            "gridTypeAbove",
+            "gridTypeTop",
+            "gridTypeMiddle",
+            "gridTypeBottom",
+            "gridTypeBelow",
+            "showWalkingLine",
+            "showNumbering",
+            "showUpDownText",
+            "showDescription",
+            "showStructure",
+            "breakLineAngleType",
+            "breakLineAngle",
+            "breakLineAngleNumberOfGoings",
+            "breakLineDistance",
+            "breakLinePositionType",
+            "upperBreakLineCustomPosition",
+            "lowerBreakLineCustomPosition",
+            "upperBreakLineNthRiserPosition",
+            "lowerBreakLineNthRiserPosition",
+            "overrideLineType",
+            "overridePen",
+            "pen",
+            "overrideSymbolFill",
+            "symbolFillPen",
+            "symbolFillBackgroundPen"
+        ]
+    },
+    "StairGridType": {
+        "type": "string",
+        "description": "How a stair's symbol is drawn on a story (API_StairGridTypeID).",
+        "enum": ["NotRelevant", "WithSingleBreaklineFull", "NoBreaklineFull", "BelowBreakline", "AboveBreakline", "MiddleBreakline", "MiddleBreaklineFull", "NoBreakMarkHidden", "AboveBreakMarkHidden", "BelowBreakMarkHidden", "Multistory2DAllVisible", "Multistory2DHiddenVisible", "Multistory2DNoneVisibleHidden", "WithBreakMarkAllVisible", "WithBreakMarkHiddenVisible", "Unknown"]
     },
     "SectionDetails": {
         "type": "object",
@@ -13950,6 +14682,41 @@
             "orientation": {
                 "$ref": "#/HatchOrientation",
                 "description": "Orientation of the cover fill. On a Slab, Archicad applies only the type through the API: it resets the origin and the distortion matrix, so ModifySlabs reports a given origin or matrix that did not stick as a failure."
+            }
+        },
+        "additionalProperties": false
+    },
+    "ShellBaseFloorFill": {
+        "type": "object",
+        "description": "Floor plan cover fill settings of a Roof or Shell (API_ShellBaseType).",
+        "properties": {
+            "use": {
+                "type": "boolean",
+                "description": "Whether the cover fill is shown on the floor plan."
+            },
+            "foregroundPen": {
+                "type": "integer"
+            },
+            "backgroundPen": {
+                "type": "integer"
+            },
+            "fillId": {
+                "$ref": "#/AttributeId"
+            },
+            "use3DHatching": {
+                "type": "boolean",
+                "description": "Use the fill of the surface material (Vectorial 3D Hatch) as the cover fill."
+            },
+            "useFillLocBaseLine": {
+                "type": "boolean",
+                "description": "Align the cover fill with the pivot line instead of the fill handle."
+            },
+            "useSlantedFill": {
+                "type": "boolean",
+                "description": "Distort the cover fill to show the slope as seen from above."
+            },
+            "orientation": {
+                "$ref": "#/HatchOrientation"
             }
         },
         "additionalProperties": false

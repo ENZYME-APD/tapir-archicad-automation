@@ -1286,23 +1286,33 @@ GS::ObjectState ImportFavoritesCommand::Execute (const GS::ObjectState& paramete
             }
         }
 
-        const ACAPI::Result<void> importResult = [&] () -> ACAPI::Result<void> {
-            if (format == "legacyPRF") {
-                return manager.ImportFavoritesFromLegacyPRF (location, managerPolicy, targetOrKeep);
+        // The import changes the project's Favorites, so it runs in an undoable command like every
+        // other Favorites change: outside one, a Teamwork project drops it without an error (#1756).
+        GS::UniString importErrorText;
+        const GSErrCode importErr = ACAPI_CallUndoableCommand ("ImportFavorites", [&] () -> GSErrCode {
+            const ACAPI::Result<void> importResult = [&] () -> ACAPI::Result<void> {
+                if (format == "legacyPRF") {
+                    return manager.ImportFavoritesFromLegacyPRF (location, managerPolicy, targetOrKeep);
+                }
+                if (!hasFileNames) {
+                    return manager.ImportAllFavorites (location, managerPolicy, targetOrKeep);
+                }
+                std::vector<IO::Location> favoriteXMLs;
+                for (const GS::UniString& fileName : fileNames) {
+                    IO::Location fileLocation = location;
+                    fileLocation.AppendToLocal (IO::Name (fileName));
+                    favoriteXMLs.push_back (fileLocation);
+                }
+                return manager.ImportFavorites (favoriteXMLs, managerPolicy, targetOrKeep);
+            } ();
+            if (importResult.IsErr ()) {
+                importErrorText = GS::UniString (importResult.UnwrapErr ().text.c_str ());
+                return importResult.UnwrapErr ().kind;
             }
-            if (!hasFileNames) {
-                return manager.ImportAllFavorites (location, managerPolicy, targetOrKeep);
-            }
-            std::vector<IO::Location> favoriteXMLs;
-            for (const GS::UniString& fileName : fileNames) {
-                IO::Location fileLocation = location;
-                fileLocation.AppendToLocal (IO::Name (fileName));
-                favoriteXMLs.push_back (fileLocation);
-            }
-            return manager.ImportFavorites (favoriteXMLs, managerPolicy, targetOrKeep);
-        } ();
-        if (importResult.IsErr ()) {
-            return CreateErrorResponse (importResult.UnwrapErr ().kind, GS::UniString::Printf ("Failed to import favorites: %s", importResult.UnwrapErr ().text.c_str ()));
+            return NoError;
+        });
+        if (importErr != NoError) {
+            return CreateErrorResponse (importErr, GS::UniString::Printf ("Failed to import favorites: %T", importErrorText.ToPrintf ()));
         }
         return GS::ObjectState ();
 #else
@@ -1318,8 +1328,11 @@ GS::ObjectState ImportFavoritesCommand::Execute (const GS::ObjectState& paramete
     parameters.Get ("conflictPolicy", policyStr);
     const auto policy = ParseConflictPolicy (policyStr, API_FavoriteOverwrite);
     GS::UniString firstConflictName;
-    const GSErrCode err = ACAPI_Favorite_Import (
-        location, targetFolder, importFolders, policy, &firstConflictName);
+    // In an undoable command like every other Favorites change: outside one, a Teamwork project
+    // drops the import without an error (#1756).
+    const GSErrCode err = ACAPI_CallUndoableCommand ("ImportFavorites", [&] () -> GSErrCode {
+        return ACAPI_Favorite_Import (location, targetFolder, importFolders, policy, &firstConflictName);
+    });
 
     // On conflictPolicy=Error + name collision, ACAPI returns
     // APIERR_NAMEALREADYUSED AND fills firstConflictName. We must NOT
@@ -1331,6 +1344,9 @@ GS::ObjectState ImportFavoritesCommand::Execute (const GS::ObjectState& paramete
         GS::ObjectState response;
         response.Add ("firstConflictName", firstConflictName);
         return response;
+    }
+    if (err == APIERR_NOACCESSRIGHT) {
+        return CreateErrorResponse (err, "The Favorites are not editable. In a Teamwork project the Favorites lockable object set must be reserved first (see ReserveLockableObjectSet).");
     }
     if (err != NoError) {
         return CreateErrorResponse (err, "ACAPI_Favorite_Import failed.");
