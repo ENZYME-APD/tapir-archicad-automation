@@ -919,6 +919,154 @@ static GS::ObjectState GetPropertyValuesWithStatusOfAttribute (const API_Attr_He
     return propertyValuesForAttribute;
 }
 
+SetPropertyValuesOfElementDefaultsCommand::SetPropertyValuesOfElementDefaultsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetPropertyValuesOfElementDefaultsCommand::GetName () const
+{
+    return "SetPropertyValuesOfElementDefaults";
+}
+
+GS::Optional<GS::UniString> SetPropertyValuesOfElementDefaultsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementDefaultPropertyValues": {
+                "type": "array",
+                "description": "The property values to set on the tool defaults (the settings new elements get) of element types.",
+                "items": {
+                    "type": "object",
+                    "description": "A property value with the identifier of the property and the element type whose defaults own it.",
+                    "properties": {
+                        "elementType": {
+                            "$ref": "#/ElementType"
+                        },
+                        "propertyId": {
+                            "$ref": "#/PropertyId"
+                        },
+                        "propertyValue": {
+                            "$ref": "#/PropertyValue"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementType",
+                        "propertyId",
+                        "propertyValue"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementDefaultPropertyValues"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetPropertyValuesOfElementDefaultsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetPropertyValuesOfElementDefaultsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementDefaultPropertyValues;
+    parameters.Get ("elementDefaultPropertyValues", elementDefaultPropertyValues);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    PropertyConversionUtils conversionUtils;
+
+    ACAPI_CallUndoableCommand ("SetPropertyValuesOfElementDefaultsCommand", [&]() -> GSErrCode {
+        for (const GS::ObjectState& elementDefaultPropertyValue : elementDefaultPropertyValues) {
+            GS::UniString elementTypeStr;
+            if (!elementDefaultPropertyValue.Get ("elementType", elementTypeStr)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementType is missing"));
+                continue;
+            }
+
+            const API_ElemTypeID typeID = GetElementTypeFromNonLocalizedName (elementTypeStr);
+            if (typeID == API_ZombieElemID) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS,
+                    GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ())));
+                continue;
+            }
+
+            const GS::ObjectState* propertyId = elementDefaultPropertyValue.Get ("propertyId");
+            if (propertyId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "propertyId is missing"));
+                continue;
+            }
+
+            const GS::ObjectState* propertyValue = elementDefaultPropertyValue.Get ("propertyValue");
+            if (propertyValue == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "propertyValue is missing"));
+                continue;
+            }
+
+            GS::UniString propertyValueDisplayString;
+            if (!propertyValue->Get ("value", propertyValueDisplayString)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "value is missing from propertyValue"));
+                continue;
+            }
+
+            API_PropertyDefinition definition;
+            definition.guid = GetGuidFromObjectState (*propertyId);
+            GSErrCode err = ACAPI_Property_GetPropertyDefinition (definition);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Property not found or invalid"));
+                continue;
+            }
+
+            // The current value of the defaults carries the definition the string is
+            // converted against, as the elements' setter reads the element's value first.
+            GS::Array<API_PropertyDefinition> propertyDefinitions;
+            propertyDefinitions.Push (definition);
+            GS::Array<API_Property> propertyValues;
+            err = TAPIR_Element_GetPropertyValuesOfDefaultElem (typeID, propertyDefinitions, propertyValues);
+            if (err != NoError || propertyValues.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (err != NoError ? err : APIERR_BADPROPERTY, "Failed to get property value for the element defaults"));
+                continue;
+            }
+
+            API_Property& property = propertyValues[0];
+            err = ACAPI_Property_SetPropertyValueFromString (propertyValueDisplayString, conversionUtils, &property);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to set property value for the element defaults"));
+                continue;
+            }
+
+            err = TAPIR_Element_SetPropertyOfDefaultElem (typeID, property);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to set property value for the element defaults"));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
 GetPropertyValuesOfAttributesCommand::GetPropertyValuesOfAttributesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -3348,7 +3496,6 @@ GS::Optional<GS::UniString> ModifyPropertyValueOfElementsCommand::GetRawResponse
 
 GS::ObjectState ModifyPropertyValueOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-#ifdef ServerMainVers_2700
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
 
@@ -3395,16 +3542,115 @@ GS::ObjectState ModifyPropertyValueOfElementsCommand::Execute (const GS::ObjectS
     }
 
     err = ACAPI_CallUndoableCommand ("ModifyPropertyValueOfElementsCommand", [&]() -> GSErrCode {
+#ifdef ServerMainVers_2700
         return ACAPI_Property_ModifyPropertyValue (property, elemGuids);
+#else
+        return ACAPI_ElementList_ModifyPropertyValue (property, elemGuids);
+#endif
     });
 
     return err == NoError
         ? CreateSuccessfulExecutionResult ()
         : CreateFailedExecutionResult (err, "Failed to set the property value, no element was changed. The property may not be available for every given element.");
-#else
-    UNUSED_PARAMETER (parameters);
-    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
-#endif
+}
+
+GetPropertyExpressionReferencesCommand::GetPropertyExpressionReferencesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetPropertyExpressionReferencesCommand::GetName () const
+{
+    return "GetPropertyExpressionReferences";
+}
+
+GS::Optional<GS::UniString> GetPropertyExpressionReferencesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "propertyIds": {
+                "$ref": "#/PropertyIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetPropertyExpressionReferencesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "references": {
+                "type": "array",
+                "description": "One item for each property, in the order of the input: its expression reference, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "reference": {
+                                    "type": "string",
+                                    "description": "The string that refers to the property in a property expression."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "reference"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "references"
+        ]
+    })";
+}
+
+GS::ObjectState GetPropertyExpressionReferencesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> propertyIds;
+    parameters.Get ("propertyIds", propertyIds);
+
+    GS::ObjectState response;
+    const auto& references = response.AddList<GS::ObjectState> ("references");
+
+    for (const GS::ObjectState& p : propertyIds) {
+        const GS::ObjectState* propertyId = p.Get ("propertyId");
+        if (propertyId == nullptr) {
+            references (CreateErrorResponse (APIERR_BADPARS, "propertyId is missing"));
+            continue;
+        }
+
+        API_PropertyDefinition definition;
+        definition.guid = GetGuidFromObjectState (*propertyId);
+        GSErrCode err = ACAPI_Property_GetPropertyDefinition (definition);
+        if (err != NoError) {
+            references (CreateErrorResponse (err, "property not found"));
+            continue;
+        }
+
+        GS::UniString reference;
+        err = ACAPI_Property_GetPropertyExprReferenceString (&definition, &reference);
+        if (err != NoError) {
+            references (CreateErrorResponse (err, "failed to get the expression reference of the property"));
+            continue;
+        }
+
+        references (GS::ObjectState ("reference", reference));
+    }
+
+    return response;
 }
 
 GetPropertyEditabilityCommand::GetPropertyEditabilityCommand () :
@@ -3814,7 +4060,7 @@ GS::ObjectState GetPropertyAvailabilityOfDefaultsCommand::Execute (const GS::Obj
 #endif
 }
 
-#if defined (ServerMainVers_2700) && !defined (ServerMainVers_2800)
+#ifndef ServerMainVers_2800
 static bool GetPropertyAvailabilityParameters (const GS::ObjectState& parameters, GS::Array<API_Guid>& elemGuids, API_PropertyDefinition& definition, GS::ObjectState& failedResult)
 {
     GS::Array<GS::ObjectState> elements;
@@ -3889,7 +4135,7 @@ GS::Optional<GS::UniString> MakePropertyAvailableForElementsCommand::GetRawRespo
 
 GS::ObjectState MakePropertyAvailableForElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-#if defined (ServerMainVers_2700) && !defined (ServerMainVers_2800)
+#ifndef ServerMainVers_2800
     GS::Array<API_Guid> elemGuids;
     API_PropertyDefinition definition;
     GS::ObjectState failedResult;
@@ -3898,7 +4144,11 @@ GS::ObjectState MakePropertyAvailableForElementsCommand::Execute (const GS::Obje
     }
 
     GSErrCode err = ACAPI_CallUndoableCommand ("MakePropertyAvailableForElements", [&]() -> GSErrCode {
+#ifdef ServerMainVers_2700
         return ACAPI_Property_AddProperty (definition, elemGuids);
+#else
+        return ACAPI_ElementList_AddProperty (definition, elemGuids);
+#endif
     });
 
     return err == NoError
@@ -3906,7 +4156,7 @@ GS::ObjectState MakePropertyAvailableForElementsCommand::Execute (const GS::Obje
         : CreateFailedExecutionResult (err, "Failed to make the property available for the given elements.");
 #else
     UNUSED_PARAMETER (parameters);
-    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command is available only in Archicad 27.");
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command is available only in Archicad 25, 26 and 27. The Archicad API of later versions has no function to change the availability of a property for elements directly.");
 #endif
 }
 
@@ -3950,7 +4200,7 @@ GS::Optional<GS::UniString> MakePropertyUnavailableForElementsCommand::GetRawRes
 
 GS::ObjectState MakePropertyUnavailableForElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-#if defined (ServerMainVers_2700) && !defined (ServerMainVers_2800)
+#ifndef ServerMainVers_2800
     GS::Array<API_Guid> elemGuids;
     API_PropertyDefinition definition;
     GS::ObjectState failedResult;
@@ -3959,7 +4209,11 @@ GS::ObjectState MakePropertyUnavailableForElementsCommand::Execute (const GS::Ob
     }
 
     GSErrCode err = ACAPI_CallUndoableCommand ("MakePropertyUnavailableForElements", [&]() -> GSErrCode {
+#ifdef ServerMainVers_2700
         return ACAPI_Property_DeleteProperty (definition.guid, elemGuids);
+#else
+        return ACAPI_ElementList_DeleteProperty (definition.guid, elemGuids);
+#endif
     });
 
     return err == NoError
@@ -3967,6 +4221,6 @@ GS::ObjectState MakePropertyUnavailableForElementsCommand::Execute (const GS::Ob
         : CreateFailedExecutionResult (err, "Failed to make the property unavailable for the given elements.");
 #else
     UNUSED_PARAMETER (parameters);
-    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command is available only in Archicad 27.");
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command is available only in Archicad 25, 26 and 27. The Archicad API of later versions has no function to change the availability of a property for elements directly.");
 #endif
 }
