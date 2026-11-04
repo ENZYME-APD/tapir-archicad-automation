@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-04 18:58 UTC",
+ "generatedAt": "2026-11-04 22:11 UTC",
  "versions": [
   25,
   26,
@@ -4052,6 +4052,10 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1903,
+     "title": "[6/6] Share the create steps of CreateKeynoteFolders and CreateKeynoteItems"
+    },
+    {
      "number": 1896,
      "title": "[3/6] Share one helper for MoveElements, ElevateElements, RotateElements and MirrorElements"
     },
@@ -5882,6 +5886,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1904,
+     "title": "ModifyRoofs: change single-plane roofs (#1782)"
+    },
+    {
      "number": 1879,
      "title": "Get3DBoundingBoxes: include the subelements of a Railing"
     },
@@ -6156,7 +6164,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1901,
+     "title": "Drawing primitives: name the element a Ctrl_ElementRef item refers to"
+    }
+   ],
    "issues": []
   },
   {
@@ -6179,7 +6192,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1901,
+     "title": "Drawing primitives: name the element a Ctrl_ElementRef item refers to"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -6890,6 +6908,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1904,
+     "title": "ModifyRoofs: change single-plane roofs (#1782)"
+    },
+    {
      "number": 1884,
      "title": "ModifyZones: keep topOffset when setting relativeTopStory in the same call"
     },
@@ -7080,7 +7102,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1904,
+     "title": "ModifyRoofs: change single-plane roofs (#1782)"
+    }
+   ],
    "issues": []
   },
   {
@@ -8128,6 +8155,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1904,
+     "title": "ModifyRoofs: change single-plane roofs (#1782)"
+    },
     {
      "number": 1879,
      "title": "Get3DBoundingBoxes: include the subelements of a Railing"
@@ -26327,6 +26358,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1904,
+     "title": "ModifyRoofs: change single-plane roofs (#1782)"
+    },
+    {
      "number": 1893,
      "title": "[2/6] Share one helper among the delete-by-id commands"
     },
@@ -28621,7 +28656,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1903,
+     "title": "[6/6] Share the create steps of CreateKeynoteFolders and CreateKeynoteItems"
+    }
+   ],
    "issues": []
   },
   {
@@ -28639,7 +28679,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1903,
+     "title": "[6/6] Share the create steps of CreateKeynoteFolders and CreateKeynoteItems"
+    }
+   ],
    "issues": []
   },
   {
@@ -28657,7 +28702,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1903,
+     "title": "[6/6] Share the create steps of CreateKeynoteFolders and CreateKeynoteItems"
+    }
+   ],
    "issues": []
   },
   {
@@ -28711,7 +28761,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1903,
+     "title": "[6/6] Share the create steps of CreateKeynoteFolders and CreateKeynoteItems"
+    }
+   ],
    "issues": []
   },
   {
@@ -28927,7 +28982,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1903,
+     "title": "[6/6] Share the create steps of CreateKeynoteFolders and CreateKeynoteItems"
+    }
+   ],
    "issues": []
   },
   {
@@ -29107,7 +29167,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1903,
+     "title": "[6/6] Share the create steps of CreateKeynoteFolders and CreateKeynoteItems"
+    }
+   ],
    "issues": []
   },
   {
@@ -31990,7 +32055,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -32052,7 +32122,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -32252,6 +32327,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1904,
+     "title": "ModifyRoofs: change single-plane roofs (#1782)"
+    },
+    {
      "number": 1883,
      "title": "Get3DModelCounts: count polygons, edges, vertices and vectors over the bodies"
     },
@@ -32383,7 +32462,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -32425,7 +32509,12 @@
    "olderNames": [],
    "status": "skipped",
    "reason": "does not compile against the Archicad 27 DevKit: Bend::Modifier does not derive from ACAPI::ModifierBase, which ExecuteUndoableScope requires (Archicad 27 only)",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -32481,7 +32570,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -32682,7 +32776,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -32756,7 +32855,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -32815,7 +32919,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -32851,7 +32960,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -33139,7 +33253,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -34082,7 +34201,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -34962,7 +35086,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -34998,7 +35127,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -35604,7 +35738,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -35640,7 +35779,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -36210,7 +36354,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -36246,7 +36395,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -36534,7 +36688,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -36568,7 +36727,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -37049,7 +37213,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -37071,6 +37240,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    },
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
@@ -37424,6 +37597,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    },
+    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
@@ -37477,7 +37654,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -37925,7 +38107,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -37941,7 +38128,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -38122,7 +38314,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -38218,7 +38415,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -38559,7 +38761,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -38676,7 +38883,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -38910,7 +39122,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -38930,6 +39147,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1904,
+     "title": "ModifyRoofs: change single-plane roofs (#1782)"
+    },
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    },
     {
      "number": 1900,
      "title": "[4/6] Share one helper among the grouping commands that list ids per item"
@@ -39147,7 +39372,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -39163,7 +39393,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -39179,7 +39414,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -39389,7 +39629,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -39405,7 +39650,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -39421,7 +39671,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -39736,7 +39991,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -39791,7 +40051,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -39834,7 +40099,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -39927,7 +40197,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -39989,7 +40264,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -40082,7 +40362,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -40314,7 +40599,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -41346,7 +41636,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -41491,7 +41786,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -41547,7 +41847,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -41688,7 +41993,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -41724,7 +42034,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -42604,7 +42919,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -42640,7 +42960,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -43210,7 +43535,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -43246,7 +43576,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -43852,7 +44187,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -43886,7 +44226,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -44367,7 +44712,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -44386,7 +44736,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -44581,7 +44936,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -44739,7 +45099,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -44759,6 +45124,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    },
     {
      "number": 1842,
      "title": "SetElementNotificationClient: optional element types to observe, touch only changed observers"
@@ -45248,7 +45617,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -45442,7 +45816,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -45867,6 +46246,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1904,
+     "title": "ModifyRoofs: change single-plane roofs (#1782)"
+    },
+    {
      "number": 1883,
      "title": "Get3DModelCounts: count polygons, edges, vertices and vectors over the bodies"
     },
@@ -46001,7 +46384,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -46037,7 +46425,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -46292,6 +46685,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    },
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
@@ -46842,6 +47239,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    },
+    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
@@ -47210,6 +47611,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    },
+    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
@@ -47288,6 +47693,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    },
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
@@ -47708,6 +48117,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    },
+    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
@@ -47959,6 +48372,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    },
+    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
@@ -48018,6 +48435,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    },
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
@@ -48654,6 +49075,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    },
+    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
@@ -49203,6 +49628,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    },
+    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
@@ -49310,7 +49739,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -49379,6 +49813,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1904,
+     "title": "ModifyRoofs: change single-plane roofs (#1782)"
+    },
     {
      "number": 1883,
      "title": "Get3DModelCounts: count polygons, edges, vertices and vectors over the bodies"
@@ -49511,7 +49949,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -49529,7 +49972,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -49624,7 +50072,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -49715,7 +50168,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -49777,7 +50235,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -49871,6 +50334,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    },
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
@@ -50119,6 +50586,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    },
+    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
@@ -50292,6 +50763,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    },
+    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
@@ -50350,7 +50825,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -50475,7 +50955,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
@@ -50633,7 +51118,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1902,
+     "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
+    }
+   ],
    "issues": []
   },
   {
