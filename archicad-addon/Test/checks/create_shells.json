@@ -116,6 +116,16 @@
               "arcs": [ { "begIndex": 0, "endIndex": 5, "arcAngle": 1.0 } ]
             },
             "extrusionVector": { "x": 0.0, "y": 4.0, "z": 0.0 }
+          },
+          {
+            "shellClass": "Extruded",
+            "profile": {
+              "coordinates": [ { "x": 0.0, "y": 0.0 }, { "x": 4.0, "y": 0.0 } ]
+            },
+            "extrusionVector": { "x": 0.0, "y": 4.0, "z": 0.0 },
+            "holes": [ {
+              "coordinates": [ { "x": 1.0, "y": 1.0 }, { "x": 2.0, "y": 1.0 }, { "x": 2.0, "y": 2.0 }, { "x": 1.0, "y": 2.0 } ]
+            } ]
           }
         ]
       },
@@ -123,7 +133,8 @@
         { "path": "elements[0].error.code", "exists": true, "name": "extruded without extrusionVector" },
         { "path": "elements[1].error.code", "exists": true, "name": "ruled without secondProfile" },
         { "path": "elements[2].error.code", "exists": true, "name": "basePlane with one axis" },
-        { "path": "elements[3].error.code", "exists": true, "name": "arc index outside the profile" }
+        { "path": "elements[3].error.code", "exists": true, "name": "arc index outside the profile" },
+        { "path": "elements[4].error.code", "exists": true, "name": "hole without depth" }
       ]
     },
     {

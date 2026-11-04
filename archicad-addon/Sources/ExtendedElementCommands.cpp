@@ -4878,11 +4878,13 @@ GS::Optional<GS::UniString> ApplyShellCutPolygons (API_Element& element, API_Ele
     }
     for (UIndex i = 0; i < holes.GetSize (); ++i) {
         API_ShellContourData& hole = memo.shellContours[index++];
+        if (!holes[i].Get ("depth", hole.height)) {
+            return GS::UniString ("A shell hole needs 'depth'.");
+        }
         auto error = FillShellContour (holes[i], GetIdentityTranmat (), hole);
         if (error.HasValue ()) {
             return error;
         }
-        holes[i].Get ("depth", hole.height);
         hole.id = i + 1;
     }
     return {};
@@ -5066,7 +5068,7 @@ GS::Optional<GS::UniString> CreateShellsCommand::GetInputParametersSchema () con
                     },
                     "holes": {
                         "type": "array",
-                        "description": "Optional holes, each cut by its polygon extruded 'depth' along the Z axis of its plane.",
+                        "description": "Optional holes, each requiring 'depth' to extrude its cutting polygon along the Z axis of its plane.",
                         "items": { "$ref": "#/ShellCutPolygon" }
                     },
                     "begShapeEdgeTrim": {

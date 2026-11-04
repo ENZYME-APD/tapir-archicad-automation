@@ -3137,7 +3137,7 @@
             },
             "depth": {
                 "type": "number",
-                "description": "Holes only: how far the cutting body is extruded from the polygon's plane, along its Z axis (negative values cut downwards)."
+                "description": "Required for holes, ignored for the clipping contour: how far the cutting body is extruded from the polygon's plane, along its Z axis (negative values cut downwards)."
             }
         },
         "additionalProperties": false,
