@@ -11,14 +11,14 @@ def check (label, ok):
     print ('{}: {}'.format (label, 'OK' if ok else 'FAILED'))
     failed += 0 if ok else 1
 
-allKeys = aclib.RunTapirCommand ('GetAllAutoTextKeys', {}, debug = False)['autoTexts']
+allKeys = aclib.RunTapirCommand ('GetAllAutoTextKeys', {})['autoTexts']
 check ('autotext keys found', len (allKeys) > 0)
 
-projectInfoFields = aclib.RunTapirCommand ('GetProjectInfoFields', {}, debug = False)['fields']
+projectInfoFields = aclib.RunTapirCommand ('GetProjectInfoFields', {})['fields']
 projectNameField = next (f for f in projectInfoFields if f['projectInfoId'] == 'PROJECTNAME')
 
 # Without an element context.
-values = aclib.RunTapirCommand ('InterpretAutoTexts', {'autoTexts': ['<PROJECTNAME>', 'PROJECTNAME']}, debug = False)['values']
+values = aclib.RunTapirCommand ('InterpretAutoTexts', {'autoTexts': ['<PROJECTNAME>', 'PROJECTNAME']})['values']
 check ('one result per autotext', len (values) == 2)
 check ('<PROJECTNAME> resolves to the project name', values[0].get ('value') == projectNameField['projectInfoValue'])
 check ('the bare key PROJECTNAME resolves to the project name', values[1].get ('value') == projectNameField['projectInfoValue'])
@@ -32,14 +32,14 @@ elements = aclib.RunTapirCommand ('CreateTexts', {
             'height': 2.5
         }
     ]
-}, debug = False)['elements']
+})['elements']
 try:
     values = aclib.RunTapirCommand ('InterpretAutoTexts', {
         'autoTexts': ['<PROJECTNAME>'],
         'elementId': elements[0]['elementId']
-    }, debug = False)['values']
+    })['values']
     check ('<PROJECTNAME> resolves in an element context', values[0].get ('value') == projectNameField['projectInfoValue'])
 finally:
-    aclib.RunTapirCommand ('DeleteElements', {'elements': elements}, debug = False)
+    aclib.RunTapirCommand ('DeleteElements', {'elements': elements})
 
 print ('interpret_autotexts: {} check(s) failed'.format (failed))
