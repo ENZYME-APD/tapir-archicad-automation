@@ -4910,7 +4910,7 @@
             },
             "preview": {
                 "type": "boolean",
-                "description": "Whether this is the preview translator, the one the IFC properties of elements are previewed with."
+                "description": "Whether this is the first item of Archicad's translator list, which the Archicad API documents as the preview translator (the one the IFC properties of elements are previewed with). No API identifies the preview translator otherwise, and in some projects the IFC Translators dialog shows another translator as the preview one."
             }
         },
         "additionalProperties": false,
