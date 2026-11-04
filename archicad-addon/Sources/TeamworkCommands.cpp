@@ -113,15 +113,17 @@ GS::ObjectState GetTeamworkProjectInfoCommand::Execute (const GS::ObjectState& /
         return CreateErrorResponse (err, "Failed to retrieve project information. Check the opened project!");
     }
 
+    // ACAPI_Teamwork_HasConnection tells that the project is a Teamwork project, which is
+    // what the DevKit recommends for this check (the teamwork flag of the project info says
+    // the same); ACAPI_Teamwork_IsOnline tells whether this client works online with the server.
+    const bool isTeamwork = projectInfo.teamwork || ACAPI_Teamwork_HasConnection ();
     GS::ObjectState response;
-    response.Add ("isTeamwork", projectInfo.teamwork);
-    if (!projectInfo.teamwork) {
+    response.Add ("isTeamwork", isTeamwork);
+    if (!isTeamwork) {
         response.Add ("isOnline", false);
         return response;
     }
 
-    // ACAPI_Teamwork_HasConnection only tells that the project is a Teamwork project;
-    // ACAPI_Teamwork_IsOnline tells whether this client works online with the server.
     response.Add ("isOnline", ACAPI_Teamwork_IsOnline ());
     response.Add ("userId", projectInfo.userId);
 

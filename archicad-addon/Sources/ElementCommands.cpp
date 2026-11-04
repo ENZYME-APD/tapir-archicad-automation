@@ -46,68 +46,7 @@ static void AddPivotPolygonFromMemo (const API_Guid& guid, GS::ObjectState& os)
 static GS::UniString StructureTypeToString (API_ModelElemStructureType structureType);
 static void AddShellBaseSurfaces (const API_ShellBaseType& base, GS::ObjectState& os);
 
-static const char* ShellBaseCutBodyTypeToString (API_ShellBaseCutBodyTypeID cutBodyType)
-{
-    switch (cutBodyType) {
-        case APIShellBaseCutBody_ContoursDown:          return "ContoursDown";
-        case APIShellBaseCutBody_PivotLinesDown:        return "PivotLinesDown";
-        case APIShellBaseCutBody_UpwardsExtrusion:      return "UpwardsExtrusion";
-        case APIShellBaseCutBody_DownwardsExtrusion:    return "DownwardsExtrusion";
-        case APIShellBaseCutBody_Editable:
-        default:                                        return "Editable";
-    }
-}
-
-// The floor plan and section settings of a Roof or Shell, kept in its API_ShellBaseType,
-// under the Wall's key names where the meaning is the same (#1785).
-static void AddShellBaseFloorPlanDetails (const API_ShellBaseType& base, GS::ObjectState& os)
-{
-    os.Add ("displayOption", ElemDisplayOptionToString (base.displayOption));
-    os.Add ("viewDepthLimitation", ViewDepthLimitationToString (base.viewDepthLimitation));
-    os.Add ("isAutoOnStoryVisibility", base.isAutoOnStoryVisibility);
-    os.Add ("visibility", CreateStoryVisibilityObjectState (base.visibilityCont));
-    os.Add ("fillVisibility", CreateStoryVisibilityObjectState (base.visibilityFill));
-    os.Add ("cutBodyType", ShellBaseCutBodyTypeToString (base.cutBodyType));
-#ifdef ServerMainVers_2700
-    os.Add ("cutFillPen", CreateOverriddenPenObjectState (base.cutFillPen));
-    os.Add ("cutFillBackgroundPen", CreateOverriddenPenObjectState (base.cutFillBackgroundPen));
-#else
-    {
-        GS::ObjectState cutFillPen ("overridden", base.penOverride.overrideCutFillPen);
-        if (base.penOverride.overrideCutFillPen) {
-            cutFillPen.Add ("penIndex", (Int32) base.penOverride.cutFillPen);
-        }
-        os.Add ("cutFillPen", cutFillPen);
-        GS::ObjectState cutFillBackgroundPen ("overridden", base.penOverride.overrideCutFillBackgroundPen);
-        if (base.penOverride.overrideCutFillBackgroundPen) {
-            cutFillBackgroundPen.Add ("penIndex", (Int32) base.penOverride.cutFillBackgroundPen);
-        }
-        os.Add ("cutFillBackgroundPen", cutFillBackgroundPen);
-    }
-#endif
-    os.Add ("sectionContourPen", (Int32) base.sectContPen);
-    if (base.sectContLtype != APIInvalidAttributeIndex) {
-        os.Add ("sectionContourLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, base.sectContLtype)));
-    }
-    os.Add ("contourPen", (Int32) base.pen);
-    if (base.ltypeInd != APIInvalidAttributeIndex) {
-        os.Add ("contourLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, base.ltypeInd)));
-    }
-    os.Add ("aboveViewLinePen", (Int32) base.aboveViewLinePen);
-    if (base.aboveViewLineType != APIInvalidAttributeIndex) {
-        os.Add ("aboveViewLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, base.aboveViewLineType)));
-    }
-    GS::ObjectState floorFillOs;
-    floorFillOs.Add ("use", base.useFloorFill);
-    floorFillOs.Add ("foregroundPen", (Int32) base.floorFillPen);
-    floorFillOs.Add ("backgroundPen", (Int32) base.floorFillBGPen);
-    floorFillOs.Add ("fillId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_FilltypeID, base.floorFillInd)));
-    floorFillOs.Add ("use3DHatching", base.use3DHatching);
-    floorFillOs.Add ("useFillLocBaseLine", base.useFillLocBaseLine);
-    floorFillOs.Add ("useSlantedFill", base.useSlantedFill);
-    floorFillOs.Add ("orientation", CreateHatchOrientationObjectState (base.hatchOrientation));
-    os.Add ("floorFill", floorFillOs);
-}
+static void AddShellBaseFloorPlanAndSection (const API_ShellBaseType& base, GS::ObjectState& os);
 
 // The RoofDetails of a roof. The polygon is read from partMemo when given (a plane
 // of a decomposed multi-plane roof, which has no memo of its own), else from the
@@ -126,7 +65,7 @@ static void AddRoofDetails (const API_RoofType& roof, const API_Guid& guid, shor
         os.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, base.buildingMaterial)));
     }
     AddShellBaseSurfaces (base, os);
-    AddShellBaseFloorPlanDetails (base, os);
+    AddShellBaseFloorPlanAndSection (base, os);
     if (roof.roofClass == API_PlaneRoofID) {
         os.Add ("angle", roof.u.planeRoof.angle);
         GS::ObjectState pivotLine;
@@ -192,6 +131,71 @@ static void AddShellBaseSurfaces (const API_ShellBaseType& base, GS::ObjectState
     os.Add ("sideMaterial", CreateOverriddenMaterialObjectState (base.sidMat));
     os.Add ("bottomMaterial", CreateOverriddenMaterialObjectState (base.botMat));
     os.Add ("materialsChained", base.materialsChained);
+}
+
+static GS::UniString ShellBaseCutBodyTypeToString (API_ShellBaseCutBodyTypeID cutBodyType)
+{
+    switch (cutBodyType) {
+        case APIShellBaseCutBody_Editable:            return "Editable";
+        case APIShellBaseCutBody_ContoursDown:        return "ContoursDown";
+        case APIShellBaseCutBody_PivotLinesDown:      return "PivotLinesDown";
+        case APIShellBaseCutBody_UpwardsExtrusion:    return "UpwardsExtrusion";
+        case APIShellBaseCutBody_DownwardsExtrusion:  return "DownwardsExtrusion";
+        default:                                      return "Editable";
+    }
+}
+
+// The floor plan and section settings of a Roof or Shell, kept in its API_ShellBaseType
+// (#1787), with the Wall's key names. Before Archicad 27 the cut fill pens are an
+// API_PenOverrideType instead of two API_OverriddenPen, read into the same shape.
+static void AddShellBaseFloorPlanAndSection (const API_ShellBaseType& base, GS::ObjectState& os)
+{
+    os.Add ("displayOption", ElemDisplayOptionToString (base.displayOption));
+    os.Add ("viewDepthLimitation", ViewDepthLimitationToString (base.viewDepthLimitation));
+    os.Add ("isAutoOnStoryVisibility", base.isAutoOnStoryVisibility);
+    os.Add ("visibility", CreateStoryVisibilityObjectState (base.visibilityCont));
+    os.Add ("fillVisibility", CreateStoryVisibilityObjectState (base.visibilityFill));
+    os.Add ("cutBodyType", ShellBaseCutBodyTypeToString (base.cutBodyType));
+#ifdef ServerMainVers_2700
+    os.Add ("cutFillPen", CreateOverriddenPenObjectState (base.cutFillPen));
+    os.Add ("cutFillBackgroundPen", CreateOverriddenPenObjectState (base.cutFillBackgroundPen));
+#else
+    GS::ObjectState cutFillPenOs ("overridden", base.penOverride.overrideCutFillPen);
+    if (base.penOverride.overrideCutFillPen) {
+        cutFillPenOs.Add ("penIndex", (Int32) base.penOverride.cutFillPen);
+    }
+    os.Add ("cutFillPen", cutFillPenOs);
+    GS::ObjectState cutFillBackgroundPenOs ("overridden", base.penOverride.overrideCutFillBackgroundPen);
+    if (base.penOverride.overrideCutFillBackgroundPen) {
+        cutFillBackgroundPenOs.Add ("penIndex", (Int32) base.penOverride.cutFillBackgroundPen);
+    }
+    os.Add ("cutFillBackgroundPen", cutFillBackgroundPenOs);
+#endif
+    os.Add ("sectionContourPen", (Int32) base.sectContPen);
+    if (base.sectContLtype != APIInvalidAttributeIndex) {
+        os.Add ("sectionContourLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, base.sectContLtype)));
+    }
+    os.Add ("contourPen", (Int32) base.pen);
+    if (base.ltypeInd != APIInvalidAttributeIndex) {
+        os.Add ("contourLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, base.ltypeInd)));
+    }
+    os.Add ("aboveViewLinePen", (Int32) base.aboveViewLinePen);
+    if (base.aboveViewLineType != APIInvalidAttributeIndex) {
+        os.Add ("aboveViewLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, base.aboveViewLineType)));
+    }
+
+    GS::ObjectState floorFillOs;
+    floorFillOs.Add ("use", base.useFloorFill);
+    floorFillOs.Add ("foregroundPen", (Int32) base.floorFillPen);
+    floorFillOs.Add ("backgroundPen", (Int32) base.floorFillBGPen);
+    if (base.floorFillInd != APIInvalidAttributeIndex) {
+        floorFillOs.Add ("fillId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_FilltypeID, base.floorFillInd)));
+    }
+    floorFillOs.Add ("use3DHatching", base.use3DHatching);
+    floorFillOs.Add ("useFillLocBaseLine", base.useFillLocBaseLine);
+    floorFillOs.Add ("useSlantedFill", base.useSlantedFill);
+    floorFillOs.Add ("orientation", CreateHatchOrientationObjectState (base.hatchOrientation));
+    os.Add ("floorFill", floorFillOs);
 }
 
 // The custom side surfaces of a Roof's polygon edges (APIMemoMask_SideMaterials), one per
@@ -277,6 +281,16 @@ static const char* StairSegmentTypeToString (API_StairSegmentTypeID type)
     }
 }
 
+static const char* ElemProjectionModeToString (API_ElemProjectionModesID projectionMode)
+{
+    switch (projectionMode) {
+        case API_Projected: return "Projected";
+        case API_Hybrid:    return "Hybrid";
+        case API_Symbolic:
+        default:            return "Symbolic";
+    }
+}
+
 static const char* StairTurnTypeToString (API_StairTurnTypeID type)
 {
     switch (type) {
@@ -285,6 +299,282 @@ static const char* StairTurnTypeToString (API_StairTurnTypeID type)
         case APIST_WinderTurn:         return "Winder";
         case APIST_DividedLandingTurn: return "DividedLanding";
         default:                       return "Unknown";
+    }
+}
+
+// The floor plan and section settings of a Stair (#1788): the members of API_StairType that the
+// Floor Plan and Section panel of Stair Settings shows, read the way the Wall case reads its own:
+// attributes as { guid } ids (left out when unset), pens as integers, enums by name. The arrays of
+// the DevKit are reported as arrays of objects that name their indices after the DevKit's index
+// enums (API_StairStructSymbTypeID, API_StairStructSymbViewID, API_StairStructSymbPartID, ...).
+// These members are the same, with the same names and types, in every supported DevKit.
+
+static const char* StairDisplayTypeToString (API_StairDisplayTypeID type)
+{
+    switch (type) {
+        case APIStairDisplay_Custom:             return "Custom";
+        case APIStairDisplay_ByModelViewOptions: return "ByModelViewOptions";
+        default:                                 return "Unknown";
+    }
+}
+
+static const char* StairGridTypeToString (API_StairGridTypeID type)
+{
+    switch (type) {
+        case APIStairGrid_NotRelevant:                  return "NotRelevant";
+        case APIStairGrid_WithSingleBreaklineFull:      return "WithSingleBreaklineFull";
+        case APIStairGrid_NoBreaklineFull:              return "NoBreaklineFull";
+        case APIStairGrid_BelowBreakline:               return "BelowBreakline";
+        case APIStairGrid_AboveBreakline:               return "AboveBreakline";
+        case APIStairGrid_MiddleBreakline:              return "MiddleBreakline";
+        case APIStairGrid_MiddleBreaklineFull:          return "MiddleBreaklineFull";
+        case APIStairGrid_NoBreakMarkHidden:            return "NoBreakMarkHidden";
+        case APIStairGrid_AboveBreakMarkHidden:         return "AboveBreakMarkHidden";
+        case APIStairGrid_BelowBreakMarkHidden:         return "BelowBreakMarkHidden";
+        case APIStairGrid_Multistory2DAllVisible:       return "Multistory2DAllVisible";
+        case APIStairGrid_Multistory2DHiddenVisible:    return "Multistory2DHiddenVisible";
+        case APIStairGrid_Multistory2DNoneVisibleHidden: return "Multistory2DNoneVisibleHidden";
+        case APIStairGrid_WithBreakMarkAllVisible:      return "WithBreakMarkAllVisible";
+        case APIStairGrid_WithBreakMarkHiddenVisible:   return "WithBreakMarkHiddenVisible";
+        default:                                        return "Unknown";
+    }
+}
+
+static const char* StairStoryVisibilityToString (API_StairStoryVisibilityID visibility)
+{
+    switch (visibility) {
+        case APISSV_HomeStoryOnly:               return "HomeStoryOnly";
+        case APISSV_HomeAndOneStoryUp:           return "HomeAndOneStoryUp";
+        case APISSV_HomeAndOneStoryDown:         return "HomeAndOneStoryDown";
+        case APISSV_HomeAndOneStoryUpAndDown:    return "HomeAndOneStoryUpAndDown";
+        case APISSV_OneStoryUp:                  return "OneStoryUp";
+        case APISSV_OneStoryDown:                return "OneStoryDown";
+        case APISSV_AllStories:                  return "AllStories";
+        case APISSV_AllRelevantStories:          return "AllRelevantStories";
+        case APISSV_AllRelevantAndOneStoryUp:    return "AllRelevantAndOneStoryUp";
+        case APISSV_AllRelevantAndOneStoryDown:  return "AllRelevantAndOneStoryDown";
+        default:                                 return "Unknown";
+    }
+}
+
+static const char* BreakLineAngleTypeToString (API_BreakLineAngleTypeID type)
+{
+    switch (type) {
+        case APIBreakLineAngle_AngleToVertical:   return "AngleToVertical";
+        case APIBreakLineAngle_AngleToHorizontal: return "AngleToHorizontal";
+        case APIBreakLineAngle_NumberOfGoings:    return "NumberOfGoings";
+        default:                                  return "Unknown";
+    }
+}
+
+static const char* BreakLinePositionTypeToString (API_BreakLinePositionTypeID type)
+{
+    switch (type) {
+        case APIBreakLinePosition_FloorPlanCutPlaneHeight: return "FloorPlanCutPlaneHeight";
+        case APIBreakLinePosition_CustomHeight:            return "CustomHeight";
+        case APIBreakLinePosition_AtNthRiser:              return "AtNthRiser";
+        default:                                           return "Unknown";
+    }
+}
+
+static const char* StairStructSymbTypeToString (Int32 type)
+{
+    switch (type) {
+        case APIST_UnderStructure: return "UnderStructure";
+        case APIST_Stringer:       return "Stringer";
+        default:                   return "Unknown";
+    }
+}
+
+static const char* StairStructSymbViewToString (Int32 view)
+{
+    switch (view) {
+        case APISV_FloorPlan:   return "FloorPlan";
+        case APISV_CeilingPlan: return "CeilingPlan";
+        default:                return "Unknown";
+    }
+}
+
+static const char* StairStructSymbVisibilityToString (Int32 structure)
+{
+    switch (structure) {
+        case APISV_Beam:         return "Beam";
+        case APISV_Cantilevered: return "Cantilevered";
+        case APISV_Stringer:     return "Stringer";
+        case APISV_Monolith:     return "Monolith";
+        default:                 return "Unknown";
+    }
+}
+
+static const char* StairStructSymbPartToString (Int32 part)
+{
+    switch (part) {
+        case APISP_Visible: return "Visible";
+        case APISP_Hidden:  return "Hidden";
+        default:            return "Unknown";
+    }
+}
+
+static const char* StairStructSymbRelevantStoriesToString (Int32 stories)
+{
+    switch (stories) {
+        case APISCV_ALL_STORIES:     return "AllStories";
+        case APISCV_BELOW_RELEVANT:  return "BelowRelevant";
+        case APISCV_BOTTOM_RELEVANT: return "BottomRelevant";
+        case APISCV_MID_RELEVANT:    return "MiddleRelevant";
+        case APISCV_TOP_RELEVANT:    return "TopRelevant";
+        case APISCV_ABOVE_RELEVANT:  return "AboveRelevant";
+        default:                     return "Unknown";
+    }
+}
+
+static void AddStairAttributeId (GS::ObjectState& os, const char* name, API_AttrTypeID typeID, API_AttributeIndex index)
+{
+    if (index != APIInvalidAttributeIndex) {
+        os.Add (name, CreateGuidObjectState (GetAttributeGuidFromIndex (typeID, index)));
+    }
+}
+
+static GS::ObjectState CreateStairLayoutObjectState (const API_StairLayoutData& layout)
+{
+    GS::ObjectState os;
+    os.Add ("visibility", CreateStoryVisibilityObjectState (layout.visibility));
+    os.Add ("isAutoOnStoryVisibility", layout.isAutoOnStoryVisibility);
+    os.Add ("storyVisibility", StairStoryVisibilityToString (layout.storyVisibility));
+    os.Add ("gridTypeAbove", StairGridTypeToString (layout.gridTypeAbove));
+    os.Add ("gridTypeTop", StairGridTypeToString (layout.gridTypeTop));
+    os.Add ("gridTypeMiddle", StairGridTypeToString (layout.gridTypeMiddle));
+    os.Add ("gridTypeBottom", StairGridTypeToString (layout.gridTypeBottom));
+    os.Add ("gridTypeBelow", StairGridTypeToString (layout.gridTypeBelow));
+    os.Add ("showWalkingLine", layout.showWalkingLine);
+    os.Add ("showNumbering", layout.showNumbering);
+    os.Add ("showUpDownText", layout.showUpDownText);
+    os.Add ("showDescription", layout.showDescription);
+    os.Add ("showStructure", layout.showStructure);
+    os.Add ("breakLineAngleType", BreakLineAngleTypeToString (layout.breakLineAngleType));
+    os.Add ("breakLineAngle", layout.breakLineAngle);
+    os.Add ("breakLineAngleNumberOfGoings", static_cast<Int32> (layout.breakLineAngleNumberOfGoings));
+    os.Add ("breakLineDistance", layout.breakLineDistance);
+    os.Add ("breakLinePositionType", BreakLinePositionTypeToString (layout.breakLinePositionType));
+    os.Add ("upperBreakLineCustomPosition", layout.upperBreakLineCustomPosition);
+    os.Add ("lowerBreakLineCustomPosition", layout.lowerBreakLineCustomPosition);
+    os.Add ("upperBreakLineNthRiserPosition", static_cast<Int32> (layout.upperBreakLineNthRiserPosition));
+    os.Add ("lowerBreakLineNthRiserPosition", static_cast<Int32> (layout.lowerBreakLineNthRiserPosition));
+    os.Add ("overrideLineType", layout.overrideLineType);
+    AddStairAttributeId (os, "lineTypeId", API_LinetypeID, layout.lineType);
+    os.Add ("overridePen", layout.overridePen);
+    os.Add ("pen", static_cast<Int32> (layout.pen));
+    os.Add ("overrideSymbolFill", layout.overrideSymbolFill);
+    AddStairAttributeId (os, "symbolFillId", API_FilltypeID, layout.symbolFill);
+    os.Add ("symbolFillPen", static_cast<Int32> (layout.symbolFillPen));
+    os.Add ("symbolFillBackgroundPen", static_cast<Int32> (layout.symbolFillBkgPen));
+    return os;
+}
+
+static void AddStairStructureSymbolDetails (const API_StairType& stair, GS::ObjectState& os)
+{
+    const auto& symbols = os.AddList<GS::ObjectState> ("structureSymbols");
+    for (Int32 type = 0; type < API_StairStructSymbTypeNum; ++type) {
+        for (Int32 view = 0; view < API_StairStructSymbViewNum; ++view) {
+            const API_StairStructureSymbolData& data = stair.structSymbData[type][view];
+            GS::ObjectState symbol;
+            symbol.Add ("structureType", StairStructSymbTypeToString (type));
+            symbol.Add ("view", StairStructSymbViewToString (view));
+            AddStairAttributeId (symbol, "visibleLineTypeId", API_LinetypeID, data.visibleLineType);
+            symbol.Add ("visibleLinePen", static_cast<Int32> (data.visibleLinePen));
+            AddStairAttributeId (symbol, "hiddenLineTypeId", API_LinetypeID, data.hiddenLineType);
+            symbol.Add ("hiddenLinePen", static_cast<Int32> (data.hiddenLinePen));
+            AddStairAttributeId (symbol, "visibleFillId", API_FilltypeID, data.visibleFillType);
+            symbol.Add ("visibleFillPen", static_cast<Int32> (data.visibleFillPen));
+            symbol.Add ("visibleFillBackgroundPen", static_cast<Int32> (data.visibleFillBackgroundPen));
+            AddStairAttributeId (symbol, "hiddenFillId", API_FilltypeID, data.hiddenFillType);
+            symbol.Add ("hiddenFillPen", static_cast<Int32> (data.hiddenFillPen));
+            symbol.Add ("hiddenFillBackgroundPen", static_cast<Int32> (data.hiddenFillBackgroundPen));
+            symbols (symbol);
+        }
+    }
+
+    const auto& monolithSymbols = os.AddList<GS::ObjectState> ("monolithStructureSymbols");
+    for (Int32 view = 0; view < API_StairStructSymbViewNum; ++view) {
+        for (Int32 part = 0; part < API_StairStructSymbPartNum; ++part) {
+            const API_StairMonolithStructureSymbolData& data = stair.monolithStructureSymbolData[view][part];
+            GS::ObjectState symbol;
+            symbol.Add ("view", StairStructSymbViewToString (view));
+            symbol.Add ("part", StairStructSymbPartToString (part));
+            AddStairAttributeId (symbol, "goingLineTypeId", API_LinetypeID, data.goingLineType);
+            symbol.Add ("goingLinePen", static_cast<Int32> (data.goingLinePen));
+            AddStairAttributeId (symbol, "goingNosingLineTypeId", API_LinetypeID, data.goingNosingLineType);
+            symbol.Add ("goingNosingLinePen", static_cast<Int32> (data.goingNosingLinePen));
+            AddStairAttributeId (symbol, "connectionLineTypeId", API_LinetypeID, data.connectionLineType);
+            symbol.Add ("connectionLinePen", static_cast<Int32> (data.connectionLinePen));
+            AddStairAttributeId (symbol, "connectionDetailLineTypeId", API_LinetypeID, data.connectionDetailLineType);
+            symbol.Add ("connectionDetailLinePen", static_cast<Int32> (data.connectionDetailLinePen));
+            AddStairAttributeId (symbol, "drainingFillId", API_FilltypeID, data.drainingFillType);
+            symbol.Add ("drainingFillPen", static_cast<Int32> (data.drainingFillPen));
+            symbol.Add ("drainingFillBackgroundPen", static_cast<Int32> (data.drainingFillBackGroundPen));
+            AddStairAttributeId (symbol, "contourLineTypeId", API_LinetypeID, data.contourLineType);
+            symbol.Add ("contourLinePen", static_cast<Int32> (data.contourLinePen));
+            monolithSymbols (symbol);
+        }
+    }
+}
+
+static GS::ObjectState CreateStairStructureVisibilityOnStoryObjectState (Int32 relevantStories, const API_StairStructureComponentSettingsVisibilityOnStory& onStory)
+{
+    GS::ObjectState os;
+    os.Add ("relevantStories", StairStructSymbRelevantStoriesToString (relevantStories));
+    const auto& structures = os.AddList<GS::ObjectState> ("structures");
+    for (Int32 part = 0; part < API_StairStructSymbPartNum; ++part) {
+        for (Int32 structure = 0; structure < API_StairStructSymbVisibilityNum; ++structure) {
+            structures (GS::ObjectState (
+                "part", StairStructSymbPartToString (part),
+                "structure", StairStructSymbVisibilityToString (structure),
+                "visible", onStory.structureVisibility[part][structure]));
+        }
+    }
+    const auto& fills = os.AddList<GS::ObjectState> ("fills");
+    for (Int32 part = 0; part < API_StairStructSymbPartNum; ++part) {
+        for (Int32 type = 0; type < API_StairStructSymbTypeNum; ++type) {
+            fills (GS::ObjectState (
+                "part", StairStructSymbPartToString (part),
+                "structureType", StairStructSymbTypeToString (type),
+                "visible", onStory.fillVisibility[part][type]));
+        }
+    }
+    const auto& monolithParts = os.AddList<GS::ObjectState> ("monolithParts");
+    for (Int32 part = 0; part < API_StairStructSymbPartNum; ++part) {
+        const API_MonolithPartsVisibilityData& data = onStory.monolithPartsVisibility[part];
+        GS::ObjectState partOS;
+        partOS.Add ("part", StairStructSymbPartToString (part));
+        partOS.Add ("connectionVisible", data.connectionVisible);
+        partOS.Add ("drainingVisible", data.drainingVisible);
+        partOS.Add ("landingLineVisible", data.landingLineVisible);
+        partOS.Add ("structureGoingVisible", data.structureGoingVisible);
+        partOS.Add ("structureGoingNosingVisible", data.structureGoingNosingVisible);
+        monolithParts (partOS);
+    }
+    return os;
+}
+
+static void AddStairFloorPlanDetails (const API_StairType& stair, GS::ObjectState& os)
+{
+    os.Add ("stairDisplayType", StairDisplayTypeToString (stair.stairDisplayType));
+    os.Add ("floorPlanLayout", CreateStairLayoutObjectState (stair.fpdLayout));
+    os.Add ("reflectedCeilingPlanLayout", CreateStairLayoutObjectState (stair.rcpdLayout));
+    os.Add ("structureVisibility", stair.structureVisibility);
+    AddStairStructureSymbolDetails (stair, os);
+
+    const auto& onStories = os.AddList<GS::ObjectState> ("structureVisibilityOnStories");
+    for (Int32 view = 0; view < API_StairStructSymbViewNum; ++view) {
+        const API_StairStructureComponentSettingsVisibility& visibility = stair.structureVisibilityOnStories[view];
+        GS::ObjectState viewOS;
+        viewOS.Add ("view", StairStructSymbViewToString (view));
+        viewOS.Add ("uniformSymbolRepresentationEnabled", visibility.uniformSymbolRepresentationEnabled);
+        const auto& stories = viewOS.AddList<GS::ObjectState> ("stories");
+        for (Int32 relevantStories = 0; relevantStories < API_StairStructSymbRelevantStoriesNum; ++relevantStories) {
+            stories (CreateStairStructureVisibilityOnStoryObjectState (relevantStories, visibility.structureVisibilityOnStories[relevantStories]));
+        }
+        onStories (viewOS);
     }
 }
 
@@ -1305,6 +1595,14 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetInputParametersSchem
                     "$ref": "#/ElementDetailsField"
                 },
                 "minItems": 1
+            },
+            "additionalFields": {
+                "type": "array",
+                "description": "Optional extra fields to return for each element, on top of the ones selected by fields. None of them is returned unless listed here, so callers that do not give this parameter get the same response as before.",
+                "items": {
+                    "$ref": "#/ElementDetailsAdditionalField"
+                },
+                "minItems": 1
             }
         },
         "additionalProperties": false,
@@ -1364,6 +1662,22 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetRawResponseSchema ()
                                             }
                                         }
                                     }
+                                },
+                                "infoString": {
+                                    "type": "string",
+                                    "description": "The element ID (info string) as Archicad shows it. Present only when requested in additionalFields."
+                                },
+                                "compoundInfoString": {
+                                    "type": "string",
+                                    "description": "The compound info string of the element, e.g. the summary of its composite or profile, as Archicad shows it. Present only when requested in additionalFields and the element has a non-empty one."
+                                },
+                                "libraryPartUnId": {
+                                    "type": "string",
+                                    "description": "The unique ID of the library part the element was placed from. Present only when requested in additionalFields and the element is library part based (e.g. object, lamp, door, window)."
+                                },
+                                "creatorToolUnId": {
+                                    "type": "string",
+                                    "description": "The unique ID of the tool that created the element. Present only when requested in additionalFields and Archicad reports one for the element."
                                 }
                             },
                             "additionalProperties": false,
@@ -1782,6 +2096,39 @@ static void AddRailingReferenceLineAndSegments (const API_Element& elem, GS::Obj
     }
 }
 
+// The fields of GetDetailsOfElements requested through additionalFields. Each one is left out
+// when Archicad reports an error or nothing for the element (e.g. libraryPartUnId on a wall),
+// so a field the element type does not have never turns the whole entry into an error.
+static void AddAdditionalElementDetails (GS::ObjectState& os, const API_Elem_Head& header, const GS::Array<GS::UniString>& additionalFields)
+{
+    if (additionalFields.Contains (GS::UniString ("infoString"))) {
+        GS::UniString infoString;
+        if (ACAPI_Element_GetElementInfoString (&header.guid, &infoString) == NoError) {
+            os.Add ("infoString", infoString);
+        }
+    }
+    if (additionalFields.Contains (GS::UniString ("compoundInfoString"))) {
+        GS::UniString compoundInfoString;
+        if (ACAPI_Element_GetCompoundInfoString (&header.guid, &compoundInfoString) == NoError && !compoundInfoString.IsEmpty ()) {
+            os.Add ("compoundInfoString", compoundInfoString);
+        }
+    }
+    if (additionalFields.Contains (GS::UniString ("libraryPartUnId"))) {
+        API_Elem_Head elemHead = header;
+        char unId[256] = {};
+        if (ACAPI_LibraryPart_GetElemLibPartUnId (&elemHead, unId) == NoError && unId[0] != '\0') {
+            os.Add ("libraryPartUnId", GS::UniString (unId));
+        }
+    }
+    if (additionalFields.Contains (GS::UniString ("creatorToolUnId"))) {
+        API_Elem_Head elemHead = header;
+        char unId[256] = {};
+        if (ACAPI_Element_GetElemCreatorToolUnId (&elemHead, unId) == NoError && unId[0] != '\0') {
+            os.Add ("creatorToolUnId", GS::UniString (unId));
+        }
+    }
+}
+
 GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elements;
@@ -1792,6 +2139,9 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
     const auto isFieldRequested = [&] (const char* fieldName) {
         return !filterFields || fields.Contains (GS::UniString (fieldName));
     };
+
+    GS::Array<GS::UniString> additionalFields;
+    parameters.Get ("additionalFields", additionalFields);
 
     GS::ObjectState response;
     const auto& detailsOfElements = response.AddList<GS::ObjectState> ("detailsOfElements");
@@ -1868,6 +2218,10 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_ElemInfoString);
 
             detailsOfElement.Add ("id", memo.elemInfoString != nullptr ? *memo.elemInfoString : GS::EmptyUniString);
+        }
+
+        if (!additionalFields.IsEmpty ()) {
+            AddAdditionalElementDetails (detailsOfElement, elem.header, additionalFields);
         }
 
         if (!isFieldRequested ("details")) {
@@ -2153,6 +2507,36 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 // its own write back (#895).
                 typeSpecificDetails.Add ("reveal", elem.window.reveal);
                 typeSpecificDetails.Add ("revealDepthOffset", elem.window.revealDepthOffset);
+                // Floor plan and section settings (API_OpeningBaseType), with the key names of the
+                // Wall and Object cases (#1791).
+                {
+                    const API_OpeningBaseType& opening = elem.window.openingBase;
+                    typeSpecificDetails.Add ("displayOption", ElemDisplayOptionToString (opening.displayOption));
+                    typeSpecificDetails.Add ("pen", (Int32) opening.pen);
+                    if (opening.ltypeInd != APIInvalidAttributeIndex) {
+                        typeSpecificDetails.Add ("lineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, opening.ltypeInd)));
+                    }
+                    if (opening.cutLineType != APIInvalidAttributeIndex) {
+                        typeSpecificDetails.Add ("cutLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, opening.cutLineType)));
+                    }
+                    if (opening.sectFill != APIInvalidAttributeIndex) {
+                        typeSpecificDetails.Add ("sectionFillId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_FilltypeID, opening.sectFill)));
+                    }
+                    typeSpecificDetails.Add ("sectionFillPen", (Int32) opening.sectFillPen);
+                    typeSpecificDetails.Add ("sectionFillBackgroundPen", (Int32) opening.sectBGPen);
+                    typeSpecificDetails.Add ("sectionContourPen", (Int32) opening.sectContPen);
+                    typeSpecificDetails.Add ("aboveViewLinePen", (Int32) opening.aboveViewLinePen);
+                    if (opening.aboveViewLineType != APIInvalidAttributeIndex) {
+                        typeSpecificDetails.Add ("aboveViewLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, opening.aboveViewLineType)));
+                    }
+                    typeSpecificDetails.Add ("belowViewLinePen", (Int32) opening.belowViewLinePen);
+                    if (opening.belowViewLineType != APIInvalidAttributeIndex) {
+                        typeSpecificDetails.Add ("belowViewLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, opening.belowViewLineType)));
+                    }
+                    typeSpecificDetails.Add ("useObjectPens", opening.useObjPens);
+                    typeSpecificDetails.Add ("useObjectLineTypes", opening.useObjLtypes);
+                    typeSpecificDetails.Add ("useObjectSectionAttributes", opening.useObjSectAttrs);
+                }
                 break;
 
             case API_LabelID: {
@@ -2341,6 +2725,10 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.railing.bottomOffset, stories));
                 typeSpecificDetails.Add ("height", elem.railing.defSegment.height);
                 AddRailingReferenceLineAndSegments (elem, typeSpecificDetails);
+                typeSpecificDetails.Add ("visibility", CreateStoryVisibilityObjectState (elem.railing.visibility));
+                typeSpecificDetails.Add ("isAutoOnStoryVisibility", elem.railing.isAutoOnStoryVisibility);
+                typeSpecificDetails.Add ("referenceLinePen", (Int32) elem.railing.referenceLinePen);
+                typeSpecificDetails.Add ("contourPen", (Int32) elem.railing.contourPen);
             } break;
 
             case API_CurtainWallID: {
@@ -2351,6 +2739,39 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
                 typeSpecificDetails.Add ("angle", elem.curtainWall.angle);
                 typeSpecificDetails.Add ("flipped", elem.curtainWall.flipped);
+                typeSpecificDetails.Add ("displayOption", ElemDisplayOptionToString (elem.curtainWall.displayOption));
+                typeSpecificDetails.Add ("viewDepthLimitation", ViewDepthLimitationToString (elem.curtainWall.viewDepthLimitation));
+                typeSpecificDetails.Add ("visibility", CreateStoryVisibilityObjectState (elem.curtainWall.visibility));
+                typeSpecificDetails.Add ("isAutoOnStoryVisibility", elem.curtainWall.isAutoOnStoryVisibility);
+                typeSpecificDetails.Add ("cutProjectionMode", ElemProjectionModeToString (elem.curtainWall.cutProjectionMode));
+                typeSpecificDetails.Add ("uncutProjectionMode", ElemProjectionModeToString (elem.curtainWall.uncutProjectionMode));
+                typeSpecificDetails.Add ("overheadProjectionMode", ElemProjectionModeToString (elem.curtainWall.overheadProjectionMode));
+#ifdef ServerMainVers_2700
+                typeSpecificDetails.Add ("cutFillPen", CreateOverriddenPenObjectState (elem.curtainWall.cutFillPen));
+                typeSpecificDetails.Add ("cutFillBackgroundPen", CreateOverriddenPenObjectState (elem.curtainWall.cutFillBackgroundPen));
+#else
+                typeSpecificDetails.Add ("cutFillPen", GS::ObjectState ("overridden", false));
+                typeSpecificDetails.Add ("cutFillBackgroundPen", GS::ObjectState ("overridden", false));
+#endif
+                typeSpecificDetails.Add ("frameCutLinePen", (Int32) elem.curtainWall.frameCutLinePen);
+                if (elem.curtainWall.frameCutLineType != APIInvalidAttributeIndex) {
+                    typeSpecificDetails.Add ("frameCutLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.curtainWall.frameCutLineType)));
+                }
+                typeSpecificDetails.Add ("panelCutLinePen", (Int32) elem.curtainWall.panelCutLinePen);
+                if (elem.curtainWall.panelCutLineType != APIInvalidAttributeIndex) {
+                    typeSpecificDetails.Add ("panelCutLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.curtainWall.panelCutLineType)));
+                }
+                typeSpecificDetails.Add ("useFrameTypesAttributes", elem.curtainWall.useFrameTypesAttributes);
+                typeSpecificDetails.Add ("usePanelTypesAttributes", elem.curtainWall.usePanelTypesAttributes);
+                typeSpecificDetails.Add ("pen", (Int32) elem.curtainWall.pen);
+                typeSpecificDetails.Add ("belowViewLinePen", (Int32) elem.curtainWall.uncutLinePen);
+                if (elem.curtainWall.uncutLineType != APIInvalidAttributeIndex) {
+                    typeSpecificDetails.Add ("belowViewLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.curtainWall.uncutLineType)));
+                }
+                typeSpecificDetails.Add ("aboveViewLinePen", (Int32) elem.curtainWall.overheadLinePen);
+                if (elem.curtainWall.overheadLineType != APIInvalidAttributeIndex) {
+                    typeSpecificDetails.Add ("aboveViewLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.curtainWall.overheadLineType)));
+                }
             } break;
 
             case API_CurtainWallSegmentID: {
@@ -2591,6 +3012,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 } else {
                     typeSpecificDetails.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, base.buildingMaterial)));
                 }
+                AddShellBaseFloorPlanAndSection (base, typeSpecificDetails);
             } break;
 
             case API_HotlinkID: {
@@ -2620,6 +3042,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 // from the home story CreateStairs writes (a stair created on the 6.4 story
                 // reads 6.4, and read 12.8 as zCoordinate when the story level was added
                 // again, #1561), and its x and y are the origin of the baseline's coords.
+                // The floor plan and section display follows (#1788); no command writes it yet.
                 const API_Coord3D& basePoint = elem.stair.basePlane.basePoint;
                 typeSpecificDetails.Add ("stepNum", static_cast<Int32> (elem.stair.stepNum));
                 typeSpecificDetails.Add ("riserHeight", elem.stair.riserHeight);
@@ -2630,6 +3053,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("zCoordinate", basePoint.z);
                 typeSpecificDetails.Add ("finishVisible", elem.stair.finishVisible);
                 AddStairBaseLineFromMemo (elem.header.guid, { basePoint.x, basePoint.y }, typeSpecificDetails);
+                AddStairFloorPlanDetails (elem.stair, typeSpecificDetails);
             } break;
 
             case API_CutPlaneID: {
@@ -6492,45 +6916,6 @@ static bool IsCopyableToDatabase (API_ElemTypeID typeId)
     }
 }
 
-static GSErrCode ChangeCurrentDatabaseTo (const API_Guid& databaseId)
-{
-    API_DatabaseInfo database = DatabaseIdResolver::Instance ().GetDatabaseWithId (databaseId);
-    GSErrCode err = ACAPI_Window_GetDatabaseInfo (&database);
-    if (err != NoError) {
-        return err;
-    }
-    return ACAPI_Database_ChangeCurrentDatabase (&database);
-}
-
-// A worksheet or detail whose window was never opened, e.g. one just made by CreateWorksheets,
-// cannot be made the current database (APIERR_BADDATABASE) until its Project Map item has been
-// opened once, as ChangeWindow does it (#1602). Called outside the undoable command; returns
-// whether a window was opened, so the caller can bring the starting window back.
-static bool OpenDatabaseIfNeverOpened (const API_Guid& databaseId)
-{
-    API_DatabaseInfo startingDatabase = {};
-    if (ACAPI_Database_GetCurrentDatabase (&startingDatabase) != NoError) {
-        return false;
-    }
-    const GSErrCode err = ChangeCurrentDatabaseTo (databaseId);
-    ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
-    if (err != APIERR_BADDATABASE) {
-        return false;
-    }
-#if defined (ServerMainVers_2700)
-    API_DatabaseInfo database = DatabaseIdResolver::Instance ().GetDatabaseWithId (databaseId);
-    if (ACAPI_Window_GetDatabaseInfo (&database) != NoError) {
-        return false;
-    }
-    const GS::Optional<API_Guid> projectMapItem = FindProjectMapItemOfWorksheetOrDetail (database);
-    if (projectMapItem.HasValue ()) {
-        const GS::UniString guidStr = APIGuidToString (projectMapItem.Get ());
-        return ACAPI_View_GoToView (guidStr.ToCStr ().Get ()) == NoError;
-    }
-#endif
-    return false;
-}
-
 // #819: copies 2D elements from one database into another (worksheet to worksheet, layout to
 // layout, ...). The elements are read with their memo in the source database and created from
 // them in the target, so every field the element has is kept without per-type code; the offset
@@ -10203,6 +10588,42 @@ GS::ObjectState Get3DModelCountsCommand::Execute (const GS::ObjectState& /*param
 #else
     return CreateErrorResponse (APIERR_GENERAL, "Get3DModelCounts is available from Archicad 27.");
 #endif
+}
+
+// GetModelExtent
+
+GetModelExtentCommand::GetModelExtentCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetModelExtentCommand::GetName () const
+{
+    return "GetModelExtent";
+}
+
+GS::Optional<GS::UniString> GetModelExtentCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/BoundingBox3D"
+    })";
+}
+
+GS::ObjectState GetModelExtentCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    // The region Fit in Window would show in the current database, vertical range included.
+    API_Box3D extent3D = {};
+    const GSErrCode err = ACAPI_Element_GetExtent3D (&extent3D);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the model extent");
+    }
+
+    return GS::ObjectState ("xMin", extent3D.xMin,
+                            "xMax", extent3D.xMax,
+                            "yMin", extent3D.yMin,
+                            "yMax", extent3D.yMax,
+                            "zMin", extent3D.zMin,
+                            "zMax", extent3D.zMax);
 }
 
 // DeleteUserDataOfElements

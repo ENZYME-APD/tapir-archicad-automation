@@ -111,7 +111,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         // Shares the icon of GetDrawingPrimitivesOfElements, whose output it has.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetDrawingPrimitivesOfElements;
+            Properties.Resources.GetShapePrimitivesOfElements;
 
         public override Guid ComponentGuid =>
             new Guid("3b1fbc5c-9bab-4c90-89ce-8c27ce152ba5");

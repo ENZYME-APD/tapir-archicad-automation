@@ -27,9 +27,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;
 
-        // Shares the icon of ModifyRoofs until it gets one of its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.ModifyRoofs;
+            Properties.Resources.ModifyShells;
 
         public override Guid ComponentGuid =>
             new Guid("83bb70a5-fc7c-45f4-ad4d-c0c0f58ea249");

@@ -1901,39 +1901,56 @@ GS::Optional<GS::UniString> ApplyWallStructure (
     return {};
 }
 
-GS::Optional<GS::UniString> ApplyRoofStructure (
-    API_Element& element,
-    API_Element* mask,
+// Roofs and shells share API_ShellBaseType, so CreateShells takes the same structure fields.
+GS::Optional<GS::UniString> ApplyShellBaseStructure (
+    API_ShellBaseType& shellBase,
     const GS::ObjectState& details,
-    bool& changed)
+    bool& applied)
 {
+    applied = false;
     StructureSelection selection;
     auto error = ParseStructureSelection (details, true, false, selection);
     if (error.HasValue ()) {
         return error;
     }
 
-    if (selection.kind == StructureSelectionKind::Unspecified) {
-        return {};
-    }
-
     switch (selection.kind) {
         case StructureSelectionKind::Basic:
-            element.roof.shellBase.modelElemStructureType = API_BasicStructure;
+            shellBase.modelElemStructureType = API_BasicStructure;
             if (selection.buildingMaterial != APIInvalidAttributeIndex) {
-                element.roof.shellBase.buildingMaterial = selection.buildingMaterial;
+                shellBase.buildingMaterial = selection.buildingMaterial;
             }
-            element.roof.shellBase.composite = APIInvalidAttributeIndex;
+            shellBase.composite = APIInvalidAttributeIndex;
             break;
         case StructureSelectionKind::Composite:
-            element.roof.shellBase.modelElemStructureType = API_CompositeStructure;
+            shellBase.modelElemStructureType = API_CompositeStructure;
             if (selection.composite != APIInvalidAttributeIndex) {
-                element.roof.shellBase.composite = selection.composite;
+                shellBase.composite = selection.composite;
             }
             break;
         case StructureSelectionKind::Profile:
         case StructureSelectionKind::Unspecified:
-            break;
+            return {};
+    }
+
+    applied = true;
+    return {};
+}
+
+GS::Optional<GS::UniString> ApplyRoofStructure (
+    API_Element& element,
+    API_Element* mask,
+    const GS::ObjectState& details,
+    bool& changed)
+{
+    bool applied = false;
+    auto error = ApplyShellBaseStructure (element.roof.shellBase, details, applied);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    if (!applied) {
+        return {};
     }
 
     if (mask != nullptr) {
@@ -4375,9 +4392,18 @@ GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () con
                         },
                         "baseLinePoints": {
                             "type": "array",
-                            "description": "2D coordinates of the stair baseline polyline. Whether the baseline runs along the left edge, the right edge or the center of the flight is the Stair tool's baseline position, taken from the tool defaults or favoriteName: with the baseline on the left edge, the flight lies to the right of it, looking from the first point to the last. The first point is kept; the length of the flight comes from the riser count and going, so the flight does not necessarily end at the last point given. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.",
+                            "description": "2D coordinates of the stair baseline polyline. Whether the baseline runs along the left edge, the right edge or the center of the flight is the Stair tool's baseline position, taken from baselinePosition, or else from the tool defaults or favoriteName: with the baseline on the left edge, the flight lies to the right of it, looking from the first point to the last. The first point is kept; the length of the flight comes from the riser count and going, so the flight does not necessarily end at the last point given. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.",
                             "items": { "$ref": "#/Coordinate2D" },
                             "minItems": 2
+                        },
+                        "baselinePosition": {
+                            "type": "string",
+                            "enum": ["Left", "Right", "Center"],
+                            "description": "Optional. Where the baseline runs on the flight, looking from the first point to the last. Left: along the left edge, the flight lies to the right of the baseline. Right: along the right edge, the flight lies to the left of it. Center: along the middle of the flight. Without it the baseline position of the Stair tool defaults (or of favoriteName) is used."
+                        },
+                        "baselineOffset": {
+                            "type": "number",
+                            "description": "Optional. The offset of the baseline from the flight edge that baselinePosition names (Left or Right); not used with Center. Without it the offset of the Stair tool defaults (or of favoriteName) is kept."
                         },
                         "zCoordinate": {
                             "type": "number",
@@ -4475,6 +4501,14 @@ static bool StairSegmentTypeFromString (const GS::UniString& str, API_StairSegme
     return false;
 }
 
+static bool StairBaselinePositionFromString (const GS::UniString& str, API_LinePositionID& position)
+{
+    if (str == "Left")   { position = APILP_Left;   return true; }
+    if (str == "Right")  { position = APILP_Right;  return true; }
+    if (str == "Center") { position = APILP_Center; return true; }
+    return false;
+}
+
 static bool StairTurnTypeFromString (const GS::UniString& str, API_StairTurnTypeID& type)
 {
     if (str == "None")           { type = APIST_NoTurn;             return true; }
@@ -4544,6 +4578,23 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
     auto flightWidth = GetOptionalDouble (parameters, "flightWidth");
     if (flightWidth.HasValue ()) {
         element.stair.flightWidth = flightWidth.Get ();
+    }
+
+    // The edge of the flight the baseline runs on. Without it the Stair tool defaults decide,
+    // and a multi-segment baseline that turns towards the flight's side failed where its
+    // mirror image was created (#578). The DevKit's Do_CreateStair example sets APILP_Center
+    // before ACAPI_Element_Create.
+    GS::UniString baselinePosition;
+    if (parameters.Get ("baselinePosition", baselinePosition)) {
+        API_LinePositionID position = APILP_Center;
+        if (!StairBaselinePositionFromString (baselinePosition, position)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid baselinePosition: it must be Left, Right or Center.");
+        }
+        element.stair.baselinePosition = position;
+    }
+    auto baselineOffset = GetOptionalDouble (parameters, "baselineOffset");
+    if (baselineOffset.HasValue ()) {
+        element.stair.baselineOffset = baselineOffset.Get ();
     }
 
     Int32 stepNum = 0;
@@ -4657,6 +4708,538 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
             }
         }
     }
+
+    return {};
+}
+
+namespace {
+
+constexpr double HalfTurn = 3.14159265358979323846;
+
+API_Tranmat GetIdentityTranmat ()
+{
+    API_Tranmat tranmat = {};
+    tranmat.tmx[0] = 1.0;
+    tranmat.tmx[5] = 1.0;
+    tranmat.tmx[10] = 1.0;
+    return tranmat;
+}
+
+// A CoordinateSystem3D's axes are the columns of the 3x4 row-major tmx and its origin is the
+// translation column; what the caller leaves out keeps the value tranmat already has.
+GS::Optional<GS::UniString> ApplyCoordinateSystem3D (const GS::ObjectState& parameters, const char* fieldName, API_Tranmat& tranmat)
+{
+    const GS::ObjectState* system = parameters.Get (fieldName);
+    if (system == nullptr) {
+        return {};
+    }
+
+    const auto xAxis = GetOptionalCoordinate3D (*system, "xAxis");
+    const auto yAxis = GetOptionalCoordinate3D (*system, "yAxis");
+    const auto zAxis = GetOptionalCoordinate3D (*system, "zAxis");
+    const int axisCount = (int) xAxis.HasValue () + (int) yAxis.HasValue () + (int) zAxis.HasValue ();
+    if (axisCount != 0 && axisCount != 3) {
+        return GS::UniString::Printf ("'%s': give all three of 'xAxis', 'yAxis' and 'zAxis' together, or none at all.", fieldName);
+    }
+
+    double* tmx = tranmat.tmx;
+    if (axisCount == 3) {
+        tmx[0] = xAxis.Get ().x; tmx[4] = xAxis.Get ().y; tmx[8]  = xAxis.Get ().z;
+        tmx[1] = yAxis.Get ().x; tmx[5] = yAxis.Get ().y; tmx[9]  = yAxis.Get ().z;
+        tmx[2] = zAxis.Get ().x; tmx[6] = zAxis.Get ().y; tmx[10] = zAxis.Get ().z;
+    }
+    const auto origin = GetOptionalCoordinate3D (*system, "origin");
+    if (origin.HasValue ()) {
+        tmx[3] = origin.Get ().x;
+        tmx[7] = origin.Get ().y;
+        tmx[11] = origin.Get ().z;
+    }
+    return {};
+}
+
+GS::Optional<GS::UniString> GetShellPolyArcs (const GS::Array<GS::ObjectState>& arcs, Int32 nCoords, GS::Array<API_PolyArc>& polyArcs)
+{
+    polyArcs = GetPolyArcs (arcs, 1);
+    for (const API_PolyArc& arc : polyArcs) {
+        if (arc.begIndex < 1 || arc.endIndex < 1 || arc.begIndex > nCoords || arc.endIndex > nCoords) {
+            return GS::UniString ("An arc index is outside the coordinates of its polyline.");
+        }
+    }
+    return {};
+}
+
+// A shell profile is stored as a closed polygon whose bodyFlags say which edges make a surface;
+// the DevKit's shell samples leave the closing edge without one, which is an open profile.
+GS::Optional<GS::UniString> FillShellShape (const GS::ObjectState& profile, API_Polygon& shape, API_ShellShapeData& shapeData)
+{
+    GS::Array<GS::ObjectState> coordinates;
+    GS::Array<GS::ObjectState> arcs;
+    bool closed = false;
+    profile.Get ("coordinates", coordinates);
+    profile.Get ("arcs", arcs);
+    profile.Get ("closed", closed);
+    if (closed && coordinates.GetSize () > 1 && IsSame2DCoordinate (coordinates.GetFirst (), coordinates.GetLast ())) {
+        coordinates.Pop ();
+    }
+    const Int32 nPoints = (Int32) coordinates.GetSize ();
+    if (nPoints < (closed ? 3 : 2)) {
+        return GS::UniString (closed ? "A closed shell profile needs at least 3 coordinates." : "A shell profile needs at least 2 coordinates.");
+    }
+
+    shape = {};
+    shape.nCoords = nPoints + 1;
+    shape.nSubPolys = 1;
+
+    GS::Array<API_PolyArc> polyArcs;
+    auto arcError = GetShellPolyArcs (arcs, shape.nCoords, polyArcs);
+    if (arcError.HasValue ()) {
+        return arcError;
+    }
+    shape.nArcs = (Int32) polyArcs.GetSize ();
+
+    shapeData.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((shape.nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    shapeData.pends = reinterpret_cast<Int32**> (BMAllocateHandle ((shape.nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0));
+    shapeData.bodyFlags = reinterpret_cast<bool**> (BMAllocateHandle ((shape.nCoords + 1) * sizeof (bool), ALLOCATE_CLEAR, 0));
+    if (shape.nArcs > 0) {
+        shapeData.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (shape.nArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+    }
+
+    for (Int32 i = 0; i < nPoints; ++i) {
+        (*shapeData.coords)[i + 1] = Get2DCoordinateFromObjectState (coordinates[i]);
+        (*shapeData.bodyFlags)[i + 1] = true;
+    }
+    (*shapeData.coords)[shape.nCoords] = (*shapeData.coords)[1];
+    (*shapeData.bodyFlags)[nPoints] = closed;
+    (*shapeData.bodyFlags)[shape.nCoords] = (*shapeData.bodyFlags)[1];
+    (*shapeData.pends)[1] = shape.nCoords;
+    for (Int32 i = 0; i < shape.nArcs; ++i) {
+        (*shapeData.parcs)[i] = polyArcs[i];
+    }
+    return {};
+}
+
+GS::Optional<GS::UniString> FillShellContour (const GS::ObjectState& polygon, const API_Tranmat& defaultPlane, API_ShellContourData& contour)
+{
+    GS::Array<GS::ObjectState> coordinates;
+    GS::Array<GS::ObjectState> arcs;
+    polygon.Get ("coordinates", coordinates);
+    polygon.Get ("arcs", arcs);
+    if (coordinates.GetSize () > 1 && IsSame2DCoordinate (coordinates.GetFirst (), coordinates.GetLast ())) {
+        coordinates.Pop ();
+    }
+    const Int32 nPoints = (Int32) coordinates.GetSize ();
+    if (nPoints < 3) {
+        return GS::UniString ("A shell contour or hole polygon needs at least 3 coordinates.");
+    }
+
+    contour.poly.nCoords = nPoints + 1;
+    contour.poly.nSubPolys = 1;
+
+    GS::Array<API_PolyArc> polyArcs;
+    auto arcError = GetShellPolyArcs (arcs, contour.poly.nCoords, polyArcs);
+    if (arcError.HasValue ()) {
+        return arcError;
+    }
+    contour.poly.nArcs = (Int32) polyArcs.GetSize ();
+
+    contour.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((contour.poly.nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    contour.pends = reinterpret_cast<Int32**> (BMAllocateHandle ((contour.poly.nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0));
+    if (contour.poly.nArcs > 0) {
+        contour.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (contour.poly.nArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+    }
+    for (Int32 i = 0; i < nPoints; ++i) {
+        (*contour.coords)[i + 1] = Get2DCoordinateFromObjectState (coordinates[i]);
+    }
+    (*contour.coords)[contour.poly.nCoords] = (*contour.coords)[1];
+    (*contour.pends)[1] = contour.poly.nCoords;
+    for (Int32 i = 0; i < contour.poly.nArcs; ++i) {
+        (*contour.parcs)[i] = polyArcs[i];
+    }
+
+    contour.plane = defaultPlane;
+    return ApplyCoordinateSystem3D (polygon, "plane", contour.plane);
+}
+
+GS::Optional<GS::UniString> ApplyShellClassParameters (API_Element& element, API_ElementMemo& memo, const GS::ObjectState& parameters)
+{
+    const GS::ObjectState* profile = parameters.Get ("profile");
+    if (profile == nullptr) {
+        return GS::UniString ("Missing required 'profile' field.");
+    }
+
+    switch (element.shell.shellClass) {
+        case API_ExtrudedShellID: {
+            API_ExtrudedShellData& extruded = element.shell.u.extrudedShell;
+            const auto extrusionVector = GetOptionalCoordinate3D (parameters, "extrusionVector");
+            if (!extrusionVector.HasValue ()) {
+                return GS::UniString ("An extruded shell needs 'extrusionVector'.");
+            }
+            extruded.extrusionVector.x = extrusionVector.Get ().x;
+            extruded.extrusionVector.y = extrusionVector.Get ().y;
+            extruded.extrusionVector.z = extrusionVector.Get ().z;
+            const auto extrusionStart = GetOptionalCoordinate3D (parameters, "extrusionStart");
+            if (extrusionStart.HasValue ()) {
+                extruded.begC = extrusionStart.Get ();
+            }
+            parameters.Get ("slantAngle", extruded.slantAngle);
+            parameters.Get ("shapePlaneTilt", extruded.shapePlaneTilt);
+            parameters.Get ("begPlaneTilt", extruded.begPlaneTilt);
+            parameters.Get ("endPlaneTilt", extruded.endPlaneTilt);
+            return FillShellShape (*profile, extruded.shellShape, memo.shellShapes[0]);
+        }
+        case API_RevolvedShellID: {
+            API_RevolvedShellData& revolved = element.shell.u.revolvedShell;
+            // The DevKit's Do_CreateRevolvedShell axis: the base plane's Y axis.
+            revolved.axisBase = {};
+            revolved.axisBase.tmx[0] = 1.0;
+            revolved.axisBase.tmx[6] = 1.0;
+            revolved.axisBase.tmx[9] = -1.0;
+            auto axisError = ApplyCoordinateSystem3D (parameters, "axis", revolved.axisBase);
+            if (axisError.HasValue ()) {
+                return axisError;
+            }
+            revolved.revolutionAngle = 2.0 * HalfTurn;
+            revolved.distortionAngle = HalfTurn / 2.0;
+            revolved.segmentType = APIShellBase_SegmentsByCircle;
+            if (revolved.segmentsByCircle < 3) {
+                revolved.segmentsByCircle = 36;
+            }
+            parameters.Get ("revolutionAngle", revolved.revolutionAngle);
+            parameters.Get ("beginAngle", revolved.begAngle);
+            parameters.Get ("slantAngle", revolved.slantAngle);
+            parameters.Get ("distortionAngle", revolved.distortionAngle);
+            Int32 segments = 0;
+            if (parameters.Get ("segmentsByCircle", segments)) {
+                revolved.segmentsByCircle = segments;
+            }
+            return FillShellShape (*profile, revolved.shellShape, memo.shellShapes[0]);
+        }
+        case API_RuledShellID: {
+            API_RuledShellData& ruled = element.shell.u.ruledShell;
+            const GS::ObjectState* secondProfile = parameters.Get ("secondProfile");
+            if (secondProfile == nullptr || parameters.Get ("profilePlane") == nullptr || parameters.Get ("secondProfilePlane") == nullptr) {
+                return GS::UniString ("A ruled shell needs 'secondProfile', 'profilePlane' and 'secondProfilePlane'.");
+            }
+            ruled.plane1 = GetIdentityTranmat ();
+            ruled.plane2 = GetIdentityTranmat ();
+            auto planeError = ApplyCoordinateSystem3D (parameters, "profilePlane", ruled.plane1);
+            if (!planeError.HasValue ()) {
+                planeError = ApplyCoordinateSystem3D (parameters, "secondProfilePlane", ruled.plane2);
+            }
+            if (planeError.HasValue ()) {
+                return planeError;
+            }
+            GS::UniString morphingRule;
+            if (parameters.Get ("morphingRule", morphingRule)) {
+                ruled.morphingRule = morphingRule == "Smooth" ? APIMorphingRule_Smooth : APIMorphingRule_Paired;
+            }
+            auto shapeError = FillShellShape (*profile, ruled.shellShape1, memo.shellShapes[0]);
+            if (shapeError.HasValue ()) {
+                return shapeError;
+            }
+            return FillShellShape (*secondProfile, ruled.shellShape2, memo.shellShapes[1]);
+        }
+    }
+    return GS::UniString ("Unknown 'shellClass'.");
+}
+
+GS::Optional<GS::UniString> ApplyShellCutPolygons (API_Element& element, API_ElementMemo& memo, const GS::ObjectState& parameters)
+{
+    const GS::ObjectState* contour = parameters.Get ("contour");
+    GS::Array<GS::ObjectState> holes;
+    parameters.Get ("holes", holes);
+
+    element.shell.hasContour = contour != nullptr;
+    element.shell.numHoles = holes.GetSize ();
+    const USize nContours = element.shell.numHoles + (element.shell.hasContour ? 1 : 0);
+    if (nContours == 0) {
+        return {};
+    }
+
+    memo.shellContours = reinterpret_cast<API_ShellContourData*> (BMAllocatePtr (nContours * sizeof (API_ShellContourData), ALLOCATE_CLEAR, 0));
+    UIndex index = 0;
+    if (contour != nullptr) {
+        auto error = FillShellContour (*contour, GetIdentityTranmat (), memo.shellContours[index++]);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+    for (UIndex i = 0; i < holes.GetSize (); ++i) {
+        API_ShellContourData& hole = memo.shellContours[index++];
+        if (!holes[i].Get ("depth", hole.height)) {
+            return GS::UniString ("A shell hole needs 'depth'.");
+        }
+        auto error = FillShellContour (holes[i], GetIdentityTranmat (), hole);
+        if (error.HasValue ()) {
+            return error;
+        }
+        hole.id = i + 1;
+    }
+    return {};
+}
+
+// The Shell tool defaults hold Vertical trims at 1 degree, which the Shell tool never stores: a shell
+// drawn in the Archicad 30 GUI has every shape edge Perpendicular at pi/2.
+void ApplyShellEdgeTrim (const GS::ObjectState& parameters, const char* name, API_ContourEdgeData& edge)
+{
+    edge.edgeTrim.sideType = APIEdgeTrim_Perpendicular;
+    edge.edgeTrim.sideAngle = HalfTurn / 2.0;
+    const GS::ObjectState* trim = parameters.Get (name);
+    if (trim == nullptr) {
+        return;
+    }
+    GS::UniString trimType;
+    trim->Get ("trimType", trimType);
+    if (trimType == "Vertical") {
+        edge.edgeTrim.sideType = APIEdgeTrim_Vertical;
+    } else if (trimType == "Horizontal") {
+        edge.edgeTrim.sideType = APIEdgeTrim_Horizontal;
+    } else if (trimType == "CustomAngle") {
+        edge.edgeTrim.sideType = APIEdgeTrim_CustomAngle;
+    }
+    trim->Get ("angle", edge.edgeTrim.sideAngle);
+}
+
+void ApplyShellEdgeTrims (API_Element& element, const GS::ObjectState& parameters)
+{
+    API_ContourEdgeData* begEdge = nullptr;
+    API_ContourEdgeData* endEdge = nullptr;
+    API_ContourEdgeData* sideEdges = nullptr;
+    switch (element.shell.shellClass) {
+        case API_ExtrudedShellID:
+            begEdge = &element.shell.u.extrudedShell.begShapeEdgeData;
+            endEdge = &element.shell.u.extrudedShell.endShapeEdgeData;
+            sideEdges = element.shell.u.extrudedShell.extrudedEdgeDatas;
+            break;
+        case API_RevolvedShellID:
+            begEdge = &element.shell.u.revolvedShell.begShapeEdgeData;
+            endEdge = &element.shell.u.revolvedShell.endShapeEdgeData;
+            sideEdges = element.shell.u.revolvedShell.revolvedEdgeDatas;
+            break;
+        case API_RuledShellID:
+            begEdge = &element.shell.u.ruledShell.begShapeEdgeData;
+            endEdge = &element.shell.u.ruledShell.endShapeEdgeData;
+            sideEdges = element.shell.u.ruledShell.ruledEdgeDatas;
+            break;
+        default:
+            return;
+    }
+    ApplyShellEdgeTrim (parameters, "begShapeEdgeTrim", *begEdge);
+    ApplyShellEdgeTrim (parameters, "endShapeEdgeTrim", *endEdge);
+    ApplyShellEdgeTrim (parameters, "begSideEdgeTrim", sideEdges[0]);
+    ApplyShellEdgeTrim (parameters, "endSideEdgeTrim", sideEdges[1]);
+}
+
+} // namespace
+
+CreateShellsCommand::CreateShellsCommand () :
+    CreateElementsCommandBase ("CreateShells", API_ShellID, "shellsData")
+{
+}
+
+GS::Optional<GS::UniString> CreateShellsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "shellsData": {
+            "type": "array",
+            "description": "Array of data to create Shells.",
+            "items": {
+                "type": "object",
+                "description": "The parameters of the new Shell.",
+                "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a Shell favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element. When omitted the element gets the next automatic ID of its tool."
+                    },
+                    "shellClass": {
+                        "type": "string",
+                        "enum": ["Extruded", "Revolved", "Ruled"],
+                        "description": "Extruded: 'profile' swept along 'extrusionVector'. Revolved: 'profile' turned around 'axis'. Ruled: a surface ruled between 'profile' and 'secondProfile'."
+                    },
+                    "floorIndex": {
+                        "type": "integer",
+                        "description": "Optional story index of the shell. Without it the shell is placed on the story of the Shell tool defaults."
+                    },
+                    "basePlane": {
+                        "$ref": "#/CoordinateSystem3D",
+                        "description": "Base plane of the shell, in project coordinates; the profiles, the extrusion, the axis and the contour and hole polygons are given in it. The project axes by default, except for a Revolved shell, whose default base plane stands upright (its Y axis is the project Z axis), so the profile's x is the radius and its y the height."
+                    },
+                    "profile": {
+                        "$ref": "#/ShellProfile",
+                        "description": "The profile polyline. Extruded: in the plane across the extrusion, x horizontal and y up. Revolved: in the base plane's XY plane. Ruled: in the XY plane of 'profilePlane'."
+                    },
+                    "thickness": {
+                        "type": "number",
+                        "exclusiveMinimum": 0.0,
+                        "description": "Only takes effect on a Basic shell; a Composite shell takes its thickness from the composite."
+                    },
+                    "isFlipped": {
+                        "type": "boolean",
+                        "description": "Applies the thickness to the other side of the reference surface."
+                    },
+                    "structureType": {
+                        "$ref": "#/RoofStructureType"
+                    },
+                    "buildingMaterialId": { "$ref": "#/AttributeId" },
+                    "compositeId": { "$ref": "#/AttributeId" },
+                    "extrusionVector": {
+                        "$ref": "#/Coordinate3D",
+                        "description": "Extruded only, required: the direction and length of the extrusion, in base plane coordinates."
+                    },
+                    "extrusionStart": {
+                        "$ref": "#/Coordinate3D",
+                        "description": "Extruded only: the point the extrusion starts from, in base plane coordinates."
+                    },
+                    "shapePlaneTilt": {
+                        "type": "number",
+                        "description": "Extruded only: tilt of the profile's plane, in radians."
+                    },
+                    "begPlaneTilt": {
+                        "type": "number",
+                        "description": "Extruded only: tilt of the start plane of the extrusion, in radians."
+                    },
+                    "endPlaneTilt": {
+                        "type": "number",
+                        "description": "Extruded only: tilt of the end plane of the extrusion, in radians."
+                    },
+                    "slantAngle": {
+                        "type": "number",
+                        "description": "Extruded and Revolved: slant of the extrusion vector or of the profile, in radians."
+                    },
+                    "axis": {
+                        "$ref": "#/CoordinateSystem3D",
+                        "description": "Revolved only: the coordinate system whose Z axis the profile is turned around, in base plane coordinates. By default the base plane's Y axis."
+                    },
+                    "revolutionAngle": {
+                        "type": "number",
+                        "description": "Revolved only: the angle the profile is turned through, in radians. 2*pi (a full turn) by default."
+                    },
+                    "beginAngle": {
+                        "type": "number",
+                        "description": "Revolved only: the angle the revolution starts at, in radians."
+                    },
+                    "distortionAngle": {
+                        "type": "number",
+                        "description": "Revolved only: shear of the revolution, in radians. pi/2 (no shear) by default."
+                    },
+                    "segmentsByCircle": {
+                        "type": "integer",
+                        "minimum": 3,
+                        "description": "Revolved only: the number of segments a full circle is resolved into."
+                    },
+                    "secondProfile": {
+                        "$ref": "#/ShellProfile",
+                        "description": "Ruled only, required: the second profile polyline, in the XY plane of 'secondProfilePlane'."
+                    },
+                    "profilePlane": {
+                        "$ref": "#/CoordinateSystem3D",
+                        "description": "Ruled only, required: the plane of 'profile', in base plane coordinates."
+                    },
+                    "secondProfilePlane": {
+                        "$ref": "#/CoordinateSystem3D",
+                        "description": "Ruled only, required: the plane of 'secondProfile', in base plane coordinates."
+                    },
+                    "morphingRule": {
+                        "type": "string",
+                        "enum": ["Paired", "Smooth"],
+                        "description": "Ruled only: how the two profiles are joined, segment by segment (Paired) or smoothly."
+                    },
+                    "contour": {
+                        "$ref": "#/ShellCutPolygon",
+                        "description": "Optional clipping contour: only the part of the shell inside this polygon, seen along the Z axis of its plane, is kept. Its 'depth' is ignored."
+                    },
+                    "holes": {
+                        "type": "array",
+                        "description": "Optional holes, each requiring 'depth' to extrude its cutting polygon along the Z axis of its plane.",
+                        "items": { "$ref": "#/ShellCutPolygon" }
+                    },
+                    "begShapeEdgeTrim": {
+                        "$ref": "#/ShellEdgeTrim",
+                        "description": "Optional trim of the profile's edges at the start of the shell (the start plane of an extrusion, the begin angle of a revolution, the first profile of a ruled shell). Perpendicular at pi/2 by default, as the Shell tool draws it, also when favoriteName is given."
+                    },
+                    "endShapeEdgeTrim": {
+                        "$ref": "#/ShellEdgeTrim",
+                        "description": "Optional trim of the profile's edges at the end of the shell. Perpendicular at pi/2 by default."
+                    },
+                    "begSideEdgeTrim": {
+                        "$ref": "#/ShellEdgeTrim",
+                        "description": "Optional trim of the edge that the profile's first point sweeps from the start to the end of the shell. Perpendicular at pi/2 by default."
+                    },
+                    "endSideEdgeTrim": {
+                        "$ref": "#/ShellEdgeTrim",
+                        "description": "Optional trim of the edge that the profile's last point sweeps. Perpendicular at pi/2 by default."
+                    }
+                },
+                "additionalProperties": false,
+                "required": ["shellClass", "profile"]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": ["shellsData"]
+})";
+}
+
+GS::Optional<GS::ObjectState> CreateShellsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& /*stories*/, const GS::ObjectState& parameters) const
+{
+    GS::UniString shellClass;
+    parameters.Get ("shellClass", shellClass);
+    if (shellClass == "Extruded") {
+        element.shell.shellClass = API_ExtrudedShellID;
+    } else if (shellClass == "Revolved") {
+        element.shell.shellClass = API_RevolvedShellID;
+    } else if (shellClass == "Ruled") {
+        element.shell.shellClass = API_RuledShellID;
+    } else {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid 'shellClass'. Use 'Extruded', 'Revolved' or 'Ruled'.");
+    }
+
+    // The class-specific union members are only filled by defaults read for that class, as in the
+    // DevKit's shell samples, which also start from an empty memo.
+    GSErrCode err = ACAPI_Element_GetDefaults (&element, nullptr);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to read the Shell defaults.");
+    }
+    ACAPI_DisposeElemMemoHdls (&memo);
+    memo = {};
+
+    parameters.Get ("floorIndex", element.header.floorInd);
+
+    if (element.shell.shellClass == API_RevolvedShellID) {
+        element.shell.basePlane = {};
+        element.shell.basePlane.tmx[0] = 1.0;
+        element.shell.basePlane.tmx[9] = 1.0;
+        element.shell.basePlane.tmx[6] = -1.0;
+    } else {
+        element.shell.basePlane = GetIdentityTranmat ();
+    }
+    auto error = ApplyCoordinateSystem3D (parameters, "basePlane", element.shell.basePlane);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+
+    bool structureApplied = false;
+    error = ApplyShellBaseStructure (element.shell.shellBase, parameters, structureApplied);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+    parameters.Get ("thickness", element.shell.shellBase.thickness);
+    parameters.Get ("isFlipped", element.shell.isFlipped);
+
+    error = ApplyShellClassParameters (element, memo, parameters);
+    if (!error.HasValue ()) {
+        error = ApplyShellCutPolygons (element, memo, parameters);
+    }
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid shell geometry: " + error.Get ());
+    }
+    ApplyShellEdgeTrims (element, parameters);
 
     return {};
 }
@@ -4898,6 +5481,381 @@ GS::ObjectState SolveStairBaselineCommand::Execute (const GS::ObjectState& param
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
 #endif
+}
+
+ModifyStairsCommand::ModifyStairsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyStairsCommand::GetName () const
+{
+    return "ModifyStairs";
+}
+
+GS::Optional<GS::UniString> ModifyStairsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "stairsWithDetails": {
+                "type": "array",
+                "description": "Array of Stair elements to modify, with the settings to change. Only the given settings are changed; the baseline, the position and the omitted settings are kept.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "flightWidth": { "type": "number", "exclusiveMinimum": 0.0, "description": "The width of the flights." },
+                        "totalHeight": { "type": "number", "exclusiveMinimum": 0.0, "description": "The height of the stair relative to its bottom." },
+                        "stepNum": { "type": "integer", "minimum": 1, "description": "The number of steps (risers)." },
+                        "riserHeight": { "type": "number", "exclusiveMinimum": 0.0, "description": "The height of each riser." },
+                        "treadDepth": { "type": "number", "exclusiveMinimum": 0.0, "description": "The length of each going." },
+                        "treadDepthLocked": { "type": "boolean", "description": "Whether the going lengths are locked." },
+                        "totalHeightLocked": { "type": "boolean", "description": "Whether the total height is locked." },
+                        "finishVisible": { "type": "boolean", "description": "Whether the tread and riser finishes of the stair are shown. The treads and risers of each part can also be switched on and off with treads and risers." },
+                        "treads": {
+                            "type": "array",
+                            "description": "The tread settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "role": { "type": "string", "enum": ["Run", "Landing"], "description": "The part of the stair: the flights (Run) or the landings (Landing)." },
+                                    "visible": { "type": "boolean", "description": "Whether the treads are present." },
+                                    "thickness": { "type": "number", "minimum": 0.0, "description": "The thickness of the treads." },
+                                    "offset": { "type": "number", "description": "The offset of the treads." },
+                                    "nosingType": { "type": "string", "enum": ["ByValue", "BySlanting"], "description": "Whether the nosing is given by its length (nosingValue) or by the slant of the riser (nosingSlant)." },
+                                    "nosingValue": { "type": "number", "description": "The length of the nosing." },
+                                    "nosingSlant": { "type": "number", "description": "The slant of the nosing in radians." }
+                                },
+                                "additionalProperties": false,
+                                "required": ["role"]
+                            }
+                        },
+                        "risers": {
+                            "type": "array",
+                            "description": "The riser settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "role": { "type": "string", "enum": ["Run", "Landing"], "description": "The part of the stair: the flights (Run) or the landings (Landing)." },
+                                    "visible": { "type": "boolean", "description": "Whether the risers are present." },
+                                    "thickness": { "type": "number", "minimum": 0.0, "description": "The thickness of the risers." },
+                                    "offset": { "type": "number", "description": "The offset of the risers." },
+                                    "crossSection": { "type": "string", "enum": ["Simple", "Slanted"], "description": "The cross section of the risers." },
+                                    "angle": { "type": "number", "description": "The angle of a slanted riser in radians." },
+                                    "position": { "type": "string", "enum": ["OnTread", "BehindTread"], "description": "Whether the risers stand on the treads or behind them." }
+                                },
+                                "additionalProperties": false,
+                                "required": ["role"]
+                            }
+                        },
+                        "structures": {
+                            "type": "array",
+                            "description": "The structure settings of the flights (Run) and of the landings (Landing), for each side: the left and right side structures and the structure under the stair. Only the given fields of the given parts and sides are changed.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "role": { "type": "string", "enum": ["Run", "Landing"], "description": "The part of the stair: the flights (Run) or the landings (Landing)." },
+                                    "side": { "type": "string", "enum": ["LeftSide", "RightSide", "UnderSide"], "description": "The side of the structure." },
+                                    "visible": { "type": "boolean", "description": "Whether the structure is present." },
+                                    "structureType": { "type": "string", "enum": ["Side", "Monolith", "BeamSupport", "CantileveredSupport"], "description": "The type of the structure: side stringers, monolithic, beam supported or cantilevered." },
+                                    "bottomType": { "type": "string", "enum": ["Stepped", "Flat", "Smooth"], "description": "The shape of the underside of the structure." },
+                                    "thickness": { "type": "number", "minimum": 0.0, "description": "The thickness of the structure." },
+                                    "horizontalThickness": { "type": "number", "minimum": 0.0, "description": "The horizontal thickness of the structure." }
+                                },
+                                "additionalProperties": false,
+                                "required": ["role", "side"]
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["stairsWithDetails"]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyStairsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": { "$ref": "#/ExecutionResults" }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+static bool StairPartRoleFromString (const GS::UniString& str, API_StairPartRoleID& role)
+{
+    if (str == "Run")     { role = APISR_Run;     return true; }
+    if (str == "Landing") { role = APISR_Landing; return true; }
+    return false;
+}
+
+static bool StairStructureSideFromString (const GS::UniString& str, API_StairStructureSideID& side)
+{
+    if (str == "LeftSide")  { side = APISS_LeftSide;  return true; }
+    if (str == "RightSide") { side = APISS_RightSide; return true; }
+    if (str == "UnderSide") { side = APISS_UnderSide; return true; }
+    return false;
+}
+
+// The settings of ModifyStairs, written into the Stair element and its mask. The tread, riser and
+// structure settings are the per-part defaults of the Stair (tread[role], riser[role],
+// structure[role][side]); the DevKit's Element_Test example (Do_Stair_Edit) changes them the same
+// way, with ACAPI_Element_Change and no memo, and Archicad rebuilds the subelements from them.
+static GS::Optional<GS::UniString> ApplyStairSettings (const GS::ObjectState& details, API_Element& element, API_Element& mask)
+{
+    API_StairType& stair = element.stair;
+
+    auto flightWidth = GetOptionalDouble (details, "flightWidth");
+    if (flightWidth.HasValue ()) {
+        stair.flightWidth = flightWidth.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_StairType, flightWidth);
+    }
+    auto totalHeight = GetOptionalDouble (details, "totalHeight");
+    if (totalHeight.HasValue ()) {
+        stair.totalHeight = totalHeight.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_StairType, totalHeight);
+    }
+    Int32 stepNum = 0;
+    if (details.Get ("stepNum", stepNum)) {
+        if (stepNum < 1) {
+            return GS::UniString ("stepNum must be at least 1.");
+        }
+        stair.stepNum = static_cast<UInt32> (stepNum);
+        ACAPI_ELEMENT_MASK_SET (mask, API_StairType, stepNum);
+    }
+    auto riserHeight = GetOptionalDouble (details, "riserHeight");
+    if (riserHeight.HasValue ()) {
+        stair.riserHeight = riserHeight.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_StairType, riserHeight);
+    }
+    auto treadDepth = GetOptionalDouble (details, "treadDepth");
+    if (treadDepth.HasValue ()) {
+        stair.treadDepth = treadDepth.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_StairType, treadDepth);
+    }
+    if (details.Get ("treadDepthLocked", stair.treadDepthLocked)) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_StairType, treadDepthLocked);
+    }
+    if (details.Get ("totalHeightLocked", stair.totalHeightLocked)) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_StairType, totalHeightLocked);
+    }
+    if (details.Get ("finishVisible", stair.finishVisible)) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_StairType, finishVisible);
+    }
+
+    GS::Array<GS::ObjectState> treads;
+    details.Get ("treads", treads);
+    for (const GS::ObjectState& tread : treads) {
+        GS::UniString roleStr;
+        API_StairPartRoleID role = APISR_Run;
+        if (!tread.Get ("role", roleStr) || !StairPartRoleFromString (roleStr, role)) {
+            return GS::UniString ("Invalid role in treads.");
+        }
+        API_StairTreadType& target = stair.tread[role];
+        if (tread.Get ("visible", target.visible)) {
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, tread[role].visible);
+        }
+        auto thickness = GetOptionalDouble (tread, "thickness");
+        if (thickness.HasValue ()) {
+            target.thickness = thickness.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, tread[role].thickness);
+        }
+        auto offset = GetOptionalDouble (tread, "offset");
+        if (offset.HasValue ()) {
+            target.offset = offset.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, tread[role].offset);
+        }
+        GS::UniString nosingType;
+        if (tread.Get ("nosingType", nosingType)) {
+            if (nosingType == "ByValue") {
+                target.nosingType = APITN_ByValue;
+            } else if (nosingType == "BySlanting") {
+                target.nosingType = APITN_BySlanting;
+            } else {
+                return GS::UniString ("Invalid nosingType in treads.");
+            }
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, tread[role].nosingType);
+        }
+        auto nosingValue = GetOptionalDouble (tread, "nosingValue");
+        if (nosingValue.HasValue ()) {
+            target.nosingValue = nosingValue.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, tread[role].nosingValue);
+        }
+        auto nosingSlant = GetOptionalDouble (tread, "nosingSlant");
+        if (nosingSlant.HasValue ()) {
+            target.nosingSlant = nosingSlant.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, tread[role].nosingSlant);
+        }
+    }
+
+    GS::Array<GS::ObjectState> risers;
+    details.Get ("risers", risers);
+    for (const GS::ObjectState& riser : risers) {
+        GS::UniString roleStr;
+        API_StairPartRoleID role = APISR_Run;
+        if (!riser.Get ("role", roleStr) || !StairPartRoleFromString (roleStr, role)) {
+            return GS::UniString ("Invalid role in risers.");
+        }
+        API_StairRiserType& target = stair.riser[role];
+        if (riser.Get ("visible", target.visible)) {
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, riser[role].visible);
+        }
+        auto thickness = GetOptionalDouble (riser, "thickness");
+        if (thickness.HasValue ()) {
+            target.thickness = thickness.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, riser[role].thickness);
+        }
+        auto offset = GetOptionalDouble (riser, "offset");
+        if (offset.HasValue ()) {
+            target.offset = offset.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, riser[role].offset);
+        }
+        GS::UniString crossSection;
+        if (riser.Get ("crossSection", crossSection)) {
+            if (crossSection == "Simple") {
+                target.crossSect = APIRCS_Simple;
+            } else if (crossSection == "Slanted") {
+                target.crossSect = APIRCS_Slanted;
+            } else {
+                return GS::UniString ("Invalid crossSection in risers.");
+            }
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, riser[role].crossSect);
+        }
+        auto angle = GetOptionalDouble (riser, "angle");
+        if (angle.HasValue ()) {
+            target.angle = angle.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, riser[role].angle);
+        }
+        GS::UniString position;
+        if (riser.Get ("position", position)) {
+            if (position == "OnTread") {
+                target.riserPosition = APIRP_OnTread;
+            } else if (position == "BehindTread") {
+                target.riserPosition = APIRP_BehindTread;
+            } else {
+                return GS::UniString ("Invalid position in risers.");
+            }
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, riser[role].riserPosition);
+        }
+    }
+
+    GS::Array<GS::ObjectState> structures;
+    details.Get ("structures", structures);
+    for (const GS::ObjectState& structure : structures) {
+        GS::UniString roleStr;
+        GS::UniString sideStr;
+        API_StairPartRoleID role = APISR_Run;
+        API_StairStructureSideID side = APISS_LeftSide;
+        if (!structure.Get ("role", roleStr) || !StairPartRoleFromString (roleStr, role)) {
+            return GS::UniString ("Invalid role in structures.");
+        }
+        if (!structure.Get ("side", sideStr) || !StairStructureSideFromString (sideStr, side)) {
+            return GS::UniString ("Invalid side in structures.");
+        }
+        API_StairStructureType& target = stair.structure[role][side];
+        if (structure.Get ("visible", target.visible)) {
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, structure[role][side].visible);
+        }
+        GS::UniString structureType;
+        if (structure.Get ("structureType", structureType)) {
+            if (structureType == "Side") {
+                target.structType = APIST_Side;
+            } else if (structureType == "Monolith") {
+                target.structType = APIST_Monolith;
+            } else if (structureType == "BeamSupport") {
+                target.structType = APIST_BeamSupport;
+            } else if (structureType == "CantileveredSupport") {
+                target.structType = APIST_CantileveredSupport;
+            } else {
+                return GS::UniString ("Invalid structureType in structures.");
+            }
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, structure[role][side].structType);
+        }
+        GS::UniString bottomType;
+        if (structure.Get ("bottomType", bottomType)) {
+            if (bottomType == "Stepped") {
+                target.bottomType = APISB_Stepped;
+            } else if (bottomType == "Flat") {
+                target.bottomType = APISB_Flat;
+            } else if (bottomType == "Smooth") {
+                target.bottomType = APISB_Smooth;
+            } else {
+                return GS::UniString ("Invalid bottomType in structures.");
+            }
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, structure[role][side].bottomType);
+        }
+        auto thickness = GetOptionalDouble (structure, "thickness");
+        if (thickness.HasValue ()) {
+            target.thickness = thickness.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, structure[role][side].thickness);
+        }
+        auto horizontalThickness = GetOptionalDouble (structure, "horizontalThickness");
+        if (horizontalThickness.HasValue ()) {
+            target.horizontalThickness = horizontalThickness.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, structure[role][side].horizontalThickness);
+        }
+    }
+
+    return {};
+}
+
+GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> stairsWithDetails;
+    parameters.Get ("stairsWithDetails", stairsWithDetails);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("ModifyStairs", [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : stairsWithDetails) {
+            const GS::ObjectState* elementId = item.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*elementId);
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to find the element"));
+                continue;
+            }
+            if (GetElemTypeId (element.header) != API_StairID) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Element is not a Stair."));
+                continue;
+            }
+
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+            const GS::Optional<GS::UniString> settingsError = ApplyStairSettings (item, element, mask);
+            if (settingsError.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, *settingsError));
+                continue;
+            }
+
+            // No memo is passed, so the baseline and the position of the stair are kept.
+            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to modify the stair."));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
 }
 
 CreateWindowsCommand::CreateWindowsCommand () :
@@ -12234,6 +13192,172 @@ GS::ObjectState ModifyDetailMarkersCommand::Execute (const GS::ObjectState& para
             }
             if (hasClipPolygon && changed.detail.poly.nCoords != element.detail.poly.nCoords) {
                 results.Push (CreateFailedExecutionResult (APIERR_REFUSEDPAR, "Archicad did not apply the new clip polygon."));
+                continue;
+            }
+            results.Push (CreateSuccessfulExecutionResult ());
+        }
+    });
+}
+
+ModifyRailingsCommand::ModifyRailingsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyRailingsCommand::GetName () const
+{
+    return "ModifyRailings";
+}
+
+GS::Optional<GS::UniString> ModifyRailingsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "railingsWithDetails": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "height": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "description": "The new height of the railing segments (the height GetDetailsOfElements returns), applied to every segment of the railing."
+                        },
+                        "bottomOffset": {
+                            "type": "number",
+                            "description": "The new base height of the railing relative to its home story."
+                        },
+                        "floorIndex": {
+                            "type": "integer",
+                            "description": "The new home story index (as returned by GetStories). The bottom offset is kept, or set from bottomOffset when that is given too, so the railing moves with the story."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "railingsWithDetails"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyRailingsCommand::GetRawResponseSchema () const
+{
+    return ModifyWallsCommand ().GetRawResponseSchema ();
+}
+
+// Only fields of the railing element itself are changed, never its memo: the reference line, nodes,
+// segments, posts and rails stay as they are. The height goes to defSegment.height, as the DevKit's
+// Element_Test (Do_Railing_Edit) changes it. The railing is read back afterwards, so a value Archicad
+// did not take (for example a base it derives from the elevations of the reference line vertices,
+// memo.polyZCoords) is reported as a failure instead of a success.
+GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> items;
+    auto error = GetElementArray (parameters, "railingsWithDetails", items);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+
+    const Stories stories = GetStories ();
+    const double tolerance = 1e-6;
+
+    return ExecuteModifyWithResults ("Modify Railings", [&](GS::Array<GS::ObjectState>& results) {
+        for (const auto& item : items) {
+            if (item.Get ("elementId") == nullptr) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
+                continue;
+            }
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to load railing."));
+                continue;
+            }
+            if (GetElemTypeId (element.header) != API_RailingID) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADID, "Element is not a Railing."));
+                continue;
+            }
+
+            double height = 0.0;
+            const bool hasHeight = item.Get ("height", height);
+            if (hasHeight && height <= 0.0) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "height must be positive."));
+                continue;
+            }
+            double bottomOffset = 0.0;
+            const bool hasBottomOffset = item.Get ("bottomOffset", bottomOffset);
+            short floorIndex = 0;
+            const bool hasFloorIndex = item.Get ("floorIndex", floorIndex);
+            if (hasFloorIndex && stories.find (floorIndex) == stories.end ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf ("floorIndex %d is not a story of the project; see GetStories for the valid story indices.", static_cast<int> (floorIndex))));
+                continue;
+            }
+            if (!hasHeight && !hasBottomOffset && !hasFloorIndex) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No railing fields to modify."));
+                continue;
+            }
+
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+            if (hasHeight) {
+                element.railing.defSegment.height = height;
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, defSegment.height);
+            }
+            if (hasBottomOffset) {
+                element.railing.bottomOffset = bottomOffset;
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, bottomOffset);
+            }
+            if (hasFloorIndex) {
+                element.header.floorInd = floorIndex;
+                ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+            }
+
+            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to modify railing."));
+                continue;
+            }
+
+            // Read back, so a value Archicad did not take is reported instead of a success.
+            API_Element changed = {};
+            changed.header.guid = element.header.guid;
+            err = ACAPI_Element_Get (&changed);
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to read the railing back after the change."));
+                continue;
+            }
+            GS::UniString notApplied;
+            if (hasFloorIndex && changed.header.floorInd != floorIndex) {
+                notApplied += GS::UniString::Printf (" floorIndex is %d.", static_cast<int> (changed.header.floorInd));
+            }
+            if (std::abs (changed.railing.bottomOffset - element.railing.bottomOffset) > tolerance) {
+                notApplied += GS::UniString::Printf (" bottomOffset is %.4f instead of %.4f.", changed.railing.bottomOffset, element.railing.bottomOffset);
+            }
+            if (hasHeight) {
+                API_ElementMemo memo = {};
+                const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+                if (ACAPI_Element_GetMemo (changed.header.guid, &memo, APIMemoMask_RailingSegment) == NoError && memo.railingSegments != nullptr) {
+                    for (UInt32 i = 0; i < changed.railing.nSegments; ++i) {
+                        if (std::abs (memo.railingSegments[i].height - height) > tolerance) {
+                            notApplied += GS::UniString::Printf (" The height of segment %u is %.4f.", i, memo.railingSegments[i].height);
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!notApplied.IsEmpty ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_REFUSEDPAR, GS::UniString ("Archicad did not apply every value; the railing was changed as follows:") + notApplied));
                 continue;
             }
             results.Push (CreateSuccessfulExecutionResult ());

@@ -265,6 +265,16 @@ GSErrCode ExecuteActionForEachDatabase (
 // NoValue for any other database type or when the Project Map has no such item.
 GS::Optional<API_Guid> FindProjectMapItemOfWorksheetOrDetail (const API_DatabaseInfo& database);
 
+// Makes the database with this id (as GetDatabases and the databaseId inputs give it) the current
+// database, without changing the front window.
+GSErrCode ChangeCurrentDatabaseTo (const API_Guid& databaseId);
+
+// A worksheet or detail whose window was never opened, e.g. one just made by CreateWorksheets,
+// cannot be made the current database (APIERR_BADDATABASE) until its Project Map item has been
+// opened once, as ChangeWindow does it (#1602). Called outside the undoable command; returns
+// whether a window was opened, so the caller can bring the starting window back.
+bool OpenDatabaseIfNeverOpened (const API_Guid& databaseId);
+
 // The name and the reference ID of a Detail or Worksheet marker. A Worksheet element reports an
 // empty detailIdStr (Archicad 29) while its viewpoint has the ID, so both are taken from the
 // viewpoint's database when it can be read, and from the element otherwise.

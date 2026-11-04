@@ -109,7 +109,7 @@ namespace TapirGrasshopperPlugin.Components.LibraryComponents
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.IsUsableGDLString;
+            Properties.Resources.InterpretGDLScript3D;
 
         public override Guid ComponentGuid =>
             new Guid("264af90d-ea87-4c93-ab9e-4e4e190ad1a8");

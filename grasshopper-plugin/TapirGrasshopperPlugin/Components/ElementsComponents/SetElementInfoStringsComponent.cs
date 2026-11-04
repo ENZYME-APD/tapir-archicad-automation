@@ -82,9 +82,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 da);
         }
 
-        // Shares the icon of ElementDetails until it gets one of its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.ElemDetails;
+            Properties.Resources.SetElementInfoStrings;
 
         public override Guid ComponentGuid =>
             new Guid("ddad45d0-509e-406a-9465-de4e30b3d3bc");
