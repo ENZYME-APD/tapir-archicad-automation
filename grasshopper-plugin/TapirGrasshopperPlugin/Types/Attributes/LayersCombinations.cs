@@ -68,4 +68,10 @@ namespace TapirGrasshopperPlugin.Types.Attributes
         [JsonProperty("overwriteExisting")]
         public bool OverwriteExisting;
     }
+
+    public class ActivateLayerCombinationParameters
+    {
+        [JsonProperty("attributeId")]
+        public AttributeGuidObject AttributeId;
+    }
 }

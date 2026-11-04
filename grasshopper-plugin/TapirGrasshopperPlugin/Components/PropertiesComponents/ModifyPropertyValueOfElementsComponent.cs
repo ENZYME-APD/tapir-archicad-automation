@@ -19,7 +19,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             : base(
                 "ModifyPropertyValueOfElements",
                 "Set one property value on all the given elements in a single step. If the property is not " +
-                "available for any of the elements, none of them is changed. Available from Archicad 27.",
+                "available for any of the elements, none of them is changed.",
                 GroupNames.Properties)
         {
         }
