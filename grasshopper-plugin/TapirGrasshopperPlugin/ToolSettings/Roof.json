@@ -188,6 +188,156 @@
       "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-4.htm (text \"Roof levels: Use these controls to add one or more levels to a Multi-plane Roof\"; screenshot AddRoofLevel.png \"Roof Levels:\")",
       "group": "Multi-plane Geometry",
       "subgroup": null
+    },
+    {
+      "get": "isAutoOnStoryVisibility",
+      "set": null,
+      "apiMember": "API_ShellBaseType::isAutoOnStoryVisibility",
+      "apiDescription": "Recalculate the story visibility automatically according to the actual vertical extent of the element.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Floor Plan Display"
+    },
+    {
+      "get": "visibility",
+      "set": null,
+      "apiMember": "API_ShellBaseType::visibilityCont",
+      "apiDescription": "Visibility of the element's contour line. On the element's own story the contour should always be visible.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Floor Plan Display"
+    },
+    {
+      "get": "fillVisibility",
+      "set": null,
+      "apiMember": "API_ShellBaseType::visibilityFill",
+      "apiDescription": "Visibility of the element's cover fill.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Floor Plan Display"
+    },
+    {
+      "get": "displayOption",
+      "set": null,
+      "apiMember": "API_ShellBaseType::displayOption",
+      "apiDescription": "Floor plan display option.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Floor Plan Display"
+    },
+    {
+      "get": "viewDepthLimitation",
+      "set": null,
+      "apiMember": "API_ShellBaseType::viewDepthLimitation",
+      "apiDescription": "Floor plan view depth limitation.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Floor Plan Display"
+    },
+    {
+      "get": "cutFillPen",
+      "set": null,
+      "apiMember": "API_ShellBaseType::cutFillPen",
+      "apiDescription": "Cut fill pens set in the used structure (building material, composite) can be overridden on the element level.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "cutFillBackgroundPen",
+      "set": null,
+      "apiMember": "API_ShellBaseType::cutFillBackgroundPen",
+      "apiDescription": "Cut fill pens set in the used structure (building material, composite) can be overridden on the element level.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "sectionContourPen",
+      "set": null,
+      "apiMember": "API_ShellBaseType::sectContPen",
+      "apiDescription": "Contour pen attribute index of the fill in sections.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "sectionContourLineTypeId",
+      "set": null,
+      "apiMember": "API_ShellBaseType::sectContLtype",
+      "apiDescription": "Line type attribute index of the element's section contour.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "contourPen",
+      "set": null,
+      "apiMember": "API_ShellBaseType::pen",
+      "apiDescription": "Pen attribute index of the contour.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Outlines"
+    },
+    {
+      "get": "contourLineTypeId",
+      "set": null,
+      "apiMember": "API_ShellBaseType::ltypeInd",
+      "apiDescription": "Line type attribute index of the contour.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Outlines"
+    },
+    {
+      "get": "aboveViewLinePen",
+      "set": null,
+      "apiMember": "API_ShellBaseType::aboveViewLinePen",
+      "apiDescription": "Pen used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup. Corresponds to the \"Overhead Line Pens\" value in the element's Settings dialog.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Outlines"
+    },
+    {
+      "get": "aboveViewLineTypeId",
+      "set": null,
+      "apiMember": "API_ShellBaseType::aboveViewLineType",
+      "apiDescription": "Line type used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup. Corresponds to the \"Overhead Lines\" value in the element's Settings dialog.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Outlines"
+    },
+    {
+      "get": "floorFill",
+      "set": null,
+      "apiMember": null,
+      "apiDescription": "Cover fill settings: API_ShellBaseType::useFloorFill, floorFillPen, floorFillBGPen, floorFillInd, use3DHatching, useFillLocBaseLine, useSlantedFill and hatchOrientation.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cover Fills"
+    },
+    {
+      "get": "cutBodyType",
+      "set": null,
+      "apiMember": "API_ShellBaseType::cutBodyType",
+      "apiDescription": "These values affect the connection type of Roof and Shell elements (see on the Model tab page of the Roof/Shell Settings dialog).",
+      "label": null,
+      "labelSource": null,
+      "group": "Model",
+      "subgroup": null
     }
   ]
 }

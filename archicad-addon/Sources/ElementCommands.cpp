@@ -46,6 +46,69 @@ static void AddPivotPolygonFromMemo (const API_Guid& guid, GS::ObjectState& os)
 static GS::UniString StructureTypeToString (API_ModelElemStructureType structureType);
 static void AddShellBaseSurfaces (const API_ShellBaseType& base, GS::ObjectState& os);
 
+static const char* ShellBaseCutBodyTypeToString (API_ShellBaseCutBodyTypeID cutBodyType)
+{
+    switch (cutBodyType) {
+        case APIShellBaseCutBody_ContoursDown:          return "ContoursDown";
+        case APIShellBaseCutBody_PivotLinesDown:        return "PivotLinesDown";
+        case APIShellBaseCutBody_UpwardsExtrusion:      return "UpwardsExtrusion";
+        case APIShellBaseCutBody_DownwardsExtrusion:    return "DownwardsExtrusion";
+        case APIShellBaseCutBody_Editable:
+        default:                                        return "Editable";
+    }
+}
+
+// The floor plan and section settings of a Roof or Shell, kept in its API_ShellBaseType,
+// under the Wall's key names where the meaning is the same (#1785).
+static void AddShellBaseFloorPlanDetails (const API_ShellBaseType& base, GS::ObjectState& os)
+{
+    os.Add ("displayOption", ElemDisplayOptionToString (base.displayOption));
+    os.Add ("viewDepthLimitation", ViewDepthLimitationToString (base.viewDepthLimitation));
+    os.Add ("isAutoOnStoryVisibility", base.isAutoOnStoryVisibility);
+    os.Add ("visibility", CreateStoryVisibilityObjectState (base.visibilityCont));
+    os.Add ("fillVisibility", CreateStoryVisibilityObjectState (base.visibilityFill));
+    os.Add ("cutBodyType", ShellBaseCutBodyTypeToString (base.cutBodyType));
+#ifdef ServerMainVers_2700
+    os.Add ("cutFillPen", CreateOverriddenPenObjectState (base.cutFillPen));
+    os.Add ("cutFillBackgroundPen", CreateOverriddenPenObjectState (base.cutFillBackgroundPen));
+#else
+    {
+        GS::ObjectState cutFillPen ("overridden", base.penOverride.overrideCutFillPen);
+        if (base.penOverride.overrideCutFillPen) {
+            cutFillPen.Add ("penIndex", (Int32) base.penOverride.cutFillPen);
+        }
+        os.Add ("cutFillPen", cutFillPen);
+        GS::ObjectState cutFillBackgroundPen ("overridden", base.penOverride.overrideCutFillBackgroundPen);
+        if (base.penOverride.overrideCutFillBackgroundPen) {
+            cutFillBackgroundPen.Add ("penIndex", (Int32) base.penOverride.cutFillBackgroundPen);
+        }
+        os.Add ("cutFillBackgroundPen", cutFillBackgroundPen);
+    }
+#endif
+    os.Add ("sectionContourPen", (Int32) base.sectContPen);
+    if (base.sectContLtype != APIInvalidAttributeIndex) {
+        os.Add ("sectionContourLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, base.sectContLtype)));
+    }
+    os.Add ("contourPen", (Int32) base.pen);
+    if (base.ltypeInd != APIInvalidAttributeIndex) {
+        os.Add ("contourLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, base.ltypeInd)));
+    }
+    os.Add ("aboveViewLinePen", (Int32) base.aboveViewLinePen);
+    if (base.aboveViewLineType != APIInvalidAttributeIndex) {
+        os.Add ("aboveViewLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, base.aboveViewLineType)));
+    }
+    GS::ObjectState floorFillOs;
+    floorFillOs.Add ("use", base.useFloorFill);
+    floorFillOs.Add ("foregroundPen", (Int32) base.floorFillPen);
+    floorFillOs.Add ("backgroundPen", (Int32) base.floorFillBGPen);
+    floorFillOs.Add ("fillId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_FilltypeID, base.floorFillInd)));
+    floorFillOs.Add ("use3DHatching", base.use3DHatching);
+    floorFillOs.Add ("useFillLocBaseLine", base.useFillLocBaseLine);
+    floorFillOs.Add ("useSlantedFill", base.useSlantedFill);
+    floorFillOs.Add ("orientation", CreateHatchOrientationObjectState (base.hatchOrientation));
+    os.Add ("floorFill", floorFillOs);
+}
+
 // The RoofDetails of a roof. The polygon is read from partMemo when given (a plane
 // of a decomposed multi-plane roof, which has no memo of its own), else from the
 // memo of the element with this guid.
@@ -63,6 +126,7 @@ static void AddRoofDetails (const API_RoofType& roof, const API_Guid& guid, shor
         os.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, base.buildingMaterial)));
     }
     AddShellBaseSurfaces (base, os);
+    AddShellBaseFloorPlanDetails (base, os);
     if (roof.roofClass == API_PlaneRoofID) {
         os.Add ("angle", roof.u.planeRoof.angle);
         GS::ObjectState pivotLine;
