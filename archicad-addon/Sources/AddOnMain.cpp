@@ -2147,6 +2147,10 @@ GSErrCode Initialize (void)
             libraryCommands, "1.7.4",
             "Gets the name and file path of the last valid library part of the embedded library."
         );
+        err |= RegisterCommand<SearchLibraryPartsCommand> (
+            libraryCommands, "1.8.1",
+            "Finds the loaded library parts derived from an ancestor library part (by its unique ID) whose name matches a pattern with * wildcards. Archicad returns at most 50 of them."
+        );
         err |= RegisterCommand<OpenLibraryPartInEditorCommand> (
             libraryCommands, "1.8.0",
             "Opens a loaded library part, given by its fileName or documentName as returned by GetAvailableLibraryParts, in Archicad's library part editor. Available from Archicad 27."
