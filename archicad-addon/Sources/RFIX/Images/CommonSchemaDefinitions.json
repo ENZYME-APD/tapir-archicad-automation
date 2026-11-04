@@ -3166,6 +3166,110 @@
             "z"
         ]
     },
+    "CoordinateSystem3D": {
+        "type": "object",
+        "description": "A coordinate system in 3D: an origin and three axes. What is left out keeps its default; give all three axes together or none.",
+        "properties": {
+            "origin": {
+                "$ref": "#/Coordinate3D",
+                "description": "The origin of the coordinate system."
+            },
+            "xAxis": {
+                "$ref": "#/Coordinate3D",
+                "description": "The X axis of the coordinate system."
+            },
+            "yAxis": {
+                "$ref": "#/Coordinate3D",
+                "description": "The Y axis of the coordinate system."
+            },
+            "zAxis": {
+                "$ref": "#/Coordinate3D",
+                "description": "The Z axis of the coordinate system."
+            }
+        },
+        "additionalProperties": false
+    },
+    "ShellEdgeTrim": {
+        "type": "object",
+        "description": "How a shell edge is cut.",
+        "properties": {
+            "trimType": {
+                "type": "string",
+                "enum": ["Vertical", "Perpendicular", "Horizontal", "CustomAngle"],
+                "description": "Vertical, Perpendicular or Horizontal to the shell, or at 'angle' (CustomAngle)."
+            },
+            "angle": {
+                "type": "number",
+                "description": "The trim angle in radians. Only CustomAngle uses it; pi/2 by default."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "trimType"
+        ]
+    },
+    "ShellProfile": {
+        "type": "object",
+        "description": "A profile polyline of a shell, in the XY plane of its coordinate system.",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "description": "The points of the polyline.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 2
+            },
+            "arcs": {
+                "type": "array",
+                "description": "Arc segments of the polyline, with indices into coordinates; index len(coordinates) is the first point again, which closes the polyline.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "closed": {
+                "type": "boolean",
+                "description": "Whether the segment from the last point back to the first one is part of the profile. False by default."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinates"
+        ]
+    },
+    "ShellCutPolygon": {
+        "type": "object",
+        "description": "A closed polygon cutting a shell: its clipping contour or a hole.",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "description": "The points of the polygon, in the XY plane of 'plane'.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 3
+            },
+            "arcs": {
+                "type": "array",
+                "description": "Arc segments of the polygon, with indices into coordinates.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "plane": {
+                "$ref": "#/CoordinateSystem3D",
+                "description": "The plane of the polygon, in the coordinates of the shell's base plane: a hole is extruded from it along its Z axis. The base plane itself by default."
+            },
+            "depth": {
+                "type": "number",
+                "description": "Required for holes, ignored for the clipping contour: how far the cutting body is extruded from the polygon's plane, along its Z axis (negative values cut downwards)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinates"
+        ]
+    },
     "AxonometryProjectionType": {
         "type": "string",
         "description": "The projection type of an axonometric 3D projection, the projMod of the Archicad API. Archicad works out the transformation matrix of every type but Custom from the type and the azimuth. XY is the top view and Bottom the view from below. YZ and XZ are both the side view (an elevation), looking from the azimuth. Frontal, Monometric, Isometric and Dimetric are the predefined axonometries, and FrontalBottom, MonometricBottom, IsometricBottom and DimetricBottom the same seen from below; an Isometric at azimuth 270 is the isometric from the south-east (X axis at -30 degrees, Y at 30, Z at 90). Custom keeps the transformation matrix as given. Parallel cannot be set: Archicad makes it Custom.",
