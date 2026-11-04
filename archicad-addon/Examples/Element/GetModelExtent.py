@@ -1,8 +1,9 @@
+"""Prints the model extent with GetModelExtent: the region Fit in Window would show in the current database, vertical range included.
+
+A stray element far from the building makes it much larger than expected.
+"""
 import aclib
 
-# GetModelExtent returns the region Fit in Window would show in the current database,
-# vertical range included. A stray element far from the building makes it much larger
-# than expected.
 extent = aclib.RunTapirCommand ('GetModelExtent')
 
 if extent is None or 'error' in extent:
