@@ -9,4 +9,4 @@ original = aclib.RunTapirCommand ('GetZoneLabelingSettings', {})
 aclib.PrintJson (aclib.RunTapirCommand ('SetZoneLabelingSettings', {'automaticLabeling': not original['isAutomaticLabelingOn']}))
 aclib.RunTapirCommand ('GetZoneLabelingSettings', {})
 
-aclib.RunTapirCommand ('SetZoneLabelingSettings', {'automaticLabeling': original['isAutomaticLabelingOn']})
+aclib.PrintJson (aclib.RunTapirCommand ('SetZoneLabelingSettings', {'automaticLabeling': original['isAutomaticLabelingOn']}))

@@ -24,6 +24,6 @@ aclib.PrintJson (aclib.RunTapirCommand ('SetCategoryValuesOfElements', {
 }))
 print ('Structural Function: {} -> {}'.format (original['name'], GetStructuralFunction ()['name']))
 
-aclib.RunTapirCommand ('SetCategoryValuesOfElements', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetCategoryValuesOfElements', {
     'elementCategoryValues': [{'elementId': wallId, 'type': 'StructuralFunction', 'categoryValueId': original['categoryValueId']}]
-})
+}))

@@ -9,7 +9,7 @@ favoriteNames = []
 for elementType in ['Window', 'CurtainWall', 'Stair']:
     favoriteNames += aclib.RunTapirCommand ('GetFavoritesByType', {
         'elementType': elementType
-    }, debug=False).get ('favorites', [])[:1]
+    }).get ('favorites', [])[:1]
 
 response = aclib.RunTapirCommand ('GetFavoriteDefaults', {
     'favorites': favoriteNames
