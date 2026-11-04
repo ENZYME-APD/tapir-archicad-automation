@@ -109,6 +109,206 @@
       "labelSource": null,
       "group": "Grid Pattern and Preview",
       "subgroup": null
+    },
+    {
+      "get": "visibility",
+      "set": null,
+      "apiMember": "API_CurtainWallType::visibility",
+      "apiDescription": "Story visibility.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Floor Plan Display"
+    },
+    {
+      "get": "isAutoOnStoryVisibility",
+      "set": null,
+      "apiMember": "API_CurtainWallType::isAutoOnStoryVisibility",
+      "apiDescription": "Story visibility will be automatically recalculated when needed.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Floor Plan Display"
+    },
+    {
+      "get": "displayOption",
+      "set": null,
+      "apiMember": "API_CurtainWallType::displayOption",
+      "apiDescription": "Floor plan display option.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Floor Plan Display"
+    },
+    {
+      "get": "viewDepthLimitation",
+      "set": null,
+      "apiMember": "API_CurtainWallType::viewDepthLimitation",
+      "apiDescription": "Floor plan view depth limitation.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Floor Plan Display"
+    },
+    {
+      "get": "cutProjectionMode",
+      "set": null,
+      "apiMember": "API_CurtainWallType::cutProjectionMode",
+      "apiDescription": "Cut projection mode.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Floor Plan Display"
+    },
+    {
+      "get": "uncutProjectionMode",
+      "set": null,
+      "apiMember": "API_CurtainWallType::uncutProjectionMode",
+      "apiDescription": "Uncut projection mode.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Floor Plan Display"
+    },
+    {
+      "get": "overheadProjectionMode",
+      "set": null,
+      "apiMember": "API_CurtainWallType::overheadProjectionMode",
+      "apiDescription": "Overhead projection mode.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Floor Plan Display"
+    },
+    {
+      "get": "cutFillPen",
+      "set": null,
+      "apiMember": "API_CurtainWallType::cutFillPen",
+      "apiDescription": "Cut fill pens set in the building material can be overridden on the element level.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "cutFillBackgroundPen",
+      "set": null,
+      "apiMember": "API_CurtainWallType::cutFillBackgroundPen",
+      "apiDescription": "Cut fill pens set in the building material can be overridden on the element level.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "frameCutLinePen",
+      "set": null,
+      "apiMember": "API_CurtainWallType::frameCutLinePen",
+      "apiDescription": "Pen index of the cut part of frames on the floorplan.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "frameCutLineTypeId",
+      "set": null,
+      "apiMember": "API_CurtainWallType::frameCutLineType",
+      "apiDescription": "Line index of the cut part of frames on the floorplan.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "useFrameTypesAttributes",
+      "set": null,
+      "apiMember": "API_CurtainWallType::useFrameTypesAttributes",
+      "apiDescription": "Use Frame type's attributes.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "panelCutLinePen",
+      "set": null,
+      "apiMember": "API_CurtainWallType::panelCutLinePen",
+      "apiDescription": "Pen index of the cut part of panels on the floorplan.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "panelCutLineTypeId",
+      "set": null,
+      "apiMember": "API_CurtainWallType::panelCutLineType",
+      "apiDescription": "Line index of the cut part of panels on the floorplan.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "usePanelTypesAttributes",
+      "set": null,
+      "apiMember": "API_CurtainWallType::usePanelTypesAttributes",
+      "apiDescription": "Use Panel type's attributes.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "pen",
+      "set": null,
+      "apiMember": "API_CurtainWallType::pen",
+      "apiDescription": "The pen index.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Outlines"
+    },
+    {
+      "get": "belowViewLinePen",
+      "set": null,
+      "apiMember": "API_CurtainWallType::uncutLinePen",
+      "apiDescription": "Pen index of view below cutplane on the floorplan.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Outlines"
+    },
+    {
+      "get": "belowViewLineTypeId",
+      "set": null,
+      "apiMember": "API_CurtainWallType::uncutLineType",
+      "apiDescription": "Linetype of view below cutplane on the floorplan.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Outlines"
+    },
+    {
+      "get": "aboveViewLinePen",
+      "set": null,
+      "apiMember": "API_CurtainWallType::overheadLinePen",
+      "apiDescription": "Pen index of view above cutplane on the floorplan.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Outlines"
+    },
+    {
+      "get": "aboveViewLineTypeId",
+      "set": null,
+      "apiMember": "API_CurtainWallType::overheadLineType",
+      "apiDescription": "Linetype of view above cutplane on the floorplan.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Outlines"
     }
   ]
 }
