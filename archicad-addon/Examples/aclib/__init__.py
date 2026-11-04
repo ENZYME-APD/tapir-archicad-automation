@@ -9,6 +9,12 @@ args, unknownArgs = parser.parse_known_args()
 host = 'http://127.0.0.1' if 'host' not in args else args.host
 port = 19723 if 'port' not in args else args.port
 
+# Whether RunTapirCommand prints each command, its parameters and its response when the call
+# does not say (debug = True or False). Off for the examples, which print what they want to
+# show; the test scripts and workflows turn it on (see their aclib.py). RunCommand prints only
+# with debug = True.
+printCommands = False
+
 def RunCommand (command, parameters = None, debug = False):
     if parameters is None:
         parameters = {}
@@ -43,7 +49,9 @@ def RunCommand (command, parameters = None, debug = False):
 
     return result
 
-def RunTapirCommand (command, parameters = None, debug = True):
+def RunTapirCommand (command, parameters = None, debug = None):
+    if debug is None:
+        debug = printCommands
     if parameters is None:
         parameters = {}
 
@@ -70,3 +78,6 @@ def RunTapirCommand (command, parameters = None, debug = True):
 
 def JsonDumpDictionary (d):
     return json.dumps (d, indent = 4)
+
+def PrintJson (value):
+    print (JsonDumpDictionary (value))

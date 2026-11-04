@@ -51,8 +51,12 @@ archicad-addon/          C++ Archicad Add-On
   Build/                 CMake build output + DevKits/ (downloaded Archicad API SDKs)
   Tools/                 Build/packaging scripts (CMake helpers, resource compiler, signing),
                          legacy auto-update script (update_addon_and_restart_archicad.py)
-  Examples/              Python usage examples (one .py per feature) + aclib/ helper
-  Test/                  test_examples.py runs Examples against TestProject.pla
+  Examples/              One example per command: <GroupFolder>/<CommandName>.py (+ an aclib.py
+                         shim per folder) and the aclib/ helper; shown in the command docs
+  Workflows/             Scripts combining several commands into a task or tool
+  Test/                  test_examples.py runs Scripts/ (regression tests, goldens in
+                         ExpectedOutputs/) and smoke-tests Examples against TestProject.pla;
+                         Scripts/manual/ are tests run by hand
   Installer/             Cross-platform end-user installer (tapir_installer.py, PyInstaller-packaged in CI)
   README.md
 grasshopper-plugin/      C# Grasshopper plugin (.NET, produces .gha), packaged via Yak
@@ -66,6 +70,7 @@ docs/                    Generated docs (archicad-addon command reference),
 tools/                   Version bump scripts (update_version.py), package_info.json,
                          Add-On docs generator (generate_addon_docs.py),
                          command scaffolder (new_command.py),
+                         one-example-per-command checker (check_examples.py),
                          Grasshopper GUI label table checker (check_tool_settings.py),
                          API coverage generator (generate_api_coverage.py,
                          fetch_api_coverage_github_data.py, api_coverage_rules.json),
@@ -139,8 +144,14 @@ the registration and a starter example. The Archicad API calls in `Execute` and 
 2. Implement input/response schemas; reuse `SchemaDefinitions` and `CommandBase` helpers.
 3. Register it in `AddOnMain.cpp` `Initialize()` with the version it is introduced in
    and a clear description.
-4. Add a Python example under [archicad-addon/Examples/](archicad-addon/Examples/) and,
-   if it should be tested, expected output under `Test/ExpectedOutputs/`.
+4. Add its example as `archicad-addon/Examples/<GroupFolder>/<CommandName>.py`: a module
+   docstring (shown as the example's description in the docs' *Example* popdown, which loads the
+   file from `main`) and a short script calling the command through `aclib`; the convention and
+   the `<GroupFolder>` rule (group name without "Commands" and parentheses, PascalCase, e.g.
+   `CustomData`, `MEP`) are in [archicad-addon/Examples/README.md](archicad-addon/Examples/README.md),
+   and `python tools/check_examples.py` checks them. A script that tests behaviour goes to
+   `archicad-addon/Test/Scripts/` (with its golden under `Test/ExpectedOutputs/` if
+   `test_examples.py` should compare it), a multi-command task to `archicad-addon/Workflows/`.
 5. Docs at <https://enzyme-apd.github.io/...> are generated from the registered
    descriptions and schemas by `python tools/generate_addon_docs.py` (no Archicad
    needed; same output as the `GenerateDocumentation` developer command). The weekly
@@ -178,8 +189,8 @@ Notes:
 
 ## Testing the Add-On
 
-Tests are Python-based and run the example scripts against a running Archicad with
-the built Add-On loaded, comparing to golden outputs:
+Tests are Python-based and run scripts against a running Archicad with the built Add-On
+loaded, comparing to golden outputs:
 
 ```bash
 cd archicad-addon/Test
@@ -187,10 +198,15 @@ python test_examples.py
 ```
 
 - Requires the official `archicad` Python package (`ACConnection`) and a running
-  Archicad instance; `test_examples.py` opens `TestProject.pla`, runs each script in
-  [Examples/](archicad-addon/Examples/), and diffs against `ExpectedOutputs/`.
-- Example scripts talk to the Add-On via `ExecuteAddOnCommand(AddOnCommandId('TapirCommand', <CommandName>), params)`.
-- `aclib/` under `Examples/` is a small shared helper used by the example scripts.
+  Archicad instance; `test_examples.py` reopens `TestProject.pla` before each script, runs
+  every script in [Test/Scripts/](archicad-addon/Test/Scripts/) (diffed against
+  `ExpectedOutputs/<name>.py.output`) and every example in [Examples/](archicad-addon/Examples/)
+  as a smoke test (`ExpectedOutputs/Examples/<GroupFolder>/<name>.py.output`, recorded on the first
+  run; `EXAMPLES_NOT_SMOKE_TESTED` lists the examples that cannot run unattended). Names given on
+  the command line run only those; `record_expected_output.py <name>.py` records one golden.
+  `Test/Scripts/manual/` is not run.
+- The scripts use `aclib/` under `Examples/` (`aclib.RunTapirCommand`); `Workflows/`,
+  `Test/Scripts/` and each `Examples/<GroupFolder>/` have an `aclib.py` shim that loads it.
 - Pull requests and local builds are tested on real Archicad with
   [tools/community-test-runner/](tools/community-test-runner/) (JSON checks in
   `archicad-addon/Test/checks/`). Use its `--brief` output (`prs`, `test … --brief --no-post`,
@@ -296,14 +312,18 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
 - `archicad_addon_build_check.yml`, `grasshopper_plugin_build_check.yml`,
   `installer_build_check.yml` — PR build checks for each component, also run
   on pushes to `main` and by `workflow_dispatch` (which the bot PR steward
-  uses); a newer push to a pull request cancels its superseded runs. The installer
+  uses); a newer push to a pull request cancels its superseded runs. The add-on
+  check also runs `tools/check_examples.py` (one example per command). The installer
   check also runs `Installer/test_update_mode.py` and syntax-checks the legacy
   auto-update script.
 - `archicad_addon.yml`, `grasshopper_plugin.yml` — release/publish pipelines.
   `archicad_addon.yml` also builds the Tapir Installer executables
-  (`TapirInstaller_Win.exe`, `TapirInstaller_Mac.zip`); `weekly_release.yml`
-  expects two assets per version in `devkits.json` plus the two installers
-  (`EXPECTED_ASSETS`). The Mac installer is
+  (`TapirInstaller_Win.exe`, `TapirInstaller_Mac.zip`), and attaches them a second time
+  under versioned names (`TapirInstaller_Win_<version>.exe`, `TapirInstaller_Mac_<version>.zip`,
+  #1646); `weekly_release.yml` expects two assets per version in `devkits.json` plus these
+  four installer files (`EXPECTED_ASSETS`). The add-on carries its version as a resource
+  (Windows VERSIONINFO written by `Tools/CompileResources.py`, macOS
+  `CFBundleShortVersionString`), which the installer shows. The Mac installer is
   universal2 (Intel and Apple silicon): both workflows build it with the
   python.org Python pinned in their `env` (keep the two the same) and check it
   with `lipo`. The Windows installer is code signed by SignPath (certificate by

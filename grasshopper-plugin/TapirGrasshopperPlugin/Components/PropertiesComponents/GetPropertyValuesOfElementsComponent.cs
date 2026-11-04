@@ -39,7 +39,12 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 "Also tell whether each property is available for the element (for example by its " +
                 "classification), in the IsAvailable output. Default is false.");
 
-            SetOptionality(2);
+            InBoolean(
+                "UseSIUnits",
+                "Return precise, locale-independent numeric values in SI units (degrees for angles) " +
+                "instead of the display strings of the project's units. Default is false.");
+
+            SetOptionality(new[] { 2, 3 });
         }
 
         protected override void AddOutputs()
@@ -79,6 +84,10 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 2,
                 out bool includeAvailability);
 
+            da.TryGet(
+                3,
+                out bool useSIUnits);
+
             var parameters = new JObject
             {
                 ["elements"] = JArray.FromObject(elements.Elements),
@@ -87,6 +96,10 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             if (includeAvailability)
             {
                 parameters["includeAvailability"] = true;
+            }
+            if (useSIUnits)
+            {
+                parameters["useSIUnits"] = true;
             }
 
             if (!TryGetConvertedCadValues(

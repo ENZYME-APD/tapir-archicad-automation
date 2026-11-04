@@ -370,6 +370,105 @@ static GS::UniString PropertyValueStatusToString (API_PropertyValueStatus status
     }
 }
 
+#ifdef ServerMainVers_2900
+static GSErrCode GetPathOfFavoriteFolder (const ACAPI::Favorite::FavoriteFolder& folder, GS::Array<GS::UniString>& path, GS::UniString& errorMessage);
+#endif
+
+// ACAPI_Favorite_Get refuses (APIERR_REFUSEDCMD) a Favorite whose settings Archicad cannot hand
+// out as an API_Element - every Drawing favorite (#652). From Archicad 29 the Favorite manager
+// still gives its element type, folder, properties, classifications and category values: this
+// fills those of them that favorite requests, empties the requested memos and sub-elements, and
+// leaves favorite.element empty apart from its type. Returns refusedErr before Archicad 29 or
+// when the Favorite manager cannot read the Favorite either.
+static GSErrCode GetFavoriteWithoutElementSettings (API_Favorite& favorite, GSErrCode refusedErr)
+{
+#ifdef ServerMainVers_2900
+    const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
+    const auto source = manager.GetFavoriteByName (favorite.name);
+    if (source.IsErr ()) {
+        return refusedErr;
+    }
+    const auto elemType = source.Unwrap ().GetElementType ();
+    const auto properties = source.Unwrap ().GetProperties ();
+    const auto classifications = source.Unwrap ().GetClassifications ();
+    const auto categoryValues = source.Unwrap ().GetElemCategoryValues ();
+    if (elemType.IsErr () || properties.IsErr () || classifications.IsErr () || categoryValues.IsErr ()) {
+        return refusedErr;
+    }
+
+    favorite.element = {};
+    favorite.element.header.type = elemType.Unwrap ();
+    if (favorite.memo.HasValue ()) {
+        ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
+        favorite.memo.Get () = {};
+    }
+    if (favorite.elementMarker.HasValue ()) {
+        favorite.elementMarker.Get () = {};
+    }
+    if (favorite.memoMarker.HasValue ()) {
+        ACAPI_DisposeElemMemoHdls (&favorite.memoMarker.Get ());
+        favorite.memoMarker.Get () = {};
+    }
+    if (favorite.subElements.HasValue ()) {
+        for (API_SubElement& subElement : *favorite.subElements) {
+            ACAPI_DisposeElemMemoHdls (&subElement.memo);
+        }
+        favorite.subElements->Clear ();
+    }
+    if (favorite.properties.HasValue ()) {
+        favorite.properties->Clear ();
+        for (const API_Property& property : properties.Unwrap ()) {
+            favorite.properties->Push (property);
+        }
+    }
+    if (favorite.classifications.HasValue ()) {
+        favorite.classifications->Clear ();
+        for (const GS::Pair<API_Guid, API_Guid>& pair : classifications.Unwrap ()) {
+            favorite.classifications->Push (pair);
+        }
+    }
+    if (favorite.elemCategoryValues.HasValue ()) {
+        favorite.elemCategoryValues->Clear ();
+        for (const API_ElemCategoryValue& categoryValue : categoryValues.Unwrap ()) {
+            favorite.elemCategoryValues->Push (categoryValue);
+        }
+    }
+    if (favorite.folder.HasValue ()) {
+        const auto parentFolder = source.Unwrap ().GetParentFolder ();
+        GS::UniString errorMessage;
+        if (parentFolder.IsErr () || GetPathOfFavoriteFolder (parentFolder.Unwrap (), *favorite.folder, errorMessage) != NoError) {
+            return refusedErr;
+        }
+    }
+    return NoError;
+#else
+    UNUSED_PARAMETER (favorite);
+    return refusedErr;
+#endif
+}
+
+// Makes the settings of the Favorite the defaults of its tool through the Favorite manager, which
+// also works for the Favorites GetFavoriteWithoutElementSettings is for.
+static GSErrCode SetFavoriteSettingsAsToolDefaults (const GS::UniString& favoriteName)
+{
+#ifdef ServerMainVers_2900
+    const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
+    const auto favorite = manager.GetFavoriteByName (favoriteName);
+    if (favorite.IsErr ()) {
+        return favorite.UnwrapErr ().kind;
+    }
+    const auto elementDefault = favorite.Unwrap ().GetElementDefault ();
+    if (elementDefault.IsErr ()) {
+        return elementDefault.UnwrapErr ().kind;
+    }
+    const auto setResult = elementDefault.Unwrap ().SetAsArchicadDefault ();
+    return setResult.IsErr () ? setResult.UnwrapErr ().kind : NoError;
+#else
+    UNUSED_PARAMETER (favoriteName);
+    return APIERR_NOTSUPPORTED;
+#endif
+}
+
 GS::ObjectState GetFavoriteDetailsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::UniString> favorites;
@@ -385,7 +484,10 @@ GS::ObjectState GetFavoriteDetailsCommand::Execute (const GS::ObjectState& param
         favorite.classifications.New ();
         favorite.elemCategoryValues.New ();
 
-        const GSErrCode err = ACAPI_Favorite_Get (&favorite);
+        GSErrCode err = ACAPI_Favorite_Get (&favorite);
+        if (err == APIERR_REFUSEDCMD) {
+            err = GetFavoriteWithoutElementSettings (favorite, err);
+        }
         if (err != NoError) {
             favoriteDetails (CreateErrorResponse (err, GS::UniString::Printf ("Failed to get favorite '%T'.", favoriteName.ToPrintf ())));
             continue;
@@ -507,13 +609,22 @@ GS::ObjectState ApplyFavoritesToElementDefaultsCommand::Execute (const GS::Objec
             favorite.name = favoriteName;
 
             GSErrCode err = ACAPI_Favorite_Get (&favorite);
+            bool hasElementSettings = true;
+            if (err == APIERR_REFUSEDCMD) {
+                err = GetFavoriteWithoutElementSettings (favorite, err);
+                hasElementSettings = false;
+            }
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to get favorite"));
                 ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
                 continue;
             }
 
-            err = ACAPI_Element_ChangeDefaults (&favorite.element, favorite.memo.GetPtr (), &mask);
+            if (hasElementSettings) {
+                err = ACAPI_Element_ChangeDefaults (&favorite.element, favorite.memo.GetPtr (), &mask);
+            } else {
+                err = SetFavoriteSettingsAsToolDefaults (favoriteName);
+            }
             ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to set element defaults"));
@@ -1670,6 +1781,11 @@ GS::ObjectState ApplyFavoritesToElementsCommand::Execute (const GS::ObjectState&
             item.Get ("favorite", favorite.name);
 
             err = ACAPI_Favorite_Get (&favorite);
+            if (err == APIERR_REFUSEDCMD) {
+                executionResults (CreateFailedExecutionResult (err, "Archicad does not give out the settings of this Favorite as element settings, so they cannot be applied to elements (the case for Drawing favorites). ApplyFavoritesToElementDefaults can still make them the tool's defaults."));
+                ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
+                continue;
+            }
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to get favorite"));
                 ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
@@ -2759,7 +2875,10 @@ GS::ObjectState GetFavoriteSettingsCommand::Execute (const GS::ObjectState& para
             }
         });
 
-        const GSErrCode err = ACAPI_Favorite_Get (&favorite);
+        GSErrCode err = ACAPI_Favorite_Get (&favorite);
+        if (err == APIERR_REFUSEDCMD) {
+            err = GetFavoriteWithoutElementSettings (favorite, err);
+        }
         if (err != NoError) {
             favoriteSettingsAdder (CreateErrorResponse (err, GS::UniString::Printf ("Failed to get favorite '%T'.", favoriteName.ToPrintf ())));
             continue;
@@ -3358,6 +3477,361 @@ GS::ObjectState MoveFavoritesCommand::Execute (const GS::ObjectState& parameters
     if (err != NoError) {
         return CreateErrorResponse (err, errorMessage);
     }
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
+// ============================================================================
+// GetFavoriteDefaults — the element default stored in each Favorite, read through
+// the Archicad 29 Favorite manager: Favorite::GetOldElementDefault, GetMemo,
+// GetElementMarker, GetMemoMarker and GetSubElements. Besides what GetFavoriteSettings
+// returns it gives the layer and the element ID the Favorite places, the marker of
+// every element type that has one and every kind of each sub-element. Nothing is
+// changed, so there is no undoable command. The memos belong to the caller and are
+// disposed here, as the DevKit's Favorite_Test example does.
+// ============================================================================
+
+#ifdef ServerMainVers_2900
+static const struct {
+    API_SubElementType flag;
+    const char*        name;
+} subElementTypeNames[] = {
+    { APISubElement_MainMarker,                "MainMarker" },
+    { APISubElement_SHMarker,                  "SHMarker" },
+    { APISubElement_CommonMarker,              "CommonMarker" },
+    { APISubElement_CWFrameClass,              "CWFrameClass" },
+    { APISubElement_CWPanelClass,              "CWPanelClass" },
+    { APISubElement_CWJunction,                "CWJunction" },
+    { APISubElement_CWAccessory,               "CWAccessory" },
+    { APISubElement_StairRiser,                "StairRiser" },
+    { APISubElement_StairTread,                "StairTread" },
+    { APISubElement_StairStructure,            "StairStructure" },
+    { APISubElement_StairFPDMarker,            "StairFPDMarker" },
+    { APISubElement_StairRCPDMarker,           "StairRCPDMarker" },
+    { APISubElement_RailingNode,               "RailingNode" },
+    { APISubElement_RailingSegment,            "RailingSegment" },
+    { APISubElement_RailingPost,               "RailingPost" },
+    { APISubElement_RailingInnerPost,          "RailingInnerPost" },
+    { APISubElement_RailingRail,               "RailingRail" },
+    { APISubElement_RailingHandrail,           "RailingHandrail" },
+    { APISubElement_RailingToprail,            "RailingToprail" },
+    { APISubElement_RailingPanel,              "RailingPanel" },
+    { APISubElement_RailingBaluster,           "RailingBaluster" },
+    { APISubElement_RailingPattern,            "RailingPattern" },
+    { APISubElement_RailingBalusterSet,        "RailingBalusterSet" },
+    { APISubElement_RailingRailEnd,            "RailingRailEnd" },
+    { APISubElement_RailingHandrailEnd,        "RailingHandrailEnd" },
+    { APISubElement_RailingToprailEnd,         "RailingToprailEnd" },
+    { APISubElement_RailingRailConnection,     "RailingRailConnection" },
+    { APISubElement_RailingHandrailConnection, "RailingHandrailConnection" },
+    { APISubElement_RailingToprailConnection,  "RailingToprailConnection" },
+    { APISubElement_RailingFinish,             "RailingFinish" },
+    { APISubElement_CWTag,                     "CWTag" },
+    { APISubElement_NoElem,                    "NoElem" },
+    { APISubElement_NoParams,                  "NoParams" }
+};
+
+// The element type, library part and GDL parameters of a marker or a sub-element.
+static GS::ObjectState GetFavoriteDefaultPart (const API_Element& element, Int32 libInd, API_AddParType** params)
+{
+    GS::ObjectState part;
+    part.Add ("elementType", GetElementTypeNonLocalizedName (GetElemTypeId (element.header)));
+    AddLibPartAndGDLParameters (part, libInd, params);
+    return part;
+}
+
+static GS::ObjectState GetFavoriteDefaultObjectState (const ACAPI::Favorite::Favorite& favorite, const GS::UniString& favoriteName)
+{
+    const auto elementResult = favorite.GetOldElementDefault ();
+    if (elementResult.IsErr ()) {
+        return CreateErrorResponse (elementResult.UnwrapErr ().kind, GS::UniString::Printf ("Failed to get the element default of the Favorite '%T'.", favoriteName.ToPrintf ()));
+    }
+    const API_Element& element = elementResult.Unwrap ();
+    const API_ElemTypeID elemTypeId = GetElemTypeId (element.header);
+
+    const auto memoResult = favorite.GetMemo ();
+    if (memoResult.IsErr ()) {
+        return CreateErrorResponse (memoResult.UnwrapErr ().kind, GS::UniString::Printf ("Failed to get the memo of the Favorite '%T'.", favoriteName.ToPrintf ()));
+    }
+    API_ElementMemo memo = memoResult.Unwrap ();
+    const GS::OnExit disposeMemo ([&] () {
+        ACAPI_DisposeElemMemoHdls (&memo);
+    });
+
+    GS::ObjectState favoriteDefault;
+    favoriteDefault.Add ("favorite", favoriteName);
+    favoriteDefault.Add ("elementType", GetElementTypeNonLocalizedName (elemTypeId));
+    favoriteDefault.Add ("layerIndex", GetAttributeIndex (element.header.layer));
+    if (memo.elemInfoString != nullptr && !memo.elemInfoString->IsEmpty ()) {
+        favoriteDefault.Add ("elementId", *memo.elemInfoString);
+    }
+
+    const auto parentFolder = favorite.GetParentFolder ();
+    GS::Array<GS::UniString> folderPath;
+    GS::UniString pathErrorMessage;
+    if (parentFolder.IsOk () && GetPathOfFavoriteFolder (parentFolder.Unwrap (), folderPath, pathErrorMessage) == NoError) {
+        const auto& folderAdder = favoriteDefault.AddList<GS::UniString> ("folder");
+        for (const GS::UniString& folderName : folderPath) {
+            folderAdder (folderName);
+        }
+    }
+
+    AddLibPartAndGDLParameters (favoriteDefault, GetLibIndOfElement (element), memo.params);
+
+    // GetElementMarker and GetMemoMarker give an error for the element types without a
+    // marker. Such a Favorite, like one whose marker has no library part and no
+    // parameters, has no "marker" field.
+    const auto markerResult = favorite.GetElementMarker ();
+    const auto markerMemoResult = favorite.GetMemoMarker ();
+    if (markerMemoResult.IsOk ()) {
+        API_ElementMemo markerMemo = markerMemoResult.Unwrap ();
+        if (markerResult.IsOk ()) {
+            const API_Element& marker = markerResult.Unwrap ();
+            // The marker of a Window or Door is an object, read as GetFavoriteSettings reads it.
+            const Int32 markerLibInd = (elemTypeId == API_WindowID || elemTypeId == API_DoorID) ? marker.object.libInd : GetLibIndOfElement (marker);
+            if (markerLibInd > 0 || markerMemo.params != nullptr) {
+                favoriteDefault.Add ("marker", GetFavoriteDefaultPart (marker, markerLibInd, markerMemo.params));
+            }
+        }
+        ACAPI_DisposeElemMemoHdls (&markerMemo);
+    }
+
+    const auto& subElementsAdder = favoriteDefault.AddList<GS::ObjectState> ("subElements");
+    const auto subElementsResult = favorite.GetSubElements ();
+    if (subElementsResult.IsOk ()) {
+        std::vector<API_SubElement> subElements = subElementsResult.Unwrap ();
+        for (API_SubElement& subElement : subElements) {
+            GS::ObjectState subElementDefault = GetFavoriteDefaultPart (subElement.subElem, GetLibIndOfElement (subElement.subElem), subElement.memo.params);
+            const auto& subTypesAdder = subElementDefault.AddList<GS::UniString> ("subTypes");
+            for (const auto& subElementTypeName : subElementTypeNames) {
+                if ((subElement.subType & subElementTypeName.flag) != 0) {
+                    subTypesAdder (GS::UniString (subElementTypeName.name));
+                }
+            }
+            subElementsAdder (subElementDefault);
+            ACAPI_DisposeElemMemoHdls (&subElement.memo);
+        }
+    }
+
+    return favoriteDefault;
+}
+#endif
+
+GetFavoriteDefaultsCommand::GetFavoriteDefaultsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetFavoriteDefaultsCommand::GetName () const
+{
+    return "GetFavoriteDefaults";
+}
+
+GS::Optional<GS::UniString> GetFavoriteDefaultsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "favorites": {
+                "$ref": "#/Favorites"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favorites"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetFavoriteDefaultsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "favoriteDefaults": {
+                "type": "array",
+                "description": "The element default of each given Favorite, in the order of the input, or an error for a Favorite that could not be read.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "favorite": {
+                                    "type": "string",
+                                    "description": "The name of the Favorite."
+                                },
+                                "elementType": {
+                                    "$ref": "#/ElementType"
+                                },
+                                "layerIndex": {
+                                    "type": "integer",
+                                    "description": "The index of the layer the Favorite places its elements on."
+                                },
+                                "elementId": {
+                                    "type": "string",
+                                    "description": "The element ID stored with the Favorite. Absent when it is empty."
+                                },
+                                "folder": {
+                                    "type": "array",
+                                    "description": "The folder hierarchy of the Favorite in the Favorites palette, outermost folder first. Empty for the root.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "libPart": {
+                                    "$ref": "#/LibPartDetails",
+                                    "description": "The library part of the Favorite, for the library part based types (Object, Lamp, Window, Door, Skylight, Zone). Absent otherwise or when it could not be read."
+                                },
+                                "parameters": {
+                                    "type": "array",
+                                    "description": "The GDL parameters stored with the Favorite. Empty for the types without GDL parameters.",
+                                    "items": {
+                                        "$ref": "#/StoredGDLParameter"
+                                    }
+                                },
+                                "marker": {
+                                    "type": "object",
+                                    "description": "The marker stored with the Favorite, for the element types that have one. Absent when the Favorite has no marker - that is not an error.",
+                                    "properties": {
+                                        "elementType": {
+                                            "$ref": "#/ElementType"
+                                        },
+                                        "libPart": {
+                                            "$ref": "#/LibPartDetails",
+                                            "description": "The library part of the marker. Absent when it could not be read."
+                                        },
+                                        "parameters": {
+                                            "type": "array",
+                                            "description": "The GDL parameters of the marker.",
+                                            "items": {
+                                                "$ref": "#/StoredGDLParameter"
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "elementType",
+                                        "parameters"
+                                    ]
+                                },
+                                "subElements": {
+                                    "type": "array",
+                                    "description": "The sub-elements stored with the Favorite, for example the frames and panels of a Curtain Wall.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "elementType": {
+                                                "$ref": "#/ElementType"
+                                            },
+                                            "libPart": {
+                                                "$ref": "#/LibPartDetails",
+                                                "description": "The library part of the sub-element. Absent when it has none or it could not be read."
+                                            },
+                                            "parameters": {
+                                                "type": "array",
+                                                "description": "The GDL parameters of the sub-element.",
+                                                "items": {
+                                                    "$ref": "#/StoredGDLParameter"
+                                                }
+                                            },
+                                            "subTypes": {
+                                                "type": "array",
+                                                "description": "The kinds of the sub-element: the API_SubElementType flags set on it, without their APISubElement_ prefix.",
+                                                "items": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "MainMarker",
+                                                        "SHMarker",
+                                                        "CommonMarker",
+                                                        "CWFrameClass",
+                                                        "CWPanelClass",
+                                                        "CWJunction",
+                                                        "CWAccessory",
+                                                        "StairRiser",
+                                                        "StairTread",
+                                                        "StairStructure",
+                                                        "StairFPDMarker",
+                                                        "StairRCPDMarker",
+                                                        "RailingNode",
+                                                        "RailingSegment",
+                                                        "RailingPost",
+                                                        "RailingInnerPost",
+                                                        "RailingRail",
+                                                        "RailingHandrail",
+                                                        "RailingToprail",
+                                                        "RailingPanel",
+                                                        "RailingBaluster",
+                                                        "RailingPattern",
+                                                        "RailingBalusterSet",
+                                                        "RailingRailEnd",
+                                                        "RailingHandrailEnd",
+                                                        "RailingToprailEnd",
+                                                        "RailingRailConnection",
+                                                        "RailingHandrailConnection",
+                                                        "RailingToprailConnection",
+                                                        "RailingFinish",
+                                                        "CWTag",
+                                                        "NoElem",
+                                                        "NoParams"
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "elementType",
+                                            "parameters",
+                                            "subTypes"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "favorite",
+                                "elementType",
+                                "layerIndex",
+                                "parameters",
+                                "subElements"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favoriteDefaults"
+        ]
+    })";
+}
+
+GS::ObjectState GetFavoriteDefaultsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::UniString> favorites;
+    parameters.Get ("favorites", favorites);
+
+    GS::ObjectState response;
+    const auto& favoriteDefaultsAdder = response.AddList<GS::ObjectState> ("favoriteDefaults");
+
+    const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
+    for (const GS::UniString& favoriteName : favorites) {
+        const auto favorite = manager.GetFavoriteByName (favoriteName);
+        if (favorite.IsErr ()) {
+            favoriteDefaultsAdder (CreateErrorResponse (favorite.UnwrapErr ().kind, GS::UniString::Printf ("The Favorite '%T' was not found.", favoriteName.ToPrintf ())));
+            continue;
+        }
+        favoriteDefaultsAdder (GetFavoriteDefaultObjectState (favorite.Unwrap (), favoriteName));
+    }
+
     return response;
 #else
     UNUSED_PARAMETER (parameters);

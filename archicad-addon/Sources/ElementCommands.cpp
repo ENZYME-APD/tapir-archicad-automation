@@ -740,10 +740,18 @@ GS::ObjectState GetSectionElementsCommand::Execute (const GS::ObjectState& param
     return response;
 }
 
-// Walks the current database with ACAPI_DrawOrder_DrawOrderGetNext, starting from an empty
-// header (null guid, zombie type) and feeding back the header it returned each time. The walk
-// ends at the first call that fails, which is how the function reports that no element is left.
-// The visited set stops it should a database ever hand back an element twice.
+// Closes a draw order walk on every way out of the function.
+class DrawOrderWalk {
+public:
+    DrawOrderWalk () : error (ACAPI_DrawOrder_DrawOrderInit ()) {}
+    ~DrawOrderWalk () { if (error == NoError) ACAPI_DrawOrder_DrawOrderTerm (); }
+    const GSErrCode error;
+};
+
+// Walks the current database with ACAPI_DrawOrder_DrawOrderGetNext between DrawOrderInit and
+// DrawOrderTerm, as the DevKit requires (calling GetNext without Init crashed Archicad, #1548).
+// The walk ends when GetNext returns an error, APIERR_NOMORE after the last element. The visited
+// set stops it should a database ever hand back an element twice.
 template <typename ListProxyType>
 static GSErrCode GetElementsInDrawOrderFromCurrentDatabase (const GS::ObjectState& parameters, ListProxyType& elementsListProxy)
 {
@@ -764,6 +772,11 @@ static GSErrCode GetElementsInDrawOrderFromCurrentDatabase (const GS::ObjectStat
                 filterFlags |= ConvertFilterStringToFlag (filter);
             }
         }
+    }
+
+    const DrawOrderWalk walk;
+    if (walk.error != NoError) {
+        return walk.error;
     }
 
     GS::HashSet<API_Guid> visitedGuids;
@@ -1228,6 +1241,14 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetInputParametersSchem
                     "$ref": "#/ElementDetailsField"
                 },
                 "minItems": 1
+            },
+            "additionalFields": {
+                "type": "array",
+                "description": "Optional extra fields to return for each element, on top of the ones selected by fields. None of them is returned unless listed here, so callers that do not give this parameter get the same response as before.",
+                "items": {
+                    "$ref": "#/ElementDetailsAdditionalField"
+                },
+                "minItems": 1
             }
         },
         "additionalProperties": false,
@@ -1287,6 +1308,22 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetRawResponseSchema ()
                                             }
                                         }
                                     }
+                                },
+                                "infoString": {
+                                    "type": "string",
+                                    "description": "The element ID (info string) as Archicad shows it. Present only when requested in additionalFields."
+                                },
+                                "compoundInfoString": {
+                                    "type": "string",
+                                    "description": "The compound info string of the element, e.g. the summary of its composite or profile, as Archicad shows it. Present only when requested in additionalFields and the element has a non-empty one."
+                                },
+                                "libraryPartUnId": {
+                                    "type": "string",
+                                    "description": "The unique ID of the library part the element was placed from. Present only when requested in additionalFields and the element is library part based (e.g. object, lamp, door, window)."
+                                },
+                                "creatorToolUnId": {
+                                    "type": "string",
+                                    "description": "The unique ID of the tool that created the element. Present only when requested in additionalFields and Archicad reports one for the element."
                                 }
                             },
                             "additionalProperties": false,
@@ -1461,6 +1498,9 @@ static void AddLibPartBasedElementDetails (GS::ObjectState& os, const Int32 libI
     API_LibPart	lp = {};
     lp.index = libInd;
     ACAPI_LibraryPart_Get (&lp);
+    // ACAPI_LibraryPart_Get allocates the location, which the caller frees (ACAPinc.h remarks).
+    delete lp.location;
+    lp.location = nullptr;
     os.Add ("libPart", GS::ObjectState (
         "name", GS::UniString (lp.docu_UName),
         "parentUnID", CreateGuidObjectState (GS::UnID (lp.parentUnID).GetMainGuid ()),
@@ -1675,6 +1715,39 @@ static void AddRailingReferenceLineAndSegments (const API_Element& elem, GS::Obj
     }
 }
 
+// The fields of GetDetailsOfElements requested through additionalFields. Each one is left out
+// when Archicad reports an error or nothing for the element (e.g. libraryPartUnId on a wall),
+// so a field the element type does not have never turns the whole entry into an error.
+static void AddAdditionalElementDetails (GS::ObjectState& os, const API_Elem_Head& header, const GS::Array<GS::UniString>& additionalFields)
+{
+    if (additionalFields.Contains (GS::UniString ("infoString"))) {
+        GS::UniString infoString;
+        if (ACAPI_Element_GetElementInfoString (&header.guid, &infoString) == NoError) {
+            os.Add ("infoString", infoString);
+        }
+    }
+    if (additionalFields.Contains (GS::UniString ("compoundInfoString"))) {
+        GS::UniString compoundInfoString;
+        if (ACAPI_Element_GetCompoundInfoString (&header.guid, &compoundInfoString) == NoError && !compoundInfoString.IsEmpty ()) {
+            os.Add ("compoundInfoString", compoundInfoString);
+        }
+    }
+    if (additionalFields.Contains (GS::UniString ("libraryPartUnId"))) {
+        API_Elem_Head elemHead = header;
+        char unId[256] = {};
+        if (ACAPI_LibraryPart_GetElemLibPartUnId (&elemHead, unId) == NoError && unId[0] != '\0') {
+            os.Add ("libraryPartUnId", GS::UniString (unId));
+        }
+    }
+    if (additionalFields.Contains (GS::UniString ("creatorToolUnId"))) {
+        API_Elem_Head elemHead = header;
+        char unId[256] = {};
+        if (ACAPI_Element_GetElemCreatorToolUnId (&elemHead, unId) == NoError && unId[0] != '\0') {
+            os.Add ("creatorToolUnId", GS::UniString (unId));
+        }
+    }
+}
+
 GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elements;
@@ -1685,6 +1758,9 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
     const auto isFieldRequested = [&] (const char* fieldName) {
         return !filterFields || fields.Contains (GS::UniString (fieldName));
     };
+
+    GS::Array<GS::UniString> additionalFields;
+    parameters.Get ("additionalFields", additionalFields);
 
     GS::ObjectState response;
     const auto& detailsOfElements = response.AddList<GS::ObjectState> ("detailsOfElements");
@@ -1761,6 +1837,10 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_ElemInfoString);
 
             detailsOfElement.Add ("id", memo.elemInfoString != nullptr ? *memo.elemInfoString : GS::EmptyUniString);
+        }
+
+        if (!additionalFields.IsEmpty ()) {
+            AddAdditionalElementDetails (detailsOfElement, elem.header, additionalFields);
         }
 
         if (!isFieldRequested ("details")) {
@@ -2131,8 +2211,11 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("basePoint", Create2DCoordinateObjectState (elem.detail.pos));
                 typeSpecificDetails.Add ("angle", elem.detail.angle);
                 typeSpecificDetails.Add ("markerId", CreateGuidObjectState (elem.detail.markId));
-                typeSpecificDetails.Add ("detailName", GS::UniString (elem.detail.detailName));
-                typeSpecificDetails.Add ("detailIdStr", GS::UniString (elem.detail.detailIdStr));
+                GS::UniString detailName;
+                GS::UniString detailIdStr;
+                GetDetailMarkerNameAndId (elem, detailName, detailIdStr);
+                typeSpecificDetails.Add ("detailName", detailName);
+                typeSpecificDetails.Add ("detailIdStr", detailIdStr);
                 typeSpecificDetails.Add ("isHorizontalMarker", elem.detail.horizontalMarker);
                 typeSpecificDetails.Add ("isWindowOpened", elem.detail.windOpened);
                 AddPolygonFromMemoCoords (elem.header.guid, typeSpecificDetails, "clipPolygon");
@@ -2878,6 +2961,9 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 executionResults (CreateFailedExecutionResult (err, "Failed to find the element"));
                 continue;
             }
+            // The header before the details are applied: a refusal is explained from the layer the
+            // element is on, and from the requested layerIndex only as the target.
+            const API_Elem_Head currentHead = elem.header;
 
             const GS::ObjectState* details = elementWithDetails.Get ("details");
             if (details == nullptr) {
@@ -3407,7 +3493,8 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 err = ChangeElementId (elem.header.guid, id);
                 if (err != NoError) {
                     ACAPI_DisposeElemMemoHdls (&clipMemo);
-                    executionResults (CreateFailedExecutionResult (err, "Failed to set the id of the element, no other details were changed"));
+                    const GS::UniString refusal = DescribeElementEditRefusal (err, currentHead);
+                    executionResults (CreateFailedExecutionResult (err, refusal.IsEmpty () ? GS::UniString ("Failed to set the id of the element, no other details were changed") : "Failed to set the id of the element, because " + refusal + "; no other details were changed"));
                     continue;
                 }
             }
@@ -3419,7 +3506,15 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                                             memoMask, withDel);
                 ACAPI_DisposeElemMemoHdls (&clipMemo);
                 if (err != NoError) {
-                    executionResults (CreateFailedExecutionResult (err, hasId ? "Failed to change element, only its id was set" : "Failed to change element"));
+                    GS::UniString message = "Failed to change element";
+                    const GS::UniString refusal = DescribeElementEditRefusal (err, currentHead, elem.header.layer);
+                    if (!refusal.IsEmpty ()) {
+                        message += ", because " + refusal;
+                    }
+                    if (hasId) {
+                        message += refusal.IsEmpty () ? ", only its id was set" : "; only its id was set";
+                    }
+                    executionResults (CreateFailedExecutionResult (err, message));
                     continue;
                 }
             }
@@ -6286,6 +6381,263 @@ GS::ObjectState	MoveElementsCommand::Execute (const GS::ObjectState& parameters,
     return response;
 }
 
+CopyElementsToDatabaseCommand::CopyElementsToDatabaseCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CopyElementsToDatabaseCommand::GetName () const
+{
+    return "CopyElementsToDatabase";
+}
+
+GS::Optional<GS::UniString> CopyElementsToDatabaseCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The 2D elements to copy: Line, PolyLine, Arc, Circle, Spline, Hotspot, Text, Hatch or Label (not associated with an element). Drawings are not copied yet: created from their own data they lose the link to their source view."
+            },
+            "sourceDatabaseId": {
+                "$ref": "#/DatabaseId",
+                "description": "The database the elements are in. Default is the current database."
+            },
+            "targetDatabaseId": {
+                "$ref": "#/DatabaseId",
+                "description": "The database to copy the elements into, e.g. a worksheet, a detail or a layout (see GetDatabases)."
+            },
+            "offset": {
+                "$ref": "#/Coordinate2D",
+                "description": "Optional vector the copies are moved by in the target database. Without it they keep the coordinates of the originals."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements", "targetDatabaseId"]
+    })";
+}
+
+GS::Optional<GS::UniString> CopyElementsToDatabaseCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementIdsOrErrors",
+                "description": "The new element of each given element, in the same order, or the reason it was not copied."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    })";
+}
+
+static bool IsCopyableToDatabase (API_ElemTypeID typeId)
+{
+    switch (typeId) {
+        case API_LineID:
+        case API_PolyLineID:
+        case API_ArcID:
+        case API_CircleID:
+        case API_SplineID:
+        case API_HotspotID:
+        case API_TextID:
+        case API_HatchID:
+        case API_LabelID:
+            return true;
+        default:
+            return false;
+    }
+}
+
+static GSErrCode ChangeCurrentDatabaseTo (const API_Guid& databaseId)
+{
+    API_DatabaseInfo database = DatabaseIdResolver::Instance ().GetDatabaseWithId (databaseId);
+    GSErrCode err = ACAPI_Window_GetDatabaseInfo (&database);
+    if (err != NoError) {
+        return err;
+    }
+    return ACAPI_Database_ChangeCurrentDatabase (&database);
+}
+
+// A worksheet or detail whose window was never opened, e.g. one just made by CreateWorksheets,
+// cannot be made the current database (APIERR_BADDATABASE) until its Project Map item has been
+// opened once, as ChangeWindow does it (#1602). Called outside the undoable command; returns
+// whether a window was opened, so the caller can bring the starting window back.
+static bool OpenDatabaseIfNeverOpened (const API_Guid& databaseId)
+{
+    API_DatabaseInfo startingDatabase = {};
+    if (ACAPI_Database_GetCurrentDatabase (&startingDatabase) != NoError) {
+        return false;
+    }
+    const GSErrCode err = ChangeCurrentDatabaseTo (databaseId);
+    ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+    if (err != APIERR_BADDATABASE) {
+        return false;
+    }
+#if defined (ServerMainVers_2700)
+    API_DatabaseInfo database = DatabaseIdResolver::Instance ().GetDatabaseWithId (databaseId);
+    if (ACAPI_Window_GetDatabaseInfo (&database) != NoError) {
+        return false;
+    }
+    const GS::Optional<API_Guid> projectMapItem = FindProjectMapItemOfWorksheetOrDetail (database);
+    if (projectMapItem.HasValue ()) {
+        const GS::UniString guidStr = APIGuidToString (projectMapItem.Get ());
+        return ACAPI_View_GoToView (guidStr.ToCStr ().Get ()) == NoError;
+    }
+#endif
+    return false;
+}
+
+// #819: copies 2D elements from one database into another (worksheet to worksheet, layout to
+// layout, ...). The elements are read with their memo in the source database and created from
+// them in the target, so every field the element has is kept without per-type code; the offset
+// is applied afterwards with the same drag MoveElements uses. Elements that reference others
+// of the source database (dimensions, associated labels) are refused, as those cannot exist
+// in the target.
+GS::ObjectState CopyElementsToDatabaseCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+    const API_Guid targetDatabaseId = GetGuidFromObjectState (*parameters.Get ("targetDatabaseId"));
+    const GS::ObjectState* sourceDatabaseIdOs = parameters.Get ("sourceDatabaseId");
+    API_Vector3D offset = {};
+    if (const GS::ObjectState* offsetOs = parameters.Get ("offset")) {
+        const API_Coord offset2D = Get2DCoordinateFromObjectState (*offsetOs);
+        offset.x = offset2D.x;
+        offset.y = offset2D.y;
+    }
+
+    struct Copy {
+        API_Element element = {};
+        API_ElementMemo memo = {};
+        GS::Optional<GS::ObjectState> result;
+    };
+    GS::Array<Copy> copies;
+    for (UIndex i = 0; i < elements.GetSize (); ++i) {
+        copies.Push (Copy ());
+    }
+    const GS::OnExit disposeMemos ([&copies] () {
+        for (Copy& copy : copies) {
+            ACAPI_DisposeElemMemoHdls (&copy.memo);
+        }
+    });
+
+    API_WindowInfo startingWindow = {};
+    const bool hasStartingWindow = ACAPI_Window_GetCurrentWindow (&startingWindow) == NoError;
+    bool openedWindow = OpenDatabaseIfNeverOpened (targetDatabaseId);
+    if (sourceDatabaseIdOs != nullptr) {
+        openedWindow = OpenDatabaseIfNeverOpened (GetGuidFromObjectState (*sourceDatabaseIdOs)) || openedWindow;
+    }
+    if (openedWindow && hasStartingWindow) {
+        ACAPI_Database_ChangeCurrentDatabase (&startingWindow);
+        ACAPI_Window_ChangeWindow (&startingWindow);
+    }
+
+    API_DatabaseInfo startingDatabase = {};
+    GSErrCode err = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the current database.");
+    }
+
+    err = ACAPI_CallUndoableCommand ("Copy Elements To Database", [&]() -> GSErrCode {
+        if (sourceDatabaseIdOs != nullptr) {
+            const GSErrCode sourceErr = ChangeCurrentDatabaseTo (GetGuidFromObjectState (*sourceDatabaseIdOs));
+            if (sourceErr != NoError) {
+                for (Copy& copy : copies) {
+                    copy.result = CreateErrorResponse (sourceErr, "Failed to switch to the source database.");
+                }
+                return NoError;
+            }
+        }
+
+        for (UIndex i = 0; i < elements.GetSize (); ++i) {
+            Copy& copy = copies[i];
+            const GS::ObjectState* elementId = elements[i].Get ("elementId");
+            copy.element.header.guid = elementId != nullptr ? GetGuidFromObjectState (*elementId) : APINULLGuid;
+            GSErrCode getErr = ACAPI_Element_Get (&copy.element);
+            if (getErr != NoError) {
+                copy.result = CreateErrorResponse (getErr, "Failed to find the element in the source database.");
+                continue;
+            }
+            const API_ElemTypeID typeId = GetElemTypeId (copy.element.header);
+            if (!IsCopyableToDatabase (typeId)) {
+                copy.result = CreateErrorResponse (APIERR_NOTSUPPORTED, "Elements of type " + GetElementTypeNonLocalizedName (typeId) + " cannot be copied to another database.");
+                continue;
+            }
+            if (typeId == API_LabelID && copy.element.label.parent != APINULLGuid) {
+                copy.result = CreateErrorResponse (APIERR_NOTSUPPORTED, "A label associated with an element cannot be copied to another database.");
+                continue;
+            }
+            getErr = ACAPI_Element_GetMemo (copy.element.header.guid, &copy.memo, APIMemoMask_All);
+            if (getErr != NoError) {
+                copy.result = CreateErrorResponse (getErr, "Failed to read the element's memo.");
+            }
+        }
+
+        const GSErrCode targetErr = ChangeCurrentDatabaseTo (targetDatabaseId);
+        if (targetErr != NoError) {
+            for (Copy& copy : copies) {
+                if (!copy.result.HasValue ()) {
+                    copy.result = CreateErrorResponse (targetErr, "Failed to switch to the target database.");
+                }
+            }
+            ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+            return NoError;
+        }
+
+        for (Copy& copy : copies) {
+            if (copy.result.HasValue ()) {
+                continue;
+            }
+            copy.element.header.guid = APINULLGuid;
+            copy.element.header.groupGuid = APINULLGuid;
+            copy.element.header.hotlinkGuid = APINULLGuid;
+            GSErrCode createErr = ACAPI_Element_Create (&copy.element, &copy.memo);
+            if (createErr != NoError) {
+                copy.result = CreateErrorResponse (createErr, "Failed to create the copy in the target database.");
+                continue;
+            }
+            if (offset.x != 0.0 || offset.y != 0.0) {
+                // The drag reports NoError for a copy it may not edit (it keeps the source's layer
+                // and lock, which can be hidden or locked) and leaves it in place, so the copy is
+                // checked first, as MoveElements does.
+                const GS::Optional<GS::ObjectState> notEditableResult = GetFailedExecutionResultIfNotEditable (copy.element.header.guid, "moved by the offset");
+                if (notEditableResult.HasValue ()) {
+                    Int32 code = APIERR_GENERAL;
+                    GS::UniString message;
+                    if (const GS::ObjectState* error = notEditableResult->Get ("error")) {
+                        error->Get ("code", code);
+                        error->Get ("message", message);
+                    }
+                    copy.result = CreateErrorResponse (static_cast<GSErrCode> (code), "The copy was created at the coordinates of the original. " + message);
+                    continue;
+                }
+                createErr = MoveElement (copy.element.header.guid, offset, false);
+                if (createErr != NoError) {
+                    copy.result = CreateErrorResponse (createErr, "The copy was created, but could not be moved by the offset.");
+                    continue;
+                }
+            }
+            copy.result = CreateElementIdObjectState (copy.element.header.guid);
+        }
+
+        ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+        return NoError;
+    });
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to copy the elements.");
+    }
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("elements");
+    for (const Copy& copy : copies) {
+        results (copy.result.HasValue () ? copy.result.Get () : CreateErrorResponse (APIERR_GENERAL, "The element was not copied."));
+    }
+    return response;
+}
+
 ElevateElementsCommand::ElevateElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -7604,6 +7956,141 @@ GS::ObjectState GetLibPartTransformationsCommand::Execute (const GS::ObjectState
     return response;
 }
 
+GetSnapPointsOfElementsCommand::GetSnapPointsOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetSnapPointsOfElementsCommand::GetName () const
+{
+    return "GetSnapPointsOfElements";
+}
+
+GS::Optional<GS::UniString> GetSnapPointsOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetSnapPointsOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "snapPointsOfElements": {
+                "type": "array",
+                "description": "The snap points (hotspots) of each element, aligned with the input array of elements, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "snapPoints": {
+                                    "type": "array",
+                                    "description": "The snap points (hotspots) of the element: the points Archicad snaps to and dimensions attach to, in world coordinates (meters, absolute Z). Empty when the element has none.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "coordinate": {
+                                                "$ref": "#/Coordinate3D"
+                                            },
+                                            "neigId": {
+                                                "type": "integer",
+                                                "description": "Which kind of point of the element the hotspot is, as the DevKit's API_NeigID enumerator value of its neig (for example the begin or end point of a Wall's reference line, or a vertex of a Slab's polygon)."
+                                            },
+                                            "inIndex": {
+                                                "type": "integer",
+                                                "description": "Subindex of the point within its kind (API_Neig inIndex), for example the vertex index in the element's polygon."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "coordinate",
+                                            "neigId",
+                                            "inIndex"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "snapPoints"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "snapPointsOfElements"
+        ]
+    })";
+}
+
+GS::ObjectState GetSnapPointsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& snapPointsOfElements = response.AddList<GS::ObjectState> ("snapPointsOfElements");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            snapPointsOfElements (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            snapPointsOfElements (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+
+        // The hotspots are the element's neigs with their 3D position: the same points the
+        // cursor snaps to on the floor plan and the dimension tool attaches to.
+        // API_ElementHotspot is a GS::Pair<API_Neig, API_Coord3D>: first is the neig, second the point.
+        GS::Array<API_ElementHotspot> elementHotspots;
+        err = ACAPI_Element_GetHotspots (elemHead.guid, &elementHotspots);
+        if (err != NoError) {
+            snapPointsOfElements (CreateErrorResponse (err, "Failed to get the hotspots of the element"));
+            continue;
+        }
+
+        GS::ObjectState snapPointsOfElement;
+        const auto& snapPoints = snapPointsOfElement.AddList<GS::ObjectState> ("snapPoints");
+        for (const API_ElementHotspot& elementHotspot : elementHotspots) {
+            const API_Neig& neig = elementHotspot.first;
+            const API_Coord3D& coord3D = elementHotspot.second;
+            GS::ObjectState hotspot;
+            hotspot.Add ("coordinate", Create3DCoordinateObjectState (coord3D));
+            hotspot.Add ("neigId", static_cast<Int32> (neig.neigID));
+            hotspot.Add ("inIndex", static_cast<Int32> (neig.inIndex));
+            snapPoints (hotspot);
+        }
+        snapPointsOfElements (snapPointsOfElement);
+    }
+
+    return response;
+}
+
 ConvertRevealOffsetsCommand::ConvertRevealOffsetsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -7872,6 +8359,10 @@ static GSErrCode CollectSolidBodies (const API_Elem_Head& elemHead, GS::Array<GS
                 component.header.typeID = API_UmatID;
                 component.header.index = pgon.iumat;
                 if (ACAPI_ModelAccess_GetComponent (&component) == NoError) {
+                    // The material comes with its texture's file location allocated, which the
+                    // caller deletes (3D_Test.c, after ACAPI_ModelAccess_GetComponent of API_UmatID).
+                    delete component.umat.mater.texture.fileLoc;
+                    component.umat.mater.texture.fileLoc = nullptr;
                     const API_Guid surfaceGuid = GetAttributeGuidFromIndex (API_MaterialID, component.umat.mater.head.index);
                     if (surfaceGuid != APINULLGuid) {
                         polygonOS.Add ("surfaceId", CreateGuidObjectState (surfaceGuid));

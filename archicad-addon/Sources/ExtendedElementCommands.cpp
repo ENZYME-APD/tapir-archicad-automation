@@ -128,6 +128,7 @@ bool ResolveAttributeIndex (const GS::ObjectState& attributeId, API_AttrTypeID a
     if (ACAPI_Attribute_Get (&attribute) != NoError) {
         return false;
     }
+    DisposeAttribute (attribute);
 
     attributeIndex = attribute.header.index;
     return true;
@@ -577,6 +578,60 @@ void FillDimensionDefaults (API_Element& element, const API_Coord& referencePoin
     element.dimension.horizontalText = false;
     element.dimension.refC = referencePoint;
     element.dimension.direction = direction;
+}
+
+static bool ParseDimensionAppearanceString (const GS::UniString& appearance, API_AppearID& result)
+{
+    if (appearance == "Linear") {
+        result = APIApp_Normal;
+    } else if (appearance == "Cumulative") {
+        result = APIApp_Cumu;
+    } else if (appearance == "Baseline") {
+        result = APIApp_CumuSv;
+    } else if (appearance == "Elevation") {
+        result = APIApp_Elev;
+    } else {
+        return false;
+    }
+    return true;
+}
+
+static GS::UniString DimensionAppearanceToString (API_AppearID appearance)
+{
+    switch (appearance) {
+        case APIApp_Cumu:   return "Cumulative";
+        case APIApp_CumuSv: return "Baseline";
+        case APIApp_Elev:   return "Elevation";
+        default:            return "Linear";
+    }
+}
+
+// The dimension creation commands always made linear dimensions (APIApp_Normal, set by
+// FillDimensionDefaults), whatever the favorite or the tool defaults say, so existing scripts
+// keep getting them. The item's optional "appearance" chooses another type, and
+// "elevationOrigin" the level an Elevation dimension measures from, named as the DimensionOrigin
+// of CreateLevelDimensions; without it the favorite's or the tool's origin is kept (#1662).
+static GS::Optional<GS::ObjectState> ApplyDimensionAppearance (const GS::ObjectState& data, API_Element& element)
+{
+    GS::UniString appearance;
+    if (data.Get ("appearance", appearance)) {
+        API_AppearID appearID = APIApp_Normal;
+        if (!ParseDimensionAppearanceString (appearance, appearID)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'appearance' value: " + appearance);
+        }
+        element.dimension.dimAppear = appearID;
+    }
+    GS::UniString elevationOrigin;
+    if (data.Get ("elevationOrigin", elevationOrigin)) {
+        // The schema can't reject an unknown value behind "$ref": "#/DimensionOrigin", so it is
+        // checked here, as CreateLevelDimensions does.
+        API_DimOriginID origin = APIDimOrigin_ProjectZero;
+        if (!ParseDimensionOriginString (elevationOrigin, origin)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'elevationOrigin' value: " + elevationOrigin);
+        }
+        element.dimension.ed_origin = origin;
+    }
+    return {};
 }
 
 // Reads the Dimension tool defaults into element and memo, with the item's optional
@@ -4133,8 +4188,8 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
                         "floorIndex": { "type": "integer", "description": "Optional floor index. If omitted, derived from zCoordinate." },
-                        "zCoordinate": { "type": "number" },
-                        "offset": { "type": "number" },
+                        "zCoordinate": { "type": "number", "description": "Absolute Z of the beam's reference line. Which point of the cross section lies on the reference line is set by anchorPoint: with a Top anchor the beam hangs below zCoordinate, so zCoordinate 10 and height 0.1 span 9.9 to 10; MiddleLeft, Center and MiddleRight center it on zCoordinate; Bottom anchors stand it on top. The home story is derived from it unless floorIndex is given." },
+                        "offset": { "type": "number", "description": "Horizontal distance of the beam from its reference line, in meters; positive moves the beam to the left of the line, looking from begCoordinate to endCoordinate." },
                         "slantAngle": {
                             "type": "number",
                             "description": "Slant angle in radians. A non-zero value also switches the beam to slanted, unless isSlanted is given explicitly."
@@ -4160,7 +4215,8 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                             "exclusiveMinimum": 0.0
                         },
                         "anchorPoint": {
-                            "$ref": "#/BeamAnchorPoint"
+                            "$ref": "#/BeamAnchorPoint",
+                            "description": "The point of the cross section that lies on the reference line (begCoordinate to endCoordinate at zCoordinate). Top anchors hang the beam below zCoordinate, Bottom anchors stand it on top, MiddleLeft, Center and MiddleRight center it. Left and Right anchors put the line on the beam's left or right edge, looking from begCoordinate to endCoordinate; TopCenter, Center and BottomCenter keep it on the beam's axis."
                         },
                         "circleBased": {
                             "type": "boolean",
@@ -4319,9 +4375,18 @@ GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () con
                         },
                         "baseLinePoints": {
                             "type": "array",
-                            "description": "2D coordinates defining the stair baseline polyline. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.",
+                            "description": "2D coordinates of the stair baseline polyline. Whether the baseline runs along the left edge, the right edge or the center of the flight is the Stair tool's baseline position, taken from baselinePosition, or else from the tool defaults or favoriteName: with the baseline on the left edge, the flight lies to the right of it, looking from the first point to the last. The first point is kept; the length of the flight comes from the riser count and going, so the flight does not necessarily end at the last point given. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.",
                             "items": { "$ref": "#/Coordinate2D" },
                             "minItems": 2
+                        },
+                        "baselinePosition": {
+                            "type": "string",
+                            "enum": ["Left", "Right", "Center"],
+                            "description": "Optional. Where the baseline runs on the flight, looking from the first point to the last. Left: along the left edge, the flight lies to the right of the baseline. Right: along the right edge, the flight lies to the left of it. Center: along the middle of the flight. Without it the baseline position of the Stair tool defaults (or of favoriteName) is used."
+                        },
+                        "baselineOffset": {
+                            "type": "number",
+                            "description": "Optional. The offset of the baseline from the flight edge that baselinePosition names (Left or Right); not used with Center. Without it the offset of the Stair tool defaults (or of favoriteName) is kept."
                         },
                         "zCoordinate": {
                             "type": "number",
@@ -4419,6 +4484,14 @@ static bool StairSegmentTypeFromString (const GS::UniString& str, API_StairSegme
     return false;
 }
 
+static bool StairBaselinePositionFromString (const GS::UniString& str, API_LinePositionID& position)
+{
+    if (str == "Left")   { position = APILP_Left;   return true; }
+    if (str == "Right")  { position = APILP_Right;  return true; }
+    if (str == "Center") { position = APILP_Center; return true; }
+    return false;
+}
+
 static bool StairTurnTypeFromString (const GS::UniString& str, API_StairTurnTypeID& type)
 {
     if (str == "None")           { type = APIST_NoTurn;             return true; }
@@ -4488,6 +4561,23 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
     auto flightWidth = GetOptionalDouble (parameters, "flightWidth");
     if (flightWidth.HasValue ()) {
         element.stair.flightWidth = flightWidth.Get ();
+    }
+
+    // The edge of the flight the baseline runs on. Without it the Stair tool defaults decide,
+    // and a multi-segment baseline that turns towards the flight's side failed where its
+    // mirror image was created (#578). The DevKit's Do_CreateStair example sets APILP_Center
+    // before ACAPI_Element_Create.
+    GS::UniString baselinePosition;
+    if (parameters.Get ("baselinePosition", baselinePosition)) {
+        API_LinePositionID position = APILP_Center;
+        if (!StairBaselinePositionFromString (baselinePosition, position)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid baselinePosition: it must be Left, Right or Center.");
+        }
+        element.stair.baselinePosition = position;
+    }
+    auto baselineOffset = GetOptionalDouble (parameters, "baselineOffset");
+    if (baselineOffset.HasValue ()) {
+        element.stair.baselineOffset = baselineOffset.Get ();
     }
 
     Int32 stepNum = 0;
@@ -4629,7 +4719,7 @@ GS::Optional<GS::UniString> SolveStairBaselineCommand::GetInputParametersSchema 
                     "properties": {
                         "baseLinePoints": {
                             "type": "array",
-                            "description": "2D coordinates defining the stair baseline polyline. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.",
+                            "description": "2D coordinates of the stair baseline polyline. Whether the baseline runs along the left edge, the right edge or the center of the flight is the Stair tool's baseline position, taken from the Stair tool defaults: with the baseline on the left edge, the flight lies to the right of it, looking from the first point to the last. The first point is kept; the length of the flight comes from the riser count and going, so the flight does not necessarily end at the last point given. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.",
                             "items": { "$ref": "#/Coordinate2D" },
                             "minItems": 2
                         },
@@ -4922,7 +5012,8 @@ static GSErrCode ApplyWindowOrDoorLibraryPartToDefaults (const GS::ObjectState& 
     }
     API_LibPart libPart = {};
     libPart.typeID = (typeId == API_DoorID) ? APILib_DoorID : APILib_WindowID;
-    GS::ucscpy (libPart.docu_UName, libName.ToUStr ());
+    const USize maxNameLength = sizeof (libPart.docu_UName) / sizeof (libPart.docu_UName[0]) - 1;
+    GS::ucscpy (libPart.docu_UName, libName.ToUStr (0, GS::Min (libName.GetLength (), maxNameLength)).Get ());
     GSErrCode err = ACAPI_LibraryPart_Search (&libPart, false, true);
     delete libPart.location;
     if (err != NoError) {
@@ -6876,6 +6967,15 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsCommand::GetInputParamete
                             "type": "boolean",
                             "description": "Optional frame around the dimension texts (true: framed, false: not framed), applied to every witness point after favoriteName. Without it the Dimension tool's setting is used."
                         },
+                        "appearance": {
+                            "type": "string",
+                            "enum": ["Linear", "Cumulative", "Baseline", "Elevation"],
+                            "description": "Optional dimension type, as in the Dimension Settings. Defaults to Linear, whatever favoriteName or the Dimension tool defaults say. Elevation gives level marks, e.g. on a vertical chain in a section."
+                        },
+                        "elevationOrigin": {
+                            "$ref": "#/DimensionOrigin",
+                            "description": "Optional level an Elevation dimension measures from. Defaults to the one of favoriteName or the Dimension tool defaults."
+                        },
                         "referencePoint": { "$ref": "#/Coordinate2D" },
                         "direction": { "$ref": "#/Coordinate2D" },
                         "floorIndex": { "type": "number" },
@@ -6975,6 +7075,11 @@ GS::ObjectState CreateAssociativeDimensionsCommand::Execute (const GS::ObjectSta
                 Get2DCoordinateFromObjectState (*data.Get ("referencePoint")),
                 {directionCoord.x, directionCoord.y}
             );
+            auto appearanceError = ApplyDimensionAppearance (data, element);
+            if (appearanceError.HasValue ()) {
+                elements.Push (appearanceError.Get ());
+                continue;
+            }
 
             auto error = PopulateAssociativeDimensionMemo (witnessPoints, element, memo);
             if (error.HasValue ()) {
@@ -7038,6 +7143,15 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsOnSectionCommand::GetInpu
                         "textFrame": {
                             "type": "boolean",
                             "description": "Optional frame around the dimension texts (true: framed, false: not framed), applied to every witness point after favoriteName. Without it the Dimension tool's setting is used."
+                        },
+                        "appearance": {
+                            "type": "string",
+                            "enum": ["Linear", "Cumulative", "Baseline", "Elevation"],
+                            "description": "Optional dimension type, as in the Dimension Settings. Defaults to Linear, whatever favoriteName or the Dimension tool defaults say. Elevation gives level marks, e.g. on a vertical chain in a section."
+                        },
+                        "elevationOrigin": {
+                            "$ref": "#/DimensionOrigin",
+                            "description": "Optional level an Elevation dimension measures from. Defaults to the one of favoriteName or the Dimension tool defaults."
                         },
                         "sectionElementId": {
                             "$ref": "#/ElementId",
@@ -7151,6 +7265,11 @@ GS::ObjectState CreateAssociativeDimensionsOnSectionCommand::Execute (const GS::
                 Get2DCoordinateFromObjectState (*data.Get ("referencePoint")),
                 {directionCoord.x, directionCoord.y}
             );
+            auto appearanceError = ApplyDimensionAppearance (data, element);
+            if (appearanceError.HasValue ()) {
+                elements.Push (appearanceError.Get ());
+                continue;
+            }
 
             auto error = PopulateAssociativeDimensionMemo (witnessPoints, element, memo);
 
@@ -7216,6 +7335,15 @@ GS::Optional<GS::UniString> CreateWallThicknessDimensionsCommand::GetInputParame
                         "textFrame": {
                             "type": "boolean",
                             "description": "Optional frame around the dimension texts (true: framed, false: not framed), applied to every witness point after favoriteName. Without it the Dimension tool's setting is used."
+                        },
+                        "appearance": {
+                            "type": "string",
+                            "enum": ["Linear", "Cumulative", "Baseline", "Elevation"],
+                            "description": "Optional dimension type, as in the Dimension Settings. Defaults to Linear, whatever favoriteName or the Dimension tool defaults say. Elevation gives level marks, e.g. on a vertical chain in a section."
+                        },
+                        "elevationOrigin": {
+                            "$ref": "#/DimensionOrigin",
+                            "description": "Optional level an Elevation dimension measures from. Defaults to the one of favoriteName or the Dimension tool defaults."
                         },
                         "wallId": { "$ref": "#/ElementId" },
                         "referencePoint": { "$ref": "#/Coordinate2D" },
@@ -7295,6 +7423,11 @@ GS::ObjectState CreateWallThicknessDimensionsCommand::Execute (const GS::ObjectS
             element.dimension.horizontalText = false;
             element.dimension.refC = Get2DCoordinateFromObjectState (*data.Get ("referencePoint"));
             element.dimension.direction = {directionCoord.x, directionCoord.y};
+            auto appearanceError = ApplyDimensionAppearance (data, element);
+            if (appearanceError.HasValue ()) {
+                elements.Push (appearanceError.Get ());
+                continue;
+            }
             element.dimension.nDimElem = 2;
 
             memo.dimElems = reinterpret_cast<API_DimElem**> (BMhAllClear (element.dimension.nDimElem * sizeof (API_DimElem)));
@@ -8591,6 +8724,8 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
         dimensionData.Add ("elementId", CreateGuidObjectState (element.header.guid));
         dimensionData.Add ("direction", Create2DCoordinateObjectState (element.dimension.direction));
         dimensionData.Add ("dimensionLinePosition", Create2DCoordinateObjectState (element.dimension.refC));
+        dimensionData.Add ("appearance", DimensionAppearanceToString (element.dimension.dimAppear));
+        dimensionData.Add ("elevationOrigin", GS::UniString (DimensionOriginToString (element.dimension.ed_origin)));
 
         const auto& witnessPoints = dimensionData.AddList<GS::ObjectState> ("witnessPoints");
 
@@ -10016,11 +10151,11 @@ GS::ObjectState CreateInteriorElevationsCommand::Execute (const GS::ObjectState&
 
             GS::UniString name;
             if (data.Get ("name", name)) {
-                GS::ucscpy (element.interiorElevation.segment.cutPlName, name.ToUStr ().Get ());
+                CopySectionString (element.interiorElevation.segment.cutPlName, name);
             }
             GS::UniString idStr;
             if (data.Get ("id", idStr)) {
-                GS::ucscpy (element.interiorElevation.segment.cutPlIdStr, idStr.ToUStr ().Get ());
+                CopySectionString (element.interiorElevation.segment.cutPlIdStr, idStr);
             }
 
             double depth = 1.0;
@@ -11726,4 +11861,406 @@ GS::ObjectState PlaceOpeningsCommand::Execute (const GS::ObjectState& parameters
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
 #endif
+}
+
+// Detail and Worksheet markers (#1377). A Detail and a Worksheet element is the marker that
+// cuts the detail or worksheet out of a floor plan, section or elevation: the clip polygon,
+// the base point (the origin of the detail/worksheet database) and the marker symbol. Created
+// with linkData.sourceMarker, Archicad makes the new Detail or Worksheet viewpoint with it, as
+// CreateSections does for sections. API_WorksheetType is API_DetailType, so element.detail
+// serves both.
+
+static void CopyToDetailString (GS::uchar_t (&target)[API_UniLongNameLen], const GS::UniString& source)
+{
+    GS::ucsncpy (target, source.ToUStr (), API_UniLongNameLen);
+    target[API_UniLongNameLen - 1] = 0;
+}
+
+static GS::ObjectState ExecuteCreateDetailMarkers (const GS::ObjectState& parameters, const char* arrayName, API_ElemTypeID typeId, const GS::String& undoName)
+{
+    GS::Array<GS::ObjectState> items;
+    auto error = GetElementArray (parameters, arrayName, items);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+
+    return ExecuteCreateWithElements (undoName, [&](GS::Array<GS::ObjectState>& elements) {
+        for (const GS::ObjectState& data : items) {
+            API_Element element = {};
+            API_ElementMemo memo = {};
+            API_SubElement marker = {};
+            const GS::OnExit cleanup ([&]() {
+                ACAPI_DisposeElemMemoHdls (&memo);
+                ACAPI_DisposeElemMemoHdls (&marker.memo);
+            });
+
+#ifdef ServerMainVers_2600
+            element.header.type = typeId;
+#else
+            element.header.typeID = typeId;
+#endif
+            marker.subType = APISubElement_MainMarker;
+            GSErrCode err = ACAPI_Element_GetDefaultsExt (&element, &memo, 1UL, &marker);
+            if (err != NoError) {
+                elements.Push (CreateErrorResponse (err, "Failed to read the marker defaults."));
+                continue;
+            }
+
+            GS::Array<GS::ObjectState> clipPolygon;
+            GS::Array<GS::ObjectState> clipPolygonArcs;
+            data.Get ("clipPolygon", clipPolygon);
+            data.Get ("polygonArcs", clipPolygonArcs);
+            if (clipPolygon.GetSize () < 3) {
+                elements.Push (CreateErrorResponse (APIERR_BADPARS, "'clipPolygon' needs at least 3 points."));
+                continue;
+            }
+
+            ACAPI_DisposeElemMemoHdls (&memo);
+            memo = {};
+            if (!BuildHatchPolygonMemo (clipPolygon, clipPolygonArcs, {}, element.detail.poly, memo)) {
+                elements.Push (CreateErrorResponse (APIERR_MEMFULL, "Failed to allocate the clip polygon."));
+                continue;
+            }
+
+            Box2DData bounds;
+            bounds.xMin = bounds.xMax = (*memo.coords)[1].x;
+            bounds.yMin = bounds.yMax = (*memo.coords)[1].y;
+            for (Int32 i = 2; i <= element.detail.poly.nCoords; ++i) {
+                bounds.xMin = GS::Min (bounds.xMin, (*memo.coords)[i].x);
+                bounds.xMax = GS::Max (bounds.xMax, (*memo.coords)[i].x);
+                bounds.yMin = GS::Min (bounds.yMin, (*memo.coords)[i].y);
+                bounds.yMax = GS::Max (bounds.yMax, (*memo.coords)[i].y);
+            }
+            // The base point, the origin of the new viewpoint, is the center of the clip polygon's
+            // bounding box: Archicad puts it there whatever pos is given (Archicad 29).
+            element.detail.pos = { (bounds.xMin + bounds.xMax) / 2.0, (bounds.yMin + bounds.yMax) / 2.0 };
+
+            marker.subElem.object.pos = (*memo.coords)[1];
+            if (const GS::ObjectState* markerCoordinate = data.Get ("markerCoordinate")) {
+                marker.subElem.object.pos = Get2DCoordinateFromObjectState (*markerCoordinate);
+            }
+
+            data.Get ("angle", element.detail.angle);
+            GS::UniString name;
+            if (data.Get ("name", name)) {
+                CopyToDetailString (element.detail.detailName, name);
+            }
+            GS::UniString id;
+            if (data.Get ("id", id)) {
+                CopyToDetailString (element.detail.detailIdStr, id);
+            }
+            short floorIndex = 0;
+            if (data.Get ("floorIndex", floorIndex)) {
+                element.header.floorInd = floorIndex;
+            }
+
+            element.detail.linkData.sourceMarker = true;
+            err = ACAPI_Element_CreateExt (&element, &memo, 1UL, &marker);
+            if (err != NoError) {
+                elements.Push (CreateErrorResponse (err, "Failed to create the marker."));
+                continue;
+            }
+            elements.Push (CreateElementIdObjectState (element.header.guid));
+        }
+    });
+}
+
+CreateDetailMarkersCommand::CreateDetailMarkersCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateDetailMarkersCommand::GetName () const
+{
+    return "CreateDetailMarkers";
+}
+
+GS::Optional<GS::UniString> CreateDetailMarkersCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "detailMarkersData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "clipPolygon": {
+                            "type": "array",
+                            "description": "The boundary of the cut out area, at least 3 points, without repeating the first one.",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 3
+                        },
+                        "polygonArcs": {
+                            "type": "array",
+                            "description": "Optional arcs of the boundary, with indices into clipPolygon.",
+                            "items": { "$ref": "#/PolyArc" }
+                        },
+                        "markerCoordinate": { "$ref": "#/Coordinate2D", "description": "Where the marker symbol is placed. Default is the first point of clipPolygon." },
+                        "angle": { "type": "number", "description": "Rotation of the marker symbol in radians. Default is that of the tool defaults." },
+                        "name": { "type": "string", "description": "Name of the new viewpoint. Default is that of the tool defaults." },
+                        "id": { "type": "string", "description": "Reference ID shown in the marker and in the Project Map. A '/' splits it between the two lines of the marker. Default is that of the tool defaults." },
+                        "floorIndex": { "type": "integer", "description": "Story of the marker when it is placed on a floor plan. Default is the current story." }
+                    },
+                    "additionalProperties": false,
+                    "required": ["clipPolygon"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["detailMarkersData"]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateDetailMarkersCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    })";
+}
+
+GS::ObjectState CreateDetailMarkersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    return ExecuteCreateDetailMarkers (parameters, "detailMarkersData", API_DetailID, "Create Detail Markers");
+}
+
+CreateWorksheetMarkersCommand::CreateWorksheetMarkersCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateWorksheetMarkersCommand::GetName () const
+{
+    return "CreateWorksheetMarkers";
+}
+
+GS::Optional<GS::UniString> CreateWorksheetMarkersCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "worksheetMarkersData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "clipPolygon": {
+                            "type": "array",
+                            "description": "The boundary of the cut out area, at least 3 points, without repeating the first one.",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 3
+                        },
+                        "polygonArcs": {
+                            "type": "array",
+                            "description": "Optional arcs of the boundary, with indices into clipPolygon.",
+                            "items": { "$ref": "#/PolyArc" }
+                        },
+                        "markerCoordinate": { "$ref": "#/Coordinate2D", "description": "Where the marker symbol is placed. Default is the first point of clipPolygon." },
+                        "angle": { "type": "number", "description": "Rotation of the marker symbol in radians. Default is that of the tool defaults." },
+                        "name": { "type": "string", "description": "Name of the new viewpoint. Default is that of the tool defaults." },
+                        "id": { "type": "string", "description": "Reference ID shown in the marker and in the Project Map. A '/' splits it between the two lines of the marker. Default is that of the tool defaults." },
+                        "floorIndex": { "type": "integer", "description": "Story of the marker when it is placed on a floor plan. Default is the current story." }
+                    },
+                    "additionalProperties": false,
+                    "required": ["clipPolygon"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["worksheetMarkersData"]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateWorksheetMarkersCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    })";
+}
+
+GS::ObjectState CreateWorksheetMarkersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    return ExecuteCreateDetailMarkers (parameters, "worksheetMarkersData", API_WorksheetID, "Create Worksheet Markers");
+}
+
+ModifyDetailMarkersCommand::ModifyDetailMarkersCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyDetailMarkersCommand::GetName () const
+{
+    return "ModifyDetailMarkers";
+}
+
+GS::Optional<GS::UniString> ModifyDetailMarkersCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "detailMarkersWithDetails": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId", "description": "A Detail or a Worksheet marker." },
+                        "name": { "type": "string", "description": "The new name of the viewpoint." },
+                        "id": { "type": "string", "description": "The new reference ID, shown in the marker and in the Project Map. A '/' splits it between the two lines of the marker." },
+                        "clipPolygon": {
+                            "type": "array",
+                            "description": "The new boundary of the cut out area, at least 3 points, without repeating the first one.",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 3
+                        },
+                        "polygonArcs": {
+                            "type": "array",
+                            "description": "Optional arcs of the new boundary, with indices into clipPolygon.",
+                            "items": { "$ref": "#/PolyArc" }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["detailMarkersWithDetails"]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyDetailMarkersCommand::GetRawResponseSchema () const
+{
+    return ModifyWallsCommand ().GetRawResponseSchema ();
+}
+
+GS::ObjectState ModifyDetailMarkersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> items;
+    auto error = GetElementArray (parameters, "detailMarkersWithDetails", items);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+
+    return ExecuteModifyWithResults ("Modify Detail Markers", [&](GS::Array<GS::ObjectState>& results) {
+        for (const GS::ObjectState& item : items) {
+            GS::UniString name;
+            GS::UniString id;
+            GS::Array<GS::ObjectState> clipPolygon;
+            GS::Array<GS::ObjectState> clipPolygonArcs;
+            const bool hasName = item.Get ("name", name);
+            const bool hasId = item.Get ("id", id);
+            const bool hasClipPolygon = item.Get ("clipPolygon", clipPolygon);
+            item.Get ("polygonArcs", clipPolygonArcs);
+            if (!hasName && !hasId && !hasClipPolygon) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Nothing to change: give 'name', 'id' or 'clipPolygon'."));
+                continue;
+            }
+            if (hasClipPolygon && clipPolygon.GetSize () < 3) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'clipPolygon' needs at least 3 points."));
+                continue;
+            }
+
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to load the element."));
+                continue;
+            }
+            const API_ElemTypeID typeId = GetElemTypeId (element.header);
+            if (typeId != API_DetailID && typeId != API_WorksheetID) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADID, "The element is not a Detail or a Worksheet marker."));
+                continue;
+            }
+
+            // Both change calls return NoError on a hidden or locked layer and change nothing,
+            // so the layer is checked first.
+            API_Attribute layerAttr = {};
+            layerAttr.header.typeID = API_LayerID;
+            layerAttr.header.index = element.header.layer;
+            if (ACAPI_Attribute_Get (&layerAttr) == NoError) {
+                if ((layerAttr.header.flags & APILay_Locked) != 0) {
+                    results.Push (CreateFailedExecutionResult (APIERR_LOCKEDLAY, "The marker was not changed, because its layer is locked."));
+                    continue;
+                }
+                if ((layerAttr.header.flags & APILay_Hidden) != 0) {
+                    results.Push (CreateFailedExecutionResult (APIERR_HIDDENLAY, "The marker was not changed, because its layer is hidden."));
+                    continue;
+                }
+            }
+
+            if (hasName || hasId) {
+                API_Element mask = {};
+                ACAPI_ELEMENT_MASK_CLEAR (mask);
+                if (hasName) {
+                    CopyToDetailString (element.detail.detailName, name);
+                    ACAPI_ELEMENT_MASK_SET (mask, API_DetailType, detailName);
+                }
+                if (hasId) {
+                    CopyToDetailString (element.detail.detailIdStr, id);
+                    ACAPI_ELEMENT_MASK_SET (mask, API_DetailType, detailIdStr);
+                }
+                // As for sections, ACAPI_Element_Change takes no name or ID; the DevKit's
+                // Element_Test changes the ID of Details and Worksheets with ChangeParameters.
+                err = ACAPI_Element_ChangeParameters ({element.header.guid}, &element, nullptr, &mask);
+                if (err != NoError) {
+                    results.Push (CreateFailedExecutionResult (err, "Failed to change the name or ID of the marker."));
+                    continue;
+                }
+            }
+
+            if (hasClipPolygon) {
+                API_ElementMemo memo = {};
+                const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+                if (!BuildHatchPolygonMemo (clipPolygon, clipPolygonArcs, {}, element.detail.poly, memo)) {
+                    results.Push (CreateFailedExecutionResult (APIERR_MEMFULL, "Failed to allocate the clip polygon."));
+                    continue;
+                }
+                API_Element mask = {};
+                ACAPI_ELEMENT_MASK_CLEAR (mask);
+                ACAPI_ELEMENT_MASK_SET (mask, API_DetailType, poly);
+                err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_Polygon, true);
+                if (err != NoError) {
+                    results.Push (CreateFailedExecutionResult (err, "Failed to change the clip polygon of the marker."));
+                    continue;
+                }
+            }
+
+            // Read back, so a value Archicad did not take is reported instead of a success.
+            API_Element changed = {};
+            changed.header.guid = element.header.guid;
+            err = ACAPI_Element_Get (&changed);
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to read the marker back after the change."));
+                continue;
+            }
+            GS::UniString changedName;
+            GS::UniString changedId;
+            GetDetailMarkerNameAndId (changed, changedName, changedId);
+            if ((hasName && changedName != GS::UniString (element.detail.detailName)) ||
+                (hasId && changedId != GS::UniString (element.detail.detailIdStr))) {
+                results.Push (CreateFailedExecutionResult (APIERR_REFUSEDPAR, "Archicad did not apply the new name or ID."));
+                continue;
+            }
+            if (hasClipPolygon && changed.detail.poly.nCoords != element.detail.poly.nCoords) {
+                results.Push (CreateFailedExecutionResult (APIERR_REFUSEDPAR, "Archicad did not apply the new clip polygon."));
+                continue;
+            }
+            results.Push (CreateSuccessfulExecutionResult ());
+        }
+    });
 }

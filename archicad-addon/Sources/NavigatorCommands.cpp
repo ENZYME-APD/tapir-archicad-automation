@@ -4,6 +4,7 @@
 #include "Transformation2D.hpp"
 #include "Matrix2.hpp"
 #include "TM.h"
+#include <memory>
 
 static GS::HashTable<GS::UniString, API_Guid> GetPublisherSetNameGuidTable()
 {
@@ -108,6 +109,116 @@ GS::ObjectState PublishPublisherSetCommand::Execute(const GS::ObjectState& param
     }
 
     return {};
+}
+
+GetPublisherSetsCommand::GetPublisherSetsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetPublisherSetsCommand::GetName () const
+{
+    return "GetPublisherSets";
+}
+
+GS::Optional<GS::UniString> GetPublisherSetsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "publisherSets": {
+                "type": "array",
+                "description": "The publisher sets of the project, in the order of the Publisher Sets map.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the publisher set."
+                        },
+                        "rootNavigatorItemId": {
+                            "$ref": "#/NavigatorItemId",
+                            "description": "The navigator item ID of the root of the publisher set."
+                        },
+                        "path": {
+                            "type": "string",
+                            "description": "The saved local or LAN output path, when the set is published to files. When it is also uploaded to a Teamwork file server, this is the temporary local path."
+                        },
+                        "twFileServerPath": {
+                            "type": "string",
+                            "description": "The saved output path on the Teamwork file server, when the set is published to files onto a file server."
+                        },
+                        "host": {
+                            "type": "string",
+                            "description": "The saved host name, when the set is published to the Internet."
+                        },
+                        "dirName": {
+                            "type": "string",
+                            "description": "The saved directory name on the host, when the set is published to the Internet."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "rootNavigatorItemId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "publisherSets"
+        ]
+    })";
+}
+
+GS::ObjectState GetPublisherSetsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    Int32 numberOfPublisherSets = 0;
+    GSErrCode err = ACAPI_Navigator_GetNavigatorSetNum (&numberOfPublisherSets);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get the number of publisher sets.");
+    }
+
+    GS::ObjectState response;
+    const auto& publisherSets = response.AddList<GS::ObjectState> ("publisherSets");
+
+    for (Int32 ii = 0; ii < numberOfPublisherSets; ++ii) {
+        API_NavigatorSet set = {};
+        set.mapId = API_PublisherSets;
+        set.wantsExtraInfo = true;
+        err = ACAPI_Navigator_GetNavigatorSet (&set, &ii);
+
+        // The publishing parameters are allocated by Archicad and owned by the caller.
+        std::unique_ptr<IO::Location> path (set.path);
+        std::unique_ptr<IO::Location> twFileServerPath (set.twFileServerPath);
+        std::unique_ptr<GS::UniString> host (set.host);
+        std::unique_ptr<GS::UniString> dirName (set.dirName);
+
+        if (err != NoError) {
+            continue;
+        }
+
+        GS::ObjectState setOS;
+        // Converted as GetPublisherSetNameGuidTable does, so the name can be passed to PublishPublisherSet.
+        setOS.Add ("name", GS::UniString (set.name));
+        setOS.Add ("rootNavigatorItemId", CreateGuidObjectState (set.rootGuid));
+        if (path != nullptr) {
+            setOS.Add ("path", path->ToDisplayText ());
+        }
+        if (twFileServerPath != nullptr) {
+            setOS.Add ("twFileServerPath", twFileServerPath->ToDisplayText ());
+        }
+        if (host != nullptr) {
+            setOS.Add ("host", *host);
+        }
+        if (dirName != nullptr) {
+            setOS.Add ("dirName", *dirName);
+        }
+        publisherSets (setOS);
+    }
+
+    return response;
 }
 
 UpdateDrawingsCommand::UpdateDrawingsCommand() :
@@ -572,6 +683,8 @@ GS::ObjectState GetModelViewOptionsCommand::Execute (const GS::ObjectState& /*pa
 
         if (ACAPI_Navigator_ModelViewOptions_Get (&modelViewOption) == NoError) {
             modelViewOptions (GS::ObjectState ("name", name));
+            // The Get allocates the GDL options (as the DevKit's Environment_Control example frees them).
+            ACAPI_FreeGDLModelViewOptionsPtr (&modelViewOption.modelViewOpt.gdlOptions);
         }
     }
 #else
@@ -587,6 +700,7 @@ GS::ObjectState GetModelViewOptionsCommand::Execute (const GS::ObjectState& /*pa
 
         if (ACAPI_Attribute_Get (&attr) == NoError) {
             modelViewOptions (GS::ObjectState ("name", name));
+            ACAPI_FreeGDLModelViewOptionsPtr (&attr.modelViewOpt.modelViewOpt.gdlOptions);
         }
     }
 #endif
@@ -683,7 +797,11 @@ GS::ObjectState FindModelViewOptionCommand::Execute (const GS::ObjectState& para
             API_ModelViewOptionsType modelViewOption = {};
             modelViewOption.head.index = i;
 
-            if (ACAPI_Navigator_ModelViewOptions_Get (&modelViewOption) == NoError && modelViewOption.head.guid == guidToSearch) {
+            if (ACAPI_Navigator_ModelViewOptions_Get (&modelViewOption) != NoError) {
+                continue;
+            }
+            ACAPI_FreeGDLModelViewOptionsPtr (&modelViewOption.modelViewOpt.gdlOptions);
+            if (modelViewOption.head.guid == guidToSearch) {
                 searchHead.index = modelViewOption.head.index;
                 err = NoError;
                 break;
@@ -708,6 +826,7 @@ GS::ObjectState FindModelViewOptionCommand::Execute (const GS::ObjectState& para
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to read the model view option combination found.");
     }
+    ACAPI_FreeGDLModelViewOptionsPtr (&modelViewOption.modelViewOpt.gdlOptions);
     if (guidToSearch != APINULLGuid && modelViewOption.head.guid != guidToSearch) {
         return CreateErrorResponse (APIERR_BADID, "No model view option combination has the given modelViewOptionId.");
     }
@@ -893,6 +1012,9 @@ void DisposeViewOptions (API_ViewOptions& viewOptions)
 
 }
 
+// Defined at CreateViewsInViewMap below; frees what ACAPI_Navigator_GetNavigatorView allocates.
+static void FreeNavigatorView (API_NavigatorView& navigatorView);
+
 GetViewOptionsCommand::GetViewOptionsCommand () :
     CommandBase (CommonSchema::Used)
 {}
@@ -1077,6 +1199,7 @@ GS::ObjectState GetViewSettingsCommand::Execute (const GS::ObjectState& paramete
             viewSettings (CreateErrorResponse (err, "Failed to get view settings from the navigator item, probably it's not a view"));
             continue;
         }
+        const GS::OnExit freeView ([&navigatorView] () { FreeNavigatorView (navigatorView); });
 
         GS::UniString graphicOverrideCombinationName (navigatorView.overrideCombination);
         GS::ObjectState viewSetting (
@@ -1088,6 +1211,18 @@ GS::ObjectState GetViewSettingsCommand::Execute (const GS::ObjectState& paramete
             "drawingScale", navigatorView.drawingScale,
             "saveZoom", navigatorView.saveZoom,
             "ignoreSavedZoom", navigatorView.ignoreSavedZoom);
+
+        // The "stored in this view" checkboxes of the View Settings dialog. A stored setting
+        // with an empty name is a custom one; a setting that is not stored is not part of the
+        // view at all, so the name fields above cannot tell the two apart on their own.
+        viewSetting.Add ("saveFlags", GS::ObjectState (
+            "zoom", navigatorView.saveZoom,
+            "displayOptions", navigatorView.saveDispOpt,
+            "layers", navigatorView.saveLaySet,
+            "drawingScale", navigatorView.saveDScale,
+            "dimensions", navigatorView.saveDim,
+            "penSet", navigatorView.savePenSet,
+            "structureDisplay", navigatorView.saveStructureDisplay));
 
         if (navigatorView.saveZoom) {
             viewSetting.Add ("zoom", GS::ObjectState (
@@ -1109,6 +1244,13 @@ GS::ObjectState GetViewSettingsCommand::Execute (const GS::ObjectState& paramete
             double rotAngle = 0.0;
             Geometry::TranAngle (trafo, &rotAngle);
             viewSetting.Add ("rotation", rotAngle);
+
+            // The full 2D transformation the rotation above is derived from, in the same
+            // row-by-row layout Get3DProjectionSettings uses for its transformationMatrix.
+            const auto& transformationMatrix = viewSetting.AddList<double> ("transformationMatrix");
+            for (double value : navigatorView.tr.tmx) {
+                transformationMatrix (value);
+            }
         }
 
         const char* structureDisplayStr = "EntireStructure";
@@ -1235,6 +1377,7 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
             executionResults (CreateFailedExecutionResult (err, "Failed to get navigator view settings from the navigator item"));
             continue;
         }
+        const GS::OnExit freeView ([&navigatorView] () { FreeNavigatorView (navigatorView); });
 
         SetCharProperty (viewSettingsOS, "modelViewOptions", navigatorView.modelViewOptName);
         SetCharProperty (viewSettingsOS, "layerCombination", navigatorView.layerCombination);
@@ -1283,6 +1426,20 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
         SetUCharProperty (viewSettingsOS, "renderingSceneName", navigatorView.renderingSceneName);
         viewSettingsOS->Get ("usePhotoRendering", navigatorView.usePhotoRendering);
 
+        // Explicit "stored in this view" flags come last, so they override the ones implied
+        // above by drawingScale, zoom, structureDisplay and the legacy saveZoom field.
+        // A flag that is not given keeps the value the view already has.
+        const GS::ObjectState* saveFlagsOS = viewSettingsOS->Get ("saveFlags");
+        if (saveFlagsOS != nullptr) {
+            saveFlagsOS->Get ("zoom", navigatorView.saveZoom);
+            saveFlagsOS->Get ("displayOptions", navigatorView.saveDispOpt);
+            saveFlagsOS->Get ("layers", navigatorView.saveLaySet);
+            saveFlagsOS->Get ("drawingScale", navigatorView.saveDScale);
+            saveFlagsOS->Get ("dimensions", navigatorView.saveDim);
+            saveFlagsOS->Get ("penSet", navigatorView.savePenSet);
+            saveFlagsOS->Get ("structureDisplay", navigatorView.saveStructureDisplay);
+        }
+
         err = ACAPI_Navigator_ChangeNavigatorView (&navigatorItem, &navigatorView);
         if (err != NoError) {
             executionResults (CreateFailedExecutionResult (err, "Failed to set navigator item view settings"));
@@ -1299,6 +1456,7 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
                 executionResults (CreateFailedExecutionResult (err, "The view settings were written, but the view could not be read back to check the dimensionStyle."));
                 continue;
             }
+            const GS::OnExit freeChangedView ([&changedNavigatorView] () { FreeNavigatorView (changedNavigatorView); });
 
             const GS::UniString appliedDimensionStyle (changedNavigatorView.dimName);
             if (appliedDimensionStyle.Compare (GS::UniString (navigatorView.dimName), CaseInsensitive) != GS::UniString::Equal) {
@@ -2350,6 +2508,7 @@ GS::ObjectState SetViewRotationCommand::Execute (const GS::ObjectState& paramete
             executionResults (CreateFailedExecutionResult (err, "Failed to get navigator view"));
             continue;
         }
+        const GS::OnExit freeView ([&navigatorView] () { FreeNavigatorView (navigatorView); });
 
         // Obtain the axis-aligned model extent for this database without
         // modifying the database's live zoom state.
@@ -3370,7 +3529,10 @@ GS::Optional<GS::UniString> RenameNavigatorItemCommand::GetInputParametersSchema
         "type": "object",
         "properties": {
             "navigatorItemId": { "$ref": "#/NavigatorItemId" },
-            "newName":         { "type": "string" },
+            "newName": {
+                "type": "string",
+                "description": "The new name of the item. On the Layout Book item of a placed Drawing it is also set as the custom name of the Drawing (nameType CustomName)."
+            },
             "newId": {
                 "type": "string",
                 "description": "The new ID of the item. On a layout it is the custom layout number (customLayoutNumbering is switched on); on a Project Map section, elevation, interior elevation, detail or worksheet it is the reference ID of the element behind the item; on any other item it is the custom ID of the navigator item (customUiId becomes true)."
@@ -3558,6 +3720,122 @@ static bool IsProjectMapItem (const API_Guid& guid)
     return ContainsNavigatorItem (rootItem, API_ProjectMap, guid);
 }
 
+// Finds the Drawing element of a placed Drawing's Layout Book item in the current database, which is the database
+// of the item's layout. Neither the element's guid nor its drawingGuid is the item's guid; what links them is the
+// view the Drawing shows: the item's sourceGuid is the Drawing's linkGuid (ACAPI_Drawing_GetDrawingLink, tested on
+// Archicad 29). When the layout holds more than one Drawing of that view, the one whose custom name is the item's
+// current name is taken; ambiguous is set when that still leaves no single Drawing.
+static bool FindDrawingOfNavigatorItemInCurrentDatabase (const API_NavigatorItem& navItem, API_Element& drawing, bool& ambiguous)
+{
+    ambiguous = false;
+    if (navItem.sourceGuid == APINULLGuid) {
+        return false;
+    }
+    GS::Array<API_Guid> drawings;
+    if (ACAPI_Element_GetElemList (API_DrawingID, &drawings) != NoError) {
+        return false;
+    }
+    GS::Array<API_Element> candidates;
+    for (const API_Guid& guid : drawings) {
+        API_DrawingLinkInfo link = {};
+        API_Guid drawingGuid = guid;
+        if (ACAPI_Drawing_GetDrawingLink (&drawingGuid, &link) != NoError) {
+            continue;
+        }
+        if (link.viewPath != nullptr) {
+            BMpFree (link.viewPath);
+        }
+        delete link.linkPath;
+        if (link.linkGuid != navItem.sourceGuid) {
+            continue;
+        }
+        API_Element candidate = {};
+        candidate.header.guid = guid;
+        if (ACAPI_Element_Get (&candidate) == NoError) {
+            candidates.Push (candidate);
+        }
+    }
+    if (candidates.GetSize () > 1) {
+        const GS::UniString itemName (navItem.uName);
+        GS::Array<API_Element> sameName;
+        for (const API_Element& candidate : candidates) {
+            if (candidate.drawing.nameType == APIName_CustomName && GS::UniString (candidate.drawing.name) == itemName) {
+                sameName.Push (candidate);
+            }
+        }
+        candidates = sameName;
+        ambiguous = candidates.GetSize () != 1;
+    }
+    if (candidates.GetSize () != 1) {
+        return false;
+    }
+    drawing = candidates[0];
+    return true;
+}
+
+// Gives the Drawing element of the current database the new name as its custom name and checks that it stuck.
+static GSErrCode SetCustomNameOfDrawing (API_Element& drawing, const char* drawingName)
+{
+    CHTruncate (drawingName, drawing.drawing.name, GS::ArraySize (drawing.drawing.name));
+    drawing.drawing.nameType = APIName_CustomName;
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, name);
+    ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, nameType);
+    GSErrCode err = ACAPI_Element_Change (&drawing, &mask, nullptr, 0, true);
+    if (err != NoError) {
+        return err;
+    }
+
+    API_Element changedDrawing = {};
+    changedDrawing.header.guid = drawing.header.guid;
+    err = ACAPI_Element_Get (&changedDrawing);
+    if (err != NoError) {
+        return err;
+    }
+    if (changedDrawing.drawing.nameType != APIName_CustomName || strcmp (changedDrawing.drawing.name, drawing.drawing.name) != 0) {
+        return APIERR_REFUSEDPAR;
+    }
+    return NoError;
+}
+
+// A Drawing placed on a layout has its own name (API_DrawingType::name and nameType), which
+// GetDetailsOfElements, the Drawing Settings and the Drawing's title read, while
+// ACAPI_Navigator_ChangeNavigatorItem only renames its Layout Book item (#1479). So the new name
+// is written to the Drawing too, as a custom name, as renaming it in the Navigator does in Archicad.
+// The Drawing item's own db is empty; the Drawing is in the database of its parent item, the layout.
+// navItem is the item as read before the rename, so its name is the old one.
+static GSErrCode RenameDrawingOfNavigatorItem (const API_NavigatorItem& navItem, const GS::UniString& newName, bool& found, bool& ambiguous)
+{
+    const auto drawingName = newName.ToCStr ();
+    found = false;
+    ambiguous = false;
+    API_NavigatorItem layoutItem = {};
+    API_DatabaseInfo startDb = {};
+    GSErrCode err = ACAPI_Navigator_GetNavigatorParentItem (&navItem.guid, &layoutItem);
+    if (err == NoError) {
+        err = ACAPI_Database_GetCurrentDatabase (&startDb);
+    }
+    API_DatabaseInfo layoutDb = layoutItem.db;
+    if (err == NoError) {
+        err = ACAPI_Window_GetDatabaseInfo (&layoutDb);
+    }
+    if (err == NoError) {
+        err = ACAPI_Database_ChangeCurrentDatabase (&layoutDb);
+    }
+    if (err != NoError) {
+        return err;
+    }
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("RenameNavigatorItemCommand", [&]() -> GSErrCode {
+        API_Element drawing = {};
+        found = FindDrawingOfNavigatorItemInCurrentDatabase (navItem, drawing, ambiguous);
+        err = found ? SetCustomNameOfDrawing (drawing, drawingName.Get ()) : NoError;
+        return err;
+    });
+    ACAPI_Database_ChangeCurrentDatabase (&startDb);
+    return undoErr != NoError ? undoErr : err;
+}
+
 GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     const GS::ObjectState* navIdOS = parameters.Get ("navigatorItemId");
@@ -3572,6 +3850,7 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to get navigator item.");
     }
+    const API_NavigatorItem navItemBefore = navItem;
 
     GS::UniString newName;
     const bool hasNewName = parameters.Get ("newName", newName) && !newName.IsEmpty ();
@@ -3694,6 +3973,22 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
         if (hasNewItemId && GS::UniString (changedItem.uiId) != GS::UniString (navItem.uiId)) {
             return CreateFailedExecutionResult (APIERR_REFUSEDPAR,
                 "Archicad did not apply the new ID. The ID of this navigator item cannot be changed by this command.");
+        }
+    }
+
+    // A Drawing that is not found (it shows no view, e.g. an image or a PDF) keeps its old name, and the rename
+    // of the Layout Book item still succeeds, as it did before the Drawing was renamed too.
+    if (hasNewName && navItem.itemType == API_DrawingNavItem) {
+        bool drawingFound = false;
+        bool drawingAmbiguous = false;
+        err = RenameDrawingOfNavigatorItem (navItemBefore, newName, drawingFound, drawingAmbiguous);
+        if (drawingAmbiguous) {
+            return CreateFailedExecutionResult (APIERR_GENERAL,
+                "The Layout Book item was renamed, but its layout holds more than one Drawing of the same view with that name, so no Drawing was renamed. Set the Drawing's customName with SetDetailsOfElements.");
+        }
+        if (drawingFound && err != NoError) {
+            return CreateFailedExecutionResult (err,
+                "The Layout Book item was renamed, but Archicad did not apply the new name to its Drawing. Set the Drawing's customName with SetDetailsOfElements.");
         }
     }
 

@@ -5,8 +5,10 @@
 #include "MigrationHelper.hpp"
 #include "DGModule.hpp"
 #include "Folder.hpp"
+#include "Base64Converter.hpp"
 
 #include <cstdlib>
+#include <cstring>
 
 static ULong GenerateProjectLocationHashValue (const IO::Location& projectLocation)
 {
@@ -2893,6 +2895,196 @@ GS::ObjectState SetDialogAutoCloseCommand::Execute (const GS::ObjectState& param
     }
 
     return CreateSuccessfulExecutionResult ();
+}
+
+ConvertImagesCommand::ConvertImagesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ConvertImagesCommand::GetName () const
+{
+    return "ConvertImages";
+}
+
+GS::Optional<GS::UniString> ConvertImagesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "images": {
+                "type": "array",
+                "description": "The images to convert.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "image": {
+                            "type": "string",
+                            "description": "The base64 encoded image, for example a previewImage returned by GetElementPreviewImage."
+                        },
+                        "inputFormat": {
+                            "type": "string",
+                            "description": "The format of the image: Bitmap, GIF, TIFF, JPEG or PNG, or the MIME type of another format Archicad can read (for example image/x-targa)."
+                        },
+                        "outputFormat": {
+                            "type": "string",
+                            "description": "The format to convert the image to: Bitmap, GIF, TIFF, JPEG or PNG, or the MIME type of another format Archicad can write."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "image",
+                        "inputFormat",
+                        "outputFormat"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "images"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ConvertImagesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "images": {
+                "type": "array",
+                "description": "The converted images in the order of the input, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "image": {
+                                    "type": "string",
+                                    "description": "The base64 encoded converted image."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "image"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "images"
+        ]
+    })";
+}
+
+// The image formats of API_PictureFormat, by the names ConvertImages takes, with their MIME types.
+struct NamedPictureFormat {
+    const char*       name;
+    API_PictureFormat format;
+    const char*       mimeType;
+};
+
+static const NamedPictureFormat NamedPictureFormats[] = {
+    { "Bitmap", APIPictForm_Bitmap, "image/x-bmp" },
+    { "GIF",    APIPictForm_GIF,    "image/gif" },
+    { "TIFF",   APIPictForm_TIFF,   "image/tiff" },
+    { "JPEG",   APIPictForm_JPEG,   "image/jpeg" },
+    { "PNG",    APIPictForm_PNG,    "image/png" }
+};
+
+static const NamedPictureFormat* FindNamedPictureFormat (const GS::UniString& name)
+{
+    for (const NamedPictureFormat& namedFormat : NamedPictureFormats) {
+        if (name == namedFormat.name) {
+            return &namedFormat;
+        }
+    }
+    return nullptr;
+}
+
+// Two named formats are converted with ACAPI_Conversion_ConvertPicture; when either format is a
+// MIME type, both are passed as MIME types to ACAPI_Conversion_ConvertMimePicture.
+static GS::ObjectState ConvertImage (const GS::ObjectState& imageOS)
+{
+    GS::UniString image;
+    GS::UniString inputFormat;
+    GS::UniString outputFormat;
+    if (!imageOS.Get ("image", image) || !imageOS.Get ("inputFormat", inputFormat) || !imageOS.Get ("outputFormat", outputFormat)) {
+        return CreateErrorResponse (APIERR_BADPARS, "image, inputFormat and outputFormat are required.");
+    }
+
+    const GS::Array<char> bytes = Base64Converter::Decode (image);
+    if (bytes.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "image is empty or not base64 encoded.");
+    }
+
+    GSHandle inputHdl = BMAllocateHandle ((GSSize) bytes.GetSize (), ALLOCATE_CLEAR, 0);
+    if (inputHdl == nullptr) {
+        return CreateErrorResponse (APIERR_MEMFULL, "Failed to allocate the image.");
+    }
+    std::memcpy (*inputHdl, bytes.GetContent (), bytes.GetSize ());
+
+    const NamedPictureFormat* namedInput = FindNamedPictureFormat (inputFormat);
+    const NamedPictureFormat* namedOutput = FindNamedPictureFormat (outputFormat);
+
+    GSErrCode err = NoError;
+    GSHandle outputHdl = nullptr;
+    if (namedInput != nullptr && namedOutput != nullptr) {
+        API_PictureHandle oldPict = {};
+        oldPict.storageFormat = namedInput->format;
+        oldPict.pictHdl = inputHdl;
+        API_PictureHandle newPict = {};
+        newPict.storageFormat = namedOutput->format;
+        err = ACAPI_Conversion_ConvertPicture (&oldPict, &newPict);
+        outputHdl = newPict.pictHdl;
+    } else {
+        const GS::UniString mimeInType = namedInput != nullptr ? GS::UniString (namedInput->mimeType) : inputFormat;
+        const GS::UniString mimeOutType = namedOutput != nullptr ? GS::UniString (namedOutput->mimeType) : outputFormat;
+        const auto mimeIn = mimeInType.ToCStr (CC_UTF8);
+        const auto mimeOut = mimeOutType.ToCStr (CC_UTF8);
+        API_MimePicture mimePicture = {};
+        mimePicture.mimeIn = mimeIn.Get ();
+        mimePicture.inputHdl = inputHdl;
+        mimePicture.mimeOut = mimeOut.Get ();
+        mimePicture.inContainsMime = false;
+        mimePicture.outDepth = APIColorDepth_FromSourceImage;
+        err = ACAPI_Conversion_ConvertMimePicture (&mimePicture);
+        outputHdl = mimePicture.outputHdl;
+    }
+    BMKillHandle (&inputHdl);
+
+    if (err != NoError || outputHdl == nullptr) {
+        if (outputHdl != nullptr) {
+            BMKillHandle (&outputHdl);
+        }
+        return CreateErrorResponse (err != NoError ? err : APIERR_GENERAL, "Failed to convert the image from " + inputFormat + " to " + outputFormat + ".");
+    }
+
+    GS::UniString converted = Base64Converter::Encode (*outputHdl, (USize) BMGetHandleSize (outputHdl));
+    converted.DeleteAll (GS::UniChar (char ('\n')));
+    BMKillHandle (&outputHdl);
+
+    return GS::ObjectState ("image", converted);
+}
+
+GS::ObjectState ConvertImagesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> images;
+    parameters.Get ("images", images);
+
+    GS::ObjectState response;
+    const auto& convertedImages = response.AddList<GS::ObjectState> ("images");
+    for (const GS::ObjectState& imageOS : images) {
+        convertedImages (ConvertImage (imageOS));
+    }
+    return response;
 }
 
 void ApplyDialogAutoCloseFromEnvironment ()

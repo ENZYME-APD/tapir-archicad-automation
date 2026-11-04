@@ -50,6 +50,11 @@ GS::ObjectState CreateFailedExecutionResult (GSErrCode errorCode, const GS::UniS
 GS::ObjectState CreateFailedExecutionResult (const GS::ObjectState& errorResponse);
 GS::ObjectState CreateSuccessfulExecutionResult ();
 GS::UniString DescribeDefinitionChangeError (GSErrCode err);
+// Why Archicad refused to change an element the user could not edit in Archicad either, as the end
+// of a sentence ("its layer is hidden"); empty when the refusal has another cause. elemHead is the
+// element as it is in the project; targetLayer is the layer a change moves it to, if any.
+GS::UniString DescribeElementEditRefusal (GSErrCode err, const API_Elem_Head& elemHead, const GS::Optional<API_AttributeIndex>& targetLayer = GS::NoValue);
+
 // One of "Free", "Editable", "Locked", "NotAvailable", "NotExist".
 const char* LockableStatusToString (API_LockableStatus status);
 
@@ -66,6 +71,13 @@ void AddGuidDifference (const GS::HashSet<API_Guid>& from, const GS::HashSet<API
 }
 
 API_Guid    GetGuidFromObjectState (const GS::ObjectState& os);
+
+// A guid string field that may be left out. Archicad does not check the type of fields whose schema
+// is a $ref (e.g. "#/Guid"), so a wrapped {"guid": ...} object would otherwise read as "not given".
+enum class OptionalGuidField { NotGiven, Valid, Invalid };
+// Reads the guid string field 'name' of 'os' into 'guid'. Invalid when the field is given but is not
+// a string holding a guid.
+OptionalGuidField GetOptionalGuidField (const GS::ObjectState& os, const GS::String& name, API_Guid& guid);
 API_Guid    GetGuidFromArrayItem (const GS::String& idFieldName, const GS::ObjectState& os);
 inline API_Guid GetGuidFromElementsArrayItem (const GS::ObjectState& os)        { return GetGuidFromArrayItem ("elementId", os); }
 inline API_Guid GetGuidFromAttributesArrayItem (const GS::ObjectState& os)      { return GetGuidFromArrayItem ("attributeId", os); }
@@ -252,6 +264,11 @@ GSErrCode ExecuteActionForEachDatabase (
 // The Project Map item of an independent worksheet or detail database, found by its database;
 // NoValue for any other database type or when the Project Map has no such item.
 GS::Optional<API_Guid> FindProjectMapItemOfWorksheetOrDetail (const API_DatabaseInfo& database);
+
+// The name and the reference ID of a Detail or Worksheet marker. A Worksheet element reports an
+// empty detailIdStr (Archicad 29) while its viewpoint has the ID, so both are taken from the
+// viewpoint's database when it can be read, and from the element otherwise.
+void GetDetailMarkerNameAndId (const API_Element& element, GS::UniString& name, GS::UniString& id);
 
 template<std::size_t N>
 bool SetCharProperty (const GS::ObjectState* os, const char* propertyKey, char (&targetProperty)[N])

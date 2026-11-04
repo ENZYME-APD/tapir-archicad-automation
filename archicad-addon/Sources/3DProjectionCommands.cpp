@@ -692,3 +692,119 @@ GS::ObjectState Set3DWindowSettingsCommand::Execute (const GS::ObjectState& para
 
     return Create3DWindowSettingsObjectState (newWindowInfo);
 }
+
+SetCurrent3DStyleCommand::SetCurrent3DStyleCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String SetCurrent3DStyleCommand::GetName () const
+{
+    return "SetCurrent3DStyle";
+}
+
+GS::Optional<GS::UniString> SetCurrent3DStyleCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "styleName": {
+            "type": "string",
+            "description": "The name of an existing 3D style, as Get3DStyles returns it.",
+            "minLength": 1
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "styleName"
+    ]
+})";
+}
+
+GS::Optional<GS::UniString> SetCurrent3DStyleCommand::GetRawResponseSchema () const
+{
+    return R"({
+    "$ref": "#/ExecutionResult"
+})";
+}
+
+GS::ObjectState SetCurrent3DStyleCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString styleName;
+    if (!parameters.Get ("styleName", styleName) || styleName.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "styleName is missing or empty.");
+    }
+
+    GS::Array<GS::UniString> styles;
+    GS::UniString current;
+    GSErrCode err = ACAPI_View_Get3DStyleList (&styles, &current);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get the 3D styles.");
+    }
+    if (!styles.Contains (styleName)) {
+        return CreateFailedExecutionResult (APIERR_BADNAME, "There is no 3D style with the name '" + styleName + "'.");
+    }
+
+    err = ACAPI_CallUndoableCommand ("SetCurrent3DStyleCommand", [&]() -> GSErrCode {
+        return ACAPI_View_SetCurrent3DStyle (&styleName);
+    });
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to set the current 3D style.");
+}
+
+StoreViewSettingsCommand::StoreViewSettingsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String StoreViewSettingsCommand::GetName () const
+{
+    return "StoreViewSettings";
+}
+
+GS::Optional<GS::UniString> StoreViewSettingsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "action": {
+            "type": "string",
+            "description": "Store saves the current view settings, Restore puts the stored ones back. Call them in pairs: a second Store before a Restore is refused.",
+            "enum": [
+                "Store",
+                "Restore"
+            ]
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "action"
+    ]
+})";
+}
+
+GS::Optional<GS::UniString> StoreViewSettingsCommand::GetRawResponseSchema () const
+{
+    return R"({
+    "$ref": "#/ExecutionResult"
+})";
+}
+
+GS::ObjectState StoreViewSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString action;
+    parameters.Get ("action", action);
+    if (action != "Store" && action != "Restore") {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "action must be Store or Restore.");
+    }
+    const bool store = (action == "Store");
+
+    const GSErrCode err = ACAPI_View_StoreViewSettings (store);
+    if (err == APIERR_BADPARS) {
+        return CreateFailedExecutionResult (err, "Store and Restore must be called in pairs, one after the other.");
+    }
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, store ? "Failed to store the view settings." : "Failed to restore the view settings.");
+}

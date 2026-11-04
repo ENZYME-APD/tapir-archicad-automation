@@ -551,6 +551,85 @@ GS::Optional<GS::UniString> GetPropertyValuesOfElementsCommand::GetRawResponseSc
     })";
 }
 
+// The guids of the given PropertyIds, skipping items without a valid propertyId.
+static GS::Array<API_Guid> GetPropertyGuids (const GS::Array<GS::ObjectState>& properties)
+{
+    GS::Array<API_Guid> propertyGuids;
+    for (const GS::ObjectState& property : properties) {
+        const GS::ObjectState* propertyId = property.Get ("propertyId");
+        if (propertyId != nullptr) {
+            const API_Guid propertyGuid = GetGuidFromObjectState (*propertyId);
+            if (propertyGuid != APINULLGuid) {
+                propertyGuids.Push (propertyGuid);
+            }
+        }
+    }
+    return propertyGuids;
+}
+
+// The {propertyValues: [...]} item of a PropertyValuesOrErrorArray: one value or error per
+// requested property, in the order of the request, from the properties fetched for one owner
+// (an element or an element component). With availabilityElemGuid each value or error also
+// gets isAvailable, whether the property is available for that element. With useSIUnits the
+// values are formatted in SI units instead of the project's working units.
+static GS::ObjectState CreatePropertyValuesObjectState (const GS::Array<GS::ObjectState>& properties, const GS::Array<API_Property>& fetchedProperties, const API_Guid* availabilityElemGuid = nullptr, bool useSIUnits = false)
+{
+    GS::HashTable<API_Guid, const API_Property*> propertyMap;
+    for (const API_Property& prop : fetchedProperties) {
+        if (!propertyMap.ContainsKey (prop.definition.guid)) {
+            propertyMap.Add (prop.definition.guid, &prop);
+        }
+    }
+
+    GS::ObjectState propertyValuesForOwner;
+    const auto& propertyValues = propertyValuesForOwner.AddList<GS::ObjectState> ("propertyValues");
+
+    for (const GS::ObjectState& property : properties) {
+        const GS::ObjectState* propertyId = property.Get ("propertyId");
+        if (propertyId == nullptr) {
+            propertyValues (CreateErrorResponse (APIERR_BADPARS, "The 'propertyId' field is missing"));
+            continue;
+        }
+
+        const API_Guid propertyGuid = GetGuidFromObjectState (*propertyId);
+
+        const auto addPropertyValue = [&] (GS::ObjectState item) {
+            if (availabilityElemGuid != nullptr) {
+                item.Add ("isAvailable", ACAPI_Element_IsPropertyDefinitionAvailable (*availabilityElemGuid, propertyGuid));
+            }
+            propertyValues (item);
+        };
+
+        if (!propertyMap.ContainsKey (propertyGuid)) {
+            addPropertyValue (CreateErrorResponse (APIERR_BADPROPERTY, "Property not found or invalid"));
+            continue;
+        }
+
+        const API_Property& propertyValue = *propertyMap[propertyGuid];
+        if (propertyValue.status == API_Property_NotAvailable || propertyValue.status == API_Property_NotEvaluated) {
+            addPropertyValue (CreateErrorResponse (APIERR_BADPROPERTY, "Not available or not evaluated property"));
+            continue;
+        }
+
+        GS::UniString propertyValueString;
+        GSErrCode err = NoError;
+        if (useSIUnits) {
+            err = GetPropertyValueStringInSIUnits (propertyValue, propertyValueString);
+        } else {
+            err = GetPropertyValueString (propertyValue, propertyValueString);
+        }
+
+        if (err != NoError) {
+            addPropertyValue (CreateErrorResponse (err, "Failed to get property value as string"));
+            continue;
+        }
+
+        addPropertyValue (GS::ObjectState ("propertyValue", GS::ObjectState ("value", propertyValueString)));
+    }
+
+    return propertyValuesForOwner;
+}
+
 GS::ObjectState GetPropertyValuesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elements;
@@ -568,16 +647,7 @@ GS::ObjectState GetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
     GS::ObjectState response;
     const auto& propertyValuesForElements = response.AddList<GS::ObjectState> ("propertyValuesForElements");
 
-    GS::Array<API_Guid> propertyGuids;
-    for (const GS::ObjectState& property : properties) {
-        const GS::ObjectState* propertyId = property.Get ("propertyId");
-        if (propertyId != nullptr) {
-            const API_Guid propertyGuid = GetGuidFromObjectState (*propertyId);
-            if (propertyGuid != APINULLGuid) {
-                propertyGuids.Push (propertyGuid);
-            }
-        }
-    }
+    const GS::Array<API_Guid> propertyGuids = GetPropertyGuids (properties);
 
     for (const GS::ObjectState& element : elements) {
         const GS::ObjectState* elementId = element.Get ("elementId");
@@ -589,65 +659,434 @@ GS::ObjectState GetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
         const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
 
         GS::Array<API_Property> fetchedProperties;
-        GSErrCode err = ACAPI_Element_GetPropertyValuesByGuid (elemGuid, propertyGuids, fetchedProperties);
+        const GSErrCode err = ACAPI_Element_GetPropertyValuesByGuid (elemGuid, propertyGuids, fetchedProperties);
         if (err != NoError) {
             propertyValuesForElements (CreateErrorResponse (err, "Failed to get property values for element"));
             continue;
         }
 
-        GS::HashTable<API_Guid, const API_Property*> propertyMap;
-        for (const API_Property& prop : fetchedProperties) {
-            if (!propertyMap.ContainsKey (prop.definition.guid)) {
-                propertyMap.Add (prop.definition.guid, &prop);
+        propertyValuesForElements (CreatePropertyValuesObjectState (properties, fetchedProperties, includeAvailability ? &elemGuid : nullptr, useSIUnits));
+    }
+
+    return response;
+}
+
+// Element components (API_ElemComponentID): the building material skins or profile parts of an
+// element. A component guid identifies the component only together with its element, so the
+// JSON id always carries both: {elementComponentId: {elementId: {guid}, componentId: {guid}}}.
+
+static GS::ObjectState CreateElementComponentIdObjectState (const API_ElemComponentID& elemComponent)
+{
+    GS::ObjectState elementComponentId;
+    elementComponentId.Add ("elementId", CreateGuidObjectState (elemComponent.elemGuid));
+    elementComponentId.Add ("componentId", CreateGuidObjectState (elemComponent.componentID.componentGuid));
+    return GS::ObjectState ("elementComponentId", elementComponentId);
+}
+
+// ACAPI_Element_GetComponents crashes Archicad for some 2D and annotation elements (Dimension,
+// LevelDimension, Hatch, RailingNode on AC29), so it is called only for the model element types
+// known to answer it.
+static bool ElementTypeCanHaveComponents (API_ElemTypeID typeID)
+{
+    switch (typeID) {
+        case API_WallID:
+        case API_ColumnID:
+        case API_BeamID:
+        case API_WindowID:
+        case API_DoorID:
+        case API_ObjectID:
+        case API_LampID:
+        case API_SlabID:
+        case API_RoofID:
+        case API_ShellID:
+        case API_MeshID:
+        case API_ZoneID:
+        case API_MorphID:
+        case API_CurtainWallID:
+        case API_CurtainWallSegmentID:
+        case API_CurtainWallFrameID:
+        case API_CurtainWallPanelID:
+        case API_StairID:
+        case API_RiserID:
+        case API_TreadID:
+        case API_StairStructureID:
+        case API_RailingID:
+        case API_RailingToprailID:
+        case API_RailingHandrailID:
+        case API_RailingRailID:
+        case API_RailingPostID:
+        case API_RailingInnerPostID:
+        case API_RailingBalusterID:
+        case API_RailingPanelID:
+        case API_RailingSegmentID:
+            return true;
+        default:
+            return false;
+    }
+}
+
+// On an element that does not exist or whose type has no components sets error and returns false.
+static bool CheckElementCanHaveComponents (const API_Guid& elemGuid, GS::ObjectState& error)
+{
+    API_Elem_Head header = {};
+    if (!LoadElementHeaderByGuid (elemGuid, header)) {
+        error = CreateErrorResponse (APIERR_BADID, "Failed to find the element");
+        return false;
+    }
+
+    const API_ElemTypeID typeID = GetElemTypeId (header);
+    if (!ElementTypeCanHaveComponents (typeID)) {
+        error = CreateErrorResponse (APIERR_BADPARS, "Element type '" + GetElementTypeNonLocalizedName (typeID) + "' has no components");
+        return false;
+    }
+
+    return true;
+}
+
+// Reads an ElementComponentIdArrayItem; on a missing field or an element without components
+// sets error and returns false.
+static bool GetElemComponentIDFromObjectState (const GS::ObjectState& item, API_ElemComponentID& elemComponent, GS::ObjectState& error)
+{
+    const GS::ObjectState* elementComponentId = item.Get ("elementComponentId");
+    if (elementComponentId == nullptr) {
+        error = CreateErrorResponse (APIERR_BADPARS, "elementComponentId is missing");
+        return false;
+    }
+
+    const GS::ObjectState* elementId = elementComponentId->Get ("elementId");
+    if (elementId == nullptr) {
+        error = CreateErrorResponse (APIERR_BADPARS, "elementComponentId/elementId is missing");
+        return false;
+    }
+
+    const GS::ObjectState* componentId = elementComponentId->Get ("componentId");
+    if (componentId == nullptr) {
+        error = CreateErrorResponse (APIERR_BADPARS, "elementComponentId/componentId is missing");
+        return false;
+    }
+
+    elemComponent.elemGuid = GetGuidFromObjectState (*elementId);
+    elemComponent.componentID.componentGuid = GetGuidFromObjectState (*componentId);
+    return CheckElementCanHaveComponents (elemComponent.elemGuid, error);
+}
+
+GetComponentsOfElementsCommand::GetComponentsOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetComponentsOfElementsCommand::GetName () const
+{
+    return "GetComponentsOfElements";
+}
+
+GS::Optional<GS::UniString> GetComponentsOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
             }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetComponentsOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "componentsOfElements": {
+                "$ref": "#/ElementComponentsOrErrorArray",
+                "description": "The components of each element, in the order of the given elements. Each component id carries the element id too, so the items can be passed on to GetPropertyValuesOfElementComponents as they are."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "componentsOfElements"
+        ]
+    })";
+}
+
+GS::ObjectState GetComponentsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& componentsOfElements = response.AddList<GS::ObjectState> ("componentsOfElements");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            componentsOfElements (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
         }
 
-        GS::ObjectState propertyValuesForElement;
-        const auto& propertyValues = propertyValuesForElement.AddList<GS::ObjectState> ("propertyValues");
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+        GS::ObjectState error;
+        if (!CheckElementCanHaveComponents (elemGuid, error)) {
+            componentsOfElements (error);
+            continue;
+        }
 
-        for (const GS::ObjectState& property : properties) {
-            const GS::ObjectState* propertyId = property.Get ("propertyId");
-            if (propertyId == nullptr) {
-                propertyValues (CreateErrorResponse (APIERR_BADPARS, "The 'propertyId' field is missing"));
-                continue;
+        GS::Array<API_ElemComponentID> elemComponents;
+        const GSErrCode err = ACAPI_Element_GetComponents (elemGuid, elemComponents);
+        if (err != NoError) {
+            componentsOfElements (CreateErrorResponse (err, "Failed to get the components of the element"));
+            continue;
+        }
+
+        GS::ObjectState componentsOfElement;
+        const auto& elementComponents = componentsOfElement.AddList<GS::ObjectState> ("elementComponents");
+        for (const API_ElemComponentID& elemComponent : elemComponents) {
+            elementComponents (CreateElementComponentIdObjectState (elemComponent));
+        }
+
+        componentsOfElements (componentsOfElement);
+    }
+
+    return response;
+}
+
+GetPropertyDefinitionsOfElementComponentsCommand::GetPropertyDefinitionsOfElementComponentsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetPropertyDefinitionsOfElementComponentsCommand::GetName () const
+{
+    return "GetPropertyDefinitionsOfElementComponents";
+}
+
+GS::Optional<GS::UniString> GetPropertyDefinitionsOfElementComponentsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementComponents": {
+                "$ref": "#/ElementComponents"
+            },
+            "filter": {
+                "type": "string",
+                "description": "Which property definitions to return: the user defined (Custom) ones, the built-in ones, or all. The default is All.",
+                "enum": [
+                    "UserDefined",
+                    "BuiltIn",
+                    "All"
+                ]
             }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementComponents"
+        ]
+    })";
+}
 
-            const API_Guid propertyGuid = GetGuidFromObjectState (*propertyId);
-
-            const auto addPropertyValue = [&] (GS::ObjectState item) {
-                if (includeAvailability) {
-                    item.Add ("isAvailable", ACAPI_Element_IsPropertyDefinitionAvailable (elemGuid, propertyGuid));
+GS::Optional<GS::UniString> GetPropertyDefinitionsOfElementComponentsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "propertyDefinitionsOfElementComponents": {
+                "type": "array",
+                "description": "The property definitions available on each element component, in the order of the given element components. GetAllProperties returns the full details of a property.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "propertyDefinitions": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "propertyId": {
+                                                "$ref": "#/PropertyId"
+                                            },
+                                            "propertyName": {
+                                                "type": "string"
+                                            },
+                                            "propertyType": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "StaticBuiltIn",
+                                                    "DynamicBuiltIn",
+                                                    "Custom"
+                                                ]
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "propertyId",
+                                            "propertyName",
+                                            "propertyType"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "propertyDefinitions"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
                 }
-                propertyValues (item);
-            };
-
-            if (!propertyMap.ContainsKey (propertyGuid)) {
-                addPropertyValue (CreateErrorResponse (APIERR_BADPROPERTY, "Property not found or invalid"));
-                continue;
             }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyDefinitionsOfElementComponents"
+        ]
+    })";
+}
 
-            const API_Property& propertyValue = *propertyMap[propertyGuid];
-            if (propertyValue.status == API_Property_NotAvailable || propertyValue.status == API_Property_NotEvaluated) {
-                addPropertyValue (CreateErrorResponse (APIERR_BADPROPERTY, "Not available or not evaluated property"));
-                continue;
-            }
+GS::ObjectState GetPropertyDefinitionsOfElementComponentsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementComponents;
+    parameters.Get ("elementComponents", elementComponents);
 
-            GS::UniString propertyValueString;
-            if (useSIUnits) {
-                err = GetPropertyValueStringInSIUnits (propertyValue, propertyValueString);
-            } else {
-                err = GetPropertyValueString (propertyValue, propertyValueString);
-            }
+    GS::UniString filterStr = "All";
+    parameters.Get ("filter", filterStr);
 
-            if (err != NoError) {
-                addPropertyValue (CreateErrorResponse (err, "Failed to get property value as string"));
-                continue;
-            }
+    // Before AC28 the API splits the built-in properties into two filters (FundamentalBuiltIn and
+    // UserLevelBuiltIn); since AC28 there is a single BuiltIn filter. To return the same on every
+    // version, BuiltIn requests all definitions before AC28 and drops the user defined (Custom) ones.
+    API_PropertyDefinitionFilter filter = API_PropertyDefinitionFilter_All;
+    bool skipCustomDefinitions = false;
+    if (filterStr == "UserDefined") {
+        filter = API_PropertyDefinitionFilter_UserDefined;
+    } else if (filterStr == "BuiltIn") {
+#ifdef ServerMainVers_2800
+        filter = API_PropertyDefinitionFilter_BuiltIn;
+#else
+        skipCustomDefinitions = true;
+#endif
+    }
 
-            addPropertyValue (GS::ObjectState ("propertyValue", GS::ObjectState ("value", propertyValueString)));
+    GS::ObjectState response;
+    const auto& propertyDefinitionsOfElementComponents = response.AddList<GS::ObjectState> ("propertyDefinitionsOfElementComponents");
+
+    for (const GS::ObjectState& item : elementComponents) {
+        API_ElemComponentID elemComponent = {};
+        GS::ObjectState error;
+        if (!GetElemComponentIDFromObjectState (item, elemComponent, error)) {
+            propertyDefinitionsOfElementComponents (error);
+            continue;
         }
 
-        propertyValuesForElements (propertyValuesForElement);
+        GS::Array<API_PropertyDefinition> definitions;
+        const GSErrCode err = TAPIR_ElemComponent_GetPropertyDefinitions (elemComponent, filter, definitions);
+        if (err != NoError) {
+            propertyDefinitionsOfElementComponents (CreateErrorResponse (err, "Failed to get the property definitions of the element component"));
+            continue;
+        }
+
+        GS::ObjectState propertyDefinitionsOfElementComponent;
+        const auto& propertyDefinitions = propertyDefinitionsOfElementComponent.AddList<GS::ObjectState> ("propertyDefinitions");
+        for (const API_PropertyDefinition& definition : definitions) {
+            if (skipCustomDefinitions && definition.definitionType == API_PropertyCustomDefinitionType) {
+                continue;
+            }
+            GS::ObjectState propertyDefinition;
+            propertyDefinition.Add ("propertyId", CreateGuidObjectState (definition.guid));
+            propertyDefinition.Add ("propertyName", definition.name);
+            propertyDefinition.Add ("propertyType", GetPropertyTypeString (definition.definitionType));
+            propertyDefinitions (propertyDefinition);
+        }
+
+        propertyDefinitionsOfElementComponents (propertyDefinitionsOfElementComponent);
+    }
+
+    return response;
+}
+
+GetPropertyValuesOfElementComponentsCommand::GetPropertyValuesOfElementComponentsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetPropertyValuesOfElementComponentsCommand::GetName () const
+{
+    return "GetPropertyValuesOfElementComponents";
+}
+
+GS::Optional<GS::UniString> GetPropertyValuesOfElementComponentsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementComponents": {
+                "$ref": "#/ElementComponents"
+            },
+            "properties": {
+                "$ref": "#/PropertyIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementComponents",
+            "properties"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetPropertyValuesOfElementComponentsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "propertyValuesForElementComponents": {
+                "$ref": "#/PropertyValuesOrErrorArray",
+                "description": "The order of the outer list is that of the given element components. The order of the inner lists are that of the given properties. The items have the shape of GetPropertyValuesOfElements."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyValuesForElementComponents"
+        ]
+    })";
+}
+
+GS::ObjectState GetPropertyValuesOfElementComponentsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementComponents;
+    parameters.Get ("elementComponents", elementComponents);
+
+    GS::Array<GS::ObjectState> properties;
+    parameters.Get ("properties", properties);
+
+    GS::ObjectState response;
+    const auto& propertyValuesForElementComponents = response.AddList<GS::ObjectState> ("propertyValuesForElementComponents");
+
+    const GS::Array<API_Guid> propertyGuids = GetPropertyGuids (properties);
+
+    for (const GS::ObjectState& item : elementComponents) {
+        API_ElemComponentID elemComponent = {};
+        GS::ObjectState error;
+        if (!GetElemComponentIDFromObjectState (item, elemComponent, error)) {
+            propertyValuesForElementComponents (error);
+            continue;
+        }
+
+        GS::Array<API_Property> fetchedProperties;
+        const GSErrCode err = TAPIR_ElemComponent_GetPropertyValuesByGuid (elemComponent, propertyGuids, fetchedProperties);
+        if (err != NoError) {
+            propertyValuesForElementComponents (CreateErrorResponse (err, "Failed to get property values for element component"));
+            continue;
+        }
+
+        propertyValuesForElementComponents (CreatePropertyValuesObjectState (properties, fetchedProperties));
     }
 
     return response;
@@ -912,6 +1351,154 @@ static GS::ObjectState GetPropertyValuesWithStatusOfAttribute (const API_Attr_He
     }
 
     return propertyValuesForAttribute;
+}
+
+SetPropertyValuesOfElementDefaultsCommand::SetPropertyValuesOfElementDefaultsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetPropertyValuesOfElementDefaultsCommand::GetName () const
+{
+    return "SetPropertyValuesOfElementDefaults";
+}
+
+GS::Optional<GS::UniString> SetPropertyValuesOfElementDefaultsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementDefaultPropertyValues": {
+                "type": "array",
+                "description": "The property values to set on the tool defaults (the settings new elements get) of element types.",
+                "items": {
+                    "type": "object",
+                    "description": "A property value with the identifier of the property and the element type whose defaults own it.",
+                    "properties": {
+                        "elementType": {
+                            "$ref": "#/ElementType"
+                        },
+                        "propertyId": {
+                            "$ref": "#/PropertyId"
+                        },
+                        "propertyValue": {
+                            "$ref": "#/PropertyValue"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementType",
+                        "propertyId",
+                        "propertyValue"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementDefaultPropertyValues"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetPropertyValuesOfElementDefaultsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetPropertyValuesOfElementDefaultsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementDefaultPropertyValues;
+    parameters.Get ("elementDefaultPropertyValues", elementDefaultPropertyValues);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    PropertyConversionUtils conversionUtils;
+
+    ACAPI_CallUndoableCommand ("SetPropertyValuesOfElementDefaultsCommand", [&]() -> GSErrCode {
+        for (const GS::ObjectState& elementDefaultPropertyValue : elementDefaultPropertyValues) {
+            GS::UniString elementTypeStr;
+            if (!elementDefaultPropertyValue.Get ("elementType", elementTypeStr)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementType is missing"));
+                continue;
+            }
+
+            const API_ElemTypeID typeID = GetElementTypeFromNonLocalizedName (elementTypeStr);
+            if (typeID == API_ZombieElemID) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS,
+                    GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ())));
+                continue;
+            }
+
+            const GS::ObjectState* propertyId = elementDefaultPropertyValue.Get ("propertyId");
+            if (propertyId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "propertyId is missing"));
+                continue;
+            }
+
+            const GS::ObjectState* propertyValue = elementDefaultPropertyValue.Get ("propertyValue");
+            if (propertyValue == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "propertyValue is missing"));
+                continue;
+            }
+
+            GS::UniString propertyValueDisplayString;
+            if (!propertyValue->Get ("value", propertyValueDisplayString)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "value is missing from propertyValue"));
+                continue;
+            }
+
+            API_PropertyDefinition definition;
+            definition.guid = GetGuidFromObjectState (*propertyId);
+            GSErrCode err = ACAPI_Property_GetPropertyDefinition (definition);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Property not found or invalid"));
+                continue;
+            }
+
+            // The current value of the defaults carries the definition the string is
+            // converted against, as the elements' setter reads the element's value first.
+            GS::Array<API_PropertyDefinition> propertyDefinitions;
+            propertyDefinitions.Push (definition);
+            GS::Array<API_Property> propertyValues;
+            err = TAPIR_Element_GetPropertyValuesOfDefaultElem (typeID, propertyDefinitions, propertyValues);
+            if (err != NoError || propertyValues.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (err != NoError ? err : APIERR_BADPROPERTY, "Failed to get property value for the element defaults"));
+                continue;
+            }
+
+            API_Property& property = propertyValues[0];
+            err = ACAPI_Property_SetPropertyValueFromString (propertyValueDisplayString, conversionUtils, &property);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to set property value for the element defaults"));
+                continue;
+            }
+
+            err = TAPIR_Element_SetPropertyOfDefaultElem (typeID, property);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to set property value for the element defaults"));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+
+        return NoError;
+    });
+
+    return response;
 }
 
 GetPropertyValuesOfAttributesCommand::GetPropertyValuesOfAttributesCommand () :
@@ -3223,7 +3810,6 @@ GS::Optional<GS::UniString> ModifyPropertyValueOfElementsCommand::GetRawResponse
 
 GS::ObjectState ModifyPropertyValueOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-#ifdef ServerMainVers_2700
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
 
@@ -3270,16 +3856,250 @@ GS::ObjectState ModifyPropertyValueOfElementsCommand::Execute (const GS::ObjectS
     }
 
     err = ACAPI_CallUndoableCommand ("ModifyPropertyValueOfElementsCommand", [&]() -> GSErrCode {
+#ifdef ServerMainVers_2700
         return ACAPI_Property_ModifyPropertyValue (property, elemGuids);
+#else
+        return ACAPI_ElementList_ModifyPropertyValue (property, elemGuids);
+#endif
     });
 
     return err == NoError
         ? CreateSuccessfulExecutionResult ()
         : CreateFailedExecutionResult (err, "Failed to set the property value, no element was changed. The property may not be available for every given element.");
-#else
-    UNUSED_PARAMETER (parameters);
-    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
-#endif
+}
+
+GetPropertyExpressionReferencesCommand::GetPropertyExpressionReferencesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetPropertyExpressionReferencesCommand::GetName () const
+{
+    return "GetPropertyExpressionReferences";
+}
+
+GS::Optional<GS::UniString> GetPropertyExpressionReferencesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "propertyIds": {
+                "$ref": "#/PropertyIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetPropertyExpressionReferencesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "references": {
+                "type": "array",
+                "description": "One item for each property, in the order of the input: its expression reference, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "reference": {
+                                    "type": "string",
+                                    "description": "The string that refers to the property in a property expression."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "reference"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "references"
+        ]
+    })";
+}
+
+GS::ObjectState GetPropertyExpressionReferencesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> propertyIds;
+    parameters.Get ("propertyIds", propertyIds);
+
+    GS::ObjectState response;
+    const auto& references = response.AddList<GS::ObjectState> ("references");
+
+    for (const GS::ObjectState& p : propertyIds) {
+        const GS::ObjectState* propertyId = p.Get ("propertyId");
+        if (propertyId == nullptr) {
+            references (CreateErrorResponse (APIERR_BADPARS, "propertyId is missing"));
+            continue;
+        }
+
+        API_PropertyDefinition definition;
+        definition.guid = GetGuidFromObjectState (*propertyId);
+        GSErrCode err = ACAPI_Property_GetPropertyDefinition (definition);
+        if (err != NoError) {
+            references (CreateErrorResponse (err, "property not found"));
+            continue;
+        }
+
+        GS::UniString reference;
+        err = ACAPI_Property_GetPropertyExprReferenceString (&definition, &reference);
+        if (err != NoError) {
+            references (CreateErrorResponse (err, "failed to get the expression reference of the property"));
+            continue;
+        }
+
+        references (GS::ObjectState ("reference", reference));
+    }
+
+    return response;
+}
+
+CheckPropertyValuesCommand::CheckPropertyValuesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CheckPropertyValuesCommand::GetName () const
+{
+    return "CheckPropertyValues";
+}
+
+GS::Optional<GS::UniString> CheckPropertyValuesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "propertyValues": {
+                "type": "array",
+                "description": "The values to check, each with the property definition it is checked against.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyId": {
+                            "$ref": "#/PropertyId"
+                        },
+                        "propertyValue": {
+                            "$ref": "#/PropertyValue"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "propertyId",
+                        "propertyValue"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyValues"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CheckPropertyValuesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "results": {
+                "type": "array",
+                "description": "One item for each value, in the order of the input: whether it is acceptable, or an error if the property was not found.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "isValid": {
+                                    "type": "boolean",
+                                    "description": "True if the value can be converted to the type of the property and Archicad accepts it for the property definition."
+                                },
+                                "error": {
+                                    "$ref": "#/Error"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "isValid"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "results"
+        ]
+    })";
+}
+
+GS::ObjectState CheckPropertyValuesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> propertyValues;
+    parameters.Get ("propertyValues", propertyValues);
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("results");
+
+    PropertyConversionUtils conversionUtils;
+
+    for (const GS::ObjectState& item : propertyValues) {
+        const GS::ObjectState* propertyId = item.Get ("propertyId");
+        if (propertyId == nullptr) {
+            results (CreateErrorResponse (APIERR_BADPARS, "propertyId is missing"));
+            continue;
+        }
+
+        const GS::ObjectState* propertyValue = item.Get ("propertyValue");
+        GS::UniString propertyValueDisplayString;
+        if (propertyValue == nullptr || !propertyValue->Get ("value", propertyValueDisplayString)) {
+            results (CreateErrorResponse (APIERR_BADPARS, "value is missing from propertyValue"));
+            continue;
+        }
+
+        API_PropertyDefinition definition;
+        definition.guid = GetGuidFromObjectState (*propertyId);
+        GSErrCode err = ACAPI_Property_GetPropertyDefinition (definition);
+        if (err != NoError) {
+            results (CreateErrorResponse (err, "property not found"));
+            continue;
+        }
+
+        API_Property property;
+        property.definition = definition;
+        property.isDefault = false;
+        property.status = API_Property_HasValue;
+        property.value.variantStatus = API_VariantStatusNormal;
+
+        err = ACAPI_Property_SetPropertyValueFromString (propertyValueDisplayString, conversionUtils, &property);
+        if (err != NoError) {
+            GS::ObjectState result = CreateErrorResponse (err, "the value cannot be converted to the type of the property");
+            result.Add ("isValid", false);
+            results (result);
+            continue;
+        }
+
+        results (GS::ObjectState ("isValid", ACAPI_Property_IsValidValue (property.value, property.definition)));
+    }
+
+    return response;
 }
 
 GetPropertyEditabilityCommand::GetPropertyEditabilityCommand () :
@@ -3674,7 +4494,7 @@ GS::ObjectState GetPropertyAvailabilityOfDefaultsCommand::Execute (const GS::Obj
 #endif
 }
 
-#if defined (ServerMainVers_2700) && !defined (ServerMainVers_2800)
+#ifndef ServerMainVers_2800
 static bool GetPropertyAvailabilityParameters (const GS::ObjectState& parameters, GS::Array<API_Guid>& elemGuids, API_PropertyDefinition& definition, GS::ObjectState& failedResult)
 {
     GS::Array<GS::ObjectState> elements;
@@ -3749,7 +4569,7 @@ GS::Optional<GS::UniString> MakePropertyAvailableForElementsCommand::GetRawRespo
 
 GS::ObjectState MakePropertyAvailableForElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-#if defined (ServerMainVers_2700) && !defined (ServerMainVers_2800)
+#ifndef ServerMainVers_2800
     GS::Array<API_Guid> elemGuids;
     API_PropertyDefinition definition;
     GS::ObjectState failedResult;
@@ -3758,7 +4578,11 @@ GS::ObjectState MakePropertyAvailableForElementsCommand::Execute (const GS::Obje
     }
 
     GSErrCode err = ACAPI_CallUndoableCommand ("MakePropertyAvailableForElements", [&]() -> GSErrCode {
+#ifdef ServerMainVers_2700
         return ACAPI_Property_AddProperty (definition, elemGuids);
+#else
+        return ACAPI_ElementList_AddProperty (definition, elemGuids);
+#endif
     });
 
     return err == NoError
@@ -3766,7 +4590,7 @@ GS::ObjectState MakePropertyAvailableForElementsCommand::Execute (const GS::Obje
         : CreateFailedExecutionResult (err, "Failed to make the property available for the given elements.");
 #else
     UNUSED_PARAMETER (parameters);
-    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command is available only in Archicad 27.");
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command is available only in Archicad 25, 26 and 27. The Archicad API of later versions has no function to change the availability of a property for elements directly.");
 #endif
 }
 
@@ -3810,7 +4634,7 @@ GS::Optional<GS::UniString> MakePropertyUnavailableForElementsCommand::GetRawRes
 
 GS::ObjectState MakePropertyUnavailableForElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-#if defined (ServerMainVers_2700) && !defined (ServerMainVers_2800)
+#ifndef ServerMainVers_2800
     GS::Array<API_Guid> elemGuids;
     API_PropertyDefinition definition;
     GS::ObjectState failedResult;
@@ -3819,7 +4643,11 @@ GS::ObjectState MakePropertyUnavailableForElementsCommand::Execute (const GS::Ob
     }
 
     GSErrCode err = ACAPI_CallUndoableCommand ("MakePropertyUnavailableForElements", [&]() -> GSErrCode {
+#ifdef ServerMainVers_2700
         return ACAPI_Property_DeleteProperty (definition.guid, elemGuids);
+#else
+        return ACAPI_ElementList_DeleteProperty (definition.guid, elemGuids);
+#endif
     });
 
     return err == NoError
@@ -3827,6 +4655,6 @@ GS::ObjectState MakePropertyUnavailableForElementsCommand::Execute (const GS::Ob
         : CreateFailedExecutionResult (err, "Failed to make the property unavailable for the given elements.");
 #else
     UNUSED_PARAMETER (parameters);
-    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command is available only in Archicad 27.");
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command is available only in Archicad 25, 26 and 27. The Archicad API of later versions has no function to change the availability of a property for elements directly.");
 #endif
 }

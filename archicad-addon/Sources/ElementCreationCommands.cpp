@@ -2557,7 +2557,7 @@ static void SetParamValueString (API_AddParType&        addPar,
 	GS::UniString value;
 	parameterDetails.Get (ParameterValueFieldName, value);
 
-	GS::ucscpy (addPar.value.uStr, value.ToUStr (0, GS::Min(value.GetLength (), (USize)API_UAddParStrLen)).Get ());
+	GS::ucscpy (addPar.value.uStr, value.ToUStr (0, GS::Min(value.GetLength (), (USize)API_UAddParStrLen - 1)).Get ());
 }
 
 static void ChangeParams (API_AddParType**& params, const GS::HashTable<GS::String, GS::ObjectState>& changeParamsDictionary)
@@ -2604,7 +2604,8 @@ static GS::Optional<GS::ObjectState> ResolveLibraryPartName (API_Element& elemen
     parameters.Get ("libraryPartName", uName);
 
     API_LibPart libPart = {};
-    GS::ucscpy (libPart.docu_UName, uName.ToUStr ());
+    const USize maxNameLength = sizeof (libPart.docu_UName) / sizeof (libPart.docu_UName[0]) - 1;
+    GS::ucscpy (libPart.docu_UName, uName.ToUStr (0, GS::Min (uName.GetLength (), maxNameLength)).Get ());
 
     GSErrCode err = ACAPI_LibraryPart_Search (&libPart, false, true);
     delete libPart.location;
@@ -2629,6 +2630,7 @@ static bool ResolveAttributeIndex (const GS::ObjectState& attributeId, API_AttrT
     if (ACAPI_Attribute_Get (&attribute) != NoError) {
         return false;
     }
+    DisposeAttribute (attribute);
 
     attributeIndex = attribute.header.index;
     return true;

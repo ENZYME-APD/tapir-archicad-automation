@@ -19,7 +19,7 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 "GetMEPPorts",
                 "Get the ports of the given MEP elements including position, shape, size and connection status. " +
                 "Tree outputs have one branch per queried element. " +
-                "Available from Archicad 28.",
+                "Available from Archicad 27.",
                 GroupNames.MEP)
         {
         }
@@ -71,7 +71,7 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
 
             OutBooleanTree(
                 "IsConnected",
-                "True if the port is physically connected (one branch per element).");
+                "True if the port is physically connected; on Archicad 27, if it is connected (one branch per element).");
 
             OutGenericTree(
                 "ConnectedElementGuids",
@@ -160,7 +160,7 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                         widths.Add(port["width"]?.Value<double>(), path);
                         heights.Add(port["height"]?.Value<double>(), path);
                         domains.Add(port["domain"]?.ToString(), path);
-                        isConnected.Add(port["isPhysicallyConnected"]?.Value<bool>(), path);
+                        isConnected.Add((port["isPhysicallyConnected"] ?? port["isConnected"])?.Value<bool>(), path);
                         var connectedGuid = port["connectedElementId"]?["guid"]?.ToString();
                         connectedElementGuids.Add(
                             connectedGuid == null
