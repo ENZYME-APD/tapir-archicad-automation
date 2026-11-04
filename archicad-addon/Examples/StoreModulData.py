@@ -1,9 +1,10 @@
+"""Module data are the custom data sections of Archicad's ModulData Manager: text saved in the project file under
+a name, kept apart from project data (SetProjectData). StoreModulData creates or overwrites them, with an
+optional data version; storing is not an undoable step.
+"""
 import json
 import aclib
 
-# Module data are the custom data sections of Archicad's ModulData Manager: text saved in the project
-# file under a name, kept apart from project data (SetProjectData). StoreModulData creates or
-# overwrites them, with an optional data version; storing is not an undoable step.
 settings = {'syncedAt': '2026-11-04T12:00:00Z', 'database': 'Épület DB'}
 
 aclib.RunTapirCommand ('StoreModulData', {

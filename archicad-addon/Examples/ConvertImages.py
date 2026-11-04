@@ -1,9 +1,10 @@
+"""ConvertImages converts base64 encoded images with Archicad's own converters. The formats are Bitmap, GIF,
+TIFF, JPEG and PNG, or the MIME type of another format Archicad can read or write. Here the PNG preview image
+of an element is converted to JPEG, and to a MIME type format.
+"""
 import base64
 import aclib
 
-# ConvertImages converts base64 encoded images with Archicad's own converters. The formats are
-# Bitmap, GIF, TIFF, JPEG and PNG, or the MIME type of another format Archicad can read or write.
-# Here the PNG preview image of an element is converted to JPEG, and to a MIME type format.
 elements = aclib.RunTapirCommand ('GetAllElements', debug = False)['elements']
 if not elements:
     print ('No elements in the project.')

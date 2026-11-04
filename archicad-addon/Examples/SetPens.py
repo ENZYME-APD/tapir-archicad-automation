@@ -1,9 +1,9 @@
+"""SetPens changes the pens in effect in the current window, the ones GetPens returns, one by one with
+ACAPI_Attribute_ModifyPen. Only the given fields (color, width, description) of a listed pen are changed, and
+each pen gets its own execution result. In a Teamwork project reserve the PenTables lockable object set first
+(ReserveLockableObjectSet). Available from Archicad 27.
+"""
 import aclib
-
-# SetPens changes the pens in effect in the current window, the ones GetPens returns, one by one with
-# ACAPI_Attribute_ModifyPen. Only the given fields (color, width, description) of a listed pen are
-# changed, and each pen gets its own execution result. In a Teamwork project reserve the PenTables
-# lockable object set first (ReserveLockableObjectSet). Available from Archicad 27.
 
 PEN_INDEX = 5
 

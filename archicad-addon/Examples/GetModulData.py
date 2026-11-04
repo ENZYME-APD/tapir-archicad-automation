@@ -1,8 +1,9 @@
+"""GetModulData returns the module data Tapir stored in the project (StoreModulData): every one without names, or
+the given names. With includeContent false only the names and data versions are read. A name without module
+data gets an error item.
+"""
 import aclib
 
-# GetModulData returns the module data Tapir stored in the project (StoreModulData): every one
-# without names, or the given names. With includeContent false only the names and data versions are
-# read. A name without module data gets an error item.
 aclib.RunTapirCommand ('StoreModulData', {
     'modulData': [
         {'name': 'tapir-example/get', 'content': '{"answer": 42}'}

@@ -1,7 +1,8 @@
+"""SetCurrent3DStyle makes one of the 3D styles Get3DStyles lists the current one, which the 3D window uses. Here
+every style is made current once, then the original one is set back.
+"""
 import aclib
 
-# SetCurrent3DStyle makes one of the 3D styles Get3DStyles lists the current one, which the 3D window
-# uses. Here every style is made current once, then the original one is set back.
 styles = aclib.RunTapirCommand ('Get3DStyles', debug = False)
 original = styles['currentStyleName']
 

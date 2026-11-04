@@ -1,8 +1,9 @@
+"""StoreViewSettings stores the current view settings (action Store) and puts them back (action Restore), for
+example around a script that changes the view. The two come in pairs and cannot be stacked: a second Store
+before a Restore fails.
+"""
 import aclib
 
-# StoreViewSettings stores the current view settings (action Store) and puts them back (action
-# Restore), for example around a script that changes the view. The two come in pairs and cannot be
-# stacked: a second Store before a Restore fails.
 aclib.RunTapirCommand ('StoreViewSettings', {'action': 'Store'})
 aclib.RunTapirCommand ('StoreViewSettings', {'action': 'Store'})
 

@@ -1,10 +1,11 @@
+"""GetShapePrimitivesOfElements draws the elements as ACAPI_DrawingPrimitive_ShapePrims draws them by default, in
+the format of GetDrawingPrimitivesOfElements. includeMarkers draws the objects attached to the elements
+(window and door markers, ...) with them or leaves them out; Archicad's own setting is changed back
+afterwards. The floor plan must be the current database.
+"""
 import aclib
 from collections import Counter
 
-# GetShapePrimitivesOfElements draws the elements as ACAPI_DrawingPrimitive_ShapePrims draws them by
-# default, in the format of GetDrawingPrimitivesOfElements. includeMarkers draws the objects attached
-# to the elements (window and door markers, ...) with them or leaves them out; Archicad's own
-# setting is changed back afterwards. The floor plan must be the current database.
 walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'}, debug = False)['elements']
 if not walls:
     print ('No walls in the project.')
