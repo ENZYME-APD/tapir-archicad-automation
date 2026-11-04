@@ -107,6 +107,12 @@ jobs:
               ;;
           esac
 
+          # FAIL 0/0 means nothing was scored (for example every check skipped by
+          # minArchicad on an older Archicad): no check failed, so no status is set.
+          if [ "$scored" = "0" ]; then
+            echo "No check was scored ($verdict $passed/$scored): no status set."
+            exit 0
+          fi
           if [ "$verdict" = "PASS" ]; then status=success; else status=failure; fi
           gh api "repos/$REPO/statuses/$head" -f state="$status" -f context="archicad-test/AC$version" \
             -f description="$verdict $passed/$scored, tested by $AUTHOR" \
