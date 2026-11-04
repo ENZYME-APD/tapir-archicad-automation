@@ -1501,6 +1501,9 @@ static void AddLibPartBasedElementDetails (GS::ObjectState& os, const Int32 libI
     API_LibPart	lp = {};
     lp.index = libInd;
     ACAPI_LibraryPart_Get (&lp);
+    // ACAPI_LibraryPart_Get allocates the location, which the caller frees (ACAPinc.h remarks).
+    delete lp.location;
+    lp.location = nullptr;
     os.Add ("libPart", GS::ObjectState (
         "name", GS::UniString (lp.docu_UName),
         "parentUnID", CreateGuidObjectState (GS::UnID (lp.parentUnID).GetMainGuid ()),
