@@ -1,4 +1,5 @@
 #include "AnalyticalCommands.hpp"
+#include "OptionalAPIs.hpp"
 #include "MigrationHelper.hpp"
 
 // The Structural Analytical Model functions are called with their ACAPI_Analytical_* names and the
@@ -1179,7 +1180,7 @@ GS::ObjectState CreateAnalyticalLinkGeometryObjectState (const API_AnalyticalLin
     return geometryOS;
 }
 
-// Reads the element and checks its type, the class ID of an external element type (e.g. API_AnalyticalSupportID).
+// Reads the element and checks its type, the class ID of an external element type (e.g. GetAnalyticalSupportID ()).
 // Returns an error response on failure.
 GS::Optional<GS::ObjectState> GetElementOfType (const API_Guid& elemGuid, const API_Guid& classID, const char* typeName, API_Element& element)
 {
@@ -1613,7 +1614,7 @@ GS::ObjectState GetAnalyticalLoadOfElement (const API_Guid& amGuid, const API_Gu
 
     // Loads are external elements, told apart by the class ID of their type.
     const API_Guid classID = element.header.type.classID;
-    if (classID == API_AnalyticalPointLoadID) {
+    if (classID == GetAnalyticalPointLoadID ()) {
         API_AnalyticalPointLoadType pointLoad {};
         err = TAPIR_GetPointLoadFromElement (element, pointLoad);
         if (err != NoError) {
@@ -1629,7 +1630,7 @@ GS::ObjectState GetAnalyticalLoadOfElement (const API_Guid& amGuid, const API_Gu
             "geometry", GS::ObjectState ("coordinate", Create3DCoordinateObjectState (geometry.coordinate)));
     }
 
-    if (classID != API_AnalyticalEdgeLoadID && classID != API_AnalyticalSurfaceLoadID) {
+    if (classID != GetAnalyticalEdgeLoadID () && classID != GetAnalyticalSurfaceLoadID ()) {
         return CreateErrorResponse (APIERR_BADID, "The element is not an analytical point, edge or surface load.");
     }
 
@@ -1640,7 +1641,7 @@ GS::ObjectState GetAnalyticalLoadOfElement (const API_Guid& amGuid, const API_Gu
         return CreateErrorResponse (err, "Failed to get the memo of the load.");
     }
 
-    if (classID == API_AnalyticalEdgeLoadID) {
+    if (classID == GetAnalyticalEdgeLoadID ()) {
         API_AnalyticalEdgeLoadType edgeLoad {};
         err = TAPIR_GetEdgeLoadFromElement (element, edgeLoad);
         if (err != NoError) {
@@ -1740,7 +1741,7 @@ GS::ObjectState CreateAnalyticalLoad (const GS::ObjectState& itemOS)
         if (error.HasValue ()) {
             return *error;
         }
-        return CreateAnalyticalLoadElement (API_AnalyticalPointLoadID, "analytical point load",
+        return CreateAnalyticalLoadElement (GetAnalyticalPointLoadID (), "analytical point load",
             [&] (API_Element& element) { return TAPIR_SetElementFromPointLoad (pointLoad, element); },
             [] (API_ElementMemo&) -> GSErrCode { return NoError; });
     }
@@ -1762,7 +1763,7 @@ GS::ObjectState CreateAnalyticalLoad (const GS::ObjectState& itemOS)
         if (error.HasValue ()) {
             return *error;
         }
-        return CreateAnalyticalLoadElement (API_AnalyticalEdgeLoadID, "analytical edge load",
+        return CreateAnalyticalLoadElement (GetAnalyticalEdgeLoadID (), "analytical edge load",
             [&] (API_Element& element) { return TAPIR_SetElementFromEdgeLoad (edgeLoad, element); },
             [&] (API_ElementMemo& memo) { return TAPIR_SetMemoFromEdgeLoadCustomData (customData, memo); });
     }
@@ -1777,7 +1778,7 @@ GS::ObjectState CreateAnalyticalLoad (const GS::ObjectState& itemOS)
     if (error.HasValue ()) {
         return *error;
     }
-    return CreateAnalyticalLoadElement (API_AnalyticalSurfaceLoadID, "analytical surface load",
+    return CreateAnalyticalLoadElement (GetAnalyticalSurfaceLoadID (), "analytical surface load",
         [&] (API_Element& element) { return TAPIR_SetElementFromSurfaceLoad (surfaceLoad, element); },
         [&] (API_ElementMemo& memo) { return TAPIR_SetMemoFromSurfaceLoadCustomData (customData, memo); });
 }
@@ -2284,6 +2285,9 @@ GS::Optional<GS::UniString> GetCurrentAnalyticalModelCommand::GetRawResponseSche
 GS::ObjectState GetCurrentAnalyticalModelCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2700
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     API_Guid analyticalModelGuid = APINULLGuid;
     const GSErrCode err = ACAPI_Analytical_GetCurrentAnalyticalModel (ACAPI_GetToken (), analyticalModelGuid);
     if (err != NoError) {
@@ -2331,6 +2335,9 @@ GS::Optional<GS::UniString> UpdateAnalyticalModelCommand::GetRawResponseSchema (
 GS::ObjectState UpdateAnalyticalModelCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2700
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     API_Guid analyticalModelGuid = APINULLGuid;
     const GS::ObjectState* analyticalModelId = parameters.Get ("analyticalModelId");
     if (analyticalModelId != nullptr) {
@@ -2379,6 +2386,9 @@ GS::Optional<GS::UniString> SetAnalyticalGenerationSettingsToNoRuleCommand::GetR
 GS::ObjectState SetAnalyticalGenerationSettingsToNoRuleCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2700
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     const GSErrCode err = ACAPI_CallUndoableCommand ("Set Analytical Generation Settings To No Rule", [&] () -> GSErrCode {
         return ACAPI_Analytical_SetGenerationSettingsToNoRule (ACAPI_GetToken ());
     });
@@ -2422,6 +2432,9 @@ GS::Optional<GS::UniString> GetAnalyticalModelCheckTypeIdCommand::GetRawResponse
 GS::ObjectState GetAnalyticalModelCheckTypeIdCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2900
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     API_Guid typeId = APINULLGuid;
     const GSErrCode err = ACAPI_Analytical_GetModelCheckTypeId (ACAPI_GetToken (), typeId);
     if (err != NoError) {
@@ -2477,6 +2490,9 @@ GS::Optional<GS::UniString> GetAnalyticalModelVariationCommand::GetRawResponseSc
 
 GS::ObjectState GetAnalyticalModelVariationCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     API_Guid analyticalModelGuid = APINULLGuid;
     const GS::Optional<GS::ObjectState> modelError = GetAnalyticalModelGuidFromParameters (parameters, analyticalModelGuid);
     if (modelError.HasValue ()) {
@@ -2537,6 +2553,9 @@ GS::Optional<GS::UniString> GetAnalyticalModelCommand::GetRawResponseSchema () c
 
 GS::ObjectState GetAnalyticalModelCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     const GS::ObjectState* variationOS = parameters.Get ("variation");
     if (variationOS == nullptr) {
         return CreateErrorResponse (APIERR_BADPARS, "variation is missing.");
@@ -2587,6 +2606,9 @@ GS::Optional<GS::UniString> GetAnalyticalVisibilitySettingsCommand::GetRawRespon
 GS::ObjectState GetAnalyticalVisibilitySettingsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2600
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     API_AM_VisibilitySettings settings;
     const GSErrCode err = TAPIR_GetAnalyticalVisibilitySettings (settings);
     if (err != NoError) {
@@ -2636,6 +2658,9 @@ GS::Optional<GS::UniString> SetAnalyticalVisibilitySettingsCommand::GetRawRespon
 GS::ObjectState SetAnalyticalVisibilitySettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2600
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     const GS::ObjectState* settingsOS = parameters.Get ("visibilitySettings");
     if (settingsOS == nullptr) {
         return CreateFailedExecutionResult (APIERR_BADPARS, "visibilitySettings is missing.");
@@ -2738,6 +2763,9 @@ GS::Optional<GS::UniString> GetAnalyticalMemberTypesOfElementsCommand::GetRawRes
 
 GS::ObjectState GetAnalyticalMemberTypesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
 
@@ -3281,6 +3309,9 @@ GS::Optional<GS::UniString> GetAnalyticalLoadGroupsCommand::GetRawResponseSchema
 
 GS::ObjectState GetAnalyticalLoadGroupsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     GS::Array<API_Guid> loadGroupGuids;
     const GSErrCode err = TAPIR_GetAnalyticalLoadGroups (loadGroupGuids);
     if (err != NoError) {
@@ -3357,6 +3388,9 @@ GS::Optional<GS::UniString> GetAnalyticalLoadCasesCommand::GetRawResponseSchema 
 
 GS::ObjectState GetAnalyticalLoadCasesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     GS::Array<API_Guid> loadCaseGuids;
     GSErrCode err = NoError;
     if (parameters.Contains ("loadGroupId")) {
@@ -3428,6 +3462,9 @@ GS::Optional<GS::UniString> GetAnalyticalLoadCombinationsCommand::GetRawResponse
 
 GS::ObjectState GetAnalyticalLoadCombinationsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     GS::Array<API_Guid> loadCombinationGuids;
     const GSErrCode err = TAPIR_GetAnalyticalLoadCombinations (loadCombinationGuids);
     if (err != NoError) {
@@ -3539,6 +3576,9 @@ GS::Optional<GS::UniString> CreateAnalyticalLoadGroupsCommand::GetRawResponseSch
 
 GS::ObjectState CreateAnalyticalLoadGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> loadGroups;
     parameters.Get ("loadGroups", loadGroups);
 
@@ -3664,6 +3704,9 @@ GS::Optional<GS::UniString> CreateAnalyticalLoadCasesCommand::GetRawResponseSche
 
 GS::ObjectState CreateAnalyticalLoadCasesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> loadCases;
     parameters.Get ("loadCases", loadCases);
 
@@ -3790,6 +3833,9 @@ GS::Optional<GS::UniString> CreateAnalyticalLoadCombinationsCommand::GetRawRespo
 
 GS::ObjectState CreateAnalyticalLoadCombinationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> loadCombinations;
     parameters.Get ("loadCombinations", loadCombinations);
 
@@ -3874,6 +3920,9 @@ GS::Optional<GS::UniString> DeleteAnalyticalLoadGroupsCommand::GetRawResponseSch
 
 GS::ObjectState DeleteAnalyticalLoadGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     return DeleteAnalyticalLoadObjects (GetGuidsFromIdList (parameters, "loadGroupIds", "loadGroupId"),
         "Delete Analytical Load Groups", "loadGroupId", "Failed to delete the analytical load group.", TAPIR_DeleteAnalyticalLoadGroup);
 }
@@ -3924,6 +3973,9 @@ GS::Optional<GS::UniString> DeleteAnalyticalLoadCasesCommand::GetRawResponseSche
 
 GS::ObjectState DeleteAnalyticalLoadCasesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     return DeleteAnalyticalLoadObjects (GetGuidsFromIdList (parameters, "loadCaseIds", "loadCaseId"),
         "Delete Analytical Load Cases", "loadCaseId", "Failed to delete the analytical load case.", TAPIR_DeleteAnalyticalLoadCase);
 }
@@ -3974,6 +4026,9 @@ GS::Optional<GS::UniString> DeleteAnalyticalLoadCombinationsCommand::GetRawRespo
 
 GS::ObjectState DeleteAnalyticalLoadCombinationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     return DeleteAnalyticalLoadObjects (GetGuidsFromIdList (parameters, "loadCombinationIds", "loadCombinationId"),
         "Delete Analytical Load Combinations", "loadCombinationId", "Failed to delete the analytical load combination.", TAPIR_DeleteAnalyticalLoadCombination);
 }
@@ -4020,6 +4075,9 @@ GS::Optional<GS::UniString> AddLoadCasesToLoadCombinationCommand::GetRawResponse
 
 GS::ObjectState AddLoadCasesToLoadCombinationCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     API_Guid loadCombinationGuid = APINULLGuid;
     const GS::Optional<GS::ObjectState> combinationError = GetRequiredGuidField (parameters, "loadCombinationId", loadCombinationGuid);
     if (combinationError.HasValue ()) {
@@ -4100,6 +4158,9 @@ GS::Optional<GS::UniString> GetAnalyticalMembersCommand::GetRawResponseSchema ()
 
 GS::ObjectState GetAnalyticalMembersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     API_Guid analyticalModelGuid = APINULLGuid;
     const GS::Optional<GS::ObjectState> modelError = GetAnalyticalModelGuidFromParameters (parameters, analyticalModelGuid);
     if (modelError.HasValue ()) {
@@ -4249,6 +4310,9 @@ GS::Optional<GS::UniString> GetAnalyticalMemberDetailsCommand::GetRawResponseSch
 
 GS::ObjectState GetAnalyticalMemberDetailsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     API_Guid analyticalModelGuid = APINULLGuid;
     const GS::Optional<GS::ObjectState> modelError = GetAnalyticalModelGuidFromParameters (parameters, analyticalModelGuid);
     if (modelError.HasValue ()) {
@@ -4410,6 +4474,9 @@ GS::Optional<GS::UniString> GetAnalyticalReleasesCommand::GetRawResponseSchema (
 GS::ObjectState GetAnalyticalReleasesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2600
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     API_Guid analyticalModelGuid = APINULLGuid;
     const GS::Optional<GS::ObjectState> modelError = GetAnalyticalModelGuidFromParameters (parameters, analyticalModelGuid);
     if (modelError.HasValue ()) {
@@ -4506,6 +4573,9 @@ GS::Optional<GS::UniString> SetAnalyticalReleasesCommand::GetRawResponseSchema (
 
 GS::ObjectState SetAnalyticalReleasesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> releases;
     parameters.Get ("releases", releases);
 
@@ -4626,6 +4696,9 @@ GS::Optional<GS::UniString> GetCustomCurveMemberStretchCommand::GetRawResponseSc
 GS::ObjectState GetCustomCurveMemberStretchCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2900
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
 
@@ -4725,6 +4798,9 @@ GS::Optional<GS::UniString> SetCustomCurveMemberStretchCommand::GetRawResponseSc
 
 GS::ObjectState SetCustomCurveMemberStretchCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> stretches;
     parameters.Get ("stretches", stretches);
 
@@ -4846,6 +4922,9 @@ GS::Optional<GS::UniString> GetLCSOfAnalyticalMembersCommand::GetRawResponseSche
 GS::ObjectState GetLCSOfAnalyticalMembersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2600
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> memberParts;
     parameters.Get ("memberParts", memberParts);
 
@@ -4979,6 +5058,9 @@ GS::Optional<GS::UniString> GetAnalyticalMemberPartGeometriesCommand::GetRawResp
 GS::ObjectState GetAnalyticalMemberPartGeometriesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2600
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     API_Guid analyticalModelGuid = APINULLGuid;
     const GS::Optional<GS::ObjectState> modelError = GetAnalyticalModelGuidFromParameters (parameters, analyticalModelGuid);
     if (modelError.HasValue ()) {
@@ -5111,6 +5193,9 @@ GS::Optional<GS::UniString> GetAnalyticalSupportsCommand::GetRawResponseSchema (
 GS::ObjectState GetAnalyticalSupportsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2600
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     API_Guid analyticalModelGuid = APINULLGuid;
     const GS::Optional<GS::ObjectState> modelError = GetAnalyticalModelGuidFromParameters (parameters, analyticalModelGuid);
     if (modelError.HasValue ()) {
@@ -5131,7 +5216,7 @@ GS::ObjectState GetAnalyticalSupportsCommand::Execute (const GS::ObjectState& pa
         }
 
         API_Element element;
-        const GS::Optional<GS::ObjectState> elementError = GetElementOfType (elemGuid, API_AnalyticalSupportID, "analytical support", element);
+        const GS::Optional<GS::ObjectState> elementError = GetElementOfType (elemGuid, GetAnalyticalSupportID (), "analytical support", element);
         if (elementError.HasValue ()) {
             supports (*elementError);
             continue;
@@ -5237,6 +5322,9 @@ GS::Optional<GS::UniString> GetAnalyticalLinksCommand::GetRawResponseSchema () c
 GS::ObjectState GetAnalyticalLinksCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2600
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     API_Guid analyticalModelGuid = APINULLGuid;
     const GS::Optional<GS::ObjectState> modelError = GetAnalyticalModelGuidFromParameters (parameters, analyticalModelGuid);
     if (modelError.HasValue ()) {
@@ -5257,7 +5345,7 @@ GS::ObjectState GetAnalyticalLinksCommand::Execute (const GS::ObjectState& param
         }
 
         API_Element element;
-        const GS::Optional<GS::ObjectState> elementError = GetElementOfType (elemGuid, API_AnalyticalLinkID, "analytical link", element);
+        const GS::Optional<GS::ObjectState> elementError = GetElementOfType (elemGuid, GetAnalyticalLinkID (), "analytical link", element);
         if (elementError.HasValue ()) {
             links (*elementError);
             continue;
@@ -5337,6 +5425,9 @@ GS::Optional<GS::UniString> CreateAnalyticalSupportsCommand::GetRawResponseSchem
 
 GS::ObjectState CreateAnalyticalSupportsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> supports;
     parameters.Get ("supports", supports);
 
@@ -5352,7 +5443,7 @@ GS::ObjectState CreateAnalyticalSupportsCommand::Execute (const GS::ObjectState&
                 elements (*supportError);
                 continue;
             }
-            elements (CreateAnalyticalElement (API_AnalyticalSupportID, "analytical support", [&] (API_Element& element) {
+            elements (CreateAnalyticalElement (GetAnalyticalSupportID (), "analytical support", [&] (API_Element& element) {
                 return TAPIR_SetElementFromSupport (support, element);
             }));
         }
@@ -5418,6 +5509,9 @@ GS::Optional<GS::UniString> CreateAnalyticalLinksCommand::GetRawResponseSchema (
 
 GS::ObjectState CreateAnalyticalLinksCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> links;
     parameters.Get ("links", links);
 
@@ -5433,7 +5527,7 @@ GS::ObjectState CreateAnalyticalLinksCommand::Execute (const GS::ObjectState& pa
                 elements (*linkError);
                 continue;
             }
-            elements (CreateAnalyticalElement (API_AnalyticalLinkID, "analytical link", [&] (API_Element& element) {
+            elements (CreateAnalyticalElement (GetAnalyticalLinkID (), "analytical link", [&] (API_Element& element) {
                 return TAPIR_SetElementFromLink (link, element);
             }));
         }
@@ -5521,6 +5615,9 @@ GS::Optional<GS::UniString> ConvertAnalyticalLinksToNonShortestCommand::GetRawRe
 GS::ObjectState ConvertAnalyticalLinksToNonShortestCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2600
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     API_Guid analyticalModelGuid = APINULLGuid;
     const GS::Optional<GS::ObjectState> modelError = GetAnalyticalModelGuidFromParameters (parameters, analyticalModelGuid);
     if (modelError.HasValue ()) {
@@ -5685,6 +5782,9 @@ GS::Optional<GS::UniString> GetAnalyticalLoadsCommand::GetRawResponseSchema () c
 GS::ObjectState GetAnalyticalLoadsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2600
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     API_Guid analyticalModelGuid = APINULLGuid;
     const GS::Optional<GS::ObjectState> modelError = GetAnalyticalModelGuidFromParameters (parameters, analyticalModelGuid);
     if (modelError.HasValue ()) {
@@ -5807,6 +5907,9 @@ GS::Optional<GS::UniString> CreateAnalyticalLoadsCommand::GetRawResponseSchema (
 
 GS::ObjectState CreateAnalyticalLoadsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> loads;
     parameters.Get ("loads", loads);
 
@@ -5945,6 +6048,9 @@ GS::Optional<GS::UniString> CreateElementsFromAnalyticalMembersCommand::GetRawRe
 
 GS::ObjectState CreateElementsFromAnalyticalMembersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsAnalyticalModelAPIAvailable ()) {
+        return CreateAnalyticalModelAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> members;
     parameters.Get ("members", members);
 

@@ -88,14 +88,37 @@ function (LinkGSLibrariesToProject target acVersion devKitDir)
 
     file (GLOB ModuleFolders ${devKitDir}/Modules/*)
     target_include_directories (${target} SYSTEM PUBLIC ${ModuleFolders})
+    # Not every Archicad can load the Analytical Model API and the MEP API (#1688), so Tapir links them in a way
+    # that lets it load without them: delay-loaded on Windows, weakly linked on macOS. Their call sites check
+    # IsAnalyticalModelAPIAvailable / IsMEPAPIAvailable (Sources/OptionalAPIs.hpp) first.
+    set (OptionalModules AnalyticalModelAPI MEPAPI)
     if (WIN32)
         file (GLOB LibFilesInFolder ${devKitDir}/Modules/*/*/*.lib)
         target_link_libraries (${target} ${LibFilesInFolder})
+        set (HasDelayLoadedDll FALSE)
+        foreach (module ${OptionalModules})
+            file (GLOB ModuleLibFiles ${devKitDir}/Modules/${module}/*/*.lib)
+            if (ModuleLibFiles)
+                target_link_options (${target} PUBLIC "/DELAYLOAD:${module}.dll")
+                set (HasDelayLoadedDll TRUE)
+            endif ()
+        endforeach ()
+        if (HasDelayLoadedDll)
+            target_link_libraries (${target} delayimp.lib)
+        endif ()
     else ()
         file (GLOB LibFilesInFolder
             ${devKitDir}/Frameworks/*.framework
             ${devKitDir}/Frameworks/*.dylib
         )
+        foreach (module ${OptionalModules})
+            file (GLOB ModuleFramework ${devKitDir}/Frameworks/${module}.framework)
+            if (ModuleFramework)
+                list (REMOVE_ITEM LibFilesInFolder ${ModuleFramework})
+                get_filename_component (ModuleFrameworkDir ${ModuleFramework} DIRECTORY)
+                target_link_options (${target} PUBLIC "-F${ModuleFrameworkDir}" "-Wl,-weak_framework,${module}")
+            endif ()
+        endforeach ()
         target_link_libraries (${target} ${LibFilesInFolder})
     endif ()
 
