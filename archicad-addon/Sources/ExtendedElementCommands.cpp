@@ -5523,7 +5523,8 @@ GS::Optional<GS::ObjectState> CreateSkylightsCommand::SetTypeSpecificParameters 
     if (parameters.Get ("libraryPartName", libraryPartName) && !libraryPartName.IsEmpty ()) {
         API_LibPart libPart = {};
         libPart.typeID = APILib_SkylightID;
-        GS::ucscpy (libPart.docu_UName, libraryPartName.ToUStr ());
+        const USize maxNameLength = sizeof (libPart.docu_UName) / sizeof (libPart.docu_UName[0]) - 1;
+        GS::ucscpy (libPart.docu_UName, libraryPartName.ToUStr (0, GS::Min (libraryPartName.GetLength (), maxNameLength)).Get ());
         GSErrCode err = ACAPI_LibraryPart_Search (&libPart, false, true);
         delete libPart.location;
         if (err != NoError) {

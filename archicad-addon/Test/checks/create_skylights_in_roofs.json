@@ -1,6 +1,6 @@
 {
   "title": "CreateSkylights places skylights in single- and multi-plane roofs and refuses other owners",
-  "minTapir": "1.7.4",
+  "minTapir": "1.8.1",
   "minArchicad": "27",
   "steps": [
     {
@@ -134,6 +134,27 @@
           "path": "elements[0].error.message",
           "contains": "not a roof or a shell",
           "name": "refused"
+        }
+      ]
+    },
+    {
+      "id": "an overlong library part name",
+      "command": "CreateSkylights",
+      "creates": false,
+      "params": {
+        "skylightsData": [
+          {
+            "ownerId": { "guid": "${r1}" },
+            "anchorPosition": { "x": 1004, "y": 1003 },
+            "libraryPartName": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "elements[0].error.message",
+          "contains": "Failed to resolve 'libraryPartName'",
+          "name": "overlong unknown name fails without creating a skylight"
         }
       ]
     },
