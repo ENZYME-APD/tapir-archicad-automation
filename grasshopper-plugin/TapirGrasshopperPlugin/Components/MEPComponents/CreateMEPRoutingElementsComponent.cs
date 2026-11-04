@@ -71,7 +71,27 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 "Layer attribute index of each route, also set on its segments, elbows and transitions; " +
                 "a missing or locked layer gives an error for the route (input only 1 to use the same layer for all). Optional.");
 
-            SetOptionality(new[] { 2, 3, 4, 5, 6, 7, 8 });
+            InTexts(
+                "ElbowPreferenceTableGuids",
+                "Identifier of the elbow preference table of the elbows placed at the nodes of each route " +
+                "(see GetMEPPreferenceTables with includeFittingTables), changing the routing tool default " +
+                "only for this route (input only 1 to use the same table for all). Optional; " +
+                "available from Archicad 29.");
+
+            InNumbers(
+                "ElbowRadiusFactors",
+                "Radius factor of the elbows placed at the nodes of each route, changing the routing tool " +
+                "default only for this route (input only 1 to use the same factor for all). Optional; " +
+                "available from Archicad 29.");
+
+            InTexts(
+                "TransitionPreferenceTableGuids",
+                "Identifier of the transition preference table of the transitions placed at the nodes of each " +
+                "route (see GetMEPPreferenceTables with includeFittingTables), changing the routing tool default " +
+                "only for this route (input only 1 to use the same table for all). Optional; " +
+                "available from Archicad 29.");
+
+            SetOptionality(new[] { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 });
         }
 
         protected override void AddOutputs()
@@ -129,6 +149,16 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             preferenceTableGuids = preferenceTableGuids ?? new List<string>();
             da.TryGetList(8, out List<int> layerIndices);
             layerIndices = layerIndices ?? new List<int>();
+            if (!MEPComponentHelp.TryGetGuidTexts(this, da, 9, out List<string> elbowTableGuids))
+            {
+                return;
+            }
+            da.TryGetList(10, out List<double> elbowRadiusFactors);
+            elbowRadiusFactors = elbowRadiusFactors ?? new List<double>();
+            if (!MEPComponentHelp.TryGetGuidTexts(this, da, 11, out List<string> transitionTableGuids))
+            {
+                return;
+            }
 
             foreach (var pair in new (string Name, int Count)[]
                      {
@@ -138,7 +168,10 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                          ("MEPSystemGuids", mepSystemWrappers.Count),
                          ("CrossSectionReferenceIds", referenceIds.Count),
                          ("PreferenceTableGuids", preferenceTableGuids.Count),
-                         ("LayerIndices", layerIndices.Count)
+                         ("LayerIndices", layerIndices.Count),
+                         ("ElbowPreferenceTableGuids", elbowTableGuids.Count),
+                         ("ElbowRadiusFactors", elbowRadiusFactors.Count),
+                         ("TransitionPreferenceTableGuids", transitionTableGuids.Count)
                      })
             {
                 if (pair.Count > 1 &&
@@ -230,6 +263,34 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 if (layerIndices.Count > 0)
                 {
                     item["layerIndex"] = layerIndices[layerIndices.Count == 1 ? 0 : i];
+                }
+
+                // The routing node default (elbows and transitions) of the
+                // route, from Archicad 29.
+                var routingNode = new JObject();
+                var elbow = new JObject();
+                if (elbowTableGuids.Count > 0)
+                {
+                    elbow["preferenceTableId"] = elbowTableGuids[elbowTableGuids.Count == 1 ? 0 : i];
+                }
+                if (elbowRadiusFactors.Count > 0)
+                {
+                    elbow["factorRadius"] = elbowRadiusFactors[elbowRadiusFactors.Count == 1 ? 0 : i];
+                }
+                if (elbow.Count > 0)
+                {
+                    routingNode["elbow"] = elbow;
+                }
+                if (transitionTableGuids.Count > 0)
+                {
+                    routingNode["transition"] = new JObject
+                    {
+                        ["preferenceTableId"] = transitionTableGuids[transitionTableGuids.Count == 1 ? 0 : i]
+                    };
+                }
+                if (routingNode.Count > 0)
+                {
+                    item["defaults"] = new JObject { ["routingNode"] = routingNode };
                 }
                 items.Add(item);
             }
