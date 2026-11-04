@@ -464,6 +464,105 @@ static GS::UniString PropertyValueStatusToString (API_PropertyValueStatus status
     }
 }
 
+#ifdef ServerMainVers_2900
+static GSErrCode GetPathOfFavoriteFolder (const ACAPI::Favorite::FavoriteFolder& folder, GS::Array<GS::UniString>& path, GS::UniString& errorMessage);
+#endif
+
+// ACAPI_Favorite_Get refuses (APIERR_REFUSEDCMD) a Favorite whose settings Archicad cannot hand
+// out as an API_Element - every Drawing favorite (#652). From Archicad 29 the Favorite manager
+// still gives its element type, folder, properties, classifications and category values: this
+// fills those of them that favorite requests, empties the requested memos and sub-elements, and
+// leaves favorite.element empty apart from its type. Returns refusedErr before Archicad 29 or
+// when the Favorite manager cannot read the Favorite either.
+static GSErrCode GetFavoriteWithoutElementSettings (API_Favorite& favorite, GSErrCode refusedErr)
+{
+#ifdef ServerMainVers_2900
+    const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
+    const auto source = manager.GetFavoriteByName (favorite.name);
+    if (source.IsErr ()) {
+        return refusedErr;
+    }
+    const auto elemType = source.Unwrap ().GetElementType ();
+    const auto properties = source.Unwrap ().GetProperties ();
+    const auto classifications = source.Unwrap ().GetClassifications ();
+    const auto categoryValues = source.Unwrap ().GetElemCategoryValues ();
+    if (elemType.IsErr () || properties.IsErr () || classifications.IsErr () || categoryValues.IsErr ()) {
+        return refusedErr;
+    }
+
+    favorite.element = {};
+    favorite.element.header.type = elemType.Unwrap ();
+    if (favorite.memo.HasValue ()) {
+        ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
+        favorite.memo.Get () = {};
+    }
+    if (favorite.elementMarker.HasValue ()) {
+        favorite.elementMarker.Get () = {};
+    }
+    if (favorite.memoMarker.HasValue ()) {
+        ACAPI_DisposeElemMemoHdls (&favorite.memoMarker.Get ());
+        favorite.memoMarker.Get () = {};
+    }
+    if (favorite.subElements.HasValue ()) {
+        for (API_SubElement& subElement : *favorite.subElements) {
+            ACAPI_DisposeElemMemoHdls (&subElement.memo);
+        }
+        favorite.subElements->Clear ();
+    }
+    if (favorite.properties.HasValue ()) {
+        favorite.properties->Clear ();
+        for (const API_Property& property : properties.Unwrap ()) {
+            favorite.properties->Push (property);
+        }
+    }
+    if (favorite.classifications.HasValue ()) {
+        favorite.classifications->Clear ();
+        for (const GS::Pair<API_Guid, API_Guid>& pair : classifications.Unwrap ()) {
+            favorite.classifications->Push (pair);
+        }
+    }
+    if (favorite.elemCategoryValues.HasValue ()) {
+        favorite.elemCategoryValues->Clear ();
+        for (const API_ElemCategoryValue& categoryValue : categoryValues.Unwrap ()) {
+            favorite.elemCategoryValues->Push (categoryValue);
+        }
+    }
+    if (favorite.folder.HasValue ()) {
+        const auto parentFolder = source.Unwrap ().GetParentFolder ();
+        GS::UniString errorMessage;
+        if (parentFolder.IsErr () || GetPathOfFavoriteFolder (parentFolder.Unwrap (), *favorite.folder, errorMessage) != NoError) {
+            return refusedErr;
+        }
+    }
+    return NoError;
+#else
+    UNUSED_PARAMETER (favorite);
+    return refusedErr;
+#endif
+}
+
+// Makes the settings of the Favorite the defaults of its tool through the Favorite manager, which
+// also works for the Favorites GetFavoriteWithoutElementSettings is for.
+static GSErrCode SetFavoriteSettingsAsToolDefaults (const GS::UniString& favoriteName)
+{
+#ifdef ServerMainVers_2900
+    const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
+    const auto favorite = manager.GetFavoriteByName (favoriteName);
+    if (favorite.IsErr ()) {
+        return favorite.UnwrapErr ().kind;
+    }
+    const auto elementDefault = favorite.Unwrap ().GetElementDefault ();
+    if (elementDefault.IsErr ()) {
+        return elementDefault.UnwrapErr ().kind;
+    }
+    const auto setResult = elementDefault.Unwrap ().SetAsArchicadDefault ();
+    return setResult.IsErr () ? setResult.UnwrapErr ().kind : NoError;
+#else
+    UNUSED_PARAMETER (favoriteName);
+    return APIERR_NOTSUPPORTED;
+#endif
+}
+
 GS::ObjectState GetFavoriteDetailsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::UniString> favorites;
@@ -479,7 +578,10 @@ GS::ObjectState GetFavoriteDetailsCommand::Execute (const GS::ObjectState& param
         favorite.classifications.New ();
         favorite.elemCategoryValues.New ();
 
-        const GSErrCode err = ACAPI_Favorite_Get (&favorite);
+        GSErrCode err = ACAPI_Favorite_Get (&favorite);
+        if (err == APIERR_REFUSEDCMD) {
+            err = GetFavoriteWithoutElementSettings (favorite, err);
+        }
         if (err != NoError) {
             favoriteDetails (CreateErrorResponse (err, GS::UniString::Printf ("Failed to get favorite '%T'.", favoriteName.ToPrintf ())));
             continue;
@@ -601,13 +703,22 @@ GS::ObjectState ApplyFavoritesToElementDefaultsCommand::Execute (const GS::Objec
             favorite.name = favoriteName;
 
             GSErrCode err = ACAPI_Favorite_Get (&favorite);
+            bool hasElementSettings = true;
+            if (err == APIERR_REFUSEDCMD) {
+                err = GetFavoriteWithoutElementSettings (favorite, err);
+                hasElementSettings = false;
+            }
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to get favorite"));
                 ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
                 continue;
             }
 
-            err = ACAPI_Element_ChangeDefaults (&favorite.element, favorite.memo.GetPtr (), &mask);
+            if (hasElementSettings) {
+                err = ACAPI_Element_ChangeDefaults (&favorite.element, favorite.memo.GetPtr (), &mask);
+            } else {
+                err = SetFavoriteSettingsAsToolDefaults (favoriteName);
+            }
             ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to set element defaults"));
@@ -1648,7 +1759,7 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
             },
             "applySettings": {
                 "type": "boolean",
-                "description": "Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc.). Geometry (position, floor, and dimensions such as a Wall's height) is never applied - the element stays on its own home story - except that a Window or Door takes the Favorite's library part and parameters, size included, while keeping its wall, marker and placement. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. A Dimension's text size, text pen and text frame are not changed (tested in Archicad 28): the dimension creation commands take textHeight and textPen for them. Default is true."
+                "description": "Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc.). Geometry (position, floor, and dimensions such as a Wall's height) is never applied - the element stays on its own home story - except that a Window or Door takes the Favorite's library part and parameters, size included, while keeping its wall, marker and placement. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. A Dimension's text size, text pen and text frame are not changed (tested in Archicad 28): the dimension creation commands take textHeight, textPen and textFrame for them. Default is true."
             },
             "applyClassifications": {
                 "type": "boolean",
@@ -1765,6 +1876,11 @@ GS::ObjectState ApplyFavoritesToElementsCommand::Execute (const GS::ObjectState&
             item.Get ("favorite", favorite.name);
 
             err = ACAPI_Favorite_Get (&favorite);
+            if (err == APIERR_REFUSEDCMD) {
+                executionResults (CreateFailedExecutionResult (err, "Archicad does not give out the settings of this Favorite as element settings, so they cannot be applied to elements (the case for Drawing favorites). ApplyFavoritesToElementDefaults can still make them the tool's defaults."));
+                ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
+                continue;
+            }
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to get favorite"));
                 ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
@@ -2535,6 +2651,127 @@ GS::ObjectState DeleteFavoriteFolderCommand::Execute (const GS::ObjectState& par
 }
 
 // ============================================================================
+// ReadFavoritesFile — wraps ACAPI_Favorite_Read, which reads the Favorites of a
+// .prefs file or folder without importing them, so a caller can compare them
+// with the project's Favorites before ImportFavorites overwrites anything.
+// ============================================================================
+
+ReadFavoritesFileCommand::ReadFavoritesFileCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ReadFavoritesFileCommand::GetName () const
+{
+    return "ReadFavoritesFile";
+}
+
+GS::Optional<GS::UniString> ReadFavoritesFileCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "path": {
+                "type": "string",
+                "description": "Absolute path on the AC host to a Favorites file (.prefs) or folder."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["path"]
+    })";
+}
+
+GS::Optional<GS::UniString> ReadFavoritesFileCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "favorites": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the Favorite."
+                        },
+                        "elementType": {
+                            "$ref": "#/ElementType"
+                        },
+                        "folder": {
+                            "type": "array",
+                            "items": { "type": "string" },
+                            "description": "The folder hierarchy of the Favorite in the file or folder. Empty = root."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "elementType",
+                        "folder"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favorites"
+        ]
+    })";
+}
+
+GS::ObjectState ReadFavoritesFileCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString path;
+    parameters.Get ("path", path);
+    if (path.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "path is required");
+    }
+
+    // Nothing is imported: ACAPI_Favorite_Read only fills this array, the project's
+    // Favorites stay as they are.
+    GS::Array<API_Favorite> favorites;
+    const GSErrCode err = ACAPI_Favorite_Read (LocationFromPath (path), &favorites);
+
+    GS::ObjectState response;
+    const auto& favoritesList = response.AddList<GS::ObjectState> ("favorites");
+    for (API_Favorite& favorite : favorites) {
+        if (err == NoError) {
+            GS::ObjectState favoriteOS;
+            favoriteOS.Add ("name", favorite.name);
+            favoriteOS.Add ("elementType", GetElementTypeNonLocalizedName (GetElemTypeId (favorite.element.header)));
+            const auto& folder = favoriteOS.AddList<GS::UniString> ("folder");
+            if (favorite.folder.HasValue ()) {
+                for (const GS::UniString& part : *favorite.folder) {
+                    folder (part);
+                }
+            }
+            favoritesList (favoriteOS);
+        }
+
+        // Only the name, type and folder are returned; the memo handles the read
+        // allocated are released here, also when it failed part way.
+        if (favorite.memo.HasValue ()) {
+            ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
+        }
+        if (favorite.memoMarker.HasValue ()) {
+            ACAPI_DisposeElemMemoHdls (&favorite.memoMarker.Get ());
+        }
+        if (favorite.subElements.HasValue ()) {
+            for (API_SubElement& subElement : *favorite.subElements) {
+                ACAPI_DisposeElemMemoHdls (&subElement.memo);
+            }
+        }
+    }
+
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to read the Favorites file or folder.");
+    }
+
+    return response;
+}
+
+// ============================================================================
 // GetFavoriteSettings — reads what ACAPI_Favorite_Get returns about a Favorite
 // (element type, the GDL parameters of its library part, its marker, its
 // sub-elements and its folder) without applying it to the tool defaults or
@@ -2733,7 +2970,10 @@ GS::ObjectState GetFavoriteSettingsCommand::Execute (const GS::ObjectState& para
             }
         });
 
-        const GSErrCode err = ACAPI_Favorite_Get (&favorite);
+        GSErrCode err = ACAPI_Favorite_Get (&favorite);
+        if (err == APIERR_REFUSEDCMD) {
+            err = GetFavoriteWithoutElementSettings (favorite, err);
+        }
         if (err != NoError) {
             favoriteSettingsAdder (CreateErrorResponse (err, GS::UniString::Printf ("Failed to get favorite '%T'.", favoriteName.ToPrintf ())));
             continue;
