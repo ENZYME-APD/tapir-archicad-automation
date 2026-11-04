@@ -1,15 +1,15 @@
 {
- "generatedAt": "2026-11-04 06:54 UTC",
+ "generatedAt": "2026-11-04 07:06 UTC",
  "counts": {
   "done": 568,
-  "merged": 91,
-  "in progress": 42,
+  "merged": 114,
+  "in progress": 19,
   "open": 1,
   "not applicable": 1
  },
  "parameters": {
-  "all": 604,
-  "partial": 8,
+  "all": 632,
+  "partial": 3,
   "json": 47
  },
  "items": [
@@ -15439,12 +15439,12 @@
      "path": "Components/MEPComponents/GetMEPDistributionSystemsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [
+   "coveredParameters": [
     "includeTree"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -15461,7 +15461,7 @@
      "path": "Components/MEPComponents/CreateMEPRoutingElementsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 15,
    "coveredParameters": [
     "routingElementsData",
@@ -15469,19 +15469,18 @@
     "routingElementsData.crossSectionReferenceId",
     "routingElementsData.crossSectionShape",
     "routingElementsData.crossSectionWidth",
+    "routingElementsData.defaults",
+    "routingElementsData.defaults.routingNode",
+    "routingElementsData.defaults.routingNode.elbow",
+    "routingElementsData.defaults.routingNode.elbow.factorRadius",
+    "routingElementsData.defaults.routingNode.transition",
     "routingElementsData.domain",
     "routingElementsData.layerIndex",
     "routingElementsData.mepSystemId",
     "routingElementsData.nodeCoordinates",
     "routingElementsData.preferenceTableId"
    ],
-   "missingParameters": [
-    "routingElementsData.defaults",
-    "routingElementsData.defaults.routingNode",
-    "routingElementsData.defaults.routingNode.elbow",
-    "routingElementsData.defaults.routingNode.elbow.factorRadius",
-    "routingElementsData.defaults.routingNode.transition"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -15498,31 +15497,30 @@
      "path": "Components/MEPComponents/CreateMEPElementsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 19,
    "coveredParameters": [
     "elementsData",
-    "elementsData.domain",
-    "elementsData.orientationDirection",
-    "elementsData.orientationRotation",
-    "elementsData.ports.height",
-    "elementsData.ports.width",
-    "elementsData.position",
-    "elementsData.type"
-   ],
-   "missingParameters": [
     "elementsData.defaults",
     "elementsData.defaults.insulationThickness",
     "elementsData.defaults.removeInsulation",
+    "elementsData.domain",
     "elementsData.libraryPartId",
     "elementsData.mepSystemId",
+    "elementsData.orientationDirection",
+    "elementsData.orientationRotation",
     "elementsData.ports",
     "elementsData.ports.diameter",
+    "elementsData.ports.height",
     "elementsData.ports.portIndex",
     "elementsData.ports.shape",
+    "elementsData.ports.width",
+    "elementsData.position",
+    "elementsData.type",
     "elementsData.xSize",
     "elementsData.ySize"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -15539,7 +15537,7 @@
      "path": "Components/MEPComponents/ModifyMEPRoutingElementsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 22,
    "coveredParameters": [
     "routingElementsData",
@@ -15554,6 +15552,7 @@
     "routingElementsData.elementId",
     "routingElementsData.flangeSize",
     "routingElementsData.floorPlanDisplayOption",
+    "routingElementsData.insulationThickness",
     "routingElementsData.mepSystemId",
     "routingElementsData.nodePositions",
     "routingElementsData.onStoryVisibility",
@@ -15564,9 +15563,7 @@
     "routingElementsData.showProjection",
     "routingElementsData.wallThickness"
    ],
-   "missingParameters": [
-    "routingElementsData.insulationThickness"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -15847,19 +15844,21 @@
    "group": "MEP Commands",
    "version": "1.7.4",
    "brief": "Retrieves the current settings of the MEP tools per domain, without changing them: the routing tool (MEP system, branch preference table, floor plan display settings from Archicad 29, and its segment, node, elbow (from Archicad 29) and transition defaults), the flexible segment tool, and the library part and port settings of the terminal, accessory, fitting and equipment tools. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1764,
-     "title": "Grasshopper: components for the remaining analytical and MEP commands"
+     "name": "GetMEPToolDefaultsComponent",
+     "path": "Components/MEPComponents/GetMEPToolDefaultsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "domains"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -15867,19 +15866,22 @@
    "group": "MEP Commands",
    "version": "1.7.4",
    "brief": "Picks up the settings of an MEP element and injects them into other MEP elements of the same type and domain, like Archicad's pick up and inject parameters. Works for routing elements, terminals, accessories, equipment, fittings, flexible segments, branches, take-offs and (from Archicad 30) electrical panels and devices. Each target is changed in its own undoable step. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1764,
-     "title": "Grasshopper: components for the remaining analytical and MEP commands"
+     "name": "TransferMEPSettingsComponent",
+     "path": "Components/MEPComponents/TransferMEPSettingsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "sourceElementId",
+    "targetElements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -15887,19 +15889,21 @@
    "group": "MEP Commands",
    "version": "1.8.1",
    "brief": "Returns the physical systems each of the given MEP elements is part of. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1764,
-     "title": "Grasshopper: components for the remaining analytical and MEP commands"
+     "name": "GetMEPPhysicalSystemsOfElementsComponent",
+     "path": "Components/MEPComponents/GetMEPPhysicalSystemsOfElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -15907,19 +15911,25 @@
    "group": "MEP Commands",
    "version": "1.8.1",
    "brief": "Places MEP flexible segments through the given control points with the current settings of the Flexible Segment tool of their domain, optionally with the orientation at both ends. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 5,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1764,
-     "title": "Grasshopper: components for the remaining analytical and MEP commands"
+     "name": "PlaceMEPFlexibleSegmentsComponent",
+     "path": "Components/MEPComponents/PlaceMEPFlexibleSegmentsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 5,
+   "coveredParameters": [
+    "flexibleSegmentsData",
+    "flexibleSegmentsData.controlPoints",
+    "flexibleSegmentsData.domain",
+    "flexibleSegmentsData.endOrientation",
+    "flexibleSegmentsData.startOrientation"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -15927,19 +15937,26 @@
    "group": "MEP Commands",
    "version": "1.8.1",
    "brief": "Places MEP take-offs on the given routing segments, at a distance from the beginning of the segment and optionally rotated around its axis, with the current settings of the Take-Off tool of their domain, optionally with their length. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 6,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1764,
-     "title": "Grasshopper: components for the remaining analytical and MEP commands"
+     "name": "PlaceMEPTakeOffsComponent",
+     "path": "Components/MEPComponents/PlaceMEPTakeOffsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 6,
+   "coveredParameters": [
+    "takeOffsData",
+    "takeOffsData.distanceFromBeginning",
+    "takeOffsData.domain",
+    "takeOffsData.length",
+    "takeOffsData.rotationAroundMainAxis",
+    "takeOffsData.segmentId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -15947,19 +15964,21 @@
    "group": "MEP Commands",
    "version": "1.8.0",
    "brief": "Gets the routing parameters of placed MEP elements: of a routing element its routing node parameters (preferred transition placement, elbow from Archicad 29, transition) and routing segment parameters (cross section, preference table, anchor, reference line offsets, wall thickness, flange size, connection style); of a routing node its elbow (from Archicad 29) and transition parameters; of a routing segment its rigid segment parameters (Archicad 28 only). Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1764,
-     "title": "Grasshopper: components for the remaining analytical and MEP commands"
+     "name": "GetMEPRoutingParametersComponent",
+     "path": "Components/MEPComponents/GetMEPRoutingParametersComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -15967,19 +15986,34 @@
    "group": "MEP Commands",
    "version": "1.8.0",
    "brief": "Sets the routing parameters of placed MEP elements: the routing segment parameters (cross section and preference table) and, from Archicad 29, the routing node parameters (elbow radius factor and preference table, transition preference table) of routing elements, and the elbow and transition parameters of routing nodes (from Archicad 29). Only the given keys are changed, in one undo step with one execution result per element. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 14,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1764,
-     "title": "Grasshopper: components for the remaining analytical and MEP commands"
+     "name": "SetMEPRoutingParametersComponent",
+     "path": "Components/MEPComponents/SetMEPRoutingParametersComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 14,
+   "coveredParameters": [
+    "elements",
+    "elements.elbowParameters",
+    "elements.elementId",
+    "elements.routingNodeParameters",
+    "elements.routingNodeParameters.elbow",
+    "elements.routingNodeParameters.elbow.factorRadius",
+    "elements.routingNodeParameters.elbow.preferenceTableId",
+    "elements.routingNodeParameters.transition",
+    "elements.routingSegmentParameters",
+    "elements.routingSegmentParameters.crossSectionHeight",
+    "elements.routingSegmentParameters.crossSectionReferenceId",
+    "elements.routingSegmentParameters.crossSectionShape",
+    "elements.routingSegmentParameters.crossSectionWidth",
+    "elements.transitionParameters"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16317,9 +16351,11 @@
      "path": "Components/MEPComponents/ModifyElectricalProjectSettingsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 10,
    "coveredParameters": [
+    "clearLoadClassifications",
+    "clearWiringTypes",
     "loadClassificationsToAdd",
     "loadClassificationsToAdd.demandFactor",
     "loadClassificationsToRemove",
@@ -16329,10 +16365,7 @@
     "wiringTypesToAdd.name",
     "wiringTypesToRemove"
    ],
-   "missingParameters": [
-    "clearLoadClassifications",
-    "clearWiringTypes"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -16995,19 +17028,21 @@
    "group": "Analytical Commands",
    "version": "1.8.0",
    "brief": "Lists the elements of the curve and surface members of the given Structural Analytical Model, or of the model of the current view when no model is given (the model is required before Archicad 27).",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1764,
-     "title": "Grasshopper: components for the remaining analytical and MEP commands"
+     "name": "GetAnalyticalMembersComponent",
+     "path": "Components/AnalyticalComponents/GetAnalyticalMembersComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "analyticalModelId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17015,19 +17050,23 @@
    "group": "Analytical Commands",
    "version": "1.8.0",
    "brief": "Retrieves the curve, surface or segmented surface member of the given elements in a Structural Analytical Model, with their connections. Cross sections, curves, nodes and surfaces are returned with every field the Archicad version has.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1764,
-     "title": "Grasshopper: components for the remaining analytical and MEP commands"
+     "name": "GetAnalyticalMemberDetailsComponent",
+     "path": "Components/AnalyticalComponents/GetAnalyticalMemberDetailsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "analyticalModelId",
+    "elements",
+    "segmentationCentralAngle"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17035,19 +17074,22 @@
    "group": "Analytical Commands",
    "version": "1.8.0",
    "brief": "Retrieves the releases of the given analytical members. Available from Archicad 26.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1764,
-     "title": "Grasshopper: components for the remaining analytical and MEP commands"
+     "name": "GetAnalyticalReleasesComponent",
+     "path": "Components/AnalyticalComponents/GetAnalyticalReleasesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "analyticalModelId",
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17055,19 +17097,23 @@
    "group": "Analytical Commands",
    "version": "1.8.0",
    "brief": "Replaces the releases of the given analytical members, in one undo step. Available from Archicad 26.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1764,
-     "title": "Grasshopper: components for the remaining analytical and MEP commands"
+     "name": "SetAnalyticalReleasesComponent",
+     "path": "Components/AnalyticalComponents/SetAnalyticalReleasesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "releases",
+    "releases.elementId",
+    "releases.release"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17075,19 +17121,21 @@
    "group": "Analytical Commands",
    "version": "1.8.0",
    "brief": "Retrieves the lengths added to the start and end of the given curve members. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1764,
-     "title": "Grasshopper: components for the remaining analytical and MEP commands"
+     "name": "GetCustomCurveMemberStretchComponent",
+     "path": "Components/AnalyticalComponents/GetCustomCurveMemberStretchComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17095,19 +17143,24 @@
    "group": "Analytical Commands",
    "version": "1.8.0",
    "brief": "Sets the lengths added to the start and end of the given curve members, in one undo step. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 4,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1764,
-     "title": "Grasshopper: components for the remaining analytical and MEP commands"
+     "name": "SetCustomCurveMemberStretchComponent",
+     "path": "Components/AnalyticalComponents/SetCustomCurveMemberStretchComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "stretches",
+    "stretches.begAdditionalLength",
+    "stretches.elementId",
+    "stretches.endAdditionalLength"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17115,19 +17168,23 @@
    "group": "Analytical Commands",
    "version": "1.8.0",
    "brief": "Retrieves the local coordinate system of the given analytical member parts, optionally in their intersection with another member part. Available from Archicad 26.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1764,
-     "title": "Grasshopper: components for the remaining analytical and MEP commands"
+     "name": "GetLCSOfAnalyticalMembersComponent",
+     "path": "Components/AnalyticalComponents/GetLCSOfAnalyticalMembersComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "memberParts",
+    "memberParts.intersectingMemberPartRef",
+    "memberParts.memberPartRef"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17135,19 +17192,22 @@
    "group": "Analytical Commands",
    "version": "1.8.0",
    "brief": "Retrieves the node of the given analytical member vertices and the curve of the given member edges. Available from Archicad 26.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1764,
-     "title": "Grasshopper: components for the remaining analytical and MEP commands"
+     "name": "GetAnalyticalMemberPartGeometriesComponent",
+     "path": "Components/AnalyticalComponents/GetAnalyticalMemberPartGeometriesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "analyticalModelId",
+    "memberPartRefs"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17155,19 +17215,22 @@
    "group": "Analytical Commands",
    "version": "1.8.0",
    "brief": "Retrieves the settings, the supported member part and the geometry of the given analytical supports. Available from Archicad 26.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1764,
-     "title": "Grasshopper: components for the remaining analytical and MEP commands"
+     "name": "GetAnalyticalSupportsComponent",
+     "path": "Components/AnalyticalComponents/GetAnalyticalSupportsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "analyticalModelId",
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17175,19 +17238,22 @@
    "group": "Analytical Commands",
    "version": "1.8.0",
    "brief": "Retrieves the settings, the connected member parts and the geometry of the given analytical links. Available from Archicad 26.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1764,
-     "title": "Grasshopper: components for the remaining analytical and MEP commands"
+     "name": "GetAnalyticalLinksComponent",
+     "path": "Components/AnalyticalComponents/GetAnalyticalLinksComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "analyticalModelId",
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17195,19 +17261,21 @@
    "group": "Analytical Commands",
    "version": "1.8.0",
    "brief": "Creates analytical supports from their settings and supported member part, as GetAnalyticalSupports returns them, in one undo step. Available from Archicad 26.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1764,
-     "title": "Grasshopper: components for the remaining analytical and MEP commands"
+     "name": "CreateAnalyticalSupportsComponent",
+     "path": "Components/AnalyticalComponents/CreateAnalyticalSupportsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "supports"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17215,19 +17283,21 @@
    "group": "Analytical Commands",
    "version": "1.8.0",
    "brief": "Creates analytical links from their settings and connected member parts, as GetAnalyticalLinks returns them, in one undo step. Available from Archicad 26.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1764,
-     "title": "Grasshopper: components for the remaining analytical and MEP commands"
+     "name": "CreateAnalyticalLinksComponent",
+     "path": "Components/AnalyticalComponents/CreateAnalyticalLinksComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "links"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17235,19 +17305,22 @@
    "group": "Analytical Commands",
    "version": "1.8.0",
    "brief": "Converts the given shortest analytical links (associative to a curve member or a surface member edge) to links connected to a fixed coordinate, in one undo step, and returns the converted links. Available from Archicad 26.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1764,
-     "title": "Grasshopper: components for the remaining analytical and MEP commands"
+     "name": "ConvertAnalyticalLinksToNonShortestComponent",
+     "path": "Components/AnalyticalComponents/ConvertAnalyticalLinksToNonShortestComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "analyticalModelId",
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17255,19 +17328,22 @@
    "group": "Analytical Commands",
    "version": "1.8.0",
    "brief": "Retrieves the settings, the loaded member part, the custom data (the curve of an edge load, the contour of a surface load) and the geometry of the given analytical point, edge and surface loads. Available from Archicad 26.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1764,
-     "title": "Grasshopper: components for the remaining analytical and MEP commands"
+     "name": "GetAnalyticalLoadsComponent",
+     "path": "Components/AnalyticalComponents/GetAnalyticalLoadsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "analyticalModelId",
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17275,19 +17351,25 @@
    "group": "Analytical Commands",
    "version": "1.8.0",
    "brief": "Creates analytical point, edge and surface loads from their settings, loaded member part and custom data, as GetAnalyticalLoads returns them, in one undo step. Available from Archicad 26.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 5,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1764,
-     "title": "Grasshopper: components for the remaining analytical and MEP commands"
+     "name": "CreateAnalyticalLoadsComponent",
+     "path": "Components/AnalyticalComponents/CreateAnalyticalLoadsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 5,
+   "coveredParameters": [
+    "loads",
+    "loads.customData",
+    "loads.edgeLoad",
+    "loads.pointLoad",
+    "loads.surfaceLoad"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17295,19 +17377,25 @@
    "group": "Analytical Commands",
    "version": "1.7.4",
    "brief": "Creates elements (beams, columns, walls, slabs, roofs) from the given curve, surface or segmented surface members, in the form GetAnalyticalMemberDetails returns them, optionally with the settings of a favorite, in one undo step. Returns the new elements and, from Archicad 26, the mapping of their edges and vertices to member parts.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 5,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1764,
-     "title": "Grasshopper: components for the remaining analytical and MEP commands"
+     "name": "CreateElementsFromAnalyticalMembersComponent",
+     "path": "Components/AnalyticalComponents/CreateElementsFromAnalyticalMembersComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 5,
+   "coveredParameters": [
+    "members",
+    "members.curveMember",
+    "members.favoriteName",
+    "members.segmentedSurfaceMembers",
+    "members.surfaceMember"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
