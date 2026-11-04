@@ -1026,6 +1026,46 @@ inline GSErrCode ACAPI_CurtainWall_IsCWPanelDegenerate (const API_Guid* guid, bo
     return ACAPI_Database (APIDb_IsCWPanelDegenerateID, const_cast<API_Guid*> (guid), isDegenerate);
 }
 
+// The AC25/26 forms of these calls, as the AC27 ACAPI_MigrationHeader.hpp maps them: the bools of
+// APIEnv_ChangeMarkerDrawingEnabledID and APIDb_StoreViewSettingsID are passed by value in par1.
+inline GSErrCode ACAPI_View_SetCurrent3DStyle (const GS::UniString* name)
+{
+    return ACAPI_Environment (APIEnv_SetCurrent3DStyleID, (void*) name);
+}
+
+inline GSErrCode ACAPI_Drawing_IsMarkerDrawingEnabled (bool* enabled)
+{
+    return ACAPI_Environment (APIEnv_IsMarkerDrawingEnabledID, enabled);
+}
+
+inline GSErrCode ACAPI_Drawing_ChangeMarkerDrawingEnabled (bool enabled)
+{
+    return ACAPI_Environment (APIEnv_ChangeMarkerDrawingEnabledID, reinterpret_cast<void*> (static_cast<GS::IntPtr> (enabled)));
+}
+
+inline GSErrCode ACAPI_View_StoreViewSettings (bool store)
+{
+    return ACAPI_Database (APIDb_StoreViewSettingsID, reinterpret_cast<void*> (static_cast<GS::IntPtr> (store)));
+}
+
+inline GSErrCode ACAPI_Conversion_ConvertPicture (API_PictureHandle* oldPict, API_PictureHandle* newPict)
+{
+    return ACAPI_Goodies (APIAny_ConvertPictureID, oldPict, newPict);
+}
+
+inline GSErrCode ACAPI_Conversion_ConvertMimePicture (API_MimePicture* mimePicture)
+{
+    return ACAPI_Goodies (APIAny_ConvertMimePictureID, mimePicture);
+}
+
+inline GSErrCode ACAPI_ProjectSetting_GetSplineMaxDist (API_TestSplineFit* splinePars, double* distance)
+{
+    return ACAPI_Goodies (APIAny_GetSplineMaxDistID, splinePars, distance);
+}
+
+#define ACAPI_DrawingPrimitive_ShapePrims ACAPI_Element_ShapePrims
+#define ACAPI_CuttingPlane_GetCutPolygonInfo ACAPI_3D_GetCutPolygonInfo
+
 #endif
 
 #if defined(ServerMainVers_2600) && !defined(ServerMainVers_2700)
