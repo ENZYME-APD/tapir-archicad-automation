@@ -50,6 +50,11 @@ GS::ObjectState CreateFailedExecutionResult (GSErrCode errorCode, const GS::UniS
 GS::ObjectState CreateFailedExecutionResult (const GS::ObjectState& errorResponse);
 GS::ObjectState CreateSuccessfulExecutionResult ();
 GS::UniString DescribeDefinitionChangeError (GSErrCode err);
+// Why Archicad refused to change an element the user could not edit in Archicad either, as the end
+// of a sentence ("its layer is hidden"); empty when the refusal has another cause. elemHead is the
+// element as it is in the project; targetLayer is the layer a change moves it to, if any.
+GS::UniString DescribeElementEditRefusal (GSErrCode err, const API_Elem_Head& elemHead, const GS::Optional<API_AttributeIndex>& targetLayer = GS::NoValue);
+
 // One of "Free", "Editable", "Locked", "NotAvailable", "NotExist".
 const char* LockableStatusToString (API_LockableStatus status);
 
