@@ -11,7 +11,7 @@ if not walls:
     print ('There are no walls in the project.')
     raise SystemExit (0)
 
-componentsOfElements = aclib.RunTapirCommand ('GetComponentsOfElements', {'elements': walls}, debug = False)['componentsOfElements']
+componentsOfElements = aclib.RunTapirCommand ('GetComponentsOfElements', {'elements': walls})['componentsOfElements']
 
 elementComponents = []
 for wall, componentsOfElement in zip (walls, componentsOfElements):
@@ -29,7 +29,7 @@ if not elementComponents:
 definitionsOfFirstComponent = aclib.RunTapirCommand ('GetPropertyDefinitionsOfElementComponents', {
     'elementComponents': [elementComponents[0]],
     'filter': 'All'
-}, debug = False)['propertyDefinitionsOfElementComponents'][0]
+})['propertyDefinitionsOfElementComponents'][0]
 
 if 'error' in definitionsOfFirstComponent:
     print ('Error:\n{}'.format (aclib.JsonDumpDictionary (definitionsOfFirstComponent['error'])))
@@ -55,7 +55,7 @@ propertyValuesForElementComponents = aclib.RunTapirCommand ('GetPropertyValuesOf
         {'propertyId': buildingMaterialNamePropertyId},
         {'propertyId': volumePropertyId}
     ]
-}, debug = False)['propertyValuesForElementComponents']
+})['propertyValuesForElementComponents']
 
 volumeByBuildingMaterial = {}
 for elementComponent, propertyValuesForElementComponent in zip (elementComponents, propertyValuesForElementComponents):
