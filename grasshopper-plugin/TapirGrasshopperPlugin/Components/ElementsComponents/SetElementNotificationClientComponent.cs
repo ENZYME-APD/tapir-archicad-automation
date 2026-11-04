@@ -54,7 +54,17 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     .WithTypeName("booleanItem"),
                 GH_ParamAccess.item);
 
-            SetOptionality(new[] { 0, 2, 3, 4 });
+            inManager.AddTextParameter(
+                "ElementTypesToObserve",
+                "ElementTypesToObserve",
+                ("Only the modification or deletion of elements of these types (e.g. Wall, Column) is notified. " +
+                 "Defaults to every element. Archicad is blocked while it attaches an observer to each element " +
+                 "to observe, for minutes on projects with thousands of elements, so limit the types on large " +
+                 "projects. Optional.")
+                    .WithTypeName("textList"),
+                GH_ParamAccess.list);
+
+            SetOptionality(new[] { 0, 2, 3, 4, 5 });
         }
 
         protected override void Solve(
@@ -91,6 +101,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (da.GetData(4, ref notifyOnReservationChanges))
             {
                 parameters["notifyOnReservationChanges"] = notifyOnReservationChanges;
+            }
+
+            var elementTypesToObserve = new System.Collections.Generic.List<string>();
+            if (da.GetDataList(5, elementTypesToObserve) &&
+                elementTypesToObserve.Count > 0)
+            {
+                parameters["elementTypesToObserve"] = new JArray(elementTypesToObserve);
             }
 
             if (TryGetCadResponse(

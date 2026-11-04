@@ -46,13 +46,19 @@ public:
             bool isEmptyMessage = true;
             GS::ObjectState message;
             for (const auto& kv : eventQueue) {
-                if (!client.acceptsNotificationsForEventType (kv.first)) {
+                std::vector<const GS::ObjectState*> acceptedEvents;
+                for (const auto& os : kv.second) {
+                    if (client.acceptsNotificationsForEventType (kv.first, os)) {
+                        acceptedEvents.push_back (&os);
+                    }
+                }
+                if (acceptedEvents.empty ()) {
                     continue;
                 }
 
                 const auto& events = message.AddList<GS::ObjectState> (ElementEventTypeToString (kv.first));
-                for (const auto& os : kv.second) {
-                    events (os);
+                for (const GS::ObjectState* os : acceptedEvents) {
+                    events (*os);
                     isEmptyMessage = false;
                 }
             }
@@ -69,6 +75,7 @@ public:
 std::map<GS::UniString, AddElementNotificationClientCommand::Client> AddElementNotificationClientCommand::clients;
 bool AddElementNotificationClientCommand::hasClientToNotifyOnNew = false;
 bool AddElementNotificationClientCommand::hasClientToNotifyOnModification = false;
+std::set<API_ElemTypeID> AddElementNotificationClientCommand::observedElementTypes;
 bool AddElementNotificationClientCommand::hasClientToNotifyOnReservationChanges = false;
 std::unique_ptr<AddElementNotificationClientCommand::EventQueue> AddElementNotificationClientCommand::queuedEvents;
 GS::Thread AddElementNotificationClientCommand::messageSenderThread;
@@ -117,7 +124,14 @@ GS::Optional<GS::UniString> AddElementNotificationClientCommand::GetInputParamet
             },
             "notifyOnModificationOfAnElement": {
                 "type": "boolean",
-                "description": "Notify on modification/deletion of an element. Optional parameter, by default true."
+                "description": "Notify on modification/deletion of an element. Optional parameter, by default true. Archicad attaches an observer to each element to observe (see elementTypesToObserve) when the first client asks for this, and detaches them when the last one stops, and it is blocked meanwhile: the time grows faster than the number of elements, from seconds for a few hundred elements to many minutes for a few thousand. Count the elements first (GetAllElements with IncludeSubElemObjects, or GetElementsByType) and limit the types on large projects."
+            },
+            "elementTypesToObserve": {
+                "type": "array",
+                "description": "Only modifications/deletions of elements of these types are observed and notified to this client. Optional parameter, by default every element (including the parts of curtain walls, stairs and railings, which are most of the elements of large projects). Registering the same client again with other types changes them; only the elements of types no client observed before get an observer then. Does not limit the other notifications.",
+                "items": {
+                    "$ref": "#/ElementType"
+                }
             },
             "notifyOnReservationChanges": {
                 "type": "boolean",
@@ -161,17 +175,29 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
     bool notifyOnReservationChanges = true;
     parameters.Get ("notifyOnReservationChanges", notifyOnReservationChanges);
 
+    std::set<API_ElemTypeID> elementTypesToObserve;
+    GS::Array<GS::UniString> elementTypeNames;
+    if (parameters.Get ("elementTypesToObserve", elementTypeNames)) {
+        if (elementTypeNames.IsEmpty ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "elementTypesToObserve is empty; leave it out to observe every element.");
+        }
+        for (const GS::UniString& elementTypeName : elementTypeNames) {
+            const API_ElemTypeID elementType = GetElementTypeFromNonLocalizedName (elementTypeName);
+            if (elementType == API_ZombieElemID) {
+                return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString ("Unknown element type: ") + elementTypeName);
+            }
+            elementTypesToObserve.insert (elementType);
+        }
+    }
+
     const GS::UniString connectionUrlStr = GS::UniString::Printf ("http://%T:%d/", host.ToPrintf (), port);
     const IO::URI::URI connectionUrl (connectionUrlStr);
-    auto result = clients.emplace(std::piecewise_construct, std::forward_as_tuple(connectionUrlStr), std::forward_as_tuple(connectionUrl, notifyOnNew, notifyOnModification, notifyOnReservationChanges));
+    auto result = clients.emplace(std::piecewise_construct, std::forward_as_tuple(connectionUrlStr), std::forward_as_tuple(connectionUrl, notifyOnNew, notifyOnModification, notifyOnReservationChanges, elementTypesToObserve));
     if (!result.second) {
         result.first->second.notifyOnNew = notifyOnNew;
         result.first->second.notifyOnModification = notifyOnModification;
         result.first->second.notifyOnReservationChanges = notifyOnReservationChanges;
-        // A client registered again without modification notifications may have
-        // been the last one that wanted them; detach the observers in that case,
-        // as RemoveElementNotificationClient does.
-        DetachElementObserversIfNotNeeded ();
+        result.first->second.elementTypesToObserve = elementTypesToObserve;
     }
 
     if (notifyOnNew && !hasClientToNotifyOnNew) {
@@ -179,14 +205,10 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
         hasClientToNotifyOnNew = true;
     }
 
-    if (notifyOnModification && !hasClientToNotifyOnModification) {
-        GS::Array<API_Guid> elementIds;
-        ACAPI_Element_GetElemList (API_ZombieElemID, &elementIds);
-        for (const auto& elemId : elementIds) {
-            ACAPI_Element_AttachObserver (elemId);
-        }
-        hasClientToNotifyOnModification = true;
-    }
+    // Attaches the observers this client needs and, when it was registered again
+    // with fewer types or without modification notifications, detaches the ones no
+    // client needs any more, as RemoveElementNotificationClient does.
+    UpdateElementObservers ();
 
     if (notifyOnReservationChanges && !hasClientToNotifyOnReservationChanges) {
         ACAPI_Notification_CatchElementReservationChange (ElementReservationChangeHandler);
@@ -198,27 +220,92 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
     return CreateSuccessfulExecutionResult ();
 }
 
-void
-AddElementNotificationClientCommand::DetachElementObserversIfNotNeeded ()
+// The elements of the given types; every element when the set is empty.
+static GS::Array<API_Guid>
+GetElementsOfTypes (const std::set<API_ElemTypeID>& elementTypes)
 {
-    if (!hasClientToNotifyOnModification) {
+    GS::Array<API_Guid> elementIds;
+    if (elementTypes.empty ()) {
+        ACAPI_Element_GetElemList (API_ZombieElemID, &elementIds);
+        return elementIds;
+    }
+
+    for (const API_ElemTypeID elementType : elementTypes) {
+        GS::Array<API_Guid> elementIdsOfType;
+        if (ACAPI_Element_GetElemList (elementType, &elementIdsOfType) != NoError) {
+            continue;
+        }
+        elementIds.Append (elementIdsOfType);
+    }
+    return elementIds;
+}
+
+bool
+AddElementNotificationClientCommand::IsObservedElementType (API_ElemTypeID typeID)
+{
+    return hasClientToNotifyOnModification && (observedElementTypes.empty () || observedElementTypes.count (typeID) > 0);
+}
+
+void
+AddElementNotificationClientCommand::UpdateElementObservers ()
+{
+    // The types the clients need now: empty means every element.
+    bool needed = false;
+    bool neededForEveryType = false;
+    std::set<API_ElemTypeID> neededTypes;
+    for (const auto& kv : clients) {
+        const Client& client = kv.second;
+        if (!client.notifyOnModification) {
+            continue;
+        }
+        needed = true;
+        if (client.elementTypesToObserve.empty ()) {
+            neededForEveryType = true;
+        } else {
+            neededTypes.insert (client.elementTypesToObserve.begin (), client.elementTypesToObserve.end ());
+        }
+    }
+    if (neededForEveryType) {
+        neededTypes.clear ();
+    }
+
+    if (needed == hasClientToNotifyOnModification && (!needed || neededTypes == observedElementTypes)) {
         return;
     }
 
-    for (const auto& kv : clients) {
-        if (kv.second.notifyOnModification) {
-            return;
+    // ACAPI_Element_AttachObserver and ACAPI_Element_DetachObserver are slow on
+    // many elements, and Archicad is blocked meanwhile (see issue #1840), so only
+    // the elements whose observer changes are touched.
+    GS::Array<API_Guid> attachedIds;
+    if (hasClientToNotifyOnModification) {
+        attachedIds = GetElementsOfTypes (observedElementTypes);
+    }
+    GS::Array<API_Guid> neededIds;
+    if (needed) {
+        neededIds = GetElementsOfTypes (neededTypes);
+    }
+
+    GS::HashSet<API_Guid> neededIdSet;
+    for (const API_Guid& elemId : neededIds) {
+        neededIdSet.Add (elemId);
+    }
+    GS::HashSet<API_Guid> attachedIdSet;
+    for (const API_Guid& elemId : attachedIds) {
+        attachedIdSet.Add (elemId);
+        if (!neededIdSet.Contains (elemId)) {
+            // Without this the observer stays attached for the rest of the session
+            // after the last client was removed (see issue #762).
+            ACAPI_Element_DetachObserver (elemId);
+        }
+    }
+    for (const API_Guid& elemId : neededIds) {
+        if (!attachedIdSet.Contains (elemId)) {
+            ACAPI_Element_AttachObserver (elemId);
         }
     }
 
-    // Without this the observer stays attached to every element for the rest of the
-    // session after the last client was removed (see issue #762).
-    GS::Array<API_Guid> elementIds;
-    ACAPI_Element_GetElemList (API_ZombieElemID, &elementIds);
-    for (const auto& elemId : elementIds) {
-        ACAPI_Element_DetachObserver (elemId);
-    }
-    hasClientToNotifyOnModification = false;
+    hasClientToNotifyOnModification = needed;
+    observedElementTypes = needed ? neededTypes : std::set<API_ElemTypeID> ();
 }
 
 void
@@ -235,7 +322,7 @@ AddElementNotificationClientCommand::SendEventToNotificationClient (ElementEvent
 
     for (auto& kv : clients) {
         auto& client = kv.second;
-        if (!client.acceptsNotificationsForEventType (eventType)) {
+        if (!client.acceptsNotificationsForEventType (eventType, os)) {
             continue;
         }
 
@@ -297,7 +384,7 @@ AddElementNotificationClientCommand::ElementEventHandlerProc (const API_NotifyEl
             case APINotifyElement_Undo_Deleted:
             case APINotifyElement_Redo_Created:
                 SendEventToNotificationClient (ElementEventType::New, message);
-                if (hasClientToNotifyOnModification) {
+                if (IsObservedElementType (typeID)) {
                     ACAPI_Element_AttachObserver (elemType->elemHead.guid);
                 }
                 break;
@@ -434,7 +521,7 @@ GS::ObjectState RemoveElementNotificationClientCommand::Execute (const GS::Objec
         return CreateFailedExecutionResult (APIERR_BADPARS, "No such notification client registered.");
     }
 
-    AddElementNotificationClientCommand::DetachElementObserversIfNotNeeded ();
+    AddElementNotificationClientCommand::UpdateElementObservers ();
 
     return CreateSuccessfulExecutionResult ();
 }
