@@ -93,9 +93,8 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 errorMessages);
         }
 
-        // Shares the Hotlinks icon until a badged one is drawn for it.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.Hotlinks;
+            Properties.Resources.GetHotlinkSourceStatus;
 
         public override Guid ComponentGuid =>
             new Guid("27b3cf3c-dc4b-4027-bc23-82f487616b95");

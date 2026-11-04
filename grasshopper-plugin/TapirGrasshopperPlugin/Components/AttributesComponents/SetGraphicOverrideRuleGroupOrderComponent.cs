@@ -52,9 +52,8 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             this.CheckExecutionResult(response);
         }
 
-        // Shares the icon of SetGraphicOverrideRuleOrder.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.SetGraphicOverrideRuleOrder;
+            Properties.Resources.SetGraphicOverrideRuleGroupOrder;
 
         public override Guid ComponentGuid =>
             new Guid("d6d7bfd5-1a80-48a5-91d1-78e68b0067c1");

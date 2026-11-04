@@ -1512,6 +1512,41 @@ GS::Optional<API_Guid> FindProjectMapItemOfWorksheetOrDetail (const API_Database
     return {};
 }
 
+GSErrCode ChangeCurrentDatabaseTo (const API_Guid& databaseId)
+{
+    API_DatabaseInfo database = DatabaseIdResolver::Instance ().GetDatabaseWithId (databaseId);
+    GSErrCode err = ACAPI_Window_GetDatabaseInfo (&database);
+    if (err != NoError) {
+        return err;
+    }
+    return ACAPI_Database_ChangeCurrentDatabase (&database);
+}
+
+bool OpenDatabaseIfNeverOpened (const API_Guid& databaseId)
+{
+    API_DatabaseInfo startingDatabase = {};
+    if (ACAPI_Database_GetCurrentDatabase (&startingDatabase) != NoError) {
+        return false;
+    }
+    const GSErrCode err = ChangeCurrentDatabaseTo (databaseId);
+    ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+    if (err != APIERR_BADDATABASE) {
+        return false;
+    }
+#if defined (ServerMainVers_2700)
+    API_DatabaseInfo database = DatabaseIdResolver::Instance ().GetDatabaseWithId (databaseId);
+    if (ACAPI_Window_GetDatabaseInfo (&database) != NoError) {
+        return false;
+    }
+    const GS::Optional<API_Guid> projectMapItem = FindProjectMapItemOfWorksheetOrDetail (database);
+    if (projectMapItem.HasValue ()) {
+        const GS::UniString guidStr = APIGuidToString (projectMapItem.Get ());
+        return ACAPI_View_GoToView (guidStr.ToCStr ().Get ()) == NoError;
+    }
+#endif
+    return false;
+}
+
 bool LoadElementHeaderByGuid (const API_Guid& elementGuid, API_Elem_Head& elementHeader)
 {
     elementHeader = {};

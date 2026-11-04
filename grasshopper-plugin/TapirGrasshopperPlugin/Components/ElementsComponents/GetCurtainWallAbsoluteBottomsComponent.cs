@@ -67,9 +67,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 errors);
         }
 
-        // Shares the icon of ElementDetails until it gets one of its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.ElemDetails;
+            Properties.Resources.GetCurtainWallAbsoluteBottoms;
 
         public override Guid ComponentGuid =>
             new Guid("1641ceaa-7878-481d-ba43-fa24f93a33f7");

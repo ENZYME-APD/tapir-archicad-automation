@@ -1,5 +1,8 @@
 #include "MEPCommands.hpp"
 #include <cmath>
+#include <functional>
+#include <limits>
+#include <vector>
 
 #ifdef ServerMainVers_2800
 #include "ACAPI/Result.hpp"
@@ -474,54 +477,187 @@ static GS::Optional<GS::ObjectState> GetErrorIfLayerNotUsable (Int32 layerIndex)
     return GS::NoValue;
 }
 
-// Sets the layer of a routing element and of all its parts: routing segments, rigid segments,
+// Sets the home story of one element through the classic element API; the MEP API has no home
+// story setter (Graphisoft's MEP_Test example changes it the same way).
+static GSErrCode SetFloorIndexOfElement (const API_Guid& elemGuid, short floorIndex)
+{
+    API_Element element = {};
+    element.header.guid = elemGuid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+    if (element.header.floorInd == floorIndex) {
+        return NoError;
+    }
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+    element.header.floorInd = floorIndex;
+    return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+}
+
+// Calls changeElement for a routing element and for all its parts: routing segments, rigid segments,
 // elbows (bends in Archicad 28) and transitions. Changing only the routing element did not
 // always move the parts that carry the geometry. Runs inside the caller's undoable command. Every
 // part is tried; the first error is returned.
-static GSErrCode SetLayerOfRoutingElement (const ACAPI::MEP::UniqueID& routingElementId, const API_AttributeIndex& layerIndex)
+static GSErrCode ChangeRoutingElementAndParts (const ACAPI::MEP::UniqueID& routingElementId, const std::function<GSErrCode (const API_Guid&)>& changeElement)
 {
     GSErrCode firstErr = NoError;
-    const auto setLayer = [&] (const ACAPI::MEP::UniqueID& id) {
-        const GSErrCode err = SetLayerOfElement (MEPUniqueIDToAPIGuid (id), layerIndex);
+    const auto changePart = [&] (const ACAPI::MEP::UniqueID& id) {
+        const GSErrCode err = changeElement (MEPUniqueIDToAPIGuid (id));
         if (firstErr == NoError) {
             firstErr = err;
         }
     };
 
-    setLayer (routingElementId);
+    changePart (routingElementId);
     auto routingElement = RoutingElement::Get (routingElementId);
     if (routingElement.IsErr ()) {
         return firstErr != NoError ? firstErr : routingElement.UnwrapErr ().kind;
     }
     for (const auto& segmentId : routingElement->GetRoutingSegmentIds ()) {
-        setLayer (segmentId);
+        changePart (segmentId);
         auto segment = RoutingSegment::Get (segmentId);
         if (segment.IsOk ()) {
             for (const auto& rigidSegmentId : segment->GetRigidSegmentIds ()) {
-                setLayer (rigidSegmentId);
+                changePart (rigidSegmentId);
             }
         }
     }
     for (const auto& nodeId : routingElement->GetRoutingNodeIds ()) {
-        setLayer (nodeId);
+        changePart (nodeId);
         auto node = RoutingNode::Get (nodeId);
         if (node.IsOk ()) {
 #ifdef ServerMainVers_2900
             for (const auto& elbowId : node->GetElbowIds ()) {
-                setLayer (elbowId);
+                changePart (elbowId);
             }
 #else
             // Archicad 28 calls the elbows bends (RoutingNode::GetBendIds).
             for (const auto& bendId : node->GetBendIds ()) {
-                setLayer (bendId);
+                changePart (bendId);
             }
 #endif
             for (const auto& transitionId : node->GetTransitionIds ()) {
-                setLayer (transitionId);
+                changePart (transitionId);
             }
         }
     }
     return firstErr;
+}
+
+static GSErrCode SetLayerOfRoutingElement (const ACAPI::MEP::UniqueID& routingElementId, const API_AttributeIndex& layerIndex)
+{
+    return ChangeRoutingElementAndParts (routingElementId, [&] (const API_Guid& elemGuid) {
+        return SetLayerOfElement (elemGuid, layerIndex);
+    });
+}
+
+// The points that define where a placed MEP element is: the node positions of a routing element,
+// the anchor point of any other MEP element. Empty if they cannot be read.
+static std::vector<API_Coord3D> GetMEPElementPositions (const ACAPI::MEP::UniqueID& elemId, bool isRoutingElement)
+{
+    std::vector<API_Coord3D> positions;
+    if (isRoutingElement) {
+        auto routingElement = RoutingElement::Get (elemId);
+        if (routingElement.IsOk ()) {
+            for (const auto& nodeId : routingElement->GetRoutingNodeIds ()) {
+                auto node = RoutingNode::Get (nodeId);
+                if (node.IsOk ()) {
+                    positions.push_back (node->GetPosition ());
+                }
+            }
+        }
+    } else {
+        auto element = Element::Get (elemId);
+        if (element.IsOk ()) {
+            positions.push_back (element->GetAnchorPoint ());
+        }
+    }
+    return positions;
+}
+
+static bool AreSamePositions (const std::vector<API_Coord3D>& positions1, const std::vector<API_Coord3D>& positions2)
+{
+    if (positions1.size () != positions2.size ()) {
+        return false;
+    }
+    constexpr double Tolerance = 1e-5;
+    for (size_t i = 0; i < positions1.size (); ++i) {
+        if (std::fabs (positions1[i].x - positions2[i].x) > Tolerance ||
+            std::fabs (positions1[i].y - positions2[i].y) > Tolerance ||
+            std::fabs (positions1[i].z - positions2[i].z) > Tolerance) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// The 'floorIndex' of an item of CreateMEPRoutingElements or CreateMEPElements. Returns an error
+// response for an index that is not a story of the project, nullopt in floorIndex when not given.
+static GS::Optional<GS::ObjectState> GetFloorIndexParameter (const GS::ObjectState& itemData, std::optional<short>& floorIndex)
+{
+    floorIndex.reset ();
+    Int32 floorIndexValue = 0;
+    if (!itemData.Get ("floorIndex", floorIndexValue)) {
+        return GS::NoValue;
+    }
+    const Stories stories = GetStories ();
+    if (floorIndexValue < std::numeric_limits<short>::min () || floorIndexValue > std::numeric_limits<short>::max () ||
+        stories.find (static_cast<short> (floorIndexValue)) == stories.end ()) {
+        return CreateErrorResponse (APIERR_BADINDEX, "The 'floorIndex' parameter does not refer to an existing story; nothing was placed.");
+    }
+    floorIndex = static_cast<short> (floorIndexValue);
+    return GS::NoValue;
+}
+
+// Moves a placed MEP element (a routing element with all its parts) to the given home story,
+// keeping its coordinates absolute. Archicad places MEP elements on a home story derived from the
+// active story, and the MEP API has no setter for it, so the classic element API is used. If the
+// change moves the element, the home story is set back and an error is returned. Runs inside the
+// caller's undoable command. Returns the error response of the item, or nothing on success.
+static GS::Optional<GS::ObjectState> SetHomeStoryOfPlacedMEPElement (const ACAPI::MEP::UniqueID& placedId, bool isRoutingElement, short floorIndex)
+{
+    const API_Guid placedGuid = MEPUniqueIDToAPIGuid (placedId);
+    const GS::UniString placedGuidStr = APIGuidToString (placedGuid);
+
+    API_Element placedElement = {};
+    placedElement.header.guid = placedGuid;
+    GSErrCode err = ACAPI_Element_Get (&placedElement);
+    if (err != NoError) {
+        return CreateErrorResponse (err, GS::UniString::Printf (
+            "The MEP element with guid %T was placed, but its home story could not be read.", placedGuidStr.ToPrintf ()));
+    }
+    const short originalFloorIndex = placedElement.header.floorInd;
+    if (originalFloorIndex == floorIndex) {
+        return GS::NoValue;
+    }
+
+    const auto setFloorIndex = [&] (short newFloorIndex) -> GSErrCode {
+        if (isRoutingElement) {
+            return ChangeRoutingElementAndParts (placedId, [&] (const API_Guid& elemGuid) {
+                return SetFloorIndexOfElement (elemGuid, newFloorIndex);
+            });
+        }
+        return SetFloorIndexOfElement (placedGuid, newFloorIndex);
+    };
+
+    const std::vector<API_Coord3D> positionsBefore = GetMEPElementPositions (placedId, isRoutingElement);
+    err = setFloorIndex (floorIndex);
+    if (err != NoError) {
+        setFloorIndex (originalFloorIndex);
+        return CreateErrorResponse (err, GS::UniString::Printf (
+            "The MEP element with guid %T was placed, but its home story could not be set.", placedGuidStr.ToPrintf ()));
+    }
+
+    const std::vector<API_Coord3D> positionsAfter = GetMEPElementPositions (placedId, isRoutingElement);
+    if (!AreSamePositions (positionsBefore, positionsAfter)) {
+        setFloorIndex (originalFloorIndex);
+        return CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf (
+            "The MEP element with guid %T was placed, but setting its home story would have moved it, so its home story was left unchanged.", placedGuidStr.ToPrintf ()));
+    }
+    return GS::NoValue;
 }
 
 // Sets the insulation of an MEP element default (rigid segment, elbow, bend or transition); a
@@ -1201,9 +1337,10 @@ static GS::Optional<GS::ObjectState> ApplyMEPElementData (DefaultT& elemDefault,
 }
 
 // Places a terminal, accessory, fitting or equipment from its default, after applying the optional
-// fields and 'defaults' of the CreateMEPElements item. Returns the element id or the error of the item.
+// fields and 'defaults' of the CreateMEPElements item, and moves it to the 'floorIndex' home story when
+// given. Returns the element id or the error of the item.
 template <typename DefaultT>
-static GS::ObjectState PlaceMEPElementFromDefault (ACAPI::Result<DefaultT>& elemDefault, const GS::ObjectState& elementData, const std::optional<Domain>& domain, const GS::ObjectState* defaults, const API_Coord3D& coordinate, const Orientation& orientation)
+static GS::ObjectState PlaceMEPElementFromDefault (ACAPI::Result<DefaultT>& elemDefault, const GS::ObjectState& elementData, const std::optional<Domain>& domain, const GS::ObjectState* defaults, const API_Coord3D& coordinate, const Orientation& orientation, const std::optional<short>& floorIndex)
 {
     if (elemDefault.IsErr ()) {
         return CreateErrorResponse (elemDefault.UnwrapErr ().kind, "Failed to place the MEP element.");
@@ -1222,7 +1359,14 @@ static GS::ObjectState PlaceMEPElementFromDefault (ACAPI::Result<DefaultT>& elem
     if (newElementId.IsErr ()) {
         return CreateErrorResponse (newElementId.UnwrapErr ().kind, "Failed to place the MEP element.");
     }
-    return CreateElementIdObjectState (MEPUniqueIDToAPIGuid (newElementId.Unwrap ()));
+    const ACAPI::MEP::UniqueID placedId = newElementId.Unwrap ();
+    if (floorIndex.has_value ()) {
+        const GS::Optional<GS::ObjectState> floorError = SetHomeStoryOfPlacedMEPElement (placedId, false, floorIndex.value ());
+        if (floorError.HasValue ()) {
+            return floorError.Get ();
+        }
+    }
+    return CreateElementIdObjectState (MEPUniqueIDToAPIGuid (placedId));
 }
 
 // The getters of the MEP element parts used by GetMEPElementDetails could not be checked against the
@@ -1613,6 +1757,11 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
         GS::ObjectState routingElementOs;
         routingElementOs.Add ("domain", DomainToString (routingElement->GetDomain ()));
         routingElementOs.Add ("mepSystemId", CreateMEPSystemIdObjectState (routingElement->GetMEPSystem ()));
+        API_Element routingElementHead = {};
+        routingElementHead.header.guid = elemGuid;
+        if (ACAPI_Element_Get (&routingElementHead) == NoError) {
+            routingElementOs.Add ("floorIndex", static_cast<Int32> (routingElementHead.header.floorInd));
+        }
         routingElementOs.Add ("offsetFromHomeStory", routingElement->GetOffsetFromHomeStory ());
         ACAPI::Result<ACAPI::MEP::UniqueID> branchPreferenceTableId = routingElement->GetBranchPreferenceTableId ();
         if (branchPreferenceTableId.IsOk ()) {
@@ -1898,7 +2047,7 @@ GS::Optional<GS::UniString> GetMEPElementDetailsCommand::GetRawResponseSchema ()
                                 },
                                 "polyline": {
                                     "$ref": "#/MEPFlexibleSegmentPolyline",
-                                    "description": "The line and spline parts of the flexible segment, when Archicad gives them (a flexible segment placed as a polyline, see PlaceMEPFlexibleSegments). FlexibleSegment."
+                                    "description": "The line and spline parts of the flexible segment, when Archicad gives them (a flexible segment placed as a polyline, see CreateMEPFlexibleSegments). FlexibleSegment."
                                 },
                                 "factorRadius": {
                                     "type": "number",
@@ -2307,6 +2456,10 @@ GS::Optional<GS::UniString> CreateMEPRoutingElementsCommand::GetInputParametersS
                             "type": "integer",
                             "description": "Optional layer attribute index of the routing element and all its parts (routing segments, rigid segments, elbows and transitions). Only a positive index takes effect; otherwise the routing tool default layer is used. A layer that does not exist or is locked gives an error for the item, and nothing is placed."
                         },
+                        "floorIndex": {
+                            "type": "integer",
+                            "description": "Optional home story index (as returned by GetStories) of the routing element and all its parts. The node coordinates stay absolute: the route is placed at them, then moved to this home story. Without it, Archicad picks the home story, which follows the active story. A story that does not exist gives an error for the item, and nothing is placed."
+                        },
                         "defaults": {
                             "type": "object",
                             "description": "Optional changes to the routing tool default of the domain before the route is placed. Only what is placed changes, not the routing tool's settings. A value that cannot be set gives an error for the item, and nothing is placed.",
@@ -2414,6 +2567,13 @@ GS::ObjectState CreateMEPRoutingElementsCommand::Execute (const GS::ObjectState&
                     elements (layerError.Get ());
                     continue;
                 }
+            }
+
+            std::optional<short> floorIndex;
+            const GS::Optional<GS::ObjectState> floorIndexError = GetFloorIndexParameter (routingElementData, floorIndex);
+            if (floorIndexError.HasValue ()) {
+                elements (floorIndexError.Get ());
+                continue;
             }
 
             // The MEP system is resolved before anything is placed, so an unknown one does not place a route without a system.
@@ -2543,6 +2703,14 @@ GS::ObjectState CreateMEPRoutingElementsCommand::Execute (const GS::ObjectState&
                 }
             }
 
+            if (floorIndex.has_value ()) {
+                const GS::Optional<GS::ObjectState> floorError = SetHomeStoryOfPlacedMEPElement (placedId, true, floorIndex.value ());
+                if (floorError.HasValue ()) {
+                    elements (floorError.Get ());
+                    continue;
+                }
+            }
+
             elements (CreateElementIdObjectState (MEPUniqueIDToAPIGuid (placedId)));
         }
         return NoError;
@@ -2647,6 +2815,10 @@ GS::Optional<GS::UniString> CreateMEPElementsCommand::GetInputParametersSchema (
                             "$ref": "#/Coordinate3D",
                             "description": "Optional rotation vector of the orientation. Defaults to (0, 1, 0)."
                         },
+                        "floorIndex": {
+                            "type": "integer",
+                            "description": "Optional home story index (as returned by GetStories). The position stays absolute: the element is placed at it, then moved to this home story. Without it, Archicad picks the home story, which follows the active story. A story that does not exist gives an error for the item, and nothing is placed."
+                        },
                         "defaults": {
                             "type": "object",
                             "description": "Optional changes to the tool default before the element is placed. Only what is placed changes, not the tool's settings. A value that cannot be set gives an error for the item, and nothing is placed.",
@@ -2743,20 +2915,27 @@ GS::ObjectState CreateMEPElementsCommand::Execute (const GS::ObjectState& parame
                 continue;
             }
 
+            std::optional<short> floorIndex;
+            const GS::Optional<GS::ObjectState> floorIndexError = GetFloorIndexParameter (elementData, floorIndex);
+            if (floorIndexError.HasValue ()) {
+                elements (floorIndexError.Get ());
+                continue;
+            }
+
             const API_Coord3D coordinate = Get3DCoordinateFromObjectState (*position);
 
             if (typeStr == "Terminal") {
                 ACAPI::Result<TerminalDefault> terminalDefault = CreateTerminalDefault (domain.value ());
-                elements (PlaceMEPElementFromDefault (terminalDefault, elementData, domain, defaults, coordinate, orientation));
+                elements (PlaceMEPElementFromDefault (terminalDefault, elementData, domain, defaults, coordinate, orientation, floorIndex));
             } else if (typeStr == "Accessory") {
                 ACAPI::Result<AccessoryDefault> accessoryDefault = CreateAccessoryDefault (domain.value ());
-                elements (PlaceMEPElementFromDefault (accessoryDefault, elementData, domain, defaults, coordinate, orientation));
+                elements (PlaceMEPElementFromDefault (accessoryDefault, elementData, domain, defaults, coordinate, orientation, floorIndex));
             } else if (typeStr == "Fitting") {
                 ACAPI::Result<FittingDefault> fittingDefault = CreateFittingDefault (domain.value ());
-                elements (PlaceMEPElementFromDefault (fittingDefault, elementData, domain, defaults, coordinate, orientation));
+                elements (PlaceMEPElementFromDefault (fittingDefault, elementData, domain, defaults, coordinate, orientation, floorIndex));
             } else {
                 ACAPI::Result<EquipmentDefault> equipmentDefault = CreateEquipmentDefault ();
-                elements (PlaceMEPElementFromDefault (equipmentDefault, elementData, domain, defaults, coordinate, orientation));
+                elements (PlaceMEPElementFromDefault (equipmentDefault, elementData, domain, defaults, coordinate, orientation, floorIndex));
             }
         }
         return NoError;
@@ -8477,7 +8656,7 @@ static Orientation GetFlexibleSegmentEndOrientation (const GS::ObjectState* orie
     return Orientation { { direction.x, direction.y, direction.z }, { rotation.x, rotation.y, rotation.z } };
 }
 
-// Places one flexible segment of PlaceMEPFlexibleSegments given by its 'polyline'; gives its element id or the error.
+// Places one flexible segment of CreateMEPFlexibleSegments given by its 'polyline'; gives its element id or the error.
 static GS::ObjectState PlaceMEPFlexibleSegmentPolyline (const GS::ObjectState& flexibleSegmentData, Domain domain)
 {
     if (flexibleSegmentData.Contains ("controlPoints")) {
@@ -8510,17 +8689,17 @@ static GS::ObjectState PlaceMEPFlexibleSegmentPolyline (const GS::ObjectState& f
 
 #endif
 
-PlaceMEPFlexibleSegmentsCommand::PlaceMEPFlexibleSegmentsCommand () :
+CreateMEPFlexibleSegmentsCommand::CreateMEPFlexibleSegmentsCommand () :
     CommandBase (CommonSchema::Used)
 {
 }
 
-GS::String PlaceMEPFlexibleSegmentsCommand::GetName () const
+GS::String CreateMEPFlexibleSegmentsCommand::GetName () const
 {
-    return "PlaceMEPFlexibleSegments";
+    return "CreateMEPFlexibleSegments";
 }
 
-GS::Optional<GS::UniString> PlaceMEPFlexibleSegmentsCommand::GetInputParametersSchema () const
+GS::Optional<GS::UniString> CreateMEPFlexibleSegmentsCommand::GetInputParametersSchema () const
 {
     return R"({
         "type": "object",
@@ -8577,7 +8756,7 @@ GS::Optional<GS::UniString> PlaceMEPFlexibleSegmentsCommand::GetInputParametersS
     })";
 }
 
-GS::Optional<GS::UniString> PlaceMEPFlexibleSegmentsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateMEPFlexibleSegmentsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -8593,7 +8772,7 @@ GS::Optional<GS::UniString> PlaceMEPFlexibleSegmentsCommand::GetRawResponseSchem
     })";
 }
 
-GS::ObjectState PlaceMEPFlexibleSegmentsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState CreateMEPFlexibleSegmentsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
     GS::Array<GS::ObjectState> flexibleSegmentsData;
@@ -8604,7 +8783,7 @@ GS::ObjectState PlaceMEPFlexibleSegmentsCommand::Execute (const GS::ObjectState&
     GS::ObjectState response;
     const auto& elements = response.AddList<GS::ObjectState> ("elements");
 
-    ACAPI_CallUndoableCommand ("Place MEP Flexible Segments", [&]() -> GSErrCode {
+    ACAPI_CallUndoableCommand ("Create MEP Flexible Segments", [&]() -> GSErrCode {
         for (const GS::ObjectState& flexibleSegmentData : flexibleSegmentsData) {
             GS::UniString domainStr;
             flexibleSegmentData.Get ("domain", domainStr);
@@ -8655,51 +8834,63 @@ GS::ObjectState PlaceMEPFlexibleSegmentsCommand::Execute (const GS::ObjectState&
 #endif
 }
 
-PlaceMEPTakeOffsCommand::PlaceMEPTakeOffsCommand () :
+CreateMEPTakeOffsCommand::CreateMEPTakeOffsCommand () :
     CommandBase (CommonSchema::Used)
 {
 }
 
-GS::String PlaceMEPTakeOffsCommand::GetName () const
+GS::String CreateMEPTakeOffsCommand::GetName () const
 {
-    return "PlaceMEPTakeOffs";
+    return "CreateMEPTakeOffs";
 }
 
-GS::Optional<GS::UniString> PlaceMEPTakeOffsCommand::GetInputParametersSchema () const
+GS::Optional<GS::UniString> CreateMEPTakeOffsCommand::GetInputParametersSchema () const
 {
     return R"({
         "type": "object",
         "properties": {
             "takeOffsData": {
                 "type": "array",
-                "description": "Array of data to place MEP take-offs on routing segments with the current settings of the Take-Off tool of their domain.",
+                "description": "Array of data to create MEP take-offs on routing segments with the current settings of the Take-Off tool of their domain.",
                 "items": {
                     "type": "object",
                     "properties": {
                         "domain": {
-                            "$ref": "#/MEPDomain"
+                            "$ref": "#/MEPDomain",
+                            "description": "Optional domain of the Take-Off tool whose settings are used. Defaults to the domain of the segment's routing element. Archicad currently only has Ventilation take-offs."
                         },
                         "segmentId": {
                             "$ref": "#/ElementId",
-                            "description": "The routing segment to place the take-off on (one of the segments GetMEPRoutingElements returns)."
+                            "description": "The routing segment to place the take-off on (the elementId of an item of 'segments' returned by GetMEPRoutingElements)."
                         },
                         "distanceFromBeginning": {
                             "type": "number",
-                            "description": "The distance of the take-off from the beginning of the segment.",
+                            "description": "The distance of the take-off from the beginning of the segment, in meters. Must not be negative or more than the length of the segment.",
                             "minimum": 0
                         },
                         "rotationAroundMainAxis": {
                             "type": "number",
-                            "description": "Optional rotation of the take-off around the axis of the segment, in radians. Defaults to 0."
+                            "description": "Optional rotation of the take-off around the axis of the segment, in radians. Archicad places take-offs only at quarter turns, so it must be a multiple of pi/2 (negative values and full turns are allowed). Defaults to 0, which places the take-off facing left relative to the segment's direction; pi/2 faces up, pi faces right, 3*pi/2 (or -pi/2) faces down."
                         },
                         "length": {
                             "type": "number",
-                            "description": "Optional length of the take-off, set after placing it. The length of the Take-Off tool when not given."
+                            "description": "Optional length of the take-off in meters, set after placing it; must be positive. The length of the Take-Off tool when not given.",
+                            "exclusiveMinimum": 0
+                        },
+                        "defaults": {
+                            "type": "object",
+                            "description": "Optional changes to the settings of the Take-Off tool before the take-off is placed. Only what is placed changes, not the tool's settings. A value that cannot be set gives an error for the item, and nothing is placed. The insulation thickness of a take-off cannot be set (Archicad stops with a fatal error).",
+                            "properties": {
+                                "removeInsulation": {
+                                    "type": "boolean",
+                                    "description": "If true, the take-off is placed without insulation."
+                                }
+                            },
+                            "additionalProperties": false
                         }
                     },
                     "additionalProperties": false,
                     "required": [
-                        "domain",
                         "segmentId",
                         "distanceFromBeginning"
                     ]
@@ -8713,7 +8904,7 @@ GS::Optional<GS::UniString> PlaceMEPTakeOffsCommand::GetInputParametersSchema ()
     })";
 }
 
-GS::Optional<GS::UniString> PlaceMEPTakeOffsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateMEPTakeOffsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -8729,7 +8920,133 @@ GS::Optional<GS::UniString> PlaceMEPTakeOffsCommand::GetRawResponseSchema () con
     })";
 }
 
-GS::ObjectState PlaceMEPTakeOffsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+#ifdef ServerMainVers_2800
+
+// Creates one take-off of CreateMEPTakeOffs; gives its element id or the error of the item.
+static GS::ObjectState CreateMEPTakeOff (const GS::ObjectState& takeOffData)
+{
+    const GS::ObjectState* segmentIdOs = takeOffData.Get ("segmentId");
+    if (segmentIdOs == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing 'segmentId' parameter.");
+    }
+    double distanceFromBeginning = 0.0;
+    if (!takeOffData.Get ("distanceFromBeginning", distanceFromBeginning)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'distanceFromBeginning' parameter.");
+    }
+    if (distanceFromBeginning < 0.0) {
+        return CreateErrorResponse (APIERR_BADPARS, "The 'distanceFromBeginning' parameter must not be negative.");
+    }
+
+    // Archicad places take-offs only at quarter turns, so the rotation must be a multiple of pi/2;
+    // it is normalized into [0, 2*pi), so a negative rotation or a full turn works too.
+    double rotationAroundMainAxis = 0.0;
+    if (takeOffData.Get ("rotationAroundMainAxis", rotationAroundMainAxis)) {
+        constexpr double halfPi = 1.57079632679489661923;
+        const double quarterTurns = rotationAroundMainAxis / halfPi;
+        const double roundedQuarterTurns = std::round (quarterTurns);
+        if (!std::isfinite (quarterTurns) || std::fabs (quarterTurns - roundedQuarterTurns) > 1e-6) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf (
+                "The 'rotationAroundMainAxis' parameter (%.15g) must be a multiple of pi/2, because Archicad places take-offs only at quarter turns.",
+                rotationAroundMainAxis));
+        }
+        const double normalizedQuarterTurns = std::fmod (std::fmod (roundedQuarterTurns, 4.0) + 4.0, 4.0);
+        rotationAroundMainAxis = normalizedQuarterTurns * halfPi;
+    }
+
+    double length = 0.0;
+    const bool hasLength = takeOffData.Get ("length", length);
+    if (hasLength && length <= 0.0) {
+        return CreateErrorResponse (APIERR_BADPARS, "The 'length' parameter must be positive.");
+    }
+
+    // Setting the insulation thickness of a take-off default stops Archicad with a fatal error
+    // (TakeOffDefault::SetInsulationThickness, seen in Archicad 30), so it is refused before the call.
+    const GS::ObjectState* defaults = takeOffData.Get ("defaults");
+    if (defaults != nullptr && defaults->Contains ("insulationThickness")) {
+        return CreateErrorResponse (APIERR_BADPARS, "The insulation thickness of a Take-off cannot be set; only 'removeInsulation' is supported.");
+    }
+
+    const ACAPI::MEP::UniqueID segmentId = Adapter::UniqueID (GetGuidFromObjectState (*segmentIdOs));
+    ACAPI::Result<RoutingSegment> segment = RoutingSegment::Get (segmentId);
+    if (segment.IsErr ()) {
+        return CreateErrorResponse (segment.UnwrapErr ().kind, "The 'segmentId' parameter does not refer to an MEP routing segment.");
+    }
+
+    // Archicad places a take-off beyond the segment at its end, so a longer distance is an error.
+    ACAPI::Result<RoutingNode> beginNode = RoutingNode::Get (segment->GetBeginNodeId ());
+    ACAPI::Result<RoutingNode> endNode = RoutingNode::Get (segment->GetEndNodeId ());
+    if (beginNode.IsErr () || endNode.IsErr ()) {
+        return CreateErrorResponse (APIERR_GENERAL, "Failed to get the begin and end nodes of the segment.");
+    }
+    const API_Coord3D beginPosition = beginNode->GetPosition ();
+    const API_Coord3D endPosition = endNode->GetPosition ();
+    const double segmentLength = std::sqrt (
+        (endPosition.x - beginPosition.x) * (endPosition.x - beginPosition.x) +
+        (endPosition.y - beginPosition.y) * (endPosition.y - beginPosition.y) +
+        (endPosition.z - beginPosition.z) * (endPosition.z - beginPosition.z));
+    if (distanceFromBeginning > segmentLength + 1e-6) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf (
+            "The 'distanceFromBeginning' parameter (%.4f m) is more than the length of the segment (%.4f m).",
+            distanceFromBeginning, segmentLength));
+    }
+
+    std::optional<Domain> domain;
+    GS::UniString domainStr;
+    if (takeOffData.Get ("domain", domainStr)) {
+        domain = DomainFromString (domainStr);
+        if (!domain.has_value ()) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid 'domain' parameter.");
+        }
+    } else {
+        ACAPI::Result<RoutingElement> routingElement = RoutingElement::Get (segment->GetRoutingElementId ());
+        if (routingElement.IsErr ()) {
+            return CreateErrorResponse (routingElement.UnwrapErr ().kind, "Failed to get the routing element of the segment, give the 'domain' parameter.");
+        }
+        domain = routingElement->GetDomain ();
+    }
+
+    ACAPI::Result<TakeOffDefault> takeOffDefault = CreateTakeOffDefault (domain.value ());
+    if (takeOffDefault.IsErr ()) {
+        const GS::UniString message = "Failed to get the Take-Off tool settings of the domain " + DomainToString (domain.value ()) + ". Archicad only has Ventilation take-offs.";
+        return CreateErrorResponse (takeOffDefault.UnwrapErr ().kind, message);
+    }
+    if (defaults != nullptr) {
+        ACAPI::Result<void> defaultsResult = ApplyMEPElementDefaults (*takeOffDefault, *defaults);
+        if (defaultsResult.IsErr ()) {
+            return CreateErrorResponse (defaultsResult.UnwrapErr ().kind, "Failed to apply the 'defaults' parameter; nothing was placed.");
+        }
+    }
+
+    ACAPI::Result<ACAPI::MEP::UniqueID> newElementId = takeOffDefault->Place (segmentId, distanceFromBeginning, rotationAroundMainAxis);
+    if (newElementId.IsErr ()) {
+        const ACAPI::Error error = newElementId.UnwrapErr ();
+        GS::UniString message = GS::UniString::Printf ("Failed to place the take-off on the segment (%.4f m long) of the domain ", segmentLength) + DomainToString (domain.value ()) + ".";
+        if (!error.text.empty ()) {
+            message += GS::UniString (" Archicad: ") + error.text.c_str ();
+        }
+        return CreateErrorResponse (error.kind, message);
+    }
+    const ACAPI::MEP::UniqueID placedId = newElementId.Unwrap ();
+
+    if (hasLength) {
+        ACAPI::Result<TakeOff> takeOff = TakeOff::Get (placedId);
+        ACAPI::Result<void> modifyResult = takeOff.IsErr () ? ACAPI::Result<void> (takeOff.UnwrapErr (), takeOff.Token ()) : takeOff->Modify ([&](TakeOff::Modifier& modifier) {
+            modifier.SetLength (length);
+        }, "Set MEP Take-Off Length");
+        if (modifyResult.IsErr ()) {
+            // The take-off stays placed, so its guid is given in the message to let the caller find it.
+            return CreateErrorResponse (modifyResult.UnwrapErr ().kind, GS::UniString::Printf (
+                "The take-off with guid %T was placed, but its length could not be set.",
+                APIGuidToString (MEPUniqueIDToAPIGuid (placedId)).ToPrintf ()));
+        }
+    }
+
+    return CreateElementIdObjectState (MEPUniqueIDToAPIGuid (placedId));
+}
+
+#endif
+
+GS::ObjectState CreateMEPTakeOffsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
     GS::Array<GS::ObjectState> takeOffsData;
@@ -8740,58 +9057,9 @@ GS::ObjectState PlaceMEPTakeOffsCommand::Execute (const GS::ObjectState& paramet
     GS::ObjectState response;
     const auto& elements = response.AddList<GS::ObjectState> ("elements");
 
-    ACAPI_CallUndoableCommand ("Place MEP Take-Offs", [&]() -> GSErrCode {
+    ACAPI_CallUndoableCommand ("Create MEP Take-Offs", [&]() -> GSErrCode {
         for (const GS::ObjectState& takeOffData : takeOffsData) {
-            GS::UniString domainStr;
-            takeOffData.Get ("domain", domainStr);
-            const std::optional<Domain> domain = DomainFromString (domainStr);
-            if (!domain.has_value ()) {
-                elements (CreateErrorResponse (APIERR_BADPARS, "Invalid 'domain' parameter."));
-                continue;
-            }
-            const GS::ObjectState* segmentId = takeOffData.Get ("segmentId");
-            if (segmentId == nullptr) {
-                elements (CreateErrorResponse (APIERR_BADPARS, "Missing 'segmentId' parameter."));
-                continue;
-            }
-            double distanceFromBeginning = 0.0;
-            if (!takeOffData.Get ("distanceFromBeginning", distanceFromBeginning) || distanceFromBeginning < 0.0) {
-                elements (CreateErrorResponse (APIERR_BADPARS, "The 'distanceFromBeginning' parameter must be a number not less than 0."));
-                continue;
-            }
-            double rotationAroundMainAxis = 0.0;
-            takeOffData.Get ("rotationAroundMainAxis", rotationAroundMainAxis);
-            double length = 0.0;
-            const bool hasLength = takeOffData.Get ("length", length);
-
-            ACAPI::Result<TakeOffDefault> takeOffDefault = CreateTakeOffDefault (domain.value ());
-            if (takeOffDefault.IsErr ()) {
-                elements (CreateErrorResponse (takeOffDefault.UnwrapErr ().kind, "Failed to create the take-off default."));
-                continue;
-            }
-            ACAPI::Result<ACAPI::MEP::UniqueID> newElementId = takeOffDefault->Place (
-                Adapter::UniqueID (GetGuidFromObjectState (*segmentId)), distanceFromBeginning, rotationAroundMainAxis);
-            if (newElementId.IsErr ()) {
-                elements (CreateErrorResponse (newElementId.UnwrapErr ().kind, "Failed to place the take-off."));
-                continue;
-            }
-            const ACAPI::MEP::UniqueID placedId = newElementId.Unwrap ();
-
-            if (hasLength) {
-                ACAPI::Result<TakeOff> takeOff = TakeOff::Get (placedId);
-                ACAPI::Result<void> modifyResult = takeOff.IsErr () ? ACAPI::Result<void> (takeOff.UnwrapErr (), takeOff.Token ()) : takeOff->Modify ([&](TakeOff::Modifier& modifier) {
-                    modifier.SetLength (length);
-                }, "Set MEP Take-Off Length");
-                if (modifyResult.IsErr ()) {
-                    // The take-off stays placed, so its guid is given in the message to let the caller find it.
-                    elements (CreateErrorResponse (modifyResult.UnwrapErr ().kind, GS::UniString::Printf (
-                        "The take-off with guid %T was placed, but its length could not be set.",
-                        APIGuidToString (MEPUniqueIDToAPIGuid (placedId)).ToPrintf ())));
-                    continue;
-                }
-            }
-
-            elements (CreateElementIdObjectState (MEPUniqueIDToAPIGuid (placedId)));
+            elements (CreateMEPTakeOff (takeOffData));
         }
         return NoError;
     });

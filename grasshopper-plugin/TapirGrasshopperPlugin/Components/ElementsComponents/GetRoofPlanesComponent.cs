@@ -156,9 +156,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 errors);
         }
 
-        // Shares the icon of RoofDetails until it gets one of its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.RoofDetails;
+            Properties.Resources.GetRoofPlanes;
 
         public override Guid ComponentGuid =>
             new Guid("bde08bc4-da52-4929-9cf2-d23e0f449f5a");

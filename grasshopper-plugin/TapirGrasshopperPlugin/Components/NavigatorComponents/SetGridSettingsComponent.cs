@@ -124,7 +124,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.SetViewSettings;
+            Properties.Resources.SetGridSettings;
 
         public override Guid ComponentGuid =>
             new Guid("2bb60a08-19e9-476f-a99f-c414a697bede");

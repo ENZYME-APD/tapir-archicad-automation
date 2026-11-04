@@ -59,7 +59,7 @@ if terminalId is not None:
         print (f"Terminal port {port['portId']}: {port['shape']} at {port['position']}")
 
 # A ventilation flexible segment through control points, then new control points and a new width.
-flexible = aclib.RunTapirCommand ('PlaceMEPFlexibleSegments', {
+flexible = aclib.RunTapirCommand ('CreateMEPFlexibleSegments', {
         'flexibleSegmentsData': [
             {
                 'domain': 'Ventilation',
@@ -95,7 +95,7 @@ polyline = [
     ]},
     {'type': 'Line', 'begin': {'x': 2.0, 'y': -46.0, 'z': 1.0}, 'end': {'x': 2.0, 'y': -47.0, 'z': 1.0}}
 ]
-pipe = aclib.RunTapirCommand ('PlaceMEPFlexibleSegments', {
+pipe = aclib.RunTapirCommand ('CreateMEPFlexibleSegments', {
         'flexibleSegmentsData': [{'domain': 'Piping', 'polyline': polyline}]
     })['elements'][0]
 if 'elementId' in pipe:

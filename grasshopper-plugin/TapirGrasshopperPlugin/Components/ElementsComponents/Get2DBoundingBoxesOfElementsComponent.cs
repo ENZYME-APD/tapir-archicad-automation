@@ -107,9 +107,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 errors);
         }
 
-        // Shares the icon of Element3DBoundingBoxes until it gets one of its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.Elems3DBoxes;
+            Properties.Resources.Get2DBoundingBoxes;
 
         public override Guid ComponentGuid =>
             new Guid("5126fbdb-1d28-40ee-99f5-17e8e4a9a47b");

@@ -67,7 +67,7 @@ namespace TapirGrasshopperPlugin.Components.LibraryComponents
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.CreateLibraryPart;
+            Properties.Resources.OpenLibraryPartInEditor;
 
         public override Guid ComponentGuid =>
             new Guid("6204f413-69be-4d9d-a6e2-2a830c04b464");

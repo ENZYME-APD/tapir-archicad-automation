@@ -78,7 +78,7 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.ModifyMEPPorts;
+            Properties.Resources.TransferMEPSettings;
 
         public override Guid ComponentGuid =>
             new Guid("166d842a-dd25-476b-ab3d-3aa865e657d2");

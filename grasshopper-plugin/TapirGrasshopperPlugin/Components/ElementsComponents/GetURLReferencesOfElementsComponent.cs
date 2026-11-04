@@ -78,9 +78,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 errors);
         }
 
-        // Shares the icon of OpenWebsiteButton until it gets one of its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.OpenWebsiteButton;
+            Properties.Resources.GetURLReferencesOfElements;
 
         public override Guid ComponentGuid =>
             new Guid("4744043c-d846-49b1-8d7f-f669daa61a15");

@@ -111,9 +111,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             da.SetDataList(1, errors);
         }
 
-        // Shares the icon of GetElementsOfGroups.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetElementsOfGroups;
+            Properties.Resources.GetAllElementsOfGroups;
 
         public override Guid ComponentGuid =>
             new Guid("07fc89c8-4f1d-4a2d-98a8-43349efbe940");
