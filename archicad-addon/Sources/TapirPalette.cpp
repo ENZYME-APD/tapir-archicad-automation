@@ -1543,10 +1543,11 @@ void TapirPalette::AddScriptsFromRepositories ()
         if (!repo.relativeLoc.IsEmpty ()) {
             repoFolderRelativeLoc.Append (IO::RelativeLocation (repo.relativeLoc));
         };
-        // The files are saved under their path in the repository, so the project's pyproject.toml is found there.
-        IO::Location repoRootLoc = tapirTempFolder;
-        repoRootLoc.AppendToLocal (repoRelativeLoc);
-        const GS::UniString uvProjectPath = GetUvProjectPath (repoRootLoc, repo.uvProject);
+        // Only the files below relativeLoc are downloaded (under their path in the repository), so the project is
+        // looked for below that folder.
+        IO::Location repoFolderLoc = tapirTempFolder;
+        repoFolderLoc.AppendToLocal (repoFolderRelativeLoc);
+        const GS::UniString uvProjectPath = GetUvProjectPath (repoFolderLoc, repo.uvProject);
         std::map<GS::UniString, GS::UniString> headers;
         if (!repo.token.IsEmpty ()) {
             headers.emplace ("Authorization", "Bearer " + repo.token);

@@ -39,8 +39,8 @@ public:
         GS::UniString excludeFromDownloadPattern;
         GS::UniString includePattern;
         GS::UniString excludePattern;
-        // Optional: the folder of a uv project (pyproject.toml), relative to the repository's root, "." for
-        // the root; a path ending in pyproject.toml works too. When set, the .py scripts run in that project
+        // Optional: the folder of a uv project (pyproject.toml), relative to relativeLoc (only the files below it
+        // are downloaded), "." for relativeLoc itself; a path ending in pyproject.toml works too. When set, the .py scripts run in that project
         // (uv run --project) instead of as standalone scripts with inline metadata (uv run --script).
         GS::UniString uvProject;
 
