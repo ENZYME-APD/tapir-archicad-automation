@@ -23,6 +23,6 @@ aclib.PrintJson (aclib.RunTapirCommand ('SetIFCAttributesOfElements', {
 }))
 print ('Description:', GetDescription ())
 
-aclib.PrintJson (aclib.RunTapirCommand ('SetIFCAttributesOfElements', {
+aclib.RunTapirCommand ('SetIFCAttributesOfElements', {
     'elementIFCAttributeValues': [{'elementId': elementId, 'name': 'Description', 'value': originalDescription}]
-}))
+})

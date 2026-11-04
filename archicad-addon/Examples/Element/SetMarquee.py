@@ -14,12 +14,12 @@ aclib.RunTapirCommand ('GetMarquee', {})
 
 # Restore the original marquee; without polygon and box SetMarquee removes it.
 if original['type'] == 'none':
-    aclib.PrintJson (aclib.RunTapirCommand ('SetMarquee', {}))
+    aclib.RunTapirCommand ('SetMarquee', {})
 elif original['type'] == 'polygon':
-    aclib.PrintJson (aclib.RunTapirCommand ('SetMarquee', {'polygon': original['polygon'], 'multiStory': original['multiStory']}))
+    aclib.RunTapirCommand ('SetMarquee', {'polygon': original['polygon'], 'multiStory': original['multiStory']})
 else:
-    aclib.PrintJson (aclib.RunTapirCommand ('SetMarquee', {
+    aclib.RunTapirCommand ('SetMarquee', {
         'box': original['box'],
         'rotationAngle': original.get ('rotationAngle', 0.0),
         'multiStory': original['multiStory']
-    }))
+    })
