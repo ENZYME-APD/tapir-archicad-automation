@@ -831,6 +831,26 @@ inline GSErrCode ACAPI_LibraryPart_GetBuiltInLibpartUnId (short resId, char* unI
     return ACAPI_Goodies (APIAny_GetBuiltInLibpartUnIdID, (void*)(Int64)resId, unId);
 }
 
+inline GSErrCode ACAPI_LibraryPart_GetElemLibPartUnId (API_Elem_Head* elemHead, char* lpfUnId)
+{
+    return ACAPI_Goodies (APIAny_GetElemLibPartUnIdID, elemHead, lpfUnId);
+}
+
+inline GSErrCode ACAPI_Element_GetElemCreatorToolUnId (API_Elem_Head* elemHead, char* unIDStr)
+{
+    return ACAPI_Goodies (APIAny_GetElemCreatorToolUnIdID, elemHead, unIDStr);
+}
+
+inline GSErrCode ACAPI_Element_GetElementInfoString (const API_Guid* elementGuid, GS::UniString* infoString)
+{
+    return ACAPI_Database (APIDb_GetElementInfoStringID, (void*) elementGuid, infoString);
+}
+
+inline GSErrCode ACAPI_Element_GetCompoundInfoString (const API_Guid* elementGuid, GS::UniString* infoString)
+{
+    return ACAPI_Database (APIDb_GetCompoundInfoStringID, (void*) elementGuid, infoString);
+}
+
 inline GSErrCode ACAPI_LibraryPart_GetUnloadedLibpartName (const API_Guid* guid, GS::UniString* name)
 {
     return ACAPI_Goodies (APIAny_GetUnloadedLibpartNameID, (void*) guid, name);

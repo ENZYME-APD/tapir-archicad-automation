@@ -684,7 +684,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetDetailsOfElementsCommand> (
             elementCommands, "1.5.7",
-            "Gets the details of the given elements (geometry parameters etc). Use the optional fields parameter to return only the fields you need and skip the computation of the others (for example floorPlanPolygons). An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true."
+            "Gets the details of the given elements (geometry parameters etc). Use the optional fields parameter to return only the fields you need and skip the computation of the others (for example floorPlanPolygons). Use the optional additionalFields parameter to also get the info string, the compound info string, the library part unique ID and the creator tool unique ID. An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true."
         );
         err |= RegisterCommand<SetDetailsOfElementsCommand> (
             elementCommands, "1.0.7",
