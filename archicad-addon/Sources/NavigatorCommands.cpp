@@ -4445,7 +4445,11 @@ GS::Optional<GS::UniString> DeleteNavigatorItemsCommand::GetInputParametersSchem
     return R"({
         "type": "object",
         "properties": {
-            "navigatorItemIds": { "$ref": "#/NavigatorItemIds" }
+            "navigatorItemIds": { "$ref": "#/NavigatorItemIds" },
+            "dryRun": {
+                "type": "boolean",
+                "description": "If true, nothing is deleted: each execution result says what the deletion would do for that item, from the checks made before deleting (corrupt id, item not found, layout subset, View Map folder that is not empty). Archicad can still refuse an item that passes them: a Project Map item other than an independent worksheet, detail or viewpoint created by the Tapir Add-On, a marker-linked worksheet or detail, or in a Teamwork project an item that is not reserved. Default is false."
+            }
         },
         "additionalProperties": false,
         "required": ["navigatorItemIds"]
@@ -4487,6 +4491,7 @@ static bool IsProjectMapWorksheetOrDetail (const API_Guid& guid, const API_Navig
 }
 
 static GS::UniString NavigatorItemTypeToString (API_NavigatorItemTypeID t);
+static bool GetNavigatorChildren (const API_Guid& parentGuid, GS::Array<API_NavigatorItem>& children);
 
 GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
@@ -4501,6 +4506,8 @@ GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& par
 
     GS::Array<GS::ObjectState> navigatorItemIds;
     parameters.Get ("navigatorItemIds", navigatorItemIds);
+    bool dryRun = false;
+    parameters.Get ("dryRun", dryRun);
 
     API_ProjectInfo projectInfo = {};
     const bool isTeamwork = ACAPI_ProjectOperation_Project (&projectInfo) == NoError && projectInfo.teamwork;
@@ -4524,15 +4531,21 @@ GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& par
 
         GSErrCode err = NoError;
         GS::UniString failureMessage = "Failed to delete navigator item.";
+        // With dryRun only the checks made before the delete calls are run; the
+        // calls themselves are skipped.
         if (navItem.itemType == API_LayoutNavItem || navItem.itemType == API_MasterLayoutNavItem) {
-            API_DatabaseInfo dbInfo = navItem.db;
-            err = ACAPI_Database_DeleteDatabase (&dbInfo);
+            if (!dryRun) {
+                API_DatabaseInfo dbInfo = navItem.db;
+                err = ACAPI_Database_DeleteDatabase (&dbInfo);
+            }
         } else if (IsProjectMapWorksheetOrDetail (guid, navItem)) {
             // Only independent worksheets and details are databases of their
             // own; one placed by a marker belongs to its marker and cannot be
             // deleted this way.
-            API_DatabaseInfo dbInfo = navItem.db;
-            err = ACAPI_Database_DeleteDatabase (&dbInfo);
+            if (!dryRun) {
+                API_DatabaseInfo dbInfo = navItem.db;
+                err = ACAPI_Database_DeleteDatabase (&dbInfo);
+            }
             failureMessage = "Failed to delete the worksheet or detail. Only independent worksheets and details can be deleted; delete a marker-linked one by deleting its marker.";
         } else if (navItem.itemType == API_SubSetNavItem) {
             err = APIERR_NOTSUPPORTED;
@@ -4540,8 +4553,17 @@ GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& par
             // ACAPI_Navigator_DeleteNavigatorVPItem deletes only the viewpoints of this
             // add-on (CreateAddOnViewpoints) and answers APIERR_BADID for any other one;
             // the API cannot delete Archicad's own Project Map viewpoints.
-            err = ACAPI_Navigator_DeleteNavigatorVPItem (&guid);
+            if (!dryRun) {
+                err = ACAPI_Navigator_DeleteNavigatorVPItem (&guid);
+            }
             failureMessage = "Failed to delete the Project Map viewpoint. Only the viewpoints the Tapir Add-On created (CreateAddOnViewpoints) can be deleted; Archicad's own Project Map items, such as schedules, cannot be deleted through the API.";
+        } else if (dryRun) {
+            // ACAPI_Navigator_DeleteNavigatorView refuses a View Map folder that
+            // still holds items with APIERR_NOTSUPPORTED (see below).
+            GS::Array<API_NavigatorItem> children;
+            if (navItem.itemType == API_FolderNavItem && GetNavigatorChildren (guid, children) && !children.IsEmpty ()) {
+                err = APIERR_NOTSUPPORTED;
+            }
         } else {
             bool silentMode = true;
             err = ACAPI_Navigator_DeleteNavigatorView (&guid, &silentMode);
@@ -4569,6 +4591,10 @@ GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& par
         }
         if (err != NoError) {
             executionResults (CreateFailedExecutionResult (err, failureMessage));
+            continue;
+        }
+        if (dryRun) {
+            executionResults (CreateSuccessfulExecutionResult ());
             continue;
         }
 

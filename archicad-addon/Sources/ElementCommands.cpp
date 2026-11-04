@@ -9195,6 +9195,10 @@ GS::Optional<GS::UniString> DeleteElementsCommand::GetInputParametersSchema () c
             "elements": {
                 "$ref": "#/Elements",
                 "description": "The elements to delete. The zones among them are deleted before all the others, so an automatic zone deleted together with its bounding elements is gone before its boundary is. Deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found around the clicked point' dialog, which blocks the command until someone clicks it in Archicad."
+            },
+            "dryRun": {
+                "type": "boolean",
+                "description": "If true, nothing is deleted and no undo step is created: each execution result says what the deletion would do for that element, from the checks made before deleting (the element does not exist, its layer is locked, it is not editable). Archicad can still refuse an element that passes them. Default is false."
             }
         },
         "additionalProperties": false,
@@ -9224,6 +9228,8 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
 {
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
+    bool dryRun = false;
+    parameters.Get ("dryRun", dryRun);
 
     const GS::Array<API_Guid> elemGuids = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
 
@@ -9259,7 +9265,7 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
     }
 
     GSErrCode deleteErr = NoError;
-    if (!zoneGuids.IsEmpty () || !otherGuids.IsEmpty ()) {
+    if (!dryRun && (!zoneGuids.IsEmpty () || !otherGuids.IsEmpty ())) {
         ACAPI_CallUndoableCommand ("DeleteElementsCommand", [&]() {
             if (!zoneGuids.IsEmpty ()) {
                 deleteErr = ACAPI_Element_Delete (zoneGuids);
@@ -9289,6 +9295,8 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
             continue;
         }
 
+        // With dryRun every existing element is still there, and the checks below say
+        // whether the deletion would skip it.
         const API_Guid& elemGuid = elemGuids[i];
         API_Elem_Head elemHead = {};
         if (!LoadElementHeaderByGuid (elemGuid, elemHead)) {
@@ -9303,6 +9311,8 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
             executionResults (CreateFailedExecutionResult (APIERR_LOCKEDLAY, "The element was not deleted, because its layer is locked."));
         } else if (!ACAPI_Element_Filter (elemGuid, APIFilt_IsEditable)) {
             executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "The element was not deleted, because it is not editable."));
+        } else if (dryRun) {
+            executionResults (CreateSuccessfulExecutionResult ());
         } else {
             executionResults (CreateFailedExecutionResult (deleteErr != NoError ? deleteErr : APIERR_GENERAL, "Failed to delete the element."));
         }

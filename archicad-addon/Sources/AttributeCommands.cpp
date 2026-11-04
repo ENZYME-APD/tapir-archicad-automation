@@ -3841,6 +3841,10 @@ GS::Optional<GS::UniString> DeleteAttributesCommand::GetInputParametersSchema ()
                     "additionalProperties": false,
                     "required": ["attributeType", "attributeId"]
                 }
+            },
+            "dryRun": {
+                "type": "boolean",
+                "description": "If true, nothing is deleted: each execution result says what the deletion would do for that attribute, from the checks made before deleting (invalid attributeType, attribute not found). Archicad can still refuse to delete an attribute that passes them. Default is false."
             }
         },
         "additionalProperties": false,
@@ -3914,6 +3918,17 @@ GS::ObjectState DeleteAttributesCommand::Execute (const GS::ObjectState& paramet
             }
         }
         resolved.Push (attribute);
+    }
+
+    bool dryRun = false;
+    parameters.Get ("dryRun", dryRun);
+    if (dryRun) {
+        GS::ObjectState response;
+        const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+        for (const GS::ObjectState& result : results) {
+            executionResults (result);
+        }
+        return response;
     }
 
     // One ACAPI_Attribute_DeleteMore call per attribute type instead of one ACAPI_Attribute_Delete call per attribute.
