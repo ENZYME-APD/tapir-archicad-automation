@@ -200,7 +200,7 @@ python test_examples.py
 - Requires the official `archicad` Python package (`ACConnection`) and a running
   Archicad instance; `test_examples.py` reopens `TestProject.pla` before each script, runs
   every script in [Test/Scripts/](archicad-addon/Test/Scripts/) (diffed against
-  `ExpectedOutputs/<name>.output`) and every example in [Examples/](archicad-addon/Examples/)
+  `ExpectedOutputs/<name>.py.output`) and every example in [Examples/](archicad-addon/Examples/)
   as a smoke test (`ExpectedOutputs/Examples/<GroupFolder>/<name>.output`, recorded on the first
   run; `EXAMPLES_NOT_SMOKE_TESTED` lists the examples that cannot run unattended). Names given on
   the command line run only those; `record_expected_output.py <name>.py` records one golden.
@@ -312,7 +312,8 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
 - `archicad_addon_build_check.yml`, `grasshopper_plugin_build_check.yml`,
   `installer_build_check.yml` — PR build checks for each component, also run
   on pushes to `main` and by `workflow_dispatch` (which the bot PR steward
-  uses); a newer push to a pull request cancels its superseded runs. The installer
+  uses); a newer push to a pull request cancels its superseded runs. The add-on
+  check also runs `tools/check_examples.py` (one example per command). The installer
   check also runs `Installer/test_update_mode.py` and syntax-checks the legacy
   auto-update script.
 - `archicad_addon.yml`, `grasshopper_plugin.yml` — release/publish pipelines.

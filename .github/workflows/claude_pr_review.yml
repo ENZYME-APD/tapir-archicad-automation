@@ -393,8 +393,9 @@ jobs:
 
             3. Consistency across the three surfaces. A new or changed command
                should keep its input schema, its C++ implementation, its
-               registered description in AddOnMain.cpp, its Python example and
-               its Grasshopper component in agreement. A command that gains a
+               registered description in AddOnMain.cpp, its Python example
+               (archicad-addon/Examples/<Group>/<CommandName>.py) and its
+               Grasshopper component in agreement. A command that gains a
                response field usually needs the matching Grasshopper output.
 
             4. The registered version. A new command must carry the UNRELEASED
