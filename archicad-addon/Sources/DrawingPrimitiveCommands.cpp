@@ -2,8 +2,6 @@
 #include "ElementCreationCommands.hpp"
 #include "MigrationHelper.hpp"
 
-#include <cstring>
-
 // ── Primitive collector ───────────────────────────────────────────────────────
 
 // The shape primitive callback has no user pointer, so - like CollectCutFillPolygons in
@@ -165,15 +163,8 @@ static GSErrCode CollectDrawingPrimitives (const API_PrimElement* primElem,
             os.Add ("angle", text.angle);
             os.Add ("widthFactor", text.widthFactor);
             os.Add ("charSpaceFactor", text.charSpaceFactor);
-            // The text content arrives in par1. Read it with a bound, so a missing terminator
-            // cannot run through memory.
-            const char* content = static_cast<const char*> (par1);
-            if (content != nullptr) {
-                const size_t MaxTextLength = 65536;
-                const char* end = static_cast<const char*> (memchr (content, '\0', MaxTextLength));
-                const size_t length = (end != nullptr) ? static_cast<size_t> (end - content) : MaxTextLength;
-                os.Add ("text", GS::UniString (content, static_cast<GS::USize> (length), CC_UTF8));
-            }
+            // The text content is not read: nothing in this add-on confirms what par1 carries
+            // for a text primitive, and a wrong guess would crash Archicad.
             break;
         }
         case API_PrimPLineID: {
@@ -184,11 +175,8 @@ static GSErrCode CollectDrawingPrimitives (const API_PrimElement* primElem,
             os.Add ("nCoords", pline.nCoords);
             os.Add ("nArcs", pline.nArcs);
             os.Add ("penWeight", pline.penWeight);
-            const auto* coords = static_cast<const API_Coord*> (par1);
-            if (coords != nullptr && pline.nCoords > 0) {
-                const auto& coordinates = os.AddList<GS::ObjectState> ("coordinates");
-                AddCoordinatesToList (coordinates, coords, 1, pline.nCoords);
-            }
+            // The vertices are not read: nothing in this add-on confirms how par1 is indexed for
+            // a polyline primitive, and a wrong guess would read past the array.
             break;
         }
         case API_PrimTriID: {
@@ -246,8 +234,8 @@ static GSErrCode CollectDrawingPrimitives (const API_PrimElement* primElem,
                 "yMax", pict.destBox.yMax));
             break;
         }
-        case API_PrimCtrl_HatchBorderBegID:
-        case API_PrimCtrl_HatchLinesBegID: {
+        case API_PrimCtrl_HatchBorderBegID: {
+            // par1 read as CollectCutFillPolygons in ElementCommands.cpp reads it.
             const auto* border = static_cast<const API_PrimHatchBorder*> (par1);
             if (border != nullptr) {
                 GS::ObjectState hatch;
@@ -377,10 +365,6 @@ static const char* DrawingPrimitiveSchema = R"({
         "ratio": {
             "type": "number"
         },
-        "text": {
-            "type": "string",
-            "description": "Text: the content."
-        },
         "font": {
             "type": "integer"
         },
@@ -439,7 +423,7 @@ static const char* DrawingPrimitiveSchema = R"({
         },
         "coordinates": {
             "type": "array",
-            "description": "PLine: the vertices. Tri: the three corners.",
+            "description": "Tri: the three corners.",
             "items": {
                 "$ref": "#/Coordinate2D"
             }
@@ -478,7 +462,7 @@ static const char* DrawingPrimitiveSchema = R"({
         },
         "hatchBorder": {
             "type": "object",
-            "description": "Ctrl_HatchBorderBeg and Ctrl_HatchLinesBeg: the fill that follows.",
+            "description": "Ctrl_HatchBorderBeg: the fill that follows.",
             "properties": {
                 "doFrame": { "type": "boolean" },
                 "fill": { "$ref": "#/AttributeIdArrayItem" },
@@ -691,5 +675,162 @@ GS::ObjectState GetStoryControlPrimitivesCommand::Execute (const GS::ObjectState
     for (const GS::ObjectState& primitive : ctx.primitives) {
         primitives (primitive);
     }
+    return response;
+}
+
+// ── GetShapePrimitivesOfElements ──────────────────────────────────────────────
+
+// Draws the element with ACAPI_DrawingPrimitive_ShapePrims (ACAPI_Element_ShapePrims before AC27),
+// Archicad's default drawing of the element, without the parameters GetDrawingPrimitives passes to
+// the Ext variant. Whether the objects attached to the element (window/door markers, drawing titles,
+// ...) are drawn too is a setting of the decomposition: it is read, changed for the drawing and
+// changed back, as the DevKit's ACAPI_Drawing_IsMarkerDrawingEnabled example does.
+static GSErrCode GetShapePrimitives (const API_Elem_Head& elemHead, const GS::Optional<bool>& includeMarkers, DrawingPrimitiveCollectorContext& ctx)
+{
+    bool markerDrawingWasEnabled = false;
+    bool markerDrawingChanged = false;
+    if (includeMarkers.HasValue () &&
+        ACAPI_Drawing_IsMarkerDrawingEnabled (&markerDrawingWasEnabled) == NoError &&
+        markerDrawingWasEnabled != includeMarkers.Get ())
+    {
+        const GSErrCode changeErr = ACAPI_Drawing_ChangeMarkerDrawingEnabled (includeMarkers.Get ());
+        if (changeErr != NoError) {
+            return changeErr;
+        }
+        markerDrawingChanged = true;
+    }
+    const GS::OnExit markerGuard ([&] () {
+        if (markerDrawingChanged) {
+            ACAPI_Drawing_ChangeMarkerDrawingEnabled (markerDrawingWasEnabled);
+        }
+    });
+
+    tl_drawingPrimitiveCtx = &ctx;
+    const GS::OnExit ctxGuard ([&] () { tl_drawingPrimitiveCtx = nullptr; });
+
+    return ACAPI_DrawingPrimitive_ShapePrims (elemHead, CollectDrawingPrimitives);
+}
+
+GetShapePrimitivesOfElementsCommand::GetShapePrimitivesOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetShapePrimitivesOfElementsCommand::GetName () const
+{
+    return "GetShapePrimitivesOfElements";
+}
+
+GS::Optional<GS::UniString> GetShapePrimitivesOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "includeMarkers": {
+                "type": "boolean",
+                "description": "Whether the objects attached to the elements (window and door markers, drawing titles, ...) are drawn with them. When omitted, Archicad's current setting is used. The setting is changed back after the drawing."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetShapePrimitivesOfElementsCommand::GetRawResponseSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {
+            "shapePrimitivesOfElements": {
+                "type": "array",
+                "description": "The drawing primitives of each element, in the order of the input elements.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "primitives": {
+                                    "type": "array",
+                                    "description": "The primitives in the order Archicad draws them. The Ctrl_* items mark the beginning and the end of sub-parts (hatch borders, hatch lines, texts, curtain wall panels, ...).",
+                                    "items": )") + DrawingPrimitiveSchema + R"(
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "primitives"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "shapePrimitivesOfElements"
+        ]
+    })";
+}
+
+GS::ObjectState GetShapePrimitivesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    API_DatabaseInfo currentDatabase = {};
+    GSErrCode err = ACAPI_Database_GetCurrentDatabase (&currentDatabase);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the current database.");
+    }
+    if (currentDatabase.typeID != APIWind_FloorPlanID) {
+        return CreateErrorResponse (APIERR_BADDATABASE, "The floor plan must be the current database. Switch to the floor plan window first, for example with ChangeWindow.");
+    }
+
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::Optional<bool> includeMarkers;
+    bool includeMarkersValue = false;
+    if (parameters.Get ("includeMarkers", includeMarkersValue)) {
+        includeMarkers = includeMarkersValue;
+    }
+
+    GS::ObjectState response;
+    const auto& shapePrimitivesOfElements = response.AddList<GS::ObjectState> ("shapePrimitivesOfElements");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            shapePrimitivesOfElements (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            shapePrimitivesOfElements (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+
+        DrawingPrimitiveCollectorContext ctx;
+        err = GetShapePrimitives (elemHead, includeMarkers, ctx);
+        if (err != NoError) {
+            shapePrimitivesOfElements (CreateErrorResponse (err, "Failed to get the drawing primitives of the element"));
+            continue;
+        }
+
+        GS::ObjectState result;
+        const auto& primitives = result.AddList<GS::ObjectState> ("primitives");
+        for (const GS::ObjectState& primitive : ctx.primitives) {
+            primitives (primitive);
+        }
+        shapePrimitivesOfElements (result);
+    }
+
     return response;
 }

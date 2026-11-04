@@ -122,9 +122,19 @@ static const RoutingParameterEnumName<PreferredTransitionPlacement> RoutingParam
     { PreferredTransitionPlacement::LargeToSmall, "LargeToSmall" }
 };
 
-static ACAPI::MEP::UniqueID RoutingParameterTableIdFromString (const GS::UniString& tableIdStr)
+// Reads the optional preferenceTableId of 'parameters'. Returns an error when it is given but is not a
+// guid string (Archicad does not check the type of a $ref field, see GetOptionalGuidField).
+static std::optional<GS::UniString> ReadRoutingParameterTableId (const GS::ObjectState& parameters, std::optional<ACAPI::MEP::UniqueID>& tableId)
 {
-    return Adapter::UniqueID (APIGuidFromString (tableIdStr.ToCStr ()));
+    API_Guid guid = APINULLGuid;
+    const OptionalGuidField field = GetOptionalGuidField (parameters, "preferenceTableId", guid);
+    if (field == OptionalGuidField::Invalid) {
+        return GS::UniString ("preferenceTableId must be a guid string.");
+    }
+    if (field == OptionalGuidField::Valid) {
+        tableId = Adapter::UniqueID (guid);
+    }
+    return std::nullopt;
 }
 
 static GS::ObjectState CreateRoutingSegmentParametersObjectState (const RoutingSegmentDefault& segmentDefault)
@@ -237,11 +247,7 @@ static std::optional<GS::UniString> ReadRoutingSegmentChanges (const GS::ObjectS
         }
         changes.referenceId = static_cast<uint32_t> (referenceId);
     }
-    GS::UniString preferenceTableIdStr;
-    if (parameters.Get ("preferenceTableId", preferenceTableIdStr)) {
-        changes.preferenceTableId = RoutingParameterTableIdFromString (preferenceTableIdStr);
-    }
-    return std::nullopt;
+    return ReadRoutingParameterTableId (parameters, changes.preferenceTableId);
 }
 
 // Applies the changes with the setters of a RoutingSegmentDefault::Modifier or a RoutingSegment::Modifier,
@@ -284,18 +290,14 @@ struct ElbowChanges {
     std::optional<ACAPI::MEP::UniqueID> preferenceTableId;
 };
 
-static ElbowChanges ReadElbowChanges (const GS::ObjectState& parameters)
+// Returns an error when a value is not valid.
+static std::optional<GS::UniString> ReadElbowChanges (const GS::ObjectState& parameters, ElbowChanges& changes)
 {
-    ElbowChanges changes;
     double factorRadius = 0.0;
     if (parameters.Get ("factorRadius", factorRadius)) {
         changes.factorRadius = factorRadius;
     }
-    GS::UniString preferenceTableIdStr;
-    if (parameters.Get ("preferenceTableId", preferenceTableIdStr)) {
-        changes.preferenceTableId = RoutingParameterTableIdFromString (preferenceTableIdStr);
-    }
-    return changes;
+    return ReadRoutingParameterTableId (parameters, changes.preferenceTableId);
 }
 
 static std::optional<GS::UniString> ApplyElbowChanges (ElbowDefault& elbowDefault, const ElbowChanges& changes)
@@ -311,15 +313,6 @@ static std::optional<GS::UniString> ApplyElbowChanges (ElbowDefault& elbowDefaul
     });
     CheckRoutingParameterSetter (result, "the elbow default", error);
     return error;
-}
-
-static std::optional<ACAPI::MEP::UniqueID> ReadTransitionTableChange (const GS::ObjectState& parameters)
-{
-    GS::UniString preferenceTableIdStr;
-    if (!parameters.Get ("preferenceTableId", preferenceTableIdStr)) {
-        return std::nullopt;
-    }
-    return RoutingParameterTableIdFromString (preferenceTableIdStr);
 }
 
 static std::optional<GS::UniString> ApplyTransitionTableChange (TransitionDefault& transitionDefault, const std::optional<ACAPI::MEP::UniqueID>& tableId)
@@ -589,13 +582,18 @@ static GS::ObjectState SetRoutingParametersOfRoutingElement (const ACAPI::MEP::U
         TransitionDefault transitionDefault = nodeDefault.GetTransitionDefault ();
         std::optional<GS::UniString> error;
         if (elbowParameters != nullptr) {
-            const ElbowChanges elbowChanges = ReadElbowChanges (*elbowParameters);
-            tables.elbow = elbowChanges.preferenceTableId;
-            error = ApplyElbowChanges (elbowDefault, elbowChanges);
+            ElbowChanges elbowChanges;
+            error = ReadElbowChanges (*elbowParameters, elbowChanges);
+            if (!error.has_value ()) {
+                tables.elbow = elbowChanges.preferenceTableId;
+                error = ApplyElbowChanges (elbowDefault, elbowChanges);
+            }
         }
         if (transitionParameters != nullptr && !error.has_value ()) {
-            tables.transition = ReadTransitionTableChange (*transitionParameters);
-            error = ApplyTransitionTableChange (transitionDefault, tables.transition);
+            error = ReadRoutingParameterTableId (*transitionParameters, tables.transition);
+            if (!error.has_value ()) {
+                error = ApplyTransitionTableChange (transitionDefault, tables.transition);
+            }
         }
         if (error.has_value ()) {
             return CreateFailedExecutionResult (APIERR_BADPARS, error.value () + " Nothing was changed.");
@@ -663,13 +661,18 @@ static GS::ObjectState SetRoutingParametersOfRoutingNode (const ACAPI::MEP::Uniq
     TransitionDefault transitionDefault = node->GetTransitionDefaultParameters ();
     std::optional<GS::UniString> error;
     if (elbowParameters != nullptr) {
-        const ElbowChanges elbowChanges = ReadElbowChanges (*elbowParameters);
-        tables.elbow = elbowChanges.preferenceTableId;
-        error = ApplyElbowChanges (elbowDefault, elbowChanges);
+        ElbowChanges elbowChanges;
+        error = ReadElbowChanges (*elbowParameters, elbowChanges);
+        if (!error.has_value ()) {
+            tables.elbow = elbowChanges.preferenceTableId;
+            error = ApplyElbowChanges (elbowDefault, elbowChanges);
+        }
     }
     if (transitionParameters != nullptr && !error.has_value ()) {
-        tables.transition = ReadTransitionTableChange (*transitionParameters);
-        error = ApplyTransitionTableChange (transitionDefault, tables.transition);
+        error = ReadRoutingParameterTableId (*transitionParameters, tables.transition);
+        if (!error.has_value ()) {
+            error = ApplyTransitionTableChange (transitionDefault, tables.transition);
+        }
     }
     if (error.has_value ()) {
         return CreateFailedExecutionResult (APIERR_BADPARS, error.value () + " Nothing was changed.");

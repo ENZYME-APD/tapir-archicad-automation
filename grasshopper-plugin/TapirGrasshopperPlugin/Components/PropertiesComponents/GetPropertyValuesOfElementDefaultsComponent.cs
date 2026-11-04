@@ -76,61 +76,53 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 return;
             }
 
-            var parameters = new JObject
-            {
-                ["elementTypes"] = JArray.FromObject(elementTypes),
-                ["properties"] = JArray.FromObject(properties.Properties)
-            };
-
-            if (!TryGetCadResponse(
-                    CommandName,
-                    parameters,
-                    ToAddOn,
-                    out JObject response))
-            {
-                return;
-            }
-
             var values = new DataTree<string>();
             var valueErrors = new DataTree<string>();
             var errors = new List<string>();
 
-            var items = JsonOutputHelp.Items(
-                response,
-                "propertyValuesForElementDefaults");
-            for (var i = 0; i < items.Count; i++)
+            // The command reads the default of one element type per call.
+            for (var i = 0; i < elementTypes.Count; i++)
             {
-                var item = items[i];
                 var path = new GH_Path(i);
                 values.EnsurePath(path);
                 valueErrors.EnsurePath(path);
 
-                if (JsonOutputHelp.IsError(item))
+                var parameters = new JObject
                 {
-                    errors.Add(JsonOutputHelp.ErrorMessage(item));
+                    ["elementType"] = elementTypes[i],
+                    ["properties"] = JArray.FromObject(properties.Properties)
+                };
+
+                if (!TryGetCadResponse(
+                        CommandName,
+                        parameters,
+                        ToAddOn,
+                        out JObject response))
+                {
+                    errors.Add(
+                        $"Failed to get the property values of the {elementTypes[i]} defaults.");
                     continue;
                 }
 
                 errors.Add("");
 
-                if (item["propertyValues"] is JArray propertyValues)
+                foreach (var valueOrError in JsonOutputHelp.Items(
+                             response,
+                             "propertyValues"))
                 {
-                    foreach (var valueOrError in propertyValues)
+                    if (JsonOutputHelp.IsError(valueOrError))
                     {
-                        if (JsonOutputHelp.IsError(valueOrError))
-                        {
-                            values.Add(null, path);
-                            valueErrors.Add(
-                                JsonOutputHelp.ErrorMessage(valueOrError),
-                                path);
-                            continue;
-                        }
-
-                        values.Add(
-                            valueOrError["propertyValue"]?["value"]?.ToString(),
+                        values.Add(null, path);
+                        valueErrors.Add(
+                            JsonOutputHelp.ErrorMessage(valueOrError),
                             path);
-                        valueErrors.Add("", path);
+                        continue;
                     }
+
+                    values.Add(
+                        valueOrError["propertyValue"]?["value"]?.ToString(),
+                        path);
+                    valueErrors.Add("", path);
                 }
             }
 
