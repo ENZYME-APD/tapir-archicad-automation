@@ -8,7 +8,7 @@ import aclib
 PEN_INDEX = 5
 
 def GetPen (penIndex):
-    return aclib.RunTapirCommand ('GetPens', {'indices': [penIndex]})['pens'][0]
+    return aclib.RunTapirCommand ('GetPens', {'indices': [penIndex]}, debug = False)['pens'][0]
 
 def FormatPen (pen):
     color = pen['color']
@@ -19,7 +19,7 @@ original = GetPen (PEN_INDEX)
 print ('Pen {} before: {}'.format (PEN_INDEX, FormatPen (original)))
 
 # The second item has no such pen, so it fails on its own while pen 5 is still changed.
-aclib.PrintJson (aclib.RunTapirCommand ('SetPens', {
+aclib.RunTapirCommand ('SetPens', {
     'pens': [
         {
             'index': PEN_INDEX,
@@ -31,7 +31,7 @@ aclib.PrintJson (aclib.RunTapirCommand ('SetPens', {
             'index': 1000
         }
     ]
-}))
+})
 
 print ('Pen {} after: {}'.format (PEN_INDEX, FormatPen (GetPen (PEN_INDEX))))
 
@@ -45,6 +45,6 @@ aclib.RunTapirCommand ('SetPens', {
             'description': original['description']
         }
     ]
-})
+}, debug = False)
 
 print ('Pen {} restored: {}'.format (PEN_INDEX, FormatPen (GetPen (PEN_INDEX))))

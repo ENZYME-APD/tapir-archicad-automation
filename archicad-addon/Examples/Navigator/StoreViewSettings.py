@@ -4,9 +4,9 @@ before a Restore fails.
 """
 import aclib
 
-aclib.PrintJson (aclib.RunTapirCommand ('StoreViewSettings', {'action': 'Store'}))
-aclib.PrintJson (aclib.RunTapirCommand ('StoreViewSettings', {'action': 'Store'}))
+aclib.RunTapirCommand ('StoreViewSettings', {'action': 'Store'})
+aclib.RunTapirCommand ('StoreViewSettings', {'action': 'Store'})
 
 # ... change the view here, for example with SetCurrent3DStyle or ActivateLayerCombination ...
 
-aclib.PrintJson (aclib.RunTapirCommand ('StoreViewSettings', {'action': 'Restore'}))
+aclib.RunTapirCommand ('StoreViewSettings', {'action': 'Restore'})

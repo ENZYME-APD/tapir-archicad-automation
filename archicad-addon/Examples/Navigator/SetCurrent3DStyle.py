@@ -3,14 +3,14 @@ every style is made current once, then the original one is set back.
 """
 import aclib
 
-styles = aclib.RunTapirCommand ('Get3DStyles')
+styles = aclib.RunTapirCommand ('Get3DStyles', debug = False)
 original = styles['currentStyleName']
 
 for styleName in styles['styleNames']:
-    aclib.RunTapirCommand ('SetCurrent3DStyle', {'styleName': styleName})
-    print ('Current 3D style: {}'.format (aclib.RunTapirCommand ('Get3DStyles')['currentStyleName']))
+    aclib.RunTapirCommand ('SetCurrent3DStyle', {'styleName': styleName}, debug = False)
+    print ('Current 3D style: {}'.format (aclib.RunTapirCommand ('Get3DStyles', debug = False)['currentStyleName']))
 
 # A name that is not a 3D style fails.
-aclib.PrintJson (aclib.RunTapirCommand ('SetCurrent3DStyle', {'styleName': 'No such 3D style'}))
+aclib.RunTapirCommand ('SetCurrent3DStyle', {'styleName': 'No such 3D style'})
 
-aclib.PrintJson (aclib.RunTapirCommand ('SetCurrent3DStyle', {'styleName': original}))
+aclib.RunTapirCommand ('SetCurrent3DStyle', {'styleName': original})

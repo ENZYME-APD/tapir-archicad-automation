@@ -18,7 +18,6 @@ response = aclib.RunTapirCommand ('GetElementPreviewImage', {
     'width': 256,
     'height': 256
 })
-aclib.PrintJson (response)
 
 path = os.path.join (tempfile.mkdtemp (), 'wall_preview.png')
 with open (path, 'wb') as file:

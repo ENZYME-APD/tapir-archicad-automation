@@ -6,7 +6,7 @@ afterwards. The floor plan must be the current database.
 import aclib
 from collections import Counter
 
-walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements']
+walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'}, debug = False)['elements']
 if not walls:
     print ('No walls in the project.')
     raise SystemExit (0)
@@ -15,7 +15,7 @@ for includeMarkers in [True, False]:
     result = aclib.RunTapirCommand ('GetShapePrimitivesOfElements', {
         'elements': walls[:3],
         'includeMarkers': includeMarkers
-    })
+    }, debug = False)
     if result is None or 'shapePrimitivesOfElements' not in result:
         print ('Failed: {}'.format (result))
         raise SystemExit (1)

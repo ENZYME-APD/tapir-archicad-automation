@@ -13,6 +13,6 @@ aclib.PrintJson (aclib.RunTapirCommand ('ElevateElements', {
     'elementsWithElevations': [{'elementId': wallId, 'elevation': 1.0}]
 }))
 
-aclib.PrintJson (aclib.RunTapirCommand ('ElevateElements', {
+aclib.RunTapirCommand ('ElevateElements', {
     'elementsWithElevations': [{'elementId': wallId, 'elevation': -1.0}]
-}))
+})

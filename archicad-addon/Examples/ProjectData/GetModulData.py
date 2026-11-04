@@ -8,16 +8,16 @@ aclib.RunTapirCommand ('StoreModulData', {
     'modulData': [
         {'name': 'tapir-example/get', 'content': '{"answer": 42}'}
     ]
+}, debug = False)
+
+aclib.RunTapirCommand ('GetModulData', {
+    'includeContent': False
 })
 
-aclib.PrintJson (aclib.RunTapirCommand ('GetModulData', {
-    'includeContent': False
-}))
-
-aclib.PrintJson (aclib.RunTapirCommand ('GetModulData', {
+aclib.RunTapirCommand ('GetModulData', {
     'names': ['tapir-example/get', 'tapir-example/missing']
-}))
+})
 
 aclib.RunTapirCommand ('DeleteModulData', {
     'names': ['tapir-example/get']
-})
+}, debug = False)

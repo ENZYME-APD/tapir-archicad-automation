@@ -15,6 +15,6 @@ aclib.PrintJson (aclib.RunTapirCommand ('MirrorElements', {
     'elementsWithMirrorAxes': [{'elementId': wallId, 'mirrorAxis': mirrorAxis}]
 }))
 
-aclib.PrintJson (aclib.RunTapirCommand ('MirrorElements', {
+aclib.RunTapirCommand ('MirrorElements', {
     'elementsWithMirrorAxes': [{'elementId': wallId, 'mirrorAxis': mirrorAxis}]
-}))
+})

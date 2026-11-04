@@ -16,10 +16,10 @@ created = aclib.RunTapirCommand ('CreateSplines', {
     'splinesData': [
         {'coordinates': fitPoints}
     ]
-})['elements']
+}, debug = False)['elements']
 spline = created[0]['elementId']
 
-aclib.PrintJson (aclib.RunTapirCommand ('GetSplineMaxDistances', {
+aclib.RunTapirCommand ('GetSplineMaxDistances', {
     'splines': [
         {
             'elementId': spline,
@@ -32,8 +32,8 @@ aclib.PrintJson (aclib.RunTapirCommand ('GetSplineMaxDistances', {
             'coordinates': [{'x': 1.0, 'y': 0.5}]
         }
     ]
-}))
+})
 
 aclib.RunTapirCommand ('DeleteElements', {
     'elements': [{'elementId': spline}]
-})
+}, debug = False)
