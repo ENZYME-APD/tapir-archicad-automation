@@ -820,6 +820,11 @@ GS::Optional<GS::UniString> GetNoteAutotextsCommand::GetInputParametersSchema ()
             "noteOwnerType": {
                 "$ref": "#/ElementType",
                 "description": "The type of the element that owns the note, e.g. 'Dimension', 'RadialDimension', 'LevelDimension' or 'AngleDimension'."
+            },
+            "dimensionAppearance": {
+                "type": "string",
+                "enum": ["Linear", "Cumulative", "Baseline", "Elevation"],
+                "description": "Optional dimension type, as in the Dimension Settings, whose note autotexts are listed when noteOwnerType is 'Dimension'. Defaults to Linear. Not allowed with other owner types."
             }
         },
         "additionalProperties": false,
@@ -877,9 +882,31 @@ GS::ObjectState GetNoteAutotextsCommand::Execute (const GS::ObjectState& paramet
         return CreateErrorResponse (APIERR_BADPARS, "Invalid noteOwnerType.");
     }
 
-    // dimAppear is left at its default (GS::NoValue).
+    // The API needs dimAppear for API_DimensionID (it returns APIERR_BADID without it, #1867)
+    // and does not use it for the other owner types, so it is only passed for dimensions.
+    GS::Optional<API_AppearID> dimAppear;
+    GS::UniString dimensionAppearance;
+    const bool hasDimensionAppearance = parameters.Get ("dimensionAppearance", dimensionAppearance);
+    if (noteOwnerTypeID == API_DimensionID) {
+        API_AppearID appearID = APIApp_Normal;
+        if (!hasDimensionAppearance || dimensionAppearance == "Linear") {
+            appearID = APIApp_Normal;
+        } else if (dimensionAppearance == "Cumulative") {
+            appearID = APIApp_Cumu;
+        } else if (dimensionAppearance == "Baseline") {
+            appearID = APIApp_CumuSv;
+        } else if (dimensionAppearance == "Elevation") {
+            appearID = APIApp_Elev;
+        } else {
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'dimensionAppearance' value: " + dimensionAppearance);
+        }
+        dimAppear = appearID;
+    } else if (hasDimensionAppearance) {
+        return CreateErrorResponse (APIERR_BADPARS, "dimensionAppearance is only allowed when noteOwnerType is 'Dimension'.");
+    }
+
     std::unordered_map<API_NoteAutotextID, std::unordered_set<API_ElemType>> elemTypesForAutotextIDs;
-    const GSErrCode err = ACAPI_AutoText_GetNoteAutotexts (API_ElemType (noteOwnerTypeID), elemTypesForAutotextIDs);
+    const GSErrCode err = ACAPI_AutoText_GetNoteAutotexts (API_ElemType (noteOwnerTypeID), elemTypesForAutotextIDs, dimAppear);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to retrieve the note autotexts.");
     }
