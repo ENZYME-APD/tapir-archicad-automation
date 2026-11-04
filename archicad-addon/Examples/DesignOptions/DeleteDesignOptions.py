@@ -10,7 +10,7 @@ option = aclib.RunTapirCommand ('CreateDesignOptions', {
     'designOptions': [{'name': 'Option A', 'id': 'A', 'ownerSetName': setName}]
 })['designOptionIdsOrErrors'][0]
 
-aclib.RunTapirCommand ('DeleteDesignOptions', {'designOptions': [{'designOptionId': option['designOptionId']}]})
+aclib.PrintJson (aclib.RunTapirCommand ('DeleteDesignOptions', {'designOptions': [{'designOptionId': option['designOptionId']}]}))
 aclib.RunTapirCommand ('GetDesignOptions')
 
 sets = aclib.RunTapirCommand ('GetDesignOptionSets')['designOptionSets']

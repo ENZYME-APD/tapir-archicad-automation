@@ -10,7 +10,7 @@ systemId = aclib.RunTapirCommand ('CreateClassificationSystems', {
         'classificationSystem': {'name': 'Tapir Example System', 'description': '', 'source': '', 'version': '1.0', 'date': '2026-01-01'},
         'classificationItems': []
     }]
-}, debug = False)['classificationSystemIds'][0]
+})['classificationSystemIds'][0]
 if 'error' in systemId:
     raise SystemExit ('Could not create the classification system: ' + systemId['error']['message'])
 itemId = aclib.RunTapirCommand ('CreateClassificationItems', {
@@ -18,14 +18,14 @@ itemId = aclib.RunTapirCommand ('CreateClassificationItems', {
         'classificationSystemId': systemId['classificationSystemId'],
         'classificationItemDetails': {'id': '10', 'name': 'Walls', 'description': ''}
     }]
-}, debug = False)['classificationItemIds'][0]
+})['classificationItemIds'][0]
 
-aclib.RunTapirCommand ('UpdateClassificationItems', {
+aclib.PrintJson (aclib.RunTapirCommand ('UpdateClassificationItems', {
     'classificationItems': [{
         'classificationItemId': itemId['classificationItemId'],
         'id': '21.10',
         'name': 'Load-bearing walls'
     }]
-})
+}))
 
-aclib.RunTapirCommand ('DeleteClassificationSystems', {'classificationSystemIds': [systemId]}, debug = False)
+aclib.RunTapirCommand ('DeleteClassificationSystems', {'classificationSystemIds': [systemId]})

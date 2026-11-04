@@ -11,6 +11,6 @@ views = [item for item in AllItems (viewMap) if item['type'] != 'FolderItem']
 if not views:
     raise SystemExit ('No view in the View Map.')
 
-aclib.RunTapirCommand ('GetViewSettings', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetViewSettings', {
     'navigatorItemIds': [{'navigatorItemId': view['navigatorItemId']} for view in views]
-})
+}))

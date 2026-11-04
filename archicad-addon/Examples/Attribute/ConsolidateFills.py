@@ -4,4 +4,4 @@ Changes the fills of the current window and may show Archicad's dialog. Requires
 """
 import aclib
 
-aclib.RunTapirCommand ('ConsolidateFills')
+aclib.PrintJson (aclib.RunTapirCommand ('ConsolidateFills'))

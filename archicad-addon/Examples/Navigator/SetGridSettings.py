@@ -7,8 +7,8 @@ import aclib
 original = aclib.RunTapirCommand ('GetGridSettings')['settings']
 
 # Only the given fields change.
-aclib.RunTapirCommand ('SetGridSettings', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetGridSettings', {
     'settings': {'gridSwitch': True, 'spaceMainX': 1.0, 'spaceMainY': 1.0}
-})
+}))
 
-aclib.RunTapirCommand ('SetGridSettings', {'settings': original})
+aclib.PrintJson (aclib.RunTapirCommand ('SetGridSettings', {'settings': original}))

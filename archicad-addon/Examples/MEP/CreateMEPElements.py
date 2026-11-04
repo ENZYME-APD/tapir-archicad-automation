@@ -4,7 +4,7 @@ Coordinates are in meters. Requires Archicad 28 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateMEPElements', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateMEPElements', {
     'elementsData': [
         {
             'type': 'Terminal',
@@ -17,4 +17,4 @@ aclib.RunTapirCommand ('CreateMEPElements', {
             'position': {'x': 2.0, 'y': 0.0, 'z': 1.0}
         }
     ]
-})
+}))

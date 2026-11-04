@@ -16,5 +16,5 @@ aclib.RunTapirCommand ('ExportIssuesToBCF', {
 })
 aclib.RunTapirCommand ('DeleteIssue', {'issueId': issue['issueId']})
 
-aclib.RunTapirCommand ('ImportIssuesFromBCF', {'importPath': bcfPath, 'alignBySurveyPoint': True})
+aclib.PrintJson (aclib.RunTapirCommand ('ImportIssuesFromBCF', {'importPath': bcfPath, 'alignBySurveyPoint': True}))
 aclib.RunTapirCommand ('GetIssues')

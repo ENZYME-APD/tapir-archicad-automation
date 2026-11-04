@@ -4,7 +4,7 @@ Needs at least one Wall. The removed reference is stored by the script first. Av
 """
 import aclib
 
-walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'}, debug = False)['elements'][:1]
+walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]
 if not walls:
     raise SystemExit ('No wall in the project.')
 elementId = walls[0]['elementId']
@@ -23,12 +23,12 @@ aclib.RunTapirCommand ('SetIFCClassificationReferencesOfElements', {
             'location': 'https://example.com/classification'
         }
     }]
-}, debug = False)
+})
 
-aclib.RunTapirCommand ('RemoveIFCClassificationReferencesOfElements', {
+aclib.PrintJson (aclib.RunTapirCommand ('RemoveIFCClassificationReferencesOfElements', {
     'elementIFCClassificationReferences': [{
         'elementId': elementId,
         'referencedSource': {'name': 'Tapir Example Classification'},
         'identification': 'TE-01'
     }]
-})
+}))

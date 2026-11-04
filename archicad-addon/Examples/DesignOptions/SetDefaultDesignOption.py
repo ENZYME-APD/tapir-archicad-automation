@@ -10,10 +10,10 @@ option = aclib.RunTapirCommand ('CreateDesignOptions', {
     'designOptions': [{'name': 'Option A', 'id': 'A', 'ownerSetName': setName}]
 })['designOptionIdsOrErrors'][0]
 
-aclib.RunTapirCommand ('SetDefaultDesignOption', {'designOptionId': option['designOptionId']})
+aclib.PrintJson (aclib.RunTapirCommand ('SetDefaultDesignOption', {'designOptionId': option['designOptionId']}))
 
 # Without a designOptionId the Main Model becomes the default.
-aclib.RunTapirCommand ('SetDefaultDesignOption', {})
+aclib.PrintJson (aclib.RunTapirCommand ('SetDefaultDesignOption', {}))
 
 sets = aclib.RunTapirCommand ('GetDesignOptionSets')['designOptionSets']
 aclib.RunTapirCommand ('DeleteDesignOptionSets', {

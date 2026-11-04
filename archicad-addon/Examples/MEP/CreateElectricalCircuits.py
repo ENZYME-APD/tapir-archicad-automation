@@ -8,10 +8,10 @@ panels = [p for p in aclib.RunTapirCommand ('GetElectricalPanels', {})['electric
 if not panels:
     raise SystemExit ('No electrical panel in the project.')
 
-aclib.RunTapirCommand ('CreateElectricalCircuits', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateElectricalCircuits', {
     'electricalCircuitsData': [{
         'electricalPanelId': panels[0]['elementId'],
         'description': 'Lighting',
         'voltage': 230
     }]
-})
+}))

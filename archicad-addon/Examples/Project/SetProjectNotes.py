@@ -6,13 +6,13 @@ import aclib
 
 original = aclib.RunTapirCommand ('GetProjectNotes')
 
-aclib.RunTapirCommand ('SetProjectNotes', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetProjectNotes', {
     'client': 'Tapir Client Ltd.',
     'projectStatus': 'Design development'
-})
+}))
 aclib.RunTapirCommand ('GetProjectNotes')
 
-aclib.RunTapirCommand ('SetProjectNotes', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetProjectNotes', {
     'client': original['client'],
     'projectStatus': original['projectStatus']
-})
+}))

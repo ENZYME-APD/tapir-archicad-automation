@@ -11,17 +11,17 @@ if not openings:
 
 aclib.RunTapirCommand ('GetOpeningDetails', {'elements': openings})
 
-aclib.RunTapirCommand ('SetOpeningDetails', {'openingsWithDetails': [{
+aclib.PrintJson (aclib.RunTapirCommand ('SetOpeningDetails', {'openingsWithDetails': [{
     'elementId': openings[0]['elementId'],
     'transformation': [1, 0, 0, 0.5,
                        0, 1, 0, 0,
                        0, 0, 1, 0]
-}]})
+}]}))
 aclib.RunTapirCommand ('GetOpeningDetails', {'elements': openings})
 
-aclib.RunTapirCommand ('SetOpeningDetails', {'openingsWithDetails': [{
+aclib.PrintJson (aclib.RunTapirCommand ('SetOpeningDetails', {'openingsWithDetails': [{
     'elementId': openings[0]['elementId'],
     'transformation': [1, 0, 0, -0.5,
                        0, 1, 0, 0,
                        0, 0, 1, 0]
-}]})
+}]}))

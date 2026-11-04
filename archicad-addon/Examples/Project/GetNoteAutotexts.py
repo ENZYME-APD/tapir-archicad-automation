@@ -4,4 +4,4 @@ Requires Archicad 26 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('GetNoteAutotexts', {'noteOwnerType': 'Dimension'})
+aclib.PrintJson (aclib.RunTapirCommand ('GetNoteAutotexts', {'noteOwnerType': 'Dimension'}))

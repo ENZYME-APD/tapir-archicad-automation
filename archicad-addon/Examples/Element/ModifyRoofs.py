@@ -11,10 +11,10 @@ roof = aclib.RunTapirCommand ('CreateRoofs', {'roofsData': [{
     'levels': [{'levelHeight': 10.0, 'levelAngle': math.radians (30)}]
 }]})['elements'][0]
 
-aclib.RunTapirCommand ('ModifyRoofs', {'roofsWithDetails': [{
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyRoofs', {'roofsWithDetails': [{
     'elementId': roof['elementId'],
     'level': 3.5,
     'eavesOverhang': 0.5,
     'levels': [{'levelHeight': 10.0, 'levelAngle': math.radians (40)}]
-}]})
+}]}))
 aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': [roof], 'fields': ['details']})

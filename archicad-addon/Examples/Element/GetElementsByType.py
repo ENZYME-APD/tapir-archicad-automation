@@ -4,7 +4,7 @@ import aclib
 walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements']
 print ('{} walls in the project.'.format (len (walls)))
 
-aclib.RunTapirCommand ('GetElementsByType', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetElementsByType', {
     'elementType': 'Wall',
     'filters': ['IsEditable', 'OnActualFloor']
-})
+}))

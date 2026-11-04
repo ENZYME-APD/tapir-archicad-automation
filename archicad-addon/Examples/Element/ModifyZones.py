@@ -10,15 +10,15 @@ if not zones:
 
 old = aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': zones, 'fields': ['details']})['detailsOfElements'][0]['details']
 
-aclib.RunTapirCommand ('ModifyZones', {'zonesWithDetails': [{
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyZones', {'zonesWithDetails': [{
     'elementId': zones[0]['elementId'],
     'name': 'Meeting Room',
     'numberStr': 'M01'
-}]})
+}]}))
 aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': zones, 'fields': ['details']})
 
-aclib.RunTapirCommand ('ModifyZones', {'zonesWithDetails': [{
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyZones', {'zonesWithDetails': [{
     'elementId': zones[0]['elementId'],
     'name': old['name'],
     'numberStr': old['numberStr']
-}]})
+}]}))

@@ -8,6 +8,6 @@ setName = 'Tapir Example Set'
 aclib.RunTapirCommand ('CreateDesignOptionSets', {'designOptionSets': [setName]})
 sets = aclib.RunTapirCommand ('GetDesignOptionSets')['designOptionSets']
 
-aclib.RunTapirCommand ('DeleteDesignOptionSets', {
+aclib.PrintJson (aclib.RunTapirCommand ('DeleteDesignOptionSets', {
     'designOptionSets': [{'designOptionSetId': s['designOptionSetId']} for s in sets if s['name'] == setName]
-})
+}))

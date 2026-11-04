@@ -4,6 +4,6 @@ Missing parent folders are created too. The empty folder stays in the embedded l
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateFolderInEmbeddedLibrary', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateFolderInEmbeddedLibrary', {
     'folderPath': 'TapirExamples/Created Folder'
-})
+}))

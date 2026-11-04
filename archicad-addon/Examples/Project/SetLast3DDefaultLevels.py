@@ -4,10 +4,10 @@ import aclib
 elementTypes = ['Wall', 'Slab']
 originalLevels = aclib.RunTapirCommand ('GetLast3DDefaultLevels', {'elementTypes': elementTypes})['levels']
 
-aclib.RunTapirCommand ('SetLast3DDefaultLevels', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetLast3DDefaultLevels', {
     'elementTypes': elementTypes,
     'levels': [1.0, 2.5]
-})
+}))
 aclib.RunTapirCommand ('GetLast3DDefaultLevels', {'elementTypes': elementTypes})
 
-aclib.RunTapirCommand ('SetLast3DDefaultLevels', {'elementTypes': elementTypes, 'levels': originalLevels})
+aclib.PrintJson (aclib.RunTapirCommand ('SetLast3DDefaultLevels', {'elementTypes': elementTypes, 'levels': originalLevels}))

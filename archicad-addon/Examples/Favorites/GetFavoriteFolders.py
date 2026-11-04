@@ -4,7 +4,7 @@ Requires Archicad 29 or later.
 """
 import aclib
 
-rootFolder = aclib.RunTapirCommand ('GetFavoriteFolders', debug = False)['rootFolder']
+rootFolder = aclib.RunTapirCommand ('GetFavoriteFolders')['rootFolder']
 
 folders = [rootFolder]
 while folders:

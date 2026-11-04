@@ -5,7 +5,7 @@ GetGridElementDefaults). Requires Archicad 26 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateGridElements', {'gridElements': [
+aclib.PrintJson (aclib.RunTapirCommand ('CreateGridElements', {'gridElements': [
     {
         'begCoordinate': {'x': 0.0, 'y': -2.0},
         'endCoordinate': {'x': 0.0, 'y': 18.0}
@@ -14,4 +14,4 @@ aclib.RunTapirCommand ('CreateGridElements', {'gridElements': [
         'begCoordinate': {'x': -2.0, 'y': 0.0},
         'endCoordinate': {'x': 18.0, 'y': 0.0}
     }
-]})
+]}))

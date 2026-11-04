@@ -4,17 +4,17 @@ Needs at least one Wall. The Favorite 'Tapir Example Wall' is created by the scr
 """
 import aclib
 
-walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'}, debug = False)['elements'][:1]
+walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]
 if not walls:
     raise SystemExit ('No wall in the project.')
 
 favoriteName = 'Tapir Example Wall'
 aclib.RunTapirCommand ('CreateFavoritesFromElements', {
     'favoritesFromElements': [{'elementId': walls[0]['elementId'], 'favorite': favoriteName}]
-}, debug = False)
-
-aclib.RunTapirCommand ('UpdateFavoritesFromElements', {
-    'favoritesFromElements': [{'elementId': walls[0]['elementId'], 'favorite': favoriteName}]
 })
 
-aclib.RunTapirCommand ('DeleteFavorites', {'favorites': [favoriteName]}, debug = False)
+aclib.PrintJson (aclib.RunTapirCommand ('UpdateFavoritesFromElements', {
+    'favoritesFromElements': [{'elementId': walls[0]['elementId'], 'favorite': favoriteName}]
+}))
+
+aclib.RunTapirCommand ('DeleteFavorites', {'favorites': [favoriteName]})

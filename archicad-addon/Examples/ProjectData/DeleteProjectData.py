@@ -4,4 +4,4 @@ import aclib
 name = 'tapir-example/to-delete'
 aclib.RunTapirCommand ('SetProjectData', {'values': [{'name': name, 'content': 'temporary'}]})
 
-aclib.RunTapirCommand ('DeleteProjectData', {'names': [name]})
+aclib.PrintJson (aclib.RunTapirCommand ('DeleteProjectData', {'names': [name]}))

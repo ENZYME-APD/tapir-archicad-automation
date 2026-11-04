@@ -5,7 +5,7 @@ come from the Stair tool defaults.
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateStairs', {'stairsData': [
+aclib.PrintJson (aclib.RunTapirCommand ('CreateStairs', {'stairsData': [
     {
         'baseLinePoints': [{'x': 0.0, 'y': 0.0}, {'x': 4.0, 'y': 0.0}],
         'zCoordinate': 0.0,
@@ -23,4 +23,4 @@ aclib.RunTapirCommand ('CreateStairs', {'stairsData': [
         'baseLineEdges': [{'segmentType': 'Flight'}, {'segmentType': 'Landing'}, {'segmentType': 'Flight'}],
         'baseLineVertices': [{'turnType': 'None'}, {'turnType': 'Landing'}, {'turnType': 'Landing'}, {'turnType': 'None'}]
     }
-]})
+]}))

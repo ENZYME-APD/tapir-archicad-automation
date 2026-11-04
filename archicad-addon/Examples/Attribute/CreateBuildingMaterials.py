@@ -4,7 +4,7 @@ Overwrites the Building Material of the same name when the script is run again.
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateBuildingMaterials', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateBuildingMaterials', {
     'buildingMaterialDataArray': [{
         'name': 'Tapir Example Building Material',
         'id': 'TAP-01',
@@ -20,4 +20,4 @@ aclib.RunTapirCommand ('CreateBuildingMaterials', {
         'heatCapacity': 900.0
     }],
     'overwriteExisting': True
-})
+}))

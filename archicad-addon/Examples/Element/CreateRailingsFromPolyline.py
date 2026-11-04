@@ -6,7 +6,7 @@ Railing tool defaults, or from favoriteName.
 import aclib
 import math
 
-aclib.RunTapirCommand ('CreateRailingsFromPolyline', {'railingsData': [{
+aclib.PrintJson (aclib.RunTapirCommand ('CreateRailingsFromPolyline', {'railingsData': [{
     'polylineCoordinates': [
         {'x': 0.0, 'y': 0.0, 'z': 0.0},
         {'x': 4.0, 'y': 0.0, 'z': 0.0},
@@ -16,4 +16,4 @@ aclib.RunTapirCommand ('CreateRailingsFromPolyline', {'railingsData': [{
     'polylineArcs': [{'begIndex': 2, 'endIndex': 3, 'arcAngle': math.pi / 2}],
     'floorIndex': 0,
     'height': 1.1
-}]})
+}]}))

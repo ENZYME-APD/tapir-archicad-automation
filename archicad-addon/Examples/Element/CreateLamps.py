@@ -8,9 +8,9 @@ libraryParts = aclib.RunTapirCommand ('GetAvailableLibraryParts', {'filterByType
 if not libraryParts:
     raise SystemExit ('No Lamp library part in the loaded libraries.')
 
-aclib.RunTapirCommand ('CreateLamps', {'lampsData': [{
+aclib.PrintJson (aclib.RunTapirCommand ('CreateLamps', {'lampsData': [{
     'libraryPartName': libraryParts[0]['documentName'],
     'coordinates': {'x': 0.0, 'y': 0.0, 'z': 2.5},
     'lightIsOn': True,
     'lightColor': {'red': 1.0, 'green': 0.9, 'blue': 0.8}
-}]})
+}]}))

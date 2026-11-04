@@ -7,11 +7,11 @@ import aclib
 
 original = aclib.RunTapirCommand ('GetProjectPreferences', {'preferenceTypes': ['WorkingUnits']})
 
-aclib.RunTapirCommand ('SetProjectPreferences', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetProjectPreferences', {
     'workingUnits': {
         'length': {'unit': 'Millimeter', 'decimals': 0}
     }
-})
+}))
 aclib.RunTapirCommand ('GetProjectPreferences', {'preferenceTypes': ['WorkingUnits']})
 
-aclib.RunTapirCommand ('SetProjectPreferences', {'workingUnits': original['workingUnits']})
+aclib.PrintJson (aclib.RunTapirCommand ('SetProjectPreferences', {'workingUnits': original['workingUnits']}))

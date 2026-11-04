@@ -8,4 +8,4 @@ changeMarkers = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Cha
 if not changeMarkers:
     raise SystemExit ('No change marker on the floor plan.')
 
-aclib.RunTapirCommand ('GetRevisionChangesOfElements', {'elements': changeMarkers})
+aclib.PrintJson (aclib.RunTapirCommand ('GetRevisionChangesOfElements', {'elements': changeMarkers}))

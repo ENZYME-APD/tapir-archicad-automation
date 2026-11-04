@@ -15,7 +15,7 @@ createdPart = aclib.RunTapirCommand ('CreateLibraryParts', {
         'script3D': 'BLOCK A, B, 1'
     }],
     'overwriteExisting': True
-}, debug = False)['libraryParts'][0]
+})['libraryParts'][0]
 if 'error' in createdPart:
     raise SystemExit (createdPart['error']['message'])
 libraryPartName = 'Tapir Example Box.gsm'
@@ -23,15 +23,15 @@ libraryPartName = 'Tapir Example Box.gsm'
 # A four-character section code is given as its integer value, the first character in the highest byte.
 sectionId = int.from_bytes (b'TAPR', 'big')
 
-aclib.RunTapirCommand ('SetLibraryPartCustomSection', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetLibraryPartCustomSection', {
     'name': libraryPartName,
     'sectionId': sectionId,
     'dataVersion': 1,
     'data': base64.b64encode (b'Data stored by Tapir').decode ('ascii')
-})
+}))
 
 aclib.RunTapirCommand ('GetLibraryPartCustomSection', {'name': libraryPartName, 'sectionId': sectionId})
 
-aclib.RunTapirCommand ('SetLibraryPartCustomSection', {'name': libraryPartName, 'sectionId': sectionId, 'delete': True})
+aclib.PrintJson (aclib.RunTapirCommand ('SetLibraryPartCustomSection', {'name': libraryPartName, 'sectionId': sectionId, 'delete': True}))
 
-aclib.RunTapirCommand ('DeleteEmbeddedLibraryItems', {'embeddedLibraryItems': [{'path': createdPart['path']}]}, debug = False)
+aclib.RunTapirCommand ('DeleteEmbeddedLibraryItems', {'embeddedLibraryItems': [{'path': createdPart['path']}]})

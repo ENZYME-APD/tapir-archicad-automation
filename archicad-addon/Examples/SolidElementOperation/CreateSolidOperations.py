@@ -22,11 +22,12 @@ morphs = aclib.RunTapirCommand ('CreateMorphs', {
         {'basePoint': {'x': 0.0, 'y': 0.0, 'z': 0.0}, 'body': BoxBody (2.0, 2.0, 1.0)},
         {'basePoint': {'x': 0.5, 'y': 0.5, 'z': 0.5}, 'body': BoxBody (1.0, 1.0, 1.0)}
     ]
-}, debug = False)['elements']
+})['elements']
 
 result = aclib.RunTapirCommand ('CreateSolidOperations', {
     'operations': [{'targetId': morphs[0]['elementId'], 'operatorId': morphs[1]['elementId'], 'operation': 'Subtraction'}]
 })['results'][0]
+aclib.PrintJson (result)
 
 if 'elements' in result:
-    aclib.RunTapirCommand ('DeleteElements', {'elements': result['elements']}, debug = False)
+    aclib.RunTapirCommand ('DeleteElements', {'elements': result['elements']})

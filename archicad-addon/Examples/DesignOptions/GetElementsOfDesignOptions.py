@@ -8,6 +8,6 @@ designOptions = aclib.RunTapirCommand ('GetDesignOptions')['designOptions']
 if not designOptions:
     raise SystemExit ('No design option in the project.')
 
-aclib.RunTapirCommand ('GetElementsOfDesignOptions', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetElementsOfDesignOptions', {
     'designOptions': [{'designOptionId': d['designOptionId']} for d in designOptions]
-})
+}))

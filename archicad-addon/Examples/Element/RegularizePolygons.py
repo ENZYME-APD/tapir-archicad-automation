@@ -4,7 +4,7 @@ The results are in the format of CreateSlabs; nothing is created.
 """
 import aclib
 
-aclib.RunTapirCommand ('RegularizePolygons', {
+aclib.PrintJson (aclib.RunTapirCommand ('RegularizePolygons', {
     'polygons': [{
         'polygonCoordinates': [
             {'x': 0.0, 'y': 0.0},
@@ -15,4 +15,4 @@ aclib.RunTapirCommand ('RegularizePolygons', {
         ]
     }],
     'withAncestry': False
-})
+}))

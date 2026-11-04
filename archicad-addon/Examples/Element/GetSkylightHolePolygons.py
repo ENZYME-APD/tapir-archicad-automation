@@ -4,8 +4,8 @@ Needs at least one Skylight.
 """
 import aclib
 
-skylights = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Skylight'}, debug = False)['elements']
+skylights = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Skylight'})['elements']
 if not skylights:
     raise SystemExit ('No skylight in the project.')
 
-aclib.RunTapirCommand ('GetSkylightHolePolygons', {'elements': skylights})
+aclib.PrintJson (aclib.RunTapirCommand ('GetSkylightHolePolygons', {'elements': skylights}))

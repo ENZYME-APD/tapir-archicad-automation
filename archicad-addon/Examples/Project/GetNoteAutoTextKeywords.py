@@ -4,10 +4,10 @@ Requires Archicad 26 or later.
 """
 import aclib
 
-noteAutotexts = aclib.RunTapirCommand ('GetNoteAutotexts', {'noteOwnerType': 'Dimension'}, debug = False)['noteAutotexts']
+noteAutotexts = aclib.RunTapirCommand ('GetNoteAutotexts', {'noteOwnerType': 'Dimension'})['noteAutotexts']
 if not noteAutotexts:
     raise SystemExit ('No note autotexts found.')
 
-aclib.RunTapirCommand ('GetNoteAutoTextKeywords', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetNoteAutoTextKeywords', {
     'autoTextIds': [a['autotextId'] for a in noteAutotexts]
-})
+}))

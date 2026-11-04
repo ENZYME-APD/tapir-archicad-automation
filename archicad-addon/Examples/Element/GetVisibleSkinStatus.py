@@ -4,11 +4,11 @@ The current window is not changed. Needs at least one Slab.
 """
 import aclib
 
-slabs = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Slab'}, debug = False)['elements']
+slabs = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Slab'})['elements']
 if not slabs:
     raise SystemExit ('No slab in the project.')
 
-aclib.RunTapirCommand ('GetVisibleSkinStatus', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetVisibleSkinStatus', {
     'elements': slabs,
     'structureDisplay': 'CoreOnly'
-})
+}))

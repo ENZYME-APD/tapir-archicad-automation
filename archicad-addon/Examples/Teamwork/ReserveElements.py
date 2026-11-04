@@ -4,15 +4,15 @@ Needs an open Teamwork project with at least one Wall. A wall that was free befo
 """
 import aclib
 
-walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'}, debug = False)['elements'][:1]
+walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]
 if not walls:
     raise SystemExit ('No wall in the project.')
 
-wasFree = aclib.RunTapirCommand ('GetReservationStatusOfElements', {'elements': walls}, debug = False)['reservationStatuses'][0].get ('status') == 'Free'
+wasFree = aclib.RunTapirCommand ('GetReservationStatusOfElements', {'elements': walls})['reservationStatuses'][0].get ('status') == 'Free'
 
 response = aclib.RunTapirCommand ('ReserveElements', {'elements': walls})
 for conflict in response.get ('conflicts', []):
     print ('Reserved by', conflict['user']['userName'])
 
 if wasFree:
-    aclib.RunTapirCommand ('ReleaseElements', {'elements': walls}, debug = False)
+    aclib.RunTapirCommand ('ReleaseElements', {'elements': walls})

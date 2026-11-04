@@ -10,10 +10,10 @@ if settings['isPersp']:
     # Every perspective parameter is required: pass back what was read, with the camera moved.
     perspective = settings['perspective']
     perspective['cameraPosition']['z'] += 1.0
-    aclib.RunTapirCommand ('Set3DProjectionSettings', {'perspective': perspective})
+    aclib.PrintJson (aclib.RunTapirCommand ('Set3DProjectionSettings', {'perspective': perspective}))
     perspective['cameraPosition']['z'] -= 1.0
-    aclib.RunTapirCommand ('Set3DProjectionSettings', {'perspective': perspective})
+    aclib.PrintJson (aclib.RunTapirCommand ('Set3DProjectionSettings', {'perspective': perspective}))
 else:
     # An axonometry changes only the given values.
-    aclib.RunTapirCommand ('Set3DProjectionSettings', {'axonometry': {'projectionType': 'Isometric'}})
-    aclib.RunTapirCommand ('Set3DProjectionSettings', {'axonometry': settings['axonometric']})
+    aclib.PrintJson (aclib.RunTapirCommand ('Set3DProjectionSettings', {'axonometry': {'projectionType': 'Isometric'}}))
+    aclib.PrintJson (aclib.RunTapirCommand ('Set3DProjectionSettings', {'axonometry': settings['axonometric']}))

@@ -17,5 +17,5 @@ parameters = {
     'overwriteExisting': False
 }
 
-aclib.RunTapirCommand ('ImportAttributesFromProject', dict (parameters, dryRun = True))
-aclib.RunTapirCommand ('ImportAttributesFromProject', parameters)
+aclib.PrintJson (aclib.RunTapirCommand ('ImportAttributesFromProject', dict (parameters, dryRun = True)))
+aclib.PrintJson (aclib.RunTapirCommand ('ImportAttributesFromProject', parameters))

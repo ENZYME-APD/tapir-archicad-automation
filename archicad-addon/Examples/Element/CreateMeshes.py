@@ -4,7 +4,7 @@ z of each outline point is its height above level.
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateMeshes', {'meshesData': [{
+aclib.PrintJson (aclib.RunTapirCommand ('CreateMeshes', {'meshesData': [{
     'level': 0.0,
     'skirtType': 'SolidBodyWithSkirt',
     'skirtLevel': 1.0,
@@ -14,4 +14,4 @@ aclib.RunTapirCommand ('CreateMeshes', {'meshesData': [{
         {'x': 10.0, 'y': 10.0, 'z': 2.0},
         {'x': 0.0, 'y': 10.0, 'z': 2.0}
     ]
-}]})
+}]}))

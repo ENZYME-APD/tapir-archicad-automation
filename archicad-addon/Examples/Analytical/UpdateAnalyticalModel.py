@@ -6,6 +6,6 @@ import aclib
 
 analyticalModelId = aclib.RunTapirCommand ('GetCurrentAnalyticalModel', {})['analyticalModelId']
 
-aclib.RunTapirCommand ('UpdateAnalyticalModel', {
+aclib.PrintJson (aclib.RunTapirCommand ('UpdateAnalyticalModel', {
     'analyticalModelId': analyticalModelId
-})
+}))

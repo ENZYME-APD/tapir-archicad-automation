@@ -1,8 +1,8 @@
 """Reads the domain, pens, fill, line type and surfaces of every MEP System with GetMEPSystems."""
 import aclib
 
-mepSystems = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'MEPSystem'}, debug = False)['attributes']
+mepSystems = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'MEPSystem'})['attributes']
 
-aclib.RunTapirCommand ('GetMEPSystems', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetMEPSystems', {
     'attributeIds': [{'attributeId': mepSystem['attributeId']} for mepSystem in mepSystems]
-})
+}))

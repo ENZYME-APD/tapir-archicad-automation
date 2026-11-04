@@ -8,6 +8,7 @@ from GitHub as archicad-addon/Examples/<GroupFolder>/<CommandName>.py. So:
     same rule is in docs/archicad-addon/renderer.js); the Developer Commands have none,
   * each of them starts with a module docstring (the docs show it as the example's
     description) and calls its own command with aclib.RunTapirCommand ('<CommandName>', ...),
+  * no example passes debug to aclib (they print what they show, e.g. with aclib.PrintJson),
   * each group folder has the aclib.py shim, so `python Examples/<GroupFolder>/<Name>.py` finds
     the aclib/ helper package,
   * there are no other .py files under Examples/ besides aclib/ and the shims: tests go to
@@ -130,6 +131,10 @@ def CheckExample (path, commandName):
         problems.append ('does not start with a module docstring')
     if commandName not in CalledTapirCommands (tree):
         problems.append ("does not call aclib.RunTapirCommand ('{}', ...)".format (commandName))
+    for node in ast.walk (tree):
+        if (isinstance (node, ast.Call) and isinstance (node.func, ast.Attribute) and node.func.attr in ('RunTapirCommand', 'RunCommand')
+                and any (keyword.arg == 'debug' for keyword in node.keywords)):
+            problems.append ('passes debug to aclib.{} (line {}); print what the example shows with aclib.PrintJson instead'.format (node.func.attr, node.lineno))
     return problems
 
 

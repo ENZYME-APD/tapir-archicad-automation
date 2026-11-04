@@ -12,6 +12,6 @@ circuitId = aclib.RunTapirCommand ('CreateElectricalCircuits', {
     'electricalCircuitsData': [{'electricalPanelId': panels[0]['elementId'], 'description': 'Spare'}]
 })['elements'][0]['elementId']
 
-aclib.RunTapirCommand ('DeleteElectricalCircuits', {
+aclib.PrintJson (aclib.RunTapirCommand ('DeleteElectricalCircuits', {
     'electricalCircuits': [{'elementId': circuitId}]
-})
+}))

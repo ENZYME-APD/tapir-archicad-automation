@@ -9,5 +9,5 @@ def PrintTree (item, indent):
     for child in item.get ('children', []):
         PrintTree (child['navigatorItem'], indent + 1)
 
-tree = aclib.RunTapirCommand ('GetNavigatorItemTree', {'navigatorMapId': 'LayoutBook'}, debug = False)['navigatorItemTree']
+tree = aclib.RunTapirCommand ('GetNavigatorItemTree', {'navigatorMapId': 'LayoutBook'})['navigatorItemTree']
 PrintTree (tree, 0)

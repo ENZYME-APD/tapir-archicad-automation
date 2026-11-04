@@ -4,10 +4,10 @@ Requires Archicad 27 or later.
 """
 import aclib
 
-rules = aclib.RunTapirCommand ('GetGraphicOverrideRules', debug = False)['graphicOverrideRules']
+rules = aclib.RunTapirCommand ('GetGraphicOverrideRules')['graphicOverrideRules']
 if not rules:
     raise SystemExit ('No graphic override rule in the project.')
 
-aclib.RunTapirCommand ('GetGraphicOverrideRulesByName', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetGraphicOverrideRulesByName', {
     'graphicOverrideRules': [{'name': rules[0]['name']}]
-})
+}))

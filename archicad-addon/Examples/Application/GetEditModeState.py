@@ -4,4 +4,4 @@ Requires Archicad 27 or later (the overall inEditMode flag needs Archicad 29).
 """
 import aclib
 
-aclib.RunTapirCommand ('GetEditModeState')
+aclib.PrintJson (aclib.RunTapirCommand ('GetEditModeState'))

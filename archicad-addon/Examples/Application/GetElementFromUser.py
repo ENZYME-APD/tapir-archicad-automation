@@ -4,7 +4,7 @@ Waits for a click in Archicad; Escape returns cancelled.
 """
 import aclib
 
-aclib.RunTapirCommand ('GetElementFromUser', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetElementFromUser', {
     'prompt': 'Click a wall or a column',
     'elementTypes': ['Wall', 'Column']
-})
+}))

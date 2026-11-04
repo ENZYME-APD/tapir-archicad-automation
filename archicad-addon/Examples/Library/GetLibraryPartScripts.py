@@ -4,11 +4,11 @@ Needs at least one Door. Requires Archicad 28 or later.
 """
 import aclib
 
-doors = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Door'}, debug = False)['elements'][:1]
+doors = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Door'})['elements'][:1]
 if not doors:
     raise SystemExit ('No door in the project.')
 
-aclib.RunTapirCommand ('GetLibraryPartScripts', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetLibraryPartScripts', {
     'libraryParts': [{'elementId': doors[0]['elementId']}],
     'scripts': ['2d', '3d']
-})
+}))

@@ -4,8 +4,8 @@ Needs at least one Zone.
 """
 import aclib
 
-zones = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Zone'}, debug = False)['elements'][:3]
+zones = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Zone'})['elements'][:3]
 if not zones:
     raise SystemExit ('No zone in the project.')
 
-aclib.RunTapirCommand ('GetZoneBoundaries', {'zones': zones})
+aclib.PrintJson (aclib.RunTapirCommand ('GetZoneBoundaries', {'zones': zones}))

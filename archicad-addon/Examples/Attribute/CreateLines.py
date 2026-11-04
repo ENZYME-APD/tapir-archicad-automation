@@ -4,7 +4,7 @@ Overwrites the line type of the same name when the script is run again.
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateLines', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateLines', {
     'lineDataArray': [{
         'name': 'Tapir Example Dashed Line',
         'scaleWithPlan': False,
@@ -13,4 +13,4 @@ aclib.RunTapirCommand ('CreateLines', {
         'dashItems': [{'dash': 3.0, 'gap': 1.5}]
     }],
     'overwriteExisting': True
-})
+}))

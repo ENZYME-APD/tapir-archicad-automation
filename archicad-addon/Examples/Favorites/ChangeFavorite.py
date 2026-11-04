@@ -5,7 +5,7 @@ the end; it gets the settings of the last Wall Favorite. Requires Archicad 29 or
 """
 import aclib
 
-wallFavorites = aclib.RunTapirCommand ('GetAllFavorites', {'elementType': 'Wall'}, debug = False)['favorites']
+wallFavorites = aclib.RunTapirCommand ('GetAllFavorites', {'elementType': 'Wall'})['favorites']
 if not wallFavorites:
     raise SystemExit ('The project has no Wall Favorite.')
 
@@ -13,11 +13,11 @@ created = aclib.RunTapirCommand ('CreateFavorite', {
     'name': 'Tapir Example Favorite',
     'source': {'favoriteName': wallFavorites[0]['name']},
     'conflictPolicy': 'RenameNew'
-}, debug = False)
-
-aclib.RunTapirCommand ('ChangeFavorite', {
-    'favoriteName': created['name'],
-    'source': {'favoriteName': wallFavorites[-1]['name']}
 })
 
-aclib.RunTapirCommand ('DeleteFavorites', {'favorites': [created['name']]}, debug = False)
+aclib.PrintJson (aclib.RunTapirCommand ('ChangeFavorite', {
+    'favoriteName': created['name'],
+    'source': {'favoriteName': wallFavorites[-1]['name']}
+}))
+
+aclib.RunTapirCommand ('DeleteFavorites', {'favorites': [created['name']]})

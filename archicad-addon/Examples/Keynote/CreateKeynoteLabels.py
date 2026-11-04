@@ -15,6 +15,7 @@ labels = aclib.RunTapirCommand ('CreateKeynoteLabels', {
         'contentFields': ['Key', 'Title']
     }]
 })['elements']
+aclib.PrintJson (labels)
 
 aclib.RunTapirCommand ('DeleteElements', {'elements': [label for label in labels if 'elementId' in label]})
 aclib.RunTapirCommand ('DeleteKeynoteItems', {'keynoteItemIds': [{'keynoteItemId': item['keynoteItemId']}]})

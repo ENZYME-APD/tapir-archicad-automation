@@ -4,6 +4,6 @@ The names are localized, e.g. "Wand" for Wall in German Archicad. Requires Archi
 """
 import aclib
 
-aclib.RunTapirCommand ('GetElementTypeNames', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetElementTypeNames', {
     'elementTypes': ['Wall', 'Slab', 'Zone', 'Door', 'Window']
-})
+}))

@@ -4,6 +4,6 @@ Requires Archicad 28 or later.
 """
 import aclib
 
-walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'}, debug = False)['elements'][:3]
+walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:3]
 
-aclib.RunTapirCommand ('GetIFCSpatialStructure', {'elements': walls})
+aclib.PrintJson (aclib.RunTapirCommand ('GetIFCSpatialStructure', {'elements': walls}))

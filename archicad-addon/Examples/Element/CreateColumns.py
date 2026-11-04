@@ -4,7 +4,7 @@ Coordinates are in meters; z is the elevation of the column base.
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateColumns', {'columnsData': [
+aclib.PrintJson (aclib.RunTapirCommand ('CreateColumns', {'columnsData': [
     {
         'coordinates': {'x': 0.0, 'y': 0.0, 'z': 0.0}
     },
@@ -14,4 +14,4 @@ aclib.RunTapirCommand ('CreateColumns', {'columnsData': [
         'width': 0.4,
         'circleBased': True
     }
-]})
+]}))

@@ -6,11 +6,11 @@ import aclib
 
 elements = []
 for elementType in ['Object', 'Window', 'Door']:
-    elements += aclib.RunTapirCommand ('GetElementsByType', {'elementType': elementType}, debug = False)['elements']
+    elements += aclib.RunTapirCommand ('GetElementsByType', {'elementType': elementType})['elements']
 if not elements:
     raise SystemExit ('No object, window or door in the project.')
 
-aclib.RunTapirCommand ('RefreshElements', {
+aclib.PrintJson (aclib.RunTapirCommand ('RefreshElements', {
     'elements': elements,
     'force': True
-})
+}))

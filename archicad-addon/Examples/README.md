@@ -19,8 +19,11 @@ python archicad-addon/Examples/Application/GetAddOnVersion.py
 ```
 
 `aclib/` is the helper every example uses: `aclib.RunTapirCommand (name, parameters)` runs a Tapir
-command, prints the command, its parameters and the response, and returns the response;
-`aclib.RunCommand ('API.<Command>', parameters)` runs an official Archicad JSON command.
+command and returns its response, `aclib.RunCommand ('API.<Command>', parameters)` runs an official
+Archicad JSON command, and `aclib.PrintJson (value)` prints a response as indented JSON. Neither
+prints by itself (only errors), so an example prints what it shows, usually with
+`aclib.PrintJson (aclib.RunTapirCommand (...))`; pass `debug = True` to also see the command and its
+parameters.
 `--port <port>` talks to another Archicad than the one on 19723. The `aclib.py` in each group
 folder only loads `../aclib/`, so the scripts run from any working directory.
 
@@ -40,6 +43,8 @@ import aclib
 - The docstring is the example's description in the docs: plain and specific.
 - Short top-level code, typically 5-30 lines; no argparse, no `input ()`, no GUI.
 - Take ids from the project (e.g. `GetElementsByType`) instead of hard-coding GUIDs.
+- Print what the example shows, with `aclib.PrintJson (...)` or `print (...)`; don't pass `debug`
+  (`tools/check_examples.py` reports it).
 - Change as little as possible and restore what was changed; delete only what the script created;
   write files only to a temporary folder.
 - `tools/new_command.py` writes a starter example for a new command;

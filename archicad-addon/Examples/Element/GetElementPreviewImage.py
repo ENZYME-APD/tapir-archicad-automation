@@ -17,7 +17,7 @@ response = aclib.RunTapirCommand ('GetElementPreviewImage', {
     'format': 'png',
     'width': 256,
     'height': 256
-}, debug = False)
+})
 
 path = os.path.join (tempfile.mkdtemp (), 'wall_preview.png')
 with open (path, 'wb') as file:

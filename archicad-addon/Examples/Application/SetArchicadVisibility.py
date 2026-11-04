@@ -5,8 +5,8 @@ Windows only; on macOS it returns an error.
 import time
 import aclib
 
-aclib.RunTapirCommand ('SetArchicadVisibility', {'isVisible': False})
+aclib.PrintJson (aclib.RunTapirCommand ('SetArchicadVisibility', {'isVisible': False}))
 aclib.RunTapirCommand ('GetArchicadVisibility')
 time.sleep (2)
 
-aclib.RunTapirCommand ('SetArchicadVisibility', {'isVisible': True})
+aclib.PrintJson (aclib.RunTapirCommand ('SetArchicadVisibility', {'isVisible': True}))

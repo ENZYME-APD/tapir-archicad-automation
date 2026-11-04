@@ -4,12 +4,12 @@ Needs at least one Wall. The reference is removed again at the end. Available on
 """
 import aclib
 
-walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'}, debug = False)['elements'][:1]
+walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]
 if not walls:
     raise SystemExit ('No wall in the project.')
 elementId = walls[0]['elementId']
 
-aclib.RunTapirCommand ('SetIFCClassificationReferencesOfElements', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetIFCClassificationReferencesOfElements', {
     'elementIFCClassificationReferences': [{
         'elementId': elementId,
         'identification': 'TE-01',
@@ -23,7 +23,7 @@ aclib.RunTapirCommand ('SetIFCClassificationReferencesOfElements', {
             'location': 'https://example.com/classification'
         }
     }]
-})
+}))
 
 aclib.RunTapirCommand ('GetIFCClassificationReferencesOfElements', {
     'elements': [{'elementId': elementId}],
@@ -32,4 +32,4 @@ aclib.RunTapirCommand ('GetIFCClassificationReferencesOfElements', {
 
 aclib.RunTapirCommand ('RemoveIFCClassificationReferencesOfElements', {
     'elementIFCClassificationReferences': [{'elementId': elementId, 'referencedSource': {'name': 'Tapir Example Classification'}}]
-}, debug = False)
+})

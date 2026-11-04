@@ -6,7 +6,7 @@ renovationFilters = response['renovationFilters']
 if not renovationFilters:
     raise SystemExit ('No renovation filter in the project.')
 
-aclib.RunTapirCommand ('SetActiveRenovationFilter', {'name': renovationFilters[0]['name']})
+aclib.PrintJson (aclib.RunTapirCommand ('SetActiveRenovationFilter', {'name': renovationFilters[0]['name']}))
 
 if 'activeRenovationFilterId' in response:
-    aclib.RunTapirCommand ('SetActiveRenovationFilter', {'renovationFilterId': response['activeRenovationFilterId']})
+    aclib.PrintJson (aclib.RunTapirCommand ('SetActiveRenovationFilter', {'renovationFilterId': response['activeRenovationFilterId']}))

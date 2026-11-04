@@ -5,4 +5,4 @@ keys = aclib.RunTapirCommand ('GetProjectDataKeys')['keys']
 if not keys:
     raise SystemExit ('No project data in the project.')
 
-aclib.RunTapirCommand ('GetProjectData', {'names': [k['name'] for k in keys]})
+aclib.PrintJson (aclib.RunTapirCommand ('GetProjectData', {'names': [k['name'] for k in keys]}))

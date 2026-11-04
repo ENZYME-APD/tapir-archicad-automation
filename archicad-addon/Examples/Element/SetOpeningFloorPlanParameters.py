@@ -10,13 +10,13 @@ if not openings:
 
 old = aclib.RunTapirCommand ('GetOpeningFloorPlanParameters', {'elements': openings})['openings'][0]['floorPlanParameters']
 
-aclib.RunTapirCommand ('SetOpeningFloorPlanParameters', {'openingsWithFloorPlanParameters': [{
+aclib.PrintJson (aclib.RunTapirCommand ('SetOpeningFloorPlanParameters', {'openingsWithFloorPlanParameters': [{
     'elementId': openings[0]['elementId'],
     'floorPlanParameters': {'showReferenceAxis': not old['showReferenceAxis']}
-}]})
+}]}))
 aclib.RunTapirCommand ('GetOpeningFloorPlanParameters', {'elements': openings})
 
-aclib.RunTapirCommand ('SetOpeningFloorPlanParameters', {'openingsWithFloorPlanParameters': [{
+aclib.PrintJson (aclib.RunTapirCommand ('SetOpeningFloorPlanParameters', {'openingsWithFloorPlanParameters': [{
     'elementId': openings[0]['elementId'],
     'floorPlanParameters': {'showReferenceAxis': old['showReferenceAxis']}
-}]})
+}]}))

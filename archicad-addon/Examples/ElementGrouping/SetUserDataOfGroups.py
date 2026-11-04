@@ -4,16 +4,16 @@ The script ungroups the walls again at the end. Needs at least two Walls that ar
 """
 import aclib
 
-walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'}, debug = False)['elements'][:2]
+walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:2]
 if len (walls) < 2:
     raise SystemExit ('Needs at least two walls.')
-groups = aclib.RunTapirCommand ('CreateGroups', {'elementGroups': [{'elements': walls}]}, debug = False)['groupGuids']
+groups = aclib.RunTapirCommand ('CreateGroups', {'elementGroups': [{'elements': walls}]})['groupGuids']
 groups = [g for g in groups if 'groupId' in g]
 
-aclib.RunTapirCommand ('SetUserDataOfGroups', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetUserDataOfGroups', {
     'groups': groups,
     'pairs': [{'key': 'tapirExample.note', 'value': 'Grouped by a Tapir example'}]
-})
+}))
 aclib.RunTapirCommand ('GetUserDataOfGroups', {'groups': groups})
 
-aclib.RunTapirCommand ('UngroupElements', {'groups': groups}, debug = False)
+aclib.RunTapirCommand ('UngroupElements', {'groups': groups})

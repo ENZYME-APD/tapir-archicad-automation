@@ -15,14 +15,14 @@ hinge = {
     'ux': 'Rigid', 'uy': 'Rigid', 'uz': 'Rigid', 'fix': 'Rigid', 'fiy': 'Free', 'fiz': 'Rigid',
     'amPartRef': {'elemGuid': memberId, 'partRefType': 'EndVertex'}
 }
-aclib.RunTapirCommand ('SetAnalyticalReleases', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetAnalyticalReleases', {
     'releases': [{
         'elementId': memberId,
         'release': {'guid': oldRelease['guid'], 'releaseDescriptions': oldRelease['releaseDescriptions'] + [hinge]}
     }]
-})
+}))
 aclib.RunTapirCommand ('GetAnalyticalReleases', {'elements': [{'elementId': memberId}]})
 
-aclib.RunTapirCommand ('SetAnalyticalReleases', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetAnalyticalReleases', {
     'releases': [{'elementId': memberId, 'release': oldRelease}]
-})
+}))
