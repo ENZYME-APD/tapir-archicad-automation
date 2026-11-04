@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-04 04:57 UTC",
+ "generatedAt": "2026-11-04 05:03 UTC",
  "versions": [
   25,
   26,
@@ -12,8 +12,8 @@
   "not applicable": 627,
   "done": 1860,
   "claimed": 47,
-  "merged": 176,
-  "in progress": 90,
+  "merged": 223,
+  "in progress": 43,
   "open": 77,
   "skipped": 2
  },
@@ -2935,10 +2935,6 @@
      "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
     },
     {
-     "number": 1618,
-     "title": "SetDetailsOfElements: say why Archicad refused the element (hidden or locked layer)"
-    },
-    {
      "number": 1395,
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
     }
@@ -3671,12 +3667,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 674,
-     "title": "Verify project info field create/delete instead of trusting NoError (#667)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3699,12 +3690,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 674,
-     "title": "Verify project info field create/delete instead of trusting NoError (#667)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3783,12 +3769,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 674,
-     "title": "Verify project info field create/delete instead of trusting NoError (#667)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3916,12 +3897,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 674,
-     "title": "Verify project info field create/delete instead of trusting NoError (#667)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4155,32 +4131,16 @@
      "title": "[2/6] SetLibraryPartParameters"
     },
     {
-     "number": 1517,
-     "title": "[6/6] Add Get3DDocumentSettings and Set3DDocumentSettings"
-    },
-    {
      "number": 1470,
      "title": "Report failed creation transactions instead of returning element results"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
     {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
-    },
-    {
-     "number": 968,
-     "title": "[1/3] Add Get/SetPropertyValuesOfElementDefaults"
     }
    ],
    "issues": [
@@ -4191,10 +4151,6 @@
     {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    },
-    {
-     "number": 1108,
-     "title": "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846"
     },
     {
      "number": 1048,
@@ -6971,10 +6927,6 @@
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
     },
     {
-     "number": 1618,
-     "title": "SetDetailsOfElements: say why Archicad refused the element (hidden or locked layer)"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     },
@@ -7512,12 +7464,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1618,
-     "title": "SetDetailsOfElements: say why Archicad refused the element (hidden or locked layer)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7564,16 +7511,8 @@
      "title": "[3/4] Add CopyLibraryParts command"
     },
     {
-     "number": 1494,
-     "title": "[1/4] Add GetLibraryPartScripts"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    },
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
     },
     {
      "number": 995,
@@ -8160,10 +8099,6 @@
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    },
-    {
-     "number": 1032,
-     "title": "[2/4] Add GetSnapPointsOfElements: the snap points (hotspots) of any element with their neig kind"
     }
    ],
    "issues": []
@@ -8184,14 +8119,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1032,
-     "title": "[2/4] Add GetSnapPointsOfElements: the snap points (hotspots) of any element with their neig kind"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8473,14 +8403,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 968,
-     "title": "[1/3] Add Get/SetPropertyValuesOfElementDefaults"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9257,14 +9182,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 968,
-     "title": "[1/3] Add Get/SetPropertyValuesOfElementDefaults"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11402,12 +11322,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11721,14 +11636,9 @@
    "olderNames": [
     "APIEnv_ChangeGDLDateID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1325,
-     "title": "[1/6] Add GetGDLDate and SetGDLDate commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11910,14 +11820,9 @@
    "olderNames": [
     "APIEnv_GetGDLDateID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1325,
-     "title": "[1/6] Add GetGDLDate and SetGDLDate commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12924,20 +12829,10 @@
    "olderNames": [
     "APIAny_GetUnloadedLibpartNameID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1227,
-     "title": "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1218,
-     "title": "Expose ACAPI_LibraryPart_GetUnloadedLibpartName (name of a missing library part)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_InstallESYMHandler",
@@ -14822,10 +14717,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1517,
-     "title": "[6/6] Add Get3DDocumentSettings and Set3DDocumentSettings"
-    },
     {
      "number": 765,
      "title": "RenameNavigatorItem: set a view's ID with newId and fail when the ID is kept"
@@ -17219,14 +17110,6 @@
     {
      "number": 1147,
      "title": "[2/4] Add CheckPropertyValues command (ACAPI_Property_IsValidValue)"
-    },
-    {
-     "number": 1146,
-     "title": "[1/4] Add CheckPropertyExpressions and GetPropertyExpressionReferences"
-    },
-    {
-     "number": 968,
-     "title": "[1/3] Add Get/SetPropertyValuesOfElementDefaults"
     }
    ],
    "issues": []
@@ -17275,14 +17158,9 @@
    "olderNames": [
     "APIAny_GetPropertyExprReferenceStringID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1146,
-     "title": "[1/4] Add CheckPropertyExpressions and GetPropertyExpressionReferences"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1145,
@@ -17537,10 +17415,6 @@
     {
      "number": 1147,
      "title": "[2/4] Add CheckPropertyValues command (ACAPI_Property_IsValidValue)"
-    },
-    {
-     "number": 968,
-     "title": "[1/3] Add Get/SetPropertyValuesOfElementDefaults"
     }
    ],
    "issues": []
@@ -18691,14 +18565,9 @@
    "olderNames": [
     "APIEnv_GetTWAccessRightID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1449,
-     "title": "[2/5] Add GetTeamworkAccessRights command"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -19943,14 +19812,9 @@
    "olderNames": [
     "APIEnv_ChangeDocumentFrom3DSettingsID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1517,
-     "title": "[6/6] Add Get3DDocumentSettings and Set3DDocumentSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1048,
@@ -20319,14 +20183,9 @@
    "olderNames": [
     "APIEnv_GetDocumentFrom3DSettingsID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1517,
-     "title": "[6/6] Add Get3DDocumentSettings and Set3DDocumentSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1048,
@@ -21689,14 +21548,9 @@
     26
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1362,
-     "title": "[3/3] Batch property commands on Archicad 25–26: ModifyPropertyValueOfElements, MakePropertyAvailable/UnavailableForElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -21711,14 +21565,9 @@
     26
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1362,
-     "title": "[3/3] Batch property commands on Archicad 25–26: ModifyPropertyValueOfElements, MakePropertyAvailable/UnavailableForElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -21733,14 +21582,9 @@
     26
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1362,
-     "title": "[3/3] Batch property commands on Archicad 25–26: ModifyPropertyValueOfElements, MakePropertyAvailable/UnavailableForElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -22051,20 +21895,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1517,
-     "title": "[6/6] Add Get3DDocumentSettings and Set3DDocumentSettings"
-    },
-    {
-     "number": 1449,
-     "title": "[2/5] Add GetTeamworkAccessRights command"
-    },
-    {
-     "number": 1325,
-     "title": "[1/6] Add GetGDLDate and SetGDLDate commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
@@ -22102,14 +21933,6 @@
     {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
-    },
-    {
-     "number": 1227,
-     "title": "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"
-    },
-    {
-     "number": 1146,
-     "title": "[1/4] Add CheckPropertyExpressions and GetPropertyExpressionReferences"
     },
     {
      "number": 1094,
@@ -24028,12 +23851,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24244,12 +24062,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24265,12 +24078,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24384,12 +24192,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24440,12 +24243,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24549,12 +24347,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24606,18 +24399,8 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1108,
-     "title": "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionCombinationViewSettings::GetStatus",
@@ -24635,12 +24418,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1108,
-     "title": "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionCombinationViewSettings::Modifier::SetMainModelOnly",
@@ -24705,12 +24483,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1108,
-     "title": "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionCombinationViewSettings::SetStandardCombination",
@@ -24727,12 +24500,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1108,
-     "title": "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionManager::ActivateDesignOptionInCombination",
@@ -24970,12 +24738,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1108,
-     "title": "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionManager::GetDesignOptionCombinations",
@@ -25076,18 +24839,8 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionManager::GetHotlinkInstanceDesignOptionTable",
@@ -25101,20 +24854,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionManager::GetTWID",
@@ -25247,20 +24990,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionSet::GetGuid",
@@ -25293,12 +25026,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25398,20 +25126,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::ActivateOptionInSet",
@@ -25425,20 +25143,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::DeactivateCombination",
@@ -25452,20 +25160,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::DeactivateOptionsInSet",
@@ -25479,20 +25177,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::GetActiveCombination",
@@ -25508,18 +25196,8 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::GetActiveOptionInSet",
@@ -25535,18 +25213,8 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::GetCombinationsNames",
@@ -25562,18 +25230,8 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::GetFilterMode",
@@ -25589,18 +25247,8 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::GetNodeGuid",
@@ -25616,18 +25264,8 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::GetOptionsNamesOfSet",
@@ -25643,18 +25281,8 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::GetSetsNames",
@@ -25670,18 +25298,8 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::SetFilterMode",
@@ -25695,20 +25313,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::EditNotificationInterface::ElementsEdited",
@@ -26657,10 +26265,6 @@
     {
      "number": 1668,
      "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands"
-    },
-    {
-     "number": 1618,
-     "title": "SetDetailsOfElements: say why Archicad refused the element (hidden or locked layer)"
     },
     {
      "number": 1537,
@@ -27948,10 +27552,6 @@
     {
      "number": 1502,
      "title": "[3/4] Add CopyLibraryParts command"
-    },
-    {
-     "number": 1494,
-     "title": "[1/4] Add GetLibraryPartScripts"
     }
    ],
    "issues": []
@@ -28193,24 +27793,12 @@
      "title": "[2/4] Add CheckPropertyValues command (ACAPI_Property_IsValidValue)"
     },
     {
-     "number": 1146,
-     "title": "[1/4] Add CheckPropertyExpressions and GetPropertyExpressionReferences"
-    },
-    {
      "number": 1125,
      "title": "Add GetModelExtent command (ACAPI_Element_GetExtent3D)"
     },
     {
-     "number": 1032,
-     "title": "[2/4] Add GetSnapPointsOfElements: the snap points (hotspots) of any element with their neig kind"
-    },
-    {
      "number": 1019,
      "title": "Add element component commands: list components and read their properties"
-    },
-    {
-     "number": 968,
-     "title": "[1/3] Add Get/SetPropertyValuesOfElementDefaults"
     }
    ],
    "issues": []
@@ -29599,7 +29187,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -29609,10 +29197,6 @@
     {
      "number": 1502,
      "title": "[3/4] Add CopyLibraryParts command"
-    },
-    {
-     "number": 1494,
-     "title": "[1/4] Add GetLibraryPartScripts"
     }
    ],
    "issues": [
@@ -29653,7 +29237,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -29663,10 +29247,6 @@
     {
      "number": 1502,
      "title": "[3/4] Add CopyLibraryParts command"
-    },
-    {
-     "number": 1494,
-     "title": "[1/4] Add GetLibraryPartScripts"
     }
    ],
    "issues": [
@@ -29903,7 +29483,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -29913,10 +29493,6 @@
     {
      "number": 1502,
      "title": "[3/4] Add CopyLibraryParts command"
-    },
-    {
-     "number": 1494,
-     "title": "[1/4] Add GetLibraryPartScripts"
     }
    ],
    "issues": [
@@ -29971,7 +29547,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -29981,10 +29557,6 @@
     {
      "number": 1502,
      "title": "[3/4] Add CopyLibraryParts command"
-    },
-    {
-     "number": 1494,
-     "title": "[1/4] Add GetLibraryPartScripts"
     }
    ],
    "issues": [
@@ -30057,7 +29629,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -30067,10 +29639,6 @@
     {
      "number": 1502,
      "title": "[3/4] Add CopyLibraryParts command"
-    },
-    {
-     "number": 1494,
-     "title": "[1/4] Add GetLibraryPartScripts"
     }
    ],
    "issues": [
@@ -30126,10 +29694,6 @@
     {
      "number": 1502,
      "title": "[3/4] Add CopyLibraryParts command"
-    },
-    {
-     "number": 1494,
-     "title": "[1/4] Add GetLibraryPartScripts"
     }
    ],
    "issues": []
@@ -30147,7 +29711,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -30157,10 +29721,6 @@
     {
      "number": 1502,
      "title": "[3/4] Add CopyLibraryParts command"
-    },
-    {
-     "number": 1494,
-     "title": "[1/4] Add GetLibraryPartScripts"
     }
    ],
    "issues": [
@@ -30201,7 +29761,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -30211,10 +29771,6 @@
     {
      "number": 1502,
      "title": "[3/4] Add CopyLibraryParts command"
-    },
-    {
-     "number": 1494,
-     "title": "[1/4] Add GetLibraryPartScripts"
     }
    ],
    "issues": [
@@ -30361,7 +29917,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -30371,10 +29927,6 @@
     {
      "number": 1502,
      "title": "[3/4] Add CopyLibraryParts command"
-    },
-    {
-     "number": 1494,
-     "title": "[1/4] Add GetLibraryPartScripts"
     }
    ],
    "issues": [
@@ -30397,7 +29949,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -30407,10 +29959,6 @@
     {
      "number": 1502,
      "title": "[3/4] Add CopyLibraryParts command"
-    },
-    {
-     "number": 1494,
-     "title": "[1/4] Add GetLibraryPartScripts"
     }
    ],
    "issues": [
@@ -30451,7 +29999,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -30461,10 +30009,6 @@
     {
      "number": 1502,
      "title": "[3/4] Add CopyLibraryParts command"
-    },
-    {
-     "number": 1494,
-     "title": "[1/4] Add GetLibraryPartScripts"
     }
    ],
    "issues": [
@@ -31427,10 +30971,6 @@
      "title": "[3/4] Add CopyLibraryParts command"
     },
     {
-     "number": 1494,
-     "title": "[1/4] Add GetLibraryPartScripts"
-    },
-    {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
     }
@@ -31501,10 +31041,6 @@
      "title": "[3/4] Add CopyLibraryParts command"
     },
     {
-     "number": 1494,
-     "title": "[1/4] Add GetLibraryPartScripts"
-    },
-    {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
     },
@@ -31513,20 +31049,12 @@
      "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
     },
     {
-     "number": 1325,
-     "title": "[1/6] Add GetGDLDate and SetGDLDate commands"
-    },
-    {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
     },
     {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
-    },
-    {
-     "number": 1227,
-     "title": "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"
     }
    ],
    "issues": []
@@ -31665,20 +31193,12 @@
      "title": "[3/4] Add CopyLibraryParts command"
     },
     {
-     "number": 1494,
-     "title": "[1/4] Add GetLibraryPartScripts"
-    },
-    {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
     },
     {
      "number": 1353,
      "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
-    },
-    {
-     "number": 1325,
-     "title": "[1/6] Add GetGDLDate and SetGDLDate commands"
     },
     {
      "number": 1273,
@@ -31691,10 +31211,6 @@
     {
      "number": 1234,
      "title": "Add GetGDLParametersOfLibraryParts: default GDL parameters of a library part"
-    },
-    {
-     "number": 1227,
-     "title": "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"
     }
    ],
    "issues": []
@@ -32174,10 +31690,6 @@
     {
      "number": 1502,
      "title": "[3/4] Add CopyLibraryParts command"
-    },
-    {
-     "number": 1494,
-     "title": "[1/4] Add GetLibraryPartScripts"
     }
    ],
    "issues": [
@@ -32248,10 +31760,6 @@
      "title": "[3/4] Add CopyLibraryParts command"
     },
     {
-     "number": 1494,
-     "title": "[1/4] Add GetLibraryPartScripts"
-    },
-    {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
     }
@@ -32297,10 +31805,6 @@
     {
      "number": 1502,
      "title": "[3/4] Add CopyLibraryParts command"
-    },
-    {
-     "number": 1494,
-     "title": "[1/4] Add GetLibraryPartScripts"
     },
     {
      "number": 1244,
@@ -32955,24 +32459,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -32994,10 +32486,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
@@ -33047,16 +32535,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -33100,10 +32580,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -33201,10 +32677,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -33223,12 +32695,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -33317,14 +32784,6 @@
      "title": "[3/4] Add CopyLibraryParts command"
     },
     {
-     "number": 1494,
-     "title": "[1/4] Add GetLibraryPartScripts"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1431,
      "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
     },
@@ -33351,18 +32810,6 @@
     {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
-    },
-    {
-     "number": 1227,
-     "title": "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"
-    },
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    },
-    {
-     "number": 1032,
-     "title": "[2/4] Add GetSnapPointsOfElements: the snap points (hotspots) of any element with their neig kind"
     },
     {
      "number": 995,
@@ -33421,16 +32868,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -33536,24 +32975,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -33632,10 +33059,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
@@ -33767,16 +33190,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -33893,12 +33308,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -33918,16 +33328,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -33971,24 +33373,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -34064,10 +33454,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -34087,12 +33473,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -34289,16 +33670,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -34316,14 +33689,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -34436,12 +33804,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -34630,12 +33993,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -34849,16 +34207,12 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": [
@@ -35013,14 +34367,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35054,14 +34403,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35136,14 +34480,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35159,14 +34498,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35182,14 +34516,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35205,14 +34534,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35228,14 +34552,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35251,14 +34570,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35274,14 +34588,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35323,24 +34632,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -35723,10 +35020,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -35746,12 +35039,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36115,10 +35403,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -36242,16 +35526,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -36295,24 +35571,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -36472,10 +35736,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -36513,12 +35773,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36775,12 +36030,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36936,16 +36186,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -36989,24 +36231,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -37149,10 +36379,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -37241,12 +36467,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37467,12 +36688,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37594,16 +36810,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -37647,24 +36855,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -37740,10 +36936,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -37763,12 +36955,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37965,16 +37152,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -38016,24 +37195,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -38226,10 +37393,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -38248,12 +37411,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38527,16 +37685,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -38569,24 +37719,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -38610,10 +37748,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
@@ -38954,16 +38088,8 @@
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -39021,24 +38147,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -39490,16 +38604,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -39523,24 +38629,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -39725,16 +38819,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -39820,10 +38906,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -39847,24 +38929,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -40209,16 +39279,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -40325,10 +39387,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -40352,24 +39410,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -40607,16 +39653,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -40659,20 +39697,12 @@
      "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
     },
     {
      "number": 1717,
@@ -40699,10 +39729,6 @@
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1431,
      "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
     },
@@ -40727,16 +39753,8 @@
      "title": "[2/4] Add CheckPropertyValues command (ACAPI_Property_IsValidValue)"
     },
     {
-     "number": 1146,
-     "title": "[1/4] Add CheckPropertyExpressions and GetPropertyExpressionReferences"
-    },
-    {
      "number": 1094,
      "title": "Add GetAllAutoTextKeys and InterpretAutoTexts commands"
-    },
-    {
-     "number": 1032,
-     "title": "[2/4] Add GetSnapPointsOfElements: the snap points (hotspots) of any element with their neig kind"
     },
     {
      "number": 1019,
@@ -40745,10 +39763,6 @@
     {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
-    },
-    {
-     "number": 968,
-     "title": "[1/3] Add Get/SetPropertyValuesOfElementDefaults"
     },
     {
      "number": 463,
@@ -40856,12 +39870,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41002,12 +40011,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -41026,14 +40030,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -41059,10 +40058,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     }
@@ -41084,12 +40079,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41127,12 +40117,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41182,12 +40167,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -41206,14 +40186,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -41237,12 +40212,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41256,14 +40226,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -41323,12 +40288,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -41347,14 +40307,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -41442,12 +40397,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41463,12 +40413,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41484,12 +40429,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41526,16 +40466,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -41598,24 +40530,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -41662,16 +40582,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -41715,10 +40627,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -41781,24 +40689,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -41820,10 +40716,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
@@ -41873,16 +40765,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -41926,10 +40810,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -41992,24 +40872,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": [
@@ -42055,10 +40923,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
@@ -42191,12 +41055,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -42238,12 +41097,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -42264,16 +41118,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -42374,10 +41220,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": [
@@ -43076,14 +41918,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43380,12 +42217,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43401,12 +42233,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43422,12 +42249,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43483,16 +42305,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -43531,14 +42345,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43561,24 +42370,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -43601,10 +42398,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -43727,16 +42520,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -43780,24 +42565,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -44180,10 +42953,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -44203,12 +42972,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44572,10 +43336,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -44699,16 +43459,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -44752,24 +43504,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -44912,10 +43652,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -45004,12 +43740,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45230,12 +43961,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45357,16 +44083,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -45410,24 +44128,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -45587,10 +44293,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -45628,12 +44330,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45890,12 +44587,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46051,16 +44743,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -46102,24 +44786,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -46312,10 +44984,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -46334,12 +45002,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46564,10 +45227,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -46622,16 +45281,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -46658,24 +45309,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -46874,16 +45513,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -46973,12 +45604,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47050,16 +45676,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -47086,24 +45704,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -47203,10 +45809,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
@@ -47317,10 +45919,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -47525,12 +46123,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47549,16 +46142,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47577,12 +46161,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47601,12 +46180,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47627,16 +46201,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -47673,10 +46239,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
@@ -47721,10 +46283,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -47796,16 +46354,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47823,12 +46372,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47846,12 +46390,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47871,16 +46410,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -48214,10 +46745,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -48255,12 +46782,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48352,14 +46874,6 @@
      "title": "[3/4] Add CopyLibraryParts command"
     },
     {
-     "number": 1494,
-     "title": "[1/4] Add GetLibraryPartScripts"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1431,
      "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
     },
@@ -48386,18 +46900,6 @@
     {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
-    },
-    {
-     "number": 1227,
-     "title": "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"
-    },
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    },
-    {
-     "number": 1032,
-     "title": "[2/4] Add GetSnapPointsOfElements: the snap points (hotspots) of any element with their neig kind"
     },
     {
      "number": 995,
@@ -48459,16 +46961,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -48512,24 +47006,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -48551,10 +47033,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
@@ -48804,24 +47282,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": [
@@ -48883,10 +47349,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
@@ -49274,16 +47736,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49400,16 +47853,8 @@
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -49490,10 +47935,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
@@ -49682,16 +48123,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49803,16 +48235,8 @@
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -49837,10 +48261,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -49907,24 +48327,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": [
@@ -49990,10 +48398,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
@@ -50369,16 +48773,8 @@
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -50446,10 +48842,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
@@ -50641,16 +49033,8 @@
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -50717,24 +49101,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": [
@@ -50896,10 +49268,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
@@ -51400,16 +49768,8 @@
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -51566,10 +49926,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
@@ -51974,16 +50330,8 @@
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -52095,24 +50443,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -52135,10 +50471,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -52229,14 +50561,6 @@
      "title": "[3/4] Add CopyLibraryParts command"
     },
     {
-     "number": 1494,
-     "title": "[1/4] Add GetLibraryPartScripts"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1431,
      "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
     },
@@ -52263,18 +50587,6 @@
     {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
-    },
-    {
-     "number": 1227,
-     "title": "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"
-    },
-    {
-     "number": 1115,
-     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
-    },
-    {
-     "number": 1032,
-     "title": "[2/4] Add GetSnapPointsOfElements: the snap points (hotspots) of any element with their neig kind"
     },
     {
      "number": 995,
@@ -52333,16 +50645,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -52368,24 +50672,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -52406,10 +50698,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
@@ -52477,10 +50765,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -52502,16 +50786,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -52553,10 +50829,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -52619,24 +50891,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -52658,10 +50918,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
@@ -52711,16 +50967,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -52764,10 +51012,6 @@
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -52834,24 +51078,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -52892,10 +51124,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
     {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
@@ -53110,16 +51338,8 @@
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -53299,16 +51519,8 @@
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -53371,24 +51583,12 @@
      "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1719,
-     "title": "CreateMEPRoutingElements, ModifyMEPRoutingElements: reject an mepSystemId that is not an MEP system"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -53517,16 +51717,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -53650,12 +51842,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -53693,16 +51880,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -53927,12 +52106,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1108,
-     "title": "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::ModelViews::View::GetGuid",
@@ -53987,12 +52161,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1729,
-     "title": "CreateMEPElements: choose the library part, size, MEP system and port settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -59106,16 +57275,8 @@
      "title": "[2/4] Add CheckPropertyValues command (ACAPI_Property_IsValidValue)"
     },
     {
-     "number": 1146,
-     "title": "[1/4] Add CheckPropertyExpressions and GetPropertyExpressionReferences"
-    },
-    {
      "number": 1019,
      "title": "Add element component commands: list components and read their properties"
-    },
-    {
-     "number": 968,
-     "title": "[1/3] Add Get/SetPropertyValuesOfElementDefaults"
     }
    ],
    "issues": [
@@ -60214,20 +58375,12 @@
      "title": "[3/4] Add CopyLibraryParts command"
     },
     {
-     "number": 1494,
-     "title": "[1/4] Add GetLibraryPartScripts"
-    },
-    {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
     },
     {
      "number": 1353,
      "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
-    },
-    {
-     "number": 1325,
-     "title": "[1/6] Add GetGDLDate and SetGDLDate commands"
     },
     {
      "number": 1292,
@@ -60242,24 +58395,12 @@
      "title": "Add GetLibrariesOfLibParts command"
     },
     {
-     "number": 1227,
-     "title": "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"
-    },
-    {
      "number": 1147,
      "title": "[2/4] Add CheckPropertyValues command (ACAPI_Property_IsValidValue)"
     },
     {
-     "number": 1146,
-     "title": "[1/4] Add CheckPropertyExpressions and GetPropertyExpressionReferences"
-    },
-    {
      "number": 1019,
      "title": "Add element component commands: list components and read their properties"
-    },
-    {
-     "number": 968,
-     "title": "[1/3] Add Get/SetPropertyValuesOfElementDefaults"
     }
    ],
    "issues": []

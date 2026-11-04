@@ -1,14 +1,14 @@
 {
- "generatedAt": "2026-11-04 04:57 UTC",
+ "generatedAt": "2026-11-04 05:03 UTC",
  "counts": {
-  "done": 567,
-  "open": 99,
-  "merged": 17,
+  "done": 568,
+  "open": 112,
+  "merged": 18,
   "not applicable": 1
  },
  "parameters": {
-  "all": 527,
-  "partial": 11,
+  "all": 528,
+  "partial": 12,
   "json": 46
  },
  "items": [
@@ -2487,7 +2487,7 @@
    "id": "SetDetailsOfElements",
    "group": "Element Commands",
    "version": "1.0.7",
-   "brief": "Sets the details of the given elements (floor, layer, order, Element ID etc).",
+   "brief": "Sets the details of the given elements (floor, layer, order, Element ID etc). An element Archicad does not let you edit (its layer is hidden or locked, it is locked, or it is not reserved by you in teamwork) gets a failed execution result naming the reason.",
    "status": "done",
    "reason": "",
    "components": [
@@ -2686,6 +2686,28 @@
     {
      "name": "GetLibPartTransformationsComponent",
      "path": "Components/ElementsComponents/GetLibPartTransformationsComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetSnapPointsOfElements",
+   "group": "Element Commands",
+   "version": "1.8.1",
+   "brief": "Gets the snap points (hotspots) of the given elements, of any element type: the points of an element that the cursor snaps to and dimensions attach to (for example the endpoints of a Wall's reference line or the vertices of a Slab), in world coordinates, each with the neig kind and subindex identifying which point of the element it is. For the 2D hotspots of library part instances see GetHotspotsOfElements. The output is aligned with the input array of elements.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "GetSnapPointsOfElementsComponent",
+     "path": "Components/ElementsComponents/GetSnapPointsOfElementsComponent.cs"
     }
    ],
    "parameters": "all",
@@ -7391,6 +7413,31 @@
    "issues": []
   },
   {
+   "id": "SetPropertyValuesOfElementDefaults",
+   "group": "Property Commands",
+   "version": "1.8.1",
+   "brief": "Sets the property values of the tool defaults (the settings new elements get) of element types, so every element placed afterwards gets them, without saving and applying a favorite.",
+   "status": "done",
+   "reason": "",
+   "components": [
+    {
+     "name": "SetPropertyValuesOfElementDefaultsComponent",
+     "path": "Components/PropertiesComponents/SetPropertyValuesOfElementDefaultsComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "elementDefaultPropertyValues",
+    "elementDefaultPropertyValues.elementType",
+    "elementDefaultPropertyValues.propertyId",
+    "elementDefaultPropertyValues.propertyValue"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetPropertyValuesOfAttributes",
    "group": "Property Commands",
    "version": "1.1.8",
@@ -7750,7 +7797,7 @@
    "id": "ModifyPropertyValueOfElements",
    "group": "Property Commands",
    "version": "1.8.0",
-   "brief": "Sets one property value on all the given elements in a single step. If the property is not available for any of the elements, none of them is changed. Available from Archicad 27.",
+   "brief": "Sets one property value on all the given elements in a single step. If the property is not available for any of the elements, none of them is changed.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7766,6 +7813,21 @@
     "propertyId",
     "propertyValue"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetPropertyExpressionReferences",
+   "group": "Property Commands",
+   "version": "1.8.1",
+   "brief": "Returns the strings that refer to the given properties in property expressions.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -7804,7 +7866,7 @@
    "id": "MakePropertyAvailableForElements",
    "group": "Property Commands",
    "version": "1.7.3",
-   "brief": "Makes a property definition available for all the given elements. Available only in Archicad 27.",
+   "brief": "Makes a property definition available for all the given elements. Available in Archicad 25, 26 and 27.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7827,7 +7889,7 @@
    "id": "MakePropertyUnavailableForElements",
    "group": "Property Commands",
    "version": "1.7.3",
-   "brief": "Makes a property definition unavailable for all the given elements. Available only in Archicad 27.",
+   "brief": "Makes a property definition unavailable for all the given elements. Available in Archicad 25, 26 and 27.",
    "status": "done",
    "reason": "",
    "components": [
@@ -10350,6 +10412,21 @@
    "issues": []
   },
   {
+   "id": "GetMissingLibPartNames",
+   "group": "Library Commands",
+   "version": "1.8.1",
+   "brief": "Gets the library part name of the given placed Object, Lamp, Window or Door elements, even if the library containing the part is not loaded. Use it to find the parts of elements that are shown as dots because their library part is missing.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "FindLibraryParts",
    "group": "Library Commands",
    "version": "1.8.1",
@@ -10442,6 +10519,36 @@
    "coveredParameters": [
     "strings"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetGDLDate",
+   "group": "Library Commands",
+   "version": "1.8.1",
+   "brief": "Gets the date GDL scripts see, as the integer value the Archicad API returns.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetGDLDate",
+   "group": "Library Commands",
+   "version": "1.8.1",
+   "brief": "Sets the date GDL scripts see, in the integer format GetGDLDate returns. Useful to test date-dependent library parts; set the value read with GetGDLDate back to restore it.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -10662,6 +10769,21 @@
     "ancestorSubtype",
     "path"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetLibraryPartScripts",
+   "group": "Library Commands",
+   "version": "1.8.1",
+   "brief": "Gets the master, parameter, 2D, 3D and properties scripts of loaded library parts, given by name or by an element placed from them, with the unique ID of each part. A script section the part does not have is reported as not present. Password protected parts need their password. Available from Archicad 28.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 5,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -11069,6 +11191,21 @@
    "group": "Teamwork Commands",
    "version": "1.7.4",
    "brief": "Returns for each given object, for example an element, whether the current Teamwork user has the right to create objects of its kind and to delete or modify it.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetTeamworkAccessRights",
+   "group": "Teamwork Commands",
+   "version": "1.8.1",
+   "brief": "Returns whether the role of the current user has the given Teamwork access rights (API_TWAccessRights names without the API prefix, e.g. LayersCreate), all of them when no names are given.",
    "status": "open",
    "reason": "",
    "components": [],
@@ -12293,6 +12430,36 @@
     "zoomScaleX",
     "zoomScaleY"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "Get3DDocumentSettings",
+   "group": "Navigator Commands",
+   "version": "1.8.1",
+   "brief": "Gets the settings of a 3D Document, given by its navigator item: the element and story filter, the 3D cut, the projection, the window and zoom, the uniform cut and uncut surface attributes, the source and the boundary contours, with the field names of API_DocumentFrom3DType.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "Set3DDocumentSettings",
+   "group": "Navigator Commands",
+   "version": "1.8.1",
+   "brief": "Changes the given settings of a 3D Document, given by its navigator item, in the form Get3DDocumentSettings returns; the settings not given are kept. Returns the settings read back after the change.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 84,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -13744,6 +13911,36 @@
    "issues": []
   },
   {
+   "id": "GetHotlinkDesignOptionTables",
+   "group": "Design Options Commands",
+   "version": "1.8.1",
+   "brief": "Retrieves the design option table of the given hotlink nodes and placed hotlink instances: the filter mode (main model only, by options or by combination), the design option sets, options and combinations of the hotlinked module and which of them are active. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetHotlinkDesignOptionTables",
+   "group": "Design Options Commands",
+   "version": "1.8.1",
+   "brief": "Sets the filter mode, the active combination and the active option of sets in the design option table of the given placed hotlink instances. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 7,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "SetDefaultDesignOption",
    "group": "Design Options Commands",
    "version": "1.8.0",
@@ -14319,7 +14516,7 @@
    "id": "GetMEPElements",
    "group": "MEP Commands",
    "version": "1.5.6",
-   "brief": "Retrieves the MEP (Mechanical, Electrical, Plumbing) elements of the project, optionally filtered by type and domain. MEP elements are ordinary elements, so the generic element commands work on them as well (for example they can be deleted with the DeleteElements command). Available from Archicad 28.",
+   "brief": "Retrieves the MEP (Mechanical, Electrical, Plumbing) elements of the project (every element the MEP API lists, and from Archicad 30 the electrical panels and devices), optionally filtered by type and domain. MEP elements are ordinary elements, so the generic element commands work on them as well (for example they can be deleted with the DeleteElements command). Available from Archicad 28.",
    "status": "done",
    "reason": "",
    "components": [
@@ -14386,7 +14583,7 @@
    "id": "GetMEPDistributionSystems",
    "group": "MEP Commands",
    "version": "1.5.6",
-   "brief": "Retrieves the MEP distribution systems of the project with their domain, MEP system attribute and member elements. Available from Archicad 28.",
+   "brief": "Retrieves the MEP distribution systems of the project with their domain, MEP system attribute, member elements, physical systems (from Archicad 29) and optionally their tree: the elements from the root element on, each with its previous and next elements and the connecting ports. Available from Archicad 28.",
    "status": "done",
    "reason": "",
    "components": [
@@ -14395,10 +14592,12 @@
      "path": "Components/MEPComponents/GetMEPDistributionSystemsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 0,
+   "parameters": "partial",
+   "parameterCount": 1,
    "coveredParameters": [],
-   "missingParameters": [],
+   "missingParameters": [
+    "includeTree"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -14443,7 +14642,7 @@
    "id": "CreateMEPElements",
    "group": "MEP Commands",
    "version": "1.5.6",
-   "brief": "Creates MEP elements (Terminal, Accessory, Equipment or Fitting) at the given positions, optionally with a changed insulation that applies only to what is placed. Available from Archicad 28.",
+   "brief": "Creates MEP elements (Terminal, Accessory, Equipment or Fitting) at the given positions, optionally with another library part, size (from Archicad 30), MEP system, port sizes and shapes and a changed insulation, which apply only to what is placed. Available from Archicad 28.",
    "status": "done",
    "reason": "",
    "components": [
@@ -14453,19 +14652,29 @@
     }
    ],
    "parameters": "partial",
-   "parameterCount": 9,
+   "parameterCount": 19,
    "coveredParameters": [
     "elementsData",
     "elementsData.domain",
     "elementsData.orientationDirection",
     "elementsData.orientationRotation",
+    "elementsData.ports.height",
+    "elementsData.ports.width",
     "elementsData.position",
     "elementsData.type"
    ],
    "missingParameters": [
     "elementsData.defaults",
     "elementsData.defaults.insulationThickness",
-    "elementsData.defaults.removeInsulation"
+    "elementsData.defaults.removeInsulation",
+    "elementsData.libraryPartId",
+    "elementsData.mepSystemId",
+    "elementsData.ports",
+    "elementsData.ports.diameter",
+    "elementsData.ports.portIndex",
+    "elementsData.ports.shape",
+    "elementsData.xSize",
+    "elementsData.ySize"
    ],
    "pullRequests": [],
    "issues": []
@@ -14811,6 +15020,51 @@
    "components": [],
    "parameters": null,
    "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetMEPPhysicalSystemsOfElements",
+   "group": "MEP Commands",
+   "version": "1.8.1",
+   "brief": "Returns the physical systems each of the given MEP elements is part of. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "PlaceMEPFlexibleSegments",
+   "group": "MEP Commands",
+   "version": "1.8.1",
+   "brief": "Places MEP flexible segments through the given control points with the current settings of the Flexible Segment tool of their domain, optionally with the orientation at both ends. Available from Archicad 28.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 5,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "PlaceMEPTakeOffs",
+   "group": "MEP Commands",
+   "version": "1.8.1",
+   "brief": "Places MEP take-offs on the given routing segments, at a distance from the beginning of the segment and optionally rotated around its axis, with the current settings of the Take-Off tool of their domain, optionally with their length. Available from Archicad 28.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 6,
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
