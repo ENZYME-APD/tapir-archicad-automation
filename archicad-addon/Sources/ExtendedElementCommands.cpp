@@ -8381,6 +8381,38 @@ static GS::Optional<GS::UniString> ApplyRoofPivotEdges (API_ElementMemo& memo, c
     return {};
 }
 
+// The pivot line and the angle of a single-plane roof (u.planeRoof), with the keys of
+// CreateRoofs (begCoordinate, endCoordinate) or of GetDetailsOfElements (begin, end).
+static GS::Optional<GS::UniString> ApplyPlaneRoofPivot (API_Element& element, API_Element& mask, const GS::ObjectState& item, bool& changed)
+{
+    GS::ObjectState pivotLine;
+    if (item.Get ("pivotLine", pivotLine)) {
+        GS::ObjectState begCoordinate;
+        GS::ObjectState endCoordinate;
+        const bool hasBeg = pivotLine.Get ("begCoordinate", begCoordinate) || pivotLine.Get ("begin", begCoordinate);
+        const bool hasEnd = pivotLine.Get ("endCoordinate", endCoordinate) || pivotLine.Get ("end", endCoordinate);
+        if (!hasBeg || !hasEnd) {
+            return GS::UniString ("'pivotLine' must contain 'begCoordinate' and 'endCoordinate' (or 'begin' and 'end').");
+        }
+        if (IsSame2DCoordinate (begCoordinate, endCoordinate)) {
+            return GS::UniString ("Zero-length pivot line: its two ends are identical.");
+        }
+        element.roof.u.planeRoof.baseLine.c1 = Get2DCoordinateFromObjectState (begCoordinate);
+        element.roof.u.planeRoof.baseLine.c2 = Get2DCoordinateFromObjectState (endCoordinate);
+        ACAPI_ELEMENT_MASK_SET (mask, API_RoofType, u.planeRoof.baseLine);
+        changed = true;
+    }
+
+    auto angle = GetOptionalDouble (item, "angle");
+    if (angle.HasValue ()) {
+        element.roof.u.planeRoof.angle = angle.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_RoofType, u.planeRoof.angle);
+        changed = true;
+    }
+
+    return {};
+}
+
 ModifyRoofsCommand::ModifyRoofsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -8432,9 +8464,24 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                             "items": { "$ref": "#/PolyArc" }
                         },
                         "holes": { "$ref": "#/Holes2D" },
+                        "angle": {
+                            "type": "number",
+                            "description": "Single-plane roofs only: the angle of the plane to the XY plane."
+                        },
+                        "pivotLine": {
+                            "type": "object",
+                            "description": "Single-plane roofs only: the line the plane rises from. The ends are named begCoordinate and endCoordinate as in CreateRoofs, or begin and end as GetDetailsOfElements reports them.",
+                            "properties": {
+                                "begCoordinate": { "$ref": "#/Coordinate2D" },
+                                "endCoordinate": { "$ref": "#/Coordinate2D" },
+                                "begin": { "$ref": "#/Coordinate2D" },
+                                "end": { "$ref": "#/Coordinate2D" }
+                            },
+                            "additionalProperties": false
+                        },
                         "pivotEdges": {
                             "type": "array",
-                            "description": "The roof planes of each edge of the pivot polygon, one item per edge in the order GetDetailsOfElements reports them (the outline, then each hole). Only the given fields change; an item without levels keeps its edge. Cannot be combined with polygonOutline.",
+                            "description": "Multi-plane roofs only: the roof planes of each edge of the pivot polygon, one item per edge in the order GetDetailsOfElements reports them (the outline, then each hole). Only the given fields change; an item without levels keeps its edge. Cannot be combined with polygonOutline.",
                             "items": {
                                 "type": "object",
                                 "properties": {
@@ -8494,8 +8541,19 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 results.Push (CreateFailedExecutionResult (err, "Failed to load roof."));
                 continue;
             }
-            if (element.roof.roofClass != API_PolyRoofID) {
-                results.Push (CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "Only multi-plane roofs are supported.")); 
+            const bool isPlaneRoof = element.roof.roofClass == API_PlaneRoofID;
+            if (!isPlaneRoof && element.roof.roofClass != API_PolyRoofID) {
+                results.Push (CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "Only single-plane and multi-plane roofs are supported."));
+                continue;
+            }
+            // The fields of the other roof class would be written into the wrong member of
+            // the roof's union (u.planeRoof / u.polyRoof), so they are refused.
+            if (isPlaneRoof && (item.Contains ("levels") || item.Contains ("eavesOverhang") || item.Contains ("pivotEdges"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'levels', 'eavesOverhang' and 'pivotEdges' are only valid for multi-plane roofs."));
+                continue;
+            }
+            if (!isPlaneRoof && (item.Contains ("angle") || item.Contains ("pivotLine"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'angle' and 'pivotLine' are only valid for single-plane roofs."));
                 continue;
             }
 
@@ -8513,6 +8571,13 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
             if (error.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                 continue;
+            }
+            if (isPlaneRoof) {
+                auto planeError = ApplyPlaneRoofPivot (element, mask, item, changed);
+                if (planeError.HasValue ()) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, planeError.Get ()));
+                    continue;
+                }
             }
 
             GS::Array<GS::ObjectState> pivotEdges;
@@ -8558,6 +8623,40 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 GS::Array<GS::ObjectState> holes;
                 item.Get ("polygonArcs", polygonArcs);
                 item.Get ("holes", holes);
+                if (isPlaneRoof) {
+                    // A single-plane roof keeps its outline in the polygon of the memo, as a Slab
+                    // does. A memo built from scratch is refused there with APIERR_BADPOLY when the
+                    // point count changes, so the outline is edited in place as ModifySlabs does it:
+                    // the other fields first with ACAPI_Element_Change, then the polygon with
+                    // ACAPI_Element_ChangeMemo.
+                    auto error = ApplySlabPolygonChange (memo, element.roof.shellBase.sidMat, polygonOutline, polygonArcs, holes);
+                    if (error.HasValue ()) {
+                        results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
+                        continue;
+                    }
+                    if (changed) {
+                        err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+                        if (err != NoError) {
+                            results.Push (CreateFailedExecutionResult (err, "Failed to modify roof."));
+                            continue;
+                        }
+                    }
+                    // Passed as the DevKit's Element_Modify_Polygon example passes a roof's edited
+                    // polygon: only the polygon handles, with the roof's memo mask. The full memo
+                    // of ACAPI_Element_GetMemo makes ACAPI_Element_ChangeMemo answer APIERR_BADPARS.
+                    API_ElementMemo polygonMemo = {};
+                    polygonMemo.coords = memo.coords;
+                    polygonMemo.pends = memo.pends;
+                    polygonMemo.parcs = memo.parcs;
+                    polygonMemo.vertexIDs = memo.vertexIDs;
+                    polygonMemo.edgeIDs = memo.edgeIDs;
+                    polygonMemo.edgeTrims = memo.edgeTrims;
+                    polygonMemo.contourIDs = memo.contourIDs;
+                    err = ACAPI_Element_ChangeMemo (element.header.guid, APIMemoMask_Polygon | APIMemoMask_EdgeTrims | APIMemoMask_SideMaterials | APIMemoMask_RoofEdgeTypes, &polygonMemo);
+                    results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify roof geometry."));
+                    continue;
+                }
+
                 auto error = BuildRoofMemoFromGeometry (element, memo, polygonOutline, polygonArcs, holes);
                 if (error.HasValue ()) {
                     results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
