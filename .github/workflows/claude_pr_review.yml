@@ -113,7 +113,10 @@ jobs:
     # conversation comments and dispatches the payload does not say, so the
     # first step checks). Comments by bots never start a review, so the bot
     # cannot re-review itself in a loop. A person's comment on a bot pull
-    # request does - that is how a tester's report reaches the verdict.
+    # request does - that is how a tester's report reaches the verdict. A
+    # community test result (first line `tapir-test:`) does not: it becomes
+    # the archicad-test/AC<version> status instead (archicad_test_status.yml,
+    # #1577), and the review runs again on every new head anyway.
     # Pull requests of the Claude GitHub App (claude[bot]) stay excluded.
     # A bot's push to the issue bot's pull request (the steward's merge of
     # main, see the header) starts no review here: the steward starts it.
@@ -129,6 +132,7 @@ jobs:
        github.event.issue.pull_request &&
        github.event.issue.state == 'open' &&
        github.event.comment.user.type != 'Bot' &&
+       !startsWith(github.event.comment.body, 'tapir-test:') &&
        github.event.issue.user.login != 'claude[bot]') ||
       (github.event_name == 'pull_request_review_comment' &&
        github.event.pull_request.draft == false &&
