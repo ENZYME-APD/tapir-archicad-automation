@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 67 % | 80 | 53 | 1 | 6 | 1 | 19 | 2 | 57 |
 | C++ API (ACAPI::, IFCAPI::) | 93 % | 1435 | 1207 | 136 | 55 | 28 | 9 |  | 392 |
 
-Archicad 25–30 DevKits; updated 2026-11-03 23:42 UTC.
+Archicad 25–30 DevKits; updated 2026-11-04 01:12 UTC.
 
 | | Status |
 |---|---|
@@ -465,7 +465,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Navigator_ChangeLayoutSets` – Changes the settings of the current layout in Archicad. <sub>(was `APIEnv_ChangeLayoutSetsID`)</sub> — [#765](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/765 "RenameNavigatorItem: set a view's ID with newId and fail when the ID is kept")
 - ✅ `ACAPI_Navigator_ChangeNavigatorItem` – Modifies the given Project Navigator item. <sub>(was `APINavigator_ChangeNavigatorItemID`)</sub> — [#1640](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1640 "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)")
 - ✅ `ACAPI_Navigator_ChangeNavigatorVPItem` – Changes an existing Navigator viewpoint root, group or leaf node in the Project Map. <sub>(was `APINavigator_ChangeNavigatorVPItemID`)</sub>
-- ✅ `ACAPI_Navigator_ChangeNavigatorView` – Sets the given Project Navigator item and its view settings. <sub>(was `APINavigator_ChangeNavigatorViewID`)</sub> — [#1047](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1047 "GetViewSettings: return the stored in this view flags and the full transformation (split from #876)"), [#688](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/688 "SetViewSettings fails at ACAPI_Navigator_ChangeNavigatorView (-2130313113) even when writing a view's current values")
+- ✅ `ACAPI_Navigator_ChangeNavigatorView` – Sets the given Project Navigator item and its view settings. <sub>(was `APINavigator_ChangeNavigatorViewID`)</sub> — [#688](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/688 "SetViewSettings fails at ACAPI_Navigator_ChangeNavigatorView (-2130313113) even when writing a view's current values")
 - ✅ `ACAPI_Navigator_ChangeStructureDisplay` – Changes the partial structure display options for the current database. <sub>(was `APIEnv_ChangeStructureDisplayID`)</sub>
 - ✅ `ACAPI_Navigator_ChangeViewOptions` – Changes the actual model view options. <sub>(was `APIEnv_ChangeViewOptionsID`)</sub> — [#781](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/781 "Full Get/Set/Create access to Model View Option combinations, including custom GDL-contributed fields")
 - ✅ `ACAPI_Navigator_CloneProjectMapItemToViewMap` – Clones a Navigator item from the project map to view map. <sub>(was `APINavigator_CloneProjectMapItemToViewMapID`)</sub> — [#876](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/876 "Feature request: Get/Set view commands")

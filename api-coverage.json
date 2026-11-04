@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-03 23:42 UTC",
+ "generatedAt": "2026-11-04 01:12 UTC",
  "versions": [
   25,
   26,
@@ -14415,10 +14415,6 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
-    {
-     "number": 1047,
-     "title": "GetViewSettings: return the \"stored in this view\" flags and the full transformation (split from #876)"
-    },
     {
      "number": 688,
      "title": "SetViewSettings fails at ACAPI_Navigator_ChangeNavigatorView (-2130313113) even when writing a view's current values"
