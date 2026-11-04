@@ -146,6 +146,32 @@ GS::ObjectState GetTeamworkProjectInfoCommand::Execute (const GS::ObjectState& /
     return response;
 }
 
+// ACAPI_Teamwork_ReserveElements and ACAPI_Teamwork_ReleaseElements return NoError for GUIDs that
+// are not elements (navigator items, databases, layout subsets, ...) and do nothing with them, so
+// the GUIDs are checked with ACAPI_Element_GetHeader first and only the elements are passed on.
+static void SplitElementsAndNonElements (const GS::Array<API_Guid>& guids, GS::Array<API_Guid>& elemIds, GS::Array<API_Guid>& notElements)
+{
+    for (const API_Guid& guid : guids) {
+        API_Elem_Head elemHead = {};
+        elemHead.guid = guid;
+        if (ACAPI_Element_GetHeader (&elemHead) == NoError) {
+            elemIds.Push (guid);
+        } else {
+            notElements.Push (guid);
+        }
+    }
+}
+
+static GS::UniString CreateNotElementsMessage (const GS::Array<API_Guid>& notElements, const char* action)
+{
+    GS::UniString message = GS::UniString::Printf ("%u of the given GUIDs are not elements, so they were not %s:", (unsigned) notElements.GetSize (), action);
+    for (const API_Guid& guid : notElements) {
+        message += " " + APIGuidToString (guid);
+    }
+    message += ". Navigator items, layouts and their settings cannot be reserved or released with this command.";
+    return message;
+}
+
 ReserveElementsCommand::ReserveElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -180,6 +206,13 @@ GS::Optional<GS::UniString> ReserveElementsCommand::GetRawResponseSchema () cons
             "executionResult": {
                 "$ref": "#/ExecutionResult"
             },
+            "notElements": {
+                "type": "array",
+                "description": "The given GUIDs that are not elements, e.g. navigator items, layouts or databases. They were not reserved, and executionResult fails because of them even if the other elements were reserved. Left out when every GUID is an element.",
+                "items": {
+                    "$ref": "#/ElementIdArrayItem"
+                }
+            },
             "conflicts": {
                 "type": "array",
                 "items": {
@@ -212,17 +245,32 @@ GS::ObjectState ReserveElementsCommand::Execute (const GS::ObjectState& paramete
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
 
-    const GS::Array<API_Guid> elemIds = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
+    GS::Array<API_Guid> elemIds;
+    GS::Array<API_Guid> notElements;
+    SplitElementsAndNonElements (elements.Transform<API_Guid> (GetGuidFromElementsArrayItem), elemIds, notElements);
 
-	GS::HashTable<API_Guid, short> conflicts;
-    constexpr bool enableDialogs = false;
-    const GSErrCode err = ACAPI_Teamwork_ReserveElements (elemIds, &conflicts, enableDialogs);
-
-    if (err != NoError) {
-        return GS::ObjectState ("executionResult", CreateFailedExecutionResult (err, "Failed to reserve elements."));
+    GS::HashTable<API_Guid, short> conflicts;
+    GSErrCode err = NoError;
+    if (!elemIds.IsEmpty () || notElements.IsEmpty ()) {
+        constexpr bool enableDialogs = false;
+        err = ACAPI_Teamwork_ReserveElements (elemIds, &conflicts, enableDialogs);
     }
 
-    GS::ObjectState response ("executionResult", CreateSuccessfulExecutionResult ());
+    GS::ObjectState response ("executionResult",
+        err != NoError ? CreateFailedExecutionResult (err, "Failed to reserve elements.")
+        : !notElements.IsEmpty () ? CreateFailedExecutionResult (APIERR_BADID, CreateNotElementsMessage (notElements, "reserved"))
+        : CreateSuccessfulExecutionResult ());
+
+    if (!notElements.IsEmpty ()) {
+        const auto& notElementsOutput = response.AddList<GS::ObjectState> ("notElements");
+        for (const API_Guid& guid : notElements) {
+            notElementsOutput (GS::ObjectState ("elementId", CreateGuidObjectState (guid)));
+        }
+    }
+
+    if (err != NoError) {
+        return response;
+    }
 
     if (!conflicts.IsEmpty ()) {
         const auto& conflictsOutput = response.AddList<GS::ObjectState> ("conflicts");
@@ -292,14 +340,23 @@ GS::ObjectState ReleaseElementsCommand::Execute (const GS::ObjectState& paramete
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
 
-    const GS::Array<API_Guid> elemIds = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
+    GS::Array<API_Guid> elemIds;
+    GS::Array<API_Guid> notElements;
+    SplitElementsAndNonElements (elements.Transform<API_Guid> (GetGuidFromElementsArrayItem), elemIds, notElements);
 
-    constexpr bool enableDialogs = false;
-    const GSErrCode err = ACAPI_Teamwork_ReleaseElements (elemIds, enableDialogs);
+    GSErrCode err = NoError;
+    if (!elemIds.IsEmpty () || notElements.IsEmpty ()) {
+        constexpr bool enableDialogs = false;
+        err = ACAPI_Teamwork_ReleaseElements (elemIds, enableDialogs);
+    }
 
-    return err == NoError
-        ? CreateSuccessfulExecutionResult ()
-        : CreateFailedExecutionResult (err, "Failed to release elements.");
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to release elements.");
+    }
+    if (!notElements.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADID, CreateNotElementsMessage (notElements, "released"));
+    }
+    return CreateSuccessfulExecutionResult ();
 }
 
 static GS::UniString GetTeamworkUserName (short userId)
