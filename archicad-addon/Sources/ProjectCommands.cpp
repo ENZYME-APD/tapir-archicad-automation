@@ -532,10 +532,13 @@ static GS::Optional<GS::UniString> FindProjectInfoAutoTextKey (const GS::Array<G
 }
 
 // The name a project info field shows on the UI, by its autotext key: the way back from the key
-// to the field of the Project Info API (see FindProjectInfoAutoTextKey). The caller checks the key
-// with IsProjectInfoOrCustomAutoTextId first, as another autotext may share a field's name.
+// to the field of the Project Info API (see FindProjectInfoAutoTextKey). Only project info keys
+// are taken: another kind of autotext may show the same name as a custom field.
 static GS::Optional<GS::UniString> FindProjectInfoAutoTextName (const GS::Array<GS::ArrayFB<GS::UniString, 3>>& autoTexts, const GS::UniString& autoTextKey)
 {
+    if (!IsProjectInfoOrCustomAutoTextId (autoTextKey)) {
+        return GS::NoValue;
+    }
     for (const auto& autoText : autoTexts) {
         if (autoText[1] == autoTextKey) {
             return autoText[0];
