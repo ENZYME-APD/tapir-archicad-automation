@@ -10131,34 +10131,62 @@ GS::Optional<GS::UniString> Get3DModelCountsCommand::GetRawResponseSchema () con
 GS::ObjectState Get3DModelCountsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2700
-    // Every API_3DTypeID except API_Zombie3DID, in the order of the enum.
-    static const std::pair<API_3DTypeID, const char*> componentTypes[] = {
-        { API_BodyID, "Body" },
-        { API_PgonID, "Pgon" },
-        { API_PedgID, "Pedg" },
-        { API_EdgeID, "Edge" },
-        { API_VertID, "Vert" },
-        { API_VectID, "Vect" },
-        { API_UmatID, "Umat" },
-        { API_LghtID, "Lght" }
-    };
+    // ACAPI_ModelAccess_GetNum counts only the bodies, materials and lights; it refuses the
+    // body dependent components (APIERR_REFUSEDPAR), whose numbers are summed from the
+    // nPgon, nPedg, nEdge, nVert and nVect fields of every API_BodyType instead.
+    Int32 bodyCount = 0;
+    const GSErrCode bodyErr = ACAPI_ModelAccess_GetNum (API_BodyID, &bodyCount);
+
+    Int64 pgonCount = 0;
+    Int64 pedgCount = 0;
+    Int64 edgeCount = 0;
+    Int64 vertCount = 0;
+    Int64 vectCount = 0;
+    GSErrCode bodyComponentErr = bodyErr;
+    for (Int32 iBody = 1; bodyComponentErr == NoError && iBody <= bodyCount; ++iBody) {
+        API_Component3D component = {};
+        component.header.typeID = API_BodyID;
+        component.header.index = iBody;
+        bodyComponentErr = ACAPI_ModelAccess_GetComponent (&component);
+        if (bodyComponentErr != NoError) {
+            break;
+        }
+        pgonCount += component.body.nPgon;
+        pedgCount += component.body.nPedg;
+        edgeCount += component.body.nEdge;
+        vertCount += component.body.nVert;
+        vectCount += component.body.nVect;
+    }
 
     GS::ObjectState response;
     const auto& counts = response.AddList<GS::ObjectState> ("counts");
 
-    for (const auto& componentType : componentTypes) {
-        Int32 count = 0;
-        const GSErrCode err = ACAPI_ModelAccess_GetNum (componentType.first, &count);
+    const auto AddCount = [&counts] (const char* componentType, GSErrCode err, Int64 count) {
         if (err != NoError) {
-            counts (CreateErrorResponse (err, GS::UniString::Printf ("Failed to count the %s components of the 3D model", componentType.second)));
-            continue;
+            counts (CreateErrorResponse (err, GS::UniString::Printf ("Failed to count the %s components of the 3D model", componentType)));
+            return;
         }
-
         GS::ObjectState countOS;
-        countOS.Add ("componentType", GS::UniString (componentType.second));
+        countOS.Add ("componentType", GS::UniString (componentType));
         countOS.Add ("count", count);
         counts (countOS);
-    }
+    };
+
+    // Every API_3DTypeID except API_Zombie3DID, in the order of the enum.
+    AddCount ("Body", bodyErr, bodyCount);
+    AddCount ("Pgon", bodyComponentErr, pgonCount);
+    AddCount ("Pedg", bodyComponentErr, pedgCount);
+    AddCount ("Edge", bodyComponentErr, edgeCount);
+    AddCount ("Vert", bodyComponentErr, vertCount);
+    AddCount ("Vect", bodyComponentErr, vectCount);
+
+    Int32 umatCount = 0;
+    const GSErrCode umatErr = ACAPI_ModelAccess_GetNum (API_UmatID, &umatCount);
+    AddCount ("Umat", umatErr, umatCount);
+
+    Int32 lghtCount = 0;
+    const GSErrCode lghtErr = ACAPI_ModelAccess_GetNum (API_LghtID, &lghtCount);
+    AddCount ("Lght", lghtErr, lghtCount);
 
     return response;
 #else
