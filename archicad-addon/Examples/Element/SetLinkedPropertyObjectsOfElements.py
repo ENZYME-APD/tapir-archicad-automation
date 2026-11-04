@@ -20,6 +20,6 @@ aclib.PrintJson (aclib.RunTapirCommand ('SetLinkedPropertyObjectsOfElements', {
 }))
 print ('Link by criteria: {} -> {}'.format (original, GetLinkByCriteria ()))
 
-aclib.RunTapirCommand ('SetLinkedPropertyObjectsOfElements', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetLinkedPropertyObjectsOfElements', {
     'elementsWithLinkedPropertyObjects': [{'elementId': wallId, 'linkByCriteria': original}]
-})
+}))

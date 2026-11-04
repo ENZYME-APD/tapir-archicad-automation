@@ -19,6 +19,7 @@ response = aclib.RunTapirCommand ('GetFavoritePreviewImage', {
     'width': 256,
     'height': 256
 })
+aclib.PrintJson (response)
 
 imagePath = os.path.join (tempfile.mkdtemp (), 'favorite_preview.png')
 with open (imagePath, 'wb') as imageFile:

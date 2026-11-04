@@ -7,7 +7,7 @@ import aclib
 
 # GetMEPToolDefaults: the rigid segment and branch defaults of the routing tool, and from Archicad 30
 # the Electrical Panel tool with its number of circuit defaults.
-defaults = aclib.RunTapirCommand ('GetMEPToolDefaults', {'domains': ['Ventilation', 'Piping']}, debug = False)
+defaults = aclib.RunTapirCommand ('GetMEPToolDefaults', {'domains': ['Ventilation', 'Piping']})
 if defaults is None or 'error' in defaults:
     print ('Could not read the MEP tool defaults, this example needs Archicad 27 or newer.')
     sys.exit ()
@@ -21,7 +21,7 @@ if 'electricalPanel' in defaults:
     print (f"Electrical panel: {defaults['electricalPanel']['circuitDefaultCount']} circuit default(s)")
 
 def ModifyAndReport (title, items):
-    result = aclib.RunTapirCommand ('ModifyMEPElements', {'elements': items}, debug = False)
+    result = aclib.RunTapirCommand ('ModifyMEPElements', {'elements': items})
     if result is None or 'error' in result:
         print (f"{title}: {result['error']['message'] if result else 'failed'}")
         return
@@ -33,13 +33,13 @@ terminal = aclib.RunTapirCommand ('CreateMEPElements', {
         'elementsData': [
             {'type': 'Terminal', 'domain': 'Ventilation', 'position': {'x': 0.0, 'y': -40.0, 'z': 2.5}}
         ]
-    }, debug = False)
+    })
 
 if terminal is None or 'error' in terminal:
     # Archicad 27: the selected elements.
-    selected = aclib.RunTapirCommand ('GetSelectedElements', {}, debug = False)
+    selected = aclib.RunTapirCommand ('GetSelectedElements', {})
     selectedIds = [{'elementId': e['elementId']} for e in (selected or {}).get ('elements', [])]
-    ports = aclib.RunTapirCommand ('GetMEPPorts', {'elements': selectedIds}, debug = False)
+    ports = aclib.RunTapirCommand ('GetMEPPorts', {'elements': selectedIds})
     for elementPorts in (ports or {}).get ('elementPorts', []):
         if 'error' in elementPorts:
             print (f"Ports: {elementPorts['error']['message']}")
@@ -54,7 +54,7 @@ terminalId = terminal['elements'][0].get ('elementId')
 if terminalId is not None:
     placedIds.append (terminalId)
     ModifyAndReport ('Move the terminal', [{'elementId': terminalId, 'anchorPoint': {'x': 1.0, 'y': -40.0, 'z': 2.8}}])
-    ports = aclib.RunTapirCommand ('GetMEPPorts', {'elements': [{'elementId': terminalId}]}, debug = False)
+    ports = aclib.RunTapirCommand ('GetMEPPorts', {'elements': [{'elementId': terminalId}]})
     for port in ports['elementPorts'][0].get ('ports', []):
         print (f"Terminal port {port['portId']}: {port['shape']} at {port['position']}")
 
@@ -70,7 +70,7 @@ flexible = aclib.RunTapirCommand ('PlaceMEPFlexibleSegments', {
                 ]
             }
         ]
-    }, debug = False)['elements'][0]
+    })['elements'][0]
 if 'elementId' in flexible:
     placedIds.append (flexible['elementId'])
     ModifyAndReport ('New control points and width', [{
@@ -97,10 +97,10 @@ polyline = [
 ]
 pipe = aclib.RunTapirCommand ('PlaceMEPFlexibleSegments', {
         'flexibleSegmentsData': [{'domain': 'Piping', 'polyline': polyline}]
-    }, debug = False)['elements'][0]
+    })['elements'][0]
 if 'elementId' in pipe:
     placedIds.append (pipe['elementId'])
-    details = aclib.RunTapirCommand ('GetMEPElementDetails', {'elements': [{'elementId': pipe['elementId']}]}, debug = False)
+    details = aclib.RunTapirCommand ('GetMEPElementDetails', {'elements': [{'elementId': pipe['elementId']}]})
     print (f"Polyline parts: {[part['type'] for part in details['elementDetails'][0].get ('polyline', [])]}")
     # Move the end of the last line.
     polyline[2]['end'] = {'x': 2.0, 'y': -48.0, 'z': 1.0}
@@ -109,4 +109,4 @@ else:
     print (f"Polyline flexible segment: {pipe['error']['message']}")
 
 # Clean up
-aclib.RunTapirCommand ('DeleteElements', {'elements': [{'elementId': elementId} for elementId in placedIds]}, debug = False)
+aclib.RunTapirCommand ('DeleteElements', {'elements': [{'elementId': elementId} for elementId in placedIds]})
