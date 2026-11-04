@@ -5839,6 +5839,69 @@ static bool IsKnownWiringType (const GS::UniString& name)
     return settings.IsOk () && ContainsName (settings->GetWiringTypeNames (), name);
 }
 
+// Modifies the electrical panels or devices listed in the given parameter, each in its own undo step: sets the fields of its type
+// with setFields and the placement fields, then checks that Archicad used the given library part and size.
+// validate returns an error message for an item that must not be modified.
+template <typename ElementT, typename ValidateFunc, typename SetFieldsFunc>
+static GS::ObjectState ModifyElectricalElements (const GS::ObjectState& parameters,
+                                                 const char* dataListName,
+                                                 const char* elementName,
+                                                 const GS::UniString& undoString,
+                                                 const ValidateFunc& validate,
+                                                 const SetFieldsFunc& setFields)
+{
+    GS::Array<GS::ObjectState> elementsData;
+    if (!parameters.Get (dataListName, elementsData)) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Invalid or missing '") + dataListName + "' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& elementData : elementsData) {
+        const GS::ObjectState* elementId = elementData.Get ("elementId");
+        if (elementId == nullptr) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'elementId' parameter."));
+            continue;
+        }
+
+        const std::optional<GS::UniString> validationError = validate (elementData);
+        if (validationError.has_value ()) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, validationError.value ()));
+            continue;
+        }
+
+        ACAPI::Result<ElementT> element = ElementT::Get (Adapter::UniqueID (GetGuidFromObjectState (*elementId)));
+        if (element.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (element.UnwrapErr ().kind, GS::UniString ("Failed to get the ") + elementName + "."));
+            continue;
+        }
+
+        bool placementSuccess = true;
+        ACAPI::Result<void> modifyResult = element->Modify ([&](typename ElementT::Modifier& modifier) {
+            setFields (modifier, elementData);
+            placementSuccess = ApplyElectricalPlacement (modifier, elementData);
+        }, undoString);
+
+        if (modifyResult.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, GS::UniString ("Failed to modify the ") + elementName + "."));
+        } else if (!placementSuccess) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString ("Failed to set the size of the ") + elementName + "."));
+        } else {
+            ACAPI::Result<ElementT> modified = ElementT::Get (Adapter::UniqueID (GetGuidFromObjectState (*elementId)));
+            if (modified.IsOk () && !IsRequestedLibraryPartUsed (modified->GetObjectId (), elementData)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, GS::UniString (LibraryPartNotFound) + " The other changes were made."));
+            } else if (modified.IsOk () && !IsRequestedSizeUsed (modified->GetObjectXSize (), modified->GetObjectYSize (), elementData)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString (SizeNotApplied) + " The other changes were made."));
+            } else {
+                executionResults (CreateSuccessfulExecutionResult ());
+            }
+        }
+    }
+
+    return response;
+}
+
 #endif
 
 CreateElectricalPanelsCommand::CreateElectricalPanelsCommand () :
@@ -6298,29 +6361,11 @@ GS::Optional<GS::UniString> ModifyElectricalPanelsCommand::GetRawResponseSchema 
 GS::ObjectState ModifyElectricalPanelsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_3000
-    GS::Array<GS::ObjectState> electricalPanelsData;
-    if (!parameters.Get ("electricalPanelsData", electricalPanelsData)) {
-        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'electricalPanelsData' parameter.");
-    }
-
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-
-    for (const GS::ObjectState& panelData : electricalPanelsData) {
-        const GS::ObjectState* elementId = panelData.Get ("elementId");
-        if (elementId == nullptr) {
-            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'elementId' parameter."));
-            continue;
-        }
-
-        ACAPI::Result<ElectricalPanel> panel = ElectricalPanel::Get (Adapter::UniqueID (GetGuidFromObjectState (*elementId)));
-        if (panel.IsErr ()) {
-            executionResults (CreateFailedExecutionResult (panel.UnwrapErr ().kind, "Failed to get the electrical panel."));
-            continue;
-        }
-
-        bool placementSuccess = true;
-        ACAPI::Result<void> modifyResult = panel->Modify ([&](ElectricalPanel::Modifier& modifier) {
+    return ModifyElectricalElements<ElectricalPanel> (parameters, "electricalPanelsData", "electrical panel", "Modify Electrical Panel",
+        [](const GS::ObjectState&) -> std::optional<GS::UniString> {
+            return std::nullopt;
+        },
+        [](ElectricalPanel::Modifier& modifier, const GS::ObjectState& panelData) {
             GS::UniString text;
             if (panelData.Get ("panelName", text)) {
                 modifier.SetPanelName (text);
@@ -6332,26 +6377,7 @@ GS::ObjectState ModifyElectricalPanelsCommand::Execute (const GS::ObjectState& p
             if (panelData.Get ("circuitIdStyle", circuitIdStyle)) {
                 modifier.SetCircuitIdStyle (static_cast<short> (circuitIdStyle));
             }
-            placementSuccess = ApplyElectricalPlacement (modifier, panelData);
-        }, "Modify Electrical Panel");
-
-        if (modifyResult.IsErr ()) {
-            executionResults (CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, "Failed to modify the electrical panel."));
-        } else if (!placementSuccess) {
-            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Failed to set the size of the electrical panel."));
-        } else {
-            ACAPI::Result<ElectricalPanel> modified = ElectricalPanel::Get (Adapter::UniqueID (GetGuidFromObjectState (*elementId)));
-            if (modified.IsOk () && !IsRequestedLibraryPartUsed (modified->GetObjectId (), panelData)) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADID, GS::UniString (LibraryPartNotFound) + " The other changes were made."));
-            } else if (modified.IsOk () && !IsRequestedSizeUsed (modified->GetObjectXSize (), modified->GetObjectYSize (), panelData)) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString (SizeNotApplied) + " The other changes were made."));
-            } else {
-                executionResults (CreateSuccessfulExecutionResult ());
-            }
-        }
-    }
-
-    return response;
+        });
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, ElectricalRequiresArchicad30);
@@ -6839,36 +6865,15 @@ GS::Optional<GS::UniString> ModifyElectricalDevicesCommand::GetRawResponseSchema
 GS::ObjectState ModifyElectricalDevicesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_3000
-    GS::Array<GS::ObjectState> electricalDevicesData;
-    if (!parameters.Get ("electricalDevicesData", electricalDevicesData)) {
-        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'electricalDevicesData' parameter.");
-    }
-
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-
-    for (const GS::ObjectState& deviceData : electricalDevicesData) {
-        const GS::ObjectState* elementId = deviceData.Get ("elementId");
-        if (elementId == nullptr) {
-            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'elementId' parameter."));
-            continue;
-        }
-
-        GS::UniString loadClassificationName;
-        const bool hasLoadClassification = deviceData.Get ("loadClassificationName", loadClassificationName);
-        if (hasLoadClassification && !IsKnownLoadClassification (loadClassificationName)) {
-            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The load classification '" + loadClassificationName + "' is not defined in the electrical project settings."));
-            continue;
-        }
-
-        ACAPI::Result<ElectricalDevice> device = ElectricalDevice::Get (Adapter::UniqueID (GetGuidFromObjectState (*elementId)));
-        if (device.IsErr ()) {
-            executionResults (CreateFailedExecutionResult (device.UnwrapErr ().kind, "Failed to get the electrical device."));
-            continue;
-        }
-
-        bool placementSuccess = true;
-        ACAPI::Result<void> modifyResult = device->Modify ([&](ElectricalDevice::Modifier& modifier) {
+    return ModifyElectricalElements<ElectricalDevice> (parameters, "electricalDevicesData", "electrical device", "Modify Electrical Device",
+        [](const GS::ObjectState& deviceData) -> std::optional<GS::UniString> {
+            GS::UniString loadClassificationName;
+            if (deviceData.Get ("loadClassificationName", loadClassificationName) && !IsKnownLoadClassification (loadClassificationName)) {
+                return "The load classification '" + loadClassificationName + "' is not defined in the electrical project settings.";
+            }
+            return std::nullopt;
+        },
+        [](ElectricalDevice::Modifier& modifier, const GS::ObjectState& deviceData) {
             Int32 apparentPower = 0;
             if (deviceData.Get ("apparentPower", apparentPower)) {
                 modifier.SetApparentPower (static_cast<uint32_t> (apparentPower));
@@ -6877,29 +6882,11 @@ GS::ObjectState ModifyElectricalDevicesCommand::Execute (const GS::ObjectState& 
             if (deviceData.Get ("isApparentPowerEnabled", isApparentPowerEnabled)) {
                 modifier.SetApparentPowerEnabled (isApparentPowerEnabled);
             }
-            if (hasLoadClassification) {
+            GS::UniString loadClassificationName;
+            if (deviceData.Get ("loadClassificationName", loadClassificationName)) {
                 modifier.SetLoadClassificationName (loadClassificationName);
             }
-            placementSuccess = ApplyElectricalPlacement (modifier, deviceData);
-        }, "Modify Electrical Device");
-
-        if (modifyResult.IsErr ()) {
-            executionResults (CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, "Failed to modify the electrical device."));
-        } else if (!placementSuccess) {
-            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Failed to set the size of the electrical device."));
-        } else {
-            ACAPI::Result<ElectricalDevice> modified = ElectricalDevice::Get (Adapter::UniqueID (GetGuidFromObjectState (*elementId)));
-            if (modified.IsOk () && !IsRequestedLibraryPartUsed (modified->GetObjectId (), deviceData)) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADID, GS::UniString (LibraryPartNotFound) + " The other changes were made."));
-            } else if (modified.IsOk () && !IsRequestedSizeUsed (modified->GetObjectXSize (), modified->GetObjectYSize (), deviceData)) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString (SizeNotApplied) + " The other changes were made."));
-            } else {
-                executionResults (CreateSuccessfulExecutionResult ());
-            }
-        }
-    }
-
-    return response;
+        });
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, ElectricalRequiresArchicad30);
