@@ -16,11 +16,11 @@ name: Archicad Test Status
 # failure; a head nobody tested has none, which does not block. A new push
 # makes a new head without the status, so the test is repeated for it.
 #
-# Who counts: testers run the runner under their own GitHub accounts, which
-# need no access to this repository. So a result counts only from an account
-# listed in the repository variable ARCHICAD_TESTERS (logins separated by
-# spaces or commas) or one with write access. Anything else in a comment is
-# ignored.
+# Who counts: everyone (the maintainer's decision). Testers run the runner
+# under their own GitHub accounts, which need no access to this repository, and
+# every person's result line counts; only bots are left out. The newest result
+# of an Archicad version on a head is the one that counts, so a later result
+# replaces an earlier one. Anything else in a comment is ignored.
 #
 # Security: the job runs no model and never checks out or runs the pull
 # request's code. It reads nothing from the comment but its first line, which
@@ -55,29 +55,10 @@ jobs:
       AUTHOR: ${{ github.event.comment.user.login }}
       COMMENT_URL: ${{ github.event.comment.html_url }}
       BODY: ${{ github.event.comment.body }}
-      TESTERS: ${{ vars.ARCHICAD_TESTERS }}
     steps:
       - name: Set the status from the result line
         run: |
           set -euo pipefail
-
-          # The author first, before anything in the comment is read.
-          trusted=false
-          set -f
-          for login in ${TESTERS//,/ }; do
-            if [ "${login,,}" = "${AUTHOR,,}" ]; then trusted=true; fi
-          done
-          if [ "$trusted" != "true" ]; then
-            permission=$(gh api "repos/$REPO/collaborators/$AUTHOR/permission" \
-              --jq '.permission' 2>/dev/null || echo "none")
-            case "$permission" in
-              admin|maintain|write) trusted=true ;;
-            esac
-          fi
-          if [ "$trusted" != "true" ]; then
-            echo "$AUTHOR is not in ARCHICAD_TESTERS and has no write access: ignored."
-            exit 0
-          fi
 
           line=${BODY%%$'\n'*}
           line=${line%$'\r'}
