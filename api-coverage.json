@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-04 09:11 UTC",
+ "generatedAt": "2026-11-04 09:54 UTC",
  "versions": [
   25,
   26,
@@ -12,8 +12,8 @@
   "not applicable": 670,
   "done": 1859,
   "skipped": 28,
-  "merged": 282,
-  "in progress": 37,
+  "merged": 286,
+  "in progress": 33,
   "open": 3
  },
  "items": [
@@ -16456,12 +16456,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16839,12 +16834,7 @@
    "status": "skipped",
    "reason": "crashes Archicad 29 on an unknown function name and gives wrong results both ways; tested and removed from #1146 (8822f998)",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1145,
-     "title": "Expose ACAPI_Property missing functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Property_CreatePropertyDefinition",
@@ -16952,10 +16942,6 @@
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    },
-    {
-     "number": 1147,
-     "title": "[2/4] Add CheckPropertyValues command (ACAPI_Property_IsValidValue)"
     }
    ],
    "issues": []
@@ -17007,12 +16993,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1145,
-     "title": "Expose ACAPI_Property missing functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Property_GetPropertyGroup",
@@ -17162,20 +17143,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1147,
-     "title": "[2/4] Add CheckPropertyValues command (ACAPI_Property_IsValidValue)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1145,
-     "title": "Expose ACAPI_Property missing functions"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Property_ModifyPropertyValue",
@@ -17194,12 +17165,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1145,
-     "title": "Expose ACAPI_Property missing functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Property_RegisterPropertyObjectHandler",
@@ -17257,12 +17223,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1147,
-     "title": "[2/4] Add CheckPropertyValues command (ACAPI_Property_IsValidValue)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -22588,12 +22549,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1145,
-     "title": "Expose ACAPI_Property missing functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Property_DeleteProperty",
@@ -22609,12 +22565,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1145,
-     "title": "Expose ACAPI_Property missing functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Register_AddOnObjectHandler",
@@ -26014,6 +25965,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1805,
+     "title": "[4/6] Grasshopper: Windows tool component (Design Tools)"
+    },
+    {
+     "number": 1804,
+     "title": "[3/6] Grasshopper: Doors tool component"
+    },
+    {
+     "number": 1803,
+     "title": "[2/6] Doors and windows: Create/Modify take the floor plan and section settings"
+    },
+    {
      "number": 1802,
      "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
     },
@@ -27545,10 +27508,6 @@
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
     {
-     "number": 1147,
-     "title": "[2/4] Add CheckPropertyValues command (ACAPI_Property_IsValidValue)"
-    },
-    {
      "number": 1125,
      "title": "Add GetModelExtent command (ACAPI_Element_GetExtent3D)"
     },
@@ -28825,20 +28784,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1219,
-     "title": "Expose ACAPI::Library::GSMObject::CopyTo (duplicate a library part under a new name and GUID)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GSMObject::CreateNew",
@@ -29329,10 +29278,6 @@
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
     }
    ],
    "issues": []
@@ -30561,10 +30506,6 @@
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     },
     {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
-    },
-    {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
     }
@@ -30587,10 +30528,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
-    },
     {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
@@ -30629,10 +30566,6 @@
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
     },
     {
      "number": 1364,
@@ -30732,10 +30665,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
-    },
-    {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
     }
@@ -30781,10 +30710,6 @@
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
     },
     {
      "number": 1364,
@@ -31200,20 +31125,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1219,
-     "title": "Expose ACAPI::Library::GSMObject::CopyTo (duplicate a library part under a new name and GUID)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::Library::LibraryManager::GetGSMObjectOfLibPart",
@@ -31250,18 +31165,9 @@
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
     }
    ],
-   "issues": [
-    {
-     "number": 1219,
-     "title": "Expose ACAPI::Library::GSMObject::CopyTo (duplicate a library part under a new name and GUID)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Library::LibraryManager::GetLibIndOfLibPart",
@@ -31479,16 +31385,12 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
     }
    ],
    "issues": [
@@ -32276,6 +32178,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1805,
+     "title": "[4/6] Grasshopper: Windows tool component (Design Tools)"
+    },
+    {
+     "number": 1804,
+     "title": "[3/6] Grasshopper: Doors tool component"
+    },
+    {
+     "number": 1803,
+     "title": "[2/6] Doors and windows: Create/Modify take the floor plan and section settings"
+    },
+    {
      "number": 1801,
      "title": "GetDetailsOfElements: floor plan and section parameters of Stairs"
     },
@@ -32322,10 +32236,6 @@
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
     },
     {
      "number": 1431,
@@ -38992,6 +38902,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1805,
+     "title": "[4/6] Grasshopper: Windows tool component (Design Tools)"
+    },
+    {
+     "number": 1804,
+     "title": "[3/6] Grasshopper: Doors tool component"
+    },
+    {
+     "number": 1803,
+     "title": "[2/6] Doors and windows: Create/Modify take the floor plan and section settings"
+    },
+    {
      "number": 1802,
      "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
     },
@@ -39066,10 +38988,6 @@
     {
      "number": 1234,
      "title": "Add GetGDLParametersOfLibraryParts: default GDL parameters of a library part"
-    },
-    {
-     "number": 1147,
-     "title": "[2/4] Add CheckPropertyValues command (ACAPI_Property_IsValidValue)"
     },
     {
      "number": 1094,
@@ -45918,6 +45836,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1805,
+     "title": "[4/6] Grasshopper: Windows tool component (Design Tools)"
+    },
+    {
+     "number": 1804,
+     "title": "[3/6] Grasshopper: Doors tool component"
+    },
+    {
+     "number": 1803,
+     "title": "[2/6] Doors and windows: Create/Modify take the floor plan and section settings"
+    },
+    {
      "number": 1801,
      "title": "GetDetailsOfElements: floor plan and section parameters of Stairs"
     },
@@ -45964,10 +45894,6 @@
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
     },
     {
      "number": 1431,
@@ -49465,6 +49391,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1805,
+     "title": "[4/6] Grasshopper: Windows tool component (Design Tools)"
+    },
+    {
+     "number": 1804,
+     "title": "[3/6] Grasshopper: Doors tool component"
+    },
+    {
+     "number": 1803,
+     "title": "[2/6] Doors and windows: Create/Modify take the floor plan and section settings"
+    },
+    {
      "number": 1801,
      "title": "GetDetailsOfElements: floor plan and section parameters of Stairs"
     },
@@ -49511,10 +49449,6 @@
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
     },
     {
      "number": 1431,
@@ -56132,10 +56066,6 @@
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
     {
-     "number": 1147,
-     "title": "[2/4] Add CheckPropertyValues command (ACAPI_Property_IsValidValue)"
-    },
-    {
      "number": 1019,
      "title": "Add element component commands: list components and read their properties"
     }
@@ -57178,10 +57108,6 @@
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     },
     {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
-    },
-    {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
     },
@@ -57200,10 +57126,6 @@
     {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
-    },
-    {
-     "number": 1147,
-     "title": "[2/4] Add CheckPropertyValues command (ACAPI_Property_IsValidValue)"
     },
     {
      "number": 1019,

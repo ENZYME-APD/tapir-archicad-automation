@@ -1,9 +1,9 @@
 {
- "generatedAt": "2026-11-04 09:11 UTC",
+ "generatedAt": "2026-11-04 09:54 UTC",
  "counts": {
   "done": 568,
   "merged": 147,
-  "open": 1,
+  "open": 3,
   "not applicable": 1
  },
  "parameters": {
@@ -172,12 +172,7 @@
     "coordinates"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -201,12 +196,7 @@
     "screenPoints.v"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -302,12 +292,7 @@
     "images.outputFormat"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -478,12 +463,7 @@
     "databases"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -593,12 +573,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -620,12 +595,7 @@
     "isVisible"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -647,12 +617,7 @@
     "checks"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -672,12 +637,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -782,12 +742,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1170,12 +1125,7 @@
     "noteOwnerType"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1447,12 +1397,7 @@
     "hotlinks.location"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1767,12 +1712,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1794,12 +1734,7 @@
     "elementTypes"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1822,12 +1757,7 @@
     "levels"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2040,12 +1970,7 @@
     "placeInfo.year"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2067,12 +1992,7 @@
     "name"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2189,12 +2109,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2521,12 +2436,7 @@
     "databases"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2799,12 +2709,7 @@
     "elements.infoString"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2939,12 +2844,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3153,12 +3053,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3203,12 +3098,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3230,12 +3120,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3304,12 +3189,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3331,12 +3211,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3378,12 +3253,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3609,12 +3479,7 @@
     "includeMarkers"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4351,12 +4216,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4381,12 +4241,7 @@
     "elementsWithURLReferences.url"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4437,12 +4292,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4464,12 +4314,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4493,12 +4338,7 @@
     "elementsWithMarkerLibraryPart.libraryPartName"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4809,7 +4649,12 @@
    "missingParameters": [
     "windowsData.libraryPartName"
    ],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1805,
+     "title": "[4/6] Grasshopper: Windows tool component (Design Tools)"
+    }
+   ],
    "issues": [
     {
      "number": 1791,
@@ -4847,7 +4692,16 @@
    "missingParameters": [
     "doorsData.libraryPartName"
    ],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1805,
+     "title": "[4/6] Grasshopper: Windows tool component (Design Tools)"
+    },
+    {
+     "number": 1804,
+     "title": "[3/6] Grasshopper: Doors tool component"
+    }
+   ],
    "issues": [
     {
      "number": 1791,
@@ -5123,12 +4977,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5157,12 +5006,7 @@
     "elements.unCutSymbolParameters"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5380,12 +5224,7 @@
    "missingParameters": [
     "railingsData.polylineArcs"
    ],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6397,7 +6236,12 @@
     "windowsWithDetails.width"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1805,
+     "title": "[4/6] Grasshopper: Windows tool component (Design Tools)"
+    }
+   ],
    "issues": [
     {
      "number": 1791,
@@ -6434,7 +6278,16 @@
     "doorsWithDetails.width"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1805,
+     "title": "[4/6] Grasshopper: Windows tool component (Design Tools)"
+    },
+    {
+     "number": 1804,
+     "title": "[3/6] Grasshopper: Doors tool component"
+    }
+   ],
    "issues": [
     {
      "number": 1791,
@@ -6588,12 +6441,7 @@
     "shellsWithDetails.structureType"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6860,12 +6708,7 @@
     "zonesWithDetails.topOffset"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7075,12 +6918,7 @@
     "splines.segmentIndex"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7190,12 +7028,7 @@
     "groups"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7217,12 +7050,7 @@
     "groups"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7242,12 +7070,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7406,12 +7229,7 @@
     "elementSets.elementSetId.guid"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7760,12 +7578,7 @@
     "path"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7788,12 +7601,7 @@
     "parentPath"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7816,12 +7624,7 @@
     "path"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7844,12 +7647,7 @@
     "recursive"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7990,12 +7788,7 @@
     "targetPath"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8017,12 +7810,7 @@
     "favorites"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8226,12 +8014,7 @@
     "attributes.properties.propertyValue"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8255,12 +8038,7 @@
     "propertyValue"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8585,12 +8363,22 @@
     "propertyIds"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "CheckPropertyValues",
+   "group": "Property Commands",
+   "version": "1.8.1",
+   "brief": "Checks whether the given values are acceptable for the given property definitions, without changing anything.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8615,12 +8403,7 @@
     "propertyDefinitionDefaults"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8643,12 +8426,7 @@
     "properties"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8830,12 +8608,7 @@
     "classificationSystemId"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8924,12 +8697,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9243,12 +9011,7 @@
     "projectFilePath"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9427,12 +9190,7 @@
     "maxPlaceholders"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9459,12 +9217,7 @@
     "maxPlaceholders"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10138,12 +9891,7 @@
     "indices"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10165,12 +9913,7 @@
     "pens"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10654,12 +10397,7 @@
     "ruleGroupNames"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11088,12 +10826,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11113,12 +10846,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11379,12 +11107,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11408,12 +11131,7 @@
     "nameContains"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11440,12 +11158,7 @@
     "subTypeOf"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11470,12 +11183,7 @@
     "remove.path"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11498,12 +11206,7 @@
     "libraryParts.name"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11526,12 +11229,7 @@
     "libraryParts.index"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11573,12 +11271,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11600,12 +11293,7 @@
     "date"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11625,12 +11313,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11650,12 +11333,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11871,12 +11549,22 @@
     "scripts"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "CopyLibraryParts",
+   "group": "Library Commands",
+   "version": "1.8.1",
+   "brief": "Copies loaded library parts, given by name or by an element placed from them, under a new file name into a folder, by default the embedded library. The copy gets a new unique ID unless the main GUID is kept. An existing file is never overwritten. The libraries are reloaded once afterwards, so the copies can be found by name. Available from Archicad 28.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 6,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11900,12 +11588,7 @@
     "libraryParts.path"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11928,12 +11611,7 @@
     "unId2"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11953,12 +11631,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11980,12 +11653,7 @@
     "name"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12021,12 +11689,7 @@
     "scripts.parameter"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12049,12 +11712,7 @@
     "script"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12074,12 +11732,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12376,12 +12029,7 @@
     "databases"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12451,12 +12099,7 @@
     "objectIds"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12478,12 +12121,7 @@
     "accessRights"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12527,12 +12165,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13084,12 +12717,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13114,12 +12742,7 @@
     "viewOptions.onScreenViewOptions"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13705,12 +13328,7 @@
     "styleName"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13732,12 +13350,7 @@
     "action"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13896,12 +13509,7 @@
     "navigatorItemId"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14007,12 +13615,7 @@
     "settings.window3DInfo.zoomScaleX",
     "settings.window3DInfo.zoomScaleY"
    ],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14032,12 +13635,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14068,12 +13666,7 @@
     "settings.trimToStoryRange"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14093,12 +13686,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14145,12 +13733,7 @@
     "settings.status"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14613,12 +14196,7 @@
     "parentNavigatorItemId"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -15573,12 +15151,7 @@
     "hotlinks.hotlinkNodeId"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -15606,12 +15179,7 @@
     "hotlinkInstances.filterMode"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -15795,12 +15363,7 @@
     "hotlinkNodes.hotlinkNodeId"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16219,12 +15782,7 @@
     "names"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16249,12 +15807,7 @@
     "modulData.name"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16276,12 +15829,7 @@
     "names"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16783,12 +16331,7 @@
     "domains"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16811,12 +16354,7 @@
     "targetElements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16838,12 +16376,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16872,12 +16405,7 @@
     "flexibleSegmentsData.startOrientation"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16906,12 +16434,7 @@
     "takeOffsData.segmentId"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16941,12 +16464,7 @@
     "elements.width"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16968,12 +16486,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17008,12 +16521,7 @@
     "elements.transitionParameters"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18042,12 +17550,7 @@
     "analyticalModelId"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18071,12 +17574,7 @@
     "segmentationCentralAngle"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18099,12 +17597,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18128,12 +17621,7 @@
     "releases.release"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18155,12 +17643,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18185,12 +17668,7 @@
     "stretches.endAdditionalLength"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18214,12 +17692,7 @@
     "memberParts.memberPartRef"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18242,12 +17715,7 @@
     "memberPartRefs"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18270,12 +17738,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18298,12 +17761,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18325,12 +17783,7 @@
     "supports"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18352,12 +17805,7 @@
     "links"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18380,12 +17828,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18408,12 +17851,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18439,12 +17877,7 @@
     "loads.surfaceLoad"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18470,12 +17903,7 @@
     "members.surfaceMember"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1795,
-     "title": "Grasshopper: own icons for the 126 new components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
