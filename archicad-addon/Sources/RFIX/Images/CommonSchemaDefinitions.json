@@ -4866,14 +4866,14 @@
     },
     "AssociativeWitnessPoint": {
         "type": "object",
-        "description": "A witness point of a dimension. Give elementId (with line, inIndex, special, nodeType, nodeStatus and nodeId as needed) for a point associated with an element, or only coordinate for a static point that is not associated with any element, like a point added by hand on empty space. A witness point takes either elementId or coordinate, not both.",
+        "description": "A witness point of a dimension. Give elementId (with line, inIndex, special, nodeType, nodeStatus and nodeId as needed) for a point associated with an element, or only coordinate for a static point that is not associated with any element, like a point added by hand on empty space. elementId together with coordinate gives an associative point at that location on the element.",
         "properties": {
             "elementId": {
                 "$ref": "#/ElementId"
             },
             "coordinate": {
                 "$ref": "#/Coordinate2D",
-                "description": "The position of a static (non-associative) witness point. Use it instead of elementId; the other fields are ignored for a static point."
+                "description": "Without elementId: the position of a static (non-associative) witness point; the other fields are ignored for a static point. With elementId: the location of the associative point on the referenced element (written to its base location), e.g. where the dimension line crosses a long or oblique wall face; without it Archicad chooses the point, e.g. the middle of a wall edge. Whether Archicad keeps this location for every kind of base (edges with line true, or only hotspots) is not verified."
             },
             "line": {
                 "type": "boolean"

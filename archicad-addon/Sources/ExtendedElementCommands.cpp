@@ -51,7 +51,8 @@ struct AssociativeDimensionPoint {
     API_Guid elementGuid = APINULLGuid;
     API_ElemTypeID elementType = API_ZombieElemID;
     bool isStatic = false;              // not associated with any element
-    API_Coord coordinate = {0.0, 0.0};  // position of a static point
+    bool hasCoordinate = false;         // coordinate given (always for a static point)
+    API_Coord coordinate = {0.0, 0.0};  // position of a static point, or the location of an associative one
     bool line = false;
     Int32 inIndex = 0;
     char special = 0;
@@ -745,9 +746,6 @@ GS::Optional<GS::UniString> ParseAssociativeDimensionPoint (const GS::ObjectStat
 {
     const GS::ObjectState* elementId = pointData.Get ("elementId");
     const GS::ObjectState* coordinate = pointData.Get ("coordinate");
-    if (elementId != nullptr && coordinate != nullptr) {
-        return "A witness point takes either 'elementId' or 'coordinate', not both.";
-    }
     if (elementId == nullptr) {
         if (coordinate == nullptr) {
             return "Each witness point needs either 'elementId' or 'coordinate'.";
@@ -757,8 +755,18 @@ GS::Optional<GS::UniString> ParseAssociativeDimensionPoint (const GS::ObjectStat
         point.isStatic = true;
         point.elementGuid = APINULLGuid;
         point.elementType = API_ZombieElemID;
+        point.hasCoordinate = true;
         point.coordinate = Get2DCoordinateFromObjectState (*coordinate);
         return {};
+    }
+
+    // Associative witness point with a coordinate: the location of the point on the referenced
+    // element, e.g. where the dimension line crosses a wall face, written to base.loc as the
+    // DevKit's Element_Test does for associative points. Without it Archicad picks the point
+    // itself, e.g. the middle of a wall edge (#1814).
+    if (coordinate != nullptr) {
+        point.hasCoordinate = true;
+        point.coordinate = Get2DCoordinateFromObjectState (*coordinate);
     }
 
     point.elementGuid = GetGuidFromObjectState (*elementId);
@@ -828,7 +836,7 @@ GS::Optional<GS::UniString> PopulateAssociativeDimensionMemo (
         dimElem.base.base.node_typ = point.nodeType;
         dimElem.base.base.node_status = point.nodeStatus;
         dimElem.base.base.node_id = point.nodeId;
-        if (point.isStatic) {
+        if (point.hasCoordinate) {
             dimElem.base.loc = point.coordinate;
         }
         dimElem.note = element.dimension.defNote;
@@ -939,6 +947,7 @@ void AddSectionStaticPoint (GS::Array<AssociativeDimensionPoint>& points, double
 {
     AssociativeDimensionPoint point;
     point.isStatic = true;
+    point.hasCoordinate = true;
     point.coordinate = {x, y};
     points.Push (point);
 }
