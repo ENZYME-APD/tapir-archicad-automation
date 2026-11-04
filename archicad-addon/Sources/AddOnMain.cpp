@@ -2211,6 +2211,18 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.4.0",
             "Creates independent Worksheet databases. Returns the databaseId and the Project Map navigatorItemId of each new worksheet."
         );
+        err |= RegisterCommand<CreateDetailMarkersCommand> (
+            navigatorCommands, "1.8.1",
+            "Places Detail markers with their clip polygon in the current floor plan, section or elevation, each with a new Detail viewpoint, like the Detail tool. GetDetailsOfElements reads them back."
+        );
+        err |= RegisterCommand<CreateWorksheetMarkersCommand> (
+            navigatorCommands, "1.8.1",
+            "Places Worksheet markers with their clip polygon in the current floor plan, section or elevation, each with a new Worksheet viewpoint, like the Worksheet tool. GetDetailsOfElements reads them back."
+        );
+        err |= RegisterCommand<ModifyDetailMarkersCommand> (
+            navigatorCommands, "1.8.1",
+            "Changes the name, the reference ID and the clip polygon of Detail and Worksheet markers."
+        );
         err |= RegisterCommand<CreateLayoutCommand> (
             navigatorCommands, "1.4.0",
             "Creates Layouts and their backing master layouts. Archicad inserts a new layout at the first "
