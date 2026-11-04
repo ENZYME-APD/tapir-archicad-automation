@@ -2,7 +2,8 @@ import aclib
 
 # GetCutPolygonsOfElements cuts each body of the 3D model of the elements with a plane and
 # returns its building material, the cut area and the cut polygons in 2D coordinates of the
-# plane. A composite structure has one body per skin. Available from Archicad 28.
+# plane. From Archicad 28 a composite structure has one body per skin; before Archicad 28 the
+# bodies are those of the 3D model and their building materials are left out.
 walls = aclib.RunTapirCommand (
     'GetElementsByType', {
         'elementType': 'Wall'
