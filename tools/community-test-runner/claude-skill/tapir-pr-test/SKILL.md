@@ -20,7 +20,7 @@ yourself for this, never read the runner's source to use it, and never print ful
 - Exit codes: 0 all passed or skipped, 1 a check failed, 2 the runner stopped (Archicad would not
   quit, a dialog, no answer). On 2, report the line and stop; don't retry in a loop.
 
-## Commands (run from the checkout root; prefix `python tools/community-test-runner/tapir_test_runner.py`)
+## Commands (run from the checkout root; prefix `python tools/community-test-runner/tapir_test_runner.py`, `python3` on macOS)
 
 | Goal | Command |
 |---|---|
@@ -29,13 +29,15 @@ yourself for this, never read the runner's source to use it, and never print ful
 | Test chosen pull requests | `test 869 870 --ac 30 --brief --no-post` |
 | Test everything open | `test --all --brief --no-post` (add `--every-check` to also run the repo's whole check folder, for PRs without their own checks) |
 | Test again on the same commit | add `--retest` |
-| Test a local build | `trial --ac 30 --build archicad-addon/Build/AC30/RelWithDebInfo/TapirAddOn_AC30_Win.apx --brief` |
+| Test a local build | `trial --ac 30 --build archicad-addon/Build/AC30/RelWithDebInfo/TapirAddOn_AC30_Win.apx --brief` (macOS: `--build …/TapirAddOn_AC29_Mac.bundle`) |
 | Archicad is already open with an empty untitled project | `check --brief` (this checkout's checks) or `check path/to/check.json --brief` |
 | Benchmark speed and tokens (Archicad open, empty untitled project) | `bench --brief` (`--quick` for a minute-long first look; `--read-only` on a real project); compare runs with `bench-compare old.json new.json`. Read the `.md` report's tables only if the user asks for detail |
 | A test was interrupted | `restore` |
 
 Archicad must be **closed** for `test` and `trial` (the line says "AC30 is open - skipped").
-Ask the user before closing their Archicad; it may hold unsaved work.
+Ask the user before closing their Archicad; it may hold unsaved work. On macOS check with
+`pgrep -x Archicad`, not the API: an Archicad with no project open answers nothing but still runs.
+There the runner brings the Archicad it starts to the front, so tell the user it will take focus.
 
 Pull requests from forks are skipped unless the fork owner is in `trustedForks` in the
 configuration (`setup` suggests the user's own name). Tell the user which were skipped rather than

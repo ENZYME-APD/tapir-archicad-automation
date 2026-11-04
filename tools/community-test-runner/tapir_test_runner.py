@@ -472,7 +472,8 @@ class Installation:
             copy_addon(build, self.addon)
         except PermissionError as exc:
             raise RuntimeError(f"cannot replace {self.addon} ({exc.strerror}): the Add-Ons folder of Archicad "
-                               f"{self.ac['version']} needs administrator rights; run the runner as administrator") from exc
+                               f"{self.ac['version']} " + ("is not writable for your user" if MACOS else
+                                                           "needs administrator rights; run the runner as administrator")) from exc
 
     def pending(self) -> bool:
         """A test build is still in place (a test did not finish)."""
