@@ -4,4 +4,4 @@ Requires Archicad 26 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('GetGridElementDefaults', {})
+aclib.PrintJson (aclib.RunTapirCommand ('GetGridElementDefaults', {}))

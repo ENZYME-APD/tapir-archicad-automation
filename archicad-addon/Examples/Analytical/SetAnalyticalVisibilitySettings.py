@@ -6,11 +6,11 @@ import aclib
 
 settings = aclib.RunTapirCommand ('GetAnalyticalVisibilitySettings', {})['visibilitySettings']
 
-aclib.RunTapirCommand ('SetAnalyticalVisibilitySettings', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetAnalyticalVisibilitySettings', {
     'visibilitySettings': {'areNodesVisible': not settings['areNodesVisible']}
-})
+}))
 aclib.RunTapirCommand ('GetAnalyticalVisibilitySettings', {})
 
-aclib.RunTapirCommand ('SetAnalyticalVisibilitySettings', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetAnalyticalVisibilitySettings', {
     'visibilitySettings': {'areNodesVisible': settings['areNodesVisible']}
-})
+}))

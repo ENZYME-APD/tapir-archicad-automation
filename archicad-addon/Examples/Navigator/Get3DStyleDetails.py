@@ -5,7 +5,7 @@ Requires Archicad 27 or later.
 import aclib
 
 # Without names the current 3D style is returned.
-aclib.RunTapirCommand ('Get3DStyleDetails')
+aclib.PrintJson (aclib.RunTapirCommand ('Get3DStyleDetails'))
 
 styleNames = aclib.RunTapirCommand ('Get3DStyles')['styleNames']
-aclib.RunTapirCommand ('Get3DStyleDetails', {'names': styleNames})
+aclib.PrintJson (aclib.RunTapirCommand ('Get3DStyleDetails', {'names': styleNames}))

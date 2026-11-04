@@ -4,6 +4,6 @@ Needs an open Teamwork project.
 """
 import aclib
 
-aclib.RunTapirCommand ('ReserveHotlinkCacheManagement', debug = False)
+aclib.RunTapirCommand ('ReserveHotlinkCacheManagement')
 
-aclib.RunTapirCommand ('ReleaseHotlinkCacheManagement')
+aclib.PrintJson (aclib.RunTapirCommand ('ReleaseHotlinkCacheManagement'))

@@ -21,8 +21,8 @@ firstPorts, secondPorts = [item['ports'] for item in aclib.RunTapirCommand ('Get
     'elements': [{'elementId': routeId} for routeId in routeIds]
 })['elementPorts']]
 
-aclib.RunTapirCommand ('CheckMEPPortConnectability', {
+aclib.PrintJson (aclib.RunTapirCommand ('CheckMEPPortConnectability', {
     'portPairs': [{'portId': firstPorts[-1]['portId'], 'otherPortId': port['portId']} for port in secondPorts]
-})
+}))
 
 aclib.RunTapirCommand ('DeleteElements', {'elements': [{'elementId': routeId} for routeId in routeIds]})

@@ -6,7 +6,7 @@ import base64
 
 import aclib
 
-doors = aclib.RunTapirCommand ('GetAvailableLibraryParts', {'filterByTypeId': 'Door'}, debug = False)['libraryParts']
+doors = aclib.RunTapirCommand ('GetAvailableLibraryParts', {'filterByTypeId': 'Door'})['libraryParts']
 if not doors:
     raise SystemExit ('No door library part is loaded.')
 

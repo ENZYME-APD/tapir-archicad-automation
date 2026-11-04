@@ -11,7 +11,7 @@ routeId = aclib.RunTapirCommand ('CreateMEPRoutingElements', {
     }]
 })['elements'][0]['elementId']
 
-aclib.RunTapirCommand ('ModifyMEPRoutingElements', {
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyMEPRoutingElements', {
     'routingElementsData': [{
         'elementId': routeId,
         'crossSectionShape': 'Rectangular',
@@ -19,7 +19,7 @@ aclib.RunTapirCommand ('ModifyMEPRoutingElements', {
         'crossSectionHeight': 0.25,
         'insulationThickness': 0.05
     }]
-})
+}))
 
 aclib.RunTapirCommand ('GetMEPRoutingElements', {'elements': [{'elementId': routeId}]})
 aclib.RunTapirCommand ('DeleteElements', {'elements': [{'elementId': routeId}]})

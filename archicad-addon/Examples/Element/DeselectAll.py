@@ -4,10 +4,10 @@ The original selection is restored at the end.
 """
 import aclib
 
-originalSelection = aclib.RunTapirCommand ('GetSelectedElements', {}, debug = False)['elements']
+originalSelection = aclib.RunTapirCommand ('GetSelectedElements', {})['elements']
 print ('{} elements were selected.'.format (len (originalSelection)))
 
-aclib.RunTapirCommand ('DeselectAll', {})
-print ('{} elements are selected now.'.format (len (aclib.RunTapirCommand ('GetSelectedElements', {}, debug = False)['elements'])))
+aclib.PrintJson (aclib.RunTapirCommand ('DeselectAll', {}))
+print ('{} elements are selected now.'.format (len (aclib.RunTapirCommand ('GetSelectedElements', {})['elements'])))
 
-aclib.RunTapirCommand ('ChangeSelectionOfElements', {'addElementsToSelection': originalSelection}, debug = False)
+aclib.RunTapirCommand ('ChangeSelectionOfElements', {'addElementsToSelection': originalSelection})

@@ -4,8 +4,8 @@ Needs a Wall Favorite. Changes the Wall tool's default settings.
 """
 import aclib
 
-wallFavorites = aclib.RunTapirCommand ('GetFavoritesByType', {'elementType': 'Wall'}, debug = False)['favorites']
+wallFavorites = aclib.RunTapirCommand ('GetFavoritesByType', {'elementType': 'Wall'})['favorites']
 if not wallFavorites:
     raise SystemExit ('The project has no Wall Favorite.')
 
-aclib.RunTapirCommand ('ApplyFavoritesToElementDefaults', {'favorites': [wallFavorites[0]]})
+aclib.PrintJson (aclib.RunTapirCommand ('ApplyFavoritesToElementDefaults', {'favorites': [wallFavorites[0]]}))

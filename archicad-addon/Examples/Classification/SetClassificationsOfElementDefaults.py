@@ -4,25 +4,25 @@ New walls get the tool default's classification. Needs a classification system w
 """
 import aclib
 
-systemId = aclib.RunTapirCommand ('GetAllClassificationSystems', debug = False)['classificationSystems'][0]['classificationSystemId']
+systemId = aclib.RunTapirCommand ('GetAllClassificationSystems')['classificationSystems'][0]['classificationSystemId']
 itemId = aclib.RunCommand ('API.GetAllClassificationsInSystem', {'classificationSystemId': systemId})['classificationItems'][0]['classificationItem']['classificationItemId']
 
 def ReadClassification ():
     return aclib.RunTapirCommand ('GetClassificationsOfElementDefaults', {
         'elementTypes': ['Wall'],
         'classificationSystemIds': [{'classificationSystemId': systemId}]
-    }, debug = False)['elementDefaultClassifications'][0]['classificationIds'][0]['classificationId']
+    })['elementDefaultClassifications'][0]['classificationIds'][0]['classificationId']
 
 oldClassification = ReadClassification ()
 
-aclib.RunTapirCommand ('SetClassificationsOfElementDefaults', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetClassificationsOfElementDefaults', {
     'elementDefaultClassifications': [{
         'elementType': 'Wall',
         'classificationId': {'classificationSystemId': systemId, 'classificationItemId': itemId}
     }]
-})
+}))
 print ('Classification after the change:', ReadClassification ())
 
-aclib.RunTapirCommand ('SetClassificationsOfElementDefaults', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetClassificationsOfElementDefaults', {
     'elementDefaultClassifications': [{'elementType': 'Wall', 'classificationId': oldClassification}]
-})
+}))

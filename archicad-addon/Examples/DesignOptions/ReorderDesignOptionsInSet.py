@@ -14,9 +14,9 @@ optionA, optionB = aclib.RunTapirCommand ('CreateDesignOptions', {
 })['designOptionIdsOrErrors']
 
 # Without beforeDesignOptionId the option goes to the end of its set.
-aclib.RunTapirCommand ('ReorderDesignOptionsInSet', {
+aclib.PrintJson (aclib.RunTapirCommand ('ReorderDesignOptionsInSet', {
     'designOptions': [{'designOptionId': optionB['designOptionId'], 'beforeDesignOptionId': optionA['designOptionId']}]
-})
+}))
 aclib.RunTapirCommand ('GetDesignOptionSets')
 
 sets = aclib.RunTapirCommand ('GetDesignOptionSets')['designOptionSets']

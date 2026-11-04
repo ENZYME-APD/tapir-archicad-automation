@@ -23,13 +23,13 @@ class NotificationHandler (BaseHTTPRequestHandler):
 server = HTTPServer ((HOST, PORT), NotificationHandler)
 threading.Thread (target = server.serve_forever, daemon = True).start ()
 
-aclib.RunTapirCommand ('SetElementNotificationClient', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetElementNotificationClient', {
     'host': HOST,
     'port': PORT,
     'notifyOnNewElement': True,
     'notifyOnModificationOfAnElement': True,
     'notifyOnReservationChanges': False
-})
+}))
 
 aclib.RunTapirCommand ('CreateColumns', {'columnsData': [{'coordinates': {'x': 0.0, 'y': 0.0, 'z': 0.0}}]})
 time.sleep (2)

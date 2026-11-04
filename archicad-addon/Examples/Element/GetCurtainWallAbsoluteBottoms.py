@@ -4,8 +4,8 @@ Needs at least one Curtain Wall. Its subelements (panels, frames ...) are accept
 """
 import aclib
 
-curtainWalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'CurtainWall'}, debug = False)['elements']
+curtainWalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'CurtainWall'})['elements']
 if not curtainWalls:
     raise SystemExit ('No curtain wall in the project.')
 
-aclib.RunTapirCommand ('GetCurtainWallAbsoluteBottoms', {'elements': curtainWalls})
+aclib.PrintJson (aclib.RunTapirCommand ('GetCurtainWallAbsoluteBottoms', {'elements': curtainWalls}))

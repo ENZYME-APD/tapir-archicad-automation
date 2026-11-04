@@ -13,10 +13,10 @@ html = """<!DOCTYPE html>
     <button onclick="ACAPI.SubmitResult ('no')">No</button>
 </body>
 </html>"""
-aclib.RunTapirCommand ('ShowScriptUI', {'htmlContent': html, 'title': 'Tapir', 'width': 300, 'height': 150}, debug = False)
+aclib.RunTapirCommand ('ShowScriptUI', {'htmlContent': html, 'title': 'Tapir', 'width': 300, 'height': 150})
 
 while True:
-    response = aclib.RunTapirCommand ('GetScriptUIResult', debug = False)
+    response = aclib.RunTapirCommand ('GetScriptUIResult')
     if response['hasResult'] or not response['isOpen']:
         break
     time.sleep (0.5)

@@ -4,10 +4,10 @@ Opens the first Curtain Wall in editing mode first. accept True would keep the c
 """
 import aclib
 
-curtainWalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'CurtainWall'}, debug = False)['elements']
+curtainWalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'CurtainWall'})['elements']
 if not curtainWalls:
     raise SystemExit ('No curtain wall in the project.')
 
-aclib.RunTapirCommand ('EditHierarchicalElement', {'elementId': curtainWalls[0]['elementId']}, debug = False)
+aclib.RunTapirCommand ('EditHierarchicalElement', {'elementId': curtainWalls[0]['elementId']})
 
-aclib.RunTapirCommand ('FinishHierarchicalEditing', {'accept': False})
+aclib.PrintJson (aclib.RunTapirCommand ('FinishHierarchicalEditing', {'accept': False}))

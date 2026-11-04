@@ -6,7 +6,7 @@ create an automatic zone in the room around that point.
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateZones', {'zonesData': [{
+aclib.PrintJson (aclib.RunTapirCommand ('CreateZones', {'zonesData': [{
     'name': 'Office',
     'numberStr': '001',
     'geometry': {
@@ -17,4 +17,4 @@ aclib.RunTapirCommand ('CreateZones', {'zonesData': [{
             {'x': 100.0, 'y': 5.0}
         ]
     }
-}]})
+}]}))

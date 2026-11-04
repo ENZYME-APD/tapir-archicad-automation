@@ -4,6 +4,6 @@ States are freed anyway when the project is closed; releasing them earlier frees
 """
 import aclib
 
-stateId = aclib.RunTapirCommand ('CaptureElementState', {}, debug = False)['stateId']
+stateId = aclib.RunTapirCommand ('CaptureElementState', {})['stateId']
 
-aclib.RunTapirCommand ('ReleaseElementState', {'stateId': stateId})
+aclib.PrintJson (aclib.RunTapirCommand ('ReleaseElementState', {'stateId': stateId}))

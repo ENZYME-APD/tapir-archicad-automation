@@ -8,4 +8,4 @@ walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['el
 if not walls:
     raise SystemExit ('No wall in the project.')
 
-aclib.RunTapirCommand ('GetDesignOptionForElements', {'elements': walls})
+aclib.PrintJson (aclib.RunTapirCommand ('GetDesignOptionForElements', {'elements': walls}))

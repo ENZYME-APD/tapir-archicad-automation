@@ -4,8 +4,8 @@ Needs an open Teamwork project. The reservation is released again at the end.
 """
 import aclib
 
-aclib.RunTapirCommand ('ReserveHotlinkCacheManagement')
+aclib.PrintJson (aclib.RunTapirCommand ('ReserveHotlinkCacheManagement'))
 
 aclib.RunTapirCommand ('GetTeamworkStatus')
 
-aclib.RunTapirCommand ('ReleaseHotlinkCacheManagement', debug = False)
+aclib.RunTapirCommand ('ReleaseHotlinkCacheManagement')

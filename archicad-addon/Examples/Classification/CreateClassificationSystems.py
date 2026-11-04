@@ -21,7 +21,8 @@ result = aclib.RunTapirCommand ('CreateClassificationSystems', {
         }]
     }]
 })
+aclib.PrintJson (result)
 
 aclib.RunTapirCommand ('DeleteClassificationSystems', {
     'classificationSystemIds': [s for s in result['classificationSystemIds'] if 'classificationSystemId' in s]
-}, debug = False)
+})

@@ -9,6 +9,6 @@ elements = members['curveMembers'][:1] + members['surfaceMembers'][:1]
 if not elements:
     raise SystemExit ('No analytical member in the current view.')
 
-aclib.RunTapirCommand ('GetAnalyticalMemberDetails', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetAnalyticalMemberDetails', {
     'elements': elements
-})
+}))

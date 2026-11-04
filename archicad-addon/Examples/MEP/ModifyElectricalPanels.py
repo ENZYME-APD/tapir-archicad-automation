@@ -9,11 +9,11 @@ if not panels:
     raise SystemExit ('No electrical panel in the project.')
 panel = panels[0]
 
-aclib.RunTapirCommand ('ModifyElectricalPanels', {
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyElectricalPanels', {
     'electricalPanelsData': [{'elementId': panel['elementId'], 'panelName': panel['panelName'] + ' (renamed)'}]
-})
+}))
 aclib.RunTapirCommand ('GetElectricalPanels', {'elements': [{'elementId': panel['elementId']}]})
 
-aclib.RunTapirCommand ('ModifyElectricalPanels', {
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyElectricalPanels', {
     'electricalPanelsData': [{'elementId': panel['elementId'], 'panelName': panel['panelName']}]
-})
+}))

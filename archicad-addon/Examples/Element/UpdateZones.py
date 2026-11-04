@@ -4,11 +4,11 @@ Changes the zone, as Design > Update Zones does. Archicad updates it right after
 """
 import aclib
 
-zones = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Zone'}, debug = False)['elements'][:1]
+zones = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Zone'})['elements'][:1]
 if not zones:
     raise SystemExit ('No zone in the project.')
 
-aclib.RunTapirCommand ('UpdateZones', {
+aclib.PrintJson (aclib.RunTapirCommand ('UpdateZones', {
     'zones': zones,
     'keepStampPosition': True
-})
+}))

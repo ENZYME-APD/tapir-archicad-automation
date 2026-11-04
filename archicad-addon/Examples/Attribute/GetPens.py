@@ -4,4 +4,4 @@ Requires Archicad 27 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('GetPens', {'indices': [1, 2, 3]})
+aclib.PrintJson (aclib.RunTapirCommand ('GetPens', {'indices': [1, 2, 3]}))

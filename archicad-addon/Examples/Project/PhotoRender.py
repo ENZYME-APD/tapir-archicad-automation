@@ -6,10 +6,10 @@ import os
 import tempfile
 import aclib
 
-aclib.RunTapirCommand ('PhotoRender', {
+aclib.PrintJson (aclib.RunTapirCommand ('PhotoRender', {
     'imageFilePath': os.path.join (tempfile.mkdtemp (), 'TapirRender.png'),
     'format': 'png',
     'width': 640,
     'height': 480,
     'resolution': 72
-})
+}))

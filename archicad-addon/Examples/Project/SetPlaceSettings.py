@@ -5,11 +5,12 @@ Only the given fields change; an empty placeInfo only reads the settings. Requir
 import aclib
 
 original = aclib.RunTapirCommand ('SetPlaceSettings', {'placeInfo': {}})['placeInfo']
+aclib.PrintJson (original)
 
-aclib.RunTapirCommand ('SetPlaceSettings', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetPlaceSettings', {
     'placeInfo': {'month': 6, 'day': 21, 'hour': 12, 'minute': 0, 'second': 0}
-})
+}))
 
-aclib.RunTapirCommand ('SetPlaceSettings', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetPlaceSettings', {
     'placeInfo': {key: original[key] for key in ['year', 'month', 'day', 'hour', 'minute', 'second', 'sumTime']}
-})
+}))

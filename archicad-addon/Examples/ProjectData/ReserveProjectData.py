@@ -7,7 +7,7 @@ import aclib
 name = 'tapir-example/teamwork'
 aclib.RunTapirCommand ('SetProjectData', {'values': [{'name': name, 'content': 'shared'}]})
 
-aclib.RunTapirCommand ('ReserveProjectData', {'names': [name]})
+aclib.PrintJson (aclib.RunTapirCommand ('ReserveProjectData', {'names': [name]}))
 aclib.RunTapirCommand ('GetProjectDataKeys')
 
 aclib.RunTapirCommand ('ReleaseProjectData', {'names': [name]})

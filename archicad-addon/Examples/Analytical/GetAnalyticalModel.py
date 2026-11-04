@@ -6,6 +6,6 @@ import aclib
 
 variation = aclib.RunTapirCommand ('GetAnalyticalModelVariation', {})['variation']
 
-aclib.RunTapirCommand ('GetAnalyticalModel', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetAnalyticalModel', {
     'variation': variation
-})
+}))

@@ -21,17 +21,17 @@ if not candidates:
 view, settings = candidates[0]
 
 newDisplay = 'CoreOnly' if settings['structureDisplay'] != 'CoreOnly' else 'EntireStructure'
-aclib.RunTapirCommand ('SetViewSettings', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetViewSettings', {
     'navigatorItemIdsWithViewSettings': [{
         'navigatorItemId': view['navigatorItemId'],
         'viewSettings': {'structureDisplay': newDisplay}
     }]
-})
+}))
 aclib.RunTapirCommand ('GetViewSettings', {'navigatorItemIds': [view]})
 
-aclib.RunTapirCommand ('SetViewSettings', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetViewSettings', {
     'navigatorItemIdsWithViewSettings': [{
         'navigatorItemId': view['navigatorItemId'],
         'viewSettings': {'structureDisplay': settings['structureDisplay']}
     }]
-})
+}))

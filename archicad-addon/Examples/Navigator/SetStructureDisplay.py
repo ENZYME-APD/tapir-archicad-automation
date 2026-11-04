@@ -6,7 +6,7 @@ import aclib
 
 original = aclib.RunTapirCommand ('GetStructureDisplay')
 
-aclib.RunTapirCommand ('SetStructureDisplay', {'structureDisplay': 'CoreOnly'})
+aclib.PrintJson (aclib.RunTapirCommand ('SetStructureDisplay', {'structureDisplay': 'CoreOnly'}))
 aclib.RunTapirCommand ('GetStructureDisplay')
 
-aclib.RunTapirCommand ('SetStructureDisplay', {'structureDisplay': original['structureDisplay']})
+aclib.PrintJson (aclib.RunTapirCommand ('SetStructureDisplay', {'structureDisplay': original['structureDisplay']}))

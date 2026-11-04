@@ -6,10 +6,10 @@ import aclib
 
 original = aclib.RunTapirCommand ('Get3DCutawayStatus')
 
-aclib.RunTapirCommand ('Set3DCutawayStatus', {'cutawayEnabled': True, 'cuttingPlanesVisible': True})
+aclib.PrintJson (aclib.RunTapirCommand ('Set3DCutawayStatus', {'cutawayEnabled': True, 'cuttingPlanesVisible': True}))
 aclib.RunTapirCommand ('Get3DCutawayStatus')
 
-aclib.RunTapirCommand ('Set3DCutawayStatus', {
+aclib.PrintJson (aclib.RunTapirCommand ('Set3DCutawayStatus', {
     'cutawayEnabled': original['cutawayEnabled'],
     'cuttingPlanesVisible': original['cuttingPlanesVisible']
-})
+}))

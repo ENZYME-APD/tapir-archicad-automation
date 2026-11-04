@@ -12,7 +12,7 @@ routeId = aclib.RunTapirCommand ('CreateMEPRoutingElements', {
 })['elements'][0]['elementId']
 route = aclib.RunTapirCommand ('GetMEPRoutingElements', {'elements': [{'elementId': routeId}]})['routingElements'][0]
 
-aclib.RunTapirCommand ('PlaceMEPTakeOffs', {
+aclib.PrintJson (aclib.RunTapirCommand ('PlaceMEPTakeOffs', {
     'takeOffsData': [{
         'domain': 'Piping',
         'segmentId': route['segments'][0]['elementId'],
@@ -20,4 +20,4 @@ aclib.RunTapirCommand ('PlaceMEPTakeOffs', {
         'rotationAroundMainAxis': 0.0,
         'length': 0.3
     }]
-})
+}))

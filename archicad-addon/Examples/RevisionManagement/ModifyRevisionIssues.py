@@ -11,17 +11,17 @@ if not openIssues:
 revisionIssue = openIssues[0]
 
 # Only the given fields change.
-aclib.RunTapirCommand ('ModifyRevisionIssues', {
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyRevisionIssues', {
     'revisionIssues': [{
         'revisionIssueId': revisionIssue['revisionIssueId'],
         'description': revisionIssue['description'] + ' (Tapir)'
     }]
-})
+}))
 aclib.RunTapirCommand ('GetRevisionIssues')
 
-aclib.RunTapirCommand ('ModifyRevisionIssues', {
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyRevisionIssues', {
     'revisionIssues': [{
         'revisionIssueId': revisionIssue['revisionIssueId'],
         'description': revisionIssue['description']
     }]
-})
+}))

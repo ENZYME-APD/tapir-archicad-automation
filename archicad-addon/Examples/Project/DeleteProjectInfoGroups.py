@@ -10,8 +10,8 @@ created = aclib.RunTapirCommand ('CreateProjectInfoGroups', {
 if 'error' in created:
     raise SystemExit ('The group could not be created.')
 
-aclib.RunTapirCommand ('DeleteProjectInfoGroups', {
+aclib.PrintJson (aclib.RunTapirCommand ('DeleteProjectInfoGroups', {
     'projectInfoGroups': [
         {'projectInfoGroupId': created['projectInfoGroupId']}
     ]
-})
+}))

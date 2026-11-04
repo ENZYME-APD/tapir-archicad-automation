@@ -5,9 +5,9 @@ connect them to a circuit. Coordinates are in meters. Requires Archicad 30 or la
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateElectricalDevices', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateElectricalDevices', {
     'electricalDevicesData': [
         {'position': {'x': 2.0, 'y': 3.0, 'z': 2.5}, 'apparentPower': 60},
         {'position': {'x': 4.0, 'y': 3.0, 'z': 0.3}, 'apparentPower': 2000}
     ]
-})
+}))

@@ -13,11 +13,11 @@ original = aclib.RunTapirCommand ('GetHotlinkDesignOptionTables', {'hotlinks': i
 if original.get ('filterMode', 'Unknown') == 'Unknown':
     raise SystemExit ('The design option table of the hotlink cannot be read.')
 
-aclib.RunTapirCommand ('SetHotlinkDesignOptionTables', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetHotlinkDesignOptionTables', {
     'hotlinkInstances': [{'elementId': elementId, 'filterMode': 'MainModelOnly'}]
-})
+}))
 
 restore = {'elementId': elementId, 'filterMode': original['filterMode']}
 if 'activeDesignOptionCombination' in original:
     restore['activeDesignOptionCombination'] = original['activeDesignOptionCombination']
-aclib.RunTapirCommand ('SetHotlinkDesignOptionTables', {'hotlinkInstances': [restore]})
+aclib.PrintJson (aclib.RunTapirCommand ('SetHotlinkDesignOptionTables', {'hotlinkInstances': [restore]}))

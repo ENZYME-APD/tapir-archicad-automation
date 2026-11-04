@@ -4,8 +4,8 @@ Needs at least one Section.
 """
 import aclib
 
-sections = aclib.RunTapirCommand ('GetDatabases', {'types': ['Section']}, debug = False)['databases']
+sections = aclib.RunTapirCommand ('GetDatabases', {'types': ['Section']})['databases']
 if not sections:
     raise SystemExit ('No section in the project.')
 
-aclib.RunTapirCommand ('GetStoryControlPrimitives', {'databaseId': sections[0]['databaseId']})
+aclib.PrintJson (aclib.RunTapirCommand ('GetStoryControlPrimitives', {'databaseId': sections[0]['databaseId']}))

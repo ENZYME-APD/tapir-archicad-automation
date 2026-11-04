@@ -17,9 +17,9 @@ with tempfile.TemporaryDirectory () as tempDir:
     with open (inputPath, 'wb') as pngFile:
         pngFile.write (PNG_1X1)
 
-    aclib.RunTapirCommand ('AddFilesToEmbeddedLibrary', {
+    aclib.PrintJson (aclib.RunTapirCommand ('AddFilesToEmbeddedLibrary', {
         'files': [{'inputPath': inputPath, 'outputPath': outputPath, 'type': 'Pict'}],
         'overwriteExisting': True
-    })
+    }))
 
 aclib.RunTapirCommand ('DeleteEmbeddedLibraryItems', {'embeddedLibraryItems': [{'path': outputPath}]})

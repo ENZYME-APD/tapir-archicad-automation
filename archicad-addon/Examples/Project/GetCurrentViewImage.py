@@ -7,7 +7,7 @@ import os
 import tempfile
 import aclib
 
-response = aclib.RunTapirCommand ('GetCurrentViewImage', {'source': '3DWindow', 'format': 'png'}, debug = False)
+response = aclib.RunTapirCommand ('GetCurrentViewImage', {'source': '3DWindow', 'format': 'png'})
 if not response or 'image' not in response:
     raise SystemExit ('No image: {}'.format (response))
 

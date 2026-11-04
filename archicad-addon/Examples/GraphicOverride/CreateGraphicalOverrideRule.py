@@ -5,14 +5,14 @@ the rule applies to every element. Requires Archicad 27 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateGraphicalOverrideRule', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateGraphicalOverrideRule', {
     'name': 'Tapir Example Red Surfaces',
     'ruleGroupName': 'Tapir Examples',
     'surfaceRGB': {'red': 1.0, 'green': 0.0, 'blue': 0.0},
     'linePenIndex': 20,
     'overrideContours': True
-})
+}))
 
 aclib.RunTapirCommand ('GetGraphicalOverrideRules')
 
-aclib.RunTapirCommand ('DeleteGraphicOverrideRuleGroups', {'ruleGroupNames': ['Tapir Examples'], 'deleteRules': True}, debug = False)
+aclib.RunTapirCommand ('DeleteGraphicOverrideRuleGroups', {'ruleGroupNames': ['Tapir Examples'], 'deleteRules': True})

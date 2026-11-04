@@ -6,7 +6,7 @@ import aclib
 
 originalIsOn = aclib.RunTapirCommand ('GetAutoIntersect')['isOn']
 
-aclib.RunTapirCommand ('SetAutoIntersect', {'isOn': False})
+aclib.PrintJson (aclib.RunTapirCommand ('SetAutoIntersect', {'isOn': False}))
 aclib.RunTapirCommand ('GetAutoIntersect')
 
-aclib.RunTapirCommand ('SetAutoIntersect', {'isOn': originalIsOn})
+aclib.PrintJson (aclib.RunTapirCommand ('SetAutoIntersect', {'isOn': originalIsOn}))

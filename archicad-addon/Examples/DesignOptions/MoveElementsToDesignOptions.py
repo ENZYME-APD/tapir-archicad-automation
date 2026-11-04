@@ -22,14 +22,14 @@ option = aclib.RunTapirCommand ('CreateDesignOptions', {
     'designOptions': [{'name': 'Option A', 'id': 'A', 'ownerSetName': setName}]
 })['designOptionIdsOrErrors'][0]
 
-aclib.RunTapirCommand ('MoveElementsToDesignOptions', {
+aclib.PrintJson (aclib.RunTapirCommand ('MoveElementsToDesignOptions', {
     'elementDesignOptionPairs': [{'elementId': wallId, 'designOptionId': option['designOptionId']}]
-})
+}))
 aclib.RunTapirCommand ('GetDesignOptionForElements', {'elements': walls})
 
-aclib.RunTapirCommand ('MoveElementsToDesignOptions', {
+aclib.PrintJson (aclib.RunTapirCommand ('MoveElementsToDesignOptions', {
     'elementDesignOptionPairs': [{'elementId': wallId, 'designOptionId': originalOptionId}]
-})
+}))
 sets = aclib.RunTapirCommand ('GetDesignOptionSets')['designOptionSets']
 aclib.RunTapirCommand ('DeleteDesignOptionSets', {
     'designOptionSets': [{'designOptionSetId': s['designOptionSetId']} for s in sets if s['name'] == setName]

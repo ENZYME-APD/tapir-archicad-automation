@@ -4,7 +4,7 @@ Overwrites the layer of the same name when the script is run again.
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateLayers', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateLayers', {
     'layerDataArray': [{
         'name': 'Tapir Example Layer',
         'isHidden': False,
@@ -13,4 +13,4 @@ aclib.RunTapirCommand ('CreateLayers', {
         'intersectionGroupNr': 2
     }],
     'overwriteExisting': True
-})
+}))

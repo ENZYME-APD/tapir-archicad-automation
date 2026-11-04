@@ -4,4 +4,4 @@ Requires Archicad 27 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('Get3DFilterAndCutSettings')
+aclib.PrintJson (aclib.RunTapirCommand ('Get3DFilterAndCutSettings'))

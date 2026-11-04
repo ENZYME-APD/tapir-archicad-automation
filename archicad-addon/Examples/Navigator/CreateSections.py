@@ -13,5 +13,6 @@ sections = aclib.RunTapirCommand ('CreateSections', {
         'id': 'TX-1'
     }]
 })['elements']
+aclib.PrintJson (sections)
 
 aclib.RunTapirCommand ('DeleteElements', {'elements': [s for s in sections if 'elementId' in s]})

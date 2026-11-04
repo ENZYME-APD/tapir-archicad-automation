@@ -12,6 +12,6 @@ routeId = routes[0]['elementId']
 route = aclib.RunTapirCommand ('GetMEPRoutingElements', {'elements': [{'elementId': routeId}]})['routingElements'][0]
 ids = [routeId] + [node['elementId'] for node in route['nodes']] + [segment['elementId'] for segment in route['segments']]
 
-aclib.RunTapirCommand ('GetMEPRoutingParameters', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetMEPRoutingParameters', {
     'elements': [{'elementId': id} for id in ids]
-})
+}))

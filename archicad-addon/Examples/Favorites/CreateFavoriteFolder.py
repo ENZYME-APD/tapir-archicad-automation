@@ -4,7 +4,7 @@ Requires Archicad 29 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateFavoriteFolder', {'parentPath': [], 'name': 'Tapir Example Folder'})
-aclib.RunTapirCommand ('CreateFavoriteFolder', {'parentPath': ['Tapir Example Folder'], 'name': 'Walls'})
+aclib.PrintJson (aclib.RunTapirCommand ('CreateFavoriteFolder', {'parentPath': [], 'name': 'Tapir Example Folder'}))
+aclib.PrintJson (aclib.RunTapirCommand ('CreateFavoriteFolder', {'parentPath': ['Tapir Example Folder'], 'name': 'Walls'}))
 
-aclib.RunTapirCommand ('DeleteFavoriteFolder', {'path': ['Tapir Example Folder'], 'recursive': True}, debug = False)
+aclib.RunTapirCommand ('DeleteFavoriteFolder', {'path': ['Tapir Example Folder'], 'recursive': True})

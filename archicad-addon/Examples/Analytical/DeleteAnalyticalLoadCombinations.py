@@ -5,6 +5,6 @@ loadCombinationId = aclib.RunTapirCommand ('CreateAnalyticalLoadCombinations', {
     'loadCombinations': [{'name': 'Tapir Temporary', 'category': 'SLS'}]
 })['loadCombinationIds'][0]['loadCombinationId']
 
-aclib.RunTapirCommand ('DeleteAnalyticalLoadCombinations', {
+aclib.PrintJson (aclib.RunTapirCommand ('DeleteAnalyticalLoadCombinations', {
     'loadCombinationIds': [{'loadCombinationId': loadCombinationId}]
-})
+}))

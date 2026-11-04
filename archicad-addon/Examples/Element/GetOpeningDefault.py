@@ -4,4 +4,4 @@ Requires Archicad 29 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('GetOpeningDefault', {})
+aclib.PrintJson (aclib.RunTapirCommand ('GetOpeningDefault', {}))

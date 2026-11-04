@@ -2,7 +2,7 @@
 with the recorded one.
 
 - Test/Scripts/*.py are the regression tests: the output of <name>.py is compared with
-  ExpectedOutputs/<name>.output.
+  ExpectedOutputs/<name>.py.output.
 - Examples/<GroupFolder>/*.py (one per command) run as a smoke test: the output of
   <GroupFolder>/<CommandName>.py is compared with
   ExpectedOutputs/Examples/<GroupFolder>/<CommandName>.py.output.

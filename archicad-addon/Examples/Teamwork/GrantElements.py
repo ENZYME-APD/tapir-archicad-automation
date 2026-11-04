@@ -5,16 +5,16 @@ reserved by the other member. Requires Archicad 27 or later.
 """
 import aclib
 
-walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'}, debug = False)['elements'][:1]
+walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]
 if not walls:
     raise SystemExit ('No wall in the project.')
 
-myUserId = aclib.RunTapirCommand ('GetTeamworkProjectInfo', debug = False).get ('userId')
-users = aclib.RunTapirCommand ('GetTeamworkStatus', debug = False).get ('users', [])
+myUserId = aclib.RunTapirCommand ('GetTeamworkProjectInfo').get ('userId')
+users = aclib.RunTapirCommand ('GetTeamworkStatus').get ('users', [])
 otherUsers = [user for user in users if user['userId'] != myUserId]
 if not otherUsers:
     raise SystemExit ('The project has no other Teamwork member.')
 
-aclib.RunTapirCommand ('ReserveElements', {'elements': walls}, debug = False)
+aclib.RunTapirCommand ('ReserveElements', {'elements': walls})
 
-aclib.RunTapirCommand ('GrantElements', {'elements': walls, 'userId': otherUsers[0]['userId']})
+aclib.PrintJson (aclib.RunTapirCommand ('GrantElements', {'elements': walls, 'userId': otherUsers[0]['userId']}))

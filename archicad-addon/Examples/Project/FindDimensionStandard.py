@@ -4,8 +4,8 @@ Requires Archicad 27 or later.
 """
 import aclib
 
-standards = aclib.RunTapirCommand ('GetDimensionStandards', {}, debug = False)['dimensionStandards']
+standards = aclib.RunTapirCommand ('GetDimensionStandards', {})['dimensionStandards']
 if not standards:
     raise SystemExit ('No dimension standard in the project.')
 
-aclib.RunTapirCommand ('FindDimensionStandard', {'name': standards[0]['name']})
+aclib.PrintJson (aclib.RunTapirCommand ('FindDimensionStandard', {'name': standards[0]['name']}))

@@ -4,4 +4,4 @@ Discards the unsaved changes of the open project.
 """
 import aclib
 
-aclib.RunTapirCommand ('NewProject', {'newAndReset': False})
+aclib.PrintJson (aclib.RunTapirCommand ('NewProject', {'newAndReset': False}))

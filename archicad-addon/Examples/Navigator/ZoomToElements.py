@@ -8,4 +8,4 @@ walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall', 'fil
 if not walls:
     raise SystemExit ('No wall on the current story.')
 
-aclib.RunTapirCommand ('ZoomToElements', {'elements': walls, 'keepSelection': True})
+aclib.PrintJson (aclib.RunTapirCommand ('ZoomToElements', {'elements': walls, 'keepSelection': True}))

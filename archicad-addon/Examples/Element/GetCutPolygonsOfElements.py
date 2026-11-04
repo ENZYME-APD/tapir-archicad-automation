@@ -5,11 +5,11 @@ the building materials are left out.
 """
 import aclib
 
-walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'}, debug = False)['elements'][:3]
+walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:3]
 if not walls:
     raise SystemExit ('No wall in the project.')
 
-aclib.RunTapirCommand ('GetCutPolygonsOfElements', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetCutPolygonsOfElements', {
     'elements': walls,
     'cutPlane': {
         'basePoint': {'x': 0.0, 'y': 0.0, 'z': 1.0},
@@ -17,4 +17,4 @@ aclib.RunTapirCommand ('GetCutPolygonsOfElements', {
         'axisY': {'x': 0.0, 'y': 1.0, 'z': 0.0},
         'axisZ': {'x': 0.0, 'y': 0.0, 'z': 1.0}
     }
-})
+}))

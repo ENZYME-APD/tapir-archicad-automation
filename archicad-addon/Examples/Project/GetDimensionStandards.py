@@ -4,4 +4,4 @@ Pass a name to get only that standard. Requires Archicad 27 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('GetDimensionStandards', {})
+aclib.PrintJson (aclib.RunTapirCommand ('GetDimensionStandards', {}))

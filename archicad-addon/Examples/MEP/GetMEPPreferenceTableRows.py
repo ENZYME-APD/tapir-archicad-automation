@@ -8,7 +8,7 @@ tables = [t for t in aclib.RunTapirCommand ('GetMEPPreferenceTables', {'domain':
 if not tables:
     raise SystemExit ('No pipe segment preference table with rows in the project.')
 
-aclib.RunTapirCommand ('GetMEPPreferenceTableRows', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetMEPPreferenceTableRows', {
     'tableId': {'guid': tables[0]['guid']},
     'keys': [{'referenceId': row['referenceId']} for row in tables[0]['rows'][:2]]
-})
+}))

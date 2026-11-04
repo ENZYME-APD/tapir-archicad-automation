@@ -12,23 +12,23 @@ def ReadDefaultElementId ():
     return aclib.RunTapirCommand ('GetPropertyValuesOfElementDefaults', {
         'elementType': 'Wall',
         'properties': [{'propertyId': elementIdPropertyId}]
-    }, debug = False)['propertyValues'][0]['propertyValue']['value']
+    })['propertyValues'][0]['propertyValue']['value']
 
 oldValue = ReadDefaultElementId ()
 
-aclib.RunTapirCommand ('SetPropertyValuesOfElementDefaults', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetPropertyValuesOfElementDefaults', {
     'elementDefaultPropertyValues': [{
         'elementType': 'Wall',
         'propertyId': elementIdPropertyId,
         'propertyValue': {'value': 'TAPIR-WALL'}
     }]
-})
+}))
 print ('Default Element ID after the change:', ReadDefaultElementId ())
 
-aclib.RunTapirCommand ('SetPropertyValuesOfElementDefaults', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetPropertyValuesOfElementDefaults', {
     'elementDefaultPropertyValues': [{
         'elementType': 'Wall',
         'propertyId': elementIdPropertyId,
         'propertyValue': {'value': oldValue}
     }]
-})
+}))

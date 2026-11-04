@@ -4,4 +4,4 @@ Quits Archicad. Save the project first.
 """
 import aclib
 
-aclib.RunTapirCommand ('QuitArchicad')
+aclib.PrintJson (aclib.RunTapirCommand ('QuitArchicad'))

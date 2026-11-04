@@ -10,6 +10,6 @@ mepElements = aclib.RunTapirCommand ('GetMEPElements', {
 if not mepElements:
     raise SystemExit ('No MEP segment, elbow, branch or transition in the project.')
 
-aclib.RunTapirCommand ('GetMEPElementDetails', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetMEPElementDetails', {
     'elements': [{'elementId': element['elementId']} for element in mepElements[:5]]
-})
+}))

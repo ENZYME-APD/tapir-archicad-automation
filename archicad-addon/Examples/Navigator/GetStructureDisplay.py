@@ -4,4 +4,4 @@ Requires Archicad 27 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('GetStructureDisplay')
+aclib.PrintJson (aclib.RunTapirCommand ('GetStructureDisplay'))

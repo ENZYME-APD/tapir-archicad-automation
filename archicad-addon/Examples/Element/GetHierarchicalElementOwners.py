@@ -4,14 +4,14 @@ Needs at least one Curtain Wall.
 """
 import aclib
 
-curtainWalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'CurtainWall'}, debug = False)['elements'][:1]
+curtainWalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'CurtainWall'})['elements'][:1]
 if not curtainWalls:
     raise SystemExit ('No curtain wall in the project.')
 
-subelements = aclib.RunTapirCommand ('GetSubelementsOfHierarchicalElements', {'elements': curtainWalls}, debug = False)['subelements']
+subelements = aclib.RunTapirCommand ('GetSubelementsOfHierarchicalElements', {'elements': curtainWalls})['subelements']
 frames = subelements[0].get ('cWallFrames', [])[:3]
 
-aclib.RunTapirCommand ('GetHierarchicalElementOwners', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetHierarchicalElementOwners', {
     'elements': frames,
     'ownerMode': 'root'
-})
+}))

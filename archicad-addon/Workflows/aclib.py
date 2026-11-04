@@ -12,3 +12,6 @@ _spec = importlib.util.spec_from_file_location ('aclib', os.path.normpath (_path
 _module = importlib.util.module_from_spec (_spec)
 sys.modules['aclib'] = _module
 _spec.loader.exec_module (_module)
+# These scripts print every command they run, as all of them did before the examples went quiet;
+# the recorded outputs in Test/ExpectedOutputs depend on it.
+_module.printCommands = True
