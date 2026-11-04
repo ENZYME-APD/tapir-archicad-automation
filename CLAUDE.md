@@ -433,6 +433,11 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   (default 72), with no open thread by a person, no changes requested and no
   `do-not-merge`/`needs-maintainer` label; `BOT_AUTO_MERGE=false` turns that off.
   This is a deliberate maintainer decision to minimize human maintenance.
+- `delete_merged_branches.yml` — deletes the head branch of every merged pull
+  request of this repository, however it was merged, when its tip is still the
+  merged head and no open pull request uses it; run by hand (dry run by default)
+  it sweeps the leftovers. `KEEP` in it lists the branches without a pull
+  request that must stay (`api-coverage`, image branches).
 - `discord_issue_bot.yml` — files GitHub issues from bug reports and feature
   requests in the project's Discord channels, then dispatches
   `claude_issue_triage.yml` for each (issues created with `GITHUB_TOKEN` trigger
