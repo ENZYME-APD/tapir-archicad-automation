@@ -1,14 +1,14 @@
 {
- "generatedAt": "2026-11-04 06:11 UTC",
+ "generatedAt": "2026-11-04 06:23 UTC",
  "counts": {
   "done": 568,
-  "in progress": 112,
-  "merged": 21,
+  "merged": 45,
+  "in progress": 88,
   "not applicable": 1
  },
  "parameters": {
-  "all": 531,
-  "partial": 12,
+  "all": 556,
+  "partial": 11,
   "json": 46
  },
  "items": [
@@ -159,19 +159,21 @@
    "group": "Application Commands",
    "version": "1.8.0",
    "brief": "Converts model coordinates to pixel positions local to the current Archicad view window (not global desktop coordinates), using the current window's size, drawing scale and zoom. In a 3D window the coordinates are projected with the current camera; in other windows z is disregarded. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1759,
-     "title": "Grasshopper: cover the Project, Application, Teamwork, Design Options and IFC commands"
+     "name": "ModelToScreenComponent",
+     "path": "Components/GeneralComponents/ModelToScreenComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "coordinates"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -179,19 +181,23 @@
    "group": "Application Commands",
    "version": "1.8.0",
    "brief": "Converts pixel positions local to the current Archicad view window to 2D model coordinates of the current database, using the current window's size, drawing scale and zoom. It is a 2D mapping: it does not reconstruct a 3D point, and several model coordinates can map to the same pixel.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1759,
-     "title": "Grasshopper: cover the Project, Application, Teamwork, Design Options and IFC commands"
+     "name": "ScreenToModelComponent",
+     "path": "Components/GeneralComponents/ScreenToModelComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "screenPoints",
+    "screenPoints.h",
+    "screenPoints.v"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -419,19 +425,21 @@
    "group": "Application Commands",
    "version": "1.8.0",
    "brief": "Deletes the trace (ghost) record of each given parent database, which removes the trace reference shown in that database's window. A database without a trace reference gets a failed execution result. Not undoable.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1759,
-     "title": "Grasshopper: cover the Project, Application, Teamwork, Design Options and IFC commands"
+     "name": "DeleteGhostRecordsComponent",
+     "path": "Components/GeneralComponents/DeleteGhostRecordsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "databases"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -529,19 +537,19 @@
    "group": "Application Commands",
    "version": "1.8.0",
    "brief": "Returns whether the Archicad application is shown or hidden. Supported on Windows only; on macOS it returns an error.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetArchicadVisibilityComponent",
+     "path": "Components/GeneralComponents/GetArchicadVisibilityComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1759,
-     "title": "Grasshopper: cover the Project, Application, Teamwork, Design Options and IFC commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -549,19 +557,21 @@
    "group": "Application Commands",
    "version": "1.8.0",
    "brief": "Hides or shows the Archicad application, e.g. to keep it out of the way while a batch runs. A script that hides Archicad must show it again, also when the script fails (e.g. in a finally block). Supported on Windows only; on macOS it returns an error.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1759,
-     "title": "Grasshopper: cover the Project, Application, Teamwork, Design Options and IFC commands"
+     "name": "SetArchicadVisibilityComponent",
+     "path": "Components/GeneralComponents/SetArchicadVisibilityComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "isVisible"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -569,19 +579,21 @@
    "group": "Application Commands",
    "version": "1.8.0",
    "brief": "Runs the given checks of the Action Center (by default the hotlink check). A successful result means the check ran, not that nothing was found: Archicad does not report the outcome to the caller, it shows the Action Center tab when the check found an issue.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1759,
-     "title": "Grasshopper: cover the Project, Application, Teamwork, Design Options and IFC commands"
+     "name": "RunActionCenterChecksComponent",
+     "path": "Components/GeneralComponents/RunActionCenterChecksComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "checks"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -589,19 +601,19 @@
    "group": "Application Commands",
    "version": "1.8.0",
    "brief": "Redraws the current database, even when its window is in the background. Only the visible region of its window is updated.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "RedrawCurrentDatabaseComponent",
+     "path": "Components/GeneralComponents/RedrawCurrentDatabaseComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1759,
-     "title": "Grasshopper: cover the Project, Application, Teamwork, Design Options and IFC commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -694,19 +706,19 @@
    "group": "Application Commands",
    "version": "1.8.0",
    "brief": "Tells whether the dialog auto close is on, the same state SetDialogAutoClose writes, so a script can restore it afterwards. The state belongs to the running Archicad process: it is off when Archicad starts (unless the TAPIR_DIALOG_AUTOCLOSE environment variable is true), it stays as last set until Archicad quits, and it is shared by every add-on and script in that Archicad.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetDialogAutoCloseComponent",
+     "path": "Components/GeneralComponents/GetDialogAutoCloseComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1759,
-     "title": "Grasshopper: cover the Project, Application, Teamwork, Design Options and IFC commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1070,19 +1082,21 @@
    "group": "Project Commands",
    "version": "1.8.0",
    "brief": "Retrieves the autotexts available in the notes of an element type (e.g. a Dimension), each with the element types it is available for. The autotexts are identified by the numeric value of their API_NoteAutotextID. Needs Archicad 26 or later.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1759,
-     "title": "Grasshopper: cover the Project, Application, Teamwork, Design Options and IFC commands"
+     "name": "GetNoteAutotextsComponent",
+     "path": "Components/ProjectComponents/GetNoteAutotextsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "noteOwnerType"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1339,19 +1353,22 @@
    "group": "Project Commands",
    "version": "1.8.0",
    "brief": "Tells for each hotlink source file whether it is available, missing, not accessible, incompatible or offline. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1759,
-     "title": "Grasshopper: cover the Project, Application, Teamwork, Design Options and IFC commands"
+     "name": "GetHotlinkSourceStatusComponent",
+     "path": "Components/ProjectComponents/GetHotlinkSourceStatusComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "hotlinks",
+    "hotlinks.location"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1544,18 +1561,17 @@
      "path": "Components/ProjectComponents/PhotoRenderComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 6,
    "coveredParameters": [
     "format",
     "height",
     "imageFilePath",
+    "resolution",
     "sceneName",
     "width"
    ],
-   "missingParameters": [
-    "resolution"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -1655,19 +1671,19 @@
    "group": "Project Commands",
    "version": "1.8.0",
    "brief": "Gets the export tolerance: the largest distance allowed between an arc and the straight segments that replace it when curves are segmented for export.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetExportToleranceComponent",
+     "path": "Components/ProjectComponents/GetExportToleranceComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1759,
-     "title": "Grasshopper: cover the Project, Application, Teamwork, Design Options and IFC commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1675,19 +1691,21 @@
    "group": "Project Commands",
    "version": "1.8.0",
    "brief": "Gets the last 3D default levels of the given element types' defaults.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1759,
-     "title": "Grasshopper: cover the Project, Application, Teamwork, Design Options and IFC commands"
+     "name": "GetLast3DDefaultLevelsComponent",
+     "path": "Components/ProjectComponents/GetLast3DDefaultLevelsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elementTypes"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1695,19 +1713,22 @@
    "group": "Project Commands",
    "version": "1.8.0",
    "brief": "Sets the last 3D default levels of the given element types' defaults.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1759,
-     "title": "Grasshopper: cover the Project, Application, Teamwork, Design Options and IFC commands"
+     "name": "SetLast3DDefaultLevelsComponent",
+     "path": "Components/ProjectComponents/SetLast3DDefaultLevelsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "elementTypes",
+    "levels"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1893,19 +1914,34 @@
    "group": "Project Commands",
    "version": "1.8.0",
    "brief": "Changes the place settings of the project: location (longitude, latitude, altitude, north), date, time, summer time and time zone. Only the given fields change. Returns the settings read back, with the sun position Archicad calculated for them. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 14,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1759,
-     "title": "Grasshopper: cover the Project, Application, Teamwork, Design Options and IFC commands"
+     "name": "SetPlaceSettingsComponent",
+     "path": "Components/ProjectComponents/SetPlaceSettingsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 14,
+   "coveredParameters": [
+    "placeInfo",
+    "placeInfo.altitude",
+    "placeInfo.day",
+    "placeInfo.hour",
+    "placeInfo.latitude",
+    "placeInfo.longitude",
+    "placeInfo.minute",
+    "placeInfo.month",
+    "placeInfo.north",
+    "placeInfo.second",
+    "placeInfo.sumTime",
+    "placeInfo.timeZoneInMinutes",
+    "placeInfo.timeZoneOffset",
+    "placeInfo.year"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1913,19 +1949,21 @@
    "group": "Project Commands",
    "version": "1.8.0",
    "brief": "Finds a dimension standard (Options > Project Preferences > Dimensions) by its name and returns its index, name and guid. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1759,
-     "title": "Grasshopper: cover the Project, Application, Teamwork, Design Options and IFC commands"
+     "name": "FindDimensionStandardComponent",
+     "path": "Components/ProjectComponents/FindDimensionStandardComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "name"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2030,19 +2068,19 @@
    "group": "Project Commands",
    "version": "1.7.4",
    "brief": "Gets the offset of the virtual coordinate system origin from the world origin, and the user origin of the current database. Use it to tell which origin the coordinates of different sources (elements, views, survey point) are relative to.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetCoordinateOriginsComponent",
+     "path": "Components/ProjectComponents/GetCoordinateOriginsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1759,
-     "title": "Grasshopper: cover the Project, Application, Teamwork, Design Options and IFC commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10427,19 +10465,21 @@
    "group": "IFC Commands",
    "version": "1.7.4",
    "brief": "Returns the IfcProject, IfcSite and IfcBuilding objects of the project's IFC model (hash value, IFC type and GlobalId), and for the given elements the index of the story they are assigned to in the IFC model. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1759,
-     "title": "Grasshopper: cover the Project, Application, Teamwork, Design Options and IFC commands"
+     "name": "GetIFCSpatialStructureComponent",
+     "path": "Components/IFCComponents/GetIFCSpatialStructureComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10447,19 +10487,19 @@
    "group": "IFC Commands",
    "version": "1.7.4",
    "brief": "Returns the IFC assignments of the project: the root IFC groups, and for each object the objects assigned to it (children) and the objects it is assigned to (parents). Each object is given by its hash value, its element where it belongs to one, its IFC type and its GlobalId. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetIFCAssignmentsComponent",
+     "path": "Components/IFCComponents/GetIFCAssignmentsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1759,
-     "title": "Grasshopper: cover the Project, Application, Teamwork, Design Options and IFC commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11493,19 +11533,21 @@
    "group": "Teamwork Commands",
    "version": "1.8.0",
    "brief": "Returns the Teamwork owner (user id and name) of each given database, e.g. of a layout or a view database. The user id is 0 when nobody owns the database.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1759,
-     "title": "Grasshopper: cover the Project, Application, Teamwork, Design Options and IFC commands"
+     "name": "GetTeamworkOwnersOfDatabasesComponent",
+     "path": "Components/TeamworkComponents/GetTeamworkOwnersOfDatabasesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "databases"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11561,19 +11603,21 @@
    "group": "Teamwork Commands",
    "version": "1.7.4",
    "brief": "Returns for each given object, for example an element, whether the current Teamwork user has the right to create objects of its kind and to delete or modify it.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1759,
-     "title": "Grasshopper: cover the Project, Application, Teamwork, Design Options and IFC commands"
+     "name": "GetTeamworkRightsOfObjectsComponent",
+     "path": "Components/TeamworkComponents/GetTeamworkRightsOfObjectsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "objectIds"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11581,19 +11625,21 @@
    "group": "Teamwork Commands",
    "version": "1.8.1",
    "brief": "Returns whether the role of the current user has the given Teamwork access rights (API_TWAccessRights names without the API prefix, e.g. LayersCreate), all of them when no names are given.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1759,
-     "title": "Grasshopper: cover the Project, Application, Teamwork, Design Options and IFC commands"
+     "name": "GetTeamworkAccessRightsComponent",
+     "path": "Components/TeamworkComponents/GetTeamworkAccessRightsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "accessRights"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14430,19 +14476,23 @@
    "group": "Design Options Commands",
    "version": "1.8.1",
    "brief": "Retrieves the design option table of the given hotlink nodes and placed hotlink instances: the filter mode (main model only, by options or by combination), the design option sets, options and combinations of the hotlinked module and which of them are active. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1759,
-     "title": "Grasshopper: cover the Project, Application, Teamwork, Design Options and IFC commands"
+     "name": "GetHotlinkDesignOptionTablesComponent",
+     "path": "Components/DesignOptionsComponents/GetHotlinkDesignOptionTablesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "hotlinks",
+    "hotlinks.elementId",
+    "hotlinks.hotlinkNodeId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14450,19 +14500,27 @@
    "group": "Design Options Commands",
    "version": "1.8.1",
    "brief": "Sets the filter mode, the active combination and the active option of sets in the design option table of the given placed hotlink instances. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 7,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1759,
-     "title": "Grasshopper: cover the Project, Application, Teamwork, Design Options and IFC commands"
+     "name": "SetHotlinkDesignOptionTablesComponent",
+     "path": "Components/DesignOptionsComponents/SetHotlinkDesignOptionTablesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 7,
+   "coveredParameters": [
+    "hotlinkInstances",
+    "hotlinkInstances.activeDesignOptionCombination",
+    "hotlinkInstances.activeDesignOptions",
+    "hotlinkInstances.activeDesignOptions.designOptionName",
+    "hotlinkInstances.activeDesignOptions.setName",
+    "hotlinkInstances.elementId",
+    "hotlinkInstances.filterMode"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14631,19 +14689,22 @@
    "group": "Design Options Commands",
    "version": "1.8.0",
    "brief": "Reads the design option table of hotlink nodes: the design option sets, options and combinations of the hotlinked source file, and which of them the node shows. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1759,
-     "title": "Grasshopper: cover the Project, Application, Teamwork, Design Options and IFC commands"
+     "name": "GetHotlinkDesignOptionTableDetailsComponent",
+     "path": "Components/DesignOptionsComponents/GetHotlinkDesignOptionTableDetailsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "hotlinkNodes",
+    "hotlinkNodes.hotlinkNodeId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
