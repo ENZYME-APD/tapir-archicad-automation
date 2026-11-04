@@ -5466,5 +5466,469 @@ namespace TapirGrasshopperPlugin.Properties
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
+
+        internal static System.Drawing.Bitmap CheckLibraries
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CheckLibraries", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CompareLibraryPartUnIds
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CompareLibraryPartUnIds", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ConvertAnalyticalLinksToNonShortest
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ConvertAnalyticalLinksToNonShortest", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ConvertImages
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ConvertImages", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateAnalyticalLinks
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateAnalyticalLinks", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateAnalyticalLoads
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateAnalyticalLoads", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateAnalyticalSupports
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateAnalyticalSupports", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateElementsFromAnalyticalMembers
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateElementsFromAnalyticalMembers", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap DeleteModulData
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteModulData", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap FindLibraryParts
+        {
+            get {
+                object obj = ResourceManager.GetObject ("FindLibraryParts", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap Get3DDocumentSettings
+        {
+            get {
+                object obj = ResourceManager.GetObject ("Get3DDocumentSettings", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap Get3DFilterAndCutSettings
+        {
+            get {
+                object obj = ResourceManager.GetObject ("Get3DFilterAndCutSettings", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetAnalyticalLinks
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAnalyticalLinks", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetAnalyticalLoads
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAnalyticalLoads", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetAnalyticalMemberDetails
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAnalyticalMemberDetails", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetAnalyticalMemberPartGeometries
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAnalyticalMemberPartGeometries", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetAnalyticalMembers
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAnalyticalMembers", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetAnalyticalReleases
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAnalyticalReleases", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetAnalyticalSupports
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAnalyticalSupports", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetCustomCurveMemberStretch
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetCustomCurveMemberStretch", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetGDLDate
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetGDLDate", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetGridSettings
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetGridSettings", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetLCSOfAnalyticalMembers
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetLCSOfAnalyticalMembers", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetLastValidEmbeddedLibraryPartName
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetLastValidEmbeddedLibraryPartName", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetLibraryPartDetails
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetLibraryPartDetails", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetLibraryPartIdentities
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetLibraryPartIdentities", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetLibraryPartMetadata
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetLibraryPartMetadata", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetLibraryPartOriginalLocations
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetLibraryPartOriginalLocations", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetLibraryPartScripts
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetLibraryPartScripts", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetMEPPhysicalSystemsOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetMEPPhysicalSystemsOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetMEPRoutingParameters
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetMEPRoutingParameters", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetMEPToolDefaults
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetMEPToolDefaults", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetMissingLibPartNames
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetMissingLibPartNames", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetModulData
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetModulData", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetPublisherSets
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetPublisherSets", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetShapePrimitivesOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetShapePrimitivesOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetSplineMaxDistances
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetSplineMaxDistances", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetViewOptions
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetViewOptions", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyLibraryList
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyLibraryList", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyMEPElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyMEPElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap OpenLibraryPartInEditor
+        {
+            get {
+                object obj = ResourceManager.GetObject ("OpenLibraryPartInEditor", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateMEPFlexibleSegments
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateMEPFlexibleSegments", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateMEPTakeOffs
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateMEPTakeOffs", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ReorderNavigatorItems
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ReorderNavigatorItems", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ResetLibraries
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ResetLibraries", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap Set3DDocumentSettings
+        {
+            get {
+                object obj = ResourceManager.GetObject ("Set3DDocumentSettings", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap Set3DFilterAndCutSettings
+        {
+            get {
+                object obj = ResourceManager.GetObject ("Set3DFilterAndCutSettings", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetAnalyticalReleases
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetAnalyticalReleases", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetCurrent3DStyle
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetCurrent3DStyle", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetCustomCurveMemberStretch
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetCustomCurveMemberStretch", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetGDLDate
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetGDLDate", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetGridSettings
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetGridSettings", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetMEPRoutingParameters
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetMEPRoutingParameters", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetPens
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetPens", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetViewOptions
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetViewOptions", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap StoreModulData
+        {
+            get {
+                object obj = ResourceManager.GetObject ("StoreModulData", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap StoreViewSettings
+        {
+            get {
+                object obj = ResourceManager.GetObject ("StoreViewSettings", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap TransferMEPSettings
+        {
+            get {
+                object obj = ResourceManager.GetObject ("TransferMEPSettings", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
     }
 }

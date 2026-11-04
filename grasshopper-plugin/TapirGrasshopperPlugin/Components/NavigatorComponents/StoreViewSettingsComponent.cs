@@ -58,7 +58,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
         // Shares the icon of the 3D projection setter until it gets one of its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.Set3DProjectionSettings;
+            Properties.Resources.StoreViewSettings;
 
         public override Guid ComponentGuid =>
             new Guid("d5773fe7-415c-410c-a257-504e6ab22491");
