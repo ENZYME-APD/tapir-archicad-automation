@@ -335,9 +335,13 @@
             "mepSystemId": {
                 "$ref": "#/AttributeId"
             },
+            "floorIndex": {
+                "type": "integer",
+                "description": "The index of the home story of the routing element (see GetStories)."
+            },
             "offsetFromHomeStory": {
                 "type": "number",
-                "description": "The offset of the routing element from its home story."
+                "description": "The offset of the lowest node of the routing element from the level of its home story."
             },
             "branchPreferenceTableId": {
                 "$ref": "#/Guid",
@@ -4906,7 +4910,7 @@
             },
             "preview": {
                 "type": "boolean",
-                "description": "Whether this is the preview translator, the one the IFC properties of elements are previewed with."
+                "description": "Whether this is the first item of Archicad's translator list, which the Archicad API documents as the preview translator (the one the IFC properties of elements are previewed with). No API identifies the preview translator otherwise, and in some projects the IFC Translators dialog shows another translator as the preview one."
             }
         },
         "additionalProperties": false,
@@ -6022,13 +6026,33 @@
             },
             "propertyValue": {
                 "$ref": "#/PropertyValue"
+            },
+            "valueStatus": {
+                "type": "string",
+                "enum": [
+                    "Value",
+                    "Default",
+                    "UserUndefined"
+                ],
+                "description": "Value (the default) sets propertyValue. Default removes the element's own value, so the property shows its default value (or its expression) again. UserUndefined sets the value to undefined. propertyValue is not needed and is ignored for Default and UserUndefined."
             }
         },
         "additionalProperties": false,
         "required": [
             "elementId",
-            "propertyId",
-            "propertyValue"
+            "propertyId"
+        ],
+        "anyOf": [
+            {
+                "required": [
+                    "propertyValue"
+                ]
+            },
+            {
+                "required": [
+                    "valueStatus"
+                ]
+            }
         ]
     },
     "ElementPropertyValues": {

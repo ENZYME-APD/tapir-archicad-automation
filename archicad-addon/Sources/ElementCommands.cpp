@@ -6492,45 +6492,6 @@ static bool IsCopyableToDatabase (API_ElemTypeID typeId)
     }
 }
 
-static GSErrCode ChangeCurrentDatabaseTo (const API_Guid& databaseId)
-{
-    API_DatabaseInfo database = DatabaseIdResolver::Instance ().GetDatabaseWithId (databaseId);
-    GSErrCode err = ACAPI_Window_GetDatabaseInfo (&database);
-    if (err != NoError) {
-        return err;
-    }
-    return ACAPI_Database_ChangeCurrentDatabase (&database);
-}
-
-// A worksheet or detail whose window was never opened, e.g. one just made by CreateWorksheets,
-// cannot be made the current database (APIERR_BADDATABASE) until its Project Map item has been
-// opened once, as ChangeWindow does it (#1602). Called outside the undoable command; returns
-// whether a window was opened, so the caller can bring the starting window back.
-static bool OpenDatabaseIfNeverOpened (const API_Guid& databaseId)
-{
-    API_DatabaseInfo startingDatabase = {};
-    if (ACAPI_Database_GetCurrentDatabase (&startingDatabase) != NoError) {
-        return false;
-    }
-    const GSErrCode err = ChangeCurrentDatabaseTo (databaseId);
-    ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
-    if (err != APIERR_BADDATABASE) {
-        return false;
-    }
-#if defined (ServerMainVers_2700)
-    API_DatabaseInfo database = DatabaseIdResolver::Instance ().GetDatabaseWithId (databaseId);
-    if (ACAPI_Window_GetDatabaseInfo (&database) != NoError) {
-        return false;
-    }
-    const GS::Optional<API_Guid> projectMapItem = FindProjectMapItemOfWorksheetOrDetail (database);
-    if (projectMapItem.HasValue ()) {
-        const GS::UniString guidStr = APIGuidToString (projectMapItem.Get ());
-        return ACAPI_View_GoToView (guidStr.ToCStr ().Get ()) == NoError;
-    }
-#endif
-    return false;
-}
-
 // #819: copies 2D elements from one database into another (worksheet to worksheet, layout to
 // layout, ...). The elements are read with their memo in the source database and created from
 // them in the target, so every field the element has is kept without per-type code; the offset
