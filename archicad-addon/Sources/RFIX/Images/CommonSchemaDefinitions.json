@@ -366,7 +366,12 @@
                 "$ref": "#/AttributeId"
             },
             "isPhysicallyConnected": {
-                "type": "boolean"
+                "type": "boolean",
+                "description": "Whether the port is physically connected to another port. Available from Archicad 28."
+            },
+            "isConnected": {
+                "type": "boolean",
+                "description": "Whether the port is connected to another port. Archicad 27 only; from Archicad 28 see isPhysicallyConnected."
             },
             "connectionStyle": {
                 "$ref": "#/MEPConnectionStyle",
@@ -409,8 +414,7 @@
             "width",
             "height",
             "domain",
-            "mepSystemId",
-            "isPhysicallyConnected"
+            "mepSystemId"
         ]
     },
     "MEPElementPorts": {
@@ -447,6 +451,43 @@
         "items": {
             "$ref": "#/MEPElementPortsOrError"
         }
+    },
+    "MEPFlexibleSegmentPolyline": {
+        "type": "array",
+        "description": "The geometry of a polyline MEP flexible segment: its line and spline parts in order, which alternate and connect at their ends. Available from Archicad 28.",
+        "items": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "A straight line from 'begin' to 'end', or a spline through 'controlPoints'.",
+                    "enum": [
+                        "Line",
+                        "Spline"
+                    ]
+                },
+                "begin": {
+                    "$ref": "#/Coordinate3D",
+                    "description": "The beginning of a line part."
+                },
+                "end": {
+                    "$ref": "#/Coordinate3D",
+                    "description": "The end of a line part."
+                },
+                "controlPoints": {
+                    "type": "array",
+                    "description": "The control points of a spline part.",
+                    "items": {
+                        "$ref": "#/Coordinate3D"
+                    }
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "type"
+            ]
+        },
+        "minItems": 1
     },
     "MEPConnectionResult": {
         "type": "object",
@@ -4070,7 +4111,7 @@
     },
     "MEPPortDefaultDetails": {
         "type": "object",
-        "description": "The settings of one port of an MEP tool default. Each field is present only where the port's domain and the Archicad version have it.",
+        "description": "The settings of one port of an MEP tool default. Each field is present only where the port's domain and the Archicad version have it: Archicad 27 gives only the index and the shape.",
         "properties": {
             "index": {
                 "type": "integer",
@@ -4118,17 +4159,20 @@
         },
         "additionalProperties": false,
         "required": [
-            "index",
-            "domain"
+            "index"
         ]
     },
     "MEPElementDefaultDetails": {
         "type": "object",
-        "description": "The settings of a terminal, accessory, fitting or equipment tool default.",
+        "description": "The settings of a terminal, accessory, fitting, equipment or branch tool default.",
         "properties": {
             "libraryPartId": {
                 "$ref": "#/LibPartUnId",
                 "description": "The library part the tool places."
+            },
+            "insulationThickness": {
+                "type": "number",
+                "description": "The insulation thickness, when the default has insulation."
             },
             "ports": {
                 "type": "array",
@@ -4223,7 +4267,7 @@
                             },
                             "elbow": {
                                 "type": "object",
-                                "description": "The elbow default. Available from Archicad 29.",
+                                "description": "The elbow default: Archicad 27 gives its radius factor (it calls elbows bends), Archicad 28 none, Archicad 29 and later both values.",
                                 "properties": {
                                     "factorRadius": {
                                         "type": "number"
@@ -4268,9 +4312,37 @@
                     "routingNode"
                 ]
             },
+            "rigidSegment": {
+                "type": "object",
+                "description": "The rigid segment default of the routing tool.",
+                "properties": {
+                    "shape": {
+                        "$ref": "#/MEPCrossSectionShape",
+                        "description": "Archicad 27 and 28."
+                    },
+                    "width": {
+                        "type": "number",
+                        "description": "Archicad 27 and 28."
+                    },
+                    "height": {
+                        "type": "number",
+                        "description": "Archicad 27 and 28."
+                    },
+                    "insulationThickness": {
+                        "type": "number",
+                        "description": "The insulation thickness, when the default has insulation."
+                    }
+                },
+                "additionalProperties": false,
+                "required": []
+            },
+            "branch": {
+                "$ref": "#/MEPElementDefaultDetails",
+                "description": "The branch default of the routing tool."
+            },
             "flexibleSegment": {
                 "type": "object",
-                "description": "The flexible segment tool default.",
+                "description": "The flexible segment tool default. Archicad 27 has it in the Ventilation domain only.",
                 "properties": {
                     "shape": {
                         "$ref": "#/MEPCrossSectionShape"
