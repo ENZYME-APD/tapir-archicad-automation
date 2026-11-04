@@ -1,0 +1,203 @@
+{
+  "title": "ModifyMEPRoutingElements sets and removes the insulation of a route, also together with a new cross section, and refuses it on a cable carrier",
+  "minTapir": "1.7.4",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 0
+      }
+    },
+    {
+      "id": "pipe route with one elbow",
+      "command": "CreateMEPRoutingElements",
+      "params": {
+        "routingElementsData": [
+          {
+            "domain": "Piping",
+            "nodeCoordinates": [
+              { "x": 0.0, "y": -8.0, "z": 3.0 },
+              { "x": 4.0, "y": -8.0, "z": 3.0 },
+              { "x": 4.0, "y": -5.0, "z": 3.0 }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "pipe": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "pipe created"
+        }
+      ]
+    },
+    {
+      "id": "insulate",
+      "command": "ModifyMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "routingElementsData": [
+          { "elementId": { "guid": "${pipe}" }, "insulationThickness": 0.02 }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "read the insulation",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${pipe}" } } ]
+      },
+      "expect": [
+        {
+          "path": "routingElements[0].segments[0].insulationThickness",
+          "approx": 0.02,
+          "name": "first segment insulated"
+        },
+        {
+          "path": "routingElements[0].segments[1].insulationThickness",
+          "approx": 0.02,
+          "name": "second segment insulated"
+        }
+      ]
+    },
+    {
+      "id": "remove the insulation",
+      "command": "ModifyMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "routingElementsData": [
+          { "elementId": { "guid": "${pipe}" }, "insulationThickness": 0 }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "read it again",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${pipe}" } } ]
+      },
+      "expect": [
+        {
+          "path": "routingElements[0].segments[0].insulationThickness",
+          "exists": false,
+          "name": "no insulation left"
+        }
+      ]
+    },
+    {
+      "id": "duct route",
+      "command": "CreateMEPRoutingElements",
+      "params": {
+        "routingElementsData": [
+          {
+            "domain": "Ventilation",
+            "crossSectionShape": "Rectangular",
+            "crossSectionWidth": 0.3,
+            "crossSectionHeight": 0.2,
+            "nodeCoordinates": [
+              { "x": 0.0, "y": -12.0, "z": 3.0 },
+              { "x": 4.0, "y": -12.0, "z": 3.0 }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "duct": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "resize and insulate in one call",
+      "command": "ModifyMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "routingElementsData": [
+          { "elementId": { "guid": "${duct}" }, "crossSectionWidth": 0.4, "insulationThickness": 0.025 }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "read the duct",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${duct}" } } ]
+      },
+      "expect": [
+        {
+          "path": "routingElements[0].segments[0].crossSectionWidth",
+          "approx": 0.4,
+          "name": "new width kept"
+        },
+        {
+          "path": "routingElements[0].segments[0].insulationThickness",
+          "approx": 0.025,
+          "name": "duct insulated"
+        }
+      ]
+    },
+    {
+      "id": "cable carrier",
+      "command": "CreateMEPRoutingElements",
+      "params": {
+        "routingElementsData": [
+          {
+            "domain": "CableCarrier",
+            "crossSectionShape": "Rectangular",
+            "crossSectionWidth": 0.1,
+            "crossSectionHeight": 0.05,
+            "nodeCoordinates": [
+              { "x": 0.0, "y": -10.0, "z": 3.0 },
+              { "x": 4.0, "y": -10.0, "z": 3.0 }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "carrier": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "insulate the cable carrier",
+      "command": "ModifyMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "routingElementsData": [
+          { "elementId": { "guid": "${carrier}" }, "insulationThickness": 0.02 }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": false,
+          "name": "refused"
+        }
+      ]
+    }
+  ]
+}

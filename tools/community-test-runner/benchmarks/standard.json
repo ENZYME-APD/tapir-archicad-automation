@@ -1,0 +1,51 @@
+{
+  "title": "Tapir standard benchmark",
+  "version": 1,
+  "about": "Change this suite only by adding cases or by raising 'version': results are compared by case id and scale, and a changed case is no longer the same measurement.",
+  "repeat": 5,
+  "warmup": 1,
+  "scales": [100, 1000, 5000],
+  "seed": [
+    {"command": "CreateColumns", "listKey": "columnsData", "share": 0.6, "chunk": 500,
+     "item": {"coordinates": {"x": "$x", "y": "$y", "z": 0}, "height": 3}},
+    {"command": "CreateWalls", "listKey": "wallsData", "share": 0.3, "chunk": 500,
+     "item": {"begCoordinate": {"x": "$x", "y": "$y"}, "endCoordinate": {"x": "$x+0.8", "y": "$y"},
+              "zCoordinate": 0, "height": 3, "thickness": 0.2}},
+    {"command": "CreateSlabs", "listKey": "slabsData", "share": 0.1, "chunk": 500,
+     "item": {"level": 0, "thickness": 0.2,
+              "polygonCoordinates": [{"x": "$x", "y": "$y"}, {"x": "$x+0.8", "y": "$y"}, {"x": "$x+0.8", "y": "$y+0.8"}]}}
+  ],
+  "setup": [
+    {"command": "API.GetPropertyIds", "save": {"props": "properties"},
+     "params": {"properties": [{"type": "BuiltIn", "nonLocalizedName": "General_ElementID"},
+                               {"type": "BuiltIn", "nonLocalizedName": "General_Width"},
+                               {"type": "BuiltIn", "nonLocalizedName": "General_Height"}]}}
+  ],
+  "cases": [
+    {"id": "ping-tapir", "command": "GetAddOnVersion", "scope": "once", "repeat": 30, "about": "round trip of the smallest Tapir command"},
+    {"id": "ping-api", "command": "API.IsAlive", "scope": "once", "repeat": 30, "about": "round trip of the official JSON API, without Tapir"},
+    {"id": "project-info", "command": "GetProjectInfo", "scope": "once"},
+    {"id": "stories", "command": "GetStories", "scope": "once"},
+    {"id": "all-properties", "command": "GetAllProperties", "scope": "once", "about": "large fixed answer an agent often asks for first"},
+    {"id": "layers", "command": "GetAttributesByType", "params": {"attributeType": "Layer"}, "scope": "once"},
+    {"id": "building-materials", "command": "GetAttributesByType", "params": {"attributeType": "BuildingMaterial"}, "scope": "once"},
+    {"id": "wall-favorites", "command": "GetFavoritesByType", "params": {"elementType": "Wall"}, "scope": "once"},
+    {"id": "libraries", "command": "GetLibraries", "scope": "once"},
+
+    {"id": "all-elements", "command": "GetAllElements", "scope": "scale"},
+    {"id": "columns-by-type", "command": "GetElementsByType", "params": {"elementType": "Column"}, "scope": "scale"},
+    {"id": "types", "command": "API.GetTypesOfElements", "params": {"elements": "$elements"}, "scope": "scale"},
+    {"id": "details-full", "command": "GetDetailsOfElements", "params": {"elements": "$elements"}, "scope": "scale"},
+    {"id": "details-slim", "command": "GetDetailsOfElements", "params": {"elements": "$elements", "fields": ["type", "id", "floorIndex"]},
+     "scope": "scale", "about": "same as details-full with a field filter: the difference is what the filter saves"},
+    {"id": "property-values", "command": "GetPropertyValuesOfElements", "params": {"elements": "$elements", "properties": "$props"}, "scope": "scale"},
+    {"id": "bounding-boxes", "command": "Get3DBoundingBoxes", "params": {"elements": "$elements"}, "scope": "scale"},
+    {"id": "quantities", "command": "GetQuantitiesOfElements", "params": {"elements": "$elements"}, "scope": "scale"},
+    {"id": "move", "command": "MoveElements", "scope": "scale", "repeat": 2, "write": true, "about": "a write on every element; skipped with --read-only",
+     "params": {"elementsWithMoveVectors": {"$each": "elements", "as": {"elementId": "$item.elementId", "moveVector": {"x": 0.01, "y": 0, "z": 0}}}}}
+  ],
+  "stress": [
+    {"id": "burst-ping", "command": "GetAddOnVersion", "calls": 200, "concurrency": [1, 4, 16]},
+    {"id": "burst-all-elements", "command": "GetAllElements", "calls": 40, "concurrency": [1, 4]}
+  ]
+}
