@@ -12,9 +12,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "ModifyTexts",
                 "Modify standalone Text elements. Only the connected optional inputs are changed on the " +
                 "elements. A change of the text, or of the pen, font, face or height, rebuilds the content as " +
-                "one paragraph, which makes the element auto-width; the other inputs leave the content as it is. Multi-run content (runs), effects, the text frame and " +
-                "the anchor can be changed through the AdditionalSettings input (runs, style.effectStrikeout, " +
-                "style.textFrameShape, style.anchor, etc.).",
+                "one paragraph, which makes the element auto-width unless a width is given; the other inputs leave the content as it is. Multi-run content (runs), effects, the text frame, " +
+                "the anchor and a box width that turns word wrap on can be changed through the AdditionalSettings input (runs, style.effectStrikeout, " +
+                "style.textFrameShape, style.anchor, width, etc.).",
                 GroupNames.ElementModification)
         {
         }

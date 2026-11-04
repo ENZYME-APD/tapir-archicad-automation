@@ -43,8 +43,9 @@ public:
 protected:
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const = 0;
     // Called right after ACAPI_Element_Create with the element as SetTypeSpecificParameters
-    // prepared it, for what the create itself does not keep. An error deletes the new element.
-    virtual GSErrCode AfterCreate (const API_Element& /*requestedElement*/, const API_Guid& /*newElementGuid*/) const { return NoError; }
+    // prepared it and the item's parameters, for what the create itself does not keep. An error
+    // deletes the new element.
+    virtual GSErrCode AfterCreate (const API_Element& /*requestedElement*/, const API_Guid& /*newElementGuid*/, const GS::ObjectState& /*parameters*/) const { return NoError; }
 protected:
     GS::String     commandName;
     API_ElemTypeID elemTypeID;
@@ -199,7 +200,7 @@ public:
     CreateLabelsCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
-    virtual GSErrCode AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid) const override;
+    virtual GSErrCode AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const override;
 };
 
 class CreateTextsCommand : public CreateElementsCommandBase
@@ -208,7 +209,7 @@ public:
     CreateTextsCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
-    virtual GSErrCode AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid) const override;
+    virtual GSErrCode AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const override;
 };
 
 class CreateLevelDimensionsCommand : public CreateElementsCommandBase
@@ -325,6 +326,10 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
 // change of the two fields alone without a memo keeps them. So every write of the content is
 // followed by this. Does nothing for other elements.
 GSErrCode KeepTextFactors (const API_Guid& elemGuid, double widthFactor, double charSpaceFactor);
+// Turns word wrap on for a standalone Text (nonBreaking false) with the given box width in mm,
+// without a memo, so the content and its runs stay as they are. A content write makes the text
+// auto-width (see ApplyTextContent), so CreateTexts and ModifyTexts call this after it.
+GSErrCode SetTextWrapWidth (const API_Guid& elemGuid, double width);
 
 void AddLabelLeaderLineDetails (GS::ObjectState& os, const API_LabelType& label);
 // Returns an error response for an attribute reference that cannot be resolved.
