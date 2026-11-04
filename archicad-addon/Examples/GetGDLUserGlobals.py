@@ -1,7 +1,7 @@
+"""GetGDLUserGlobals lists the GDL global variables the GDL interpreter gets in the current context (Archicad 28
+or newer). This prints how many there are and the first few.
+"""
 import aclib
-
-# GetGDLUserGlobals lists the GDL global variables the GDL interpreter gets in the current
-# context (Archicad 28 or newer). This prints how many there are and the first few.
 
 response = aclib.RunTapirCommand ('GetGDLUserGlobals', {}, debug = False)
 if 'error' in response:

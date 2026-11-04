@@ -1,9 +1,8 @@
+"""CreateLibraryPartFromElements makes a new object whose 2D symbol is a copy of 2D drawing elements of the plan.
+This draws a square and a circle around the project origin, turns them into an object with a simple 3D script,
+places it with CreateObjects, then deletes the drawn elements and the placed object again.
+"""
 import aclib
-
-# CreateLibraryPartFromElements makes a new object whose 2D symbol is a copy of 2D drawing
-# elements of the plan. This draws a square and a circle around the project origin, turns
-# them into an object with a simple 3D script, places it with CreateObjects, then deletes
-# the drawn elements and the placed object again.
 
 libraryPartName = 'Tapir Example Symbol'
 
@@ -45,7 +44,7 @@ response = aclib.RunTapirCommand ('CreateLibraryPartFromElements', {
     'scripts': {
         '3D': 'BLOCK A, B, 0.5'
     },
-    'comment': 'Created by the Tapir example create_library_part_from_elements.py',
+    'comment': 'Created by the Tapir example CreateLibraryPartFromElements.py',
     'keywords': 'Tapir example'
 }, debug = False)
 print ('Library part created:', 'error' not in response)

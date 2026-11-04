@@ -1,8 +1,8 @@
+"""InterpretGDLScript3D runs a GDL 3D script like the GDL editor does and tells whether it ran to its end. A
+script that stops with a GDL error gives success False; the API gives no message or line number. The model's
+element count tells an empty output apart.
+"""
 import aclib
-
-# InterpretGDLScript3D runs a GDL 3D script like the GDL editor does and tells whether it
-# ran to its end. A script that stops with a GDL error gives success False; the API gives
-# no message or line number. The model's element count tells an empty output apart.
 
 goodScript = 'BLOCK 1, 2, 3'
 response = aclib.RunTapirCommand ('InterpretGDLScript3D', {
