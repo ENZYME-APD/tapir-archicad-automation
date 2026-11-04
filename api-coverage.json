@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-04 16:32 UTC",
+ "generatedAt": "2026-11-04 16:41 UTC",
  "versions": [
   25,
   26,
@@ -9034,6 +9034,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1851,
+     "title": "SetPropertyValuesOfElements: write each element's values with one ACAPI_Element_SetProperties call"
+    },
+    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
@@ -9084,7 +9088,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1851,
+     "title": "SetPropertyValuesOfElements: write each element's values with one ACAPI_Element_SetProperties call"
+    }
+   ],
    "issues": [
     {
      "number": 1850,
