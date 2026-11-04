@@ -4,6 +4,11 @@ import aclib
 # In a solo project isShared and isOnline are false and nothing else is returned.
 aclib.RunTapirCommand ('GetTeamworkStatus')
 
+# The Teamwork access rights of the current user. Without names all rights are returned.
+aclib.RunTapirCommand ('GetTeamworkAccessRights', {
+    'accessRights': ['LayersCreate', 'LibraryPartDeleteModify', 'HotlinkAndXrefManage']
+})
+
 # Whether the current user may create objects of the kind of each wall and delete or modify it.
 walls = aclib.RunCommand ('API.GetElementsByType', { 'elementType' : 'Wall' })['elements']
 aclib.RunTapirCommand ('GetTeamworkRightsOfObjects', {

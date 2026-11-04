@@ -54,6 +54,8 @@
 #define ACAPI_Teamwork_HasCreateRight ACAPI_TeamworkControl_HasCreateRight
 #define ACAPI_Teamwork_HasDeleteModifyRight ACAPI_TeamworkControl_HasDeleteModifyRight
 #define ACAPI_Teamwork_ProjectSharing(par1) ACAPI_Environment (APIEnv_ProjectSharingID, par1)
+// The old call takes the right itself in par1 (as in the AC27 ACAPI_MigrationHeader.hpp), cast to a pointer.
+#define ACAPI_Teamwork_GetTWAccessRight(par1, par2) ACAPI_Environment (APIEnv_GetTWAccessRightID, reinterpret_cast<void*> (static_cast<GS::IntPtr> (par1)), par2)
 
 #ifdef ServerMainVers_2600
 #define ACAPI_UserInput_SetElementHighlight ACAPI_Interface_SetElementHighlight
