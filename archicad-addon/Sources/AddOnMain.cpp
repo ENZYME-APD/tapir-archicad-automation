@@ -1263,6 +1263,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.2.7",
             "Returns the room image of the given zone."
         );
+        err |= RegisterCommand<GetModelExtentCommand> (
+            elementCommands, "1.8.1",
+            "Returns the 3D extent (xMin, yMin, zMin, xMax, yMax, zMax) of the current database, the region Archicad's Fit in Window would show."
+        );
         err |= RegisterCommand<AddElementNotificationClientCommand> (
             elementCommands, "1.2.8",
             "Sets up a new notification client to receive element events."
