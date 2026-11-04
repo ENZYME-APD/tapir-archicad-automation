@@ -4934,6 +4934,381 @@ GS::ObjectState SolveStairBaselineCommand::Execute (const GS::ObjectState& param
 #endif
 }
 
+ModifyStairsCommand::ModifyStairsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyStairsCommand::GetName () const
+{
+    return "ModifyStairs";
+}
+
+GS::Optional<GS::UniString> ModifyStairsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "stairsWithDetails": {
+                "type": "array",
+                "description": "Array of Stair elements to modify, with the settings to change. Only the given settings are changed; the baseline, the position and the omitted settings are kept.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "flightWidth": { "type": "number", "exclusiveMinimum": 0.0, "description": "The width of the flights." },
+                        "totalHeight": { "type": "number", "exclusiveMinimum": 0.0, "description": "The height of the stair relative to its bottom." },
+                        "stepNum": { "type": "integer", "minimum": 1, "description": "The number of steps (risers)." },
+                        "riserHeight": { "type": "number", "exclusiveMinimum": 0.0, "description": "The height of each riser." },
+                        "treadDepth": { "type": "number", "exclusiveMinimum": 0.0, "description": "The length of each going." },
+                        "treadDepthLocked": { "type": "boolean", "description": "Whether the going lengths are locked." },
+                        "totalHeightLocked": { "type": "boolean", "description": "Whether the total height is locked." },
+                        "finishVisible": { "type": "boolean", "description": "Whether the tread and riser finishes of the stair are shown. The treads and risers of each part can also be switched on and off with treads and risers." },
+                        "treads": {
+                            "type": "array",
+                            "description": "The tread settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "role": { "type": "string", "enum": ["Run", "Landing"], "description": "The part of the stair: the flights (Run) or the landings (Landing)." },
+                                    "visible": { "type": "boolean", "description": "Whether the treads are present." },
+                                    "thickness": { "type": "number", "minimum": 0.0, "description": "The thickness of the treads." },
+                                    "offset": { "type": "number", "description": "The offset of the treads." },
+                                    "nosingType": { "type": "string", "enum": ["ByValue", "BySlanting"], "description": "Whether the nosing is given by its length (nosingValue) or by the slant of the riser (nosingSlant)." },
+                                    "nosingValue": { "type": "number", "description": "The length of the nosing." },
+                                    "nosingSlant": { "type": "number", "description": "The slant of the nosing in radians." }
+                                },
+                                "additionalProperties": false,
+                                "required": ["role"]
+                            }
+                        },
+                        "risers": {
+                            "type": "array",
+                            "description": "The riser settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "role": { "type": "string", "enum": ["Run", "Landing"], "description": "The part of the stair: the flights (Run) or the landings (Landing)." },
+                                    "visible": { "type": "boolean", "description": "Whether the risers are present." },
+                                    "thickness": { "type": "number", "minimum": 0.0, "description": "The thickness of the risers." },
+                                    "offset": { "type": "number", "description": "The offset of the risers." },
+                                    "crossSection": { "type": "string", "enum": ["Simple", "Slanted"], "description": "The cross section of the risers." },
+                                    "angle": { "type": "number", "description": "The angle of a slanted riser in radians." },
+                                    "position": { "type": "string", "enum": ["OnTread", "BehindTread"], "description": "Whether the risers stand on the treads or behind them." }
+                                },
+                                "additionalProperties": false,
+                                "required": ["role"]
+                            }
+                        },
+                        "structures": {
+                            "type": "array",
+                            "description": "The structure settings of the flights (Run) and of the landings (Landing), for each side: the left and right side structures and the structure under the stair. Only the given fields of the given parts and sides are changed.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "role": { "type": "string", "enum": ["Run", "Landing"], "description": "The part of the stair: the flights (Run) or the landings (Landing)." },
+                                    "side": { "type": "string", "enum": ["LeftSide", "RightSide", "UnderSide"], "description": "The side of the structure." },
+                                    "visible": { "type": "boolean", "description": "Whether the structure is present." },
+                                    "structureType": { "type": "string", "enum": ["Side", "Monolith", "BeamSupport", "CantileveredSupport"], "description": "The type of the structure: side stringers, monolithic, beam supported or cantilevered." },
+                                    "bottomType": { "type": "string", "enum": ["Stepped", "Flat", "Smooth"], "description": "The shape of the underside of the structure." },
+                                    "thickness": { "type": "number", "minimum": 0.0, "description": "The thickness of the structure." },
+                                    "horizontalThickness": { "type": "number", "minimum": 0.0, "description": "The horizontal thickness of the structure." }
+                                },
+                                "additionalProperties": false,
+                                "required": ["role", "side"]
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["stairsWithDetails"]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyStairsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": { "$ref": "#/ExecutionResults" }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+static bool StairPartRoleFromString (const GS::UniString& str, API_StairPartRoleID& role)
+{
+    if (str == "Run")     { role = APISR_Run;     return true; }
+    if (str == "Landing") { role = APISR_Landing; return true; }
+    return false;
+}
+
+static bool StairStructureSideFromString (const GS::UniString& str, API_StairStructureSideID& side)
+{
+    if (str == "LeftSide")  { side = APISS_LeftSide;  return true; }
+    if (str == "RightSide") { side = APISS_RightSide; return true; }
+    if (str == "UnderSide") { side = APISS_UnderSide; return true; }
+    return false;
+}
+
+// The settings of ModifyStairs, written into the Stair element and its mask. The tread, riser and
+// structure settings are the per-part defaults of the Stair (tread[role], riser[role],
+// structure[role][side]); the DevKit's Element_Test example (Do_Stair_Edit) changes them the same
+// way, with ACAPI_Element_Change and no memo, and Archicad rebuilds the subelements from them.
+static GS::Optional<GS::UniString> ApplyStairSettings (const GS::ObjectState& details, API_Element& element, API_Element& mask)
+{
+    API_StairType& stair = element.stair;
+
+    auto flightWidth = GetOptionalDouble (details, "flightWidth");
+    if (flightWidth.HasValue ()) {
+        stair.flightWidth = flightWidth.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_StairType, flightWidth);
+    }
+    auto totalHeight = GetOptionalDouble (details, "totalHeight");
+    if (totalHeight.HasValue ()) {
+        stair.totalHeight = totalHeight.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_StairType, totalHeight);
+    }
+    Int32 stepNum = 0;
+    if (details.Get ("stepNum", stepNum)) {
+        if (stepNum < 1) {
+            return GS::UniString ("stepNum must be at least 1.");
+        }
+        stair.stepNum = static_cast<UInt32> (stepNum);
+        ACAPI_ELEMENT_MASK_SET (mask, API_StairType, stepNum);
+    }
+    auto riserHeight = GetOptionalDouble (details, "riserHeight");
+    if (riserHeight.HasValue ()) {
+        stair.riserHeight = riserHeight.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_StairType, riserHeight);
+    }
+    auto treadDepth = GetOptionalDouble (details, "treadDepth");
+    if (treadDepth.HasValue ()) {
+        stair.treadDepth = treadDepth.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_StairType, treadDepth);
+    }
+    if (details.Get ("treadDepthLocked", stair.treadDepthLocked)) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_StairType, treadDepthLocked);
+    }
+    if (details.Get ("totalHeightLocked", stair.totalHeightLocked)) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_StairType, totalHeightLocked);
+    }
+    if (details.Get ("finishVisible", stair.finishVisible)) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_StairType, finishVisible);
+    }
+
+    GS::Array<GS::ObjectState> treads;
+    details.Get ("treads", treads);
+    for (const GS::ObjectState& tread : treads) {
+        GS::UniString roleStr;
+        API_StairPartRoleID role = APISR_Run;
+        if (!tread.Get ("role", roleStr) || !StairPartRoleFromString (roleStr, role)) {
+            return GS::UniString ("Invalid role in treads.");
+        }
+        API_StairTreadType& target = stair.tread[role];
+        if (tread.Get ("visible", target.visible)) {
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, tread[role].visible);
+        }
+        auto thickness = GetOptionalDouble (tread, "thickness");
+        if (thickness.HasValue ()) {
+            target.thickness = thickness.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, tread[role].thickness);
+        }
+        auto offset = GetOptionalDouble (tread, "offset");
+        if (offset.HasValue ()) {
+            target.offset = offset.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, tread[role].offset);
+        }
+        GS::UniString nosingType;
+        if (tread.Get ("nosingType", nosingType)) {
+            if (nosingType == "ByValue") {
+                target.nosingType = APITN_ByValue;
+            } else if (nosingType == "BySlanting") {
+                target.nosingType = APITN_BySlanting;
+            } else {
+                return GS::UniString ("Invalid nosingType in treads.");
+            }
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, tread[role].nosingType);
+        }
+        auto nosingValue = GetOptionalDouble (tread, "nosingValue");
+        if (nosingValue.HasValue ()) {
+            target.nosingValue = nosingValue.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, tread[role].nosingValue);
+        }
+        auto nosingSlant = GetOptionalDouble (tread, "nosingSlant");
+        if (nosingSlant.HasValue ()) {
+            target.nosingSlant = nosingSlant.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, tread[role].nosingSlant);
+        }
+    }
+
+    GS::Array<GS::ObjectState> risers;
+    details.Get ("risers", risers);
+    for (const GS::ObjectState& riser : risers) {
+        GS::UniString roleStr;
+        API_StairPartRoleID role = APISR_Run;
+        if (!riser.Get ("role", roleStr) || !StairPartRoleFromString (roleStr, role)) {
+            return GS::UniString ("Invalid role in risers.");
+        }
+        API_StairRiserType& target = stair.riser[role];
+        if (riser.Get ("visible", target.visible)) {
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, riser[role].visible);
+        }
+        auto thickness = GetOptionalDouble (riser, "thickness");
+        if (thickness.HasValue ()) {
+            target.thickness = thickness.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, riser[role].thickness);
+        }
+        auto offset = GetOptionalDouble (riser, "offset");
+        if (offset.HasValue ()) {
+            target.offset = offset.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, riser[role].offset);
+        }
+        GS::UniString crossSection;
+        if (riser.Get ("crossSection", crossSection)) {
+            if (crossSection == "Simple") {
+                target.crossSect = APIRCS_Simple;
+            } else if (crossSection == "Slanted") {
+                target.crossSect = APIRCS_Slanted;
+            } else {
+                return GS::UniString ("Invalid crossSection in risers.");
+            }
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, riser[role].crossSect);
+        }
+        auto angle = GetOptionalDouble (riser, "angle");
+        if (angle.HasValue ()) {
+            target.angle = angle.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, riser[role].angle);
+        }
+        GS::UniString position;
+        if (riser.Get ("position", position)) {
+            if (position == "OnTread") {
+                target.riserPosition = APIRP_OnTread;
+            } else if (position == "BehindTread") {
+                target.riserPosition = APIRP_BehindTread;
+            } else {
+                return GS::UniString ("Invalid position in risers.");
+            }
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, riser[role].riserPosition);
+        }
+    }
+
+    GS::Array<GS::ObjectState> structures;
+    details.Get ("structures", structures);
+    for (const GS::ObjectState& structure : structures) {
+        GS::UniString roleStr;
+        GS::UniString sideStr;
+        API_StairPartRoleID role = APISR_Run;
+        API_StairStructureSideID side = APISS_LeftSide;
+        if (!structure.Get ("role", roleStr) || !StairPartRoleFromString (roleStr, role)) {
+            return GS::UniString ("Invalid role in structures.");
+        }
+        if (!structure.Get ("side", sideStr) || !StairStructureSideFromString (sideStr, side)) {
+            return GS::UniString ("Invalid side in structures.");
+        }
+        API_StairStructureType& target = stair.structure[role][side];
+        if (structure.Get ("visible", target.visible)) {
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, structure[role][side].visible);
+        }
+        GS::UniString structureType;
+        if (structure.Get ("structureType", structureType)) {
+            if (structureType == "Side") {
+                target.structType = APIST_Side;
+            } else if (structureType == "Monolith") {
+                target.structType = APIST_Monolith;
+            } else if (structureType == "BeamSupport") {
+                target.structType = APIST_BeamSupport;
+            } else if (structureType == "CantileveredSupport") {
+                target.structType = APIST_CantileveredSupport;
+            } else {
+                return GS::UniString ("Invalid structureType in structures.");
+            }
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, structure[role][side].structType);
+        }
+        GS::UniString bottomType;
+        if (structure.Get ("bottomType", bottomType)) {
+            if (bottomType == "Stepped") {
+                target.bottomType = APISB_Stepped;
+            } else if (bottomType == "Flat") {
+                target.bottomType = APISB_Flat;
+            } else if (bottomType == "Smooth") {
+                target.bottomType = APISB_Smooth;
+            } else {
+                return GS::UniString ("Invalid bottomType in structures.");
+            }
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, structure[role][side].bottomType);
+        }
+        auto thickness = GetOptionalDouble (structure, "thickness");
+        if (thickness.HasValue ()) {
+            target.thickness = thickness.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, structure[role][side].thickness);
+        }
+        auto horizontalThickness = GetOptionalDouble (structure, "horizontalThickness");
+        if (horizontalThickness.HasValue ()) {
+            target.horizontalThickness = horizontalThickness.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_StairType, structure[role][side].horizontalThickness);
+        }
+    }
+
+    return {};
+}
+
+GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> stairsWithDetails;
+    parameters.Get ("stairsWithDetails", stairsWithDetails);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("ModifyStairs", [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : stairsWithDetails) {
+            const GS::ObjectState* elementId = item.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*elementId);
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to find the element"));
+                continue;
+            }
+            if (GetElemTypeId (element.header) != API_StairID) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Element is not a Stair."));
+                continue;
+            }
+
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+            const GS::Optional<GS::UniString> settingsError = ApplyStairSettings (item, element, mask);
+            if (settingsError.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, *settingsError));
+                continue;
+            }
+
+            // No memo is passed, so the baseline and the position of the stair are kept.
+            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to modify the stair."));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+}
+
 CreateWindowsCommand::CreateWindowsCommand () :
     CommandBase (CommonSchema::Used)
 {
