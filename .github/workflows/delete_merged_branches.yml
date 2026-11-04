@@ -53,8 +53,12 @@ jobs:
        github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # One group per pull request (and one for the sweep): a shared group would
+    # keep only one pending run and cancel the others, so a branch of a pull
+    # request merged during a burst would be skipped. The deletes are
+    # idempotent, so runs side by side are safe.
     concurrency:
-      group: delete-merged-branches
+      group: delete-merged-branches-${{ github.event.pull_request.number || 'sweep' }}
       cancel-in-progress: false
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
