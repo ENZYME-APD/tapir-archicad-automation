@@ -9,4 +9,4 @@ dimensions = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Dimens
 if not dimensions:
     raise SystemExit ('No dimension in the project.')
 
-aclib.RunTapirCommand ('GetDimensionData', {'elements': dimensions})
+aclib.PrintJson (aclib.RunTapirCommand ('GetDimensionData', {'elements': dimensions}))

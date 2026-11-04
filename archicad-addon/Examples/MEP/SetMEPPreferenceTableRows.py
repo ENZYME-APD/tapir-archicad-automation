@@ -13,13 +13,13 @@ tableId = {'guid': tables[0]['guid']}
 key = {'referenceId': tables[0]['rows'][0]['referenceId']}
 oldDescription = tables[0]['rows'][0].get ('description', '')
 
-aclib.RunTapirCommand ('SetMEPPreferenceTableRows', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetMEPPreferenceTableRows', {
     'tableId': tableId,
     'rows': [{'key': key, 'values': {'description': 'Changed by Tapir'}}]
-})
+}))
 aclib.RunTapirCommand ('GetMEPPreferenceTableRows', {'tableId': tableId, 'keys': [key]})
 
-aclib.RunTapirCommand ('SetMEPPreferenceTableRows', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetMEPPreferenceTableRows', {
     'tableId': tableId,
     'rows': [{'key': key, 'values': {'description': oldDescription}}]
-})
+}))

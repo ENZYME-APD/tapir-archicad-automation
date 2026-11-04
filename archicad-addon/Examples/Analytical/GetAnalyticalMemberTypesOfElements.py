@@ -10,6 +10,6 @@ for elementType in ['Wall', 'Beam', 'Column']:
 if not elements:
     raise SystemExit ('No wall, beam or column in the project.')
 
-aclib.RunTapirCommand ('GetAnalyticalMemberTypesOfElements', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetAnalyticalMemberTypesOfElements', {
     'elements': elements
-})
+}))

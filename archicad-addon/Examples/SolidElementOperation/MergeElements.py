@@ -10,10 +10,10 @@ slabs = aclib.RunTapirCommand ('CreateSlabs', {
         {'level': 0.0, 'thickness': 0.3, 'polygonCoordinates': [{'x': 50.0, 'y': 50.0}, {'x': 54.0, 'y': 50.0}, {'x': 54.0, 'y': 54.0}, {'x': 50.0, 'y': 54.0}]},
         {'level': 0.0, 'thickness': 0.3, 'polygonCoordinates': [{'x': 54.0, 'y': 50.0}, {'x': 56.0, 'y': 50.0}, {'x': 56.0, 'y': 54.0}, {'x': 54.0, 'y': 54.0}]}
     ]
-}, debug = False)['elements']
+})['elements']
 
-aclib.RunTapirCommand ('MergeElements', {'elements': slabs})
+aclib.PrintJson (aclib.RunTapirCommand ('MergeElements', {'elements': slabs}))
 
 aclib.RunTapirCommand ('GetMergedElements', {'elements': slabs})
 
-aclib.RunTapirCommand ('DeleteElements', {'elements': slabs}, debug = False)
+aclib.RunTapirCommand ('DeleteElements', {'elements': slabs})

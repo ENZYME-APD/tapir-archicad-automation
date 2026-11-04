@@ -4,7 +4,7 @@ Don't repeat the first point at the end of the outline. Colors are RGB values be
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateHatches', {'hatchesData': [{
+aclib.PrintJson (aclib.RunTapirCommand ('CreateHatches', {'hatchesData': [{
     'coordinates': [
         {'x': 0.0, 'y': 0.0},
         {'x': 4.0, 'y': 0.0},
@@ -20,4 +20,4 @@ aclib.RunTapirCommand ('CreateHatches', {'hatchesData': [{
         ]
     }],
     'foregroundColor': {'red': 1.0, 'green': 0.0, 'blue': 0.0}
-}]})
+}]}))

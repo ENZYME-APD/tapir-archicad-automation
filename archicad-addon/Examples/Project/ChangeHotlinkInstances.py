@@ -11,18 +11,18 @@ if not instances:
 details = aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': instances})['detailsOfElements'][0]['details']
 origin = details['origin']
 
-aclib.RunTapirCommand ('ChangeHotlinkInstances', {
+aclib.PrintJson (aclib.RunTapirCommand ('ChangeHotlinkInstances', {
     'hotlinkInstances': [{
         'elementId': instances[0]['elementId'],
         'origin': {'x': origin['x'] + 1.0, 'y': origin['y'], 'z': origin['z']}
     }]
-})
+}))
 
-aclib.RunTapirCommand ('ChangeHotlinkInstances', {
+aclib.PrintJson (aclib.RunTapirCommand ('ChangeHotlinkInstances', {
     'hotlinkInstances': [{
         'elementId': instances[0]['elementId'],
         'origin': origin,
         'rotationAngle': details['rotationAngle'],
         'mirrored': details['mirrored']
     }]
-})
+}))

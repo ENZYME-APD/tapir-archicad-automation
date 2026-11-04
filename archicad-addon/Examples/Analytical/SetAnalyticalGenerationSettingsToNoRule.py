@@ -4,4 +4,4 @@ Changes the project's analytical model generation settings and does not restore 
 """
 import aclib
 
-aclib.RunTapirCommand ('SetAnalyticalGenerationSettingsToNoRule', {})
+aclib.PrintJson (aclib.RunTapirCommand ('SetAnalyticalGenerationSettingsToNoRule', {}))

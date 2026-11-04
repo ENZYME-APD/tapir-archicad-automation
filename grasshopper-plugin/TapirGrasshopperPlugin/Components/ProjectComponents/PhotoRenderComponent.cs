@@ -15,7 +15,8 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 "PhotoRender",
                 "Render the 3D model with a rendering scene into an image file (png, jpg, " +
                 "bmp, tiff or gif), as Document > Creative Imaging > PhotoRender Projection " +
-                "does. The size and quality of the image come from the scene, and the model " +
+                "does. The quality of the image, and its size and resolution unless Width, Height " +
+                "or Resolution are given, come from the scene, and the model " +
                 "is rendered as the 3D window shows it, so set up the 3D window with the " +
                 "view to render first.",
                 GroupNames.Project)
@@ -41,7 +42,37 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 "SetCurrentRenderingScene does, and stays current afterwards. When it is " +
                 "not given, the current scene is used.");
 
-            SetOptionality(new[] { 1, 2 });
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            // Integer inputs without a default value: an unconnected one is not sent,
+            // so the size and the resolution of the scene are used.
+            inManager.AddIntegerParameter(
+                "Width",
+                "Width",
+                ("Optional. The width of the image in pixels (the Size field of the PhotoRendering " +
+                 "Settings palette), 1 to 32767. When it is not given, the width of the scene is used. " +
+                 "The image settings of the scene are changed for this render only and restored afterwards.")
+                    .WithTypeName("integerItem"),
+                GH_ParamAccess.item);
+
+            inManager.AddIntegerParameter(
+                "Height",
+                "Height",
+                ("Optional. The height of the image in pixels (the Size field of the PhotoRendering " +
+                 "Settings palette), 1 to 32767. When it is not given, the height of the scene is used. " +
+                 "The image settings of the scene are changed for this render only and restored afterwards.")
+                    .WithTypeName("integerItem"),
+                GH_ParamAccess.item);
+
+            inManager.AddIntegerParameter(
+                "Resolution",
+                "Resolution",
+                ("Optional. The resolution of the image in dpi (the Resolution field of the PhotoRendering " +
+                 "Settings palette), 1 to 32767. When it is not given, the resolution of the scene is used. " +
+                 "The image settings of the scene are changed for this render only and restored afterwards.")
+                    .WithTypeName("integerItem"),
+                GH_ParamAccess.item);
+
+            SetOptionality(new[] { 1, 2, 3, 4, 5 });
         }
 
         protected override void AddOutputs()
@@ -81,6 +112,27 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             if (!string.IsNullOrWhiteSpace(sceneName))
             {
                 parameters["sceneName"] = sceneName;
+            }
+
+            if (da.TryGet(
+                    3,
+                    out int width))
+            {
+                parameters["width"] = width;
+            }
+
+            if (da.TryGet(
+                    4,
+                    out int height))
+            {
+                parameters["height"] = height;
+            }
+
+            if (da.TryGet(
+                    5,
+                    out int resolution))
+            {
+                parameters["resolution"] = resolution;
             }
 
             if (!TryGetConvertedCadValues(

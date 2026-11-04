@@ -17,9 +17,9 @@ opening = aclib.RunTapirCommand ('CreateOpenings', {'openingsData': [{
     'height': 0.8
 }]})['elements'][0]
 
-aclib.RunTapirCommand ('ModifyOpenings', {'openingsWithDetails': [{
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyOpenings', {'openingsWithDetails': [{
     'elementId': opening['elementId'],
     'basePoint': {'x': 5.0, 'y': 0.0, 'z': 0.5},
     'width': 1.2,
     'height': 1.5
-}]})
+}]}))

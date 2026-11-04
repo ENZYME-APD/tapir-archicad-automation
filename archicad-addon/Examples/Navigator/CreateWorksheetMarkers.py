@@ -12,5 +12,6 @@ worksheets = aclib.RunTapirCommand ('CreateWorksheetMarkers', {
         'id': 'W1'
     }]
 })['elements']
+aclib.PrintJson (worksheets)
 
-aclib.RunTapirCommand ('DeleteElements', {'elements': worksheets}, debug = False)
+aclib.RunTapirCommand ('DeleteElements', {'elements': worksheets})

@@ -7,6 +7,7 @@ import aclib
 created = aclib.RunTapirCommand ('CreateProjectInfoGroups', {
     'projectInfoGroups': [{'name': 'Tapir Example Group'}]
 })['projectInfoGroupIdsOrErrors'][0]
+aclib.PrintJson (created)
 if 'error' in created:
     raise SystemExit ('The group could not be created.')
 

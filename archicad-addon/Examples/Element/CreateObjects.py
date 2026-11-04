@@ -8,8 +8,8 @@ libraryParts = aclib.RunTapirCommand ('GetAvailableLibraryParts', {'filterByType
 if not libraryParts:
     raise SystemExit ('No Object library part in the loaded libraries.')
 
-aclib.RunTapirCommand ('CreateObjects', {'objectsData': [{
+aclib.PrintJson (aclib.RunTapirCommand ('CreateObjects', {'objectsData': [{
     'libraryPartName': libraryParts[0]['documentName'],
     'coordinates': {'x': 0.0, 'y': 0.0, 'z': 0.0},
     'angle': 0.0
-}]})
+}]}))

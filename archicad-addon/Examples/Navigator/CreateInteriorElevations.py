@@ -18,5 +18,6 @@ interiorElevations = aclib.RunTapirCommand ('CreateInteriorElevations', {
         'name': 'Tapir Example Room'
     }]
 })['elements']
+aclib.PrintJson (interiorElevations)
 
 aclib.RunTapirCommand ('DeleteElements', {'elements': [e for e in interiorElevations if 'elementId' in e]})

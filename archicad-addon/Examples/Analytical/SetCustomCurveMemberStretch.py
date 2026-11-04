@@ -11,15 +11,15 @@ if not curveMembers:
 memberId = curveMembers[0]['elementId']
 old = aclib.RunTapirCommand ('GetCustomCurveMemberStretch', {'elements': [{'elementId': memberId}]})['stretches'][0]
 
-aclib.RunTapirCommand ('SetCustomCurveMemberStretch', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetCustomCurveMemberStretch', {
     'stretches': [{'elementId': memberId, 'begAdditionalLength': 0.1, 'endAdditionalLength': 0.1}]
-})
+}))
 aclib.RunTapirCommand ('GetCustomCurveMemberStretch', {'elements': [{'elementId': memberId}]})
 
-aclib.RunTapirCommand ('SetCustomCurveMemberStretch', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetCustomCurveMemberStretch', {
     'stretches': [{
         'elementId': memberId,
         'begAdditionalLength': old['begAdditionalLength'],
         'endAdditionalLength': old['endAdditionalLength']
     }]
-})
+}))

@@ -22,8 +22,8 @@ supports = aclib.RunTapirCommand ('CreateAnalyticalSupports', {
     }]
 })['elements']
 
-aclib.RunTapirCommand ('GetAnalyticalSupports', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetAnalyticalSupports', {
     'elements': supports
-})
+}))
 
 aclib.RunTapirCommand ('DeleteElements', {'elements': supports})

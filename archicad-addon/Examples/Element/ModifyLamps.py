@@ -13,10 +13,10 @@ lamp = aclib.RunTapirCommand ('CreateLamps', {'lampsData': [{
     'coordinates': {'x': 0.0, 'y': 0.0, 'z': 2.0}
 }]})['elements'][0]
 
-aclib.RunTapirCommand ('ModifyLamps', {'lampsWithDetails': [{
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyLamps', {'lampsWithDetails': [{
     'elementId': lamp['elementId'],
     'coordinates': {'x': 0.0, 'y': 0.0, 'z': 2.5},
     'lightIsOn': False,
     'lightColor': {'red': 0.6, 'green': 0.8, 'blue': 1.0}
-}]})
+}]}))
 aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': [lamp], 'fields': ['details']})

@@ -2,4 +2,4 @@
 import aclib
 
 for objectSetName in ['Composites', 'LayerSettingsDialog', 'ProjectInfo']:
-    aclib.RunTapirCommand ('GetLockableObjectSetStatus', {'objectSetName': objectSetName})
+    aclib.PrintJson (aclib.RunTapirCommand ('GetLockableObjectSetStatus', {'objectSetName': objectSetName}))

@@ -10,4 +10,4 @@ if not layouts:
     raise SystemExit ('No layout in the project.')
 
 aclib.RunTapirCommand ('ChangeWindow', {'databaseId': layouts[0]['databaseId']})
-aclib.RunTapirCommand ('GetDrawingNumberingGridLines')
+aclib.PrintJson (aclib.RunTapirCommand ('GetDrawingNumberingGridLines'))

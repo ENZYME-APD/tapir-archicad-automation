@@ -15,6 +15,6 @@ if not nodes and not instances:
     raise SystemExit ('No hotlink in the project.')
 
 # A hotlink is given by its node or by a placed instance element.
-aclib.RunTapirCommand ('GetHotlinkDesignOptionTables', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetHotlinkDesignOptionTables', {
     'hotlinks': [{'hotlinkNodeId': n['hotlinkNodeId']} for n in nodes] + instances
-})
+}))

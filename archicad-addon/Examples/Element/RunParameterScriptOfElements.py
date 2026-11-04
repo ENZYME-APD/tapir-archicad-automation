@@ -8,4 +8,4 @@ objects = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Object'})
 if not objects:
     raise SystemExit ('No object in the project.')
 
-aclib.RunTapirCommand ('RunParameterScriptOfElements', {'elements': objects})
+aclib.PrintJson (aclib.RunTapirCommand ('RunParameterScriptOfElements', {'elements': objects}))

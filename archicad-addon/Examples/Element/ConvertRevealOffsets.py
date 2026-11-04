@@ -6,10 +6,10 @@ import aclib
 
 openings = []
 for elementType in ['Window', 'Door']:
-    openings += aclib.RunTapirCommand ('GetElementsByType', {'elementType': elementType}, debug = False)['elements']
+    openings += aclib.RunTapirCommand ('GetElementsByType', {'elementType': elementType})['elements']
 if not openings:
     raise SystemExit ('No window or door in the project.')
 
-aclib.RunTapirCommand ('ConvertRevealOffsets', {
+aclib.PrintJson (aclib.RunTapirCommand ('ConvertRevealOffsets', {
     'openings': [{'elementId': opening['elementId'], 'coreOffset': 0.0} for opening in openings[:3]]
-})
+}))

@@ -8,7 +8,7 @@ folder = aclib.RunTapirCommand ('CreateKeynoteFolders', {
     'foldersData': [{'key': 'TAPIR', 'title': 'Tapir Example Folder'}]
 })['keynoteFolderIdsOrErrors'][0]
 
-aclib.RunTapirCommand ('CreateKeynoteItems', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateKeynoteItems', {
     'itemsData': [{
         'parentFolderId': folder['keynoteFolderId'],
         'key': 'TAPIR-01',
@@ -16,6 +16,6 @@ aclib.RunTapirCommand ('CreateKeynoteItems', {
         'description': 'Created by the Tapir example.',
         'reference': 'EX-1'
     }]
-})
+}))
 
 aclib.RunTapirCommand ('DeleteKeynoteFolders', {'keynoteFolderIds': [{'keynoteFolderId': folder['keynoteFolderId']}]})

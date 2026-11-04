@@ -17,9 +17,9 @@ mainId, branchId = [element['elementId'] for element in aclib.RunTapirCommand ('
     ]
 })['elements']]
 
-aclib.RunTapirCommand ('ConnectMEPElements', {
+aclib.PrintJson (aclib.RunTapirCommand ('ConnectMEPElements', {
     'connectionsData': [{
         'routingElementId': mainId,
         'connectToId': branchId
     }]
-})
+}))

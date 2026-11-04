@@ -1,4 +1,4 @@
 """Prints the id, name and value of every Project Info field with GetProjectInfoFields."""
 import aclib
 
-aclib.RunTapirCommand ('GetProjectInfoFields')
+aclib.PrintJson (aclib.RunTapirCommand ('GetProjectInfoFields'))

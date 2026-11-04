@@ -9,8 +9,8 @@ serverUrl = 'https://bimcloud.example.com:22000'
 parentPath = 'Libraries'
 libraryPath = '/path/to/My Library'
 
-aclib.RunTapirCommand ('UploadLibrariesToBIMcloud', {
+aclib.PrintJson (aclib.RunTapirCommand ('UploadLibrariesToBIMcloud', {
     'libraryPaths': [libraryPath],
     'serverUrl': serverUrl,
     'parentPath': parentPath
-})
+}))

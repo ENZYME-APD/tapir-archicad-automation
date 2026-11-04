@@ -11,7 +11,7 @@ def PrintFolder (folder, indent):
     for subFolder in folder['subFolders']:
         PrintFolder (subFolder, indent + 1)
 
-tree = aclib.RunTapirCommand ('GetKeynoteTree', debug = False)
+tree = aclib.RunTapirCommand ('GetKeynoteTree')
 for folder in tree['foldersInRoot']:
     PrintFolder (folder, 0)
 for item in tree['itemsInRoot']:

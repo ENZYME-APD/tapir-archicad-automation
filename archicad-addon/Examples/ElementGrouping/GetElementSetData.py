@@ -4,12 +4,12 @@ Deleting the set keeps the walls. Needs at least two Walls.
 """
 import aclib
 
-walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'}, debug = False)['elements'][:2]
+walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:2]
 if len (walls) < 2:
     raise SystemExit ('Needs at least two walls.')
-elementSets = aclib.RunTapirCommand ('CreateElementSets', {'elementSets': [{'elements': walls}]}, debug = False)['elementSets']
+elementSets = aclib.RunTapirCommand ('CreateElementSets', {'elementSets': [{'elements': walls}]})['elementSets']
 elementSets = [s for s in elementSets if 'elementSetId' in s]
 
-aclib.RunTapirCommand ('GetElementSetData', {'elementSets': elementSets})
+aclib.PrintJson (aclib.RunTapirCommand ('GetElementSetData', {'elementSets': elementSets}))
 
-aclib.RunTapirCommand ('DeleteElementSets', {'elementSets': elementSets}, debug = False)
+aclib.RunTapirCommand ('DeleteElementSets', {'elementSets': elementSets})

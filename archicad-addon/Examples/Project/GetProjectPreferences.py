@@ -4,4 +4,4 @@ Without preferenceTypes every page is returned.
 """
 import aclib
 
-aclib.RunTapirCommand ('GetProjectPreferences', {'preferenceTypes': ['WorkingUnits', 'Zones']})
+aclib.PrintJson (aclib.RunTapirCommand ('GetProjectPreferences', {'preferenceTypes': ['WorkingUnits', 'Zones']}))

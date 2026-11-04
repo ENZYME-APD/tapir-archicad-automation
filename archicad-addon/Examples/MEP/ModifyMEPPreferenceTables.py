@@ -9,7 +9,7 @@ tableGuid = aclib.RunTapirCommand ('ModifyMEPPreferenceTables', {
     'tablesToAdd': [{'type': 'Segment', 'name': 'Tapir example'}]
 })['addedTables'][0]['guid']
 
-aclib.RunTapirCommand ('ModifyMEPPreferenceTables', {
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyMEPPreferenceTables', {
     'domain': 'CableCarrier',
     'tables': [{
         'guid': tableGuid,
@@ -19,12 +19,12 @@ aclib.RunTapirCommand ('ModifyMEPPreferenceTables', {
             {'value': 0.2, 'description': '200'}
         ]
     }]
-})
+}))
 
 tables = aclib.RunTapirCommand ('GetMEPPreferenceTables', {'domain': 'CableCarrier'})['cableCarrierTables']
 print (next (table for table in tables if table['guid'] == tableGuid))
 
-aclib.RunTapirCommand ('ModifyMEPPreferenceTables', {
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyMEPPreferenceTables', {
     'domain': 'CableCarrier',
     'tablesToDelete': [tableGuid]
-})
+}))

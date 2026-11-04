@@ -5,7 +5,7 @@ Fields not given (structure, top link, ...) come from the Wall tool defaults, or
 import aclib
 import math
 
-aclib.RunTapirCommand ('CreateWalls', {'wallsData': [
+aclib.PrintJson (aclib.RunTapirCommand ('CreateWalls', {'wallsData': [
     {
         'begCoordinate': {'x': 0.0, 'y': 0.0},
         'endCoordinate': {'x': 8.0, 'y': 0.0},
@@ -18,4 +18,4 @@ aclib.RunTapirCommand ('CreateWalls', {'wallsData': [
         'arcAngle': math.pi / 4,
         'height': 3.0
     }
-]})
+]}))

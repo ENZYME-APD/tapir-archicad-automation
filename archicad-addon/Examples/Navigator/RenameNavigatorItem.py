@@ -6,9 +6,9 @@ import aclib
 
 folder = aclib.RunTapirCommand ('CreateViewMapFolder', {'folderName': 'Tapir Example Folder'})
 
-aclib.RunTapirCommand ('RenameNavigatorItem', {
+aclib.PrintJson (aclib.RunTapirCommand ('RenameNavigatorItem', {
     'navigatorItemId': folder['navigatorItemId'],
     'newName': 'Tapir Renamed Folder'
-})
+}))
 
 aclib.RunTapirCommand ('DeleteNavigatorItems', {'navigatorItemIds': [{'navigatorItemId': folder['navigatorItemId']}]})

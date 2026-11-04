@@ -15,13 +15,13 @@ if not booleans:
     raise SystemExit ('The first opening has no cut symbol with a Boolean parameter.')
 
 parameter = booleans[0]
-aclib.RunTapirCommand ('SetOpeningSymbolParameters', {'elements': [{
+aclib.PrintJson (aclib.RunTapirCommand ('SetOpeningSymbolParameters', {'elements': [{
     'elementId': openings[0]['elementId'],
     'cutSymbolParameters': [{'name': parameter['name'], 'value': not parameter['value']}]
-}]})
+}]}))
 aclib.RunTapirCommand ('GetOpeningSymbolParameters', {'elements': openings})
 
-aclib.RunTapirCommand ('SetOpeningSymbolParameters', {'elements': [{
+aclib.PrintJson (aclib.RunTapirCommand ('SetOpeningSymbolParameters', {'elements': [{
     'elementId': openings[0]['elementId'],
     'cutSymbolParameters': [{'name': parameter['name'], 'value': parameter['value']}]
-}]})
+}]}))

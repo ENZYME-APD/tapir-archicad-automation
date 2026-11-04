@@ -7,12 +7,12 @@ import aclib
 setName = 'Tapir Example Set'
 aclib.RunTapirCommand ('CreateDesignOptionSets', {'designOptionSets': [setName]})
 
-aclib.RunTapirCommand ('CreateDesignOptions', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateDesignOptions', {
     'designOptions': [
         {'name': 'Option A', 'id': 'A', 'ownerSetName': setName},
         {'name': 'Option B', 'id': 'B', 'ownerSetName': setName}
     ]
-})
+}))
 aclib.RunTapirCommand ('GetDesignOptions')
 
 sets = aclib.RunTapirCommand ('GetDesignOptionSets')['designOptionSets']

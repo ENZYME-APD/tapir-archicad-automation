@@ -13,11 +13,11 @@ if 'error' in created:
     raise SystemExit ('The group could not be created.')
 groupId = created['projectInfoGroupId']
 
-aclib.RunTapirCommand ('MoveProjectInfoGroups', {
+aclib.PrintJson (aclib.RunTapirCommand ('MoveProjectInfoGroups', {
     'projectInfoGroups': [
         {'projectInfoGroupId': groupId, 'beforeProjectInfoGroupId': firstGroupId}
     ]
-})
+}))
 aclib.RunTapirCommand ('GetProjectInfoGroups')
 
 aclib.RunTapirCommand ('DeleteProjectInfoGroups', {'projectInfoGroups': [{'projectInfoGroupId': groupId}]})

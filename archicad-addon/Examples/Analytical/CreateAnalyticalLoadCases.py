@@ -8,7 +8,7 @@ loadGroupId = aclib.RunTapirCommand ('CreateAnalyticalLoadGroups', {
     'loadGroups': [{'name': 'Tapir Permanent', 'groupType': 'PermanentLoad', 'relation': 'StandardRelation'}]
 })['loadGroupIds'][0]['loadGroupId']
 
-aclib.RunTapirCommand ('CreateAnalyticalLoadCases', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateAnalyticalLoadCases', {
     'loadCases': [{
         'name': 'Tapir Dead Load',
         'description': 'Created by Tapir',
@@ -17,4 +17,4 @@ aclib.RunTapirCommand ('CreateAnalyticalLoadCases', {
         'loadType': 'StaticLoad',
         'duration': 'LongDuration'
     }]
-})
+}))

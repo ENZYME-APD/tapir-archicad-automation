@@ -8,7 +8,7 @@ curveMembers = aclib.RunTapirCommand ('GetAnalyticalMembers', {})['curveMembers'
 if len (curveMembers) < 2:
     raise SystemExit ('Fewer than two analytical curve members in the current view.')
 
-aclib.RunTapirCommand ('CreateAnalyticalLinks', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateAnalyticalLinks', {
     'links': [{
         'linkSettings': {
             'geometry': 'Link1D',
@@ -23,4 +23,4 @@ aclib.RunTapirCommand ('CreateAnalyticalLinks', {
         'startElementPartRef': {'elemGuid': curveMembers[0]['elementId'], 'partRefType': 'EndVertex'},
         'endElementPartRef': {'elemGuid': curveMembers[1]['elementId'], 'partRefType': 'BegVertex'}
     }]
-})
+}))

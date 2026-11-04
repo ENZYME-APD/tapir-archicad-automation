@@ -15,10 +15,11 @@ created = aclib.RunTapirCommand ('CreateGraphicOverrideRules', {
         }
     }]
 })['graphicOverrideRuleIds']
+aclib.PrintJson (created)
 
 for rule in aclib.RunTapirCommand ('GetGraphicOverrideRulesByName', {
-        'graphicOverrideRules': [{'name': 'Tapir Example High Walls'}]}, debug = False)['graphicOverrideRules']:
+        'graphicOverrideRules': [{'name': 'Tapir Example High Walls'}]})['graphicOverrideRules']:
     print (rule.get ('criterionXML'))
 
-aclib.RunTapirCommand ('DeleteGraphicOverrideRules', {'graphicOverrideRuleIds': [r for r in created if 'graphicOverrideRuleId' in r]}, debug = False)
-aclib.RunTapirCommand ('DeleteGraphicOverrideRuleGroups', {'ruleGroupNames': ['Tapir Examples']}, debug = False)
+aclib.RunTapirCommand ('DeleteGraphicOverrideRules', {'graphicOverrideRuleIds': [r for r in created if 'graphicOverrideRuleId' in r]})
+aclib.RunTapirCommand ('DeleteGraphicOverrideRuleGroups', {'ruleGroupNames': ['Tapir Examples']})

@@ -8,7 +8,7 @@ curveMembers = aclib.RunTapirCommand ('GetAnalyticalMembers', {})['curveMembers'
 if not curveMembers:
     raise SystemExit ('No analytical curve member in the current view.')
 
-aclib.RunTapirCommand ('CreateAnalyticalSupports', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateAnalyticalSupports', {
     'supports': [{
         'supportSettings': {
             'supportType': 'SimplePoint',
@@ -20,4 +20,4 @@ aclib.RunTapirCommand ('CreateAnalyticalSupports', {
         },
         'supportedMemberPartRef': {'elemGuid': curveMembers[0]['elementId'], 'partRefType': 'BegVertex'}
     }]
-})
+}))

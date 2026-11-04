@@ -14,9 +14,9 @@ wallsWithoutLink = [wall for wall, link in zip (walls, links) if 'error' in link
 if not wallsWithoutLink:
     raise SystemExit ('Every wall has a link already.')
 
-aclib.RunTapirCommand ('SetURLReferencesOfElements', {'elementsWithURLReferences': [{
+aclib.PrintJson (aclib.RunTapirCommand ('SetURLReferencesOfElements', {'elementsWithURLReferences': [{
     'elementId': wallsWithoutLink[0]['elementId'],
     'url': 'https://www.graphisoft.com',
     'description': 'GRAPHISOFT Home Page'
-}]})
+}]}))
 aclib.RunTapirCommand ('GetURLReferencesOfElements', {'elements': wallsWithoutLink[:1]})

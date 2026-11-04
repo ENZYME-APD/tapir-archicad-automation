@@ -11,10 +11,10 @@ loadCombinationId = aclib.RunTapirCommand ('CreateAnalyticalLoadCombinations', {
     'loadCombinations': [{'name': 'Tapir ULS', 'category': 'ULS'}]
 })['loadCombinationIds'][0]['loadCombinationId']
 
-aclib.RunTapirCommand ('AddLoadCasesToLoadCombination', {
+aclib.PrintJson (aclib.RunTapirCommand ('AddLoadCasesToLoadCombination', {
     'loadCombinationId': loadCombinationId,
     'loadFactors': [{'loadCaseId': loadCases[0]['loadCaseId'], 'factor': 1.5, 'multiplier': 1.0}]
-})
+}))
 
 aclib.RunTapirCommand ('GetAnalyticalLoadCombinations', {})
 aclib.RunTapirCommand ('DeleteAnalyticalLoadCombinations', {'loadCombinationIds': [{'loadCombinationId': loadCombinationId}]})

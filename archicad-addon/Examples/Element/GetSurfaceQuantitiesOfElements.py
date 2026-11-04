@@ -4,12 +4,12 @@ Needs at least one Wall. Without coverElements every construction element covers
 """
 import aclib
 
-walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'}, debug = False)['elements'][:3]
+walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:3]
 if not walls:
     raise SystemExit ('No wall in the project.')
-slabs = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Slab'}, debug = False)['elements']
+slabs = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Slab'})['elements']
 
-aclib.RunTapirCommand ('GetSurfaceQuantitiesOfElements', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetSurfaceQuantitiesOfElements', {
     'elements': walls,
     'coverElements': slabs
-})
+}))

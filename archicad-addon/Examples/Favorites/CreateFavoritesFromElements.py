@@ -4,16 +4,16 @@ Needs at least one Wall.
 """
 import aclib
 
-walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'}, debug = False)['elements'][:1]
+walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]
 if not walls:
     raise SystemExit ('No wall in the project.')
 
-aclib.RunTapirCommand ('CreateFavoritesFromElements', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateFavoritesFromElements', {
     'favoritesFromElements': [{
         'elementId': walls[0]['elementId'],
         'favorite': 'Tapir Example Wall'
     }]
-})
+}))
 
 aclib.RunTapirCommand ('GetFavoritesByType', {'elementType': 'Wall'})
 

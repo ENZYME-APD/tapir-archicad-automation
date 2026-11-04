@@ -8,6 +8,6 @@ hotlinks = aclib.RunTapirCommand ('GetHotlinks')['hotlinks']
 if not hotlinks:
     raise SystemExit ('No hotlink in the project.')
 
-aclib.RunTapirCommand ('GetHotlinkSourceStatus', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetHotlinkSourceStatus', {
     'hotlinks': [{'location': h['location']} for h in hotlinks]
-})
+}))

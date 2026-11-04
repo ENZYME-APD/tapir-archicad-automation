@@ -4,15 +4,15 @@ Needs at least one editable Wall.
 """
 import aclib
 
-walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall', 'filters': ['IsEditable']}, debug = False)['elements'][:1]
+walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall', 'filters': ['IsEditable']})['elements'][:1]
 if not walls:
     raise SystemExit ('No editable wall in the project.')
 wallId = walls[0]['elementId']
 
-aclib.RunTapirCommand ('ElevateElements', {
+aclib.PrintJson (aclib.RunTapirCommand ('ElevateElements', {
     'elementsWithElevations': [{'elementId': wallId, 'elevation': 1.0}]
-})
+}))
 
 aclib.RunTapirCommand ('ElevateElements', {
     'elementsWithElevations': [{'elementId': wallId, 'elevation': -1.0}]
-}, debug = False)
+})

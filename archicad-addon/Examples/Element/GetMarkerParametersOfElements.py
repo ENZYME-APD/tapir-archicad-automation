@@ -6,8 +6,8 @@ import aclib
 
 openings = []
 for elementType in ['Window', 'Door']:
-    openings += aclib.RunTapirCommand ('GetElementsByType', {'elementType': elementType}, debug = False)['elements']
+    openings += aclib.RunTapirCommand ('GetElementsByType', {'elementType': elementType})['elements']
 if not openings:
     raise SystemExit ('No window or door in the project.')
 
-aclib.RunTapirCommand ('GetMarkerParametersOfElements', {'elements': openings[:3]})
+aclib.PrintJson (aclib.RunTapirCommand ('GetMarkerParametersOfElements', {'elements': openings[:3]}))

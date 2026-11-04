@@ -8,6 +8,6 @@ properties = aclib.RunCommand ('API.GetPropertyIds', {
     ]
 })['properties']
 
-aclib.RunTapirCommand ('GetPropertyExpressionReferences', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetPropertyExpressionReferences', {
     'propertyIds': [p for p in properties if 'propertyId' in p]
-})
+}))

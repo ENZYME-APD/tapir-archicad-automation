@@ -1,4 +1,4 @@
 """Reads every classification of the Wall, Slab and Column tool defaults in one call with GetClassificationsOfToolDefaults."""
 import aclib
 
-aclib.RunTapirCommand ('GetClassificationsOfToolDefaults', {'elementTypes': ['Wall', 'Slab', 'Column']})
+aclib.PrintJson (aclib.RunTapirCommand ('GetClassificationsOfToolDefaults', {'elementTypes': ['Wall', 'Slab', 'Column']}))

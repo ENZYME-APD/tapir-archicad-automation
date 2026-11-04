@@ -4,6 +4,6 @@ Leave out 'domains' to get all three domains. Requires Archicad 28 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('GetMEPToolDefaults', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetMEPToolDefaults', {
     'domains': ['Ventilation', 'Piping']
-})
+}))

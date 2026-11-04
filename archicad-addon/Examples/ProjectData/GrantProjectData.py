@@ -11,4 +11,4 @@ name = 'tapir-example/teamwork'
 aclib.RunTapirCommand ('SetProjectData', {'values': [{'name': name, 'content': 'shared'}]})
 aclib.RunTapirCommand ('ReserveProjectData', {'names': [name]})
 
-aclib.RunTapirCommand ('GrantProjectData', {'names': [name], 'toUserId': toUserId})
+aclib.PrintJson (aclib.RunTapirCommand ('GrantProjectData', {'names': [name], 'toUserId': toUserId}))

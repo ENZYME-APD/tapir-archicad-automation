@@ -4,9 +4,9 @@ The result depends on the window's size, scale and zoom.
 """
 import aclib
 
-aclib.RunTapirCommand ('ScreenToModel', {
+aclib.PrintJson (aclib.RunTapirCommand ('ScreenToModel', {
     'screenPoints': [
         {'h': 0, 'v': 0},
         {'h': 200, 'v': 100}
     ]
-})
+}))

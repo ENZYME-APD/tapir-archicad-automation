@@ -14,6 +14,6 @@ deviceId = aclib.RunTapirCommand ('CreateElectricalDevices', {
     'electricalDevicesData': [{'position': {'x': 2.0, 'y': 3.0, 'z': 2.5}, 'apparentPower': 60}]
 })['elements'][0]['elementId']
 
-aclib.RunTapirCommand ('ConnectToElectricalCircuits', {
+aclib.PrintJson (aclib.RunTapirCommand ('ConnectToElectricalCircuits', {
     'connectionsData': [{'elementId': deviceId, 'circuitId': circuitId}]
-})
+}))

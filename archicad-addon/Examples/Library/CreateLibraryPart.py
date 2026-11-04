@@ -9,11 +9,11 @@ import tempfile
 import aclib
 
 with tempfile.TemporaryDirectory () as libraryFolder:
-    aclib.RunTapirCommand ('ModifyLibraryList', {'add': [{'path': libraryFolder}]}, debug = False)
+    aclib.RunTapirCommand ('ModifyLibraryList', {'add': [{'path': libraryFolder}]})
 
-    aclib.RunTapirCommand ('CreateLibraryPart', {
+    aclib.PrintJson (aclib.RunTapirCommand ('CreateLibraryPart', {
         'path': os.path.join (libraryFolder, 'Tapir New Object.gsm'),
         'ancestorSubtype': 'General GDL Object.gsm'
-    })
+    }))
 
-    aclib.RunTapirCommand ('ModifyLibraryList', {'remove': [{'path': libraryFolder}]}, debug = False)
+    aclib.RunTapirCommand ('ModifyLibraryList', {'remove': [{'path': libraryFolder}]})

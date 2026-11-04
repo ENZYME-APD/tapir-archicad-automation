@@ -6,4 +6,4 @@ import aclib
 
 aclib.RunTapirCommand ('SetElementNotificationClient', {'host': 'localhost', 'port': 12345})
 
-aclib.RunTapirCommand ('RemoveElementNotificationClient', {'host': 'localhost', 'port': 12345})
+aclib.PrintJson (aclib.RunTapirCommand ('RemoveElementNotificationClient', {'host': 'localhost', 'port': 12345}))

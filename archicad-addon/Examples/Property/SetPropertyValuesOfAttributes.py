@@ -4,10 +4,10 @@ Needs a Building Material that has an editable, not expression based, custom tex
 """
 import aclib
 
-buildingMaterials = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'BuildingMaterial'}, debug = False)['attributes']
+buildingMaterials = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'BuildingMaterial'})['attributes']
 attributeIds = [{'attributeId': buildingMaterial['attributeId']} for buildingMaterial in buildingMaterials]
-definitions = aclib.RunTapirCommand ('GetPropertyDefinitionsOfAttributes', {'attributeIds': attributeIds}, debug = False)['propertyDefinitionsOfAttributes']
-textPropertyIds = [p['propertyId'] for p in aclib.RunTapirCommand ('GetAllProperties', {'propertyTypes': ['Custom'], 'includeAvailability': False}, debug = False)['properties']
+definitions = aclib.RunTapirCommand ('GetPropertyDefinitionsOfAttributes', {'attributeIds': attributeIds})['propertyDefinitionsOfAttributes']
+textPropertyIds = [p['propertyId'] for p in aclib.RunTapirCommand ('GetAllProperties', {'propertyTypes': ['Custom'], 'includeAvailability': False})['properties']
                    if p['propertyValueType'] == 'String' and p['propertyCollectionType'] == 'Single' and p['propertyIsEditable'] and not p['isExpressionBased']]
 target = next (((attributeId, p['propertyId']) for attributeId, d in zip (attributeIds, definitions) for p in d.get ('propertyIds', []) if p['propertyId'] in textPropertyIds), None)
 if target is None:
@@ -18,15 +18,15 @@ def ReadValue ():
     return aclib.RunTapirCommand ('GetPropertyValuesOfAttributes', {
         'attributeIds': [attributeId],
         'properties': [{'propertyId': propertyId}]
-    }, debug = False)['propertyValuesForAttributes'][0]['propertyValues'][0]['propertyValue']['value']
+    })['propertyValuesForAttributes'][0]['propertyValues'][0]['propertyValue']['value']
 
 oldValue = ReadValue ()
 
-aclib.RunTapirCommand ('SetPropertyValuesOfAttributes', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetPropertyValuesOfAttributes', {
     'attributePropertyValues': [{'attributeId': attributeId['attributeId'], 'propertyId': propertyId, 'propertyValue': {'value': 'Set by Tapir'}}]
-})
+}))
 print ('Value after the change:', ReadValue ())
 
-aclib.RunTapirCommand ('SetPropertyValuesOfAttributes', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetPropertyValuesOfAttributes', {
     'attributePropertyValues': [{'attributeId': attributeId['attributeId'], 'propertyId': propertyId, 'propertyValue': {'value': oldValue}}]
-})
+}))

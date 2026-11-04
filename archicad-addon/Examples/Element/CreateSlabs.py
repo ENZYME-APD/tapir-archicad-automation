@@ -4,7 +4,7 @@ level is the elevation of the slab's reference plane, in meters.
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateSlabs', {'slabsData': [{
+aclib.PrintJson (aclib.RunTapirCommand ('CreateSlabs', {'slabsData': [{
     'level': 0.0,
     'thickness': 0.25,
     'polygonCoordinates': [
@@ -21,4 +21,4 @@ aclib.RunTapirCommand ('CreateSlabs', {'slabsData': [{
             {'x': 2.0, 'y': 3.0}
         ]
     }]
-}]})
+}]}))

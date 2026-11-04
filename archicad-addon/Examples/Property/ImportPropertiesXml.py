@@ -35,7 +35,8 @@ xml = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 '''.format (group = group)
 
 result = aclib.RunTapirCommand ('ImportPropertiesXml', {'xml': xml, 'conflictPolicy': 'skip'})
+aclib.PrintJson (result)
 
-aclib.RunTapirCommand ('DeletePropertyDefinitions', {'propertyIds': [{'propertyId': p} for p in result.get ('created', [])]}, debug = False)
-groups = aclib.RunTapirCommand ('GetAllProperties', {'propertyTypes': ['Custom'], 'includeAvailability': False}, debug = False)['propertyGroups']
-aclib.RunTapirCommand ('DeletePropertyGroups', {'propertyGroupIds': [{'propertyGroupId': g['propertyGroupId']} for g in groups if g['name'] == group]}, debug = False)
+aclib.RunTapirCommand ('DeletePropertyDefinitions', {'propertyIds': [{'propertyId': p} for p in result.get ('created', [])]})
+groups = aclib.RunTapirCommand ('GetAllProperties', {'propertyTypes': ['Custom'], 'includeAvailability': False})['propertyGroups']
+aclib.RunTapirCommand ('DeletePropertyGroups', {'propertyGroupIds': [{'propertyGroupId': g['propertyGroupId']} for g in groups if g['name'] == group]})

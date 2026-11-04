@@ -9,4 +9,4 @@ windows = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Window'})
 if not windows:
     raise SystemExit ('No window in the project.')
 
-aclib.RunTapirCommand ('GetOpeningTransformations', {'elements': windows})
+aclib.PrintJson (aclib.RunTapirCommand ('GetOpeningTransformations', {'elements': windows}))

@@ -4,12 +4,12 @@ Both folders are created by the script and deleted at the end. Requires Archicad
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateFavoriteFolder', {'parentPath': [], 'name': 'Tapir Example Target'}, debug = False)
-aclib.RunTapirCommand ('CreateFavoriteFolder', {'parentPath': [], 'name': 'Tapir Example Moved'}, debug = False)
+aclib.RunTapirCommand ('CreateFavoriteFolder', {'parentPath': [], 'name': 'Tapir Example Target'})
+aclib.RunTapirCommand ('CreateFavoriteFolder', {'parentPath': [], 'name': 'Tapir Example Moved'})
 
-aclib.RunTapirCommand ('MoveFavoriteFolder', {
+aclib.PrintJson (aclib.RunTapirCommand ('MoveFavoriteFolder', {
     'folder': ['Tapir Example Moved'],
     'targetFolder': ['Tapir Example Target']
-})
+}))
 
-aclib.RunTapirCommand ('DeleteFavoriteFolder', {'path': ['Tapir Example Target'], 'recursive': True}, debug = False)
+aclib.RunTapirCommand ('DeleteFavoriteFolder', {'path': ['Tapir Example Target'], 'recursive': True})

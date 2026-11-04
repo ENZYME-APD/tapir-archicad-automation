@@ -5,7 +5,7 @@ as seen from outside.
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateMorphs', {'morphsData': [
+aclib.PrintJson (aclib.RunTapirCommand ('CreateMorphs', {'morphsData': [
     {
         'basePoint': {'x': 0.0, 'y': 0.0, 'z': 0.0},
         'size': {'x': 2.0, 'y': 2.0, 'z': 2.0}
@@ -27,4 +27,4 @@ aclib.RunTapirCommand ('CreateMorphs', {'morphsData': [
             ]
         }
     }
-]})
+]}))

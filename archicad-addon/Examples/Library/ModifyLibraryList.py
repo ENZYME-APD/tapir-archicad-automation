@@ -7,5 +7,5 @@ import tempfile
 import aclib
 
 with tempfile.TemporaryDirectory () as libraryFolder:
-    aclib.RunTapirCommand ('ModifyLibraryList', {'add': [{'path': libraryFolder}]})
-    aclib.RunTapirCommand ('ModifyLibraryList', {'remove': [{'path': libraryFolder}]})
+    aclib.PrintJson (aclib.RunTapirCommand ('ModifyLibraryList', {'add': [{'path': libraryFolder}]}))
+    aclib.PrintJson (aclib.RunTapirCommand ('ModifyLibraryList', {'remove': [{'path': libraryFolder}]}))

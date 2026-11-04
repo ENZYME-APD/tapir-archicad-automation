@@ -8,26 +8,26 @@ import tempfile
 
 import aclib
 
-walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'}, debug = False)['elements'][:1]
+walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]
 if not walls:
     raise SystemExit ('No wall in the project.')
 
 favoriteName = 'Tapir Example Wall'
 aclib.RunTapirCommand ('CreateFavoritesFromElements', {
     'favoritesFromElements': [{'elementId': walls[0]['elementId'], 'favorite': favoriteName}]
-}, debug = False)
+})
 
 with tempfile.TemporaryDirectory () as tempDir:
     favoritesFile = os.path.join (tempDir, 'TapirExample.prefs')
-    aclib.RunTapirCommand ('ExportFavorites', {'path': favoritesFile, 'names': [favoriteName]}, debug = False)
-    aclib.RunTapirCommand ('DeleteFavorites', {'favorites': [favoriteName]}, debug = False)
+    aclib.RunTapirCommand ('ExportFavorites', {'path': favoritesFile, 'names': [favoriteName]})
+    aclib.RunTapirCommand ('DeleteFavorites', {'favorites': [favoriteName]})
 
-    aclib.RunTapirCommand ('ImportFavorites', {
+    aclib.PrintJson (aclib.RunTapirCommand ('ImportFavorites', {
         'path': favoritesFile,
         'format': 'prefs',
         'conflictPolicy': 'Skip'
-    })
+    }))
 
 aclib.RunTapirCommand ('GetFavoritesByType', {'elementType': 'Wall'})
 
-aclib.RunTapirCommand ('DeleteFavorites', {'favorites': [favoriteName]}, debug = False)
+aclib.RunTapirCommand ('DeleteFavorites', {'favorites': [favoriteName]})

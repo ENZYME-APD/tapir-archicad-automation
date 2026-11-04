@@ -13,4 +13,4 @@ if not layouts or not masters:
 
 # The current window must be a master layout.
 aclib.RunTapirCommand ('ChangeWindow', {'databaseId': masters[0]['databaseId']})
-aclib.RunTapirCommand ('SetMasterLayoutContext', {'layoutDatabaseId': layouts[0]['databaseId']})
+aclib.PrintJson (aclib.RunTapirCommand ('SetMasterLayoutContext', {'layoutDatabaseId': layouts[0]['databaseId']}))

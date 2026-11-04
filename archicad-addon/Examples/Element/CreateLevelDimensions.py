@@ -10,7 +10,7 @@ slab = aclib.RunTapirCommand ('CreateSlabs', {'slabsData': [{
     'polygonCoordinates': [{'x': 0.0, 'y': 0.0}, {'x': 4.0, 'y': 0.0}, {'x': 4.0, 'y': 4.0}, {'x': 0.0, 'y': 4.0}]
 }]})['elements'][0]
 
-aclib.RunTapirCommand ('CreateLevelDimensions', {'levelDimensionsData': [
+aclib.PrintJson (aclib.RunTapirCommand ('CreateLevelDimensions', {'levelDimensionsData': [
     {'position': {'x': 2.0, 'y': 2.0}, 'parentElementId': slab['elementId']},
     {'position': {'x': 6.0, 'y': 2.0}, 'level': 0.5}
-]})
+]}))

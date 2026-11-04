@@ -38,13 +38,13 @@ xml = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 </BuildingInformation>
 '''.format (system = system)
 
-aclib.RunTapirCommand ('ImportClassificationsXml', {
+aclib.PrintJson (aclib.RunTapirCommand ('ImportClassificationsXml', {
     'xml': xml,
     'systemConflictPolicy': 'skip',
     'itemConflictPolicy': 'skip'
-})
+}))
 
-systems = aclib.RunTapirCommand ('GetAllClassificationSystems', debug = False)['classificationSystems']
+systems = aclib.RunTapirCommand ('GetAllClassificationSystems')['classificationSystems']
 aclib.RunTapirCommand ('DeleteClassificationSystems', {
     'classificationSystemIds': [{'classificationSystemId': s['classificationSystemId']} for s in systems if s['name'] == system]
-}, debug = False)
+})

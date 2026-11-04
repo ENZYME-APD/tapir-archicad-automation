@@ -4,7 +4,7 @@ Requires Archicad 27 or later.
 """
 import aclib
 
-rules = aclib.RunTapirCommand ('GetGraphicalOverrideRules', debug = False)['rules']
+rules = aclib.RunTapirCommand ('GetGraphicalOverrideRules')['rules']
 for rule in rules:
     print (rule['ruleGroupName'], '/', rule['name'])
     print (rule['criterionXML'])

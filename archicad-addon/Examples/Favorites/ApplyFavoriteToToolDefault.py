@@ -4,8 +4,8 @@ Needs a Favorite. Changes the default settings of that tool. Requires Archicad 2
 """
 import aclib
 
-favorites = aclib.RunTapirCommand ('GetAllFavorites', debug = False)['favorites']
+favorites = aclib.RunTapirCommand ('GetAllFavorites')['favorites']
 if not favorites:
     raise SystemExit ('The project has no Favorite.')
 
-aclib.RunTapirCommand ('ApplyFavoriteToToolDefault', {'favoriteName': favorites[0]['name']})
+aclib.PrintJson (aclib.RunTapirCommand ('ApplyFavoriteToToolDefault', {'favoriteName': favorites[0]['name']}))

@@ -22,9 +22,9 @@ view = aclib.RunTapirCommand ('CreateViewsInViewMap', {
     }]
 })['navigatorItems'][0]
 
-aclib.RunTapirCommand ('SetViewRotation', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetViewRotation', {
     'navigatorItemIdsWithRotation': [{'navigatorItemId': view['navigatorItemId'], 'rotation': math.radians (30)}]
-})
+}))
 aclib.RunTapirCommand ('GetView2DTransformations', {'navigatorItemIds': [{'navigatorItemId': view['navigatorItemId']}]})
 
 aclib.RunTapirCommand ('DeleteNavigatorItems', {'navigatorItemIds': [{'navigatorItemId': view['navigatorItemId']}]})

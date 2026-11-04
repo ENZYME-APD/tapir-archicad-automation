@@ -4,4 +4,4 @@ In a solo project isShared and isOnline are false.
 """
 import aclib
 
-aclib.RunTapirCommand ('GetTeamworkStatus')
+aclib.PrintJson (aclib.RunTapirCommand ('GetTeamworkStatus'))

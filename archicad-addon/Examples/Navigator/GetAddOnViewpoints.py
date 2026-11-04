@@ -8,4 +8,4 @@ roots = aclib.RunTapirCommand ('GetAddOnViewpointRoots')['viewpointIds']
 if not roots:
     raise SystemExit ('No add-on viewpoint in the project.')
 
-aclib.RunTapirCommand ('GetAddOnViewpoints', {'viewpointIds': roots})
+aclib.PrintJson (aclib.RunTapirCommand ('GetAddOnViewpoints', {'viewpointIds': roots}))
