@@ -10033,6 +10033,22 @@
                 "items": {
                     "type": "number"
                 }
+            },
+            "visibility": {
+                "$ref": "#/StoryVisibility",
+                "description": "The stories the railing is shown on (API_RailingType::visibility)."
+            },
+            "isAutoOnStoryVisibility": {
+                "type": "boolean",
+                "description": "When true, Archicad recomputes 'visibility' automatically from the actual elevation of the railing (API_RailingType::isAutoOnStoryVisibility)."
+            },
+            "referenceLinePen": {
+                "type": "integer",
+                "description": "Pen index of the railing's reference line (API_RailingType::referenceLinePen)."
+            },
+            "contourPen": {
+                "type": "integer",
+                "description": "Pen index of the railing's contour line (API_RailingType::contourPen)."
             }
         },
         "additionalProperties": false,
@@ -10041,7 +10057,11 @@
             "bottomOffset",
             "zCoordinate",
             "height",
-            "segmentHeights"
+            "segmentHeights",
+            "visibility",
+            "isAutoOnStoryVisibility",
+            "referenceLinePen",
+            "contourPen"
         ]
     },
     "CurtainWallDetails": {

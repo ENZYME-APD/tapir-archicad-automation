@@ -2436,6 +2436,10 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.railing.bottomOffset, stories));
                 typeSpecificDetails.Add ("height", elem.railing.defSegment.height);
                 AddRailingReferenceLineAndSegments (elem, typeSpecificDetails);
+                typeSpecificDetails.Add ("visibility", CreateStoryVisibilityObjectState (elem.railing.visibility));
+                typeSpecificDetails.Add ("isAutoOnStoryVisibility", elem.railing.isAutoOnStoryVisibility);
+                typeSpecificDetails.Add ("referenceLinePen", (Int32) elem.railing.referenceLinePen);
+                typeSpecificDetails.Add ("contourPen", (Int32) elem.railing.contourPen);
             } break;
 
             case API_CurtainWallID: {
