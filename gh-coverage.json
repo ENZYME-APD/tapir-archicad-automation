@@ -1,9 +1,9 @@
 {
- "generatedAt": "2026-11-04 16:41 UTC",
+ "generatedAt": "2026-11-04 17:45 UTC",
  "counts": {
   "done": 568,
   "merged": 148,
-  "open": 14,
+  "open": 17,
   "not applicable": 1
  },
  "parameters": {
@@ -5199,6 +5199,21 @@
    "issues": []
   },
   {
+   "id": "CreateShells",
+   "group": "Element Commands",
+   "version": "1.8.1",
+   "brief": "Creates extruded, revolved and ruled Shell elements from profile polylines, with thickness, structure, an optional clipping contour and holes.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 33,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "CreateRailings",
    "group": "Element Commands",
    "version": "1.8.0",
@@ -6864,6 +6879,21 @@
    "issues": []
   },
   {
+   "id": "GetModelExtent",
+   "group": "Element Commands",
+   "version": "1.8.1",
+   "brief": "Returns the 3D extent (xMin, yMin, zMin, xMax, yMax, zMax) of the current database, the region Archicad's Fit in Window would show.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "SetElementNotificationClient",
    "group": "Element Commands",
    "version": "1.2.8",
@@ -7464,7 +7494,7 @@
    "id": "ImportFavorites",
    "group": "Favorites Commands",
    "version": "1.5.0",
-   "brief": "Import Favorites from a .prefs file or folder into the current project. From Archicad 29 they can also be imported from a folder of Favorite files (xml format, all of them or the given fileNames) or from a legacy .prf file (legacyPRF format), with the conflict policies Error, Skip, OverwriteExisting and RenameNew.",
+   "brief": "Import Favorites from a .prefs file or folder into the current project. From Archicad 29 they can also be imported from a folder of Favorite files (xml format, all of them or the given fileNames) or from a legacy .prf file (legacyPRF format), with the conflict policies Error, Skip, OverwriteExisting and RenameNew. In a Teamwork project the Favorites lockable object set must be reserved first (see ReserveLockableObjectSet).",
    "status": "done",
    "reason": "",
    "components": [
@@ -11211,6 +11241,21 @@
    "coveredParameters": [
     "filterByTypeId"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetLibrariesOfLibParts",
+   "group": "Library Commands",
+   "version": "1.8.1",
+   "brief": "Gets the library of each given library part (by file name or guid): display name, location, embedded/built-in/package/local/missing flags and the Library Manager tree path. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []

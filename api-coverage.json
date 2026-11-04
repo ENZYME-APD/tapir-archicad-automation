@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-04 16:41 UTC",
+ "generatedAt": "2026-11-04 17:45 UTC",
  "versions": [
   25,
   26,
@@ -10,11 +10,10 @@
  ],
  "counts": {
   "not applicable": 670,
-  "done": 1859,
-  "skipped": 28,
-  "merged": 300,
-  "in progress": 19,
-  "open": 3
+  "done": 1860,
+  "skipped": 30,
+  "merged": 306,
+  "in progress": 13
  },
  "items": [
   {
@@ -2963,6 +2962,10 @@
     {
      "number": 1615,
      "title": "Import attributes from another project file (append / overwrite like the Attribute Manager) and export them to a file"
+    },
+    {
+     "number": 1615,
+     "title": "Import attributes from another project file (append / overwrite like the Attribute Manager) and export them to a file"
     }
    ]
   },
@@ -3766,7 +3769,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1880,
+     "title": "Fix GetNoteAutotexts for linear dimensions (noteOwnerType Dimension)"
+    }
+   ],
    "issues": []
   },
   {
@@ -4048,12 +4056,12 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
-     "number": 1815,
-     "title": "Project preferences: Reference Levels page and Floor Plan Cut Plane Settings"
+     "number": 1891,
+     "title": "[1/6] Share the body of the Project Info group and field commands"
     },
     {
-     "number": 1757,
-     "title": "ImportFavorites: run the import in an undoable command so Teamwork projects keep it"
+     "number": 1815,
+     "title": "Project preferences: Reference Levels page and Floor Plan Cut Plane Settings"
     },
     {
      "number": 1543,
@@ -4867,7 +4875,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1874,
+     "title": "DeleteElements, DeleteAttributes, DeleteNavigatorItems: optional dryRun"
+    }
+   ],
    "issues": []
   },
   {
@@ -5847,6 +5860,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1879,
+     "title": "Get3DBoundingBoxes: include the subelements of a Railing"
+    },
+    {
      "number": 1826,
      "title": "CreateMorphs: favoriteName, layerIndex and id per item"
     },
@@ -5857,10 +5874,6 @@
     {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
-    },
-    {
-     "number": 1702,
-     "title": "Add CreateShells: extruded, revolved and ruled shells"
     },
     {
      "number": 1671,
@@ -6723,6 +6736,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1879,
+     "title": "Get3DBoundingBoxes: include the subelements of a Railing"
+    },
+    {
      "number": 1835,
      "title": "Get3DBoundingBoxes: measure Walls on their 3D model, with their connections"
     }
@@ -6845,6 +6862,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1884,
+     "title": "ModifyZones: keep topOffset when setting relativeTopStory in the same call"
+    },
+    {
+     "number": 1855,
+     "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
+    },
     {
      "number": 1802,
      "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
@@ -7399,6 +7424,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1884,
+     "title": "ModifyZones: keep topOffset when setting relativeTopStory in the same call"
+    },
+    {
+     "number": 1855,
+     "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
+    },
+    {
      "number": 1841,
      "title": "Check sub-element objects without reading every object in full"
     },
@@ -7660,10 +7693,6 @@
     {
      "number": 1826,
      "title": "CreateMorphs: favoriteName, layerIndex and id per item"
-    },
-    {
-     "number": 1702,
-     "title": "Add CreateShells: extruded, revolved and ruled shells"
     }
    ],
    "issues": []
@@ -7962,20 +7991,10 @@
    "olderNames": [
     "APIDb_GetExtent3DID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1125,
-     "title": "Add GetModelExtent command (ACAPI_Element_GetExtent3D)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1118,
-     "title": "Expose ACAPI_Element_GetExtent3D (the \"Fit in Window\" extent of the current database)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetHeader",
@@ -8064,6 +8083,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1879,
+     "title": "Get3DBoundingBoxes: include the subelements of a Railing"
+    },
     {
      "number": 1802,
      "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
@@ -8777,7 +8800,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1877,
+     "title": "MergeElements: report a failure when Archicad records no merge"
+    }
+   ],
    "issues": []
   },
   {
@@ -9640,12 +9668,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1757,
-     "title": "ImportFavorites: run the import in an undoable command so Teamwork projects keep it"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11669,7 +11692,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1887,
+     "title": "CreateLibraryParts: write the parameter section as the DevKit does, don't keep incomplete parts"
+    }
+   ],
    "issues": []
   },
   {
@@ -12005,7 +12033,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1887,
+     "title": "CreateLibraryParts: write the parameter section as the DevKit does, don't keep incomplete parts"
+    }
+   ],
    "issues": [
     {
      "number": 1580,
@@ -12200,7 +12233,12 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1887,
+     "title": "CreateLibraryParts: write the parameter section as the DevKit does, don't keep incomplete parts"
+    }
+   ],
    "issues": [
     {
      "number": 1580,
@@ -12232,10 +12270,6 @@
     {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
-    },
-    {
-     "number": 1244,
-     "title": "Add GetLibrariesOfLibParts command"
     }
    ],
    "issues": []
@@ -12530,10 +12564,6 @@
     {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
-    },
-    {
-     "number": 1244,
-     "title": "Add GetLibrariesOfLibParts command"
     }
    ],
    "issues": []
@@ -12645,7 +12675,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1887,
+     "title": "CreateLibraryParts: write the parameter section as the DevKit does, don't keep incomplete parts"
+    }
+   ],
    "issues": [
     {
      "number": 1580,
@@ -12775,7 +12810,12 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1887,
+     "title": "CreateLibraryParts: write the parameter section as the DevKit does, don't keep incomplete parts"
+    }
+   ],
    "issues": [
     {
      "number": 1580,
@@ -13137,7 +13177,12 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1887,
+     "title": "CreateLibraryParts: write the parameter section as the DevKit does, don't keep incomplete parts"
+    }
+   ],
    "issues": [
     {
      "number": 1580,
@@ -13891,7 +13936,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1883,
+     "title": "Get3DModelCounts: count polygons, edges, vertices and vectors over the bodies"
+    }
+   ],
    "issues": [
     {
      "number": 1580,
@@ -13933,7 +13983,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1883,
+     "title": "Get3DModelCounts: count polygons, edges, vertices and vectors over the bodies"
+    }
+   ],
    "issues": []
   },
   {
@@ -14351,7 +14406,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1874,
+     "title": "DeleteElements, DeleteAttributes, DeleteNavigatorItems: optional dryRun"
+    }
+   ],
    "issues": []
   },
   {
@@ -14374,7 +14434,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1874,
+     "title": "DeleteElements, DeleteAttributes, DeleteNavigatorItems: optional dryRun"
+    }
+   ],
    "issues": []
   },
   {
@@ -18556,7 +18621,7 @@
    "olderNames": [
     "ACAPI_TeamworkControl_HasConnection"
    ],
-   "status": "open",
+   "status": "done",
    "reason": "",
    "pullRequests": [],
    "issues": []
@@ -21214,12 +21279,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1125,
-     "title": "Add GetModelExtent command (ACAPI_Element_GetExtent3D)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -21260,8 +21320,8 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "skipped",
+   "reason": "Archicad 25/26 only; returns the same component property values as ACAPI_ElemComponent_GetPropertyValuesByGuid, which GetPropertyValuesOfElementComponents uses (#1019)",
    "pullRequests": [],
    "issues": []
   },
@@ -21277,8 +21337,8 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "skipped",
+   "reason": "Archicad 25/26 only; returns the same component property values as ACAPI_ElemComponent_GetPropertyValuesByGuid, which GetPropertyValuesOfElementComponents uses (#1019)",
    "pullRequests": [],
    "issues": []
   },
@@ -26018,6 +26078,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1875,
+     "title": "File-writing commands: optional overwrite: false refuses an existing file"
+    },
+    {
+     "number": 1874,
+     "title": "DeleteElements, DeleteAttributes, DeleteNavigatorItems: optional dryRun"
+    },
+    {
+     "number": 1854,
+     "title": "Send each command only the schema definitions it uses"
+    },
+    {
      "number": 1836,
      "title": "[3/4] Report element changes made by the per-element setters to notification clients"
     },
@@ -26056,10 +26128,6 @@
     {
      "number": 1703,
      "title": "Add CreateSkylights: place skylights in roofs and shells"
-    },
-    {
-     "number": 1702,
-     "title": "Add CreateShells: extruded, revolved and ruled shells"
     },
     {
      "number": 1537,
@@ -27551,10 +27619,6 @@
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    },
-    {
-     "number": 1125,
-     "title": "Add GetModelExtent command (ACAPI_Element_GetExtent3D)"
     }
    ],
    "issues": []
@@ -28040,12 +28104,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1757,
-     "title": "ImportFavorites: run the import in an undoable command so Teamwork projects keep it"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28062,12 +28121,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1757,
-     "title": "ImportFavorites: run the import in an undoable command so Teamwork projects keep it"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28084,12 +28138,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1757,
-     "title": "ImportFavorites: run the import in an undoable command so Teamwork projects keep it"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30505,10 +30554,6 @@
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
-     "number": 1244,
-     "title": "Add GetLibrariesOfLibParts command"
     }
    ],
    "issues": []
@@ -30528,12 +30573,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1244,
-     "title": "Add GetLibrariesOfLibParts command"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30571,10 +30611,6 @@
     {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
-    },
-    {
-     "number": 1244,
-     "title": "Add GetLibrariesOfLibParts command"
     }
    ],
    "issues": []
@@ -30609,20 +30645,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1244,
-     "title": "Add GetLibrariesOfLibParts command"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1217,
-     "title": "Expose ACAPI::Library::LibraryManager::GetLibraryOfLibPart + Library flags (embedded / package / missing)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::Library::Library::GetLocalizedName",
@@ -30656,12 +30682,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1244,
-     "title": "Add GetLibrariesOfLibParts command"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30703,10 +30724,6 @@
     {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
-    },
-    {
-     "number": 1244,
-     "title": "Add GetLibrariesOfLibParts command"
     }
    ],
    "issues": []
@@ -30868,20 +30885,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1244,
-     "title": "Add GetLibrariesOfLibParts command"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1217,
-     "title": "Expose ACAPI::Library::LibraryManager::GetLibraryOfLibPart + Library flags (embedded / package / missing)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::Library::Library::IsEmbedded",
@@ -30896,20 +30903,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1244,
-     "title": "Add GetLibrariesOfLibParts command"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1217,
-     "title": "Expose ACAPI::Library::LibraryManager::GetLibraryOfLibPart + Library flags (embedded / package / missing)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::Library::Library::IsLocal",
@@ -30924,20 +30921,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1244,
-     "title": "Add GetLibrariesOfLibParts command"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1217,
-     "title": "Expose ACAPI::Library::LibraryManager::GetLibraryOfLibPart + Library flags (embedded / package / missing)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::Library::Library::IsMissing",
@@ -30951,20 +30938,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1244,
-     "title": "Add GetLibrariesOfLibParts command"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1217,
-     "title": "Expose ACAPI::Library::LibraryManager::GetLibraryOfLibPart + Library flags (embedded / package / missing)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::Library::Library::IsPackage",
@@ -30981,18 +30958,8 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1244,
-     "title": "Add GetLibrariesOfLibParts command"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1217,
-     "title": "Expose ACAPI::Library::LibraryManager::GetLibraryOfLibPart + Library flags (embedded / package / missing)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::Library::Library::IsServer",
@@ -31064,12 +31031,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1217,
-     "title": "Expose ACAPI::Library::LibraryManager::GetLibraryOfLibPart + Library flags (embedded / package / missing)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Library::LibraryManager::FindLibrary",
@@ -31197,10 +31159,6 @@
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
-     "number": 1244,
-     "title": "Add GetLibrariesOfLibParts command"
     }
    ],
    "issues": []
@@ -31236,10 +31194,6 @@
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
-     "number": 1244,
-     "title": "Add GetLibrariesOfLibParts command"
     }
    ],
    "issues": []
@@ -31277,18 +31231,8 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1244,
-     "title": "Add GetLibrariesOfLibParts command"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1217,
-     "title": "Expose ACAPI::Library::LibraryManager::GetLibraryOfLibPart + Library flags (embedded / package / missing)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::Library::LibraryManager::GetLibraryTreePathOfLibPart",
@@ -31305,18 +31249,8 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1244,
-     "title": "Add GetLibrariesOfLibParts command"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1217,
-     "title": "Expose ACAPI::Library::LibraryManager::GetLibraryOfLibPart + Library flags (embedded / package / missing)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::Library::LibraryManager::GetTWID",
@@ -31469,12 +31403,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1244,
-     "title": "Add GetLibrariesOfLibParts command"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32137,6 +32066,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1883,
+     "title": "Get3DModelCounts: count polygons, edges, vertices and vectors over the bodies"
+    },
+    {
+     "number": 1855,
+     "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
+    },
+    {
      "number": 1841,
      "title": "Check sub-element objects without reading every object in full"
     },
@@ -32169,28 +32106,8 @@
      "title": "[2/6] Doors and windows: Create/Modify take the floor plan and section settings"
     },
     {
-     "number": 1801,
-     "title": "GetDetailsOfElements: floor plan and section parameters of Stairs"
-    },
-    {
-     "number": 1800,
-     "title": "[1/6] GetDetailsOfElements: floor plan and section settings of doors and windows"
-    },
-    {
-     "number": 1799,
-     "title": "GetDetailsOfElements: floor plan and section parameters of Curtain Walls"
-    },
-    {
      "number": 1798,
      "title": "GetDetailsOfElements: floor plan and section settings of Roofs"
-    },
-    {
-     "number": 1797,
-     "title": "GetDetailsOfElements: floor plan parameters of Railings"
-    },
-    {
-     "number": 1796,
-     "title": "GetDetailsOfElements: floor plan and section settings of Shells"
     },
     {
      "number": 1748,
@@ -32223,10 +32140,6 @@
     {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
-    },
-    {
-     "number": 1244,
-     "title": "Add GetLibrariesOfLibParts command"
     },
     {
      "number": 995,
@@ -38801,6 +38714,34 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1892,
+     "title": "ChangeTextContent: pass the change in GS memory blocks with a separator"
+    },
+    {
+     "number": 1891,
+     "title": "[1/6] Share the body of the Project Info group and field commands"
+    },
+    {
+     "number": 1884,
+     "title": "ModifyZones: keep topOffset when setting relativeTopStory in the same call"
+    },
+    {
+     "number": 1880,
+     "title": "Fix GetNoteAutotexts for linear dimensions (noteOwnerType Dimension)"
+    },
+    {
+     "number": 1875,
+     "title": "File-writing commands: optional overwrite: false refuses an existing file"
+    },
+    {
+     "number": 1874,
+     "title": "DeleteElements, DeleteAttributes, DeleteNavigatorItems: optional dryRun"
+    },
+    {
+     "number": 1855,
+     "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
+    },
+    {
      "number": 1843,
      "title": "ChangeSelectionOfElements: select the whole list in one API call"
     },
@@ -38855,10 +38796,6 @@
     {
      "number": 1703,
      "title": "Add CreateSkylights: place skylights in roofs and shells"
-    },
-    {
-     "number": 1702,
-     "title": "Add CreateShells: extruded, revolved and ruled shells"
     },
     {
      "number": 1671,
@@ -45675,6 +45612,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1883,
+     "title": "Get3DModelCounts: count polygons, edges, vertices and vectors over the bodies"
+    },
+    {
+     "number": 1855,
+     "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
+    },
+    {
      "number": 1841,
      "title": "Check sub-element objects without reading every object in full"
     },
@@ -45707,28 +45652,8 @@
      "title": "[2/6] Doors and windows: Create/Modify take the floor plan and section settings"
     },
     {
-     "number": 1801,
-     "title": "GetDetailsOfElements: floor plan and section parameters of Stairs"
-    },
-    {
-     "number": 1800,
-     "title": "[1/6] GetDetailsOfElements: floor plan and section settings of doors and windows"
-    },
-    {
-     "number": 1799,
-     "title": "GetDetailsOfElements: floor plan and section parameters of Curtain Walls"
-    },
-    {
      "number": 1798,
      "title": "GetDetailsOfElements: floor plan and section settings of Roofs"
-    },
-    {
-     "number": 1797,
-     "title": "GetDetailsOfElements: floor plan parameters of Railings"
-    },
-    {
-     "number": 1796,
-     "title": "GetDetailsOfElements: floor plan and section settings of Shells"
     },
     {
      "number": 1748,
@@ -45761,10 +45686,6 @@
     {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
-    },
-    {
-     "number": 1244,
-     "title": "Add GetLibrariesOfLibParts command"
     },
     {
      "number": 995,
@@ -49203,6 +49124,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1883,
+     "title": "Get3DModelCounts: count polygons, edges, vertices and vectors over the bodies"
+    },
+    {
+     "number": 1855,
+     "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
+    },
+    {
      "number": 1841,
      "title": "Check sub-element objects without reading every object in full"
     },
@@ -49235,28 +49164,8 @@
      "title": "[2/6] Doors and windows: Create/Modify take the floor plan and section settings"
     },
     {
-     "number": 1801,
-     "title": "GetDetailsOfElements: floor plan and section parameters of Stairs"
-    },
-    {
-     "number": 1800,
-     "title": "[1/6] GetDetailsOfElements: floor plan and section settings of doors and windows"
-    },
-    {
-     "number": 1799,
-     "title": "GetDetailsOfElements: floor plan and section parameters of Curtain Walls"
-    },
-    {
      "number": 1798,
      "title": "GetDetailsOfElements: floor plan and section settings of Roofs"
-    },
-    {
-     "number": 1797,
-     "title": "GetDetailsOfElements: floor plan parameters of Railings"
-    },
-    {
-     "number": 1796,
-     "title": "GetDetailsOfElements: floor plan and section settings of Shells"
     },
     {
      "number": 1748,
@@ -49289,10 +49198,6 @@
     {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
-    },
-    {
-     "number": 1244,
-     "title": "Add GetLibrariesOfLibParts command"
     },
     {
      "number": 995,
@@ -56899,10 +56804,6 @@
     {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
-    },
-    {
-     "number": 1244,
-     "title": "Add GetLibrariesOfLibParts command"
     }
    ],
    "issues": []
