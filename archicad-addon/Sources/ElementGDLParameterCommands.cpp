@@ -626,18 +626,24 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
 
         const Int32 libInd = GetLibIndOfElement (apiElement);
 
-        double a;
-        double b;
-        Int32 addParNum;
-        API_AddParType** addPars;
-        ACAPI_LibraryPart_GetParams (libInd, &a, &b, &addParNum, &addPars);
+        // The library part's own parameter list, for the display names. Its handle is the
+        // caller's to dispose of (ACAPI_LibraryPart_GetParams remarks in ACAPinc.h), and it is
+        // left unset when the call fails (e.g. no library part, libInd -1), so it is checked.
+        double a = 0.0;
+        double b = 0.0;
+        Int32 addParNum = 0;
+        API_AddParType** addPars = nullptr;
+        if (ACAPI_LibraryPart_GetParams (libInd, &a, &b, &addParNum, &addPars) != NoError) {
+            addPars = nullptr;
+        }
+        const GSSize nLibPartParams = addPars != nullptr ? BMGetHandleSize ((GSHandle) addPars) / sizeof (API_AddParType) : 0;
 
         const GSSize nParams = BMGetHandleSize ((GSHandle) getParams.params) / sizeof (API_AddParType);
         GS::ObjectState gdlParameters;
         const auto& parameterListAdder = gdlParameters.AddList<GS::ObjectState> ("parameters");
         for (GSIndex ii = 0; ii < nParams; ++ii) {
             const API_AddParType& actParam = (*getParams.params)[ii];
-            const API_AddParType& actLibPartParam = (*addPars)[ii];
+            const API_AddParType& actLibPartParam = ii < nLibPartParams ? (*addPars)[ii] : actParam;
 
             if (actParam.typeID == APIParT_Separator) {
                 continue;
@@ -715,6 +721,7 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
         // closed its own); the API pairs every ACAPI_LibraryPart_OpenParameters with a close.
         ACAPI_LibraryPart_CloseParameters ();
         ACAPI_DisposeAddParHdl (&getParams.params);
+        ACAPI_DisposeAddParHdl (&addPars);
     }
 
     return response;
@@ -734,24 +741,17 @@ static GSErrCode ReadParametersAgain (API_GetParamsType& getParams, const API_Gu
 }
 
 // Every parameter write ends in one ACAPI_Element_Change, which refuses an element Archicad does
-// not let the user edit either - on a locked layer, locked with Edit > Locking, or in Teamwork not
+// not let the user edit either - on a hidden or locked layer, locked with Edit > Locking, or in Teamwork not
 // reserved by the user - with a bare error code, whatever the parameter (the one non-editable
 // element of TestProject.pla answers every change with -2130312912, in SetDetailsOfElements too).
 // The reason is reported next to the code, the way DeleteElements does, so the caller does not
 // take the refusal for an invalid parameter or value.
-static GS::UniString GetElementChangeFailureMessage (const API_Elem_Head& elemHead)
+static GS::UniString GetElementChangeFailureMessage (GSErrCode err, const API_Elem_Head& elemHead)
 {
     const GS::UniString guidString = APIGuidToString (elemHead.guid);
-
-    API_Attribute layerAttr = {};
-    layerAttr.header.typeID = API_LayerID;
-    layerAttr.header.index = elemHead.layer;
-    if (ACAPI_Attribute_Get (&layerAttr) == NoError && (layerAttr.header.flags & APILay_Locked) != 0) {
-        return GS::UniString::Printf ("The parameters of element with guid %T were not changed, because its layer is locked", guidString.ToPrintf ());
-    }
-
-    if (!ACAPI_Element_Filter (elemHead.guid, APIFilt_IsEditable)) {
-        return GS::UniString::Printf ("The parameters of element with guid %T were not changed, because the element is not editable (locked with Edit > Locking, or not reserved by you in a Teamwork project)", guidString.ToPrintf ());
+    const GS::UniString refusal = DescribeElementEditRefusal (err, elemHead);
+    if (!refusal.IsEmpty ()) {
+        return GS::UniString::Printf ("The parameters of element with guid %T were not changed, because %T", guidString.ToPrintf (), refusal.ToPrintf ());
     }
 
     return GS::UniString::Printf ("The parameters of element with guid %T were set, but Archicad refused to change the element with them (ACAPI_Element_Change failed)", guidString.ToPrintf ());
@@ -1106,7 +1106,7 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                         memo.params = getParams.params;
                         err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AddPars, true);
                         if (err != NoError) {
-                            errMessage = GetElementChangeFailureMessage (element.header);
+                            errMessage = GetElementChangeFailureMessage (err, element.header);
                         } else {
                             elementChanged = true;
                         }
@@ -2249,7 +2249,8 @@ GS::Optional<GS::UniString> SetMarkerLibraryPartOfElementsCommand::GetRawRespons
 static GSErrCode SearchMarkerLibraryPart (const GS::UniString& libName, API_LibPart& libPart)
 {
     libPart = {};
-    GS::ucscpy (libPart.docu_UName, libName.ToUStr ());
+    const USize maxNameLength = sizeof (libPart.docu_UName) / sizeof (libPart.docu_UName[0]) - 1;
+    GS::ucscpy (libPart.docu_UName, libName.ToUStr (0, GS::Min (libName.GetLength (), maxNameLength)).Get ());
     GSErrCode err = ACAPI_LibraryPart_Search (&libPart, false, true);
     delete libPart.location;
     libPart.location = nullptr;
