@@ -81,9 +81,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     "executionResultForDatabases"));
         }
 
-        // Shares the icon of GetElementsInDrawOrder until it gets one of its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetElementsInDrawOrder;
+            Properties.Resources.GetElementsInCreationOrder;
 
         public override Guid ComponentGuid =>
             new Guid("de5a4763-d55f-4580-8e66-ef1e205f065f");

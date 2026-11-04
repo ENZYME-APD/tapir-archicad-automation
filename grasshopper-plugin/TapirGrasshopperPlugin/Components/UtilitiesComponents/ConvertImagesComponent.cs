@@ -112,7 +112,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 
         // Shares the icon of GetElementPreviewImage, whose images it converts.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetElementPreviewImage;
+            Properties.Resources.ConvertImages;
 
         public override Guid ComponentGuid =>
             new Guid("134c3298-4457-4e2d-8c12-4cd5a74a7bc8");

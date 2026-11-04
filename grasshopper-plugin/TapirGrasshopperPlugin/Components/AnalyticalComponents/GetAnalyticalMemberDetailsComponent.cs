@@ -126,7 +126,7 @@ namespace TapirGrasshopperPlugin.Components.AnalyticalComponents
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetAnalyticalMemberTypesOfElements;
+            Properties.Resources.GetAnalyticalMemberDetails;
 
         public override Guid ComponentGuid =>
             new Guid("6ccbafda-7e6d-412f-9ee9-f172de2760cb");

@@ -38,9 +38,8 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
             }
         }
 
-        // Shares the icon of RebuildCurrentDatabase until it gets its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.RebuildCurrentDatabase;
+            Properties.Resources.RedrawCurrentDatabase;
 
         public override Guid ComponentGuid =>
             new Guid("82bf003a-d7c3-45d2-9c76-9bf6c245cffd");

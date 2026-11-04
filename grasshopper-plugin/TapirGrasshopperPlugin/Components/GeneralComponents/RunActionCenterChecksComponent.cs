@@ -64,9 +64,8 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
                 da);
         }
 
-        // Shares the icon of UpdateHotlinks until it gets its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.UpdateHotlinks;
+            Properties.Resources.RunActionCenterChecks;
 
         public override Guid ComponentGuid =>
             new Guid("856988ea-1f97-4d42-bdf8-5a7a95ed825f");

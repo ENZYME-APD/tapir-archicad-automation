@@ -71,7 +71,7 @@ namespace TapirGrasshopperPlugin.Components.AnalyticalComponents
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.UpdateAnalyticalModel;
+            Properties.Resources.ConvertAnalyticalLinksToNonShortest;
 
         public override Guid ComponentGuid =>
             new Guid("7e246d17-c20f-43be-9194-c752f09bfd04");

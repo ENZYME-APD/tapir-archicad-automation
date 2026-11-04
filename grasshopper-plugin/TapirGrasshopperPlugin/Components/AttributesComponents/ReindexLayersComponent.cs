@@ -220,9 +220,8 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             da.SetDataList(9, errors);
         }
 
-        // Shares the icon of SetLayers.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.SetLayers;
+            Properties.Resources.ReindexLayers;
 
         public override Guid ComponentGuid =>
             new Guid("35f16d3f-beff-408e-aafc-ca6a3ad5a8d4");

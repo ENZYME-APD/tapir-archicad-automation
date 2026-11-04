@@ -109,9 +109,8 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 elementTypes);
         }
 
-        // Shares the icon of GetNoteAutoTextKeywords until it gets its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetNoteAutoTextKeywords;
+            Properties.Resources.GetNoteAutotexts;
 
         public override Guid ComponentGuid =>
             new Guid("3fd4e405-c142-466e-8ee5-e1f91e8f8746");

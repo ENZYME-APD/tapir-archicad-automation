@@ -134,7 +134,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.Set3DCutPlanes;
+            Properties.Resources.Set3DFilterAndCutSettings;
 
         public override Guid ComponentGuid =>
             new Guid("3f64ed3b-d990-49c9-ad6b-f4b6e43614fe");

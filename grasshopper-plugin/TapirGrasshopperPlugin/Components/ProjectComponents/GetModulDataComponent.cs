@@ -116,7 +116,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 
         // Shares the icon of GetProjectData, the other text data saved in the project.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetProjectData;
+            Properties.Resources.GetModulData;
 
         public override Guid ComponentGuid =>
             new Guid("e57dead8-39e0-4ac1-8873-e912cea84d82");

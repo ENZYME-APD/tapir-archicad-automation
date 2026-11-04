@@ -82,9 +82,8 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 levels);
         }
 
-        // Shares the icon of GetStories until it gets its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetStories;
+            Properties.Resources.GetLast3DDefaultLevels;
 
         public override Guid ComponentGuid =>
             new Guid("8e702b3d-1430-4bf7-89fb-f926c32c35f1");

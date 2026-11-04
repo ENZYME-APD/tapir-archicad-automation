@@ -79,9 +79,8 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
                 FavoriteFolderOutputHelp.PathOf(response["folder"]));
         }
 
-        // Shares the icon of RenameFavorites.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.RenameFavorites;
+            Properties.Resources.RenameFavoriteFolder;
 
         public override Guid ComponentGuid =>
             new Guid("2ba392d2-5d2c-4a9d-9823-9ceed20b59e8");
