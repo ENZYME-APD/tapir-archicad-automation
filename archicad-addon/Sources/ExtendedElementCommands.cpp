@@ -4923,7 +4923,8 @@ static GSErrCode ApplyWindowOrDoorLibraryPartToDefaults (const GS::ObjectState& 
     }
     API_LibPart libPart = {};
     libPart.typeID = (typeId == API_DoorID) ? APILib_DoorID : APILib_WindowID;
-    GS::ucscpy (libPart.docu_UName, libName.ToUStr ());
+    const USize maxNameLength = sizeof (libPart.docu_UName) / sizeof (libPart.docu_UName[0]) - 1;
+    GS::ucscpy (libPart.docu_UName, libName.ToUStr (0, GS::Min (libName.GetLength (), maxNameLength)).Get ());
     GSErrCode err = ACAPI_LibraryPart_Search (&libPart, false, true);
     delete libPart.location;
     if (err != NoError) {
@@ -10017,11 +10018,11 @@ GS::ObjectState CreateInteriorElevationsCommand::Execute (const GS::ObjectState&
 
             GS::UniString name;
             if (data.Get ("name", name)) {
-                GS::ucscpy (element.interiorElevation.segment.cutPlName, name.ToUStr ().Get ());
+                CopySectionString (element.interiorElevation.segment.cutPlName, name);
             }
             GS::UniString idStr;
             if (data.Get ("id", idStr)) {
-                GS::ucscpy (element.interiorElevation.segment.cutPlIdStr, idStr.ToUStr ().Get ());
+                CopySectionString (element.interiorElevation.segment.cutPlIdStr, idStr);
             }
 
             double depth = 1.0;
