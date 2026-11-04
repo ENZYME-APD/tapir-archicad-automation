@@ -989,6 +989,12 @@ inline GSErrCode ACAPI_View_CreateGhostRecord (const API_GhostRecord* ghostRecor
     return ACAPI_Environment (APIEnv_CreateGhostRecordID, (void*) ghostRecord);
 }
 
+// APIAny_GetPropertyExprReferenceStringID: par1 is the definition, par2 the reference string.
+inline GSErrCode ACAPI_Property_GetPropertyExprReferenceString (const API_PropertyDefinition* propertyDefinition, GS::UniString* propertyReferenceString)
+{
+    return ACAPI_Goodies (APIAny_GetPropertyExprReferenceStringID, (void*) propertyDefinition, propertyReferenceString);
+}
+
 // APIAny_GetCWSubElemParamsID is the AC25/26 name of ACAPI_CurtainWall_GetCWSubElemParams:
 // par1 is the guid of the curtain wall sub-element, par2 receives the parameter handle.
 inline GSErrCode ACAPI_CurtainWall_GetCWSubElemParams (const API_Guid* guid, API_AddParType*** params)

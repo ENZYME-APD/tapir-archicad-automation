@@ -1534,6 +1534,10 @@ GSErrCode Initialize (void)
             propertyCommands, "1.8.0",
             "Sets one property value on all the given elements in a single step. If the property is not available for any of the elements, none of them is changed. Available from Archicad 27."
         );
+        err |= RegisterCommand<GetPropertyExpressionReferencesCommand> (
+            propertyCommands, "1.8.1",
+            "Returns the strings that refer to the given properties in property expressions."
+        );
         err |= RegisterCommand<GetPropertyEditabilityCommand> (
             propertyCommands, "1.7.4",
             "Tells whether the values of the given properties can be modified, and whether the properties are visible, for the given elements. Also tells whether they can be modified in the tool defaults of element types (from Archicad 26) and in the default values of the property definitions themselves. Unknown elements, element types and properties are reported as errors, not as locked properties."

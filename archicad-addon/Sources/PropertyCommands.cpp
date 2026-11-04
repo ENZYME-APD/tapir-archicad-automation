@@ -3555,6 +3555,105 @@ GS::ObjectState ModifyPropertyValueOfElementsCommand::Execute (const GS::ObjectS
 #endif
 }
 
+GetPropertyExpressionReferencesCommand::GetPropertyExpressionReferencesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetPropertyExpressionReferencesCommand::GetName () const
+{
+    return "GetPropertyExpressionReferences";
+}
+
+GS::Optional<GS::UniString> GetPropertyExpressionReferencesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "propertyIds": {
+                "$ref": "#/PropertyIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetPropertyExpressionReferencesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "references": {
+                "type": "array",
+                "description": "One item for each property, in the order of the input: its expression reference, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "reference": {
+                                    "type": "string",
+                                    "description": "The string that refers to the property in a property expression."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "reference"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "references"
+        ]
+    })";
+}
+
+GS::ObjectState GetPropertyExpressionReferencesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> propertyIds;
+    parameters.Get ("propertyIds", propertyIds);
+
+    GS::ObjectState response;
+    const auto& references = response.AddList<GS::ObjectState> ("references");
+
+    for (const GS::ObjectState& p : propertyIds) {
+        const GS::ObjectState* propertyId = p.Get ("propertyId");
+        if (propertyId == nullptr) {
+            references (CreateErrorResponse (APIERR_BADPARS, "propertyId is missing"));
+            continue;
+        }
+
+        API_PropertyDefinition definition;
+        definition.guid = GetGuidFromObjectState (*propertyId);
+        GSErrCode err = ACAPI_Property_GetPropertyDefinition (definition);
+        if (err != NoError) {
+            references (CreateErrorResponse (err, "property not found"));
+            continue;
+        }
+
+        GS::UniString reference;
+        err = ACAPI_Property_GetPropertyExprReferenceString (&definition, &reference);
+        if (err != NoError) {
+            references (CreateErrorResponse (err, "failed to get the expression reference of the property"));
+            continue;
+        }
+
+        references (GS::ObjectState ("reference", reference));
+    }
+
+    return response;
+}
+
 GetPropertyEditabilityCommand::GetPropertyEditabilityCommand () :
     CommandBase (CommonSchema::Used)
 {
