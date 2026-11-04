@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-04 09:54 UTC",
+ "generatedAt": "2026-11-04 11:05 UTC",
  "versions": [
   25,
   26,
@@ -12,8 +12,8 @@
   "not applicable": 670,
   "done": 1859,
   "skipped": 28,
-  "merged": 286,
-  "in progress": 33,
+  "merged": 297,
+  "in progress": 22,
   "open": 3
  },
  "items": [
@@ -3574,7 +3574,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1824,
+     "title": "fontName in CreateTexts, MeasureTexts and the other text commands: find fonts the way GetFontsByName does"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_SetProperties",
@@ -4082,6 +4087,10 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1815,
+     "title": "Project preferences: Reference Levels page and Floor Plan Cut Plane Settings"
+    },
+    {
      "number": 1777,
      "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
     },
@@ -4106,10 +4115,6 @@
      "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
     },
     {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
-    },
-    {
      "number": 1470,
      "title": "Report failed creation transactions instead of returning element results"
     },
@@ -4123,6 +4128,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1820,
+     "title": "Run several commands as one undo step"
+    },
     {
      "number": 1580,
      "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
@@ -5780,10 +5789,6 @@
     {
      "number": 1395,
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
-    },
-    {
-     "number": 1234,
-     "title": "Add GetGDLParametersOfLibraryParts: default GDL parameters of a library part"
     }
    ],
    "issues": []
@@ -5896,6 +5901,10 @@
    "status": "not applicable",
    "reason": "memory management",
    "pullRequests": [
+    {
+     "number": 1826,
+     "title": "CreateMorphs: favoriteName, layerIndex and id per item"
+    },
     {
      "number": 1802,
      "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
@@ -6854,7 +6863,12 @@
    "status": "not applicable",
    "reason": "event handlers, not commands",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1825,
+     "title": "Element notifications: changes and deletions made by Tapir commands are not reported"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_Change",
@@ -6956,7 +6970,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1826,
+     "title": "CreateMorphs: favoriteName, layerIndex and id per item"
+    }
+   ],
    "issues": []
   },
   {
@@ -7145,20 +7164,11 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1775,
-     "title": "CreateStairs: optional baselinePosition and baselineOffset"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
      "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 578,
-     "title": "CreateStairs rejects multi-segment baselines that turn clockwise (-2130313215)"
     }
    ]
   },
@@ -7232,7 +7242,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1826,
+     "title": "CreateMorphs: favoriteName, layerIndex and id per item"
+    }
+   ],
    "issues": []
   },
   {
@@ -7624,14 +7639,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1019,
-     "title": "Add element component commands: list components and read their properties"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7673,14 +7683,9 @@
    "olderNames": [
     "APIDb_GetCompoundInfoStringID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1326,
-     "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7702,6 +7707,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1826,
+     "title": "CreateMorphs: favoriteName, layerIndex and id per item"
+    },
     {
      "number": 1702,
      "title": "Add CreateShells: extruded, revolved and ruled shells"
@@ -7779,14 +7788,9 @@
    "olderNames": [
     "APIAny_GetElemCreatorToolUnIdID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1326,
-     "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7809,11 +7813,20 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1823,
+     "title": "[1/3] Notification clients: selection changes"
+    },
+    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1813,
+     "title": "Notification clients: selection, window and project events"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetElemTypeName",
@@ -7889,14 +7902,9 @@
    "olderNames": [
     "APIDb_GetElementInfoStringID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1326,
-     "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8019,6 +8027,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1809,
+     "title": "ReserveElements/ReleaseElements: report GUIDs that are not elements instead of success"
+    },
+    {
      "number": 1543,
      "title": "[5/6] Add UpdateLibraryPartSections and GetLibraryPart2DPrimitives"
     },
@@ -8027,7 +8039,12 @@
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1808,
+     "title": "ReserveElements reports success for GUIDs that are not elements, and nothing is reserved"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetHotspots",
@@ -8178,12 +8195,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1019,
-     "title": "Add element component commands: list components and read their properties"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8313,10 +8325,6 @@
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    },
-    {
-     "number": 1019,
-     "title": "Add element component commands: list components and read their properties"
     }
    ],
    "issues": []
@@ -8643,12 +8651,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1019,
-     "title": "Add element component commands: list components and read their properties"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9744,7 +9747,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1824,
+     "title": "fontName in CreateTexts, MeasureTexts and the other text commands: find fonts the way GetFontsByName does"
+    }
+   ]
   },
   {
    "id": "ACAPI_FreeCWContourPtr",
@@ -12326,14 +12334,9 @@
    "olderNames": [
     "APIAny_GetElemLibPartUnIdID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1326,
-     "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12583,10 +12586,6 @@
     {
      "number": 1395,
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
-    },
-    {
-     "number": 1234,
-     "title": "Add GetGDLParametersOfLibraryParts: default GDL parameters of a library part"
     }
    ],
    "issues": []
@@ -12985,10 +12984,6 @@
     {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
-    },
-    {
-     "number": 1234,
-     "title": "Add GetGDLParametersOfLibraryParts: default GDL parameters of a library part"
     }
    ],
    "issues": [
@@ -15049,7 +15044,12 @@
    "status": "not applicable",
    "reason": "event handlers, not commands",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1813,
+     "title": "Notification clients: selection, window and project events"
+    }
+   ]
   },
   {
    "id": "ACAPI_Notification_CatchElementReservationChange",
@@ -15117,8 +15117,18 @@
    ],
    "status": "not applicable",
    "reason": "event handlers, not commands",
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 1823,
+     "title": "[1/3] Notification clients: selection changes"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1813,
+     "title": "Notification clients: selection, window and project events"
+    }
+   ]
   },
   {
    "id": "ACAPI_Notification_CatchToolChange",
@@ -16181,7 +16191,12 @@
    "status": "not applicable",
    "reason": "event handlers, not commands",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1813,
+     "title": "Notification clients: selection, window and project events"
+    }
+   ]
   },
   {
    "id": "ACAPI_ProjectOperation_Close",
@@ -16633,7 +16648,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1815,
+     "title": "Project preferences: Reference Levels page and Floor Plan Cut Plane Settings"
+    }
+   ],
    "issues": []
   },
   {
@@ -16745,7 +16765,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1815,
+     "title": "Project preferences: Reference Levels page and Floor Plan Cut Plane Settings"
+    }
+   ],
    "issues": []
   },
   {
@@ -17899,7 +17924,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1823,
+     "title": "[1/3] Notification clients: selection changes"
+    }
+   ],
    "issues": []
   },
   {
@@ -18398,7 +18428,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1808,
+     "title": "ReserveElements reports success for GUIDs that are not elements, and nothing is reserved"
+    }
+   ]
   },
   {
    "id": "ACAPI_Teamwork_GetTeamworkProjectDetails",
@@ -18655,7 +18690,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1809,
+     "title": "ReserveElements/ReleaseElements: report GUIDs that are not elements instead of success"
+    }
+   ],
    "issues": []
   },
   {
@@ -18741,7 +18781,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1809,
+     "title": "ReserveElements/ReleaseElements: report GUIDs that are not elements instead of success"
+    }
+   ],
    "issues": []
   },
   {
@@ -21137,10 +21182,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1326,
-     "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
-    },
-    {
      "number": 1125,
      "title": "Add GetModelExtent command (ACAPI_Element_GetExtent3D)"
     }
@@ -21168,14 +21209,9 @@
     26
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1019,
-     "title": "Add element component commands: list components and read their properties"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -21224,14 +21260,9 @@
     26
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1019,
-     "title": "Add element component commands: list components and read their properties"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -21671,10 +21702,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1326,
-     "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
-    },
     {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
@@ -25965,6 +25992,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1826,
+     "title": "CreateMorphs: favoriteName, layerIndex and id per item"
+    },
+    {
+     "number": 1822,
+     "title": "CreateProfiles: moveVertices edits geometry in place; edgeOverrides take isInnerLine/isCutEndLine"
+    },
+    {
      "number": 1805,
      "title": "[4/6] Grasshopper: Windows tool component (Design Tools)"
     },
@@ -25991,10 +26026,6 @@
     {
      "number": 1776,
      "title": "2D creation commands: optional databaseId to create in a worksheet, detail or layout without opening it"
-    },
-    {
-     "number": 1775,
-     "title": "CreateStairs: optional baselinePosition and baselineOffset"
     },
     {
      "number": 1774,
@@ -27510,10 +27541,6 @@
     {
      "number": 1125,
      "title": "Add GetModelExtent command (ACAPI_Element_GetExtent3D)"
-    },
-    {
-     "number": 1019,
-     "title": "Add element component commands: list components and read their properties"
     }
    ],
    "issues": []
@@ -29121,24 +29148,15 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    },
-    {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
     }
    ],
-   "issues": [
-    {
-     "number": 1223,
-     "title": "Expose ACAPI::Library::GSMObject::GetParameters / GetParameterDescriptions (defaults of a library part)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GSMObject::GetParameterScript",
@@ -29176,24 +29194,15 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    },
-    {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
     }
    ],
-   "issues": [
-    {
-     "number": 1223,
-     "title": "Expose ACAPI::Library::GSMObject::GetParameters / GetParameterDescriptions (defaults of a library part)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GSMObject::GetPreviewPicture",
@@ -29580,10 +29589,6 @@
     {
      "number": 1531,
      "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
-    },
-    {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
     }
    ],
    "issues": []
@@ -29959,14 +29964,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30337,14 +30337,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30461,10 +30456,6 @@
     {
      "number": 1531,
      "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
-    },
-    {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
     }
    ],
    "issues": []
@@ -30496,10 +30487,6 @@
     {
      "number": 1531,
      "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
-    },
-    {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
     },
     {
      "number": 1506,
@@ -30558,10 +30545,6 @@
     {
      "number": 1531,
      "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
-    },
-    {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
     },
     {
      "number": 1506,
@@ -30704,10 +30687,6 @@
      "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
     },
     {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
-    },
-    {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     },
@@ -30726,10 +30705,6 @@
     {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
-    },
-    {
-     "number": 1234,
-     "title": "Add GetGDLParametersOfLibraryParts: default GDL parameters of a library part"
     }
    ],
    "issues": []
@@ -31159,10 +31134,6 @@
      "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
     },
     {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
-    },
-    {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     }
@@ -31261,10 +31232,6 @@
      "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
     },
     {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
-    },
-    {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     },
@@ -31273,12 +31240,7 @@
      "title": "Add GetLibrariesOfLibParts command"
     }
    ],
-   "issues": [
-    {
-     "number": 1223,
-     "title": "Expose ACAPI::Library::GSMObject::GetParameters / GetParameterDescriptions (defaults of a library part)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Library::LibraryManager::GetLibraryByName",
@@ -32178,6 +32140,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1822,
+     "title": "CreateProfiles: moveVertices edits geometry in place; edgeOverrides take isInnerLine/isCutEndLine"
+    },
+    {
      "number": 1805,
      "title": "[4/6] Grasshopper: Windows tool component (Design Tools)"
     },
@@ -32248,10 +32214,6 @@
     {
      "number": 1353,
      "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
-    },
-    {
-     "number": 1326,
-     "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
     },
     {
      "number": 1292,
@@ -38902,6 +38864,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1826,
+     "title": "CreateMorphs: favoriteName, layerIndex and id per item"
+    },
+    {
+     "number": 1822,
+     "title": "CreateProfiles: moveVertices edits geometry in place; edgeOverrides take isInnerLine/isCutEndLine"
+    },
+    {
+     "number": 1815,
+     "title": "Project preferences: Reference Levels page and Floor Plan Cut Plane Settings"
+    },
+    {
      "number": 1805,
      "title": "[4/6] Grasshopper: Windows tool component (Design Tools)"
     },
@@ -38932,10 +38906,6 @@
     {
      "number": 1776,
      "title": "2D creation commands: optional databaseId to create in a worksheet, detail or layout without opening it"
-    },
-    {
-     "number": 1775,
-     "title": "CreateStairs: optional baselinePosition and baselineOffset"
     },
     {
      "number": 1774,
@@ -38978,24 +38948,12 @@
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
     },
     {
-     "number": 1326,
-     "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
     {
-     "number": 1234,
-     "title": "Add GetGDLParametersOfLibraryParts: default GDL parameters of a library part"
-    },
-    {
      "number": 1094,
      "title": "Add GetAllAutoTextKeys and InterpretAutoTexts commands"
-    },
-    {
-     "number": 1019,
-     "title": "Add element component commands: list components and read their properties"
     },
     {
      "number": 995,
@@ -44745,6 +44703,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1823,
+     "title": "[1/3] Notification clients: selection changes"
+    },
+    {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     }
@@ -45836,6 +45798,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1822,
+     "title": "CreateProfiles: moveVertices edits geometry in place; edgeOverrides take isInnerLine/isCutEndLine"
+    },
+    {
      "number": 1805,
      "title": "[4/6] Grasshopper: Windows tool component (Design Tools)"
     },
@@ -45906,10 +45872,6 @@
     {
      "number": 1353,
      "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
-    },
-    {
-     "number": 1326,
-     "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
     },
     {
      "number": 1292,
@@ -49391,6 +49353,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1822,
+     "title": "CreateProfiles: moveVertices edits geometry in place; edgeOverrides take isInnerLine/isCutEndLine"
+    },
+    {
      "number": 1805,
      "title": "[4/6] Grasshopper: Windows tool component (Design Tools)"
     },
@@ -49461,10 +49427,6 @@
     {
      "number": 1353,
      "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
-    },
-    {
-     "number": 1326,
-     "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
     },
     {
      "number": 1292,
@@ -56064,10 +56026,6 @@
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    },
-    {
-     "number": 1019,
-     "title": "Add element component commands: list components and read their properties"
     }
    ],
    "issues": []
@@ -57100,10 +57058,6 @@
      "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
     },
     {
-     "number": 1530,
-     "title": "[2/6] SetLibraryPartParameters"
-    },
-    {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     },
@@ -57126,10 +57080,6 @@
     {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
-    },
-    {
-     "number": 1019,
-     "title": "Add element component commands: list components and read their properties"
     }
    ],
    "issues": []

@@ -1,14 +1,14 @@
 {
- "generatedAt": "2026-11-04 09:54 UTC",
+ "generatedAt": "2026-11-04 11:05 UTC",
  "counts": {
   "done": 568,
   "merged": 147,
-  "open": 3,
+  "open": 8,
   "not applicable": 1
  },
  "parameters": {
-  "all": 667,
-  "json": 48
+  "all": 666,
+  "json": 49
  },
  "items": [
   {
@@ -2559,7 +2559,7 @@
    "id": "GetDetailsOfElements",
    "group": "Element Commands",
    "version": "1.5.7",
-   "brief": "Gets the details of the given elements (geometry parameters etc). Use the optional fields parameter to return only the fields you need and skip the computation of the others (for example floorPlanPolygons). An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true.",
+   "brief": "Gets the details of the given elements (geometry parameters etc). Use the optional fields parameter to return only the fields you need and skip the computation of the others (for example floorPlanPolygons). Use the optional additionalFields parameter to also get the info string, the compound info string, the library part unique ID and the creator tool unique ID. An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true.",
    "status": "done",
    "reason": "",
    "components": [
@@ -2620,13 +2620,15 @@
      "path": "Components/DesignToolsComponents/WallsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 2,
+   "parameters": "json",
+   "parameterCount": 3,
    "coveredParameters": [
     "elements",
     "fields"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "additionalFields"
+   ],
    "pullRequests": [],
    "issues": [
     {
@@ -4526,7 +4528,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 18,
+   "parameterCount": 20,
    "coveredParameters": [
     "stairsData",
     "stairsData.baseLinePoints",
@@ -4547,6 +4549,8 @@
     "stairsData.baseLineVertices.minLandingEndEdgeOffset",
     "stairsData.baseLineVertices.minLandingStartEdgeOffset",
     "stairsData.baseLineVertices.turnType",
+    "stairsData.baselineOffset",
+    "stairsData.baselinePosition",
     "stairsData.id"
    ],
    "pullRequests": [],
@@ -7921,6 +7925,51 @@
    "issues": []
   },
   {
+   "id": "GetComponentsOfElements",
+   "group": "Property Commands",
+   "version": "1.8.1",
+   "brief": "Returns the components of the elements: the building material skins of composite walls, slabs, roofs and shells, and the parts of complex profile walls, beams and columns. The components have their own property values (building material, thickness, area, volume and the properties of the building material); read them with GetPropertyValuesOfElementComponents.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetPropertyDefinitionsOfElementComponents",
+   "group": "Property Commands",
+   "version": "1.8.1",
+   "brief": "Returns the property definitions available on the given element components, optionally filtered to user defined or built-in ones.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetPropertyValuesOfElementComponents",
+   "group": "Property Commands",
+   "version": "1.8.1",
+   "brief": "Returns the property values of the given element components for the given properties, in the shape of GetPropertyValuesOfElements. Use GetComponentsOfElements to list the components of an element.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "SetPropertyValuesOfElementDefaults",
    "group": "Property Commands",
    "version": "1.8.1",
@@ -11089,6 +11138,21 @@
    "issues": []
   },
   {
+   "id": "GetGDLParametersOfLibraryParts",
+   "group": "Library Commands",
+   "version": "1.8.1",
+   "brief": "Gets the default GDL parameters (name, display name, type, array dimensions, value, flags) of the given library parts by name, read from the library part without placing it or changing any defaults. The output is in the format of GetGDLParametersOfElements, without isLocked and possibleValues, which need a placed element.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetMissingLibPartNames",
    "group": "Library Commands",
    "version": "1.8.1",
@@ -11522,6 +11586,21 @@
     "ancestorSubtype",
     "path"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetLibraryPartParameters",
+   "group": "Library Commands",
+   "version": "1.8.1",
+   "brief": "Sets the parameter values, and optionally the parameter descriptions, of loaded library parts, in the format of SetGDLParametersOfElements. Only the given parameters are changed; with merge, the changed list is merged into the parameters of the part instead of replacing them. A library part that is not editable, or with an invalid value given, is left unchanged. Available from Archicad 28.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 8,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
