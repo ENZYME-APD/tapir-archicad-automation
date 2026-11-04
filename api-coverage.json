@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-04 08:35 UTC",
+ "generatedAt": "2026-11-04 09:11 UTC",
  "versions": [
   25,
   26,
@@ -5897,6 +5897,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1802,
+     "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
+    },
+    {
      "number": 1793,
      "title": "Add ModifyRailings: height, bottom offset and home story of railings"
     },
@@ -6872,6 +6876,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1802,
+     "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
+    },
+    {
      "number": 1793,
      "title": "Add ModifyRailings: height, bottom offset and home story of railings"
     },
@@ -7421,6 +7429,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1802,
+     "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
+    },
     {
      "number": 1793,
      "title": "Add ModifyRailings: height, bottom offset and home story of railings"
@@ -8057,6 +8069,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1802,
+     "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
+    },
     {
      "number": 1793,
      "title": "Add ModifyRailings: height, bottom offset and home story of railings"
@@ -25998,6 +26014,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1802,
+     "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
+    },
+    {
      "number": 1793,
      "title": "Add ModifyRailings: height, bottom offset and home story of railings"
     },
@@ -32255,6 +32275,30 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1801,
+     "title": "GetDetailsOfElements: floor plan and section parameters of Stairs"
+    },
+    {
+     "number": 1800,
+     "title": "[1/6] GetDetailsOfElements: floor plan and section settings of doors and windows"
+    },
+    {
+     "number": 1799,
+     "title": "GetDetailsOfElements: floor plan and section parameters of Curtain Walls"
+    },
+    {
+     "number": 1798,
+     "title": "GetDetailsOfElements: floor plan and section settings of Roofs"
+    },
+    {
+     "number": 1797,
+     "title": "GetDetailsOfElements: floor plan parameters of Railings"
+    },
+    {
+     "number": 1796,
+     "title": "GetDetailsOfElements: floor plan and section settings of Shells"
+    },
     {
      "number": 1777,
      "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
@@ -38947,6 +38991,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1802,
+     "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
+    },
     {
      "number": 1793,
      "title": "Add ModifyRailings: height, bottom offset and home story of railings"
@@ -45870,6 +45918,30 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1801,
+     "title": "GetDetailsOfElements: floor plan and section parameters of Stairs"
+    },
+    {
+     "number": 1800,
+     "title": "[1/6] GetDetailsOfElements: floor plan and section settings of doors and windows"
+    },
+    {
+     "number": 1799,
+     "title": "GetDetailsOfElements: floor plan and section parameters of Curtain Walls"
+    },
+    {
+     "number": 1798,
+     "title": "GetDetailsOfElements: floor plan and section settings of Roofs"
+    },
+    {
+     "number": 1797,
+     "title": "GetDetailsOfElements: floor plan parameters of Railings"
+    },
+    {
+     "number": 1796,
+     "title": "GetDetailsOfElements: floor plan and section settings of Shells"
+    },
+    {
      "number": 1777,
      "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
     },
@@ -49392,6 +49464,30 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1801,
+     "title": "GetDetailsOfElements: floor plan and section parameters of Stairs"
+    },
+    {
+     "number": 1800,
+     "title": "[1/6] GetDetailsOfElements: floor plan and section settings of doors and windows"
+    },
+    {
+     "number": 1799,
+     "title": "GetDetailsOfElements: floor plan and section parameters of Curtain Walls"
+    },
+    {
+     "number": 1798,
+     "title": "GetDetailsOfElements: floor plan and section settings of Roofs"
+    },
+    {
+     "number": 1797,
+     "title": "GetDetailsOfElements: floor plan parameters of Railings"
+    },
+    {
+     "number": 1796,
+     "title": "GetDetailsOfElements: floor plan and section settings of Shells"
+    },
     {
      "number": 1777,
      "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
