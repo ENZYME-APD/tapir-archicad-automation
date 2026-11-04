@@ -154,6 +154,14 @@
     },
     {
       "id": "placement on the roof slopes",
+      "save": {
+        "n1x": "openingTransformations[1].zAxis.x",
+        "n1y": "openingTransformations[1].zAxis.y",
+        "n1z": "openingTransformations[1].zAxis.z",
+        "n2x": "openingTransformations[2].zAxis.x",
+        "n2y": "openingTransformations[2].zAxis.y",
+        "n2z": "openingTransformations[2].zAxis.z"
+      },
       "command": "GetOpeningTransformations",
       "creates": false,
       "params": {
@@ -178,6 +186,11 @@
           "path": "openingTransformations[2].origin.z",
           "gt": 3.0,
           "name": "multi-plane, second: above the eaves' level"
+        },
+        {
+          "expr": "(${n1x}-${n2x})*(${n1x}-${n2x}) + (${n1y}-${n2y})*(${n1y}-${n2y}) + (${n1z}-${n2z})*(${n1z}-${n2z})",
+          "gt": 0.1,
+          "name": "multi-plane skylights have different surface normals"
         }
       ]
     }
