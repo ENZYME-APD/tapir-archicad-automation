@@ -4,7 +4,7 @@ Leave out both filters to list every MEP element. Requires Archicad 28 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('GetMEPElements', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetMEPElements', {
     'elementTypes': ['RoutingElement', 'Terminal'],
     'domains': ['Ventilation', 'Piping']
-})
+}))

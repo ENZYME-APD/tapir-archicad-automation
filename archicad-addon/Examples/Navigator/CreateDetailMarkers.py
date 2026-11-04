@@ -12,5 +12,6 @@ details = aclib.RunTapirCommand ('CreateDetailMarkers', {
         'id': 'D1'
     }]
 })['elements']
+aclib.PrintJson (details)
 
-aclib.RunTapirCommand ('DeleteElements', {'elements': details}, debug = False)
+aclib.RunTapirCommand ('DeleteElements', {'elements': details})

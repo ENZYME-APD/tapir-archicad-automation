@@ -10,11 +10,11 @@ if not physicalSystems:
     raise SystemExit ('No editable MEP physical system in the project.')
 physicalSystem = physicalSystems[0]
 
-aclib.RunTapirCommand ('ModifyMEPPhysicalSystems', {
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyMEPPhysicalSystems', {
     'physicalSystemsData': [{'physicalSystemId': physicalSystem['physicalSystemId'], 'name': physicalSystem['name'] + ' (renamed)'}]
-})
+}))
 aclib.RunTapirCommand ('GetMEPSystemGroups', {})
 
-aclib.RunTapirCommand ('ModifyMEPPhysicalSystems', {
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyMEPPhysicalSystems', {
     'physicalSystemsData': [{'physicalSystemId': physicalSystem['physicalSystemId'], 'name': physicalSystem['name']}]
-})
+}))

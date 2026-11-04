@@ -2,9 +2,9 @@
 import aclib
 
 current = aclib.RunTapirCommand ('GetCurrentWindowType')
-firstStory = aclib.RunTapirCommand ('GetStories', debug = False)['firstStory']
+firstStory = aclib.RunTapirCommand ('GetStories')['firstStory']
 
-aclib.RunTapirCommand ('ChangeWindow', {'windowType': 'FloorPlan', 'storyIndex': firstStory})
+aclib.PrintJson (aclib.RunTapirCommand ('ChangeWindow', {'windowType': 'FloorPlan', 'storyIndex': firstStory}))
 
 if 'databaseId' in current:
-    aclib.RunTapirCommand ('ChangeWindow', {'databaseId': current['databaseId']})
+    aclib.PrintJson (aclib.RunTapirCommand ('ChangeWindow', {'databaseId': current['databaseId']}))

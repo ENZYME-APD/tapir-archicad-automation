@@ -4,4 +4,4 @@ Requires Archicad 27 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('GetCurrentAnalyticalModel', {})
+aclib.PrintJson (aclib.RunTapirCommand ('GetCurrentAnalyticalModel', {}))

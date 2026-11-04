@@ -4,7 +4,7 @@ The library part is created in the embedded library by the script and deleted at
 """
 import aclib
 
-doors = aclib.RunTapirCommand ('GetAvailableLibraryParts', {'filterByTypeId': 'Door'}, debug = False)['libraryParts']
+doors = aclib.RunTapirCommand ('GetAvailableLibraryParts', {'filterByTypeId': 'Door'})['libraryParts']
 if not doors:
     raise SystemExit ('No door library part is loaded.')
 
@@ -17,15 +17,15 @@ createdPart = aclib.RunTapirCommand ('CreateLibraryParts', {
         'script3D': 'BLOCK A, B, 1'
     }],
     'overwriteExisting': True
-}, debug = False)['libraryParts'][0]
+})['libraryParts'][0]
 if 'error' in createdPart:
     raise SystemExit (createdPart['error']['message'])
 libraryPartName = 'Tapir Example Box.gsm'
 
-aclib.RunTapirCommand ('SetLibraryPartPictures', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetLibraryPartPictures', {
     'name': libraryPartName,
     'copy2DSymbolFrom': doors[0]['fileName'],
     'deletePreviewPicture': True
-})
+}))
 
-aclib.RunTapirCommand ('DeleteEmbeddedLibraryItems', {'embeddedLibraryItems': [{'path': createdPart['path']}]}, debug = False)
+aclib.RunTapirCommand ('DeleteEmbeddedLibraryItems', {'embeddedLibraryItems': [{'path': createdPart['path']}]})

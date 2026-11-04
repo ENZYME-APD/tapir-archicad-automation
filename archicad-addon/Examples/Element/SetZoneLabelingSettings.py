@@ -4,9 +4,9 @@ Requires Archicad 28 or later.
 """
 import aclib
 
-original = aclib.RunTapirCommand ('GetZoneLabelingSettings', {}, debug = False)
+original = aclib.RunTapirCommand ('GetZoneLabelingSettings', {})
 
-aclib.RunTapirCommand ('SetZoneLabelingSettings', {'automaticLabeling': not original['isAutomaticLabelingOn']})
+aclib.PrintJson (aclib.RunTapirCommand ('SetZoneLabelingSettings', {'automaticLabeling': not original['isAutomaticLabelingOn']}))
 aclib.RunTapirCommand ('GetZoneLabelingSettings', {})
 
-aclib.RunTapirCommand ('SetZoneLabelingSettings', {'automaticLabeling': original['isAutomaticLabelingOn']}, debug = False)
+aclib.RunTapirCommand ('SetZoneLabelingSettings', {'automaticLabeling': original['isAutomaticLabelingOn']})

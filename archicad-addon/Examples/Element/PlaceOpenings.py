@@ -11,7 +11,7 @@ wall = aclib.RunTapirCommand ('CreateWalls', {'wallsData': [{
     'height': 3.0
 }]})['elements'][0]
 
-aclib.RunTapirCommand ('PlaceOpenings', {'openingsData': [
+aclib.PrintJson (aclib.RunTapirCommand ('PlaceOpenings', {'openingsData': [
     {
         'parentElementId': wall['elementId'],
         'point': {'x': 2.0, 'y': 0.0, 'z': 1.0}
@@ -22,4 +22,4 @@ aclib.RunTapirCommand ('PlaceOpenings', {'openingsData': [
         'extrusionParameters': {'linkedStatus': 'NotLinked', 'width': 1.2, 'height': 0.6},
         'floorPlanParameters': {'floorPlanDisplayMode': 'Projected'}
     }
-]})
+]}))

@@ -10,14 +10,14 @@ created = aclib.RunTapirCommand ('CreateGraphicOverrideRules', {
         {'name': 'Tapir Example Rule ' + str (i), 'ruleGroupName': group, 'criterion': {'elementType': 'Wall'}, 'style': {'lineMarkerTextPen': i}}
         for i in (1, 2)
     ]
-}, debug = False)['graphicOverrideRuleIds']
+})['graphicOverrideRuleIds']
 rules = [rule for rule in created if 'graphicOverrideRuleId' in rule]
 if len (rules) != 2:
     raise SystemExit ('Could not create the rules.')
 
-aclib.RunTapirCommand ('SetGraphicOverrideRuleOrder', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetGraphicOverrideRuleOrder', {
     'graphicOverrideRuleGroups': [{'name': group, 'graphicOverrideRuleIds': [rules[1], rules[0]]}]
-})
+}))
 
-aclib.RunTapirCommand ('DeleteGraphicOverrideRules', {'graphicOverrideRuleIds': rules}, debug = False)
-aclib.RunTapirCommand ('DeleteGraphicOverrideRuleGroups', {'ruleGroupNames': [group]}, debug = False)
+aclib.RunTapirCommand ('DeleteGraphicOverrideRules', {'graphicOverrideRuleIds': rules})
+aclib.RunTapirCommand ('DeleteGraphicOverrideRuleGroups', {'ruleGroupNames': [group]})

@@ -11,6 +11,6 @@ layouts = [item for item in AllItems (layoutBook) if item['type'] == 'LayoutItem
 if not layouts:
     raise SystemExit ('No layout in the Layout Book.')
 
-aclib.RunTapirCommand ('GetDatabaseIdFromNavigatorItemId', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetDatabaseIdFromNavigatorItemId', {
     'navigatorItemIds': [{'navigatorItemId': layout['navigatorItemId']} for layout in layouts]
-})
+}))

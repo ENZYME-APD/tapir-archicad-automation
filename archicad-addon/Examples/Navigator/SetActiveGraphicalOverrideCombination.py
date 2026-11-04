@@ -6,8 +6,8 @@ import aclib
 
 previous = aclib.RunTapirCommand ('GetActiveGraphicalOverrideCombination')
 
-aclib.RunTapirCommand ('SetActiveGraphicalOverrideCombination', {'name': 'No Overrides'})
+aclib.PrintJson (aclib.RunTapirCommand ('SetActiveGraphicalOverrideCombination', {'name': 'No Overrides'}))
 aclib.RunTapirCommand ('GetActiveGraphicalOverrideCombination')
 
 if 'combinationId' in previous:
-    aclib.RunTapirCommand ('SetActiveGraphicalOverrideCombination', {'combinationId': previous['combinationId']})
+    aclib.PrintJson (aclib.RunTapirCommand ('SetActiveGraphicalOverrideCombination', {'combinationId': previous['combinationId']}))

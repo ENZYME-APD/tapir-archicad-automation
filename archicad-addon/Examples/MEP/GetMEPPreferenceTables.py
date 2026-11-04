@@ -4,7 +4,7 @@ The angle set and the transition tables are returned from Archicad 29. Requires 
 """
 import aclib
 
-aclib.RunTapirCommand ('GetMEPPreferenceTables', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetMEPPreferenceTables', {
     'domain': 'Piping',
     'includeFittingTables': True
-})
+}))

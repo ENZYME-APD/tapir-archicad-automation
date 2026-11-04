@@ -7,7 +7,7 @@ import aclib
 original = aclib.RunTapirCommand ('GetDocumentFrom3DDefaults')
 
 # Only the given fields change.
-aclib.RunTapirCommand ('SetDocumentFrom3DDefaults', {'vectSunShadow': True})
+aclib.PrintJson (aclib.RunTapirCommand ('SetDocumentFrom3DDefaults', {'vectSunShadow': True}))
 aclib.RunTapirCommand ('GetDocumentFrom3DDefaults')
 
-aclib.RunTapirCommand ('SetDocumentFrom3DDefaults', original)
+aclib.PrintJson (aclib.RunTapirCommand ('SetDocumentFrom3DDefaults', original))

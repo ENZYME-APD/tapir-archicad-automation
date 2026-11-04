@@ -29,6 +29,10 @@ jobs:
       uses: actions/checkout@v4
     - name: Generate the docs
       run: python3 tools/generate_addon_docs.py
+    # One example per command, at archicad-addon/Examples/<Group>/<CommandName>.py;
+    # the docs show it in the command's Example popdown.
+    - name: Check the examples
+      run: python3 tools/check_examples.py
 
   # The Archicad versions to build, from archicad-addon/devkits.json (the one
   # list of supported versions; tools/devkits.py validates it).

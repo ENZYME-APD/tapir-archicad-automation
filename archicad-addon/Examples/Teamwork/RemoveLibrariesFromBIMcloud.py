@@ -9,8 +9,8 @@ serverUrl = 'https://bimcloud.example.com:22000'
 parentPath = 'Libraries'
 libraryName = 'My Library'
 
-aclib.RunTapirCommand ('RemoveLibrariesFromBIMcloud', {
+aclib.PrintJson (aclib.RunTapirCommand ('RemoveLibrariesFromBIMcloud', {
     'libraryNames': [libraryName],
     'serverUrl': serverUrl,
     'parentPath': parentPath
-})
+}))

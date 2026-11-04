@@ -4,8 +4,8 @@ Opens a new window in Archicad. Requires Archicad 27 or later.
 """
 import aclib
 
-doors = aclib.RunTapirCommand ('GetAvailableLibraryParts', {'filterByTypeId': 'Door'}, debug = False)['libraryParts']
+doors = aclib.RunTapirCommand ('GetAvailableLibraryParts', {'filterByTypeId': 'Door'})['libraryParts']
 if not doors:
     raise SystemExit ('No door library part is loaded.')
 
-aclib.RunTapirCommand ('OpenLibraryPartInEditor', {'name': doors[0]['fileName']})
+aclib.PrintJson (aclib.RunTapirCommand ('OpenLibraryPartInEditor', {'name': doors[0]['fileName']}))

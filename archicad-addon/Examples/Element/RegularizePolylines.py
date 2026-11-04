@@ -4,7 +4,7 @@ The result is in the format of CreatePolylines; nothing is created.
 """
 import aclib
 
-aclib.RunTapirCommand ('RegularizePolylines', {
+aclib.PrintJson (aclib.RunTapirCommand ('RegularizePolylines', {
     'polylines': [{
         'coordinates': [
             {'x': 0.0, 'y': 0.0},
@@ -14,4 +14,4 @@ aclib.RunTapirCommand ('RegularizePolylines', {
         ]
     }],
     'withAncestry': True
-})
+}))

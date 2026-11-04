@@ -9,11 +9,11 @@ slab = aclib.RunTapirCommand ('CreateSlabs', {'slabsData': [{
     'polygonCoordinates': [{'x': 0.0, 'y': 0.0}, {'x': 4.0, 'y': 0.0}, {'x': 4.0, 'y': 4.0}, {'x': 0.0, 'y': 4.0}]
 }]})['elements'][0]
 
-aclib.RunTapirCommand ('ModifySlabs', {'slabsWithDetails': [{
+aclib.PrintJson (aclib.RunTapirCommand ('ModifySlabs', {'slabsWithDetails': [{
     'elementId': slab['elementId'],
     'zCoordinate': 0.5,
     'structureType': 'Basic',
     'thickness': 0.3,
     'polygonOutline': [{'x': 0.0, 'y': 0.0}, {'x': 6.0, 'y': 0.0}, {'x': 6.0, 'y': 4.0}, {'x': 0.0, 'y': 4.0}]
-}]})
+}]}))
 aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': [slab], 'fields': ['details']})

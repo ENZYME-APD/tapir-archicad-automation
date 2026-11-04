@@ -4,4 +4,4 @@ Closes the project. Save it first.
 """
 import aclib
 
-aclib.RunTapirCommand ('CloseProject')
+aclib.PrintJson (aclib.RunTapirCommand ('CloseProject'))

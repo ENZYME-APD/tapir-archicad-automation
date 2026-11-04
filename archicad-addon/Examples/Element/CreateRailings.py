@@ -4,7 +4,7 @@ The posts, rails, handrails and infill come from the Railing tool defaults, or f
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateRailings', {'railingsData': [{
+aclib.PrintJson (aclib.RunTapirCommand ('CreateRailings', {'railingsData': [{
     'coordinates': [
         {'x': 0.0, 'y': 0.0},
         {'x': 0.0, 'y': 2.0},
@@ -14,4 +14,4 @@ aclib.RunTapirCommand ('CreateRailings', {'railingsData': [{
     'floorIndex': 0,
     'bottomOffset': 0.0,
     'height': 1.1
-}]})
+}]}))

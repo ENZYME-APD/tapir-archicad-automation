@@ -1,7 +1,7 @@
 """Lists the elements of the current database in the order they were created, with GetElementsInCreationOrder."""
 import aclib
 
-elements = aclib.RunTapirCommand ('GetElementsInCreationOrder', {}, debug = False)['elements']
+elements = aclib.RunTapirCommand ('GetElementsInCreationOrder', {})['elements']
 if not elements:
     raise SystemExit ('No element in the current database.')
 

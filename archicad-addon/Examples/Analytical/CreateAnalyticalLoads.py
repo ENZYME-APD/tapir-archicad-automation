@@ -15,7 +15,7 @@ curve = aclib.RunTapirCommand ('GetAnalyticalMemberDetails', {
     'elements': [{'elementId': memberId}]
 })['analyticalMembers'][0]['curveMember']['curve']
 
-aclib.RunTapirCommand ('CreateAnalyticalLoads', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateAnalyticalLoads', {
     'loads': [
         {
             'pointLoad': {
@@ -43,4 +43,4 @@ aclib.RunTapirCommand ('CreateAnalyticalLoads', {
             'customData': {'curve': [curve]}
         }
     ]
-})
+}))

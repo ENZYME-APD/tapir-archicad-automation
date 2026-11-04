@@ -4,7 +4,7 @@ height is the character height in millimeters (paper size).
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateTexts', {'textsData': [
+aclib.PrintJson (aclib.RunTapirCommand ('CreateTexts', {'textsData': [
     {
         'coordinate': {'x': 0.0, 'y': 0.0, 'z': 0.0},
         'text': 'Created by Tapir',
@@ -18,4 +18,4 @@ aclib.RunTapirCommand ('CreateTexts', {'textsData': [
         ],
         'style': {'height': 2.5, 'justification': 'Left'}
     }
-]})
+]}))

@@ -6,12 +6,12 @@ import aclib
 
 aclib.RunTapirCommand ('CreateAttributeFolders', {
     'attributeFolders': [{'attributeType': 'Layer', 'path': ['Tapir Example Folder']}]
-}, debug = False)
-
-aclib.RunTapirCommand ('RenameAttributeFolders', {
-    'attributeFolders': [{'attributeType': 'Layer', 'path': ['Tapir Example Folder'], 'newName': 'Tapir Renamed Folder'}]
 })
+
+aclib.PrintJson (aclib.RunTapirCommand ('RenameAttributeFolders', {
+    'attributeFolders': [{'attributeType': 'Layer', 'path': ['Tapir Example Folder'], 'newName': 'Tapir Renamed Folder'}]
+}))
 
 aclib.RunTapirCommand ('DeleteAttributeFolders', {
     'attributeFolders': [{'attributeType': 'Layer', 'path': ['Tapir Renamed Folder']}]
-}, debug = False)
+})

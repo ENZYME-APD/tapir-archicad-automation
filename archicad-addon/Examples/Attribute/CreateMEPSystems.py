@@ -6,9 +6,9 @@ the script is run again.
 import aclib
 
 def FirstAttributeId (attributeType):
-    return {'attributeId': aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': attributeType}, debug = False)['attributes'][0]['attributeId']}
+    return {'attributeId': aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': attributeType})['attributes'][0]['attributeId']}
 
-aclib.RunTapirCommand ('CreateMEPSystems', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateMEPSystems', {
     'mepSystemDataArray': [{
         'name': 'Tapir Example Piping System',
         'domain': 'Piping',
@@ -22,4 +22,4 @@ aclib.RunTapirCommand ('CreateMEPSystems', {
         'insulationMaterialId': FirstAttributeId ('Surface')
     }],
     'overwriteExisting': True
-})
+}))

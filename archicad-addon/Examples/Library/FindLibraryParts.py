@@ -4,7 +4,7 @@ Requires Archicad 28 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('FindLibraryParts', {
+aclib.PrintJson (aclib.RunTapirCommand ('FindLibraryParts', {
     'kind': 'Object',
     'nameContains': 'door'
-})
+}))

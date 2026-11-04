@@ -10,9 +10,9 @@ option = aclib.RunTapirCommand ('CreateDesignOptions', {
     'designOptions': [{'name': 'Option A', 'id': 'A', 'ownerSetName': setName}]
 })['designOptionIdsOrErrors'][0]
 
-aclib.RunTapirCommand ('RenameDesignOptions', {
+aclib.PrintJson (aclib.RunTapirCommand ('RenameDesignOptions', {
     'designOptions': [{'designOptionId': option['designOptionId'], 'name': 'Option A (renamed)', 'id': 'A2'}]
-})
+}))
 aclib.RunTapirCommand ('GetDesignOptions')
 
 sets = aclib.RunTapirCommand ('GetDesignOptionSets')['designOptionSets']

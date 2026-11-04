@@ -18,7 +18,7 @@ if not freeAngles:
 key = {'referenceId': referenceId, 'angle': freeAngles[0]}
 aclib.RunTapirCommand ('AddMEPPreferenceTableRows', {'tableId': {'guid': table['guid']}, 'rows': [{'key': key}]})
 
-aclib.RunTapirCommand ('DeleteMEPPreferenceTableRows', {
+aclib.PrintJson (aclib.RunTapirCommand ('DeleteMEPPreferenceTableRows', {
     'tableId': {'guid': table['guid']},
     'keys': [key]
-})
+}))

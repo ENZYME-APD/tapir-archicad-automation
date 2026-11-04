@@ -4,7 +4,7 @@ The new Pen Table is not activated. Overwrites the Pen Table of the same name wh
 """
 import aclib
 
-aclib.RunTapirCommand ('CreatePenTables', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreatePenTables', {
     'penTableDataArray': [{
         'name': 'Tapir Example Pen Table',
         'isActiveForModel': False,
@@ -12,4 +12,4 @@ aclib.RunTapirCommand ('CreatePenTables', {
         'pens': [{'index': 1, 'color': {'red': 1.0, 'green': 0.0, 'blue': 0.0}, 'width': 0.35, 'description': 'Red'}]
     }],
     'overwriteExisting': True
-})
+}))

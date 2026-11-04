@@ -14,4 +14,4 @@ documents = [item for item in AllItems (projectMap) if item['type'] == 'Document
 if not documents:
     raise SystemExit ('No 3D Document in the Project Map.')
 
-aclib.RunTapirCommand ('Get3DDocumentSettings', {'navigatorItemId': documents[0]['navigatorItemId']})
+aclib.PrintJson (aclib.RunTapirCommand ('Get3DDocumentSettings', {'navigatorItemId': documents[0]['navigatorItemId']}))

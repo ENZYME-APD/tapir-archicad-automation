@@ -8,6 +8,6 @@ layouts = aclib.RunTapirCommand ('GetDatabases', {'types': ['Layout']})['databas
 if not layouts:
     raise SystemExit ('No layout in the project.')
 
-aclib.RunTapirCommand ('GetCurrentRevisionChangesOfLayouts', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetCurrentRevisionChangesOfLayouts', {
     'layoutDatabaseIds': [{'databaseId': layout['databaseId']} for layout in layouts]
-})
+}))

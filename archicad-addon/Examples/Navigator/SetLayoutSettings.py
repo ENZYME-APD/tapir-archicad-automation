@@ -13,11 +13,11 @@ original = aclib.RunTapirCommand ('GetLayoutSettings', {
     'layoutDatabaseIds': [{'databaseId': layoutDatabaseId}]
 })['layoutSettings'][0]
 
-aclib.RunTapirCommand ('SetLayoutSettings', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetLayoutSettings', {
     'layoutsData': [{'layoutDatabaseId': layoutDatabaseId, 'layoutName': original['layoutName'] + ' (Tapir)'}]
-})
+}))
 aclib.RunTapirCommand ('GetLayoutSettings', {'layoutDatabaseIds': [{'databaseId': layoutDatabaseId}]})
 
-aclib.RunTapirCommand ('SetLayoutSettings', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetLayoutSettings', {
     'layoutsData': [{'layoutDatabaseId': layoutDatabaseId, 'layoutName': original['layoutName']}]
-})
+}))

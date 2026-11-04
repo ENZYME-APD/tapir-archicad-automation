@@ -8,6 +8,6 @@ routes = aclib.RunTapirCommand ('GetMEPElements', {'elementTypes': ['RoutingElem
 if not routes:
     raise SystemExit ('No MEP route in the project.')
 
-aclib.RunTapirCommand ('GetMEPRoutingElements', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetMEPRoutingElements', {
     'elements': [{'elementId': route['elementId']} for route in routes[:3]]
-})
+}))

@@ -8,9 +8,9 @@ import aclib
 
 exportPath = os.path.join (tempfile.mkdtemp (prefix = 'TapirBCF_'), 'issues.bcfzip')
 
-aclib.RunTapirCommand ('ExportIssuesToBCF', {
+aclib.PrintJson (aclib.RunTapirCommand ('ExportIssuesToBCF', {
     'exportPath': exportPath,
     'useExternalId': False,
     'alignBySurveyPoint': True
-})
+}))
 print ('Exported to', exportPath)

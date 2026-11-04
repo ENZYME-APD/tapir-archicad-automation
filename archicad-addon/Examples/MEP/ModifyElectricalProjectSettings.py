@@ -4,13 +4,13 @@ Reads the settings back, then removes both again. Requires Archicad 30 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('ModifyElectricalProjectSettings', {
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyElectricalProjectSettings', {
     'wiringTypesToAdd': [{'name': 'Tapir Cu 2.5', 'crossSectionalArea': 2.5}],
     'loadClassificationsToAdd': [{'name': 'Tapir Kitchen', 'demandFactor': 0.7}]
-})
+}))
 aclib.RunTapirCommand ('GetElectricalProjectSettings', {})
 
-aclib.RunTapirCommand ('ModifyElectricalProjectSettings', {
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyElectricalProjectSettings', {
     'wiringTypesToRemove': ['Tapir Cu 2.5'],
     'loadClassificationsToRemove': ['Tapir Kitchen']
-})
+}))

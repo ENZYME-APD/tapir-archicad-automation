@@ -7,12 +7,12 @@ import tempfile
 
 import aclib
 
-wallFavorites = aclib.RunTapirCommand ('GetFavoritesByType', {'elementType': 'Wall'}, debug = False)['favorites']
+wallFavorites = aclib.RunTapirCommand ('GetFavoritesByType', {'elementType': 'Wall'})['favorites']
 if not wallFavorites:
     raise SystemExit ('The project has no Wall Favorite.')
 
 with tempfile.TemporaryDirectory () as tempDir:
     favoritesFile = os.path.join (tempDir, 'WallFavorites.prefs')
-    aclib.RunTapirCommand ('ExportFavorites', {'path': favoritesFile, 'names': wallFavorites}, debug = False)
+    aclib.RunTapirCommand ('ExportFavorites', {'path': favoritesFile, 'names': wallFavorites})
 
-    aclib.RunTapirCommand ('ReadFavoritesFile', {'path': favoritesFile})
+    aclib.PrintJson (aclib.RunTapirCommand ('ReadFavoritesFile', {'path': favoritesFile}))

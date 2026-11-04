@@ -8,6 +8,6 @@ loadGroups = [g for g in aclib.RunTapirCommand ('GetAnalyticalLoadGroups', {})['
 if not loadGroups:
     raise SystemExit ('No load group in the project.')
 
-aclib.RunTapirCommand ('GetAnalyticalLoadCases', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetAnalyticalLoadCases', {
     'loadGroupId': loadGroups[0]['loadGroupId']
-})
+}))

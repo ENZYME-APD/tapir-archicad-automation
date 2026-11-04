@@ -4,12 +4,12 @@ Overwrites the layer combination of the same name when the script is run again.
 """
 import aclib
 
-layers = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'Layer'}, debug = False)['attributes']
+layers = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'Layer'})['attributes']
 layers = aclib.RunTapirCommand ('GetLayers', {
     'attributeIds': [{'attributeId': layer['attributeId']} for layer in layers]
-}, debug = False)['layers']
+})['layers']
 
-aclib.RunTapirCommand ('CreateLayerCombinations', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateLayerCombinations', {
     'layerCombinationDataArray': [{
         'name': 'Tapir Example Layer Combination',
         'layers': [{
@@ -21,4 +21,4 @@ aclib.RunTapirCommand ('CreateLayerCombinations', {
         } for layer in layers if 'attributeId' in layer]
     }],
     'overwriteExisting': True
-})
+}))

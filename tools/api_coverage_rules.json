@@ -28,6 +28,7 @@
             "ACAPI_GetExtensionInstance": "add-on infrastructure",
             "ACAPI_GetPreferences": "add-on preferences",
             "ACAPI_SetPreferences": "add-on preferences",
+            "ACAPI_Attribute_GetCurrentAttributeSetReader": "a C++ attribute reader the add-on passes to its own 3D model export (EXPGetModel); what it reads (surfaces, pens, fills, line types, building materials) the attribute commands already return, and its texture data holds only the image name",
             "ACAPI_RegisterModelessWindow": "user interface",
             "ACAPI_UnregisterModelessWindow": "user interface",
             "ACAPI_Markup_PDFImportOptions": "user interface",

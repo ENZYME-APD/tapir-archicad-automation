@@ -5,7 +5,7 @@ Requires Archicad 29 or later.
 import aclib
 
 setName = 'Tapir Example Set'
-aclib.RunTapirCommand ('CreateDesignOptionSets', {'designOptionSets': [setName]})
+aclib.PrintJson (aclib.RunTapirCommand ('CreateDesignOptionSets', {'designOptionSets': [setName]}))
 
 sets = aclib.RunTapirCommand ('GetDesignOptionSets')['designOptionSets']
 aclib.RunTapirCommand ('DeleteDesignOptionSets', {

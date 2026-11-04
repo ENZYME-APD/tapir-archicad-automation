@@ -10,5 +10,5 @@ libraries = aclib.RunTapirCommand ('GetLibraries')['libraries']
 originalLocalLibraries = [{'path': library['path']} for library in libraries if library['type'] == 'LocalLibrary']
 
 with tempfile.TemporaryDirectory () as libraryFolder:
-    aclib.RunTapirCommand ('AddLibraries', {'libraries': [{'path': libraryFolder}]})
+    aclib.PrintJson (aclib.RunTapirCommand ('AddLibraries', {'libraries': [{'path': libraryFolder}]}))
     aclib.RunTapirCommand ('SetLibraries', {'libraries': originalLocalLibraries})

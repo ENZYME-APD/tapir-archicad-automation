@@ -5,8 +5,8 @@ scenes = aclib.RunTapirCommand ('GetRenderingScenes')
 if not scenes['sceneNames']:
     raise SystemExit ('No rendering scene in the project.')
 
-aclib.RunTapirCommand ('SetCurrentRenderingScene', {'sceneName': scenes['sceneNames'][-1]})
+aclib.PrintJson (aclib.RunTapirCommand ('SetCurrentRenderingScene', {'sceneName': scenes['sceneNames'][-1]}))
 aclib.RunTapirCommand ('GetRenderingScenes')
 
 if 'currentSceneName' in scenes:
-    aclib.RunTapirCommand ('SetCurrentRenderingScene', {'sceneName': scenes['currentSceneName']})
+    aclib.PrintJson (aclib.RunTapirCommand ('SetCurrentRenderingScene', {'sceneName': scenes['currentSceneName']}))

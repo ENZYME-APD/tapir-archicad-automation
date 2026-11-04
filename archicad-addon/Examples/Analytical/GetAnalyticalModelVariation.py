@@ -4,4 +4,4 @@ Without 'analyticalModelId' the model of the current view is used, from Archicad
 """
 import aclib
 
-aclib.RunTapirCommand ('GetAnalyticalModelVariation', {})
+aclib.PrintJson (aclib.RunTapirCommand ('GetAnalyticalModelVariation', {}))

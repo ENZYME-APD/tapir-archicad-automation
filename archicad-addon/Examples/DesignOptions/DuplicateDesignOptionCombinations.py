@@ -11,6 +11,7 @@ combination = aclib.RunTapirCommand ('CreateDesignOptionCombinations', {
 duplicates = aclib.RunTapirCommand ('DuplicateDesignOptionCombinations', {
     'designOptionCombinations': [{'designOptionCombinationId': combination['designOptionCombinationId']}]
 })['designOptionCombinationIdsOrErrors']
+aclib.PrintJson (duplicates)
 aclib.RunTapirCommand ('GetDesignOptionCombinations')
 
 aclib.RunTapirCommand ('DeleteDesignOptionCombinations', {

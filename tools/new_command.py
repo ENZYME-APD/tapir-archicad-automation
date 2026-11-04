@@ -512,8 +512,8 @@ def gen_example (cmd, input_schema, common):
     # Examples/<GroupFolder>/<CommandName>.py, a module docstring the docs show as the example's description,
     # then top-level code calling the command through aclib.
     params = placeholder (input_schema, common) if input_schema else None
-    call = (f"aclib.RunTapirCommand ('{cmd['name']}', {json.dumps (params, indent=4)})" if params is not None
-            else f"aclib.RunTapirCommand ('{cmd['name']}')")
+    call = (f"aclib.PrintJson (aclib.RunTapirCommand ('{cmd['name']}', {json.dumps (params, indent=4)}))" if params is not None
+            else f"aclib.PrintJson (aclib.RunTapirCommand ('{cmd['name']}'))")
     req = f"\n\nRequires Archicad {cmd['requires']} or later.\n" if cmd.get ('requires') else ''
     placeholderNote = '# Replace the placeholder values with real ones from the project.\n' if params is not None else ''
     return (f'"""Runs {cmd["name"]} and prints its response.{req}"""\n'

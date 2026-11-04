@@ -9,11 +9,11 @@ zoom = aclib.RunTapirCommand ('GetView2DTransformations')['transformations'][0][
 width = zoom['xMax'] - zoom['xMin']
 height = zoom['yMax'] - zoom['yMin']
 
-aclib.RunTapirCommand ('SetZoom', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetZoom', {
     'zoomBox': {
         'xMin': zoom['xMin'] + width / 4,
         'yMin': zoom['yMin'] + height / 4,
         'xMax': zoom['xMax'] - width / 4,
         'yMax': zoom['yMax'] - height / 4
     }
-})
+}))

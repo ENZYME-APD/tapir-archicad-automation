@@ -10,4 +10,4 @@ if not issues:
 
 for issue in issues:
     for attachmentType in ['Creation', 'Highlight', 'Deletion', 'Modification']:
-        aclib.RunTapirCommand ('GetElementsAttachedToIssue', {'issueId': issue['issueId'], 'type': attachmentType})
+        aclib.PrintJson (aclib.RunTapirCommand ('GetElementsAttachedToIssue', {'issueId': issue['issueId'], 'type': attachmentType}))

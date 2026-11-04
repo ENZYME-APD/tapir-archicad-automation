@@ -11,6 +11,6 @@ physicalSystemId = aclib.RunTapirCommand ('CreateMEPPhysicalSystems', {
     'physicalSystemsData': [{'systemGroupId': systemGroupId, 'name': 'Boiler Flow'}]
 })['physicalSystems'][0]['physicalSystemId']
 
-aclib.RunTapirCommand ('DeleteMEPPhysicalSystems', {
+aclib.PrintJson (aclib.RunTapirCommand ('DeleteMEPPhysicalSystems', {
     'physicalSystems': [{'physicalSystemId': physicalSystemId}]
-})
+}))

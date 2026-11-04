@@ -23,8 +23,8 @@ loads = aclib.RunTapirCommand ('CreateAnalyticalLoads', {
     }]
 })['elements']
 
-aclib.RunTapirCommand ('GetAnalyticalLoads', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetAnalyticalLoads', {
     'elements': loads
-})
+}))
 
 aclib.RunTapirCommand ('DeleteElements', {'elements': loads})

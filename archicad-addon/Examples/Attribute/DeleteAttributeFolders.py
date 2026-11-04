@@ -6,5 +6,5 @@ import aclib
 
 folder = {'attributeType': 'Layer', 'path': ['Tapir Example Folder To Delete']}
 
-aclib.RunTapirCommand ('CreateAttributeFolders', {'attributeFolders': [folder]}, debug = False)
-aclib.RunTapirCommand ('DeleteAttributeFolders', {'attributeFolders': [folder]})
+aclib.RunTapirCommand ('CreateAttributeFolders', {'attributeFolders': [folder]})
+aclib.PrintJson (aclib.RunTapirCommand ('DeleteAttributeFolders', {'attributeFolders': [folder]}))

@@ -9,15 +9,15 @@ if not walls:
     raise SystemExit ('No wall in the project.')
 wallId = walls[0]['elementId']
 
-aclib.RunTapirCommand ('SetElementUserData', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetElementUserData', {
     'elementUserData': [
         {'elementId': wallId, 'userData': [{'key': 'tapir-example.externalId', 'value': 'W-001'}]}
     ]
-})
+}))
 aclib.RunTapirCommand ('GetElementUserData', {'elements': walls})
 
-aclib.RunTapirCommand ('SetElementUserData', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetElementUserData', {
     'elementUserData': [
         {'elementId': wallId, 'keysToDelete': ['tapir-example.externalId']}
     ]
-})
+}))

@@ -4,6 +4,6 @@ Requires Archicad 27 or later.
 """
 import aclib
 
-counts = aclib.RunTapirCommand ('Get3DModelCounts', {}, debug = False)['counts']
+counts = aclib.RunTapirCommand ('Get3DModelCounts', {})['counts']
 for item in counts:
     print ('{}: {}'.format (item.get ('componentType'), item.get ('count')))

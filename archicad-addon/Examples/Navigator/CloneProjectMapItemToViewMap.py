@@ -17,6 +17,7 @@ folder = aclib.RunTapirCommand ('CreateViewMapFolder', {'folderName': 'Tapir Exa
 clones = aclib.RunTapirCommand ('CloneProjectMapItemToViewMap', {
     'viewsData': [{'navigatorItemId': story['navigatorItemId'], 'parentNavigatorItemId': folder['navigatorItemId']}]
 })['navigatorItems']
+aclib.PrintJson (clones)
 
 aclib.RunTapirCommand ('DeleteNavigatorItems', {'navigatorItemIds': [c for c in clones if 'navigatorItemId' in c]})
 aclib.RunTapirCommand ('DeleteNavigatorItems', {'navigatorItemIds': [{'navigatorItemId': folder['navigatorItemId']}]})

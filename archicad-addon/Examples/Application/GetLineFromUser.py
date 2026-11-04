@@ -4,7 +4,7 @@ Waits for two clicks in Archicad; Escape returns cancelled.
 """
 import aclib
 
-aclib.RunTapirCommand ('GetLineFromUser', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetLineFromUser', {
     'startPrompt': 'Click the start point of the line',
     'endPrompt': 'Click the end point of the line'
-})
+}))

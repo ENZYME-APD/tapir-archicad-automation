@@ -4,4 +4,4 @@ Windows only; on macOS it returns an error.
 """
 import aclib
 
-aclib.RunTapirCommand ('GetArchicadVisibility')
+aclib.PrintJson (aclib.RunTapirCommand ('GetArchicadVisibility'))

@@ -4,11 +4,11 @@ Needs at least one Wall.
 """
 import aclib
 
-walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'}, debug = False)['elements'][:3]
+walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:3]
 if not walls:
     raise SystemExit ('No wall in the project.')
 
 # The last item reads the links of the wall tool defaults instead of an element.
-aclib.RunTapirCommand ('GetLinkedPropertyObjectsOfElements', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetLinkedPropertyObjectsOfElements', {
     'elements': walls + [{'elementType': 'Wall'}]
-})
+}))

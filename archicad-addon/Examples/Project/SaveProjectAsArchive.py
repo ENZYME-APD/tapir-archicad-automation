@@ -3,7 +3,7 @@ import os
 import tempfile
 import aclib
 
-aclib.RunTapirCommand ('SaveProjectAsArchive', {
+aclib.PrintJson (aclib.RunTapirCommand ('SaveProjectAsArchive', {
     'archiveFilePath': os.path.join (tempfile.mkdtemp (), 'TapirArchive.pla'),
     'includeLibraryParts': True
-})
+}))

@@ -4,10 +4,10 @@ The script deletes the group again at the end. Requires Archicad 27 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateGraphicOverrideRuleGroups', {'ruleGroupNames': ['Tapir Example Group']}, debug = False)
+aclib.RunTapirCommand ('CreateGraphicOverrideRuleGroups', {'ruleGroupNames': ['Tapir Example Group']})
 
-aclib.RunTapirCommand ('RenameGraphicOverrideRuleGroups', {
+aclib.PrintJson (aclib.RunTapirCommand ('RenameGraphicOverrideRuleGroups', {
     'ruleGroups': [{'name': 'Tapir Example Group', 'newName': 'Tapir Example Group Renamed'}]
-})
+}))
 
-aclib.RunTapirCommand ('DeleteGraphicOverrideRuleGroups', {'ruleGroupNames': ['Tapir Example Group Renamed']}, debug = False)
+aclib.RunTapirCommand ('DeleteGraphicOverrideRuleGroups', {'ruleGroupNames': ['Tapir Example Group Renamed']})

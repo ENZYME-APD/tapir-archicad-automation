@@ -16,8 +16,8 @@ label = aclib.RunTapirCommand ('CreateLabels', {'labelsData': [{
     'text': 'Wall'
 }]})['elements'][0]
 
-aclib.RunTapirCommand ('ModifyLabels', {'labelsWithDetails': [{
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyLabels', {'labelsWithDetails': [{
     'elementId': label['elementId'],
     'text': 'Exterior wall',
     'leaderLine': {'framed': True, 'arrowType': 'FullCircle', 'arrowVisible': True}
-}]})
+}]}))

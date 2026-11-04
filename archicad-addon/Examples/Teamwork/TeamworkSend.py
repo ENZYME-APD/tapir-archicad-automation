@@ -4,4 +4,4 @@ Needs an open Teamwork project.
 """
 import aclib
 
-aclib.RunTapirCommand ('TeamworkSend')
+aclib.PrintJson (aclib.RunTapirCommand ('TeamworkSend'))

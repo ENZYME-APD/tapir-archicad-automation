@@ -14,7 +14,7 @@ routeId = aclib.RunTapirCommand ('CreateMEPRoutingElements', {
 route = aclib.RunTapirCommand ('GetMEPRoutingElements', {'elements': [{'elementId': routeId}]})['routingElements'][0]
 nodeIds = [node['elementId'] for node in route['nodes']]
 
-aclib.RunTapirCommand ('SetMEPRoutingParameters', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetMEPRoutingParameters', {
     'elements': [{
         'elementId': routeId,
         'routingSegmentParameters': {'crossSectionShape': 'Circular', 'crossSectionWidth': 0.08}
@@ -22,7 +22,7 @@ aclib.RunTapirCommand ('SetMEPRoutingParameters', {
         'elementId': nodeId,
         'elbowParameters': {'factorRadius': 2.0}
     } for nodeId in nodeIds]
-})
+}))
 
 aclib.RunTapirCommand ('GetMEPRoutingParameters', {'elements': [{'elementId': id} for id in [routeId] + nodeIds]})
 aclib.RunTapirCommand ('DeleteElements', {'elements': [{'elementId': routeId}]})

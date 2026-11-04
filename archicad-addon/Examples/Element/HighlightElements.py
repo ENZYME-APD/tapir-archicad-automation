@@ -5,18 +5,18 @@ Needs at least one Wall. The highlight is removed after 5 seconds.
 import time
 import aclib
 
-walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'}, debug = False)['elements']
+walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements']
 if not walls:
     raise SystemExit ('No wall in the project.')
 
-aclib.RunTapirCommand ('HighlightElements', {
+aclib.PrintJson (aclib.RunTapirCommand ('HighlightElements', {
     'elements': walls,
     'highlightedColors': [[255, 0, 0, 255] for wall in walls],
     'wireframe3D': True,
     'nonHighlightedColor': [0, 0, 255, 128]
-})
+}))
 
 time.sleep (5)
 
 # An empty elements array removes the highlight.
-aclib.RunTapirCommand ('HighlightElements', {'elements': [], 'highlightedColors': []})
+aclib.PrintJson (aclib.RunTapirCommand ('HighlightElements', {'elements': [], 'highlightedColors': []}))

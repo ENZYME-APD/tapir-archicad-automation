@@ -10,9 +10,9 @@ text = aclib.RunTapirCommand ('CreateTexts', {'textsData': [{
     'text': 'Hello World'
 }]})['elements'][0]
 
-aclib.RunTapirCommand ('ChangeTextContent', {'contentChanges': [{
+aclib.PrintJson (aclib.RunTapirCommand ('ChangeTextContent', {'contentChanges': [{
     'elementId': text['elementId'],
     'from': len ('Hello '),
     'range': len ('World'),
     'content': 'Tapir'
-}]})
+}]}))

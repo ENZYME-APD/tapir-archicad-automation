@@ -9,9 +9,9 @@ morph = aclib.RunTapirCommand ('CreateMorphs', {'morphsData': [{
     'size': {'x': 2.0, 'y': 1.0, 'z': 1.0}
 }]})['elements'][0]
 
-aclib.RunTapirCommand ('ModifyMorphs', {'morphsWithDetails': [{
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyMorphs', {'morphsWithDetails': [{
     'elementId': morph['elementId'],
     'translation': {'x': 3.0, 'y': 0.0, 'z': 0.0},
     'rotationDegreesZ': 30.0,
     'castShadow': False
-}]})
+}]}))

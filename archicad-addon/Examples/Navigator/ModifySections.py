@@ -13,9 +13,9 @@ section = aclib.RunTapirCommand ('CreateSections', {
     }]
 })['elements'][0]
 
-aclib.RunTapirCommand ('ModifySections', {
+aclib.PrintJson (aclib.RunTapirCommand ('ModifySections', {
     'sectionsWithDetails': [{'elementId': section['elementId'], 'name': 'Tapir Renamed Section', 'id': 'TX-2'}]
-})
+}))
 aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': [section]})
 
 aclib.RunTapirCommand ('DeleteElements', {'elements': [section]})

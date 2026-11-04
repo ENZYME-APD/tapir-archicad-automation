@@ -11,18 +11,18 @@ markers = aclib.RunTapirCommand ('CreateDetailMarkers', {
         'name': 'Wall connection',
         'id': 'D1'
     }]
-}, debug = False)['elements']
+})['elements']
 
-aclib.RunTapirCommand ('ModifyDetailMarkers', {
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyDetailMarkers', {
     'detailMarkersWithDetails': [{
         'elementId': markers[0]['elementId'],
         'id': 'D2',
         'name': 'Corner detail',
         'clipPolygon': [{'x': 0.0, 'y': 1.0}, {'x': 4.0, 'y': 1.0}, {'x': 4.0, 'y': 4.0}, {'x': 0.0, 'y': 4.0}]
     }]
-})
+}))
 
-details = aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': markers}, debug = False)['detailsOfElements'][0]['details']
+details = aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': markers})['detailsOfElements'][0]['details']
 print (details['detailIdStr'], details['detailName'], len (details['clipPolygon']))
 
-aclib.RunTapirCommand ('DeleteElements', {'elements': markers}, debug = False)
+aclib.RunTapirCommand ('DeleteElements', {'elements': markers})
