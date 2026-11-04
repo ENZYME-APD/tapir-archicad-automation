@@ -55,7 +55,19 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 "LoadClassificationNamesToRemove",
                 "Names of the load classifications to remove. Optional.");
 
-            SetOptionality(new[] { 0, 1, 2, 3, 4, 5, 6 });
+            InBoolean(
+                "ClearWiringTypes",
+                "If true, every wiring type is removed before WiringTypeNamesToAdd is applied; " +
+                "WiringTypeNamesToRemove is then not needed and is ignored.",
+                false);
+
+            InBoolean(
+                "ClearLoadClassifications",
+                "If true, every load classification is removed before LoadClassificationNamesToAdd is applied; " +
+                "LoadClassificationNamesToRemove is then not needed and is ignored.",
+                false);
+
+            SetOptionality(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 });
         }
 
         // Pairs the names to add with their values: one value for every name,
@@ -112,6 +124,17 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             if (da.GetData(0, ref voltage))
             {
                 parameters["voltage"] = voltage;
+            }
+
+            bool clearWiringTypes = false;
+            if (da.GetData(7, ref clearWiringTypes) && clearWiringTypes)
+            {
+                parameters["clearWiringTypes"] = true;
+            }
+            bool clearLoadClassifications = false;
+            if (da.GetData(8, ref clearLoadClassifications) && clearLoadClassifications)
+            {
+                parameters["clearLoadClassifications"] = true;
             }
 
             if (!TryGetItemsToAdd(da, 1, 2, "crossSectionalArea", out JArray wiringTypesToAdd) ||

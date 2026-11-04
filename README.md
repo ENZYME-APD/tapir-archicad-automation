@@ -106,6 +106,7 @@ These are plain HTTPS requests. Like any web request they show your IP address a
 
 ## Documentation
 
-- [Archicad JSON commands](https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon)
+- [Archicad JSON commands](https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon), each with a Python example from [archicad-addon/Examples](archicad-addon/Examples/)
+- [Workflows](archicad-addon/Workflows/): Python scripts that combine several commands into a task
 - [Tapir GitHub wiki](https://github.com/ENZYME-APD/tapir-archicad-automation/wiki)
 

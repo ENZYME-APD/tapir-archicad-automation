@@ -11,6 +11,15 @@ public:
     virtual GS::ObjectState Execute(const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class GetPublisherSetsCommand : public CommandBase
+{
+public:
+    GetPublisherSetsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class UpdateDrawingsCommand : public CommandBase
 {
 public:
@@ -64,6 +73,16 @@ class FindModelViewOptionCommand : public CommandBase
 {
 public:
     FindModelViewOptionCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetModelViewOptionDetailsCommand : public CommandBase
+{
+public:
+    GetModelViewOptionDetailsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
@@ -298,6 +317,16 @@ class DeleteNavigatorItemsCommand : public CommandBase
 {
 public:
     DeleteNavigatorItemsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class ReorderNavigatorItemsCommand : public CommandBase
+{
+public:
+    ReorderNavigatorItemsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;

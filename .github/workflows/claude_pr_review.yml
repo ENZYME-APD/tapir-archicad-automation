@@ -113,7 +113,10 @@ jobs:
     # conversation comments and dispatches the payload does not say, so the
     # first step checks). Comments by bots never start a review, so the bot
     # cannot re-review itself in a loop. A person's comment on a bot pull
-    # request does - that is how a tester's report reaches the verdict.
+    # request does - that is how a tester's report reaches the verdict. A
+    # community test result (first line `tapir-test:`) does not: it becomes
+    # the archicad-test/AC<version> status instead (archicad_test_status.yml,
+    # #1577), and the review runs again on every new head anyway.
     # Pull requests of the Claude GitHub App (claude[bot]) stay excluded.
     # A bot's push to the issue bot's pull request (the steward's merge of
     # main, see the header) starts no review here: the steward starts it.
@@ -129,6 +132,7 @@ jobs:
        github.event.issue.pull_request &&
        github.event.issue.state == 'open' &&
        github.event.comment.user.type != 'Bot' &&
+       !startsWith(github.event.comment.body, 'tapir-test:') &&
        github.event.issue.user.login != 'claude[bot]') ||
       (github.event_name == 'pull_request_review_comment' &&
        github.event.pull_request.draft == false &&
@@ -289,7 +293,14 @@ jobs:
             '{event: $event, comment: (if $author == "" then null
                                        else {author: $author, body: $body, path: $path, line: $line} end)}' \
             > .review-context/trigger.json
+          # The checked-out base can be older than main (it is the base of the
+          # pull request's last update), so its tools/package_info.json can
+          # name a version that has already shipped. Give the review main's
+          # current file for the version check.
+          git fetch --quiet --depth=1 origin main
+          git show FETCH_HEAD:tools/package_info.json > .review-context/main_package_info.json
           echo "Earlier bot threads: $(jq length .review-context/threads.json)"
+          echo "Version main carries: $(jq -r .version .review-context/main_package_info.json)"
 
       # Holds the model call back while CLAUDE_MAX_RUNS or more Claude runs
       # started before this one are in progress (see the header of claude_issue_triage.yml).
@@ -386,13 +397,17 @@ jobs:
 
             3. Consistency across the three surfaces. A new or changed command
                should keep its input schema, its C++ implementation, its
-               registered description in AddOnMain.cpp, its Python example and
-               its Grasshopper component in agreement. A command that gains a
+               registered description in AddOnMain.cpp, its Python example
+               (archicad-addon/Examples/<GroupFolder>/<CommandName>.py) and its
+               Grasshopper component in agreement. A command that gains a
                response field usually needs the matching Grasshopper output.
 
             4. The registered version. A new command must carry the UNRELEASED
-               version from tools/package_info.json, never one that has already
-               shipped.
+               version that main carries now, never one that has already
+               shipped. Read it from .review-context/main_package_info.json
+               (main's current tools/package_info.json), not from the
+               checked-out tools/package_info.json, which is the pull
+               request's base and can be older than main.
 
             5. Schema honesty. If a command can answer with a per item error,
                its response schema has to allow that - the *OrErrors unions in
@@ -453,7 +468,7 @@ jobs:
               (it ends with a `steward-fix-outcome` marker; read the
               conversation with `gh pr view <PR NUMBER> --comments`) counts
               as a reply on each finding it answers - check its reasons
-              against the code and main's tools/package_info.json like any
+              against the code and .review-context/main_package_info.json like any
               reply; a dispatched review may follow one that disputed your
               findings, so judge them afresh. List every
               settled thread that is not yet resolved in the marker below;

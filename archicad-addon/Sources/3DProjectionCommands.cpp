@@ -3,8 +3,49 @@
 
 // Both commands mirror API_3DProjectionInfo (the 3D Projection Settings of the 3D window):
 // the common part (isPersp, camGuid, actCamSet) plus either the perspective parameters
-// (API_PerspPars) or the axonometric transformation (API_AxonoPars), whichever the
-// projection currently is.
+// (API_PerspPars) or the axonometric ones (API_AxonoPars: projection type, azimuth and
+// transformation matrix), whichever the projection currently is.
+
+// The projMod values of API_AxonoPars (API_Projection_* in APIdefs_Elements.h), by the
+// names the commands use. API_Projection_Perspective is left out: it is never the type
+// of an axonometry.
+static const std::pair<short, const char*> AxonometryProjectionTypes[] = {
+    { API_Projection_YZ,          "YZ" },
+    { API_Projection_XZ,          "XZ" },
+    { API_Projection_XY,          "XY" },
+    { API_Projection_Frontal,     "Frontal" },
+    { API_Projection_Monometric,  "Monometric" },
+    { API_Projection_Isometric,   "Isometric" },
+    { API_Projection_Dimetric,    "Dimetric" },
+    { API_Projection_Bottom,      "Bottom" },
+    { API_Projection_FrontalB,    "FrontalBottom" },
+    { API_Projection_MonometricB, "MonometricBottom" },
+    { API_Projection_IzometricB,  "IsometricBottom" },
+    { API_Projection_DimetricB,   "DimetricBottom" },
+    { API_Projection_Parallel,    "Parallel" },
+    { API_Projection_FreeAx,      "Custom" },
+};
+
+static GS::UniString GetAxonometryProjectionTypeName (short projMod)
+{
+    for (const auto& type : AxonometryProjectionTypes) {
+        if (type.first == projMod) {
+            return type.second;
+        }
+    }
+    return "Unknown";
+}
+
+static bool GetAxonometryProjectionType (const GS::UniString& name, short& projMod)
+{
+    for (const auto& type : AxonometryProjectionTypes) {
+        if (name == type.second) {
+            projMod = type.first;
+            return true;
+        }
+    }
+    return false;
+}
 
 Get3DProjectionSettingsCommand::Get3DProjectionSettingsCommand () :
     CommandBase (CommonSchema::Used)
@@ -40,6 +81,13 @@ GS::Optional<GS::UniString> Get3DProjectionSettingsCommand::GetRawResponseSchema
             "type": "object",
             "description": "The parameters of an axonometric projection. Present only when isPersp is false.",
             "properties": {
+                "projectionType": {
+                    "$ref": "#/AxonometryProjectionType"
+                },
+                "azimuth": {
+                    "type": "number",
+                    "description": "The camera azimuth in degrees, the Azimuth of the 3D Projection Settings dialog: for a side view the direction from the model to the camera, counterclockwise from the X axis (270 looks from the south). A predefined axonometry looks from 45 degrees further on."
+                },
                 "transformationMatrix": {
                     "type": "array",
                     "description": "The 3x4 transformation matrix of the axonometric projection, row by row (12 numbers).",
@@ -52,6 +100,8 @@ GS::Optional<GS::UniString> Get3DProjectionSettingsCommand::GetRawResponseSchema
             },
             "additionalProperties": false,
             "required": [
+                "projectionType",
+                "azimuth",
                 "transformationMatrix"
             ]
         }
@@ -90,9 +140,12 @@ GS::ObjectState Get3DProjectionSettingsCommand::Execute (const GS::ObjectState& 
             "rollAngle", persp.rollAngle,
             "isTwoPointPersp", persp.isTwoPointPersp));
     } else {
-        GS::ObjectState axonometric;
+        const API_AxonoPars& axono = projectionInfo.u.axono;
+        GS::ObjectState axonometric (
+            "projectionType", GetAxonometryProjectionTypeName (axono.projMod),
+            "azimuth", axono.azimuth);
         const auto& transformationMatrix = axonometric.AddList<double> ("transformationMatrix");
-        for (double value : projectionInfo.u.axono.tranmat.tmx) {
+        for (double value : axono.tranmat.tmx) {
             transformationMatrix (value);
         }
         response.Add ("axonometric", axonometric);
@@ -117,11 +170,44 @@ GS::Optional<GS::UniString> Set3DProjectionSettingsCommand::GetInputParametersSc
     "properties": {
         "perspective": {
             "$ref": "#/PerspectiveProjectionParameters"
+        },
+        "axonometry": {
+            "type": "object",
+            "description": "Makes the projection axonometric. Only the given values change; the others are kept from the current axonometry, or from the last one when the projection is a perspective.",
+            "properties": {
+                "projectionType": {
+                    "$ref": "#/AxonometryProjectionType"
+                },
+                "azimuth": {
+                    "type": "number",
+                    "description": "The camera azimuth in degrees, the Azimuth of the 3D Projection Settings dialog: for a side view the direction from the model to the camera, counterclockwise from the X axis (270 looks from the south). A predefined axonometry looks from 45 degrees further on."
+                },
+                "transformationMatrix": {
+                    "type": "array",
+                    "description": "The 3x4 transformation matrix of the axonometric projection, row by row (12 numbers), as Get3DProjectionSettings returns it. Its 3x3 part must be invertible.",
+                    "items": {
+                        "type": "number"
+                    },
+                    "minItems": 12,
+                    "maxItems": 12
+                }
+            },
+            "additionalProperties": false,
+            "minProperties": 1
         }
     },
     "additionalProperties": false,
-    "required": [
-        "perspective"
+    "oneOf": [
+        {
+            "required": [
+                "perspective"
+            ]
+        },
+        {
+            "required": [
+                "axonometry"
+            ]
+        }
     ]
 })";
 }
@@ -133,13 +219,8 @@ GS::Optional<GS::UniString> Set3DProjectionSettingsCommand::GetRawResponseSchema
     })";
 }
 
-GS::ObjectState Set3DProjectionSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+static GS::ObjectState SetPerspective (const GS::ObjectState& perspective)
 {
-    GS::ObjectState perspective;
-    if (!parameters.Get ("perspective", perspective)) {
-        return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: perspective.");
-    }
-
     GS::ObjectState cameraPosition;
     GS::ObjectState targetPosition;
     double distance = 0.0;
@@ -197,6 +278,218 @@ GS::ObjectState Set3DProjectionSettingsCommand::Execute (const GS::ObjectState& 
         : CreateFailedExecutionResult (err, "Failed to set the 3D projection settings.");
 }
 
+Get3DStylesCommand::Get3DStylesCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{}
+
+GS::String Get3DStylesCommand::GetName () const
+{
+    return "Get3DStyles";
+}
+
+GS::Optional<GS::UniString> Get3DStylesCommand::GetRawResponseSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "styleNames": {
+            "type": "array",
+            "description": "The names of the 3D styles of the project.",
+            "items": {
+                "type": "string"
+            }
+        },
+        "currentStyleName": {
+            "type": "string",
+            "description": "The name of the current 3D style, the one the 3D window uses."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "styleNames",
+        "currentStyleName"
+    ]
+})";
+}
+
+GS::ObjectState Get3DStylesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> styles;
+    GS::UniString current;
+    const GSErrCode err = ACAPI_View_Get3DStyleList (&styles, &current);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the 3D styles.");
+    }
+
+    GS::ObjectState response;
+    const auto& styleNames = response.AddList<GS::UniString> ("styleNames");
+    for (const GS::UniString& style : styles) {
+        styleNames (style);
+    }
+    response.Add ("currentStyleName", current);
+
+    return response;
+}
+
+ShowElementsIn3DCommand::ShowElementsIn3DCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String ShowElementsIn3DCommand::GetName () const
+{
+    return "ShowElementsIn3D";
+}
+
+GS::Optional<GS::UniString> ShowElementsIn3DCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "elements": {
+            "$ref": "#/Elements",
+            "description": "The elements to show in 3D. They become the selection, replacing the current one. Missing or empty: every element is shown, as Show All in 3D does."
+        }
+    },
+    "additionalProperties": false,
+    "required": []
+})";
+}
+
+GS::Optional<GS::UniString> ShowElementsIn3DCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState ShowElementsIn3DCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    if (!parameters.Get ("elements", elements) || elements.IsEmpty ()) {
+        const GSErrCode err = ACAPI_View_ShowAllIn3D ();
+        return err == NoError
+            ? CreateSuccessfulExecutionResult ()
+            : CreateFailedExecutionResult (err, "Failed to show all elements in 3D.");
+    }
+
+    // Show Selection in 3D shows exactly the selected elements, so the given ones
+    // replace the current selection instead of being added to it.
+    GS::Array<API_Neig> neigs;
+    for (const GS::ObjectState& element : elements) {
+        const API_Guid guid = GetGuidFromElementsArrayItem (element);
+        if (guid == APINULLGuid) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: elementId is missing or invalid.");
+        }
+        // Checked before the selection is cleared, so a wrong guid keeps the user's selection.
+        API_Elem_Head head = {};
+        head.guid = guid;
+        if (ACAPI_Element_GetHeader (&head) != NoError) {
+            return CreateFailedExecutionResult (APIERR_BADID, "Element not found.");
+        }
+        neigs.Push (API_Neig (guid));
+    }
+
+    GSErrCode err = ACAPI_Selection_DeselectAll ();
+    if (err != NoError && err != APIERR_NOSEL) {
+        return CreateFailedExecutionResult (err, "Failed to clear the selection.");
+    }
+
+    err = ACAPI_Selection_Select (neigs, true);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to select the elements.");
+    }
+
+    err = ACAPI_View_ShowSelectionIn3D ();
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to show the selected elements in 3D.");
+}
+
+static GS::ObjectState SetAxonometry (const GS::ObjectState& axonometry)
+{
+    short projMod = 0;
+    GS::UniString projectionType;
+    const bool hasProjectionType = axonometry.Get ("projectionType", projectionType);
+    if (hasProjectionType && !GetAxonometryProjectionType (projectionType, projMod)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: projectionType.");
+    }
+
+    double azimuth = 0.0;
+    const bool hasAzimuth = axonometry.Get ("azimuth", azimuth);
+
+    API_Tranmat tranmat {};
+    API_Tranmat invtranmat {};
+    GS::Array<double> transformationMatrix;
+    const bool hasTransformationMatrix = axonometry.Get ("transformationMatrix", transformationMatrix);
+    if (hasTransformationMatrix) {
+        if (transformationMatrix.GetSize () != 12) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: transformationMatrix must have 12 numbers.");
+        }
+        for (UIndex i = 0; i < 12; ++i) {
+            tranmat.tmx[i] = transformationMatrix[i];
+        }
+        // Archicad keeps the inverse next to the matrix, to get model coordinates back from projected ones.
+        if (!InvertTranmat (tranmat, invtranmat)) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: the 3x3 part of transformationMatrix is not invertible.");
+        }
+    }
+
+    if (!hasProjectionType && !hasAzimuth && !hasTransformationMatrix) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: give at least one of projectionType, azimuth and transformationMatrix in axonometry.");
+    }
+
+    const GSErrCode err = ACAPI_CallUndoableCommand ("Set3DProjectionSettingsCommand", [&]() -> GSErrCode {
+        API_3DProjectionInfo projectionInfo {};
+        GSErrCode err = ACAPI_View_Get3DProjectionSets (&projectionInfo);
+        if (err != NoError) {
+            return err;
+        }
+
+        // A perspective shares its memory with the axonometric parameters, so they are
+        // read after switching back to the last axonometry; the values not given come from it.
+        if (projectionInfo.isPersp) {
+            projectionInfo.isPersp = false;
+            bool switchOnlyAxonoOrPersp = true;
+            err = ACAPI_View_Change3DProjectionSets (&projectionInfo, &switchOnlyAxonoOrPersp);
+            if (err == NoError) {
+                err = ACAPI_View_Get3DProjectionSets (&projectionInfo);
+            }
+            if (err != NoError) {
+                return err;
+            }
+        }
+
+        API_AxonoPars& axono = projectionInfo.u.axono;
+        if (hasProjectionType) {
+            axono.projMod = projMod;
+        }
+        if (hasAzimuth) {
+            axono.azimuth = azimuth;
+        }
+        if (hasTransformationMatrix) {
+            axono.tranmat = tranmat;
+            axono.invtranmat = invtranmat;
+        }
+        return ACAPI_View_Change3DProjectionSets (&projectionInfo, nullptr);
+    });
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to set the 3D projection settings.");
+}
+
+GS::ObjectState Set3DProjectionSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::ObjectState perspective;
+    GS::ObjectState axonometry;
+    const bool hasPerspective = parameters.Get ("perspective", perspective);
+    const bool hasAxonometry = parameters.Get ("axonometry", axonometry);
+    if (hasPerspective == hasAxonometry) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameters: give exactly one of perspective and axonometry.");
+    }
+
+    return hasPerspective ? SetPerspective (perspective) : SetAxonometry (axonometry);
+}
 // Both commands mirror API_3DWindowInfo: the pixel size of the 3D window (hSize, vSize) and
 // the zoom of its projection (zoomScaleX/Y, zoomDispX/Y). Archicad applies the size only
 // when setWindowSize is true and the zoom only when setZoom is true.
@@ -398,4 +691,120 @@ GS::ObjectState Set3DWindowSettingsCommand::Execute (const GS::ObjectState& para
     }
 
     return Create3DWindowSettingsObjectState (newWindowInfo);
+}
+
+SetCurrent3DStyleCommand::SetCurrent3DStyleCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String SetCurrent3DStyleCommand::GetName () const
+{
+    return "SetCurrent3DStyle";
+}
+
+GS::Optional<GS::UniString> SetCurrent3DStyleCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "styleName": {
+            "type": "string",
+            "description": "The name of an existing 3D style, as Get3DStyles returns it.",
+            "minLength": 1
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "styleName"
+    ]
+})";
+}
+
+GS::Optional<GS::UniString> SetCurrent3DStyleCommand::GetRawResponseSchema () const
+{
+    return R"({
+    "$ref": "#/ExecutionResult"
+})";
+}
+
+GS::ObjectState SetCurrent3DStyleCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString styleName;
+    if (!parameters.Get ("styleName", styleName) || styleName.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "styleName is missing or empty.");
+    }
+
+    GS::Array<GS::UniString> styles;
+    GS::UniString current;
+    GSErrCode err = ACAPI_View_Get3DStyleList (&styles, &current);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get the 3D styles.");
+    }
+    if (!styles.Contains (styleName)) {
+        return CreateFailedExecutionResult (APIERR_BADNAME, "There is no 3D style with the name '" + styleName + "'.");
+    }
+
+    err = ACAPI_CallUndoableCommand ("SetCurrent3DStyleCommand", [&]() -> GSErrCode {
+        return ACAPI_View_SetCurrent3DStyle (&styleName);
+    });
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to set the current 3D style.");
+}
+
+StoreViewSettingsCommand::StoreViewSettingsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String StoreViewSettingsCommand::GetName () const
+{
+    return "StoreViewSettings";
+}
+
+GS::Optional<GS::UniString> StoreViewSettingsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "action": {
+            "type": "string",
+            "description": "Store saves the current view settings, Restore puts the stored ones back. Call them in pairs: a second Store before a Restore is refused.",
+            "enum": [
+                "Store",
+                "Restore"
+            ]
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "action"
+    ]
+})";
+}
+
+GS::Optional<GS::UniString> StoreViewSettingsCommand::GetRawResponseSchema () const
+{
+    return R"({
+    "$ref": "#/ExecutionResult"
+})";
+}
+
+GS::ObjectState StoreViewSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString action;
+    parameters.Get ("action", action);
+    if (action != "Store" && action != "Restore") {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "action must be Store or Restore.");
+    }
+    const bool store = (action == "Store");
+
+    const GSErrCode err = ACAPI_View_StoreViewSettings (store);
+    if (err == APIERR_BADPARS) {
+        return CreateFailedExecutionResult (err, "Store and Restore must be called in pairs, one after the other.");
+    }
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, store ? "Failed to store the view settings." : "Failed to restore the view settings.");
 }

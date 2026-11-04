@@ -112,9 +112,110 @@ function MinorVersion(version) {
     return VersionKey(version).slice(0, 2).join('.');
 }
 
-function RenderCommandContent(parentElement, command, schemaDefinitions) {
+// The example of a command is archicad-addon/Examples/<GroupFolder>/<CommandName>.py on main.
+// It is fetched when its popdown is first opened, so nothing of it is copied into the docs.
+var gExampleRawBaseUrl = 'https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/main/archicad-addon/Examples/';
+var gExampleViewBaseUrl = 'https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/';
+// The same as GROUPS_WITHOUT_EXAMPLES in tools/check_examples.py.
+var gGroupsWithoutExamples = ['Developer Commands'];
+
+function ExampleFolder(groupName) {
+    // The Examples subfolder of a command group, the same rule as ExampleFolder in
+    // tools/check_examples.py: "Custom Data Commands" -> "CustomData", "MEP Commands (extended)"
+    // -> "MEP", "Script UI Commands" -> "ScriptUI". The parenthesised part and a trailing
+    // "Commands" are dropped, the words are joined in PascalCase, all-caps words stay as they are.
+    let name = groupName.replace(/\s*\([^)]*\)/g, '').trim().replace(/\s+Commands$/, '');
+    return name.split(/\s+/).filter(word => word.length > 0)
+        .map(word => word === word.toUpperCase() ? word : word.charAt(0).toUpperCase() + word.substring(1))
+        .join('');
+}
+
+function ExamplePath(groupName, commandName) {
+    return encodeURIComponent(ExampleFolder(groupName)) + '/' + encodeURIComponent(commandName) + '.py';
+}
+
+function CleanDocstring(text) {
+    // The same as Python's inspect.cleandoc: the first line is stripped, the common
+    // indentation of the other lines is removed, blank lines at both ends are dropped.
+    let lines = text.replace(/\r\n?/g, '\n').split('\n');
+    let indents = lines.slice(1).filter(line => line.trim().length > 0).map(line => line.match(/^[ \t]*/)[0].length);
+    let indent = indents.length > 0 ? Math.min(...indents) : 0;
+    lines = [lines[0].trim()].concat(lines.slice(1).map(line => line.substring(indent).trimEnd()));
+    while (lines.length > 0 && lines[0] === '') lines.shift();
+    while (lines.length > 0 && lines[lines.length - 1] === '') lines.pop();
+    return lines.join('\n');
+}
+
+function SplitExampleScript(source) {
+    // The leading module docstring is the description; the rest is the code.
+    let match = source.match(/^﻿?(?:[ \t]*(?:#[^\n]*)?\r?\n)*[ \t]*[rRuU]?("""|''')([\s\S]*?)\1[ \t]*(?:\r?\n|$)/);
+    if (!match) {
+        return { description: '', code: source.replace(/^\s*\n/, '').trimEnd() };
+    }
+    let code = source.substring(match[0].length).replace(/^(?:[ \t]*\r?\n)+/, '').trimEnd();
+    return { description: CleanDocstring(match[2]), code: code };
+}
+
+function RenderExampleScript(container, examplePath, source) {
+    let example = SplitExampleScript(source);
+    for (let paragraph of example.description.split(/\n[ \t]*\n/)) {
+        if (paragraph.trim().length > 0) {
+            CreateTextElement(container, 'p', 'command_example_description', paragraph.replace(/\s*\n\s*/g, ' '));
+        }
+    }
+    let code = CreateElement(CreateElement(container, 'pre', null, null), 'code', 'hljs language-python', null);
+    if (typeof hljs !== 'undefined' && hljs.getLanguage('python')) {
+        // highlight () escapes the source, so the markup it returns is safe to insert.
+        code.innerHTML = hljs.highlight(example.code, { language: 'python', ignoreIllegals: true }).value;
+    } else {
+        code.textContent = example.code;
+    }
+    let link = CreateTextElement(CreateElement(container, 'div', 'command_example_link', null), 'a', null, 'View on GitHub');
+    link.href = gExampleViewBaseUrl + examplePath;
+    link.target = '_blank';
+    link.rel = 'noopener';
+}
+
+function LoadExample(container, examplePath) {
+    let status = CreateTextElement(container, 'div', 'command_example_status', 'Loading the example…');
+    fetch(gExampleRawBaseUrl + examplePath, { cache: 'no-cache' })
+        .then(function (response) {
+            if (response.status === 404) {
+                status.textContent = 'No example yet.';
+                return;
+            }
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
+            return response.text().then(function (source) {
+                status.remove();
+                RenderExampleScript(container, examplePath, source);
+            });
+        })
+        .catch(function (error) {
+            status.textContent = 'Could not load the example (' + error.message + ').';
+        });
+}
+
+function RenderExample(parentElement, examplePath) {
+    let details = CreateElement(parentElement, 'details', 'command_example', null);
+    CreateTextElement(details, 'summary', null, 'Example');
+    let body = CreateElement(details, 'div', 'command_example_body', null);
+    let loaded = false;
+    details.addEventListener('toggle', function () {
+        if (details.open && !loaded) {
+            loaded = true;
+            LoadExample(body, examplePath);
+        }
+    });
+}
+
+function RenderCommandContent(parentElement, groupName, command, schemaDefinitions) {
     let commandContent = CreateElement(parentElement, 'div', 'command_content', null);
     CreateElement(commandContent, 'div', 'command_description', command.description);
+    if (!gGroupsWithoutExamples.includes(groupName)) {
+        RenderExample(commandContent, ExamplePath(groupName, command.name));
+    }
     try {
         CreateSchemaElement(commandContent, 'Input parameters', command.inputScheme, schemaDefinitions);
         CreateSchemaElement(commandContent, 'Output parameters', command.outputScheme, schemaDefinitions);
@@ -125,7 +226,7 @@ function RenderCommandContent(parentElement, command, schemaDefinitions) {
     }
 }
 
-function RenderCommand(parentElement, command, schemaDefinitions) {
+function RenderCommand(parentElement, groupName, command, schemaDefinitions) {
     parentElement.setAttribute("id", command.name);
     let headerElement = CreateElement(parentElement, 'summary', 'command_header', null);
     let titleElement = CreateElement(headerElement, 'span', 'command_title', null);
@@ -138,7 +239,7 @@ function RenderCommand(parentElement, command, schemaDefinitions) {
     parentElement.addEventListener("toggle", function () {
         if (parentElement.open && !rendered) {
             rendered = true;
-            RenderCommandContent(parentElement, command, schemaDefinitions);
+            RenderCommandContent(parentElement, groupName, command, schemaDefinitions);
         }
         if (parentElement.dataset.bulkToggle) {
             // Opened or closed by "Expand all" / "Collapse all": leave the URL alone.
@@ -305,7 +406,7 @@ function RenderCommands(parentElement, commands, schemaDefinitions) {
         for (let command of group.commands) {
             let commandContainer = CreateElement(section, 'details', 'command_container', null);
             try {
-                RenderCommand(commandContainer, command, schemaDefinitions);
+                RenderCommand(commandContainer, group.name, command, schemaDefinitions);
             } catch (error) {
                 // One broken command must not blank out every command after it.
                 CreateElement(commandContainer, 'div', 'command_description', 'Failed to render this command.');

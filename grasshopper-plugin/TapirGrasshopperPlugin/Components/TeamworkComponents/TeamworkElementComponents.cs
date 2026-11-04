@@ -142,7 +142,8 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
                 "ReservationStatusOfElements",
                 "Returns the Teamwork reservation status of elements without reserving them: " +
                 "whether each element is free, reserved by the current user or reserved by " +
-                "another user, with the reserving user and the element's owner. " +
+                "another user, with the reserving user. New elements stay reserved by the " +
+                "user who created them until they are released. " +
                 "Fails in a solo project, where elements have no reservation.")
         {
         }
@@ -173,12 +174,14 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
 
             OutIntegers(
                 "OwnerUserIds",
-                "Teamwork user id of the owner of each element, usually the one who created it " +
-                "(null when it has no owner).");
+                "Teamwork user id of the Teamwork owner of each element, which is the user who " +
+                "has reserved it, the same as ReservedByUserIds (null when it is free). " +
+                "Kept for compatibility.");
 
             OutTexts(
                 "OwnerUserNames",
-                "Name of the owner of each element (null when it has no owner).");
+                "Name of the Teamwork owner of each element, the same as ReservedByUserNames " +
+                "(null when it is free). Kept for compatibility.");
 
             OutErrorMessages(
                 "Error message of each element (empty when its reservation status was read).");

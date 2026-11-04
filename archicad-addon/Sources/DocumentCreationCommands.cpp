@@ -602,7 +602,32 @@ GS::Optional<GS::UniString> CreateLayoutCommand::GetInputParametersSchema () con
 
 GS::Optional<GS::UniString> CreateLayoutCommand::GetRawResponseSchema () const
 {
-    return R"({"type":"object","properties":{"databases":{"$ref":"#/DatabaseIdsOrErrors"}},"additionalProperties":false,"required":["databases"]})";
+    return R"({
+        "type": "object",
+        "properties": {
+            "databases": {
+                "type": "array",
+                "items": {
+                    "oneOf": [
+                        { "$ref": "#/DatabaseIdArrayItem" },
+                        { "$ref": "#/ErrorItem" },
+                        {
+                            "type": "object",
+                            "description": "The layout was created, but it could not be moved to the place asked for by previousNavigatorItemId or position: it stays where Archicad put it.",
+                            "properties": {
+                                "databaseId": { "$ref": "#/DatabaseId" },
+                                "error":      { "$ref": "#/Error" }
+                            },
+                            "additionalProperties": false,
+                            "required": ["databaseId", "error"]
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["databases"]
+    })";
 }
 
 GS::ObjectState CreateLayoutCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -755,7 +780,11 @@ GS::ObjectState CreateLayoutCommand::Execute (const GS::ObjectState& parameters,
             GS::UniString placeErrorMessage;
             const GSErrCode placeErr = PlaceNewLayout (newLayoutGuid.Get (), parentNavGuid, previousOS, position, placeErrorMessage);
             if (placeErr != NoError) {
-                databases.Push (CreateErrorResponse (placeErr, placeErrorMessage));
+                // The layout exists, so its id is returned with the error: without it the
+                // caller could only find it by name (#1586)
+                GS::ObjectState placedWithError = CreateErrorResponse (placeErr, placeErrorMessage);
+                placedWithError.Add ("databaseId", CreateGuidObjectState (newLayoutGuid.Get ()));
+                databases.Push (placedWithError);
                 continue;
             }
         }
@@ -1063,7 +1092,10 @@ GS::Optional<GS::UniString> CreateDrawingsCommand::GetInputParametersSchema () c
                             "$ref": "#/DrawingNameType",
                             "description": "Defaults to CustomName when name is given, otherwise to the Drawing tool's current default."
                         },
-                        "position": { "$ref": "#/Coordinate2D" },
+                        "position": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "Where the Drawing is placed on the layout, in meters; this becomes its pos. Without clipPolygon it is the lower left corner of the Drawing (before rotation). With clipPolygon it is the point where the origin of the source view lands (on a floor plan the project origin): a model point (x, y) appears at position + scale * drawing scale * (x, y), rotated by angle, and the clipPolygon chooses which part is shown."
+                        },
                         "scale": {
                             "type": "number",
                             "exclusiveMinimum": 0.0,
@@ -1075,17 +1107,17 @@ GS::Optional<GS::UniString> CreateDrawingsCommand::GetInputParametersSchema () c
                         },
                         "drawingScale": {
                             "type": "number",
-                            "description": "The nominal scale of the drawing. Defaults to the Drawing tool's current default."
+                            "description": "Ignored: Archicad takes the scale from the source view (API_DrawingType::drawingScale is output only). GetDetailsOfElements returns the scale the Drawing got."
                         },
                         "modelOffset": {
                             "$ref": "#/Coordinate2D",
-                            "description": "Offset of the model origin within the drawing. Defaults to the Drawing tool's current default."
+                            "description": "Offset of the model origin within the drawing, in model meters. Archicad uses it only with clipPolygon and then adds modelOffset * drawing scale (times scale, rotated by angle) to the new Drawing's pos; without clipPolygon it is ignored. Defaults to the Drawing tool's current default."
                         },
                         "clipPolygon": {
                             "type": "array",
                             "items": { "$ref": "#/Coordinate2D" },
                             "minItems": 3,
-                            "description": "Optional polygon to clip the drawing with, in layout coordinates (meters on the layout, the same coordinate system as position) - not the coordinates of the source view's model. Stored as given: position, angle, scale and modelOffset are not applied to it."
+                            "description": "Optional polygon to clip the drawing with, in layout coordinates (meters on the layout, the same coordinate system as position) - not the coordinates of the source view's model. Stored as given: position, angle, scale and modelOffset are not applied to it, and it does not move the content (see position)."
                         }
                     },
                     "additionalProperties": false,
@@ -1128,6 +1160,15 @@ static bool IsPlaceableAsDrawing (API_NavigatorItemTypeID itemType)
         default:
             return false;
     }
+}
+
+// A vector given in the Drawing's own coordinates (as the clip polygon's corner or the model
+// offset times the drawing scale), as it lands on the layout: times ratio, rotated by angle.
+static API_Coord DrawingVectorOnLayout (const API_DrawingType& drawing, const API_Coord& v)
+{
+    const double c = cos (drawing.angle);
+    const double s = sin (drawing.angle);
+    return { drawing.ratio * (c * v.x - s * v.y), drawing.ratio * (s * v.x + c * v.y) };
 }
 
 // Creates a single Drawing from a "drawingsData"-shaped item (navigatorItemId, position, optional
@@ -1227,6 +1268,21 @@ static GS::ObjectState CreateOneDrawing (const GS::ObjectState& item)
                 (*memo.coords)[i + 1] = Get2DCoordinateFromObjectState (clipCoords[i]);
             (*memo.coords)[nClip + 1] = (*memo.coords)[1];
             (*memo.pends)[1] = nClip + 1;
+
+            // When a clipped Drawing is created, Archicad keeps the clip polygon where it is
+            // given but takes the lower left corner of its bounding box off pos (times ratio,
+            // rotated by angle), so the content moved away from the clip and the window could
+            // show nothing (#1654). Adding that corner beforehand leaves pos at position, which
+            // for a clipped Drawing is where the source view's origin lands. Archicad also adds
+            // the model offset times the drawing scale to pos (see the modelOffset description).
+            API_Coord clipMin = (*memo.coords)[1];
+            for (Int32 i = 2; i <= nClip; ++i) {
+                clipMin.x = std::min (clipMin.x, (*memo.coords)[i].x);
+                clipMin.y = std::min (clipMin.y, (*memo.coords)[i].y);
+            }
+            const API_Coord shift = DrawingVectorOnLayout (element.drawing, clipMin);
+            element.drawing.pos.x += shift.x;
+            element.drawing.pos.y += shift.y;
         }
     }
     err = ACAPI_Element_Create (&element, &memo);
@@ -1515,7 +1571,18 @@ GS::ObjectState ChangeDrawingLinkCommand::Execute (const GS::ObjectState& parame
             newDrawingItem.Add ("navigatorItemId", *navigatorItemIdState);
             newDrawingItem.Add ("name", GS::UniString (oldElement.drawing.name));
             newDrawingItem.Add ("nameType", DrawingNameTypeToString (oldElement.drawing.nameType));
-            newDrawingItem.Add ("position", Create2DCoordinateObjectState (oldElement.drawing.pos));
+            // Archicad adds the model offset (times the drawing scale) to the pos of a new
+            // clipped Drawing: take it off first, so the new Drawing gets the old pos when both
+            // sources have the same scale.
+            API_Coord position = oldElement.drawing.pos;
+            if (!oldClipCoords.IsEmpty ()) {
+                const API_Coord offset = DrawingVectorOnLayout (oldElement.drawing, {
+                    oldElement.drawing.modelOffset.x * oldElement.drawing.drawingScale,
+                    oldElement.drawing.modelOffset.y * oldElement.drawing.drawingScale });
+                position.x -= offset.x;
+                position.y -= offset.y;
+            }
+            newDrawingItem.Add ("position", Create2DCoordinateObjectState (position));
             newDrawingItem.Add ("scale", oldElement.drawing.ratio);
             newDrawingItem.Add ("angle", oldElement.drawing.angle);
             newDrawingItem.Add ("drawingScale", oldElement.drawing.drawingScale);

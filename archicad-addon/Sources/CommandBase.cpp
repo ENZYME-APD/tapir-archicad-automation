@@ -89,6 +89,18 @@ GS::ObjectState CreateSuccessfulExecutionResult ()
         "success", true);
 }
 
+const char* LockableStatusToString (API_LockableStatus status)
+{
+    switch (status) {
+        case APILockableStatus_Free:         return "Free";
+        case APILockableStatus_Editable:     return "Editable";
+        case APILockableStatus_Locked:       return "Locked";
+        case APILockableStatus_NotAvailable: return "NotAvailable";
+        case APILockableStatus_NotExist:
+        default:                             return "NotExist";
+    }
+}
+
 // Plain wording for the errors the Change* / Import property and classification calls
 // return, so a caller sees why a definition edit was refused without an error table.
 GS::UniString DescribeDefinitionChangeError (GSErrCode err)
@@ -103,6 +115,57 @@ GS::UniString DescribeDefinitionChangeError (GSErrCode err)
     }
 }
 
+static GSFlags GetLayerFlags (const API_AttributeIndex& layer)
+{
+    API_Attribute layerAttr = {};
+    layerAttr.header.typeID = API_LayerID;
+    layerAttr.header.index = layer;
+    return ACAPI_Attribute_Get (&layerAttr) == NoError ? layerAttr.header.flags : 0;
+}
+
+// ACAPI_Element_Change refuses an element on a hidden or locked layer, locked with Edit > Locking,
+// or in Teamwork not reserved by the user with a bare error code. Only these codes are explained:
+// any other error (bad parameters, for example) keeps its plain message even when the element
+// happens to be on a hidden layer. The layer flags are read because the code does not always name
+// the layer (an element locked by Edit > Locking can come back as a general error).
+GS::UniString DescribeElementEditRefusal (GSErrCode err, const API_Elem_Head& elemHead, const GS::Optional<API_AttributeIndex>& targetLayer)
+{
+    if (err != APIERR_HIDDENLAY && err != APIERR_LOCKEDLAY && err != APIERR_NOTMINE &&
+        err != APIERR_NOACCESSRIGHT && err != APIERR_GENERAL) {
+        return {};
+    }
+
+    const GSFlags layerFlags = GetLayerFlags (elemHead.layer);
+    if ((layerFlags & APILay_Hidden) != 0) {
+        return "its layer is hidden";
+    }
+    if ((layerFlags & APILay_Locked) != 0) {
+        return "its layer is locked";
+    }
+    if (targetLayer.HasValue () && targetLayer.Get () != elemHead.layer) {
+        const GSFlags targetFlags = GetLayerFlags (targetLayer.Get ());
+        if ((targetFlags & APILay_Hidden) != 0) {
+            return "the layer given by layerIndex is hidden";
+        }
+        if ((targetFlags & APILay_Locked) != 0) {
+            return "the layer given by layerIndex is locked";
+        }
+    }
+    if (err == APIERR_HIDDENLAY) {
+        return "its layer is hidden";
+    }
+    if (err == APIERR_LOCKEDLAY) {
+        return "its layer is locked";
+    }
+    if (err == APIERR_NOTMINE || err == APIERR_NOACCESSRIGHT) {
+        return "it is not reserved by you in the Teamwork project";
+    }
+    if (!ACAPI_Element_Filter (elemHead.guid, APIFilt_IsEditable)) {
+        return "it is not editable (locked with Edit > Locking, or not reserved by you in a Teamwork project)";
+    }
+    return {};
+}
+
 API_Guid GetGuidFromObjectState (const GS::ObjectState& os)
 {
     GS::String guid;
@@ -110,6 +173,20 @@ API_Guid GetGuidFromObjectState (const GS::ObjectState& os)
         return APINULLGuid;
     }
     return APIGuidFromString (guid.ToCStr ());
+}
+
+OptionalGuidField GetOptionalGuidField (const GS::ObjectState& os, const GS::String& name, API_Guid& guid)
+{
+    guid = APINULLGuid;
+    if (!os.Contains (name)) {
+        return OptionalGuidField::NotGiven;
+    }
+    GS::String guidStr;
+    if (!os.Get (name, guidStr)) {
+        return OptionalGuidField::Invalid;
+    }
+    guid = APIGuidFromString (guidStr.ToCStr ());
+    return guid == APINULLGuid ? OptionalGuidField::Invalid : OptionalGuidField::Valid;
 }
 
 API_Guid GetGuidFromArrayItem (const GS::String& idFieldName, const GS::ObjectState& os)
@@ -169,7 +246,16 @@ std::vector<PolygonData> GetPolygonsFromMemoCoords (const API_Guid& elemGuid, bo
     API_ElementMemo memo = {};
     const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
     const UInt64 mask = includeZCoords ? APIMemoMask_Polygon | APIMemoMask_MeshPolyZ : APIMemoMask_Polygon;
-    if (ACAPI_Element_GetMemo (elemGuid, &memo, mask) != NoError || memo.coords == nullptr) {
+    if (ACAPI_Element_GetMemo (elemGuid, &memo, mask) != NoError) {
+        return {};
+    }
+
+    return GetPolygonsFromMemoCoords (memo, includeZCoords);
+}
+
+std::vector<PolygonData> GetPolygonsFromMemoCoords (const API_ElementMemo& memo, bool includeZCoords)
+{
+    if (memo.coords == nullptr) {
         return {};
     }
 
@@ -202,7 +288,7 @@ std::vector<PolygonData> GetPolygonsFromMemoCoords (const API_Guid& elemGuid, bo
 
     const GSSize nArcs = BMhGetSize (reinterpret_cast<GSHandle> (memo.parcs)) / sizeof (API_PolyArc);
     for (GSIndex iArc = 0; iArc < nArcs; ++iArc) {
-        API_PolyArc& arc = (*memo.parcs)[iArc];
+        API_PolyArc arc = (*memo.parcs)[iArc];
         GSIndex iPoly = 0;
         for (; iPoly < nPolys; ++iPoly) {
             const auto& startEndPair = startEndIndices[iPoly];
@@ -633,12 +719,11 @@ void AddPolygonFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, co
     }
 }
 
-void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName, bool includeZCoords)
+static void AddPolygonWithHoles (const std::vector<PolygonData>& polygons, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName, bool includeZCoords)
 {
     const auto& coords = os.AddList<GS::ObjectState> (coordsFieldName);
     const auto& holes = os.AddList<GS::ObjectState> (holesArrayFieldName);
 
-    const auto polygons = GetPolygonsFromMemoCoords (elemGuid, includeZCoords);
     if (polygons.empty ()) {
         return;
     }
@@ -692,6 +777,16 @@ void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectStat
 
         holes (hole);
     }
+}
+
+void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName, bool includeZCoords)
+{
+    AddPolygonWithHoles (GetPolygonsFromMemoCoords (elemGuid, includeZCoords), os, coordsFieldName, arcsFieldName, holesArrayFieldName, holeCoordsFieldName, holeArcsFieldName, includeZCoords);
+}
+
+void AddPolygonWithHolesFromMemoCoords (const API_ElementMemo& memo, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName, bool includeZCoords)
+{
+    AddPolygonWithHoles (GetPolygonsFromMemoCoords (memo, includeZCoords), os, coordsFieldName, arcsFieldName, holesArrayFieldName, holeCoordsFieldName, holeArcsFieldName, includeZCoords);
 }
 
 bool GetHoleGeometry (const GS::ObjectState& holeOs, GS::Array<GS::ObjectState>& outCoords, GS::Array<GS::ObjectState>& outArcs)
@@ -832,6 +927,84 @@ bool GetColor (const GS::ObjectState& objectState, const GS::String& fieldName, 
     outColor = GetColorFromObjectState(colorOS);
 
     return true;
+}
+
+// A list of numbers read with ObjectState::Get<GS::Array<double>> does not convert integer items
+// (their bit pattern is taken as a double), so the items are collected one by one.
+class DoubleListCollector : public GS::ObjectState::Processor
+{
+public:
+    virtual void IntFound (const GS::String&, Int64 value) override
+    {
+        values.Push (static_cast<double> (value));
+    }
+
+    virtual void UIntFound (const GS::String&, UInt64 value) override
+    {
+        values.Push (static_cast<double> (value));
+    }
+
+    virtual void RealFound (const GS::String&, double value) override
+    {
+        values.Push (value);
+    }
+
+    virtual void BoolFound (const GS::String&, bool) override
+    {
+        failed = true;
+    }
+
+    virtual void StringFound (const GS::String&, const GS::UniString&) override
+    {
+        failed = true;
+    }
+
+    virtual bool ObjectFound (const GS::String&, const GS::ObjectState&) override
+    {
+        failed = true;
+        return false;
+    }
+
+    virtual bool ListFound (const GS::String&) override
+    {
+        return !failed;
+    }
+
+    virtual void ListEntered (const GS::String&) override
+    {
+        if (++depth > 1) {
+            failed = true;
+        }
+    }
+
+    virtual void ListExited (const GS::String&) override
+    {
+        --depth;
+    }
+
+    bool Get (GS::Array<double>& outValues) const
+    {
+        if (failed) {
+            return false;
+        }
+        outValues = values;
+        return true;
+    }
+
+private:
+    GS::Array<double> values;
+    Int32 depth = 0;
+    bool failed = false;
+};
+
+bool GetDoubleList (const GS::ObjectState& parameters, const char* fieldName, GS::Array<double>& outValues)
+{
+    if (!parameters.IsList (fieldName)) {
+        return false;
+    }
+    DoubleListCollector collector;
+    parameters.Enumerate (fieldName, collector);
+    return collector.Get (outValues);
 }
 
 Stories GetStories ()
@@ -1082,6 +1255,7 @@ API_Guid GetAttributeGuidFromIndex (API_AttrTypeID typeID, API_AttributeIndex in
     if (ACAPI_Attribute_Get (&attr) != NoError) {
         return APINULLGuid;
     }
+    DisposeAttribute (attr);
 
     return attr.header.guid;
 }
@@ -1108,8 +1282,61 @@ API_AttributeIndex GetAttributeIndexFromGuid (API_AttrTypeID typeID, API_Guid gu
     if (ACAPI_Attribute_Get (&attr) != NoError) {
         return ACAPI_CreateAttributeIndex (-1);
     }
+    DisposeAttribute (attr);
 
     return attr.header.index;
+}
+
+static const char* ColumnVeneerTypeToString (API_VeneerTypeID venType)
+{
+    switch (venType) {
+        case APIVeneer_Finish: return "Finish";
+        case APIVeneer_Other:  return "Other";
+        case APIVeneer_Core:
+        default:               return "Core";
+    }
+}
+
+GS::ObjectState CreateColumnVeneerObjectState (const API_ColumnSegmentType& segment)
+{
+    GS::ObjectState veneer;
+    veneer.Add ("type", ColumnVeneerTypeToString (segment.venType));
+    veneer.Add ("thickness", segment.venThick);
+    if (segment.assemblySegmentData.modelElemStructureType == API_BasicStructure) {
+        veneer.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, segment.venBuildingMaterial)));
+    }
+    return veneer;
+}
+
+GS::Optional<GS::UniString> ApplyColumnVeneer (const GS::ObjectState& veneer, API_ColumnSegmentType& segment)
+{
+    API_VeneerTypeID venType = segment.venType;
+    GS::UniString typeStr;
+    if (veneer.Get ("type", typeStr)) {
+        if (typeStr == "Core") {
+            venType = APIVeneer_Core;
+        } else if (typeStr == "Finish") {
+            venType = APIVeneer_Finish;
+        } else if (typeStr == "Other") {
+            venType = APIVeneer_Other;
+        } else {
+            return GS::UniString ("Unknown veneer type '") + typeStr + "': use Core, Finish or Other.";
+        }
+    }
+
+    API_AttributeIndex venBuildingMaterial = segment.venBuildingMaterial;
+    const GS::ObjectState* buildingMaterialIdOs = veneer.Get ("buildingMaterialId");
+    if (buildingMaterialIdOs != nullptr) {
+        venBuildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialIdOs));
+        if (venBuildingMaterial == ACAPI_CreateAttributeIndex (-1)) {
+            return GS::UniString ("The veneer buildingMaterialId does not refer to an existing building material.");
+        }
+    }
+
+    segment.venType = venType;
+    segment.venBuildingMaterial = venBuildingMaterial;
+    veneer.Get ("thickness", segment.venThick);
+    return GS::NoValue;
 }
 
 GS::Optional<GS::UniString> GetFontNameFromIndex (short fontIndex)
@@ -1246,6 +1473,20 @@ GSErrCode ExecuteActionForEachDatabase (
     return NoError;
 }
 
+void GetDetailMarkerNameAndId (const API_Element& element, GS::UniString& name, GS::UniString& id)
+{
+    name = GS::UniString (element.detail.detailName);
+    id = GS::UniString (element.detail.detailIdStr);
+
+    API_DatabaseInfo databaseInfo = {};
+    databaseInfo.typeID = GetElemTypeId (element.header) == API_WorksheetID ? APIWind_WorksheetID : APIWind_DetailID;
+    databaseInfo.databaseUnId = element.detail.databaseID;
+    if (ACAPI_Window_GetDatabaseInfo (&databaseInfo) == NoError) {
+        name = GS::UniString (databaseInfo.name);
+        id = GS::UniString (databaseInfo.ref);
+    }
+}
+
 GS::Optional<API_Guid> FindProjectMapItemOfWorksheetOrDetail (const API_DatabaseInfo& database)
 {
     API_NavigatorItem filterItem = {};
@@ -1271,6 +1512,41 @@ GS::Optional<API_Guid> FindProjectMapItemOfWorksheetOrDetail (const API_Database
     return {};
 }
 
+GSErrCode ChangeCurrentDatabaseTo (const API_Guid& databaseId)
+{
+    API_DatabaseInfo database = DatabaseIdResolver::Instance ().GetDatabaseWithId (databaseId);
+    GSErrCode err = ACAPI_Window_GetDatabaseInfo (&database);
+    if (err != NoError) {
+        return err;
+    }
+    return ACAPI_Database_ChangeCurrentDatabase (&database);
+}
+
+bool OpenDatabaseIfNeverOpened (const API_Guid& databaseId)
+{
+    API_DatabaseInfo startingDatabase = {};
+    if (ACAPI_Database_GetCurrentDatabase (&startingDatabase) != NoError) {
+        return false;
+    }
+    const GSErrCode err = ChangeCurrentDatabaseTo (databaseId);
+    ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+    if (err != APIERR_BADDATABASE) {
+        return false;
+    }
+#if defined (ServerMainVers_2700)
+    API_DatabaseInfo database = DatabaseIdResolver::Instance ().GetDatabaseWithId (databaseId);
+    if (ACAPI_Window_GetDatabaseInfo (&database) != NoError) {
+        return false;
+    }
+    const GS::Optional<API_Guid> projectMapItem = FindProjectMapItemOfWorksheetOrDetail (database);
+    if (projectMapItem.HasValue ()) {
+        const GS::UniString guidStr = APIGuidToString (projectMapItem.Get ());
+        return ACAPI_View_GoToView (guidStr.ToCStr ().Get ()) == NoError;
+    }
+#endif
+    return false;
+}
+
 bool LoadElementHeaderByGuid (const API_Guid& elementGuid, API_Elem_Head& elementHeader)
 {
     elementHeader = {};
@@ -1285,6 +1561,55 @@ bool DoesElementExist (const API_Guid& elementGuid, API_ElemTypeID expectedTypeI
         return false;
     }
     return GetElemTypeId (header) == expectedTypeId;
+}
+
+GSErrCode GetLayerChangeError (const API_AttributeIndex& layer, GS::UniString& reason)
+{
+    API_Attribute layerAttr = {};
+    layerAttr.header.typeID = API_LayerID;
+    layerAttr.header.index = layer;
+    if (ACAPI_Attribute_Get (&layerAttr) != NoError) {
+        return NoError;
+    }
+    if ((layerAttr.header.flags & APILay_Locked) != 0) {
+        reason = "its layer is locked";
+        return APIERR_LOCKEDLAY;
+    }
+    if ((layerAttr.header.flags & APILay_Hidden) != 0) {
+        reason = "its layer is hidden";
+        return APIERR_HIDDENLAY;
+    }
+    return NoError;
+}
+
+
+// Inverts the affine transformation of a 3x4 API_Tranmat (rotation/scale part plus translation).
+bool InvertTranmat (const API_Tranmat& tranmat, API_Tranmat& inverse)
+{
+    const double* m = tranmat.tmx;
+    const double c00 = m[5] * m[10] - m[6] * m[9];
+    const double c01 = m[6] * m[8] - m[4] * m[10];
+    const double c02 = m[4] * m[9] - m[5] * m[8];
+    const double det = m[0] * c00 + m[1] * c01 + m[2] * c02;
+    if (std::fabs (det) < 1e-12) {
+        return false;
+    }
+
+    double* r = inverse.tmx;
+    r[0]  = c00 / det;
+    r[1]  = (m[2] * m[9] - m[1] * m[10]) / det;
+    r[2]  = (m[1] * m[6] - m[2] * m[5]) / det;
+    r[4]  = c01 / det;
+    r[5]  = (m[0] * m[10] - m[2] * m[8]) / det;
+    r[6]  = (m[2] * m[4] - m[0] * m[6]) / det;
+    r[8]  = c02 / det;
+    r[9]  = (m[1] * m[8] - m[0] * m[9]) / det;
+    r[10] = (m[0] * m[5] - m[1] * m[4]) / det;
+
+    r[3]  = -(r[0] * m[3] + r[1] * m[7] + r[2] * m[11]);
+    r[7]  = -(r[4] * m[3] + r[5] * m[7] + r[6] * m[11]);
+    r[11] = -(r[8] * m[3] + r[9] * m[7] + r[10] * m[11]);
+    return true;
 }
 
 

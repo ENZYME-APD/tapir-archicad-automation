@@ -1,7 +1,8 @@
 """'gui': a small window for testers. Lists the open pull requests with their checks, builds and
 last results; tests the selected ones or everything due; tests what is labelled every pollMinutes
 unless paused; shows what happens. Uses the same functions as the command line (tkinter, standard
-library). The runner never touches an Archicad that is open: close it and the next test runs.
+library). Tests never touch an Archicad that is open: close it and the next test runs. Benchmark is
+the one action that uses an open Archicad, and only when its project is empty and untitled.
 """
 from __future__ import annotations
 
@@ -15,6 +16,7 @@ import webbrowser
 from pathlib import Path
 from tkinter import ttk
 
+import runner_bench
 import tapir_test_runner as r
 
 
@@ -61,7 +63,8 @@ class RunnerWindow:
                         ttk.Button(buttons, text="Test everything due", command=self.test_due),
                         ttk.Button(buttons, text="Refresh", command=self.refresh),
                         ttk.Button(buttons, text="Open on GitHub", command=self.open_selected),
-                        ttk.Button(buttons, text="Put my add-on back", command=self.restore)]
+                        ttk.Button(buttons, text="Put my add-on back", command=self.restore),
+                        ttk.Button(buttons, text="Benchmark open Archicad", command=self.benchmark)]
         for button in self.actions:
             button.pack(side="left", padx=(0, 6))
         self.stop_button = ttk.Button(buttons, text="Stop after this test", command=self.request_stop, state="disabled")
@@ -242,6 +245,18 @@ class RunnerWindow:
                 self.events.put(("log", "nothing to put back: your own add-on is loaded"))
         self.work("Putting your add-on back ...", job)
 
+    def benchmark(self) -> None:
+        """Speed and tokens of the Tapir in the Archicad that is open now, compared with its last run."""
+        def job():
+            port = r.find_port()
+            if port is None:
+                self.events.put(("log", "Benchmark: open Archicad with a new, empty project (do not save it), then click again."))
+                return
+            log = lambda text: self.events.put(("log", text))  # noqa: E731
+            log("Benchmark: a few minutes; it adds up to 5000 elements to the empty project and deletes them again.")
+            path = runner_bench.run_and_save(r.Tapir(port), log=log, stop=lambda: self.stop_requested)
+            webbrowser.open(path.with_suffix(".md").as_uri())
+        self.work("Benchmarking ...", job)
 
 def run(cfg: dict) -> int:
     root = tk.Tk()
