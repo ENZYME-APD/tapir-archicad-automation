@@ -2939,6 +2939,14 @@
             "isVisibleLine": {
                 "type": "boolean"
             },
+            "isInnerLine": {
+                "type": "boolean",
+                "description": "Whether the edge is an inner line of the profile (GetProfiles' edges[].isInnerLine)."
+            },
+            "isCutEndLine": {
+                "type": "boolean",
+                "description": "Whether the edge is a cut end line of the profile (GetProfiles' edges[].isCutEndLine)."
+            },
             "lineTypeId": {
                 "$ref": "#/AttributeIdArrayItem"
             },
