@@ -14,10 +14,15 @@ def CheckIFCClassificationReferences (elementIFCClassificationReferences):
             if 'source' in ifcClassificationReference:
                 assert (ifcClassificationReference['source'] in ['preview', 'local'])
             assert ('name' in ifcClassificationReference['referencedSource'])
-            # identification, name, location and description are left out when the reference has no value for them
-            for key in ['identification', 'name', 'location', 'description']:
+            # identification, name, location, description, sort (Archicad 29+) and
+            # relAssociatesClassificationName (Archicad 28+) are left out when the reference has no value for them
+            for key in ['identification', 'name', 'location', 'description', 'sort', 'relAssociatesClassificationName']:
                 if key in ifcClassificationReference:
                     assert (isinstance (ifcClassificationReference[key], str))
+            # the same for the edition, edition date, description and location of the referenced classification
+            for key in ['source', 'edition', 'editionDate', 'description', 'location']:
+                if key in ifcClassificationReference['referencedSource']:
+                    assert (isinstance (ifcClassificationReference['referencedSource'][key], str))
 
 # Every element comes with its IFC classification references. From Archicad 28
 # these are the ones mapped by the preview IFC export translator (source

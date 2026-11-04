@@ -64,6 +64,7 @@
 #include "PolygonCommands.hpp"
 #include "ViewAndPlaceSettingsCommands.hpp"
 #include "DrawingPrimitiveCommands.hpp"
+#include "LibraryPartCreationCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -1446,6 +1447,13 @@ GSErrCode Initialize (void)
             "Moves Favorites given by their names into a folder of the Favorites palette given by its path. "
             "Returns an execution result for each Favorite. Available from Archicad 29."
         );
+        err |= RegisterCommand<GetFavoriteDefaultsCommand> (
+            favoritesCommands, "1.8.1",
+            "Reads the element default stored in each given Favorite through the Favorite manager, without applying it or "
+            "placing an element: the element type, the layer, the element ID, the folder, the library part and GDL parameters, "
+            "the marker of every element type that has one, and the sub-elements with each of their kinds (Curtain Wall "
+            "frames and panels, Stair treads and risers, Railing posts and rails, markers ...). Available from Archicad 29."
+        );
         AddCommandGroup (favoritesCommands);
     }
 
@@ -1929,7 +1937,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetIFCClassificationReferencesOfElementsCommand> (
             ifcCommands, "1.8.0",
-            "Retrieves the IFC classification references of the given elements, subelements included: identification, name, location, description (from Archicad 29), the referenced classification (name, source, edition) and whether the reference comes from the preview translator or is stored locally. On Archicad 25, 26 and 27 the source is not given, the referenced classification also has its edition date, description and location, and storedOnly returns only the references stored on the elements."
+            "Retrieves the IFC classification references of the given elements, subelements included: identification, name, location, description and sort (from Archicad 29), the name of the IfcRelAssociatesClassification (from Archicad 28), the referenced classification (name, source, edition, edition date, description and location) and whether the reference comes from the preview translator or is stored locally. On Archicad 25, 26 and 27 the source is not given and storedOnly returns only the references stored on the elements."
         );
         err |= RegisterCommand<SetIFCClassificationReferencesOfElementsCommand> (
             ifcCommands, "1.8.0",
@@ -2088,6 +2096,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<OpenLibraryPartInEditorCommand> (
             libraryCommands, "1.8.0",
             "Opens a loaded library part, given by its fileName or documentName as returned by GetAvailableLibraryParts, in Archicad's library part editor. Available from Archicad 27."
+        );
+        err |= RegisterCommand<CreateLibraryPartFromElementsCommand> (
+            libraryCommands, "1.8.1",
+            "Creates a library part in the embedded library (or in a given local library folder, which is added to the loaded libraries when needed) whose 2D symbol is a copy of the given 2D drawing elements (lines, polylines, arcs, circles, splines, fills, texts and hotspots), under the given parent subtype, with optional master, 2D, 3D and parameter scripts, comment and keywords. A and B are taken from the extent of the symbol. The elements themselves are not changed."
+        );
+        err |= RegisterCommand<InterpretGDLScript3DCommand> (
+            libraryCommands, "1.8.1",
+            "Runs a GDL 3D script, given as text or as the master and 3D scripts of a loaded library part with its default parameters, with the settings of the GDL editor, and returns whether it ran without a GDL error, how many 3D model elements it generated and their bounding box. The API returns no GDL error message or line number."
+        );
+        err |= RegisterCommand<GetGDLUserGlobalsCommand> (
+            libraryCommands, "1.8.1",
+            "Returns the current GDL global variables the GDL interpreter gets, with their names, types and values. Available from Archicad 28."
         );
         AddCommandGroup (libraryCommands);
     }
