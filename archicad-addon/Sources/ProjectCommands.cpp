@@ -4728,6 +4728,11 @@ GS::ObjectState GetExportToleranceCommand::Execute (const GS::ObjectState& /*par
 {
     double arcDiff = 0.0;
     const GSErrCode err = ACAPI_ProjectSetting_GetExportTolerance (&arcDiff);
+    if (err == APIERR_NOTSUPPORTED) {
+        // Archicad documents APIERR_NOTSUPPORTED for this function as "Not at export":
+        // the tolerance only exists while an export (a file format add-on's save) runs.
+        return CreateErrorResponse (err, "Archicad provides the export tolerance only while an export is in progress, and no export is in progress now.");
+    }
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to get the export tolerance.");
     }
