@@ -1,9 +1,9 @@
+"""Requires Archicad 27 or newer. On Archicad 27 this example reads the tool defaults and works on the selected
+MEP elements (select a flexible segment, an elbow and a terminal first), because Archicad 27 has no commands
+to place them. From Archicad 28 it places its own elements and deletes them at the end.
+"""
 import sys
 import aclib
-
-# Requires Archicad 27 or newer. On Archicad 27 this example reads the tool defaults and works on the
-# selected MEP elements (select a flexible segment, an elbow and a terminal first), because Archicad 27
-# has no commands to place them. From Archicad 28 it places its own elements and deletes them at the end.
 
 # GetMEPToolDefaults: the rigid segment and branch defaults of the routing tool, and from Archicad 30
 # the Electrical Panel tool with its number of circuit defaults.
