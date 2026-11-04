@@ -9,7 +9,7 @@ command, so only the Archicad API calls inside Execute are left to write by hand
     scope, Archicad version guard) in Sources/<file>.cpp
   * the RegisterCommand call in AddOnMain.cpp, with the version from
     tools/package_info.json
-  * a starter Python example in archicad-addon/Examples/
+  * a starter Python example, archicad-addon/Examples/<GroupFolder>/<CommandName>.py
 
 Existing commands are never touched: a command whose class already exists is
 skipped. Standard library only; a .yaml spec also works when PyYAML is installed.
@@ -30,7 +30,7 @@ Spec format (JSON list, or {"commands": [...]}), one object per command:
     "undoable": true,                      optional: default true unless the name starts with Get
     "commonSchema": true,                  optional: CommonSchema::Used (default) or NotUsed
     "version": "1.7.3",                    optional: defaults to tools/package_info.json
-    "example": true,                       optional: write Examples/<snake_case>.py (default true)
+    "example": true,                       optional: write Examples/<GroupFolder>/<CommandName>.py (default true)
     "input": { ... compact schema ... },   null or omitted for no parameters
     "output": "executionResults" | "elements" | { ... compact schema ... }
   }
@@ -60,6 +60,8 @@ import json
 import os
 import re
 import sys
+
+from check_examples import ExampleFolder  # the Examples/<GroupFolder> of a command group
 
 ROOT = os.path.dirname (os.path.dirname (os.path.abspath (__file__)))
 SOURCES = os.path.join (ROOT, 'archicad-addon', 'Sources')
@@ -152,10 +154,6 @@ def schema_literal (schema):
 
 def words (name):
     return re.sub (r'(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])', ' ', name)
-
-
-def snake (name):
-    return words (name).lower ().replace (' ', '_')
 
 
 def cpp_string (text):
@@ -510,12 +508,16 @@ def placeholder (schema, common):
 
 
 def gen_example (cmd, input_schema, common):
+    # The convention of archicad-addon/Examples (see its README.md and tools/check_examples.py):
+    # Examples/<GroupFolder>/<CommandName>.py, a module docstring the docs show as the example's description,
+    # then top-level code calling the command through aclib.
     params = placeholder (input_schema, common) if input_schema else None
-    req = f"# Requires Archicad {cmd['requires']} or newer.\n" if cmd.get ('requires') else ''
-    call = (f"result = aclib.RunTapirCommand ('{cmd['name']}', {json.dumps (params, indent=4)})" if params is not None
-            else f"result = aclib.RunTapirCommand ('{cmd['name']}')")
-    return (f"import aclib\n\n{req}# {cmd.get ('description', '')}\n"
-            f"# TODO: replace the placeholder values with real ones.\n\n{call}\n\nprint (result)\n")
+    call = (f"aclib.PrintJson (aclib.RunTapirCommand ('{cmd['name']}', {json.dumps (params, indent=4)}))" if params is not None
+            else f"aclib.PrintJson (aclib.RunTapirCommand ('{cmd['name']}'))")
+    req = f"\n\nRequires Archicad {cmd['requires']} or later.\n" if cmd.get ('requires') else ''
+    placeholderNote = '# Replace the placeholder values with real ones from the project.\n' if params is not None else ''
+    return (f'"""Runs {cmd["name"]} and prints its response.{req}"""\n'
+            f"import aclib\n\n{placeholderNote}{call}\n")
 
 
 # ------------------------------------------------------------ insertion --
@@ -533,6 +535,7 @@ def read (path):
 def write (path, text, dry, label):
     if dry:
         return
+    os.makedirs (os.path.dirname (path), exist_ok=True)
     newline = NEWLINES.get (os.path.abspath (path), '\r\n' if os.name == 'nt' else '\n')
     with open (path, 'w', encoding='utf-8', newline=newline) as f:
         f.write (text)
@@ -552,6 +555,34 @@ def insert_registration (main_text, cmd, version):
         groups = re.findall (r'CommandGroup (\w+) \(', main_text)
         raise SpecError (f'{cmd["name"]}: no command group "{group}" in AddOnMain.cpp. Known groups: {", ".join (groups)}')
     return main_text[:m.start ()] + registration_block (cmd, version) + main_text[m.start ():]
+
+
+def group_display_name (main_text, group):
+    # The name of the command group whose AddCommandGroup (<group>) the registration goes before:
+    # the last CommandGroup <group> ("<name>") declared before it (a variable name can be reused
+    # in another block of Initialize).
+    m = re.search (r'^[ \t]*AddCommandGroup \(' + re.escape (group) + r'\);[ \t]*$', main_text, re.M)
+    names = re.findall (r'CommandGroup ' + re.escape (group) + r' \("([^"]+)"\)', main_text[:m.start ()] if m else main_text)
+    if not names:
+        raise SpecError (f'no CommandGroup {group} ("...") declaration in AddOnMain.cpp')
+    return names[-1]
+
+
+def write_example_folder_shim (folder):
+    # Every group folder of Examples has the aclib.py shim that loads ../aclib/ (see
+    # tools/check_examples.py); a new group's folder gets a copy of another folder's.
+    shim_path = os.path.join (EXAMPLES, folder, 'aclib.py')
+    if os.path.exists (shim_path):
+        return
+    template = next ((os.path.join (EXAMPLES, f, 'aclib.py') for f in sorted (os.listdir (EXAMPLES))
+                      if f != 'aclib' and os.path.isfile (os.path.join (EXAMPLES, f, 'aclib.py'))), None)
+    if template is None:
+        raise SpecError (f'no Examples/<GroupFolder>/aclib.py to copy into Examples/{folder}/')
+    other = os.path.basename (os.path.dirname (template))
+    os.makedirs (os.path.dirname (shim_path), exist_ok=True)
+    text = read (template).replace (f'Examples/{other}/', f'Examples/{folder}/')
+    write (shim_path, text, False, 'shim')
+    print (f'note: wrote Examples/{folder}/aclib.py')
 
 
 def validate (cmd, i):
@@ -638,12 +669,15 @@ def main ():
             main_text = insert_registration (main_text, cmd, cmd.get ('version', version))
             written.append (name)
             if cmd.get ('example', True):
-                ex_path = os.path.join (EXAMPLES, snake (name) + '.py')
+                folder = ExampleFolder (group_display_name (main_text, cmd['group']))
+                ex_path = os.path.join (EXAMPLES, folder, name + '.py')
                 if os.path.exists (ex_path):
                     print (f'note: {os.path.relpath (ex_path, ROOT)} exists, example not written')
                 else:
                     if args.dry_run:
-                        print (f'===== Examples/{snake (name)}.py\n{gen_example (cmd, input_schema, common)}')
+                        print (f'===== Examples/{folder}/{name}.py\n{gen_example (cmd, input_schema, common)}')
+                    else:
+                        write_example_folder_shim (folder)
                     write (ex_path, gen_example (cmd, input_schema, common), args.dry_run, 'example')
 
         if args.schemas:
