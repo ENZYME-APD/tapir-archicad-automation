@@ -3814,6 +3814,51 @@ GS::Optional<GS::UniString> ChangeSelectionOfElementsCommand::GetRawResponseSche
     })";
 }
 
+// Adds a list of elements to the selection, or removes it, and returns one execution
+// result per element of the list.
+//
+// ACAPI_Selection_Select takes an array, and one call per element costs a selection
+// transaction each: a list of some thousands then takes minutes, and a list of tens of
+// thousands does not finish inside any sensible timeout. So the whole list goes in one
+// call. That call reports a single error code, so when it fails the elements are tried
+// one by one, which says which of them Archicad refused and keeps the per-element
+// results of the response meaningful.
+static GS::Array<GS::ObjectState> ChangeSelectionOfElements (const GS::Array<GS::ObjectState>& elements, bool add)
+{
+    const char* const failure = add ? "Failed to add to selection" : "Failed to remove from selection";
+
+    GS::Array<API_Neig> neigs;
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId != nullptr) {
+            neigs.Push (API_Neig (GetGuidFromObjectState (*elementId)));
+        }
+    }
+
+    GS::Array<GS::ObjectState> results;
+    const GSErrCode err = neigs.IsEmpty () ? NoError : ACAPI_Selection_Select (neigs, add);
+    if (err == NoError) {
+        for (const GS::ObjectState& element : elements) {
+            results.Push (element.Get ("elementId") == nullptr
+                              ? CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing")
+                              : CreateSuccessfulExecutionResult ());
+        }
+        return results;
+    }
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+        const GSErrCode single = ACAPI_Selection_Select ({ API_Neig (GetGuidFromObjectState (*elementId)) }, add);
+        results.Push (single == NoError ? CreateSuccessfulExecutionResult ()
+                                        : CreateFailedExecutionResult (single, failure));
+    }
+    return results;
+}
+
 GS::ObjectState ChangeSelectionOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> addElementsToSelection;
@@ -3825,34 +3870,12 @@ GS::ObjectState ChangeSelectionOfElementsCommand::Execute (const GS::ObjectState
     const auto& executionResultsOfAddToSelection = response.AddList<GS::ObjectState> ("executionResultsOfAddToSelection");
     const auto& executionResultsOfRemoveFromSelection = response.AddList<GS::ObjectState> ("executionResultsOfRemoveFromSelection");
 
-    for (const GS::ObjectState& element : addElementsToSelection) {
-        const GS::ObjectState* elementId = element.Get ("elementId");
-        if (elementId == nullptr) {
-            executionResultsOfAddToSelection (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
-            continue;
-        }
-
-        const GSErrCode err = ACAPI_Selection_Select ({ API_Neig (GetGuidFromObjectState (*elementId)) }, true);
-        if (err != NoError) {
-            executionResultsOfAddToSelection (CreateFailedExecutionResult (err, "Failed to add to selection"));
-        } else {
-            executionResultsOfAddToSelection (CreateSuccessfulExecutionResult ());
-        }
+    for (const GS::ObjectState& result : ChangeSelectionOfElements (addElementsToSelection, true)) {
+        executionResultsOfAddToSelection (result);
     }
 
-    for (const GS::ObjectState& element : removeElementsFromSelection) {
-        const GS::ObjectState* elementId = element.Get ("elementId");
-        if (elementId == nullptr) {
-            executionResultsOfRemoveFromSelection (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
-            continue;
-        }
-
-        const GSErrCode err = ACAPI_Selection_Select ({ API_Neig (GetGuidFromObjectState (*elementId)) }, false);
-        if (err != NoError) {
-            executionResultsOfRemoveFromSelection (CreateFailedExecutionResult (err, "Failed to remove from selection"));
-        } else {
-            executionResultsOfRemoveFromSelection (CreateSuccessfulExecutionResult ());
-        }
+    for (const GS::ObjectState& result : ChangeSelectionOfElements (removeElementsFromSelection, false)) {
+        executionResultsOfRemoveFromSelection (result);
     }
 
     return response;
