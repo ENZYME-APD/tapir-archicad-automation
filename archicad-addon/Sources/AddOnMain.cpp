@@ -2363,6 +2363,10 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.8.0",
             "Finds a model view option combination by id or by name and returns its index, id, name and flags. The index is the one Archicad uses to switch the model view options of a window to the combination. Available from Archicad 27."
         );
+        err |= RegisterCommand<GetModelViewOptionDetailsCommand> (
+            navigatorCommands, "1.8.1",
+            "Gets the settings stored in model view option combinations (Document > Model View > Model View Options), all of them or the ones given by id or by name: the model view options in the fields of GetViewOptions, and the options library parts add to the combination (gdlOptions) with their GDL parameter values. Read-only: the Archicad API has no function to change, rename or create a stored combination; SetViewOptions changes the options of the current window. Available from Archicad 27."
+        );
         err |= RegisterCommand<GetViewOptionsCommand> (
             navigatorCommands, "1.8.0",
             "Gets the model view options and on-screen view options of the current plan window, and the index of the model view option combination it applies."
