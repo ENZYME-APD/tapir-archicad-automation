@@ -1188,6 +1188,7 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
     GS::HashTable<GS::Pair<API_Guid, API_Guid>, GSIndex> resultIndices;
     GS::HashTable<API_Guid, GS::Array<API_Guid>> propertiesForElements;
     GS::HashTable<GS::Pair<API_Guid, API_Guid>, GS::UniString> propertyValuesForElements;
+    GS::HashTable<GS::Pair<API_Guid, API_Guid>, GS::UniString> valueStatusesForElements;
 
     PropertyConversionUtils conversionUtils;
 
@@ -1204,16 +1205,26 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
             continue;
         }
 
-        const GS::ObjectState* propertyValue = elementPropertyValue.Get ("propertyValue");
-        if (propertyValue == nullptr) {
-            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "propertyValue is missing"));
+        // Default and UserUndefined need no propertyValue; Value (the default) sets it.
+        GS::UniString valueStatus ("Value");
+        elementPropertyValue.Get ("valueStatus", valueStatus);
+        if (valueStatus != "Value" && valueStatus != "Default" && valueStatus != "UserUndefined") {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "valueStatus must be Value, Default or UserUndefined"));
             continue;
         }
 
         GS::UniString propertyValueDisplayString;
-        if (!propertyValue->Get ("value", propertyValueDisplayString)) {
-            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "value is missing from propertyValue"));
-            continue;
+        if (valueStatus == "Value") {
+            const GS::ObjectState* propertyValue = elementPropertyValue.Get ("propertyValue");
+            if (propertyValue == nullptr) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "propertyValue is missing"));
+                continue;
+            }
+
+            if (!propertyValue->Get ("value", propertyValueDisplayString)) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "value is missing from propertyValue"));
+                continue;
+            }
         }
 
         const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
@@ -1225,6 +1236,7 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
 
         const auto guidPair = GS::NewPair (elemGuid, propertyGuid);
         propertyValuesForElements.Add (guidPair, propertyValueDisplayString);
+        valueStatusesForElements.Add (guidPair, valueStatus);
         resultIndices.Add (guidPair, results.GetSize ());
         results.PushNew ();
     }
@@ -1262,8 +1274,15 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
                 const bool isNumericList = definition.collectionType == API_PropertyListCollectionType &&
                     definition.measureType == API_PropertyDefaultMeasureType &&
                     (definition.valueType == API_PropertyRealValueType || definition.valueType == API_PropertyIntegerValueType);
-                GSErrCode err;
-                if (isNumericList) {
+                const GS::UniString& valueStatus = valueStatusesForElements[guidPair];
+                GSErrCode err = NoError;
+                if (valueStatus == "Default") {
+                    // The element's own value is removed, so the property shows its default value (or expression) again.
+                    propertyValue.isDefault = true;
+                } else if (valueStatus == "UserUndefined") {
+                    propertyValue.isDefault = false;
+                    propertyValue.value.variantStatus = API_VariantStatusUserUndefined;
+                } else if (isNumericList) {
                     err = SetNumericListPropertyValueFromString (propertyValuesForElements[guidPair], propertyValue);
                 } else {
                     err = ACAPI_Property_SetPropertyValueFromString (propertyValuesForElements[guidPair], conversionUtils, &propertyValue);

@@ -6022,13 +6022,33 @@
             },
             "propertyValue": {
                 "$ref": "#/PropertyValue"
+            },
+            "valueStatus": {
+                "type": "string",
+                "enum": [
+                    "Value",
+                    "Default",
+                    "UserUndefined"
+                ],
+                "description": "Value (the default) sets propertyValue. Default removes the element's own value, so the property shows its default value (or its expression) again. UserUndefined sets the value to undefined. propertyValue is not needed and is ignored for Default and UserUndefined."
             }
         },
         "additionalProperties": false,
         "required": [
             "elementId",
-            "propertyId",
-            "propertyValue"
+            "propertyId"
+        ],
+        "anyOf": [
+            {
+                "required": [
+                    "propertyValue"
+                ]
+            },
+            {
+                "required": [
+                    "valueStatus"
+                ]
+            }
         ]
     },
     "ElementPropertyValues": {
