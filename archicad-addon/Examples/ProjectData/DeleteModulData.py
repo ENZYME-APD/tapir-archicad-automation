@@ -7,11 +7,11 @@ aclib.RunTapirCommand ('StoreModulData', {
     'modulData': [
         {'name': 'tapir-example/delete', 'content': 'to be deleted'}
     ]
-}, debug = False)
-
-aclib.RunTapirCommand ('DeleteModulData', {
-    'names': ['tapir-example/delete', 'tapir-example/missing']
 })
+
+aclib.PrintJson (aclib.RunTapirCommand ('DeleteModulData', {
+    'names': ['tapir-example/delete', 'tapir-example/missing']
+}))
 
 aclib.RunTapirCommand ('GetModulData', {
     'names': ['tapir-example/delete']

@@ -5,7 +5,7 @@ of an element is converted to JPEG, and to a MIME type format.
 import base64
 import aclib
 
-elements = aclib.RunTapirCommand ('GetAllElements', debug = False)['elements']
+elements = aclib.RunTapirCommand ('GetAllElements')['elements']
 if not elements:
     print ('No elements in the project.')
     raise SystemExit (0)
@@ -16,7 +16,7 @@ preview = aclib.RunTapirCommand ('GetElementPreviewImage', {
     'format': 'png',
     'width': 128,
     'height': 128
-}, debug = False)
+})
 if 'previewImage' not in preview:
     print ('No preview image: {}'.format (preview))
     raise SystemExit (0)
@@ -27,7 +27,7 @@ result = aclib.RunTapirCommand ('ConvertImages', {
         {'image': preview['previewImage'], 'inputFormat': 'image/png', 'outputFormat': 'image/tiff'},
         {'image': 'bm90IGFuIGltYWdl', 'inputFormat': 'PNG', 'outputFormat': 'GIF'}
     ]
-}, debug = False)
+})
 
 for converted in result['images']:
     if 'error' in converted:
