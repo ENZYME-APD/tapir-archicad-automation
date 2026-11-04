@@ -39,8 +39,19 @@ ditto -c -k --keepParent "$AddOnBundlePath" "$TempZipFileName"
 # submit the zip to the notarization service
 xcrun notarytool submit "$TempZipFileName" --wait --keychain-profile "addon.notarization"
 
-# staple the ticket to the bundle
-xcrun stapler staple "$AddOnBundlePath"
+# staple the ticket to the bundle; stapling downloads the ticket from Apple
+# right after notarization, which sometimes fails on a dropped connection
+# (error 68), so retry a few times before giving up
+StapleAttempt=1
+until xcrun stapler staple "$AddOnBundlePath"; do
+    if [ $StapleAttempt -ge 5 ]; then
+        echo "Stapling failed $StapleAttempt times, giving up."
+        exit 1
+    fi
+    echo "Stapling failed (attempt $StapleAttempt), retrying in $((StapleAttempt * 30)) seconds..."
+    sleep $((StapleAttempt * 30))
+    StapleAttempt=$((StapleAttempt + 1))
+done
 
 # delete the temporary zip file
 rm "$TempZipFileName"

@@ -2,8 +2,6 @@
 #include "ElementCreationCommands.hpp"
 #include "MigrationHelper.hpp"
 
-#include <cstring>
-
 // ── Primitive collector ───────────────────────────────────────────────────────
 
 // The shape primitive callback has no user pointer, so - like CollectCutFillPolygons in
@@ -165,15 +163,8 @@ static GSErrCode CollectDrawingPrimitives (const API_PrimElement* primElem,
             os.Add ("angle", text.angle);
             os.Add ("widthFactor", text.widthFactor);
             os.Add ("charSpaceFactor", text.charSpaceFactor);
-            // The text content arrives in par1. Read it with a bound, so a missing terminator
-            // cannot run through memory.
-            const char* content = static_cast<const char*> (par1);
-            if (content != nullptr) {
-                const size_t MaxTextLength = 65536;
-                const char* end = static_cast<const char*> (memchr (content, '\0', MaxTextLength));
-                const size_t length = (end != nullptr) ? static_cast<size_t> (end - content) : MaxTextLength;
-                os.Add ("text", GS::UniString (content, static_cast<GS::USize> (length), CC_UTF8));
-            }
+            // The text content is not read: nothing in this add-on confirms what par1 carries
+            // for a text primitive, and a wrong guess would crash Archicad.
             break;
         }
         case API_PrimPLineID: {
@@ -184,11 +175,8 @@ static GSErrCode CollectDrawingPrimitives (const API_PrimElement* primElem,
             os.Add ("nCoords", pline.nCoords);
             os.Add ("nArcs", pline.nArcs);
             os.Add ("penWeight", pline.penWeight);
-            const auto* coords = static_cast<const API_Coord*> (par1);
-            if (coords != nullptr && pline.nCoords > 0) {
-                const auto& coordinates = os.AddList<GS::ObjectState> ("coordinates");
-                AddCoordinatesToList (coordinates, coords, 1, pline.nCoords);
-            }
+            // The vertices are not read: nothing in this add-on confirms how par1 is indexed for
+            // a polyline primitive, and a wrong guess would read past the array.
             break;
         }
         case API_PrimTriID: {
@@ -246,8 +234,8 @@ static GSErrCode CollectDrawingPrimitives (const API_PrimElement* primElem,
                 "yMax", pict.destBox.yMax));
             break;
         }
-        case API_PrimCtrl_HatchBorderBegID:
-        case API_PrimCtrl_HatchLinesBegID: {
+        case API_PrimCtrl_HatchBorderBegID: {
+            // par1 read as CollectCutFillPolygons in ElementCommands.cpp reads it.
             const auto* border = static_cast<const API_PrimHatchBorder*> (par1);
             if (border != nullptr) {
                 GS::ObjectState hatch;
@@ -377,10 +365,6 @@ static const char* DrawingPrimitiveSchema = R"({
         "ratio": {
             "type": "number"
         },
-        "text": {
-            "type": "string",
-            "description": "Text: the content."
-        },
         "font": {
             "type": "integer"
         },
@@ -439,7 +423,7 @@ static const char* DrawingPrimitiveSchema = R"({
         },
         "coordinates": {
             "type": "array",
-            "description": "PLine: the vertices. Tri: the three corners.",
+            "description": "Tri: the three corners.",
             "items": {
                 "$ref": "#/Coordinate2D"
             }
@@ -478,7 +462,7 @@ static const char* DrawingPrimitiveSchema = R"({
         },
         "hatchBorder": {
             "type": "object",
-            "description": "Ctrl_HatchBorderBeg and Ctrl_HatchLinesBeg: the fill that follows.",
+            "description": "Ctrl_HatchBorderBeg: the fill that follows.",
             "properties": {
                 "doFrame": { "type": "boolean" },
                 "fill": { "$ref": "#/AttributeIdArrayItem" },
