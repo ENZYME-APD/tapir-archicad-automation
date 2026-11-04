@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-04 14:12 UTC",
+ "generatedAt": "2026-11-04 15:46 UTC",
  "versions": [
   25,
   26,
@@ -6688,7 +6688,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1842,
+     "title": "SetElementNotificationClient: optional element types to observe, touch only changed observers"
+    }
+   ],
    "issues": [
     {
      "number": 1840,
@@ -7228,7 +7233,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1842,
+     "title": "SetElementNotificationClient: optional element types to observe, touch only changed observers"
+    }
+   ],
    "issues": [
     {
      "number": 1840,
@@ -7388,6 +7398,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1841,
+     "title": "Check sub-element objects without reading every object in full"
+    },
     {
      "number": 1802,
      "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
@@ -7749,6 +7763,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1842,
+     "title": "SetElementNotificationClient: optional element types to observe, touch only changed observers"
+    },
+    {
+     "number": 1841,
+     "title": "Check sub-element objects without reading every object in full"
+    },
+    {
      "number": 1834,
      "title": "[3/3] Notification clients: attribute replacement events"
     },
@@ -7974,6 +7996,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1841,
+     "title": "Check sub-element objects without reading every object in full"
+    },
     {
      "number": 1809,
      "title": "ReserveElements/ReleaseElements: report GUIDs that are not elements instead of success"
@@ -10866,7 +10892,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1841,
+     "title": "Check sub-element objects without reading every object in full"
+    }
+   ],
    "issues": [
     {
      "number": 1839,
@@ -17944,7 +17975,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1843,
+     "title": "ChangeSelectionOfElements: select the whole list in one API call"
+    }
+   ],
    "issues": [
     {
      "number": 314,
@@ -20802,7 +20838,12 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "report window of the add-on",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1849,
+     "title": "Run palette scripts in a configured uv project (uvProject in config.json)"
+    }
+   ],
    "issues": []
   },
   {
@@ -32067,6 +32108,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1841,
+     "title": "Check sub-element objects without reading every object in full"
+    },
+    {
      "number": 1836,
      "title": "[3/4] Report element changes made by the per-element setters to notification clients"
     },
@@ -38727,6 +38772,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1843,
+     "title": "ChangeSelectionOfElements: select the whole list in one API call"
+    },
+    {
      "number": 1836,
      "title": "[3/4] Report element changes made by the per-element setters to notification clients"
     },
@@ -44495,6 +44544,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1842,
+     "title": "SetElementNotificationClient: optional element types to observe, touch only changed observers"
+    },
+    {
      "number": 1834,
      "title": "[3/3] Notification clients: attribute replacement events"
     },
@@ -45592,6 +45645,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1841,
+     "title": "Check sub-element objects without reading every object in full"
+    },
     {
      "number": 1836,
      "title": "[3/4] Report element changes made by the per-element setters to notification clients"
@@ -49116,6 +49173,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1841,
+     "title": "Check sub-element objects without reading every object in full"
+    },
     {
      "number": 1836,
      "title": "[3/4] Report element changes made by the per-element setters to notification clients"
