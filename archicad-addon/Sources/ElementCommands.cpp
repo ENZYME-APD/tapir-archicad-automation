@@ -299,6 +299,282 @@ static const char* StairTurnTypeToString (API_StairTurnTypeID type)
     }
 }
 
+// The floor plan and section settings of a Stair (#1788): the members of API_StairType that the
+// Floor Plan and Section panel of Stair Settings shows, read the way the Wall case reads its own:
+// attributes as { guid } ids (left out when unset), pens as integers, enums by name. The arrays of
+// the DevKit are reported as arrays of objects that name their indices after the DevKit's index
+// enums (API_StairStructSymbTypeID, API_StairStructSymbViewID, API_StairStructSymbPartID, ...).
+// These members are the same, with the same names and types, in every supported DevKit.
+
+static const char* StairDisplayTypeToString (API_StairDisplayTypeID type)
+{
+    switch (type) {
+        case APIStairDisplay_Custom:             return "Custom";
+        case APIStairDisplay_ByModelViewOptions: return "ByModelViewOptions";
+        default:                                 return "Unknown";
+    }
+}
+
+static const char* StairGridTypeToString (API_StairGridTypeID type)
+{
+    switch (type) {
+        case APIStairGrid_NotRelevant:                  return "NotRelevant";
+        case APIStairGrid_WithSingleBreaklineFull:      return "WithSingleBreaklineFull";
+        case APIStairGrid_NoBreaklineFull:              return "NoBreaklineFull";
+        case APIStairGrid_BelowBreakline:               return "BelowBreakline";
+        case APIStairGrid_AboveBreakline:               return "AboveBreakline";
+        case APIStairGrid_MiddleBreakline:              return "MiddleBreakline";
+        case APIStairGrid_MiddleBreaklineFull:          return "MiddleBreaklineFull";
+        case APIStairGrid_NoBreakMarkHidden:            return "NoBreakMarkHidden";
+        case APIStairGrid_AboveBreakMarkHidden:         return "AboveBreakMarkHidden";
+        case APIStairGrid_BelowBreakMarkHidden:         return "BelowBreakMarkHidden";
+        case APIStairGrid_Multistory2DAllVisible:       return "Multistory2DAllVisible";
+        case APIStairGrid_Multistory2DHiddenVisible:    return "Multistory2DHiddenVisible";
+        case APIStairGrid_Multistory2DNoneVisibleHidden: return "Multistory2DNoneVisibleHidden";
+        case APIStairGrid_WithBreakMarkAllVisible:      return "WithBreakMarkAllVisible";
+        case APIStairGrid_WithBreakMarkHiddenVisible:   return "WithBreakMarkHiddenVisible";
+        default:                                        return "Unknown";
+    }
+}
+
+static const char* StairStoryVisibilityToString (API_StairStoryVisibilityID visibility)
+{
+    switch (visibility) {
+        case APISSV_HomeStoryOnly:               return "HomeStoryOnly";
+        case APISSV_HomeAndOneStoryUp:           return "HomeAndOneStoryUp";
+        case APISSV_HomeAndOneStoryDown:         return "HomeAndOneStoryDown";
+        case APISSV_HomeAndOneStoryUpAndDown:    return "HomeAndOneStoryUpAndDown";
+        case APISSV_OneStoryUp:                  return "OneStoryUp";
+        case APISSV_OneStoryDown:                return "OneStoryDown";
+        case APISSV_AllStories:                  return "AllStories";
+        case APISSV_AllRelevantStories:          return "AllRelevantStories";
+        case APISSV_AllRelevantAndOneStoryUp:    return "AllRelevantAndOneStoryUp";
+        case APISSV_AllRelevantAndOneStoryDown:  return "AllRelevantAndOneStoryDown";
+        default:                                 return "Unknown";
+    }
+}
+
+static const char* BreakLineAngleTypeToString (API_BreakLineAngleTypeID type)
+{
+    switch (type) {
+        case APIBreakLineAngle_AngleToVertical:   return "AngleToVertical";
+        case APIBreakLineAngle_AngleToHorizontal: return "AngleToHorizontal";
+        case APIBreakLineAngle_NumberOfGoings:    return "NumberOfGoings";
+        default:                                  return "Unknown";
+    }
+}
+
+static const char* BreakLinePositionTypeToString (API_BreakLinePositionTypeID type)
+{
+    switch (type) {
+        case APIBreakLinePosition_FloorPlanCutPlaneHeight: return "FloorPlanCutPlaneHeight";
+        case APIBreakLinePosition_CustomHeight:            return "CustomHeight";
+        case APIBreakLinePosition_AtNthRiser:              return "AtNthRiser";
+        default:                                           return "Unknown";
+    }
+}
+
+static const char* StairStructSymbTypeToString (Int32 type)
+{
+    switch (type) {
+        case APIST_UnderStructure: return "UnderStructure";
+        case APIST_Stringer:       return "Stringer";
+        default:                   return "Unknown";
+    }
+}
+
+static const char* StairStructSymbViewToString (Int32 view)
+{
+    switch (view) {
+        case APISV_FloorPlan:   return "FloorPlan";
+        case APISV_CeilingPlan: return "CeilingPlan";
+        default:                return "Unknown";
+    }
+}
+
+static const char* StairStructSymbVisibilityToString (Int32 structure)
+{
+    switch (structure) {
+        case APISV_Beam:         return "Beam";
+        case APISV_Cantilevered: return "Cantilevered";
+        case APISV_Stringer:     return "Stringer";
+        case APISV_Monolith:     return "Monolith";
+        default:                 return "Unknown";
+    }
+}
+
+static const char* StairStructSymbPartToString (Int32 part)
+{
+    switch (part) {
+        case APISP_Visible: return "Visible";
+        case APISP_Hidden:  return "Hidden";
+        default:            return "Unknown";
+    }
+}
+
+static const char* StairStructSymbRelevantStoriesToString (Int32 stories)
+{
+    switch (stories) {
+        case APISCV_ALL_STORIES:     return "AllStories";
+        case APISCV_BELOW_RELEVANT:  return "BelowRelevant";
+        case APISCV_BOTTOM_RELEVANT: return "BottomRelevant";
+        case APISCV_MID_RELEVANT:    return "MiddleRelevant";
+        case APISCV_TOP_RELEVANT:    return "TopRelevant";
+        case APISCV_ABOVE_RELEVANT:  return "AboveRelevant";
+        default:                     return "Unknown";
+    }
+}
+
+static void AddStairAttributeId (GS::ObjectState& os, const char* name, API_AttrTypeID typeID, API_AttributeIndex index)
+{
+    if (index != APIInvalidAttributeIndex) {
+        os.Add (name, CreateGuidObjectState (GetAttributeGuidFromIndex (typeID, index)));
+    }
+}
+
+static GS::ObjectState CreateStairLayoutObjectState (const API_StairLayoutData& layout)
+{
+    GS::ObjectState os;
+    os.Add ("visibility", CreateStoryVisibilityObjectState (layout.visibility));
+    os.Add ("isAutoOnStoryVisibility", layout.isAutoOnStoryVisibility);
+    os.Add ("storyVisibility", StairStoryVisibilityToString (layout.storyVisibility));
+    os.Add ("gridTypeAbove", StairGridTypeToString (layout.gridTypeAbove));
+    os.Add ("gridTypeTop", StairGridTypeToString (layout.gridTypeTop));
+    os.Add ("gridTypeMiddle", StairGridTypeToString (layout.gridTypeMiddle));
+    os.Add ("gridTypeBottom", StairGridTypeToString (layout.gridTypeBottom));
+    os.Add ("gridTypeBelow", StairGridTypeToString (layout.gridTypeBelow));
+    os.Add ("showWalkingLine", layout.showWalkingLine);
+    os.Add ("showNumbering", layout.showNumbering);
+    os.Add ("showUpDownText", layout.showUpDownText);
+    os.Add ("showDescription", layout.showDescription);
+    os.Add ("showStructure", layout.showStructure);
+    os.Add ("breakLineAngleType", BreakLineAngleTypeToString (layout.breakLineAngleType));
+    os.Add ("breakLineAngle", layout.breakLineAngle);
+    os.Add ("breakLineAngleNumberOfGoings", static_cast<Int32> (layout.breakLineAngleNumberOfGoings));
+    os.Add ("breakLineDistance", layout.breakLineDistance);
+    os.Add ("breakLinePositionType", BreakLinePositionTypeToString (layout.breakLinePositionType));
+    os.Add ("upperBreakLineCustomPosition", layout.upperBreakLineCustomPosition);
+    os.Add ("lowerBreakLineCustomPosition", layout.lowerBreakLineCustomPosition);
+    os.Add ("upperBreakLineNthRiserPosition", static_cast<Int32> (layout.upperBreakLineNthRiserPosition));
+    os.Add ("lowerBreakLineNthRiserPosition", static_cast<Int32> (layout.lowerBreakLineNthRiserPosition));
+    os.Add ("overrideLineType", layout.overrideLineType);
+    AddStairAttributeId (os, "lineTypeId", API_LinetypeID, layout.lineType);
+    os.Add ("overridePen", layout.overridePen);
+    os.Add ("pen", static_cast<Int32> (layout.pen));
+    os.Add ("overrideSymbolFill", layout.overrideSymbolFill);
+    AddStairAttributeId (os, "symbolFillId", API_FilltypeID, layout.symbolFill);
+    os.Add ("symbolFillPen", static_cast<Int32> (layout.symbolFillPen));
+    os.Add ("symbolFillBackgroundPen", static_cast<Int32> (layout.symbolFillBkgPen));
+    return os;
+}
+
+static void AddStairStructureSymbolDetails (const API_StairType& stair, GS::ObjectState& os)
+{
+    const auto& symbols = os.AddList<GS::ObjectState> ("structureSymbols");
+    for (Int32 type = 0; type < API_StairStructSymbTypeNum; ++type) {
+        for (Int32 view = 0; view < API_StairStructSymbViewNum; ++view) {
+            const API_StairStructureSymbolData& data = stair.structSymbData[type][view];
+            GS::ObjectState symbol;
+            symbol.Add ("structureType", StairStructSymbTypeToString (type));
+            symbol.Add ("view", StairStructSymbViewToString (view));
+            AddStairAttributeId (symbol, "visibleLineTypeId", API_LinetypeID, data.visibleLineType);
+            symbol.Add ("visibleLinePen", static_cast<Int32> (data.visibleLinePen));
+            AddStairAttributeId (symbol, "hiddenLineTypeId", API_LinetypeID, data.hiddenLineType);
+            symbol.Add ("hiddenLinePen", static_cast<Int32> (data.hiddenLinePen));
+            AddStairAttributeId (symbol, "visibleFillId", API_FilltypeID, data.visibleFillType);
+            symbol.Add ("visibleFillPen", static_cast<Int32> (data.visibleFillPen));
+            symbol.Add ("visibleFillBackgroundPen", static_cast<Int32> (data.visibleFillBackgroundPen));
+            AddStairAttributeId (symbol, "hiddenFillId", API_FilltypeID, data.hiddenFillType);
+            symbol.Add ("hiddenFillPen", static_cast<Int32> (data.hiddenFillPen));
+            symbol.Add ("hiddenFillBackgroundPen", static_cast<Int32> (data.hiddenFillBackgroundPen));
+            symbols (symbol);
+        }
+    }
+
+    const auto& monolithSymbols = os.AddList<GS::ObjectState> ("monolithStructureSymbols");
+    for (Int32 view = 0; view < API_StairStructSymbViewNum; ++view) {
+        for (Int32 part = 0; part < API_StairStructSymbPartNum; ++part) {
+            const API_StairMonolithStructureSymbolData& data = stair.monolithStructureSymbolData[view][part];
+            GS::ObjectState symbol;
+            symbol.Add ("view", StairStructSymbViewToString (view));
+            symbol.Add ("part", StairStructSymbPartToString (part));
+            AddStairAttributeId (symbol, "goingLineTypeId", API_LinetypeID, data.goingLineType);
+            symbol.Add ("goingLinePen", static_cast<Int32> (data.goingLinePen));
+            AddStairAttributeId (symbol, "goingNosingLineTypeId", API_LinetypeID, data.goingNosingLineType);
+            symbol.Add ("goingNosingLinePen", static_cast<Int32> (data.goingNosingLinePen));
+            AddStairAttributeId (symbol, "connectionLineTypeId", API_LinetypeID, data.connectionLineType);
+            symbol.Add ("connectionLinePen", static_cast<Int32> (data.connectionLinePen));
+            AddStairAttributeId (symbol, "connectionDetailLineTypeId", API_LinetypeID, data.connectionDetailLineType);
+            symbol.Add ("connectionDetailLinePen", static_cast<Int32> (data.connectionDetailLinePen));
+            AddStairAttributeId (symbol, "drainingFillId", API_FilltypeID, data.drainingFillType);
+            symbol.Add ("drainingFillPen", static_cast<Int32> (data.drainingFillPen));
+            symbol.Add ("drainingFillBackgroundPen", static_cast<Int32> (data.drainingFillBackGroundPen));
+            AddStairAttributeId (symbol, "contourLineTypeId", API_LinetypeID, data.contourLineType);
+            symbol.Add ("contourLinePen", static_cast<Int32> (data.contourLinePen));
+            monolithSymbols (symbol);
+        }
+    }
+}
+
+static GS::ObjectState CreateStairStructureVisibilityOnStoryObjectState (Int32 relevantStories, const API_StairStructureComponentSettingsVisibilityOnStory& onStory)
+{
+    GS::ObjectState os;
+    os.Add ("relevantStories", StairStructSymbRelevantStoriesToString (relevantStories));
+    const auto& structures = os.AddList<GS::ObjectState> ("structures");
+    for (Int32 part = 0; part < API_StairStructSymbPartNum; ++part) {
+        for (Int32 structure = 0; structure < API_StairStructSymbVisibilityNum; ++structure) {
+            structures (GS::ObjectState (
+                "part", StairStructSymbPartToString (part),
+                "structure", StairStructSymbVisibilityToString (structure),
+                "visible", onStory.structureVisibility[part][structure]));
+        }
+    }
+    const auto& fills = os.AddList<GS::ObjectState> ("fills");
+    for (Int32 part = 0; part < API_StairStructSymbPartNum; ++part) {
+        for (Int32 type = 0; type < API_StairStructSymbTypeNum; ++type) {
+            fills (GS::ObjectState (
+                "part", StairStructSymbPartToString (part),
+                "structureType", StairStructSymbTypeToString (type),
+                "visible", onStory.fillVisibility[part][type]));
+        }
+    }
+    const auto& monolithParts = os.AddList<GS::ObjectState> ("monolithParts");
+    for (Int32 part = 0; part < API_StairStructSymbPartNum; ++part) {
+        const API_MonolithPartsVisibilityData& data = onStory.monolithPartsVisibility[part];
+        GS::ObjectState partOS;
+        partOS.Add ("part", StairStructSymbPartToString (part));
+        partOS.Add ("connectionVisible", data.connectionVisible);
+        partOS.Add ("drainingVisible", data.drainingVisible);
+        partOS.Add ("landingLineVisible", data.landingLineVisible);
+        partOS.Add ("structureGoingVisible", data.structureGoingVisible);
+        partOS.Add ("structureGoingNosingVisible", data.structureGoingNosingVisible);
+        monolithParts (partOS);
+    }
+    return os;
+}
+
+static void AddStairFloorPlanDetails (const API_StairType& stair, GS::ObjectState& os)
+{
+    os.Add ("stairDisplayType", StairDisplayTypeToString (stair.stairDisplayType));
+    os.Add ("floorPlanLayout", CreateStairLayoutObjectState (stair.fpdLayout));
+    os.Add ("reflectedCeilingPlanLayout", CreateStairLayoutObjectState (stair.rcpdLayout));
+    os.Add ("structureVisibility", stair.structureVisibility);
+    AddStairStructureSymbolDetails (stair, os);
+
+    const auto& onStories = os.AddList<GS::ObjectState> ("structureVisibilityOnStories");
+    for (Int32 view = 0; view < API_StairStructSymbViewNum; ++view) {
+        const API_StairStructureComponentSettingsVisibility& visibility = stair.structureVisibilityOnStories[view];
+        GS::ObjectState viewOS;
+        viewOS.Add ("view", StairStructSymbViewToString (view));
+        viewOS.Add ("uniformSymbolRepresentationEnabled", visibility.uniformSymbolRepresentationEnabled);
+        const auto& stories = viewOS.AddList<GS::ObjectState> ("stories");
+        for (Int32 relevantStories = 0; relevantStories < API_StairStructSymbRelevantStoriesNum; ++relevantStories) {
+            stories (CreateStairStructureVisibilityOnStoryObjectState (relevantStories, visibility.structureVisibilityOnStories[relevantStories]));
+        }
+        onStories (viewOS);
+    }
+}
+
 // The segment type of each baseline edge and the turn of each baseline vertex (memo
 // stairBaseLine.edgeData and vertexData, plain pointers). The DevKit does not state their size;
 // on Archicad 29 both hold nPoints + 1 entries with slot 0 unused, like the coords (#1628): entry i
@@ -2763,6 +3039,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 // from the home story CreateStairs writes (a stair created on the 6.4 story
                 // reads 6.4, and read 12.8 as zCoordinate when the story level was added
                 // again, #1561), and its x and y are the origin of the baseline's coords.
+                // The floor plan and section display follows (#1788); no command writes it yet.
                 const API_Coord3D& basePoint = elem.stair.basePlane.basePoint;
                 typeSpecificDetails.Add ("stepNum", static_cast<Int32> (elem.stair.stepNum));
                 typeSpecificDetails.Add ("riserHeight", elem.stair.riserHeight);
@@ -2773,6 +3050,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("zCoordinate", basePoint.z);
                 typeSpecificDetails.Add ("finishVisible", elem.stair.finishVisible);
                 AddStairBaseLineFromMemo (elem.header.guid, { basePoint.x, basePoint.y }, typeSpecificDetails);
+                AddStairFloorPlanDetails (elem.stair, typeSpecificDetails);
             } break;
 
             case API_CutPlaneID: {
