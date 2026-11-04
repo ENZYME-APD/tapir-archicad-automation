@@ -1473,6 +1473,36 @@ GSErrCode ExecuteActionForEachDatabase (
     return NoError;
 }
 
+GS::ObjectState ExecuteForEachIdInList (
+    const GS::ObjectState& parameters,
+    const char* listFieldName,
+    const char* idFieldName,
+    const GS::UniString& undoName,
+    const std::function<GS::ObjectState (const API_Guid&)>& perItem)
+{
+    GS::Array<GS::ObjectState> items;
+    parameters.Get (listFieldName, items);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand (undoName, [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : items) {
+            const GS::ObjectState* id = item.Get (idFieldName);
+            if (id == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString (idFieldName) + " is missing"));
+                continue;
+            }
+
+            executionResults (perItem (GetGuidFromObjectState (*id)));
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
 void GetDetailMarkerNameAndId (const API_Element& element, GS::UniString& name, GS::UniString& id)
 {
     name = GS::UniString (element.detail.detailName);

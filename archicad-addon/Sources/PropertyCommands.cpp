@@ -2847,33 +2847,13 @@ GS::Optional<GS::UniString> DeletePropertyGroupsCommand::GetRawResponseSchema ()
 
 GS::ObjectState DeletePropertyGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::Array<GS::ObjectState> propertyGroupIds;
-    parameters.Get ("propertyGroupIds", propertyGroupIds);
-
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-
-    ACAPI_CallUndoableCommand ("DeletePropertyGroups", [&]() -> GSErrCode {
-        for (const GS::ObjectState& p : propertyGroupIds) {
-            const GS::ObjectState* propertyGroupId = p.Get ("propertyGroupId");
-            if (propertyGroupId == nullptr) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "propertyGroupId is missing"));
-                continue;
-            }
-
-            GSErrCode err = ACAPI_Property_DeletePropertyGroup (GetGuidFromObjectState (*propertyGroupId));
-            if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (err, "failed to delete property group"));
-                continue;
-            }
-
-            executionResults (CreateSuccessfulExecutionResult ());
+    return ExecuteForEachIdInList (parameters, "propertyGroupIds", "propertyGroupId", "DeletePropertyGroups", [] (const API_Guid& propertyGroupGuid) {
+        const GSErrCode err = ACAPI_Property_DeletePropertyGroup (propertyGroupGuid);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "failed to delete property group");
         }
-
-        return NoError;
+        return CreateSuccessfulExecutionResult ();
     });
-
-    return response;
 }
 
 // Fills definition.defaultValue from a PropertyDefaultValue object: {expressions: [...]}
@@ -3280,33 +3260,13 @@ GS::Optional<GS::UniString> DeletePropertyDefinitionsCommand::GetRawResponseSche
 
 GS::ObjectState DeletePropertyDefinitionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::Array<GS::ObjectState> propertyIds;
-    parameters.Get ("propertyIds", propertyIds);
-
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-
-    ACAPI_CallUndoableCommand ("DeletePropertyDefinitions", [&]() -> GSErrCode {
-        for (const GS::ObjectState& p : propertyIds) {
-            const GS::ObjectState* propertyId = p.Get ("propertyId");
-            if (propertyId == nullptr) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "propertyId is missing"));
-                continue;
-            }
-
-            GSErrCode err = ACAPI_Property_DeletePropertyDefinition (GetGuidFromObjectState (*propertyId));
-            if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (err, "failed to delete property"));
-                continue;
-            }
-
-            executionResults (CreateSuccessfulExecutionResult ());
+    return ExecuteForEachIdInList (parameters, "propertyIds", "propertyId", "DeletePropertyDefinitions", [] (const API_Guid& propertyGuid) {
+        const GSErrCode err = ACAPI_Property_DeletePropertyDefinition (propertyGuid);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "failed to delete property");
         }
-
-        return NoError;
+        return CreateSuccessfulExecutionResult ();
     });
-
-    return response;
 }
 
 static bool ApplyEnumEdits (const GS::ObjectState& item, API_PropertyDefinition& definition, GS::UniString& error)

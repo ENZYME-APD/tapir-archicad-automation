@@ -10224,41 +10224,22 @@ GS::Optional<GS::UniString> DeleteUserDataOfElementsCommand::GetRawResponseSchem
 
 GS::ObjectState DeleteUserDataOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::Array<GS::ObjectState> elements;
-    parameters.Get ("elements", elements);
-
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-
     // Archicad keeps the user data of an element per add-on, so this deletes only what this
     // add-on stored on the element.
-    ACAPI_CallUndoableCommand ("DeleteUserDataOfElements", [&] () -> GSErrCode {
-        for (const GS::ObjectState& element : elements) {
-            const GS::ObjectState* elementId = element.Get ("elementId");
-            if (elementId == nullptr) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
-                continue;
-            }
-
-            API_Elem_Head elemHead = {};
-            elemHead.guid = GetGuidFromObjectState (*elementId);
-            GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
-            if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (err, "Failed to find the element"));
-                continue;
-            }
-
-            err = TAPIR_UserData_DeleteUserData (&elemHead);
-            if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (err, "Failed to delete the user data of the element."));
-            } else {
-                executionResults (CreateSuccessfulExecutionResult ());
-            }
+    return ExecuteForEachIdInList (parameters, "elements", "elementId", "DeleteUserDataOfElements", [] (const API_Guid& elemGuid) {
+        API_Elem_Head elemHead = {};
+        elemHead.guid = elemGuid;
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to find the element");
         }
-        return NoError;
-    });
 
-    return response;
+        err = TAPIR_UserData_DeleteUserData (&elemHead);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to delete the user data of the element.");
+        }
+        return CreateSuccessfulExecutionResult ();
+    });
 }
 
 // GetTextureCoordinates
