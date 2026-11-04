@@ -1,13 +1,13 @@
 {
- "generatedAt": "2026-11-04 05:55 UTC",
+ "generatedAt": "2026-11-04 06:11 UTC",
  "counts": {
   "done": 568,
   "in progress": 112,
-  "merged": 18,
+  "merged": 21,
   "not applicable": 1
  },
  "parameters": {
-  "all": 528,
+  "all": 531,
   "partial": 12,
   "json": 46
  },
@@ -11775,6 +11775,91 @@
     "worksheetsData",
     "worksheetsData.name",
     "worksheetsData.referenceId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "CreateDetailMarkers",
+   "group": "Navigator Commands",
+   "version": "1.8.1",
+   "brief": "Places Detail markers with their clip polygon in the current floor plan, section or elevation, each with a new Detail viewpoint, like the Detail tool. GetDetailsOfElements reads them back.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "CreateDetailMarkersComponent",
+     "path": "Components/NavigatorComponents/CreateDetailMarkersComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 8,
+   "coveredParameters": [
+    "detailMarkersData",
+    "detailMarkersData.angle",
+    "detailMarkersData.clipPolygon",
+    "detailMarkersData.floorIndex",
+    "detailMarkersData.id",
+    "detailMarkersData.markerCoordinate",
+    "detailMarkersData.name",
+    "detailMarkersData.polygonArcs"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "CreateWorksheetMarkers",
+   "group": "Navigator Commands",
+   "version": "1.8.1",
+   "brief": "Places Worksheet markers with their clip polygon in the current floor plan, section or elevation, each with a new Worksheet viewpoint, like the Worksheet tool. GetDetailsOfElements reads them back.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "CreateWorksheetMarkersComponent",
+     "path": "Components/NavigatorComponents/CreateWorksheetMarkersComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 8,
+   "coveredParameters": [
+    "worksheetMarkersData",
+    "worksheetMarkersData.angle",
+    "worksheetMarkersData.clipPolygon",
+    "worksheetMarkersData.floorIndex",
+    "worksheetMarkersData.id",
+    "worksheetMarkersData.markerCoordinate",
+    "worksheetMarkersData.name",
+    "worksheetMarkersData.polygonArcs"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ModifyDetailMarkers",
+   "group": "Navigator Commands",
+   "version": "1.8.1",
+   "brief": "Changes the name, the reference ID and the clip polygon of Detail and Worksheet markers.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "ModifyDetailMarkersComponent",
+     "path": "Components/NavigatorComponents/ModifyDetailMarkersComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 6,
+   "coveredParameters": [
+    "detailMarkersWithDetails",
+    "detailMarkersWithDetails.clipPolygon",
+    "detailMarkersWithDetails.elementId",
+    "detailMarkersWithDetails.id",
+    "detailMarkersWithDetails.name",
+    "detailMarkersWithDetails.polygonArcs"
    ],
    "missingParameters": [],
    "pullRequests": [],

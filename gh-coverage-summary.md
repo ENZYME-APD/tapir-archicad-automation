@@ -1,6 +1,6 @@
-**586 of 698** applicable Tapir commands have a Grasshopper component (83 %): ✅ 568 done, 🔀 18 merged, 🚧 112 in progress, ➖ 1 not applicable.
+**589 of 701** applicable Tapir commands have a Grasshopper component (84 %): ✅ 568 done, 🔀 21 merged, 🚧 112 in progress, ➖ 1 not applicable.
 
-Parameters of the 586 used commands: 🟢 528 every parameter has an input, 🟡 46 the rest through a JSON input, 🟠 12 some parameters missing.
+Parameters of the 589 used commands: 🟢 531 every parameter has an input, 🟡 46 the rest through a JSON input, 🟠 12 some parameters missing.
 
 | Command group | Used | Applicable | ✅ | 🔀 | 🚧 | 🙋 | ⬜ | ⛔ | ➖ | 🟢 | 🟡 | 🟠 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -16,7 +16,7 @@ Parameters of the 586 used commands: 🟢 528 every parameter has an input, 🟡
 | IFC Commands | 86 % | 15 | 13 |  | 2 |  |  |  |  | 13 |  |  |
 | Library Commands | 54 % | 33 | 18 |  | 15 |  |  |  |  | 18 |  |  |
 | Teamwork Commands | 83 % | 18 | 15 |  | 3 |  |  |  |  | 15 |  |  |
-| Navigator Commands | 86 % | 74 | 61 | 3 | 10 |  |  |  |  | 61 | 2 | 1 |
+| Navigator Commands | 87 % | 77 | 61 | 6 | 10 |  |  |  |  | 64 | 2 | 1 |
 | Graphic Override Commands | 100 % | 4 | 4 |  |  |  |  |  |  | 4 |  |  |
 | Issue Management Commands | 100 % | 11 | 11 |  |  |  |  |  |  | 11 |  |  |
 | Revision Management Commands | 100 % | 7 | 7 |  |  |  |  |  |  | 7 |  |  |
@@ -30,4 +30,4 @@ Parameters of the 586 used commands: 🟢 528 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-04 05:55 UTC.
+Updated 2026-11-04 06:11 UTC.

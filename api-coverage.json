@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-04 05:55 UTC",
+ "generatedAt": "2026-11-04 06:11 UTC",
  "versions": [
   25,
   26,
@@ -9,13 +9,12 @@
   30
  ],
  "counts": {
-  "not applicable": 627,
+  "not applicable": 669,
   "done": 1860,
-  "claimed": 13,
-  "merged": 223,
-  "in progress": 97,
-  "open": 57,
-  "skipped": 2
+  "skipped": 28,
+  "merged": 226,
+  "in progress": 93,
+  "open": 3
  },
  "items": [
   {
@@ -969,8 +968,8 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
-   "reason": "",
+   "status": "skipped",
+   "reason": "SetProjectData creates its objects in one batch with ACAPI_AddOnObject_CreateUniqueObjectMore; one by one would cost a Teamwork send/receive each",
    "pullRequests": [],
    "issues": [
     {
@@ -1037,8 +1036,8 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
-   "reason": "",
+   "status": "skipped",
+   "reason": "project data is addressed by name, and the name lookups already report a missing object",
    "pullRequests": [],
    "issues": [
     {
@@ -2931,10 +2930,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1744,
-     "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
-    },
-    {
      "number": 1395,
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
     }
@@ -3957,8 +3952,8 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "skipped",
+   "reason": "ACAPI_Body_AddPolygon computes the normal when 0 is passed, as the morph body builder does; an explicit normal only matters for non-planar faces",
    "pullRequests": [],
    "issues": []
   },
@@ -4901,8 +4896,8 @@
    "olderNames": [
     "APIDb_BuildWindowValidatorID"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "validators of the add-on's own windows (add-on infrastructure)",
    "pullRequests": [],
    "issues": []
   },
@@ -4960,8 +4955,8 @@
    "olderNames": [
     "APIDb_CheckWindowValidatorID"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "validators of the add-on's own windows (add-on infrastructure)",
    "pullRequests": [],
    "issues": []
   },
@@ -5011,8 +5006,8 @@
    "olderNames": [
     "APIDb_DoClipID"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "clipping session for the add-on's own drawing primitive calls, no effect a JSON caller can see",
    "pullRequests": [],
    "issues": []
   },
@@ -5089,8 +5084,8 @@
    "olderNames": [
     "APIDb_GetDBUnIdFromGuidID"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "converts to the old userId/databaseId pair, which no JSON command or official command takes",
    "pullRequests": [],
    "issues": []
   },
@@ -5108,8 +5103,8 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
-   "reason": "",
+   "status": "skipped",
+   "reason": "returns what the per-type ACAPI_Database_Get*Databases calls of GetDatabases already return",
    "pullRequests": [],
    "issues": [
     {
@@ -5132,8 +5127,8 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
-   "reason": "",
+   "status": "skipped",
+   "reason": "returns what the per-type calls of GetDatabases already return, without each database's type, which the response needs",
    "pullRequests": [],
    "issues": [
     {
@@ -5229,8 +5224,8 @@
    "olderNames": [
     "APIDb_GetGuidFromDBUnIdID"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "converts from the old userId/databaseId pair, which no JSON command or official command gives",
    "pullRequests": [],
    "issues": []
   },
@@ -5492,8 +5487,8 @@
    "olderNames": [
     "APIDb_RebuildWindowValidatorID"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "validators of the add-on's own windows (add-on infrastructure)",
    "pullRequests": [],
    "issues": []
   },
@@ -5538,8 +5533,8 @@
    "olderNames": [
     "APIDb_StartClippingSessionID"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "clipping session for the add-on's own drawing primitive calls, no effect a JSON caller can see",
    "pullRequests": [],
    "issues": []
   },
@@ -5561,8 +5556,8 @@
    "olderNames": [
     "APIDb_StopClippingSessionID"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "clipping session for the add-on's own drawing primitive calls, no effect a JSON caller can see",
    "pullRequests": [],
    "issues": []
   },
@@ -5994,16 +5989,8 @@
      "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
     },
     {
-     "number": 1753,
-     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
-    },
-    {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
-    },
-    {
-     "number": 1744,
-     "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
     },
     {
      "number": 1702,
@@ -6521,8 +6508,8 @@
    "olderNames": [
     "APIDb_StartDrawingDataID"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "temporary drawing-data database of the add-on, only useful inside one add-on call",
    "pullRequests": [],
    "issues": []
   },
@@ -6544,8 +6531,8 @@
    "olderNames": [
     "APIDb_StopDrawingDataID"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "temporary drawing-data database of the add-on, only useful inside one add-on call",
    "pullRequests": [],
    "issues": []
   },
@@ -6997,10 +6984,6 @@
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
     {
-     "number": 1744,
-     "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
-    },
-    {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
@@ -7073,18 +7056,8 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1753,
-     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 652,
-     "title": "\"Drawing\" favorite fails every time"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Element_ChangeDefaultsExt",
@@ -7202,8 +7175,8 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
-   "reason": "",
+   "status": "skipped",
+   "reason": "no speed gain over SetDetailsOfElements / the Modify* commands in the #1226 measurement, and one error code for the whole batch instead of per-element results",
    "pullRequests": [],
    "issues": [
     {
@@ -7248,10 +7221,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1744,
-     "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
-    },
     {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
@@ -7321,10 +7290,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1744,
-     "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
-    },
     {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
@@ -7443,8 +7408,8 @@
    "olderNames": [
     "APIDb_DrawElementID"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "draws into the add-on's drawing-data database or own window, only useful inside one add-on call",
    "pullRequests": [],
    "issues": []
   },
@@ -7532,8 +7497,8 @@
    "olderNames": [
     "ACAPI_Goodies_ElemTypeToNeigID"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "neig ids, an internal of interactive input and selection",
    "pullRequests": [],
    "issues": []
   },
@@ -7580,10 +7545,6 @@
     {
      "number": 1765,
      "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    },
-    {
-     "number": 1744,
-     "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
     },
     {
      "number": 1727,
@@ -7802,8 +7763,8 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "skipped",
+   "reason": "obsolete; replaced by ACAPI_Element_GetComponents (#1019)",
    "pullRequests": [],
    "issues": []
   },
@@ -7859,12 +7820,7 @@
      "title": "Add CreateShells: extruded, revolved and ruled shells"
     }
    ],
-   "issues": [
-    {
-     "number": 652,
-     "title": "\"Drawing\" favorite fails every time"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetDefaultsExt",
@@ -7885,10 +7841,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1744,
-     "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
-    },
     {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
@@ -8417,8 +8369,8 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "skipped",
+   "reason": "GetPropertyValuesOfElements reads the same values with ACAPI_Element_GetPropertyValuesByGuid",
    "pullRequests": [],
    "issues": []
   },
@@ -9011,8 +8963,8 @@
     "ACAPI_Goodies_NeigIDToElemType",
     "APIAny_NeigIDToElemTypeID"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "neig ids, an internal of interactive input and selection",
    "pullRequests": [],
    "issues": []
   },
@@ -9191,8 +9143,8 @@
    "olderNames": [
     "APIAny_SetEmptyHoleUnIdID"
    ],
-   "status": "claimed",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "takes the signature of a library part subtype the add-on registers itself; Tapir registers none",
    "pullRequests": [],
    "issues": [
     {
@@ -9741,20 +9693,11 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1753,
-     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
    ],
-   "issues": [
-    {
-     "number": 652,
-     "title": "\"Drawing\" favorite fails every time"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Favorite_GetNum",
@@ -12526,8 +12469,8 @@
    "olderNames": [
     "APIAny_GetBuiltInLibpartUnIdID"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "returns the id of a library part compiled into the calling add-on as a resource; Tapir has none",
    "pullRequests": [],
    "issues": []
   },
@@ -13160,8 +13103,8 @@
    "olderNames": [
     "ACAPI_LibPart_RegisterAll"
    ],
-   "status": "claimed",
-   "reason": "",
+   "status": "skipped",
+   "reason": "ACAPI_LibraryPart_Save already registers the parts Tapir creates, and AddFilesToEmbeddedLibrary registers its files one by one",
    "pullRequests": [],
    "issues": [
     {
@@ -13188,8 +13131,8 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "add-on registration at startup",
    "pullRequests": [],
    "issues": []
   },
@@ -13207,8 +13150,8 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "add-on registration at startup",
    "pullRequests": [],
    "issues": []
   },
@@ -16537,8 +16480,8 @@
    "olderNames": [
     "ACAPI_Inform_AdditionalFileWasCreated"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "tells Archicad about files an add-on writes while the project is saved (add-on infrastructure)",
    "pullRequests": [],
    "issues": []
   },
@@ -17237,8 +17180,8 @@
    "olderNames": [
     "APIAny_CheckPropertyExpressionStringID"
    ],
-   "status": "claimed",
-   "reason": "",
+   "status": "skipped",
+   "reason": "crashes Archicad 29 on an unknown function name and gives wrong results both ways; tested and removed from #1146 (8822f998)",
    "pullRequests": [],
    "issues": [
     {
@@ -18432,8 +18375,8 @@
    "olderNames": [
     "APIAny_SetSelectedElementNeigID"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "selects a neig (part of an element) for interactive input, user interface",
    "pullRequests": [],
    "issues": []
   },
@@ -18543,8 +18486,8 @@
    "olderNames": [
     "ACAPI_3D_GetCurrentWindowSight"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "3D sights of the add-on's own 3D windows (add-on infrastructure)",
    "pullRequests": [],
    "issues": []
   },
@@ -18607,8 +18550,8 @@
    "olderNames": [
     "APIDb_Switch3DSightID"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "3D sights of the add-on's own 3D windows (add-on infrastructure)",
    "pullRequests": [],
    "issues": []
   },
@@ -19286,8 +19229,8 @@
    "olderNames": [
     "ACAPI_TeamworkReserveInterface_SendReleaseCommentMail"
    ],
-   "status": "claimed",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "needs the ids of a Teamwork reserve interface the add-on registered for its own dialog (add-on infrastructure)",
    "pullRequests": [],
    "issues": [
     {
@@ -20971,8 +20914,8 @@
    "olderNames": [
     "APIDb_AddTextWindowContentID"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "the add-on's own windows (user interface)",
    "pullRequests": [],
    "issues": []
   },
@@ -21096,8 +21039,8 @@
    "olderNames": [
     "APIDb_DestroyWindowValidatorID"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "validators of the add-on's own windows (add-on infrastructure)",
    "pullRequests": [],
    "issues": []
   },
@@ -21148,10 +21091,6 @@
     {
      "number": 1766,
      "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    },
-    {
-     "number": 1744,
-     "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
     },
     {
      "number": 1640,
@@ -21205,8 +21144,8 @@
    "olderNames": [
     "APIDb_GetOwnWindowsID"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "the add-on's own windows (user interface)",
    "pullRequests": [],
    "issues": []
   },
@@ -21228,8 +21167,8 @@
    "olderNames": [
     "APIDb_NewWindowID"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "the add-on's own windows (user interface)",
    "pullRequests": [],
    "issues": []
   },
@@ -21251,8 +21190,8 @@
    "olderNames": [
     "APIDb_ResetCurrentDatabaseID"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "empties the database of the add-on's own window (user interface)",
    "pullRequests": [],
    "issues": []
   },
@@ -21274,8 +21213,8 @@
    "olderNames": [
     "APIDb_ResetCurrentWindowID"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "empties the database of the add-on's own window (user interface)",
    "pullRequests": [],
    "issues": []
   },
@@ -21297,8 +21236,8 @@
    "olderNames": [
     "APIDb_SetWindowIdID"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "the add-on's own windows (user interface)",
    "pullRequests": [],
    "issues": []
   },
@@ -21408,8 +21347,8 @@
     25
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "skipped",
+   "reason": "Archicad 25 only: its loads are native elements, while GetAnalyticalLoads reads the Archicad 26+ load elements",
    "pullRequests": [],
    "issues": []
   },
@@ -21424,8 +21363,8 @@
     25
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "skipped",
+   "reason": "Archicad 25 only: its loads are native elements, while GetAnalyticalLoads reads the Archicad 26+ load elements",
    "pullRequests": [],
    "issues": []
   },
@@ -21440,8 +21379,8 @@
     25
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "skipped",
+   "reason": "Archicad 25 only, removed in Archicad 26 with no counterpart",
    "pullRequests": [],
    "issues": []
   },
@@ -21879,8 +21818,8 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "internal drawing link ids of Archicad 25/26, removed in Archicad 27 with no counterpart",
    "pullRequests": [],
    "issues": []
   },
@@ -22027,8 +21966,8 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "internal drawing link ids of Archicad 25/26, removed in Archicad 27 with no counterpart",
    "pullRequests": [],
    "issues": []
   },
@@ -22161,8 +22100,8 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "converts the old database/element unIds of Archicad 25/26, which no command exposes",
    "pullRequests": [],
    "issues": []
   },
@@ -22285,8 +22224,8 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "IFC difference generator of Archicad 26/27, removed in Archicad 28; its state is an in-memory object that can't pass between JSON calls",
    "pullRequests": [],
    "issues": []
   },
@@ -22302,8 +22241,8 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "IFC difference generator of Archicad 26/27, removed in Archicad 28; its state is an in-memory object that can't pass between JSON calls",
    "pullRequests": [],
    "issues": []
   },
@@ -22319,8 +22258,8 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "IFC difference generator of Archicad 26/27, removed in Archicad 28; its state is an in-memory object that can't pass between JSON calls",
    "pullRequests": [],
    "issues": []
   },
@@ -22947,8 +22886,8 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "deprecated listing API of Archicad 25/26",
    "pullRequests": [],
    "issues": []
   },
@@ -22964,8 +22903,8 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "deprecated listing API of Archicad 25/26",
    "pullRequests": [],
    "issues": []
   },
@@ -22981,8 +22920,8 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "deprecated listing API of Archicad 25/26",
    "pullRequests": [],
    "issues": []
   },
@@ -23505,8 +23444,8 @@
     25
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "neig ids, an internal of interactive input and selection (Archicad 25 command id)",
    "pullRequests": [],
    "issues": []
   },
@@ -23521,8 +23460,8 @@
     25
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "IFC difference generator (Archicad 25 command id), removed in Archicad 28; its state can't pass between JSON calls",
    "pullRequests": [],
    "issues": []
   },
@@ -23537,8 +23476,8 @@
     25
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "IFC difference generator (Archicad 25 command id), removed in Archicad 28; its state can't pass between JSON calls",
    "pullRequests": [],
    "issues": []
   },
@@ -23607,8 +23546,8 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "skipped",
+   "reason": "SetLibraries / AddLibraries already set the library list on Archicad 25/26 through APIEnv_SetLibrariesID",
    "pullRequests": [],
    "issues": []
   },
@@ -23737,8 +23676,8 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "leftover command id; Get3DCutawayStatus reads the flag through ACAPI::CuttingPlane::AreCuttingPlanesVisible (Archicad 28+) and the C API (Archicad 25-27)",
    "pullRequests": [],
    "issues": [
     {
@@ -26545,20 +26484,8 @@
      "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
     },
     {
-     "number": 1753,
-     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
-    },
-    {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
-    },
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
-    },
-    {
-     "number": 1744,
-     "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
     },
     {
      "number": 1717,
@@ -27831,12 +27758,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1753,
-     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27925,13 +27847,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1753,
-     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
-    },
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
@@ -27951,13 +27869,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1753,
-     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
-    },
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
@@ -27979,12 +27893,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1753,
-     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28028,12 +27937,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1753,
-     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -28185,10 +28089,6 @@
     {
      "number": 1761,
      "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
-    },
-    {
-     "number": 1753,
-     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
     }
    ],
    "issues": []
@@ -28205,8 +28105,8 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
-   "reason": "",
+   "status": "skipped",
+   "reason": "GetFavoritePreviewImage stays on the C API on purpose (8dbbe7b9)",
    "pullRequests": [],
    "issues": [
     {
@@ -28227,13 +28127,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1753,
-     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
-    },
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
@@ -28370,10 +28266,6 @@
     {
      "number": 1761,
      "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
-    },
-    {
-     "number": 1753,
-     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
     }
    ],
    "issues": []
@@ -28647,10 +28539,6 @@
      "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
     },
     {
-     "number": 1753,
-     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
-    },
-    {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     }
@@ -28813,8 +28701,8 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
-   "reason": "",
+   "status": "skipped",
+   "reason": "RenameFavorites stays on the C API on purpose (8dbbe7b9)",
    "pullRequests": [],
    "issues": [
     {
@@ -28863,10 +28751,6 @@
     {
      "number": 1761,
      "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
-    },
-    {
-     "number": 1753,
-     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
     },
     {
      "number": 1537,
@@ -32839,10 +32723,6 @@
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
     },
     {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
@@ -33167,10 +33047,6 @@
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
     {
-     "number": 1744,
-     "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
-    },
-    {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
@@ -33308,10 +33184,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
@@ -33334,8 +33206,8 @@
     27
    ],
    "olderNames": [],
-   "status": "in progress",
-   "reason": "",
+   "status": "skipped",
+   "reason": "does not compile against the Archicad 27 DevKit: Bend::Modifier does not derive from ACAPI::ModifierBase, which ExecuteUndoableScope requires (Archicad 27 only)",
    "pullRequests": [
     {
      "number": 1767,
@@ -33401,10 +33273,6 @@
     {
      "number": 1767,
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
      "number": 1728,
@@ -33840,10 +33708,6 @@
     {
      "number": 1767,
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
      "number": 1728,
@@ -35193,10 +35057,6 @@
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
     },
     {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
@@ -35784,8 +35644,8 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "skipped",
+   "reason": "ignores the branch angle and changes the first row with the same reference ids (#1740, b2640243); SetMEPPreferenceTableRows sets branch rows by index instead",
    "pullRequests": [],
    "issues": []
   },
@@ -35835,8 +35695,8 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "skipped",
+   "reason": "ignores the branch angle and changes the first row with the same reference ids (#1740, b2640243); SetMEPPreferenceTableRows sets branch rows by index instead",
    "pullRequests": [],
    "issues": []
   },
@@ -35886,8 +35746,8 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "skipped",
+   "reason": "ignores the branch angle and changes the first row with the same reference ids (#1740, b2640243); SetMEPPreferenceTableRows sets branch rows by index instead",
    "pullRequests": [],
    "issues": []
   },
@@ -36044,8 +35904,8 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "skipped",
+   "reason": "ignores the branch angle and changes the first row with the same reference ids (#1740, b2640243); SetMEPPreferenceTableRows sets branch rows by index instead",
    "pullRequests": [],
    "issues": []
   },
@@ -36152,10 +36012,6 @@
     {
      "number": 1767,
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
      "number": 1728,
@@ -36841,10 +36697,6 @@
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
     },
     {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
@@ -37492,10 +37344,6 @@
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
     },
     {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
@@ -37852,10 +37700,6 @@
     {
      "number": 1767,
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
      "number": 1728,
@@ -38400,10 +38244,6 @@
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     },
     {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
@@ -38738,10 +38578,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
@@ -38774,10 +38610,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
     }
    ],
    "issues": [
@@ -38872,10 +38704,6 @@
     {
      "number": 1767,
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
      "number": 1728,
@@ -39364,10 +39192,6 @@
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
     },
     {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
@@ -39670,10 +39494,6 @@
     {
      "number": 1767,
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
      "number": 1728,
@@ -40196,10 +40016,6 @@
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
     },
     {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
@@ -40487,24 +40303,12 @@
      "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
     },
     {
-     "number": 1753,
-     "title": "Favorites: apply and read Drawing favorites, whose settings Archicad refuses to give out (#652)"
-    },
-    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     },
     {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
-    },
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
-    },
-    {
-     "number": 1744,
-     "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
     },
     {
      "number": 1728,
@@ -41398,10 +41202,6 @@
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
     },
     {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
@@ -41563,10 +41363,6 @@
     {
      "number": 1767,
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
      "number": 1728,
@@ -41758,10 +41554,6 @@
     {
      "number": 1767,
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
      "number": 1728,
@@ -43302,8 +43094,8 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
-   "reason": "",
+   "status": "skipped",
+   "reason": "has no id getter for the new system; CreateMEPPhysicalSystems uses SystemGroup::Modifier::Add, which returns the new id directly",
    "pullRequests": [],
    "issues": [
     {
@@ -43347,10 +43139,6 @@
     {
      "number": 1767,
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
      "number": 1728,
@@ -43559,10 +43347,6 @@
     {
      "number": 1767,
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
      "number": 1728,
@@ -44152,8 +43936,8 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "skipped",
+   "reason": "ignores the branch angle and changes the first row with the same reference ids (#1740, b2640243); SetMEPPreferenceTableRows sets branch rows by index instead",
    "pullRequests": [],
    "issues": []
   },
@@ -44203,8 +43987,8 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "skipped",
+   "reason": "ignores the branch angle and changes the first row with the same reference ids (#1740, b2640243); SetMEPPreferenceTableRows sets branch rows by index instead",
    "pullRequests": [],
    "issues": []
   },
@@ -44254,8 +44038,8 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "skipped",
+   "reason": "ignores the branch angle and changes the first row with the same reference ids (#1740, b2640243); SetMEPPreferenceTableRows sets branch rows by index instead",
    "pullRequests": [],
    "issues": []
   },
@@ -44412,8 +44196,8 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "skipped",
+   "reason": "ignores the branch angle and changes the first row with the same reference ids (#1740, b2640243); SetMEPPreferenceTableRows sets branch rows by index instead",
    "pullRequests": [],
    "issues": []
   },
@@ -44520,10 +44304,6 @@
     {
      "number": 1767,
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
      "number": 1728,
@@ -45171,10 +44951,6 @@
     {
      "number": 1767,
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
      "number": 1728,
@@ -45858,10 +45634,6 @@
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
     },
     {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
@@ -46398,10 +46170,6 @@
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
     },
     {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
@@ -46843,10 +46611,6 @@
     {
      "number": 1767,
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
      "number": 1728,
@@ -48133,10 +47897,6 @@
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
     {
-     "number": 1744,
-     "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
-    },
-    {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
@@ -48299,10 +48059,6 @@
     {
      "number": 1767,
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
      "number": 1728,
@@ -48613,10 +48369,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
      "number": 1728,
@@ -49024,12 +48776,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49424,12 +49171,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49688,10 +49430,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
      "number": 1728,
@@ -50498,10 +50236,6 @@
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     },
     {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
@@ -51099,10 +50833,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
     }
    ],
    "issues": []
@@ -51703,10 +51433,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
     }
    ],
    "issues": []
@@ -51928,10 +51654,6 @@
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
     },
     {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
@@ -52024,10 +51746,6 @@
     {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
-    },
-    {
-     "number": 1744,
-     "title": "Place Detail and Worksheet markers, change their name, ID and clip polygon (#1377)"
     },
     {
      "number": 1727,
@@ -52171,10 +51889,6 @@
     {
      "number": 1767,
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
      "number": 1728,
@@ -52404,10 +52118,6 @@
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
     },
     {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
-    },
-    {
      "number": 1728,
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
@@ -52601,10 +52311,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
      "number": 1728,
@@ -53056,10 +52762,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
     }
    ],
    "issues": [
@@ -53157,10 +52859,6 @@
     {
      "number": 1767,
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1747,
-     "title": "MEP routing commands: reject a preference table id that is not a guid string"
     },
     {
      "number": 1728,
