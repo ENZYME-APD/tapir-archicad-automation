@@ -201,7 +201,7 @@ python test_examples.py
   Archicad instance; `test_examples.py` reopens `TestProject.pla` before each script, runs
   every script in [Test/Scripts/](archicad-addon/Test/Scripts/) (diffed against
   `ExpectedOutputs/<name>.py.output`) and every example in [Examples/](archicad-addon/Examples/)
-  as a smoke test (`ExpectedOutputs/Examples/<GroupFolder>/<name>.output`, recorded on the first
+  as a smoke test (`ExpectedOutputs/Examples/<GroupFolder>/<name>.py.output`, recorded on the first
   run; `EXAMPLES_NOT_SMOKE_TESTED` lists the examples that cannot run unattended). Names given on
   the command line run only those; `record_expected_output.py <name>.py` records one golden.
   `Test/Scripts/manual/` is not run.

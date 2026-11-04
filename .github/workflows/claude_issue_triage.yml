@@ -327,9 +327,10 @@ jobs:
             command in AddOnMain.cpp with the UNRELEASED version from
             tools/package_info.json, keep the C++ style of the surrounding
             code, and for each new command add its example as
-            archicad-addon/Examples/<Group>/<CommandName>.py (a module
-            docstring first, then short aclib code; tools/check_examples.py
-            checks it and the build check runs it). Then post one comment on the issue linking the pull
+            archicad-addon/Examples/<GroupFolder>/<CommandName>.py (a module
+            docstring first, then short aclib code; archicad-addon/Examples/
+            README.md names the group folders, and tools/check_examples.py,
+            which the build check runs, checks it). Then post one comment on the issue linking the pull
             request and saying what you changed. Start that comment by tagging
             the person who opened the issue (@<their login>) - unless the
             issue was filed by a bot (the Discord issue bot files as the
@@ -786,9 +787,10 @@ jobs:
                command in AddOnMain.cpp with the UNRELEASED version from
                tools/package_info.json, keep the C++ style of the surrounding
                code, and for each new command add its example as
-               archicad-addon/Examples/<Group>/<CommandName>.py (a module
-               docstring first, then short aclib code; tools/check_examples.py
-               checks it and the build check runs it). Then post one comment on the issue linking
+               archicad-addon/Examples/<GroupFolder>/<CommandName>.py (a module
+               docstring first, then short aclib code; archicad-addon/Examples/
+               README.md names the group folders, and tools/check_examples.py,
+               which the build check runs, checks it). Then post one comment on the issue linking
                the pull request and saying what you changed. Start it by
                tagging the person who opened the issue (@<their login>) -
                unless a bot filed it (the Discord issue bot files as the
