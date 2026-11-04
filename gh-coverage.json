@@ -1,16 +1,14 @@
 {
- "generatedAt": "2026-11-04 07:06 UTC",
+ "generatedAt": "2026-11-04 08:35 UTC",
  "counts": {
   "done": 568,
-  "merged": 114,
-  "in progress": 19,
+  "merged": 147,
   "open": 1,
   "not applicable": 1
  },
  "parameters": {
-  "all": 632,
-  "partial": 3,
-  "json": 47
+  "all": 667,
+  "json": 48
  },
  "items": [
   {
@@ -174,7 +172,12 @@
     "coordinates"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -198,7 +201,12 @@
     "screenPoints.v"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -270,6 +278,36 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ConvertImages",
+   "group": "Application Commands",
+   "version": "1.8.1",
+   "brief": "Converts base64 encoded images from one image format to another with Archicad's own image converters, for example a PNG preview image to JPEG. The formats are Bitmap, GIF, TIFF, JPEG and PNG, or the MIME type of another format Archicad can read or write. The output is aligned with the input array of images. Changes nothing in the project.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "ConvertImagesComponent",
+     "path": "Components/UtilitiesComponents/ConvertImagesComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "images",
+    "images.image",
+    "images.inputFormat",
+    "images.outputFormat"
+   ],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -440,7 +478,12 @@
     "databases"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -550,7 +593,12 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -572,7 +620,12 @@
     "isVisible"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -594,7 +647,12 @@
     "checks"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -614,7 +672,12 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -719,7 +782,12 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -1009,7 +1077,12 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1781,
+     "title": "Grasshopper ElementDetails: absolute Elevations output"
+    }
+   ],
    "issues": []
   },
   {
@@ -1097,7 +1170,12 @@
     "noteOwnerType"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -1369,7 +1447,12 @@
     "hotlinks.location"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -1684,7 +1767,12 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -1706,7 +1794,12 @@
     "elementTypes"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -1729,7 +1822,12 @@
     "levels"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -1942,7 +2040,12 @@
     "placeInfo.year"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -1964,7 +2067,12 @@
     "name"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -2081,7 +2189,12 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -2394,17 +2507,24 @@
    "group": "Element Commands",
    "version": "1.8.0",
    "brief": "Returns the identifier of every element of the current database, or of the given databases, in the order the elements were created.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetElementsInCreationOrderComponent",
+     "path": "Components/ElementsComponents/GetElementsInCreationOrderComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 1,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "databases"
+   ],
    "missingParameters": [],
    "pullRequests": [
     {
-     "number": 1760,
-     "title": "Grasshopper: components for the remaining element commands"
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
     }
    ],
    "issues": []
@@ -2485,16 +2605,15 @@
      "path": "Components/ElementsComponents/SetMarqueeComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 4,
    "coveredParameters": [
     "box",
     "multiStory",
-    "polygon"
-   ],
-   "missingParameters": [
+    "polygon",
     "rotationAngle"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -2511,19 +2630,18 @@
      "path": "Components/ElementsComponents/FilterElementsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 7,
    "coveredParameters": [
     "elementTypes",
     "elements",
     "filters",
     "floorIndices",
+    "fromHotlink",
+    "hotlinkIds",
     "layerIndices"
    ],
-   "missingParameters": [
-    "fromHotlink",
-    "hotlinkIds"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -2602,8 +2720,12 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 639,
-     "title": "Feature request for GetDetailsOfElements"
+     "number": 1791,
+     "title": "Grasshopper: Doors and Windows tool components, with their floor plan parameters"
+    },
+    {
+     "number": 1785,
+     "title": "GetDetailsOfElements: floor plan and section parameters of Roofs"
     }
    ]
   },
@@ -2661,17 +2783,26 @@
    "group": "Element Commands",
    "version": "1.8.0",
    "brief": "Sets the info string of the given elements: the Element ID shown in the Info Box, which GetDetailsOfElements returns as id. Returns one execution result per element.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "SetElementInfoStringsComponent",
+     "path": "Components/ElementsComponents/SetElementInfoStringsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 3,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "elements",
+    "elements.elementId",
+    "elements.infoString"
+   ],
    "missingParameters": [],
    "pullRequests": [
     {
-     "number": 1760,
-     "title": "Grasshopper: components for the remaining element commands"
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
     }
    ],
    "issues": []
@@ -2794,17 +2925,24 @@
    "group": "Element Commands",
    "version": "1.8.1",
    "brief": "Get the 2D bounding box of elements as Archicad draws them, in the coordinates of the database the element is in: the floor plan, a section, a worksheet, a layout or a master layout. Works for 2D elements (Line, PolyLine, Arc, Hatch, Text, Label, Dimension, Drawing ...) as well as for model elements; a Text's box covers its drawn lines, a Drawing's box its frame with the title. The current window does not need to show the element. The output is the array of the bounding boxes respective to the input array of elements.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "Get2DBoundingBoxesOfElementsComponent",
+     "path": "Components/ElementsComponents/Get2DBoundingBoxesOfElementsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 1,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "elements"
+   ],
    "missingParameters": [],
    "pullRequests": [
     {
-     "number": 1760,
-     "title": "Grasshopper: components for the remaining element commands"
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
     }
    ],
    "issues": []
@@ -2948,7 +3086,7 @@
    "id": "GetCutPolygonsOfElements",
    "group": "Element Commands",
    "version": "1.8.0",
-   "brief": "Cuts each body of the 3D model of the given elements with a plane and returns, for each body, its building material, the area of the cut surface and its polygons (outline and holes) in 2D coordinates of the plane. The 3D model is generated with separate components in a temporary sight, so a composite structure has one body per skin and the 3D window is not changed. The output is aligned with the input array of elements. Available from Archicad 28.",
+   "brief": "Cuts each body of the 3D model of the given elements with a plane and returns, for each body, its building material, the area of the cut surface and its polygons (outline and holes) in 2D coordinates of the plane. From Archicad 28 the 3D model is generated with separate components in a temporary sight, so a composite structure has one body per skin and the 3D window is not changed. Before Archicad 28 the bodies are those of the element's 3D model (a composite structure is one body) and their building materials are left out. The output is aligned with the input array of elements.",
    "status": "done",
    "reason": "",
    "components": [
@@ -3001,17 +3139,24 @@
    "group": "Element Commands",
    "version": "1.8.0",
    "brief": "Gets the polygon of the hole each given Skylight cuts into its host Roof or Shell: the outline and any holes of it as 2D coordinates. The output is aligned with the input array of elements; an element that is not a Skylight gets an error item.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetSkylightHolePolygonsComponent",
+     "path": "Components/ElementsComponents/GetSkylightHolePolygonsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 1,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "elements"
+   ],
    "missingParameters": [],
    "pullRequests": [
     {
-     "number": 1760,
-     "title": "Grasshopper: components for the remaining element commands"
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
     }
    ],
    "issues": []
@@ -3044,17 +3189,24 @@
    "group": "Element Commands",
    "version": "1.7.4",
    "brief": "Gets the single planes of roofs, without changing the roofs. A multi-plane roof is decomposed by Archicad into its planes, each returned with its part identifier and its details as a single-plane roof (slope, pivot line, level, outline with arcs and holes); a single-plane roof is returned as its only plane. The output is aligned with the input array of elements.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetRoofPlanesComponent",
+     "path": "Components/ElementsComponents/GetRoofPlanesComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 1,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "elements"
+   ],
    "missingParameters": [],
    "pullRequests": [
     {
-     "number": 1760,
-     "title": "Grasshopper: components for the remaining element commands"
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
     }
    ],
    "issues": []
@@ -3064,17 +3216,24 @@
    "group": "Element Commands",
    "version": "1.8.0",
    "brief": "Gets the absolute bottom level of curtain walls or their subelements (segments, frames, panels, junctions, accessories). The output is aligned with the input array of elements.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetCurtainWallAbsoluteBottomsComponent",
+     "path": "Components/ElementsComponents/GetCurtainWallAbsoluteBottomsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 1,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "elements"
+   ],
    "missingParameters": [],
    "pullRequests": [
     {
-     "number": 1760,
-     "title": "Grasshopper: components for the remaining element commands"
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
     }
    ],
    "issues": []
@@ -3116,14 +3275,13 @@
      "path": "Components/ElementsComponents/TriangulatePolygonsOfElementsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
+    "convex",
     "elements"
    ],
-   "missingParameters": [
-    "convex"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -3132,17 +3290,24 @@
    "group": "Element Commands",
    "version": "1.8.0",
    "brief": "Gets the texture coordinates (u, v) of the faces of the 3D model of the given elements: per solid body, per face, at the first vertex of the face. The output is aligned with the input array of elements.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetTextureCoordinatesComponent",
+     "path": "Components/ElementsComponents/GetTextureCoordinatesComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 1,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "elements"
+   ],
    "missingParameters": [],
    "pullRequests": [
     {
-     "number": 1760,
-     "title": "Grasshopper: components for the remaining element commands"
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
     }
    ],
    "issues": []
@@ -3152,17 +3317,24 @@
    "group": "Element Commands",
    "version": "1.8.0",
    "brief": "Gets the surface type of every polygon of the 3D model of the given elements, as ACAPI_Polygon_PolygonId2SurfaceType returns it: for each element its polygons with their body index, polygon index, polygon id and the numeric API_SurfaceTypeID value. The model is generated with separate components in a temporary sight, so the 3D window is not changed. The output is aligned with the input array of elements. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetSurfaceTypesOfElementsComponent",
+     "path": "Components/ElementsComponents/GetSurfaceTypesOfElementsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 1,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "elements"
+   ],
    "missingParameters": [],
    "pullRequests": [
     {
-     "number": 1760,
-     "title": "Grasshopper: components for the remaining element commands"
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
     }
    ],
    "issues": []
@@ -3192,17 +3364,24 @@
    "group": "Element Commands",
    "version": "1.7.4",
    "brief": "Deletes the user data this add-on stored on the given elements. Archicad keeps the user data of an element per add-on, so the data of other add-ons is left as it is. All deletions are one undo step. The output has one execution result per element, aligned with the input array of elements.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "DeleteUserDataOfElementsComponent",
+     "path": "Components/ElementsComponents/DeleteUserDataOfElementsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 1,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "elements"
+   ],
    "missingParameters": [],
    "pullRequests": [
     {
-     "number": 1760,
-     "title": "Grasshopper: components for the remaining element commands"
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
     }
    ],
    "issues": []
@@ -3408,6 +3587,34 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetShapePrimitivesOfElements",
+   "group": "Element Commands",
+   "version": "1.8.1",
+   "brief": "Returns the 2D drawing primitives of each given floor plan element in the same format as GetDrawingPrimitivesOfElements, but drawn as ACAPI_DrawingPrimitive_ShapePrims draws it by default (on the current story, clipped as Archicad clips it) instead of on every story and unclipped. With includeMarkers the objects attached to the elements (window and door markers, drawing titles, ...) are drawn with them or left out; Archicad's setting is changed back afterwards. The floor plan must be the current database. The output is aligned with the input array of elements.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "GetShapePrimitivesOfElementsComponent",
+     "path": "Components/ElementsComponents/GetShapePrimitivesOfElementsComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "elements",
+    "includeMarkers"
+   ],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -3777,12 +3984,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 660,
-     "title": "HighlightElements fix"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "MoveElements",
@@ -4135,17 +4337,24 @@
    "group": "Element Commands",
    "version": "1.8.0",
    "brief": "Gets the web link (URL reference) of the given elements: a URL with a description, shown in Archicad in the element's settings under Element Information > Link. An element without a link gets the error APIERR_NOUSERDATA.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetURLReferencesOfElementsComponent",
+     "path": "Components/ElementsComponents/GetURLReferencesOfElementsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 1,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "elements"
+   ],
    "missingParameters": [],
    "pullRequests": [
     {
-     "number": 1760,
-     "title": "Grasshopper: components for the remaining element commands"
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
     }
    ],
    "issues": []
@@ -4155,17 +4364,27 @@
    "group": "Element Commands",
    "version": "1.8.0",
    "brief": "Sets the web link (URL reference) of the given elements: a URL with a description, shown in Archicad in the element's settings under Element Information > Link. Fails with APIERR_MOREUSER for an element that already holds a link.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "SetURLReferencesOfElementsComponent",
+     "path": "Components/ElementsComponents/SetURLReferencesOfElementsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 4,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "elementsWithURLReferences",
+    "elementsWithURLReferences.description",
+    "elementsWithURLReferences.elementId",
+    "elementsWithURLReferences.url"
+   ],
    "missingParameters": [],
    "pullRequests": [
     {
-     "number": 1760,
-     "title": "Grasshopper: components for the remaining element commands"
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
     }
    ],
    "issues": []
@@ -4204,17 +4423,24 @@
    "group": "Element Commands",
    "version": "1.7.4",
    "brief": "Gets the GDL parameters (name, type, value) of the given Curtain Wall Frame, Panel, Junction and Accessory elements as Archicad calculated them for their place in the curtain wall. GetGDLParametersOfElements returns the parameters the sub-element was set up with instead.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetCalculatedParametersOfCurtainWallSubElementsComponent",
+     "path": "Components/ElementsComponents/GetCalculatedParametersOfCurtainWallSubElementsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 1,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "elements"
+   ],
    "missingParameters": [],
    "pullRequests": [
     {
-     "number": 1760,
-     "title": "Grasshopper: components for the remaining element commands"
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
     }
    ],
    "issues": []
@@ -4224,17 +4450,24 @@
    "group": "Element Commands",
    "version": "1.8.0",
    "brief": "Gets the 2D hotspots of the given library part instances (Objects, Lamps, Windows, Doors, Skylights, Zones, Curtain Wall parts, etc.), e.g. to dimension to them.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetHotspotsOfElementsComponent",
+     "path": "Components/ElementsComponents/GetHotspotsOfElementsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 1,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "elements"
+   ],
    "missingParameters": [],
    "pullRequests": [
     {
-     "number": 1760,
-     "title": "Grasshopper: components for the remaining element commands"
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
     }
    ],
    "issues": []
@@ -4244,17 +4477,26 @@
    "group": "Element Commands",
    "version": "1.8.1",
    "brief": "Changes which library part the marker of the given Window and Door elements uses, given by its name (find the available ones with GetAvailableLibraryParts); only a marker library part for the opening's type is accepted. The marker gets the new library part's default parameters, which SetMarkerParametersOfElements can change afterwards; the opening's own settings are left as they are.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "SetMarkerLibraryPartOfElementsComponent",
+     "path": "Components/ElementsComponents/SetMarkerLibraryPartOfElementsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 3,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "elementsWithMarkerLibraryPart",
+    "elementsWithMarkerLibraryPart.elementId",
+    "elementsWithMarkerLibraryPart.libraryPartName"
+   ],
    "missingParameters": [],
    "pullRequests": [
     {
-     "number": 1760,
-     "title": "Grasshopper: components for the remaining element commands"
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
     }
    ],
    "issues": []
@@ -4568,7 +4810,12 @@
     "windowsData.libraryPartName"
    ],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1791,
+     "title": "Grasshopper: Doors and Windows tool components, with their floor plan parameters"
+    }
+   ]
   },
   {
    "id": "CreateDoors",
@@ -4601,7 +4848,12 @@
     "doorsData.libraryPartName"
    ],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1791,
+     "title": "Grasshopper: Doors and Windows tool components, with their floor plan parameters"
+    }
+   ]
   },
   {
    "id": "CreateOpenings",
@@ -4857,17 +5109,24 @@
    "group": "Element Commands",
    "version": "1.8.0",
    "brief": "Returns the GDL parameters of the cut and uncut floor plan symbols of Opening elements, in the format of GetGDLParametersOfElements. A symbol the opening does not have is left out. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetOpeningSymbolParametersComponent",
+     "path": "Components/ElementsComponents/GetOpeningSymbolParametersComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 1,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "elements"
+   ],
    "missingParameters": [],
    "pullRequests": [
     {
-     "number": 1760,
-     "title": "Grasshopper: components for the remaining element commands"
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
     }
    ],
    "issues": []
@@ -4877,17 +5136,31 @@
    "group": "Element Commands",
    "version": "1.8.0",
    "brief": "Changes the GDL parameters of the cut and uncut floor plan symbols of Opening elements, in the format of SetGDLParametersOfElements. Only the given parameters are changed. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "SetOpeningSymbolParametersComponent",
+     "path": "Components/ElementsComponents/SetOpeningSymbolParametersComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 8,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "elements",
+    "elements.cutSymbolParameters",
+    "elements.cutSymbolParameters.index1",
+    "elements.cutSymbolParameters.index2",
+    "elements.cutSymbolParameters.name",
+    "elements.cutSymbolParameters.value",
+    "elements.elementId",
+    "elements.unCutSymbolParameters"
+   ],
    "missingParameters": [],
    "pullRequests": [
     {
-     "number": 1760,
-     "title": "Grasshopper: components for the remaining element commands"
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
     }
    ],
    "issues": []
@@ -5086,17 +5359,31 @@
    "group": "Element Commands",
    "version": "1.7.4",
    "brief": "Creates Railing elements along a 3D reference polyline: each node has its own elevation and segments can be arcs. Posts, rails, handrails, toprails, panels and balusters come from the favorite or from the Railing tool defaults.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "CreateRailingsFromPolylineComponent",
+     "path": "Components/ElementsComponents/CreateRailingsFromPolylineComponent.cs"
+    }
+   ],
+   "parameters": "json",
    "parameterCount": 7,
-   "coveredParameters": [],
-   "missingParameters": [],
+   "coveredParameters": [
+    "railingsData",
+    "railingsData.favoriteName",
+    "railingsData.floorIndex",
+    "railingsData.height",
+    "railingsData.id",
+    "railingsData.polylineCoordinates"
+   ],
+   "missingParameters": [
+    "railingsData.polylineArcs"
+   ],
    "pullRequests": [
     {
-     "number": 1760,
-     "title": "Grasshopper: components for the remaining element commands"
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
     }
    ],
    "issues": []
@@ -5137,7 +5424,7 @@
    "id": "CreateAssociativeDimensions",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Creates associative linear dimensions from explicit witness point references. A witness point can also be static, given by its coordinate instead of an element.",
+   "brief": "Creates associative dimensions from explicit witness point references: linear by default, or cumulative, baseline or elevation dimensions (appearance). A witness point can also be static, given by its coordinate instead of an element.",
    "status": "done",
    "reason": "",
    "components": [
@@ -5147,7 +5434,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 9,
+   "parameterCount": 11,
    "coveredParameters": [
     "dimensionsData",
     "dimensionsData.direction",
@@ -5155,6 +5442,8 @@
     "dimensionsData.witnessPoints"
    ],
    "missingParameters": [
+    "dimensionsData.appearance",
+    "dimensionsData.elevationOrigin",
     "dimensionsData.favoriteName",
     "dimensionsData.floorIndex",
     "dimensionsData.textFrame",
@@ -5168,7 +5457,7 @@
    "id": "CreateAssociativeDimensionsOnSection",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Creates associative linear dimensions on section elements using common wall, slab, beam, column, door and window presets. The preset points of multiple section elements can be merged into one continuous dimension chain via sectionElementIds. For Opening tool elements, which Archicad does not associate with dimensions, the OpeningEdges preset places fixed points at their edges instead.",
+   "brief": "Creates associative dimensions on section elements using common wall, slab, beam, column, door and window presets: linear by default, or cumulative, baseline or elevation dimensions (appearance), e.g. level marks. The preset points of multiple section elements can be merged into one continuous dimension chain via sectionElementIds. For Opening tool elements, which Archicad does not associate with dimensions, the OpeningEdges preset places fixed points at their edges instead.",
    "status": "done",
    "reason": "",
    "components": [
@@ -5178,7 +5467,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 14,
+   "parameterCount": 16,
    "coveredParameters": [
     "dimensionsData",
     "dimensionsData.direction",
@@ -5187,7 +5476,9 @@
     "dimensionsData.sectionElementId"
    ],
    "missingParameters": [
+    "dimensionsData.appearance",
     "dimensionsData.beginPlane",
+    "dimensionsData.elevationOrigin",
     "dimensionsData.favoriteName",
     "dimensionsData.placeOnTop",
     "dimensionsData.sectionElementIds",
@@ -5214,7 +5505,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 8,
+   "parameterCount": 10,
    "coveredParameters": [
     "dimensionsData",
     "dimensionsData.direction",
@@ -5222,6 +5513,8 @@
     "dimensionsData.wallId"
    ],
    "missingParameters": [
+    "dimensionsData.appearance",
+    "dimensionsData.elevationOrigin",
     "dimensionsData.favoriteName",
     "dimensionsData.textFrame",
     "dimensionsData.textHeight",
@@ -6105,7 +6398,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1791,
+     "title": "Grasshopper: Doors and Windows tool components, with their floor plan parameters"
+    }
+   ]
   },
   {
    "id": "ModifyDoors",
@@ -6137,7 +6435,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1791,
+     "title": "Grasshopper: Doors and Windows tool components, with their floor plan parameters"
+    }
+   ]
   },
   {
    "id": "ModifyOpenings",
@@ -6255,24 +6558,40 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1785,
+     "title": "GetDetailsOfElements: floor plan and section parameters of Roofs"
+    }
+   ]
   },
   {
    "id": "ModifyShells",
    "group": "Element Commands",
    "version": "1.8.0",
    "brief": "Modifies the structure (Basic or Composite, building material or composite) of Shell elements based on the given parameters.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "ModifyShellsComponent",
+     "path": "Components/ElementsComponents/ModifyShellsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 5,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "shellsWithDetails",
+    "shellsWithDetails.buildingMaterialId",
+    "shellsWithDetails.compositeId",
+    "shellsWithDetails.elementId",
+    "shellsWithDetails.structureType"
+   ],
    "missingParameters": [],
    "pullRequests": [
     {
-     "number": 1760,
-     "title": "Grasshopper: components for the remaining element commands"
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
     }
    ],
    "issues": []
@@ -6515,17 +6834,36 @@
    "group": "Element Commands",
    "version": "1.8.0",
    "brief": "Modifies Zone elements: name, number, category, zone stamp, height, base offset, top link and floor thickness. Only the given fields are changed; the polygon is kept.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "ModifyZonesComponent",
+     "path": "Components/ElementsComponents/ModifyZonesComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 13,
-   "coveredParameters": [],
+   "coveredParameters": [
+    "zonesWithDetails",
+    "zonesWithDetails.bottomOffset",
+    "zonesWithDetails.categoryAttributeId",
+    "zonesWithDetails.elementId",
+    "zonesWithDetails.fixedStampAngle",
+    "zonesWithDetails.floorThickness",
+    "zonesWithDetails.height",
+    "zonesWithDetails.name",
+    "zonesWithDetails.numberStr",
+    "zonesWithDetails.relativeTopStory",
+    "zonesWithDetails.stampAngle",
+    "zonesWithDetails.stampPosition",
+    "zonesWithDetails.topOffset"
+   ],
    "missingParameters": [],
    "pullRequests": [
     {
-     "number": 1760,
-     "title": "Grasshopper: components for the remaining element commands"
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
     }
    ],
    "issues": []
@@ -6716,6 +7054,36 @@
    "issues": []
   },
   {
+   "id": "GetSplineMaxDistances",
+   "group": "Element Commands",
+   "version": "1.8.1",
+   "brief": "Measures how far the given 2D coordinates are from a segment of a Spline element, between two of its fit points, with its own Bezier handles: returns the largest distance, for example to check how well a polyline follows the spline. The output is aligned with the input array. Changes nothing in the project.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "GetSplineMaxDistancesComponent",
+     "path": "Components/ElementsComponents/GetSplineMaxDistancesComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "splines",
+    "splines.coordinates",
+    "splines.elementId",
+    "splines.segmentIndex"
+   ],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
+   "issues": []
+  },
+  {
    "id": "CreateGroups",
    "group": "Element grouping Commands",
    "version": "1.4.0",
@@ -6822,7 +7190,12 @@
     "groups"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -6844,7 +7217,12 @@
     "groups"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -6864,7 +7242,12 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -7023,7 +7406,12 @@
     "elementSets.elementSetId.guid"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -7372,7 +7760,12 @@
     "path"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -7395,7 +7788,12 @@
     "parentPath"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -7418,7 +7816,12 @@
     "path"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -7441,7 +7844,12 @@
     "recursive"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -7582,7 +7990,39 @@
     "targetPath"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "GetFavoriteDefaults",
+   "group": "Favorites Commands",
+   "version": "1.8.1",
+   "brief": "Reads the element default stored in each given Favorite through the Favorite manager, without applying it or placing an element: the element type, the layer, the element ID, the folder, the library part and GDL parameters, the marker of every element type that has one, and the sub-elements with each of their kinds (Curtain Wall frames and panels, Stair treads and risers, Railing posts and rails, markers ...). Available from Archicad 29.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "GetFavoriteDefaultsComponent",
+     "path": "Components/FavoritesComponents/GetFavoriteDefaultsComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "favorites"
+   ],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -7786,7 +8226,12 @@
     "attributes.properties.propertyValue"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -7810,7 +8255,12 @@
     "propertyValue"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -8135,7 +8585,12 @@
     "propertyIds"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -8160,7 +8615,12 @@
     "propertyDefinitionDefaults"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -8183,7 +8643,12 @@
     "properties"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -8365,7 +8830,12 @@
     "classificationSystemId"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -8454,7 +8924,12 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -8768,7 +9243,12 @@
     "projectFilePath"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -8947,7 +9427,12 @@
     "maxPlaceholders"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -8974,7 +9459,12 @@
     "maxPlaceholders"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -9648,7 +10138,39 @@
     "indices"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "SetPens",
+   "group": "Attribute Commands",
+   "version": "1.8.1",
+   "brief": "Changes the color, width and description of the given pens in effect in the current window, the pens GetPens returns, in one undo step. Only the given fields of a listed pen are changed; each pen gets its own execution result. In a Teamwork project the PenTables lockable object set must be reserved first (see ReserveLockableObjectSet). Available from Archicad 27.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "SetPensComponent",
+     "path": "Components/AttributesComponents/SetPensComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "pens"
+   ],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -10132,7 +10654,12 @@
     "ruleGroupNames"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -10442,7 +10969,7 @@
    "id": "GetIFCClassificationReferencesOfElements",
    "group": "IFC Commands",
    "version": "1.8.0",
-   "brief": "Retrieves the IFC classification references of the given elements, subelements included: identification, name, location, description (from Archicad 29), the referenced classification (name, source, edition) and whether the reference comes from the preview translator or is stored locally. On Archicad 25, 26 and 27 the source is not given, the referenced classification also has its edition date, description and location, and storedOnly returns only the references stored on the elements.",
+   "brief": "Retrieves the IFC classification references of the given elements, subelements included: identification, name, location, description and sort (from Archicad 29), the name of the IfcRelAssociatesClassification (from Archicad 28), the referenced classification (name, source, edition, edition date, description and location) and whether the reference comes from the preview translator or is stored locally. On Archicad 25, 26 and 27 the source is not given and storedOnly returns only the references stored on the elements.",
    "status": "done",
    "reason": "",
    "components": [
@@ -10561,7 +11088,12 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -10581,7 +11113,12 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -10842,7 +11379,12 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -10866,7 +11408,12 @@
     "nameContains"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -10893,7 +11440,12 @@
     "subTypeOf"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -10918,7 +11470,12 @@
     "remove.path"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -10941,7 +11498,12 @@
     "libraryParts.name"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -10964,7 +11526,12 @@
     "libraryParts.index"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -11006,7 +11573,12 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -11028,7 +11600,12 @@
     "date"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -11048,7 +11625,12 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -11068,7 +11650,12 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -11284,7 +11871,12 @@
     "scripts"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -11308,7 +11900,12 @@
     "libraryParts.path"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -11331,7 +11928,12 @@
     "unId2"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -11351,7 +11953,12 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -11373,7 +11980,106 @@
     "name"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "CreateLibraryPartFromElements",
+   "group": "Library Commands",
+   "version": "1.8.1",
+   "brief": "Creates a library part in the embedded library (or in a given local library folder, which is added to the loaded libraries when needed) whose 2D symbol is a copy of the given 2D drawing elements (lines, polylines, arcs, circles, splines, fills, texts and hotspots), under the given parent subtype, with optional master, 2D, 3D and parameter scripts, comment and keywords. A and B are taken from the extent of the symbol. The elements themselves are not changed.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "CreateLibraryPartFromElementsComponent",
+     "path": "Components/LibraryComponents/CreateLibraryPartFromElementsComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 15,
+   "coveredParameters": [
+    "comment",
+    "elements",
+    "folder",
+    "keywords",
+    "libraryFolder",
+    "name",
+    "overwrite",
+    "parentId",
+    "parentName",
+    "placeable",
+    "scripts",
+    "scripts.2D",
+    "scripts.3D",
+    "scripts.master",
+    "scripts.parameter"
+   ],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "InterpretGDLScript3D",
+   "group": "Library Commands",
+   "version": "1.8.1",
+   "brief": "Runs a GDL 3D script, given as text or as the master and 3D scripts of a loaded library part with its default parameters, with the settings of the GDL editor, and returns whether it ran without a GDL error, how many 3D model elements it generated and their bounding box. The API returns no GDL error message or line number.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "InterpretGDLScript3DComponent",
+     "path": "Components/LibraryComponents/InterpretGDLScript3DComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "libraryPartName",
+    "script"
+   ],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "GetGDLUserGlobals",
+   "group": "Library Commands",
+   "version": "1.8.1",
+   "brief": "Returns the current GDL global variables the GDL interpreter gets, with their names, types and values. Available from Archicad 28.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "GetGDLUserGlobalsComponent",
+     "path": "Components/LibraryComponents/GetGDLUserGlobalsComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -11670,7 +12376,12 @@
     "databases"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -11740,7 +12451,12 @@
     "objectIds"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -11762,7 +12478,12 @@
     "accessRights"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -11806,7 +12527,12 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -12358,7 +13084,12 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -12383,7 +13114,12 @@
     "viewOptions.onScreenViewOptions"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -12951,6 +13687,60 @@
    "issues": []
   },
   {
+   "id": "SetCurrent3DStyle",
+   "group": "Navigator Commands",
+   "version": "1.8.1",
+   "brief": "Makes the given 3D style, one of the names Get3DStyles returns, the current one, which the 3D window uses.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "SetCurrent3DStyleComponent",
+     "path": "Components/NavigatorComponents/SetCurrent3DStyleComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "styleName"
+   ],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "StoreViewSettings",
+   "group": "Navigator Commands",
+   "version": "1.8.1",
+   "brief": "Stores the current view settings (action Store) and puts them back later (action Restore), for example before and after a script that changes the view. The two must be called in pairs and cannot be stacked. Restoring may rebuild the view.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "StoreViewSettingsComponent",
+     "path": "Components/NavigatorComponents/StoreViewSettingsComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "action"
+   ],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
+   "issues": []
+  },
+  {
    "id": "ShowElementsIn3D",
    "group": "Navigator Commands",
    "version": "1.7.4",
@@ -13106,7 +13896,12 @@
     "navigatorItemId"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -13212,7 +14007,12 @@
     "settings.window3DInfo.zoomScaleX",
     "settings.window3DInfo.zoomScaleY"
    ],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -13232,7 +14032,12 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -13263,7 +14068,12 @@
     "settings.trimToStoryRange"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -13283,7 +14093,12 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -13330,7 +14145,12 @@
     "settings.status"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -13793,7 +14613,12 @@
     "parentNavigatorItemId"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -14748,7 +15573,12 @@
     "hotlinks.hotlinkNodeId"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -14776,7 +15606,12 @@
     "hotlinkInstances.filterMode"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -14960,7 +15795,12 @@
     "hotlinkNodes.hotlinkNodeId"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -15360,6 +16200,91 @@
    "issues": []
   },
   {
+   "id": "GetModulData",
+   "group": "Project Data Commands",
+   "version": "1.8.1",
+   "brief": "Gets the module data Tapir stored in the project with StoreModulData: the given names, or all of them, with their data version and, unless includeContent is false, their content. Module data are the custom data sections of Archicad's ModulData Manager: text saved in the project file under a name, kept apart from project data (SetProjectData).",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "GetModulDataComponent",
+     "path": "Components/ProjectComponents/GetModulDataComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "includeContent",
+    "names"
+   ],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "StoreModulData",
+   "group": "Project Data Commands",
+   "version": "1.8.1",
+   "brief": "Creates or overwrites module data: text (for example JSON) saved in the project under a name, with an optional data version. Prefix the names with the name of your tool (for example 'my-tool/settings') so scripts do not overwrite each other's data. Storing module data is not an undoable step.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "StoreModulDataComponent",
+     "path": "Components/ProjectComponents/StoreModulDataComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "modulData",
+    "modulData.content",
+    "modulData.dataVersion",
+    "modulData.name"
+   ],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "DeleteModulData",
+   "group": "Project Data Commands",
+   "version": "1.8.1",
+   "brief": "Deletes the module data with the given names. Deleting module data is not an undoable step.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "DeleteModulDataComponent",
+     "path": "Components/ProjectComponents/DeleteModulDataComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "names"
+   ],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
+   "issues": []
+  },
+  {
    "id": "GetMEPElements",
    "group": "MEP Commands",
    "version": "1.5.6",
@@ -15408,7 +16333,7 @@
    "id": "GetMEPPorts",
    "group": "MEP Commands",
    "version": "1.5.6",
-   "brief": "Retrieves the ports of the given MEP elements including position, shape, size, connection status and connection style (from Archicad 30), the flow direction of piping and ventilation ports, the nominal size of piping ports (from Archicad 30), and the outer diameter, wall thickness and flange size (Archicad 30) of piping and ventilation ports. Available from Archicad 28.",
+   "brief": "Retrieves the ports of the given MEP elements including position, shape, size, connection status (Archicad 27: whether the port is connected, from Archicad 28: whether it is physically connected) and connection style (from Archicad 30), the flow direction of piping and ventilation ports (from Archicad 28), the nominal size of piping ports (from Archicad 30), and the outer diameter, wall thickness and flange size (Archicad 30) of piping and ventilation ports. Available from Archicad 27.",
    "status": "done",
    "reason": "",
    "components": [
@@ -15843,7 +16768,7 @@
    "id": "GetMEPToolDefaults",
    "group": "MEP Commands",
    "version": "1.7.4",
-   "brief": "Retrieves the current settings of the MEP tools per domain, without changing them: the routing tool (MEP system, branch preference table, floor plan display settings from Archicad 29, and its segment, node, elbow (from Archicad 29) and transition defaults), the flexible segment tool, and the library part and port settings of the terminal, accessory, fitting and equipment tools. Available from Archicad 28.",
+   "brief": "Retrieves the current settings of the MEP tools per domain, without changing them: the routing tool (MEP system, branch preference table, floor plan display settings from Archicad 29, and its segment, node, elbow (Archicad 27 and from Archicad 29) and transition defaults), its rigid segment and branch defaults, the flexible segment tool, the library part, insulation and port settings of the terminal, accessory, fitting and equipment tools, and from Archicad 30 the electrical panel tool with its number of circuit defaults. Archicad 27 gives fewer settings, and only the shape of the ports. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
    "components": [
@@ -15858,7 +16783,12 @@
     "domains"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -15881,7 +16811,12 @@
     "targetElements"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -15903,52 +16838,67 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
-   "id": "PlaceMEPFlexibleSegments",
+   "id": "CreateMEPFlexibleSegments",
    "group": "MEP Commands",
    "version": "1.8.1",
-   "brief": "Places MEP flexible segments through the given control points with the current settings of the Flexible Segment tool of their domain, optionally with the orientation at both ends. Available from Archicad 28.",
+   "brief": "Creates MEP flexible segments through the given control points, or along a polyline of alternating line and spline parts (Piping), with the current settings of the Flexible Segment tool of their domain, optionally with the orientation (control points) or direction (polyline) at both ends. Available from Archicad 28.",
    "status": "merged",
    "reason": "",
    "components": [
     {
-     "name": "PlaceMEPFlexibleSegmentsComponent",
-     "path": "Components/MEPComponents/PlaceMEPFlexibleSegmentsComponent.cs"
+     "name": "CreateMEPFlexibleSegmentsComponent",
+     "path": "Components/MEPComponents/CreateMEPFlexibleSegmentsComponent.cs"
     }
    ],
    "parameters": "all",
-   "parameterCount": 5,
+   "parameterCount": 8,
    "coveredParameters": [
     "flexibleSegmentsData",
     "flexibleSegmentsData.controlPoints",
     "flexibleSegmentsData.domain",
+    "flexibleSegmentsData.endDirection",
     "flexibleSegmentsData.endOrientation",
+    "flexibleSegmentsData.polyline",
+    "flexibleSegmentsData.startDirection",
     "flexibleSegmentsData.startOrientation"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
-   "id": "PlaceMEPTakeOffs",
+   "id": "CreateMEPTakeOffs",
    "group": "MEP Commands",
    "version": "1.8.1",
-   "brief": "Places MEP take-offs on the given routing segments, at a distance from the beginning of the segment and optionally rotated around its axis, with the current settings of the Take-Off tool of their domain, optionally with their length. Available from Archicad 28.",
+   "brief": "Creates MEP take-offs on the given routing segments, at a distance from the beginning of the segment (not more than its length) and optionally rotated around its axis by a multiple of 90 degrees, with the current settings of the Take-Off tool of their domain (by default the domain of the segment's routing element), optionally with their length and without insulation, which apply only to what is created. Archicad only has Ventilation take-offs. Available from Archicad 28.",
    "status": "merged",
    "reason": "",
    "components": [
     {
-     "name": "PlaceMEPTakeOffsComponent",
-     "path": "Components/MEPComponents/PlaceMEPTakeOffsComponent.cs"
+     "name": "CreateMEPTakeOffsComponent",
+     "path": "Components/MEPComponents/CreateMEPTakeOffsComponent.cs"
     }
    ],
    "parameters": "all",
-   "parameterCount": 6,
+   "parameterCount": 8,
    "coveredParameters": [
     "takeOffsData",
+    "takeOffsData.defaults",
+    "takeOffsData.defaults.removeInsulation",
     "takeOffsData.distanceFromBeginning",
     "takeOffsData.domain",
     "takeOffsData.length",
@@ -15956,7 +16906,47 @@
     "takeOffsData.segmentId"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "ModifyMEPElements",
+   "group": "MEP Commands",
+   "version": "1.8.1",
+   "brief": "Modifies placed MEP elements: the anchor point, orientation and library part of terminals, accessories, equipment, fittings and flexible segments, the control points, polyline (Piping, from Archicad 28), and width and height of flexible segments. Only the given fields are changed, in one undo step with one execution result per element; an item with a field that does not fit its element changes nothing. Archicad reports a 'libraryPartId' it does not find only after the item's other changes were made, so that item's error says which changes stayed. Available from Archicad 27.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "ModifyMEPElementsComponent",
+     "path": "Components/MEPComponents/ModifyMEPElementsComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 9,
+   "coveredParameters": [
+    "elements",
+    "elements.anchorPoint",
+    "elements.controlPoints",
+    "elements.elementId",
+    "elements.height",
+    "elements.libraryPartId",
+    "elements.orientation",
+    "elements.polyline",
+    "elements.width"
+   ],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -15978,7 +16968,12 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -16013,7 +17008,12 @@
     "elements.transitionParameters"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -16373,7 +17373,7 @@
    "id": "GetMEPElementDetails",
    "group": "MEP Commands",
    "version": "1.8.0",
-   "brief": "Retrieves the type-specific details of the given MEP elements: insulation thickness and routing segment of rigid segments, control points of flexible segments, radius factor, insulation thickness, preference table and routing node of elbows (from Archicad 29), angle, length and insulation thickness of branches, and offsets, wider and narrower ports, insulation thickness, routing node and (from Archicad 29) preference table of transitions. Available from Archicad 28.",
+   "brief": "Retrieves the type-specific details of the given MEP elements: insulation thickness and routing segment of rigid segments, control points and polyline of flexible segments, radius factor, insulation thickness, preference table and routing node of elbows (from Archicad 29), angle, length and insulation thickness of branches, and offsets, wider and narrower ports, insulation thickness, routing node and (from Archicad 29) preference table of transitions. Available from Archicad 28.",
    "status": "done",
    "reason": "",
    "components": [
@@ -17042,7 +18042,12 @@
     "analyticalModelId"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -17066,7 +18071,12 @@
     "segmentationCentralAngle"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -17089,7 +18099,12 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -17113,7 +18128,12 @@
     "releases.release"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -17135,7 +18155,12 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -17160,7 +18185,12 @@
     "stretches.endAdditionalLength"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -17184,7 +18214,12 @@
     "memberParts.memberPartRef"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -17207,7 +18242,12 @@
     "memberPartRefs"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -17230,7 +18270,12 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -17253,7 +18298,12 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -17275,7 +18325,12 @@
     "supports"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -17297,7 +18352,12 @@
     "links"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -17320,7 +18380,12 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -17343,7 +18408,12 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -17369,7 +18439,12 @@
     "loads.surfaceLoad"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {
@@ -17395,7 +18470,12 @@
     "members.surfaceMember"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1795,
+     "title": "Grasshopper: own icons for the 126 new components"
+    }
+   ],
    "issues": []
   },
   {

@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-04 07:06 UTC",
+ "generatedAt": "2026-11-04 08:35 UTC",
  "versions": [
   25,
   26,
@@ -10,11 +10,11 @@
  ],
  "counts": {
   "not applicable": 670,
-  "done": 1860,
+  "done": 1859,
   "skipped": 28,
-  "merged": 228,
-  "in progress": 91,
-  "open": 2
+  "merged": 282,
+  "in progress": 37,
+  "open": 3
  },
  "items": [
   {
@@ -2925,6 +2925,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1777,
+     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
+    },
+    {
      "number": 1395,
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
     }
@@ -3215,12 +3219,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3239,12 +3238,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3454,7 +3448,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1777,
+     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
+    }
+   ],
    "issues": []
   },
   {
@@ -3471,14 +3470,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3918,12 +3912,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 729,
-     "title": "Fix CreateMorphs \"size\" box: no per-face surface override, outward bottom face"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3965,18 +3954,8 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 729,
-     "title": "Fix CreateMorphs \"size\" box: no per-face surface override, outward bottom face"
-    }
-   ],
-   "issues": [
-    {
-     "number": 728,
-     "title": "`CreateMorphs` with `size`: every face gets the building material index as its surface override (wrong surface in 3D)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Body_AddVertex",
@@ -4103,24 +4082,16 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
+     "number": 1777,
+     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
     },
     {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    },
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
+     "number": 1774,
+     "title": "Add ModifyStairs: change the settings of existing stairs"
     },
     {
      "number": 1757,
      "title": "ImportFavorites: run the import in an undoable command so Teamwork projects keep it"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1543,
@@ -4159,14 +4130,6 @@
     {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    },
-    {
-     "number": 1048,
-     "title": "Get/Set3DDocumentSettings: read and write the settings of a 3D Document (split from #876)"
-    },
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
     }
    ]
   },
@@ -4660,14 +4623,9 @@
    "olderNames": [
     "APIAny_ConvertMimePictureID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4688,14 +4646,9 @@
    "olderNames": [
     "APIAny_ConvertPictureID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4831,14 +4784,9 @@
    "olderNames": [
     "ACAPI_3D_GetCutPolygonInfo"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4856,12 +4804,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4909,8 +4852,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
+     "number": 1777,
+     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
+    },
+    {
+     "number": 1776,
+     "title": "2D creation commands: optional databaseId to create in a worksheet, detail or layout without opening it"
     },
     {
      "number": 995,
@@ -4963,12 +4910,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1424,
-     "title": "DeleteNavigatorItems returns NOTSUPPORTED for SubSetItem (Layout Book group) — expected?"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_DoClip",
@@ -5038,8 +4980,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
+     "number": 1777,
+     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
+    },
+    {
+     "number": 1776,
+     "title": "2D creation commands: optional databaseId to create in a worksheet, detail or layout without opening it"
     }
    ],
    "issues": []
@@ -5297,12 +5243,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1423,
-     "title": "Is creating a new Master Layout possible via the API?"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_GetSectionDatabases",
@@ -5833,10 +5774,6 @@
    "reason": "memory management",
    "pullRequests": [
     {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    },
-    {
      "number": 1703,
      "title": "Add CreateSkylights: place skylights in roofs and shells"
     },
@@ -5890,7 +5827,12 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "memory management",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1777,
+     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
+    }
+   ],
    "issues": []
   },
   {
@@ -5955,16 +5897,8 @@
    "reason": "memory management",
    "pullRequests": [
     {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    },
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    },
-    {
-     "number": 1761,
-     "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
+     "number": 1793,
+     "title": "Add ModifyRailings: height, bottom offset and home story of railings"
     },
     {
      "number": 1748,
@@ -6231,14 +6165,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6310,14 +6239,9 @@
    "olderNames": [
     "APIEnv_ChangeMarkerDrawingEnabledID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6453,14 +6377,9 @@
    "olderNames": [
     "APIEnv_IsMarkerDrawingEnabledID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6953,6 +6872,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1793,
+     "title": "Add ModifyRailings: height, bottom offset and home story of railings"
+    },
+    {
+     "number": 1774,
+     "title": "Add ModifyStairs: change the settings of existing stairs"
+    },
+    {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
@@ -6974,10 +6901,6 @@
     }
    ],
    "issues": [
-    {
-     "number": 1226,
-     "title": "Expose ACAPI_Element_ChangeMore (apply one masked change to many elements, like multi-select + settings)"
-    },
     {
      "number": 371,
      "title": "Lessons learned building a Tapir-based automation toolkit (AC29)"
@@ -7147,12 +7070,7 @@
    "status": "skipped",
    "reason": "no speed gain over SetDetailsOfElements / the Modify* commands in the #1226 measurement, and one error code for the whole batch instead of per-element results",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1226,
-     "title": "Expose ACAPI_Element_ChangeMore (apply one masked change to many elements, like multi-select + settings)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_ChangeMorphEdgeType",
@@ -7221,8 +7139,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
+     "number": 1775,
+     "title": "CreateStairs: optional baselinePosition and baselineOffset"
     }
    ],
    "issues": [
@@ -7233,10 +7151,6 @@
     {
      "number": 578,
      "title": "CreateStairs rejects multi-segment baselines that turn clockwise (-2130313215)"
-    },
-    {
-     "number": 567,
-     "title": "CreateAssociativeDimensionsOnSection still returns ghost GUIDs: the #512 guard was not applied to it (Interior Elevation, 1.5.8)"
     }
    ]
   },
@@ -7268,10 +7182,6 @@
     {
      "number": 1377,
      "title": "Place Detail and Worksheet markers, and change their settings"
-    },
-    {
-     "number": 481,
-     "title": "CreateWindows/CreateDoors on AC29: command returns a GUID but no opening is created (single item, no crash) — even with a valid favoriteName"
     }
    ]
   },
@@ -7512,8 +7422,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
+     "number": 1793,
+     "title": "Add ModifyRailings: height, bottom offset and home story of railings"
+    },
+    {
+     "number": 1774,
+     "title": "Add ModifyStairs: change the settings of existing stairs"
     },
     {
      "number": 1727,
@@ -7811,10 +7725,6 @@
     {
      "number": 1377,
      "title": "Place Detail and Worksheet markers, and change their settings"
-    },
-    {
-     "number": 413,
-     "title": "CreateDoors/CreateWindows fail with APIERR_REFUSEDPAR on Archicad 27 despite valid favorite"
     }
    ]
   },
@@ -8097,10 +8007,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    },
-    {
      "number": 1543,
      "title": "[5/6] Add UpdateLibraryPartSections and GetLibraryPart2DPrimitives"
     },
@@ -8152,12 +8058,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    },
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
+     "number": 1793,
+     "title": "Add ModifyRailings: height, bottom offset and home story of railings"
     },
     {
      "number": 1748,
@@ -9867,7 +9769,12 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "memory management",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1778,
+     "title": "Add GetModelViewOptionDetails: read the settings of stored model view option combinations"
+    }
+   ],
    "issues": [
     {
      "number": 781,
@@ -10226,12 +10133,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 561,
-     "title": "Wish: expose ACAPI_GraphicalOverride_* (create/modify/delete override rules and combinations)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_GraphicalOverride_ChangeOverrideRuleGroup",
@@ -10296,12 +10198,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 561,
-     "title": "Wish: expose ACAPI_GraphicalOverride_* (create/modify/delete override rules and combinations)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_GraphicalOverride_CreateOverrideRuleGroup",
@@ -10366,12 +10263,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 561,
-     "title": "Wish: expose ACAPI_GraphicalOverride_* (create/modify/delete override rules and combinations)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_GraphicalOverride_DeleteOverrideRuleGroup",
@@ -10909,12 +10801,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1268,
-     "title": "Expose ACAPI_UserData_Get/SetUserData for attributes and ACAPI_Grouping_SetUserData"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Grouping_Tool",
@@ -11210,12 +11097,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1603,
-     "title": "CreateHotlinkNodes: allow XRef nodes from DWG/DXF files (if the API supports APIHotlink_XRef)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Hotlink_DeleteHotlinkNode",
@@ -11620,14 +11502,9 @@
    "olderNames": [
     "APIEnv_AddLibrariesID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11717,14 +11594,9 @@
    "olderNames": [
     "APIEnv_CreateCopyOfGdlUserGlobalsHandleID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11814,14 +11686,9 @@
    "olderNames": [
     "APIEnv_DestroyCopyOfGdlUserGlobalsHandleID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11888,12 +11755,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11914,20 +11776,10 @@
    "olderNames": [
     "APIAny_InterpretGDLScript3DID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1400,
-     "title": "Add command to read GDL script errors/warnings for a library part"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryManagement_NewLibDial",
@@ -12000,14 +11852,9 @@
    "olderNames": [
     "APIEnv_OverwriteLibPartID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
@@ -12131,12 +11978,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
@@ -12299,12 +12141,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
@@ -12334,14 +12171,9 @@
    "olderNames": [
     "ACAPI_LibPart_EndSection"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
@@ -12370,10 +12202,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    },
     {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
@@ -12678,10 +12506,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    },
-    {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
     },
@@ -12737,10 +12561,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    },
-    {
      "number": 1703,
      "title": "Add CreateSkylights: place skylights in roofs and shells"
     },
@@ -12773,14 +12593,9 @@
    "olderNames": [
     "ACAPI_LibPart_GetSect_2DDrawHdl"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
@@ -12812,12 +12627,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
@@ -12843,13 +12653,9 @@
    "olderNames": [
     "ACAPI_LibPart_GetSection"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    },
     {
      "number": 1543,
      "title": "[5/6] Add UpdateLibraryPartSections and GetLibraryPart2DPrimitives"
@@ -12949,14 +12755,9 @@
    "olderNames": [
     "ACAPI_LibPart_NewSection"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
@@ -13128,12 +12929,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
@@ -13162,10 +12958,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    },
     {
      "number": 1703,
      "title": "Add CreateSkylights: place skylights in roofs and shells"
@@ -13208,14 +13000,9 @@
    "olderNames": [
     "ACAPI_LibPart_SetDetails_ParamDef"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
@@ -13245,14 +13032,9 @@
    "olderNames": [
     "ACAPI_LibPart_SetUpSect_2DDrawHdl"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
@@ -13344,14 +13126,9 @@
    "olderNames": [
     "ACAPI_LibPart_WriteSection"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
@@ -14037,12 +13814,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1256,
-     "title": "Expose ACAPI_ModelAccess_GetBuildingMaterial (building material of each 3D body)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ModelAccess_Get3DInfo",
@@ -14064,12 +13836,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
@@ -14093,12 +13860,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1256,
-     "title": "Expose ACAPI_ModelAccess_GetBuildingMaterial (building material of each 3D body)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ModelAccess_GetComponent",
@@ -14144,12 +13906,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1093,
-     "title": "Expose ACAPI_ModelAccess_GetConnectionTable (contact surfaces between elements, to check wall joins)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ModelAccess_GetNum",
@@ -14218,14 +13975,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14244,14 +13996,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14270,14 +14017,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14296,14 +14038,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14322,14 +14059,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14375,12 +14107,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 765,
-     "title": "RenameNavigatorItem: set a view's ID with newId and fail when the ID is kept"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14529,12 +14256,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_CreateLayout",
@@ -14774,12 +14496,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 765,
-     "title": "RenameNavigatorItem: set a view's ID with newId and fail when the ID is kept"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14848,18 +14565,8 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 765,
-     "title": "RenameNavigatorItem: set a view's ID with newId and fail when the ID is kept"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1428,
-     "title": "Archicad crashes (internal assertion) after CreateLayout + RenameNavigatorItem + DeleteNavigatorItems in quick succession"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_GetNavigatorParentItem",
@@ -15020,12 +14727,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_GetStructureDisplay",
@@ -15140,7 +14842,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1778,
+     "title": "Add GetModelViewOptionDetails: read the settings of stored model view option combinations"
+    }
+   ],
    "issues": []
   },
   {
@@ -15159,7 +14866,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1778,
+     "title": "Add GetModelViewOptionDetails: read the settings of stored model view option combinations"
+    }
+   ],
    "issues": []
   },
   {
@@ -16614,16 +16326,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 793,
-     "title": "Add a command to open a Teamwork/BIMcloud project by launching a new Archicad instance"
-    },
-    {
-     "number": 791,
-     "title": "Add a way to open a Teamwork/BIMcloud project, not just local .pln/.pla files"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ProjectOperation_Print",
@@ -16963,14 +16666,9 @@
    "olderNames": [
     "APIAny_GetSplineMaxDistID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17059,12 +16757,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18751,12 +18444,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 791,
-     "title": "Add a way to open a Teamwork/BIMcloud project, not just local .pln/.pla files"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Teamwork_GetUsernameFromId",
@@ -18822,14 +18510,9 @@
    "olderNames": [
     "ACAPI_TeamworkControl_HasConnection"
    ],
-   "status": "done",
+   "status": "open",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1761,
-     "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18896,14 +18579,9 @@
    "olderNames": [
     "ACAPI_TeamworkControl_IsOnline"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1761,
-     "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -19339,12 +19017,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1268,
-     "title": "Expose ACAPI_UserData_Get/SetUserData for attributes and ACAPI_Grouping_SetUserData"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_UserData_GetUserData",
@@ -19363,12 +19036,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1268,
-     "title": "Expose ACAPI_UserData_Get/SetUserData for attributes and ACAPI_Grouping_SetUserData"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_UserData_SetUserData",
@@ -19387,12 +19055,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1268,
-     "title": "Expose ACAPI_UserData_Get/SetUserData for attributes and ACAPI_Grouping_SetUserData"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_UserInput_CancelUserInput",
@@ -19786,12 +19449,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_Change3DImageSets",
@@ -19814,12 +19472,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_Change3DProjectionSets",
@@ -19842,12 +19495,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_Change3DStyle",
@@ -19962,16 +19610,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1048,
-     "title": "Get/Set3DDocumentSettings: read and write the settings of a 3D Document (split from #876)"
-    },
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_ChangeGhostRecord",
@@ -20141,12 +19780,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_Get3DImageSets",
@@ -20169,12 +19803,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_Get3DProjectionSets",
@@ -20197,12 +19826,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_Get3DStyle",
@@ -20247,12 +19871,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20338,16 +19957,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1048,
-     "title": "Get/Set3DDocumentSettings: read and write the settings of a 3D Document (split from #876)"
-    },
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_GetGhostRecord",
@@ -20470,7 +20080,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1776,
+     "title": "2D creation commands: optional databaseId to create in a worksheet, detail or layout without opening it"
+    }
+   ],
    "issues": []
   },
   {
@@ -20665,14 +20280,9 @@
    "olderNames": [
     "APIEnv_SetCurrent3DStyleID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20764,14 +20374,9 @@
    "olderNames": [
     "APIDb_StoreViewSettingsID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20911,6 +20516,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1776,
+     "title": "2D creation commands: optional databaseId to create in a worksheet, detail or layout without opening it"
+    },
+    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
@@ -21011,7 +20620,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1776,
+     "title": "2D creation commands: optional databaseId to create in a worksheet, detail or layout without opening it"
+    }
+   ],
    "issues": []
   },
   {
@@ -21036,8 +20650,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
+     "number": 1776,
+     "title": "2D creation commands: optional databaseId to create in a worksheet, detail or layout without opening it"
     },
     {
      "number": 995,
@@ -21546,10 +21160,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    },
-    {
      "number": 1326,
      "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
     },
@@ -22021,14 +21631,9 @@
     26
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -22062,16 +21667,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    },
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
@@ -22080,10 +21676,6 @@
     {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    },
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
     }
    ]
   },
@@ -22102,14 +21694,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    },
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
-    },
     {
      "number": 1326,
      "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
@@ -22934,12 +22518,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Override_GetOverrideRule",
@@ -26419,16 +25998,24 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1772,
-     "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands (#1668, merged with main)"
+     "number": 1793,
+     "title": "Add ModifyRailings: height, bottom offset and home story of railings"
     },
     {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
+     "number": 1777,
+     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
     },
     {
-     "number": 1761,
-     "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
+     "number": 1776,
+     "title": "2D creation commands: optional databaseId to create in a worksheet, detail or layout without opening it"
+    },
+    {
+     "number": 1775,
+     "title": "CreateStairs: optional baselinePosition and baselineOffset"
+    },
+    {
+     "number": 1774,
+     "title": "Add ModifyStairs: change the settings of existing stairs"
     },
     {
      "number": 1748,
@@ -26441,10 +26028,6 @@
     {
      "number": 1702,
      "title": "Add CreateShells: extruded, revolved and ruled shells"
-    },
-    {
-     "number": 1668,
-     "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands"
     },
     {
      "number": 1537,
@@ -27635,14 +27218,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -27721,10 +27299,6 @@
    "status": "not applicable",
    "reason": "add-on infrastructure (undo scopes, results)",
    "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
@@ -27847,14 +27421,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1761,
-     "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -27896,14 +27465,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1761,
-     "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -27923,14 +27487,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1761,
-     "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -27954,12 +27513,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    },
-    {
-     "number": 1761,
-     "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
+     "number": 1777,
+     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
     },
     {
      "number": 1537,
@@ -27996,14 +27551,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1761,
-     "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28020,12 +27570,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1761,
-     "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28084,14 +27629,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1761,
-     "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -28141,12 +27681,7 @@
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     }
    ],
-   "issues": [
-    {
-     "number": 1231,
-     "title": "Expose ACAPI::Favorite folder functions (list, create, move favorites between folders)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::FavoriteFolder::GetName",
@@ -28164,10 +27699,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1761,
-     "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
-    },
-    {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
@@ -28176,12 +27707,7 @@
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
    ],
-   "issues": [
-    {
-     "number": 1231,
-     "title": "Expose ACAPI::Favorite folder functions (list, create, move favorites between folders)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::FavoriteFolder::GetParentFolder",
@@ -28197,12 +27723,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1761,
-     "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28225,12 +27746,7 @@
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     }
    ],
-   "issues": [
-    {
-     "number": 1231,
-     "title": "Expose ACAPI::Favorite folder functions (list, create, move favorites between folders)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::FavoriteFolder::GetSubFolders",
@@ -28252,12 +27768,7 @@
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     }
    ],
-   "issues": [
-    {
-     "number": 1231,
-     "title": "Expose ACAPI::Favorite folder functions (list, create, move favorites between folders)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::FavoriteFolder::IsRoot",
@@ -28347,12 +27858,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1231,
-     "title": "Expose ACAPI::Favorite folder functions (list, create, move favorites between folders)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::FavoriteManager::DeleteFavorite",
@@ -28374,12 +27880,7 @@
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     }
    ],
-   "issues": [
-    {
-     "number": 1231,
-     "title": "Expose ACAPI::Favorite folder functions (list, create, move favorites between folders)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::FavoriteManager::DeleteFavoriteFolder",
@@ -28396,12 +27897,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1231,
-     "title": "Expose ACAPI::Favorite folder functions (list, create, move favorites between folders)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::FavoriteManager::ExportFavorites",
@@ -28470,10 +27966,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1761,
-     "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
-    },
-    {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     }
@@ -28512,12 +28004,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1231,
-     "title": "Expose ACAPI::Favorite folder functions (list, create, move favorites between folders)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::FavoriteManager::ImportAllFavorites",
@@ -28600,12 +28087,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1231,
-     "title": "Expose ACAPI::Favorite folder functions (list, create, move favorites between folders)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::FavoriteManager::MoveFolder",
@@ -28661,12 +28143,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1231,
-     "title": "Expose ACAPI::Favorite folder functions (list, create, move favorites between folders)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::GetFavoriteManager",
@@ -28683,10 +28160,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1761,
-     "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
-    },
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
@@ -29386,12 +28859,7 @@
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     }
    ],
-   "issues": [
-    {
-     "number": 1220,
-     "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GSMObject::Get2DVectorImage",
@@ -29432,12 +28900,7 @@
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     }
    ],
-   "issues": [
-    {
-     "number": 1220,
-     "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GSMObject::GetAuthor",
@@ -29674,12 +29137,7 @@
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     }
    ],
-   "issues": [
-    {
-     "number": 1220,
-     "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GSMObject::GetParameterDescriptions",
@@ -29734,12 +29192,7 @@
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     }
    ],
-   "issues": [
-    {
-     "number": 1220,
-     "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GSMObject::GetParameters",
@@ -29812,12 +29265,7 @@
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     }
    ],
-   "issues": [
-    {
-     "number": 1220,
-     "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GSMObject::GetSubTypeUnID",
@@ -29890,12 +29338,7 @@
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     }
    ],
-   "issues": [
-    {
-     "number": 1220,
-     "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GSMObject::Has2DVectorImage",
@@ -29936,12 +29379,7 @@
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     }
    ],
-   "issues": [
-    {
-     "number": 1220,
-     "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GSMObject::HasBackwardMigrationScript",
@@ -30088,12 +29526,7 @@
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     }
    ],
-   "issues": [
-    {
-     "number": 1220,
-     "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GSMObject::HasParameterScript",
@@ -30116,12 +29549,7 @@
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     }
    ],
-   "issues": [
-    {
-     "number": 1220,
-     "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GSMObject::HasPreviewPicture",
@@ -30162,12 +29590,7 @@
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     }
    ],
-   "issues": [
-    {
-     "number": 1220,
-     "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GSMObject::IsEditable",
@@ -31316,12 +30739,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    },
-    {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
+     "number": 1777,
+     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
     },
     {
      "number": 1543,
@@ -31386,12 +30805,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1249,
-     "title": "Expose ACAPI::Library::Library package info (ID, version, minimum Archicad version, dependencies)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Library::Library::GetPackageID",
@@ -31409,12 +30823,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1249,
-     "title": "Expose ACAPI::Library::Library package info (ID, version, minimum Archicad version, dependencies)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Library::Library::GetPackageMainVersion",
@@ -31432,12 +30841,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1249,
-     "title": "Expose ACAPI::Library::Library package info (ID, version, minimum Archicad version, dependencies)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Library::Library::GetPackageMinACBuildNumber",
@@ -31455,12 +30859,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1249,
-     "title": "Expose ACAPI::Library::Library package info (ID, version, minimum Archicad version, dependencies)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Library::Library::GetPackageMinACVersion",
@@ -31478,12 +30877,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1249,
-     "title": "Expose ACAPI::Library::Library package info (ID, version, minimum Archicad version, dependencies)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Library::Library::GetPackageSubVersion",
@@ -31501,12 +30895,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1249,
-     "title": "Expose ACAPI::Library::Library package info (ID, version, minimum Archicad version, dependencies)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Library::Library::GetTWServerPath",
@@ -32602,14 +31991,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     }
@@ -32632,16 +32013,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32684,16 +32056,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32731,12 +32094,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32789,12 +32147,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -32816,12 +32169,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32838,16 +32186,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32864,12 +32203,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32922,12 +32256,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1772,
-     "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands (#1668, merged with main)"
-    },
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
+     "number": 1777,
+     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
     },
     {
      "number": 1748,
@@ -32940,10 +32270,6 @@
     {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
-    },
-    {
-     "number": 1668,
-     "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands"
     },
     {
      "number": 1537,
@@ -33040,16 +32366,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -33091,12 +32408,7 @@
    "olderNames": [],
    "status": "skipped",
    "reason": "does not compile against the Archicad 27 DevKit: Bend::Modifier does not derive from ACAPI::ModifierBase, which ExecuteUndoableScope requires (Archicad 27 only)",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -33153,14 +32465,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
@@ -33241,16 +32545,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -33269,12 +32564,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -33380,16 +32670,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -33461,12 +32742,12 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     }
    ],
    "issues": [
@@ -33491,12 +32772,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -33514,12 +32790,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -33537,16 +32808,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -33564,12 +32826,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -33588,14 +32845,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
@@ -33670,16 +32919,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -33697,12 +32937,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -33897,16 +33132,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -33943,12 +33169,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -33983,14 +33204,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -34066,14 +33282,9 @@
    "olderNames": [
     "ACAPI::MEP::CreateBendDefault"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -34130,12 +33341,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -34172,12 +33378,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -34214,12 +33415,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -34256,12 +33452,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -34296,14 +33487,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -34345,12 +33531,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -34385,14 +33566,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -34432,14 +33608,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -34497,18 +33668,8 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1724,
-     "title": "Add CreateMEPTakeOffs: place Take-Offs on routing segments (TakeOffDefault::Place)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::CreateTakeOffUIManager",
@@ -34544,12 +33705,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -34584,14 +33740,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -34739,12 +33890,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -34911,12 +34057,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -34935,14 +34076,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
@@ -35324,16 +34457,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35351,12 +34475,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35716,12 +34835,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35841,16 +34955,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35868,12 +34973,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35892,14 +34992,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
@@ -36058,16 +35150,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36103,12 +35186,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36143,12 +35221,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36524,16 +35597,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36551,12 +35615,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36575,14 +35634,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
@@ -36604,12 +35655,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36729,16 +35775,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36825,12 +35862,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37171,16 +36203,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37198,12 +36221,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37222,14 +36240,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
@@ -37304,16 +36314,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37331,12 +36332,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37531,16 +36527,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37557,12 +36544,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37580,14 +36562,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
@@ -37609,12 +36583,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37784,16 +36753,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37810,12 +36770,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38087,16 +37042,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38119,16 +37065,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
@@ -38155,16 +37093,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38185,12 +37114,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38211,12 +37135,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38237,12 +37156,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38330,12 +37244,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38356,12 +37265,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38408,12 +37312,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38522,16 +37421,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     }
    ],
    "issues": []
@@ -38584,14 +37475,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
@@ -39044,16 +37927,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39070,14 +37944,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
@@ -39263,16 +38129,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39352,12 +38209,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39374,14 +38226,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
@@ -39402,12 +38246,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39439,12 +38278,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39588,12 +38422,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39742,16 +38571,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39781,14 +38601,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -39809,12 +38624,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39830,12 +38640,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39851,12 +38656,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39872,12 +38672,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39894,14 +38689,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
@@ -40140,16 +38927,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40170,24 +38948,28 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1772,
-     "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands (#1668, merged with main)"
+     "number": 1793,
+     "title": "Add ModifyRailings: height, bottom offset and home story of railings"
     },
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
+     "number": 1779,
+     "title": "SetPropertyValuesOfElements: reset a value to the default or make it undefined"
     },
     {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
+     "number": 1777,
+     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
     },
     {
-     "number": 1765,
-     "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
+     "number": 1776,
+     "title": "2D creation commands: optional databaseId to create in a worksheet, detail or layout without opening it"
     },
     {
-     "number": 1761,
-     "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
+     "number": 1775,
+     "title": "CreateStairs: optional baselinePosition and baselineOffset"
+    },
+    {
+     "number": 1774,
+     "title": "Add ModifyStairs: change the settings of existing stairs"
     },
     {
      "number": 1750,
@@ -40196,10 +38978,6 @@
     {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
@@ -40216,10 +38994,6 @@
     {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
-    },
-    {
-     "number": 1668,
-     "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands"
     },
     {
      "number": 1537,
@@ -40284,12 +39058,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -40372,12 +39141,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40428,12 +39192,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40452,12 +39211,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40473,12 +39227,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -40578,16 +39327,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40624,12 +39364,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40648,12 +39383,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40748,12 +39478,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40804,14 +39529,9 @@
     27
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -40943,12 +39663,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41015,16 +39730,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41081,14 +39787,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     }
@@ -41135,16 +39833,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41182,12 +39871,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41244,14 +39928,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     }
@@ -41274,16 +39950,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41326,16 +39993,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41373,12 +40031,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41435,14 +40088,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     }
@@ -41489,16 +40134,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41517,12 +40153,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41538,14 +40169,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -41569,12 +40195,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41615,14 +40236,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -41646,12 +40262,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41667,14 +40278,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -41698,12 +40304,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41722,16 +40323,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41769,12 +40361,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41793,12 +40380,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41817,12 +40399,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41841,12 +40418,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -41867,14 +40439,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -42786,12 +41353,12 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
+     "number": 1727,
+     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     }
    ],
    "issues": [
@@ -42817,12 +41384,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -42857,12 +41419,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -42913,12 +41470,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -42953,16 +41505,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43020,14 +41563,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     }
@@ -43048,16 +41583,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43176,16 +41702,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43203,12 +41720,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43227,14 +41739,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
@@ -43616,16 +42120,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43643,12 +42138,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44008,12 +42498,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44133,16 +42618,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44160,12 +42636,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44184,14 +42655,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
@@ -44213,12 +42676,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44338,16 +42796,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44434,12 +42883,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44780,16 +43224,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44807,12 +43242,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44831,14 +43261,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
@@ -44997,16 +43419,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45042,12 +43455,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45082,12 +43490,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45463,16 +43866,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45489,12 +43883,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45512,14 +43901,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
@@ -45711,16 +44092,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45737,12 +44109,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45963,12 +44330,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46019,16 +44381,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46049,14 +44402,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     }
@@ -46076,12 +44421,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46099,12 +44439,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46120,12 +44455,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46144,12 +44474,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46168,12 +44493,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46280,16 +44600,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46323,12 +44634,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46346,12 +44652,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46369,12 +44670,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46462,16 +44758,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46491,14 +44778,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
@@ -46522,12 +44801,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -46551,12 +44825,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46575,12 +44844,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46596,12 +44860,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46620,16 +44879,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46643,14 +44893,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -46674,12 +44919,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46698,12 +44938,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -46727,12 +44962,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46751,16 +44981,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46779,12 +45000,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46804,14 +45020,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
@@ -46835,12 +45043,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46859,12 +45062,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46899,14 +45097,9 @@
     27
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -46952,12 +45145,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46992,12 +45180,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47054,12 +45237,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47078,16 +45256,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47103,12 +45272,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47126,16 +45290,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47153,12 +45308,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47176,16 +45326,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47203,12 +45344,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47226,12 +45362,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47301,12 +45432,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47324,16 +45450,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47638,12 +45755,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -47666,16 +45778,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47711,12 +45814,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47772,12 +45870,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1772,
-     "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands (#1668, merged with main)"
-    },
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
+     "number": 1777,
+     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
     },
     {
      "number": 1748,
@@ -47790,10 +45884,6 @@
     {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
-    },
-    {
-     "number": 1668,
-     "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands"
     },
     {
      "number": 1537,
@@ -47893,16 +45983,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47940,14 +46021,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     }
@@ -47970,16 +46043,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47998,12 +46062,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48022,12 +46081,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48084,12 +46138,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48125,12 +46174,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -48152,12 +46196,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -48179,12 +46218,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -48246,16 +46280,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
@@ -48320,16 +46346,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48401,12 +46418,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48825,16 +46837,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     }
    ],
    "issues": []
@@ -48914,16 +46918,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48959,12 +46954,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49215,16 +47205,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     }
    ],
    "issues": []
@@ -49245,12 +47227,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49307,16 +47284,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
@@ -49385,16 +47354,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49497,14 +47457,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     }
@@ -49527,12 +47479,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49551,12 +47498,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -49770,16 +47712,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     }
    ],
    "issues": []
@@ -49846,16 +47780,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49896,12 +47821,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50043,16 +47963,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     }
    ],
    "issues": []
@@ -50111,16 +48023,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
@@ -50168,12 +48072,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50191,12 +48090,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50215,12 +48109,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50257,12 +48146,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50281,12 +48165,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50305,16 +48184,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50333,12 +48203,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50356,12 +48221,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50381,10 +48241,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
@@ -50487,12 +48343,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -50515,12 +48366,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50816,16 +48662,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     }
    ],
    "issues": []
@@ -50887,12 +48725,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50911,12 +48744,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50953,12 +48781,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50977,12 +48800,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51001,16 +48819,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51028,12 +48837,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51053,10 +48857,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
@@ -51139,12 +48939,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51416,16 +49211,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     }
    ],
    "issues": []
@@ -51533,14 +49320,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     }
@@ -51561,16 +49340,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51623,12 +49393,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1772,
-     "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands (#1668, merged with main)"
-    },
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
+     "number": 1777,
+     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
     },
     {
      "number": 1748,
@@ -51641,10 +49407,6 @@
     {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
-    },
-    {
-     "number": 1668,
-     "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands"
     },
     {
      "number": 1537,
@@ -51741,16 +49503,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51769,14 +49522,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
@@ -51799,16 +49544,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51867,12 +49603,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51890,16 +49621,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51935,12 +49657,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51997,14 +49714,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     }
@@ -52027,16 +49736,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52079,16 +49779,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52126,12 +49817,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52188,16 +49874,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
      "number": 1727,
@@ -52222,12 +49900,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52246,16 +49919,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52274,12 +49938,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52336,12 +49995,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52360,12 +50014,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52476,16 +50125,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     }
    ],
    "issues": []
@@ -52530,12 +50171,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52554,12 +50190,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52578,12 +50209,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52672,16 +50298,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     }
    ],
    "issues": []
@@ -52740,14 +50358,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    },
-    {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     }
@@ -52767,12 +50377,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52790,12 +50395,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52814,12 +50414,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52891,16 +50486,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52916,12 +50502,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52939,12 +50520,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52962,12 +50538,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52985,12 +50556,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -53042,12 +50608,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -53083,16 +50644,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
-     "number": 1728,
-     "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -58057,10 +55609,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1767,
-     "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
-    },
-    {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
@@ -58476,8 +56024,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1766,
-     "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
+     "number": 1778,
+     "title": "Add GetModelViewOptionDetails: read the settings of stored model view option combinations"
+    },
+    {
+     "number": 1777,
+     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
     },
     {
      "number": 1292,
@@ -58492,12 +56044,7 @@
      "title": "Add element component commands: list components and read their properties"
     }
    ],
-   "issues": [
-    {
-     "number": 1306,
-     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::Attribute::GetValue",
@@ -58515,12 +56062,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1306,
-     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::Attribute::GetValueType",
@@ -58538,12 +56080,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1306,
-     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::Classification::GetDescription",
@@ -58560,12 +56097,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1761,
-     "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -58588,10 +56120,6 @@
     {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    },
-    {
-     "number": 1306,
-     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
     }
    ]
   },
@@ -58608,14 +56136,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1761,
-     "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -58638,12 +56161,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1761,
-     "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -58662,12 +56180,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1306,
-     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::Classification::GetSource",
@@ -58685,12 +56198,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1306,
-     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::ClassificationReference::GetDescription",
@@ -58706,18 +56214,8 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1761,
-     "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1306,
-     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "IFCAPI::ClassificationReference::GetIdentification",
@@ -58735,12 +56233,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1306,
-     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::ClassificationReference::GetIfcRelAssociatesClassificationName",
@@ -58755,14 +56248,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1761,
-     "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -58785,18 +56273,8 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1761,
-     "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1306,
-     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "IFCAPI::ClassificationReference::GetName",
@@ -58814,12 +56292,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1306,
-     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::ClassificationReference::GetReferencedSource",
@@ -58837,12 +56310,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1306,
-     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::ClassificationReference::GetSort",
@@ -58856,14 +56324,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1761,
-     "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -59705,12 +57168,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1306,
-     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::PropertyAccessor::GetLocalClassificationReferences",
@@ -59728,12 +57186,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1306,
-     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::PropertyAccessor::GetLocalProperties",
@@ -59769,12 +57222,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1306,
-     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::PropertyAccessor::GetPreviewProperties",
@@ -60192,12 +57640,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1306,
-     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
-    }
-   ]
+   "issues": []
   }
  ]
 }
