@@ -785,6 +785,29 @@ struct ScriptSection {
     GS::UniString      script;
 };
 
+// Writes an empty section of the library part under creation, streamed the way the
+// DevKit's LibPart_Test example writes its empty master script.
+static GSErrCode WriteEmptyLibPartSection (const API_LibPartSection& section)
+{
+    const char emptyText[] = "";
+#ifdef ServerMainVers_2700
+    GSErrCode err = ACAPI_LibraryPart_NewSection (&section);
+    if (err != NoError) {
+        return err;
+    }
+    err = ACAPI_LibraryPart_WriteSection (0, emptyText);
+    const GSErrCode endErr = ACAPI_LibraryPart_EndSection ();
+#else
+    GSErrCode err = ACAPI_LibPart_NewSection (&section);
+    if (err != NoError) {
+        return err;
+    }
+    err = ACAPI_LibPart_WriteSection (0, emptyText);
+    const GSErrCode endErr = ACAPI_LibPart_EndSection ();
+#endif
+    return err != NoError ? err : endErr;
+}
+
 // Creates one library part in the embedded library; on success fills result with its
 // identifiers, otherwise returns the error.
 static GS::Optional<GS::ObjectState> CreateLibraryPart (const GS::ObjectState& libraryPartData,
@@ -839,10 +862,13 @@ static GS::Optional<GS::ObjectState> CreateLibraryPart (const GS::ObjectState& l
     GetNumberField (libraryPartData, "a", a);
     GetNumberField (libraryPartData, "b", b);
 
+    // The master script section is always written, empty when not given, as the DevKit's
+    // LibPart_Test example and CreateLibraryPartFromElements do; the others only when given.
     GS::Array<ScriptSection> scripts;
     for (const ScriptSectionField& scriptSectionField : scriptSectionFields) {
         GS::UniString script;
-        if (libraryPartData.Get (scriptSectionField.fieldName, script) && !script.IsEmpty ()) {
+        const bool hasScript = libraryPartData.Get (scriptSectionField.fieldName, script) && !script.IsEmpty ();
+        if (hasScript || scriptSectionField.sectType == API_Sect1DScript) {
             scripts.Push (ScriptSection { scriptSectionField.sectType, script });
         }
     }
@@ -893,8 +919,12 @@ static GS::Optional<GS::ObjectState> CreateLibraryPart (const GS::ObjectState& l
     for (const ScriptSection& script : scripts) {
         API_LibPartSection section = {};
         section.sectType = script.sectType;
-        GS::UniString scriptText = script.script;
-        err = ACAPI_LibraryPart_AddSection (&section, nullptr, &scriptText);
+        if (script.script.IsEmpty ()) {
+            err = WriteEmptyLibPartSection (section);
+        } else {
+            GS::UniString scriptText = script.script;
+            err = ACAPI_LibraryPart_AddSection (&section, nullptr, &scriptText);
+        }
         if (err != NoError) {
             failedStep = "Failed to write a script section of the library part.";
             break;
@@ -902,30 +932,51 @@ static GS::Optional<GS::ObjectState> CreateLibraryPart (const GS::ObjectState& l
     }
 
     if (err == NoError) {
+        // Without parameters of its own the list is passed as nullptr, as the DevKit's
+        // LibPart_Test example does, not as an empty handle.
+        API_AddParType** ownParameters = (addPars != nullptr && BMGetHandleSize (reinterpret_cast<GSConstHandle> (addPars)) > 0) ? addPars : nullptr;
         GSHandle parameterSection = nullptr;
-        err = ACAPI_LibraryPart_GetSect_ParamDef (&libPart, addPars, &a, &b, nullptr, &parameterSection);
-        if (err == NoError) {
+        err = ACAPI_LibraryPart_GetSect_ParamDef (&libPart, ownParameters, &a, &b, nullptr, &parameterSection);
+        if (err != NoError) {
+            failedStep = "Failed to prepare the parameter section of the library part (ACAPI_LibraryPart_GetSect_ParamDef).";
+        } else if (parameterSection == nullptr) {
+            err = APIERR_GENERAL;
+            failedStep = "Failed to prepare the parameter section of the library part: the API returned no section.";
+        } else {
             API_LibPartSection section = {};
             section.sectType = API_SectParamDef;
             err = ACAPI_LibraryPart_AddSection (&section, parameterSection, nullptr);
+            if (err != NoError) {
+                failedStep = "Failed to write the parameter section of the library part (ACAPI_LibraryPart_AddSection).";
+            }
         }
-        BMKillHandle (&parameterSection);
-        if (err != NoError) {
-            failedStep = "Failed to write the parameter section of the library part.";
+        if (parameterSection != nullptr) {
+            BMKillHandle (&parameterSection);
         }
     }
 
     // Save ends the creation even after a failed section, so a later call does not
-    // find a library part still under creation. The part is then in the library
-    // without the failed section; the error item says so.
+    // find a library part still under creation.
     const GSErrCode saveErr = ACAPI_LibraryPart_Save (&libPart);
 
     if (err != NoError) {
-        if (saveErr == NoError) {
-            failedStep += GS::UniString::Printf (" The library part was still saved to '%T' in the embedded library without that section: create it again with overwriteExisting to replace it, or delete it with DeleteEmbeddedLibraryItems.", relativePath.ToPrintf ());
-        } else {
+        if (saveErr != NoError) {
             failedStep += " Saving the incomplete library part failed too.";
+            return CreateErrorResponse (err, failedStep);
         }
+#ifdef ServerMainVers_2700
+        // The saved part lacks the failed section and is unusable (a part without its
+        // parameter section has no parameters at all), so it is deleted again.
+        const bool keepGSMFile = false;
+        const bool silentMode = true;
+        if (ACAPI_LibraryManagement_DeleteEmbeddedLibItem (&outputFileLoc, keepGSMFile, silentMode) == NoError) {
+            failedStep += " The incomplete library part was not kept.";
+        } else {
+            failedStep += GS::UniString::Printf (" The library part was still saved to '%T' in the embedded library without that section, and deleting it failed: delete it with DeleteEmbeddedLibraryItems.", relativePath.ToPrintf ());
+        }
+#else
+        failedStep += GS::UniString::Printf (" The library part was still saved to '%T' in the embedded library without that section.", relativePath.ToPrintf ());
+#endif
         return CreateErrorResponse (err, failedStep);
     }
     if (saveErr != NoError) {
