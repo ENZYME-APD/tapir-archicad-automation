@@ -149,16 +149,55 @@ GS::ObjectState GetTeamworkProjectInfoCommand::Execute (const GS::ObjectState& /
 // ACAPI_Teamwork_ReserveElements and ACAPI_Teamwork_ReleaseElements return NoError for GUIDs that
 // are not elements (navigator items, databases, layout subsets, ...) and do nothing with them, so
 // the GUIDs are checked with ACAPI_Element_GetHeader first and only the elements are passed on.
+// ACAPI_Element_GetHeader only finds elements of the current database, so a GUID it does not find
+// there is looked up in the database that contains it (a layout, a worksheet, a section ...), and
+// the starting database is put back after the last GUID.
+static bool IsElementInContainingDatabase (const API_Guid& guid, const API_DatabaseInfo& startDatabase, bool& databaseChanged)
+{
+    API_DatabaseInfo elemDatabase = {};
+    if (ACAPI_Database_GetContainingDatabase (&guid, &elemDatabase) != NoError) {
+        return false;
+    }
+
+    const DatabaseIdResolver& resolver = DatabaseIdResolver::Instance ();
+    if (resolver.GetIdOfDatabase (elemDatabase) == resolver.GetIdOfDatabase (startDatabase)) {
+        return false;
+    }
+    if (ACAPI_Window_GetDatabaseInfo (&elemDatabase) != NoError ||
+        ACAPI_Database_ChangeCurrentDatabase (&elemDatabase) != NoError) {
+        return false;
+    }
+    databaseChanged = true;
+
+    API_Elem_Head elemHead = {};
+    elemHead.guid = guid;
+    return ACAPI_Element_GetHeader (&elemHead) == NoError;
+}
+
 static void SplitElementsAndNonElements (const GS::Array<API_Guid>& guids, GS::Array<API_Guid>& elemIds, GS::Array<API_Guid>& notElements)
 {
+    API_DatabaseInfo startDatabase = {};
+    const bool hasStartDatabase = ACAPI_Database_GetCurrentDatabase (&startDatabase) == NoError;
+    bool databaseChanged = false;
+
     for (const API_Guid& guid : guids) {
+        if (databaseChanged) {
+            ACAPI_Database_ChangeCurrentDatabase (&startDatabase);
+            databaseChanged = false;
+        }
+
         API_Elem_Head elemHead = {};
         elemHead.guid = guid;
-        if (ACAPI_Element_GetHeader (&elemHead) == NoError) {
+        if (ACAPI_Element_GetHeader (&elemHead) == NoError ||
+            (hasStartDatabase && IsElementInContainingDatabase (guid, startDatabase, databaseChanged))) {
             elemIds.Push (guid);
         } else {
             notElements.Push (guid);
         }
+    }
+
+    if (databaseChanged) {
+        ACAPI_Database_ChangeCurrentDatabase (&startDatabase);
     }
 }
 
