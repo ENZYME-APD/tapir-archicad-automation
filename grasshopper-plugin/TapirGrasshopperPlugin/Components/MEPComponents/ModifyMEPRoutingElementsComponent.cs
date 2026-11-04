@@ -129,7 +129,14 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 "New on-story visibility of each route: AllRelevantStories or HomeStoryOnly " +
                 "(input only 1 to use the same value for all; Archicad 29 or newer). Optional.");
 
-            SetOptionality(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 });
+            InNumbers(
+                "InsulationThicknesses",
+                "New insulation thickness of each route, as Insulation in its settings: applied to the rigid " +
+                "segments of all segments and to the elbows (bends in Archicad 28) and transitions at all nodes; " +
+                "0 removes the insulation. Not applicable to the CableCarrier domain " +
+                "(input only 1 to use the same value for all). Optional.");
+
+            SetOptionality(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 });
         }
 
         protected override void AddOutputs()
@@ -176,7 +183,8 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 !fields.AddTexts(da, 16, "cutPlanePosition") ||
                 !fields.AddTexts(da, 17, "floorPlanDisplayOption") ||
                 !fields.AddTexts(da, 18, "showProjection") ||
-                !fields.AddTexts(da, 19, "onStoryVisibility"))
+                !fields.AddTexts(da, 19, "onStoryVisibility") ||
+                !fields.AddNumbers(da, 20, "insulationThickness"))
             {
                 return;
             }
