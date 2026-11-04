@@ -388,7 +388,8 @@ namespace TapirGrasshopperPlugin.Components
         // segment from beg to end. A Rhino arc whose plane normal points up (+Z) in
         // the world XY plane turns counter clockwise, which bulges to the left, so
         // its angle is negated.
-        private static bool TryConvertCurveToPolygon(
+        // Also used by ModifyDetailMarkersComponent for its clip polygons.
+        internal static bool TryConvertCurveToPolygon(
             Curve curve,
             out JArray coordinates,
             out JArray arcs,

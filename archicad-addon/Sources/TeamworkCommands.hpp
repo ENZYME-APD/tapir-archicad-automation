@@ -126,6 +126,16 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class GetTeamworkOwnersOfDatabasesCommand : public CommandBase
+{
+public:
+    GetTeamworkOwnersOfDatabasesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class UploadLibrariesToBIMcloudCommand : public CommandBase
 {
 public:
@@ -140,6 +150,26 @@ class RemoveLibrariesFromBIMcloudCommand : public CommandBase
 {
 public:
     RemoveLibrariesFromBIMcloudCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetTeamworkAccessRightsCommand : public CommandBase
+{
+public:
+    GetTeamworkAccessRightsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetTeamworkRightsOfObjectsCommand : public CommandBase
+{
+public:
+    GetTeamworkRightsOfObjectsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
