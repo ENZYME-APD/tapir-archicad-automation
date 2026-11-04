@@ -236,8 +236,9 @@ GS::Optional<GS::UniString> ApplyColumnVeneer (const GS::ObjectState& veneer, AP
 // Text and Label fields reference fonts by index (from 1), which is what the commands carry as
 // fontIndex. These map that index to and from the font's name (the name the Text tool's font list
 // shows), through the Font API from Archicad 27 and the Font attributes (API_FontID) before. The
-// lookup by name is exact first, then case-insensitive; NoValue when no loaded font has the name,
-// or the index none.
+// lookup by name is exact first, then case-insensitive, then Archicad's font search (as
+// GetFontsByName does, which also finds "Century Gothic" as "Century Gothic Western"); NoValue
+// when no loaded font has the name, or the index none.
 GS::Optional<short> GetFontIndexFromName (const GS::UniString& fontName);
 GS::Optional<GS::UniString> GetFontNameFromIndex (short fontIndex);
 
