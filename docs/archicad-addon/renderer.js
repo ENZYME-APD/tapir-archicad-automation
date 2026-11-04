@@ -112,9 +112,91 @@ function MinorVersion(version) {
     return VersionKey(version).slice(0, 2).join('.');
 }
 
+// The example of a command is archicad-addon/Examples/<CommandName>.py on main. It is fetched
+// when its popdown is first opened, so nothing of it is copied into the docs.
+var gExampleRawBaseUrl = 'https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/main/archicad-addon/Examples/';
+var gExampleViewBaseUrl = 'https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/';
+
+function CleanDocstring(text) {
+    // The same as Python's inspect.cleandoc: the first line is stripped, the common
+    // indentation of the other lines is removed, blank lines at both ends are dropped.
+    let lines = text.replace(/\r\n?/g, '\n').split('\n');
+    let indents = lines.slice(1).filter(line => line.trim().length > 0).map(line => line.match(/^[ \t]*/)[0].length);
+    let indent = indents.length > 0 ? Math.min(...indents) : 0;
+    lines = [lines[0].trim()].concat(lines.slice(1).map(line => line.substring(indent).trimEnd()));
+    while (lines.length > 0 && lines[0] === '') lines.shift();
+    while (lines.length > 0 && lines[lines.length - 1] === '') lines.pop();
+    return lines.join('\n');
+}
+
+function SplitExampleScript(source) {
+    // The leading module docstring is the description; the rest is the code.
+    let match = source.match(/^﻿?(?:[ \t]*(?:#[^\n]*)?\r?\n)*[ \t]*[rRuU]?("""|''')([\s\S]*?)\1[ \t]*(?:\r?\n|$)/);
+    if (!match) {
+        return { description: '', code: source.replace(/^\s*\n/, '').trimEnd() };
+    }
+    let code = source.substring(match[0].length).replace(/^(?:[ \t]*\r?\n)+/, '').trimEnd();
+    return { description: CleanDocstring(match[2]), code: code };
+}
+
+function RenderExampleScript(container, commandName, source) {
+    let example = SplitExampleScript(source);
+    for (let paragraph of example.description.split(/\n[ \t]*\n/)) {
+        if (paragraph.trim().length > 0) {
+            CreateTextElement(container, 'p', 'command_example_description', paragraph.replace(/\s*\n\s*/g, ' '));
+        }
+    }
+    let code = CreateElement(CreateElement(container, 'pre', null, null), 'code', 'hljs language-python', null);
+    if (typeof hljs !== 'undefined' && hljs.getLanguage('python')) {
+        // highlight () escapes the source, so the markup it returns is safe to insert.
+        code.innerHTML = hljs.highlight(example.code, { language: 'python', ignoreIllegals: true }).value;
+    } else {
+        code.textContent = example.code;
+    }
+    let link = CreateTextElement(CreateElement(container, 'div', 'command_example_link', null), 'a', null, 'View on GitHub');
+    link.href = gExampleViewBaseUrl + encodeURIComponent(commandName) + '.py';
+    link.target = '_blank';
+    link.rel = 'noopener';
+}
+
+function LoadExample(container, commandName) {
+    let status = CreateTextElement(container, 'div', 'command_example_status', 'Loading the example…');
+    fetch(gExampleRawBaseUrl + encodeURIComponent(commandName) + '.py', { cache: 'no-cache' })
+        .then(function (response) {
+            if (response.status === 404) {
+                status.textContent = 'No example yet.';
+                return;
+            }
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
+            return response.text().then(function (source) {
+                status.remove();
+                RenderExampleScript(container, commandName, source);
+            });
+        })
+        .catch(function (error) {
+            status.textContent = 'Could not load the example (' + error.message + ').';
+        });
+}
+
+function RenderExample(parentElement, commandName) {
+    let details = CreateElement(parentElement, 'details', 'command_example', null);
+    CreateTextElement(details, 'summary', null, 'Example');
+    let body = CreateElement(details, 'div', 'command_example_body', null);
+    let loaded = false;
+    details.addEventListener('toggle', function () {
+        if (details.open && !loaded) {
+            loaded = true;
+            LoadExample(body, commandName);
+        }
+    });
+}
+
 function RenderCommandContent(parentElement, command, schemaDefinitions) {
     let commandContent = CreateElement(parentElement, 'div', 'command_content', null);
     CreateElement(commandContent, 'div', 'command_description', command.description);
+    RenderExample(commandContent, command.name);
     try {
         CreateSchemaElement(commandContent, 'Input parameters', command.inputScheme, schemaDefinitions);
         CreateSchemaElement(commandContent, 'Output parameters', command.outputScheme, schemaDefinitions);
