@@ -191,8 +191,12 @@ def regularize_request(contours: list[dict]) -> dict:
     return polygon
 
 
-def write_request(element_type: str, element_id: dict, contours: list[dict]) -> tuple[str, dict]:
-    """ The command and the item that writes the simplified contours back to the element. """
+def write_request(element_type: str, element_id: dict, contours: list[dict],
+                  room_separator: bool | None = None) -> tuple[str, dict]:
+    """ The command and the item that writes the simplified contours back to the element.
+    room_separator is the polyline's current value, sent back unchanged: coordinates and arcs
+    alone also fit the fill settings in the oneOf of SetDetailsOfElements' typeSpecificDetails,
+    and roomSeparator is a key only the polyline settings have. """
     outline = contours[0]
     if element_type == "Slab":
         item = {"elementId": element_id, "polygonOutline": _coordinates(outline["points"]),
@@ -205,6 +209,8 @@ def write_request(element_type: str, element_id: dict, contours: list[dict]) -> 
         # A closed polyline repeats its first point at the end; read_contours dropped it.
         points = points + points[:1]
     details = {"coordinates": _coordinates(points), "arcs": outline["arcs"]}
+    if element_type == "PolyLine" and room_separator is not None:
+        details["roomSeparator"] = room_separator
     if element_type == "Hatch":
         details["holes"] = [_hole(c) for c in contours[1:]]
     return "SetDetailsOfElements", {"elementId": element_id, "details": {"typeSpecificDetails": details}}
@@ -388,6 +394,7 @@ class ComplexElementFinder:
             "polygons": polygons,
             "contours": contours,
             "simplifiable": element_type in SIMPLIFIABLE_TYPES and contours is not None,
+            "roomSeparator": (detail.get("details") or {}).get("roomSeparator"),
         }
 
     def _fill_tree(self) -> None:
@@ -471,7 +478,7 @@ class ComplexElementFinder:
         with self.window.busy(f"Simplifying {len(plans)} element(s)..."):
             by_command: dict[str, list[dict]] = {}
             for entry, simplified, _ in plans:
-                command, item = write_request(entry["type"], entry["elementId"], simplified)
+                command, item = write_request(entry["type"], entry["elementId"], simplified, entry["roomSeparator"])
                 by_command.setdefault(command, []).append(item)
             for command, items in by_command.items():
                 key = "slabsWithDetails" if command == "ModifySlabs" else "elementsWithDetails"
