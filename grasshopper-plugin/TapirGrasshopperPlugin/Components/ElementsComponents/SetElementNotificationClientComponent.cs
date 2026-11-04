@@ -13,7 +13,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "SetElementNotificationClient",
                 "Sets up a new notification client to receive element events: Archicad posts the new, changed, " +
-                "deleted, reserved and released elements, and on request the selection, as JSON to " +
+                "deleted, reserved and released elements, and on request the selection, window and project " +
+                "events, as JSON to " +
                 "http://<Host>:<Port>/element_notification. " +
                 "Setting up the same client again changes which events it gets. The client (an HTTP server) is " +
                 "not part of this component; remove it with RemoveElementNotificationClient.",
@@ -62,7 +63,21 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     .WithTypeName("booleanItem"),
                 GH_ParamAccess.item);
 
-            SetOptionality(new[] { 0, 2, 3, 4, 5 });
+            inManager.AddBooleanParameter(
+                "NotifyOnWindowChange",
+                "NotifyOnWindowChange",
+                "Notify when the current window or the active story changes, as windowChanged with the new window's type, databaseId and story index. Defaults to false. Optional."
+                    .WithTypeName("booleanItem"),
+                GH_ParamAccess.item);
+
+            inManager.AddBooleanParameter(
+                "NotifyOnProjectEvents",
+                "NotifyOnProjectEvents",
+                "Notify on project events (New, NewAndReset, Open, Close, Quit, Teamwork SendChanges and ReceiveChanges) as projectEvent. Defaults to false. Optional."
+                    .WithTypeName("booleanItem"),
+                GH_ParamAccess.item);
+
+            SetOptionality(new[] { 0, 2, 3, 4, 5, 6, 7 });
         }
 
         protected override void Solve(
@@ -105,6 +120,18 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (da.GetData(5, ref notifyOnSelectionChange))
             {
                 parameters["notifyOnSelectionChange"] = notifyOnSelectionChange;
+            }
+
+            var notifyOnWindowChange = false;
+            if (da.GetData(6, ref notifyOnWindowChange))
+            {
+                parameters["notifyOnWindowChange"] = notifyOnWindowChange;
+            }
+
+            var notifyOnProjectEvents = false;
+            if (da.GetData(7, ref notifyOnProjectEvents))
+            {
+                parameters["notifyOnProjectEvents"] = notifyOnProjectEvents;
             }
 
             if (TryGetCadResponse(

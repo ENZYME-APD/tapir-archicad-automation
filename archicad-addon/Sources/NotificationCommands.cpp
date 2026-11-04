@@ -10,6 +10,7 @@
 #include "IChannelX.hpp"
 #include "ObjectStateJSONConversion.hpp"
 
+#include "ApplicationCommands.hpp"
 #include "MigrationHelper.hpp"
 
 static
@@ -127,6 +128,14 @@ GS::Optional<GS::UniString> AddElementNotificationClientCommand::GetInputParamet
             "notifyOnSelectionChange": {
                 "type": "boolean",
                 "description": "Notify when the selection changes. The message is {\"selectedElements\": [...]}: the whole current selection, each item an elementId as in the response of GetSelectedElements, an empty list when nothing is selected. Optional parameter, by default false."
+            },
+            "notifyOnWindowChange": {
+                "type": "boolean",
+                "description": "Notify when the current (active) window changes or the user switches to another story. The message is {\"windowChanged\": {\"event\": \"Window\" or \"Floor\", \"windowType\": ..., \"databaseId\": ..., \"storyIndex\": ...}}: windowType and databaseId describe the new current window as in the response of GetCurrentWindowType (databaseId is missing when that response has none), storyIndex is the active story, missing when it cannot be read. Optional parameter, by default false."
+            },
+            "notifyOnProjectEvents": {
+                "type": "boolean",
+                "description": "Notify on project events. The message is {\"projectEvent\": ...}, one of \"New\", \"NewAndReset\", \"Open\", \"Close\", \"Quit\", \"SendChanges\" (a Teamwork send is about to start) and \"ReceiveChanges\" (Teamwork changes were received). The client stays registered when the project is closed or another one is opened. Optional parameter, by default false."
             }
         },
         "additionalProperties": false,
@@ -169,14 +178,24 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
     bool notifyOnSelectionChange = false;
     parameters.Get ("notifyOnSelectionChange", notifyOnSelectionChange);
 
+    // Both are served by the add-on's project event handler, which is installed for the whole
+    // session (ProjectEventHandler.cpp), so nothing is installed or removed for them here.
+    bool notifyOnWindowChange = false;
+    parameters.Get ("notifyOnWindowChange", notifyOnWindowChange);
+
+    bool notifyOnProjectEvents = false;
+    parameters.Get ("notifyOnProjectEvents", notifyOnProjectEvents);
+
     const GS::UniString connectionUrlStr = GS::UniString::Printf ("http://%T:%d/", host.ToPrintf (), port);
     const IO::URI::URI connectionUrl (connectionUrlStr);
-    auto result = clients.emplace(std::piecewise_construct, std::forward_as_tuple(connectionUrlStr), std::forward_as_tuple(connectionUrl, notifyOnNew, notifyOnModification, notifyOnReservationChanges, notifyOnSelectionChange));
+    auto result = clients.emplace(std::piecewise_construct, std::forward_as_tuple(connectionUrlStr), std::forward_as_tuple(connectionUrl, notifyOnNew, notifyOnModification, notifyOnReservationChanges, notifyOnSelectionChange, notifyOnWindowChange, notifyOnProjectEvents));
     if (!result.second) {
         result.first->second.notifyOnNew = notifyOnNew;
         result.first->second.notifyOnModification = notifyOnModification;
         result.first->second.notifyOnReservationChanges = notifyOnReservationChanges;
         result.first->second.notifyOnSelectionChange = notifyOnSelectionChange;
+        result.first->second.notifyOnWindowChange = notifyOnWindowChange;
+        result.first->second.notifyOnProjectEvents = notifyOnProjectEvents;
         // A client registered again without modification notifications may have
         // been the last one that wanted them; detach the observers in that case,
         // as RemoveElementNotificationClient does.
@@ -287,6 +306,89 @@ AddElementNotificationClientCommand::SelectionChangeHandler (const API_Neig* /*s
     }
 
     return NoError;
+}
+
+static GS::Optional<GS::UniString> ProjectEventToString (API_NotifyEventID notifID)
+{
+    switch (notifID) {
+        case APINotify_New:             return GS::UniString ("New");
+        case APINotify_NewAndReset:     return GS::UniString ("NewAndReset");
+        case APINotify_Open:            return GS::UniString ("Open");
+        case APINotify_Close:           return GS::UniString ("Close");
+        case APINotify_Quit:            return GS::UniString ("Quit");
+        case APINotify_SendChanges:     return GS::UniString ("SendChanges");
+        case APINotify_ReceiveChanges:  return GS::UniString ("ReceiveChanges");
+        default:                        return GS::NoValue;
+    }
+}
+
+static GS::ObjectState CreateWindowChangedMessage (API_NotifyEventID notifID)
+{
+    GS::ObjectState windowChanged ("event", GS::UniString (notifID == APINotify_ChangeFloor ? "Floor" : "Window"));
+
+    // The same window type and databaseId as GetCurrentWindowType returns: custom add-on windows
+    // and windows without a database of their own get no databaseId.
+    API_WindowInfo windowInfo = {};
+    if (ACAPI_Window_GetCurrentWindow (&windowInfo) == NoError) {
+        windowChanged.Add ("windowType", ConvertWindowTypeToString (windowInfo.typeID));
+        if (windowInfo.typeID != APIWind_MyDrawID && windowInfo.typeID != APIWind_MyTextID) {
+            const API_Guid databaseId = DatabaseIdResolver::Instance ().GetIdOfDatabase (windowInfo);
+            if (databaseId != APINULLGuid) {
+                windowChanged.Add ("databaseId", CreateGuidObjectState (databaseId));
+            }
+        }
+    } else {
+        windowChanged.Add ("windowType", ConvertWindowTypeToString (API_ZombieWindowID));
+    }
+
+    API_StoryInfo storyInfo = {};
+    const GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    BMKillHandle (reinterpret_cast<GSHandle*> (&storyInfo.data));
+    if (err == NoError) {
+        windowChanged.Add ("storyIndex", storyInfo.actStory);
+    }
+
+    return GS::ObjectState ("windowChanged", windowChanged);
+}
+
+void
+AddElementNotificationClientCommand::ProjectEventHandler (API_NotifyEventID notifID, Int32 /*param*/)
+{
+    const bool isWindowEvent = (notifID == APINotify_ChangeWindow || notifID == APINotify_ChangeFloor);
+    const GS::Optional<GS::UniString> projectEvent = ProjectEventToString (notifID);
+    if (!isWindowEvent && !projectEvent.HasValue ()) {
+        return;
+    }
+
+    const auto wantsEvent = [isWindowEvent] (const Client& client) {
+        return isWindowEvent ? client.notifyOnWindowChange : client.notifyOnProjectEvents;
+    };
+
+    // Most of the time no client wants these events: read nothing from Archicad then.
+    bool anyClientWantsEvent = false;
+    for (const auto& kv : clients) {
+        if (wantsEvent (kv.second)) {
+            anyClientWantsEvent = true;
+            break;
+        }
+    }
+    if (!anyClientWantsEvent) {
+        return;
+    }
+
+    const GS::ObjectState message = isWindowEvent
+        ? CreateWindowChangedMessage (notifID)
+        : GS::ObjectState ("projectEvent", projectEvent.Get ());
+
+    // Sent at once, like the selection: these are not element events.
+    for (auto& kv : clients) {
+        auto& client = kv.second;
+        if (!wantsEvent (client)) {
+            continue;
+        }
+
+        SendMessageToNotificationClient (client, message);
+    }
 }
 
 void

@@ -27,6 +27,7 @@
 #include "CustomDataCommands.hpp"
 #include "ElementCommands.hpp"
 #include "ElementChangeTrackingCommands.hpp"
+#include "ProjectEventHandler.hpp"
 #include "ElementCategoryCommands.hpp"
 #include "ElementGDLParameterCommands.hpp"
 #include "ElementURLReferenceCommands.hpp"
@@ -209,8 +210,9 @@ GSErrCode Initialize (void)
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_RUNSCRIPT_6, MenuCommandHandler);
     err |= TapirPalette::RegisterPaletteControlCallBack ();
     err |= ScriptUIPalette::RegisterPaletteControlCallBack ();
-    // The element states of CaptureElementState belong to the open project: drop them when it closes.
-    err |= InstallElementStateProjectEventHandler ();
+    // The add-on's one project event handler: drops the element states of CaptureElementState when
+    // the project closes and passes window, floor and project events to the notification clients.
+    err |= InstallProjectEventHandler ();
 
     // The Add-On is preloaded, so this runs before Archicad opens the first project.
     ApplyDialogAutoCloseFromEnvironment ();
