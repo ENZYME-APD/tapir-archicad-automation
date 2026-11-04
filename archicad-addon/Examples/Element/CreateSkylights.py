@@ -1,3 +1,8 @@
+"""Requests three skylights in single-plane and multi-plane roof owners.
+
+Creates the roofs first, then uses their IDs and global XY anchor positions.
+Automatic surface placement still needs verification in a running Archicad.
+"""
 import aclib
 
 square = lambda x, y, size: [
@@ -23,11 +28,11 @@ roofs = aclib.RunTapirCommand (
 singlePlaneRoof, multiPlaneRoof = [element['elementId'] for element in roofs['elements']]
 
 # One anchor in the single-plane roof and two on opposite sides of the multi-plane roof.
-aclib.RunTapirCommand (
+aclib.PrintJson (aclib.RunTapirCommand (
     'CreateSkylights', {
         'skylightsData': [
             {'ownerId': singlePlaneRoof, 'anchorPosition': {'x': 4.0, 'y': 23.0}},
             {'ownerId': multiPlaneRoof, 'anchorPosition': {'x': 17.0, 'y': 22.0}, 'width': 0.8, 'height': 1.2},
             {'ownerId': multiPlaneRoof, 'anchorPosition': {'x': 17.0, 'y': 28.0}, 'anchorPoint': 'TopCenter'}
         ]
-    })
+    }))
