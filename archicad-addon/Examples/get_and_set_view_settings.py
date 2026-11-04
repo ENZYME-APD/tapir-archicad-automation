@@ -34,6 +34,11 @@ for i, oldViewSettings in enumerate(viewSettings):
         newViewSettings['modelViewOptions'] = modelViewOptions[i % len(modelViewOptions)]['name']
     if 'layerCombination' in oldViewSettings:
         newViewSettings['layerCombination'] = layerCombinations[i % len(layerCombinations)]['name']
+        # saveFlags tells which settings the view stores at all: a view that does not store
+        # layers ignores its layer combination name, so make sure this one stores them.
+        # Flags not given keep their current value.
+        if not oldViewSettings['saveFlags']['layers']:
+            newViewSettings['saveFlags'] = {'layers': True}
     if 'dimensionStyle' in oldViewSettings:
         newViewSettings['dimensionStyle'] = dimensionStyle
     if 'penSetName' in oldViewSettings:
