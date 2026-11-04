@@ -32,13 +32,14 @@ public:
     struct Client {
         Client(
             const IO::URI::URI& url,
-            bool onNew, bool onMod, bool onResChanges)
-            : url(url), notifyOnNew(onNew), notifyOnModification(onMod), notifyOnReservationChanges(onResChanges) {}
+            bool onNew, bool onMod, bool onResChanges, bool onSelChange)
+            : url(url), notifyOnNew(onNew), notifyOnModification(onMod), notifyOnReservationChanges(onResChanges), notifyOnSelectionChange(onSelChange) {}
 
         IO::URI::URI url;
         bool         notifyOnNew;
         bool         notifyOnModification;
         bool         notifyOnReservationChanges;
+        bool         notifyOnSelectionChange;
 
         bool acceptsNotificationsForEventType (ElementEventType eventType) const
         {
@@ -63,6 +64,7 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 
     static void DetachElementObserversIfNotNeeded ();
+    static void UninstallSelectionChangeHandlerIfNotNeeded ();
     static void SendEventToNotificationClient (ElementEventType eventType, const GS::ObjectState& os);
     static void SendQueuedEventsToNotificationClient ();
     static void SendMessageToNotificationClient (Client& client, const GS::ObjectState& os);
@@ -70,6 +72,7 @@ public:
     static GSErrCode ElementReservationChangeHandler (const GS::HashTable<API_Guid, short>& reserved,
                                                       const GS::HashSet<API_Guid>&          released,
                                                       const GS::HashSet<API_Guid>&          deleted);
+    static GSErrCode SelectionChangeHandler (const API_Neig* selElemNeig);
 
 private:
     friend class MessageSenderTask;
@@ -78,6 +81,7 @@ private:
     static bool hasClientToNotifyOnNew;
     static bool hasClientToNotifyOnModification;
     static bool hasClientToNotifyOnReservationChanges;
+    static bool hasClientToNotifyOnSelectionChange;
 
     using EventQueue = std::map<ElementEventType, std::vector<GS::ObjectState>>;
     static std::unique_ptr<EventQueue> queuedEvents;

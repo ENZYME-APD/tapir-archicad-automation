@@ -13,7 +13,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "SetElementNotificationClient",
                 "Sets up a new notification client to receive element events: Archicad posts the new, changed, " +
-                "deleted, reserved and released elements as JSON to http://<Host>:<Port>/element_notification. " +
+                "deleted, reserved and released elements, and on request the selection, as JSON to " +
+                "http://<Host>:<Port>/element_notification. " +
                 "Setting up the same client again changes which events it gets. The client (an HTTP server) is " +
                 "not part of this component; remove it with RemoveElementNotificationClient.",
                 GroupNames.Elements)
@@ -54,7 +55,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     .WithTypeName("booleanItem"),
                 GH_ParamAccess.item);
 
-            SetOptionality(new[] { 0, 2, 3, 4 });
+            inManager.AddBooleanParameter(
+                "NotifyOnSelectionChange",
+                "NotifyOnSelectionChange",
+                "Notify when the selection changes, with the whole current selection as selectedElements. Defaults to false. Optional."
+                    .WithTypeName("booleanItem"),
+                GH_ParamAccess.item);
+
+            SetOptionality(new[] { 0, 2, 3, 4, 5 });
         }
 
         protected override void Solve(
@@ -91,6 +99,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (da.GetData(4, ref notifyOnReservationChanges))
             {
                 parameters["notifyOnReservationChanges"] = notifyOnReservationChanges;
+            }
+
+            var notifyOnSelectionChange = false;
+            if (da.GetData(5, ref notifyOnSelectionChange))
+            {
+                parameters["notifyOnSelectionChange"] = notifyOnSelectionChange;
             }
 
             if (TryGetCadResponse(

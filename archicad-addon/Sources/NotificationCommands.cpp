@@ -70,6 +70,7 @@ std::map<GS::UniString, AddElementNotificationClientCommand::Client> AddElementN
 bool AddElementNotificationClientCommand::hasClientToNotifyOnNew = false;
 bool AddElementNotificationClientCommand::hasClientToNotifyOnModification = false;
 bool AddElementNotificationClientCommand::hasClientToNotifyOnReservationChanges = false;
+bool AddElementNotificationClientCommand::hasClientToNotifyOnSelectionChange = false;
 std::unique_ptr<AddElementNotificationClientCommand::EventQueue> AddElementNotificationClientCommand::queuedEvents;
 GS::Thread AddElementNotificationClientCommand::messageSenderThread;
 
@@ -117,11 +118,15 @@ GS::Optional<GS::UniString> AddElementNotificationClientCommand::GetInputParamet
             },
             "notifyOnModificationOfAnElement": {
                 "type": "boolean",
-                "description": "Notify on modification/deletion of an element. Optional parameter, by default true."
+                "description": "Notify on modification/deletion of an element. The observed elements are the ones ACAPI_Element_GetElemList (API_ZombieElemID) returns when the first client asking for these notifications is registered, and every element created after that. Optional parameter, by default true."
             },
             "notifyOnReservationChanges": {
                 "type": "boolean",
                 "description": "Notify on reservation changes of an element. Optional parameter, by default true."
+            },
+            "notifyOnSelectionChange": {
+                "type": "boolean",
+                "description": "Notify when the selection changes. The message is {\"selectedElements\": [...]}: the whole current selection, each item an elementId as in the response of GetSelectedElements, an empty list when nothing is selected. Optional parameter, by default false."
             }
         },
         "additionalProperties": false,
@@ -161,17 +166,22 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
     bool notifyOnReservationChanges = true;
     parameters.Get ("notifyOnReservationChanges", notifyOnReservationChanges);
 
+    bool notifyOnSelectionChange = false;
+    parameters.Get ("notifyOnSelectionChange", notifyOnSelectionChange);
+
     const GS::UniString connectionUrlStr = GS::UniString::Printf ("http://%T:%d/", host.ToPrintf (), port);
     const IO::URI::URI connectionUrl (connectionUrlStr);
-    auto result = clients.emplace(std::piecewise_construct, std::forward_as_tuple(connectionUrlStr), std::forward_as_tuple(connectionUrl, notifyOnNew, notifyOnModification, notifyOnReservationChanges));
+    auto result = clients.emplace(std::piecewise_construct, std::forward_as_tuple(connectionUrlStr), std::forward_as_tuple(connectionUrl, notifyOnNew, notifyOnModification, notifyOnReservationChanges, notifyOnSelectionChange));
     if (!result.second) {
         result.first->second.notifyOnNew = notifyOnNew;
         result.first->second.notifyOnModification = notifyOnModification;
         result.first->second.notifyOnReservationChanges = notifyOnReservationChanges;
+        result.first->second.notifyOnSelectionChange = notifyOnSelectionChange;
         // A client registered again without modification notifications may have
         // been the last one that wanted them; detach the observers in that case,
         // as RemoveElementNotificationClient does.
         DetachElementObserversIfNotNeeded ();
+        UninstallSelectionChangeHandlerIfNotNeeded ();
     }
 
     if (notifyOnNew && !hasClientToNotifyOnNew) {
@@ -191,6 +201,11 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
     if (notifyOnReservationChanges && !hasClientToNotifyOnReservationChanges) {
         ACAPI_Notification_CatchElementReservationChange (ElementReservationChangeHandler);
         hasClientToNotifyOnReservationChanges = true;
+    }
+
+    if (notifyOnSelectionChange && !hasClientToNotifyOnSelectionChange) {
+        ACAPI_Notification_CatchSelectionChange (SelectionChangeHandler);
+        hasClientToNotifyOnSelectionChange = true;
     }
 
     ACAPI_Element_InstallElementObserver (ElementEventHandlerProc);
@@ -219,6 +234,59 @@ AddElementNotificationClientCommand::DetachElementObserversIfNotNeeded ()
         ACAPI_Element_DetachObserver (elemId);
     }
     hasClientToNotifyOnModification = false;
+}
+
+void
+AddElementNotificationClientCommand::UninstallSelectionChangeHandlerIfNotNeeded ()
+{
+    if (!hasClientToNotifyOnSelectionChange) {
+        return;
+    }
+
+    for (const auto& kv : clients) {
+        if (kv.second.notifyOnSelectionChange) {
+            return;
+        }
+    }
+
+    ACAPI_Notification_CatchSelectionChange (nullptr);
+    hasClientToNotifyOnSelectionChange = false;
+}
+
+GSErrCode
+AddElementNotificationClientCommand::SelectionChangeHandler (const API_Neig* /*selElemNeig*/)
+{
+    // The handler only gets the last selected element, so the whole selection is read here,
+    // as GetSelectedElements does (and the DevKit's Browser_Control example in its handler).
+    API_SelectionInfo selectionInfo = {};
+    GS::Array<API_Neig> selectedNeigs;
+    const GSErrCode err = ACAPI_Selection_Get (&selectionInfo, &selectedNeigs, false);
+    // The marquee polygon handle is owned by the caller (same as the Selection_Manager DevKit example).
+    BMKillHandle (reinterpret_cast<GSHandle*> (&selectionInfo.marquee.coords));
+    if (err != NoError && err != APIERR_NOSEL) {
+        return NoError;
+    }
+
+    GS::ObjectState message;
+    const auto& elementsList = message.AddList<GS::ObjectState> ("selectedElements");
+    if (err != APIERR_NOSEL && selectionInfo.typeID != API_SelEmpty) {
+        for (const API_Neig& selectedNeig : selectedNeigs) {
+            elementsList (CreateElementIdObjectState (GetParentElemOfSectElem (selectedNeig.guid)));
+        }
+    }
+
+    // Sent at once, not queued with the element events: a selection change is not an element
+    // event, and only the current selection matters to the client.
+    for (auto& kv : clients) {
+        auto& client = kv.second;
+        if (!client.notifyOnSelectionChange) {
+            continue;
+        }
+
+        SendMessageToNotificationClient (client, message);
+    }
+
+    return NoError;
 }
 
 void
@@ -435,6 +503,7 @@ GS::ObjectState RemoveElementNotificationClientCommand::Execute (const GS::Objec
     }
 
     AddElementNotificationClientCommand::DetachElementObserversIfNotNeeded ();
+    AddElementNotificationClientCommand::UninstallSelectionChangeHandlerIfNotNeeded ();
 
     return CreateSuccessfulExecutionResult ();
 }
