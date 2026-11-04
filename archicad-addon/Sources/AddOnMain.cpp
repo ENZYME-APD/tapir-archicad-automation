@@ -64,6 +64,7 @@
 #include "PolygonCommands.hpp"
 #include "ViewAndPlaceSettingsCommands.hpp"
 #include "DrawingPrimitiveCommands.hpp"
+#include "LibraryPartCreationCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -2088,6 +2089,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<OpenLibraryPartInEditorCommand> (
             libraryCommands, "1.8.0",
             "Opens a loaded library part, given by its fileName or documentName as returned by GetAvailableLibraryParts, in Archicad's library part editor. Available from Archicad 27."
+        );
+        err |= RegisterCommand<CreateLibraryPartFromElementsCommand> (
+            libraryCommands, "1.8.1",
+            "Creates a library part in the embedded library (or in a given local library folder, which is added to the loaded libraries when needed) whose 2D symbol is a copy of the given 2D drawing elements (lines, polylines, arcs, circles, splines, fills, texts and hotspots), under the given parent subtype, with optional master, 2D, 3D and parameter scripts, comment and keywords. A and B are taken from the extent of the symbol. The elements themselves are not changed."
+        );
+        err |= RegisterCommand<InterpretGDLScript3DCommand> (
+            libraryCommands, "1.8.1",
+            "Runs a GDL 3D script, given as text or as the master and 3D scripts of a loaded library part with its default parameters, with the settings of the GDL editor, and returns whether it ran without a GDL error, how many 3D model elements it generated and their bounding box. The API returns no GDL error message or line number."
+        );
+        err |= RegisterCommand<GetGDLUserGlobalsCommand> (
+            libraryCommands, "1.8.1",
+            "Returns the current GDL global variables the GDL interpreter gets, with their names, types and values. Available from Archicad 28."
         );
         AddCommandGroup (libraryCommands);
     }
