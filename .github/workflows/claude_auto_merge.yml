@@ -23,6 +23,10 @@ name: Auto Merge
 #     waits for an earlier one, which holds the merge back like any check);
 #   - no review thread a person opened is unresolved, and no reviewer's latest
 #     review requests changes;
+#   - no Archicad test failed on that head: the newest status of each
+#     `archicad-test/AC<version>` context, which archicad_test_status.yml sets
+#     from a community test result (#1577), is not a failure. A head nobody
+#     tested has none, which does not block;
 #   - gates 2 and 3 hold, as for everyone: the release critical paths below
 #     are never merged without a person, whoever wrote the change. The one
 #     exception is archicad-addon/devkits.json on the new Archicad version
@@ -261,6 +265,21 @@ jobs:
               age=$(( $(date -u +%s) - $(date -u -d "$since" +%s) ))
               if [ "$age" -lt $(( BOT_DELAY_HOURS * 3600 )) ]; then
                 echo "skip: the review passed $((age / 3600))h ago, waiting until ${BOT_DELAY_HOURS}h"
+                echo "::endgroup::"; continue
+              fi
+
+              # Archicad tests: the newest status of each archicad-test/*
+              # context (set by archicad_test_status.yml from a community test
+              # result) must not be a failure, so a later PASS on the same head
+              # unblocks it. No status means nobody tested it: no block.
+              if ! failedTests=$(gh api "repos/$REPO/commits/$headOid/statuses?per_page=100" \
+                   --jq '[.[] | select(.context | startswith("archicad-test/"))] | group_by(.context)
+                         | map(max_by(.id) | select(.state == "failure" or .state == "error") | .context) | join(" ")'); then
+                echo "skip: could not read the Archicad test statuses"
+                echo "::endgroup::"; continue
+              fi
+              if [ -n "$failedTests" ]; then
+                echo "skip: the Archicad test failed on $headOid: $failedTests"
                 echo "::endgroup::"; continue
               fi
 

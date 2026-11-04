@@ -45,9 +45,8 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
                 response.Value<bool?>("enabled"));
         }
 
-        // Shares the icon of SetDialogAutoClose until it gets its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.SetDialogAutoClose;
+            Properties.Resources.GetDialogAutoClose;
 
         public override Guid ComponentGuid =>
             new Guid("9a2798ee-efdf-48ec-a8f2-9123871bd42a");
