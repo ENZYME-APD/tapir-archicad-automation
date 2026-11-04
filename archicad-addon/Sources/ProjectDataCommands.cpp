@@ -889,3 +889,319 @@ GS::ObjectState GrantProjectDataCommand::Execute (const GS::ObjectState& paramet
         ? CreateSuccessfulExecutionResult ()
         : CreateFailedExecutionResult (err, "Failed to grant the project data.");
 }
+
+// Module data: the custom data sections of the ModulData Manager (ACAPI_ModulData_*), saved in
+// the project file under the 'MDID' of Tapir and a name; the empty name is the default section.
+// They are kept apart from project data (add-on objects). The content is stored as UTF-8 text without a terminating zero, with
+// the dataVersion the caller gives. Storing and deleting module data is a non-undoable data
+// structure modification in the API, so these commands do not open an undo step.
+
+static GS::ObjectState CreateModulDataObjectState (const GS::UniString& name, const API_ModulData& modulData, bool includeContent)
+{
+    GS::ObjectState modulDataOS (
+        "name", name,
+        "dataVersion", modulData.dataVersion);
+    if (includeContent) {
+        GS::UniString content;
+        if (modulData.dataHdl != nullptr) {
+            const GSSize size = BMGetHandleSize (modulData.dataHdl);
+            if (size > 0) {
+                content = GS::UniString (*modulData.dataHdl, static_cast<GS::USize> (size), CC_UTF8);
+            }
+        }
+        modulDataOS.Add ("content", content);
+    }
+    return modulDataOS;
+}
+
+GetModulDataCommand::GetModulDataCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetModulDataCommand::GetName () const
+{
+    return "GetModulData";
+}
+
+GS::Optional<GS::UniString> GetModulDataCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "names": {
+                "type": "array",
+                "description": "The names of the module data to get; the empty name is the default section. When omitted, every module data Tapir stored in the project is returned.",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "includeContent": {
+                "type": "boolean",
+                "description": "Whether the content is returned too. When false, only the names and data versions are read, without loading the data. The default is true."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetModulDataCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "modulData": {
+                "type": "array",
+                "description": "The module data in the order of the given names (or of the list Archicad returns), or an error for a name that has no module data.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "The name of the module data."
+                                },
+                                "dataVersion": {
+                                    "type": "integer",
+                                    "description": "The version number stored with the data."
+                                },
+                                "content": {
+                                    "type": "string",
+                                    "description": "The content of the module data. Left out when includeContent is false."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "name",
+                                "dataVersion"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "modulData"
+        ]
+    })";
+}
+
+GS::ObjectState GetModulDataCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> names;
+    if (!parameters.Get ("names", names)) {
+        const GSErrCode err = ACAPI_ModulData_GetList (&names);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to get the list of module data.");
+        }
+    }
+
+    bool includeContent = true;
+    parameters.Get ("includeContent", includeContent);
+
+    GS::ObjectState response;
+    const auto& modulDataList = response.AddList<GS::ObjectState> ("modulData");
+
+    for (const GS::UniString& name : names) {
+        API_ModulData modulData = {};
+        const GSErrCode err = includeContent
+            ? ACAPI_ModulData_Get (&modulData, name)
+            : ACAPI_ModulData_GetInfo (&modulData, name);
+        if (err != NoError) {
+            if (modulData.dataHdl != nullptr) {
+                BMKillHandle (&modulData.dataHdl);
+            }
+            modulDataList (CreateErrorResponse (err, err == APIERR_NOMODULEDATA
+                ? "There is no module data with the name '" + name + "'."
+                : "Failed to get the module data with the name '" + name + "'."));
+            continue;
+        }
+
+        modulDataList (CreateModulDataObjectState (name, modulData, includeContent));
+        if (modulData.dataHdl != nullptr) {
+            BMKillHandle (&modulData.dataHdl);
+        }
+    }
+
+    return response;
+}
+
+StoreModulDataCommand::StoreModulDataCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String StoreModulDataCommand::GetName () const
+{
+    return "StoreModulData";
+}
+
+GS::Optional<GS::UniString> StoreModulDataCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "modulData": {
+                "type": "array",
+                "description": "The module data to create or to overwrite. Prefix the names with the name of your tool (for example 'my-tool/settings') so different scripts do not overwrite each other's data.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the module data; the empty name is the default section."
+                        },
+                        "content": {
+                            "type": "string",
+                            "description": "The content of the module data, for example a JSON string."
+                        },
+                        "dataVersion": {
+                            "type": "integer",
+                            "description": "A version number stored with the data, returned by GetModulData, for example to tell the formats of your content apart. The default is 1."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "content"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "modulData"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> StoreModulDataCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState StoreModulDataCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> modulDataArray;
+    if (!parameters.Get ("modulData", modulDataArray)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'modulData' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& modulDataOS : modulDataArray) {
+        GS::UniString name;
+        GS::UniString content;
+        if (!modulDataOS.Get ("name", name) || !modulDataOS.Get ("content", content)) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Invalid or missing 'name' or 'content'."));
+            continue;
+        }
+
+        API_ModulData modulData = {};
+        modulData.dataVersion = 1;
+        modulDataOS.Get ("dataVersion", modulData.dataVersion);
+        modulData.platformSign = GS::Act_Platform_Sign;
+        modulData.dataHdl = CreateProjectDataContentHandle (content);
+        if (modulData.dataHdl == nullptr) {
+            executionResults (CreateFailedExecutionResult (APIERR_MEMFULL, "Failed to allocate the content of the module data '" + name + "'."));
+            continue;
+        }
+
+        const GSErrCode err = ACAPI_ModulData_Store (&modulData, name);
+        BMKillHandle (&modulData.dataHdl);
+
+        executionResults (err == NoError
+            ? CreateSuccessfulExecutionResult ()
+            : CreateFailedExecutionResult (err, "Failed to store the module data '" + name + "'."));
+    }
+
+    return response;
+}
+
+DeleteModulDataCommand::DeleteModulDataCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeleteModulDataCommand::GetName () const
+{
+    return "DeleteModulData";
+}
+
+GS::Optional<GS::UniString> DeleteModulDataCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "names": {
+                "type": "array",
+                "description": "The names of the module data to delete; the empty name is the default section.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "names"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteModulDataCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteModulDataCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> names;
+    if (!parameters.Get ("names", names)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'names' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::UniString& name : names) {
+        const GSErrCode err = ACAPI_ModulData_Delete (name);
+        if (err == NoError) {
+            executionResults (CreateSuccessfulExecutionResult ());
+        } else if (err == APIERR_NOMODULEDATA) {
+            executionResults (CreateFailedExecutionResult (err, "There is no module data with the name '" + name + "'."));
+        } else {
+            executionResults (CreateFailedExecutionResult (err, "Failed to delete the module data '" + name + "'."));
+        }
+    }
+
+    return response;
+}
