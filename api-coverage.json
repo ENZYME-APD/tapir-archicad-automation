@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-04 17:45 UTC",
+ "generatedAt": "2026-11-04 18:16 UTC",
  "versions": [
   25,
   26,
@@ -2962,10 +2962,6 @@
     {
      "number": 1615,
      "title": "Import attributes from another project file (append / overwrite like the Attribute Manager) and export them to a file"
-    },
-    {
-     "number": 1615,
-     "title": "Import attributes from another project file (append / overwrite like the Attribute Manager) and export them to a file"
     }
    ]
   },
@@ -4056,6 +4052,18 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1896,
+     "title": "[3/6] Share one helper for MoveElements, ElevateElements, RotateElements and MirrorElements"
+    },
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    },
+    {
+     "number": 1893,
+     "title": "[2/6] Share one helper among the delete-by-id commands"
+    },
+    {
      "number": 1891,
      "title": "[1/6] Share the body of the Project Info group and field commands"
     },
@@ -4343,7 +4351,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1893,
+     "title": "[2/6] Share one helper among the delete-by-id commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -4364,7 +4377,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1893,
+     "title": "[2/6] Share one helper among the delete-by-id commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -6945,7 +6963,12 @@
      "title": "CreateMorphs: favoriteName, layerIndex and id per item"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1895,
+     "title": "CreateDoors with libraryPartName: parameters unreadable, and the Door tool defaults stay broken"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_ChangeDefaultsExt",
@@ -7167,6 +7190,10 @@
    ],
    "issues": [
     {
+     "number": 1895,
+     "title": "CreateDoors with libraryPartName: parameters unreadable, and the Door tool defaults stay broken"
+    },
+    {
      "number": 1377,
      "title": "Place Detail and Worksheet markers, and change their settings"
     }
@@ -7312,7 +7339,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1896,
+     "title": "[3/6] Share one helper for MoveElements, ElevateElements, RotateElements and MirrorElements"
+    }
+   ],
    "issues": []
   },
   {
@@ -7442,10 +7474,6 @@
     {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
-    },
-    {
-     "number": 1506,
-     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     },
     {
      "number": 1292,
@@ -8015,6 +8043,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1893,
+     "title": "[2/6] Share one helper among the delete-by-id commands"
+    },
     {
      "number": 1841,
      "title": "Check sub-element objects without reading every object in full"
@@ -12621,7 +12653,12 @@
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1895,
+     "title": "CreateDoors with libraryPartName: parameters unreadable, and the Door tool defaults stay broken"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_GetSect_2DDrawHdl",
@@ -16990,7 +17027,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1893,
+     "title": "[2/6] Share one helper among the delete-by-id commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -17011,7 +17053,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1893,
+     "title": "[2/6] Share one helper among the delete-by-id commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -23694,7 +23741,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -23889,7 +23941,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -23905,7 +23962,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -23921,7 +23983,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24035,7 +24102,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24052,7 +24124,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24086,7 +24163,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24137,7 +24219,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24154,7 +24241,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24172,7 +24264,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24190,7 +24287,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24224,7 +24326,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24242,7 +24349,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24359,7 +24471,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24410,7 +24527,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24444,7 +24566,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24461,7 +24588,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24478,7 +24610,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24495,7 +24632,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24512,7 +24654,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24546,7 +24693,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24597,7 +24749,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24614,7 +24771,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24733,7 +24895,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24750,7 +24917,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24767,7 +24939,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24784,7 +24961,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24801,7 +24983,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24852,7 +25039,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24869,7 +25061,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -24903,7 +25100,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -26077,6 +26279,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1893,
+     "title": "[2/6] Share one helper among the delete-by-id commands"
+    },
     {
      "number": 1875,
      "title": "File-writing commands: optional overwrite: false refuses an existing file"
@@ -27402,10 +27608,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1506,
-     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     }
    ],
    "issues": []
@@ -28912,12 +29114,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1506,
-     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28953,12 +29150,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1506,
-     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -29190,12 +29382,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1506,
-     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -29236,12 +29423,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1506,
-     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -29300,12 +29482,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1506,
-     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -29369,12 +29546,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1506,
-     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -29410,12 +29582,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1506,
-     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -29557,12 +29724,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1506,
-     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -29580,12 +29742,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1506,
-     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -29621,12 +29778,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1506,
-     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31096,10 +31248,6 @@
     {
      "number": 1531,
      "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
-    },
-    {
-     "number": 1506,
-     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     }
    ],
    "issues": []
@@ -31155,12 +31303,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1506,
-     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31190,10 +31333,6 @@
     {
      "number": 1531,
      "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
-    },
-    {
-     "number": 1506,
-     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     }
    ],
    "issues": []
@@ -32106,10 +32245,6 @@
      "title": "[2/6] Doors and windows: Create/Modify take the floor plan and section settings"
     },
     {
-     "number": 1798,
-     "title": "GetDetailsOfElements: floor plan and section settings of Roofs"
-    },
-    {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
@@ -32179,7 +32314,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -32877,7 +33017,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -34747,7 +34892,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -35299,7 +35449,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -35934,7 +36089,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -36252,7 +36412,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -36815,7 +36980,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -38713,6 +38883,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1896,
+     "title": "[3/6] Share one helper for MoveElements, ElevateElements, RotateElements and MirrorElements"
+    },
     {
      "number": 1892,
      "title": "ChangeTextContent: pass the change in GS memory blocks with a separator"
@@ -41407,7 +41581,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -42351,7 +42530,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -42901,7 +43085,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -43504,7 +43693,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -44100,7 +44294,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -45352,7 +45551,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -45652,10 +45856,6 @@
      "title": "[2/6] Doors and windows: Create/Modify take the floor plan and section settings"
     },
     {
-     "number": 1798,
-     "title": "GetDetailsOfElements: floor plan and section settings of Roofs"
-    },
-    {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
@@ -45727,7 +45927,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -49164,10 +49369,6 @@
      "title": "[2/6] Doors and windows: Create/Modify take the floor plan and section settings"
     },
     {
-     "number": 1798,
-     "title": "GetDetailsOfElements: floor plan and section settings of Roofs"
-    },
-    {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
@@ -49237,7 +49438,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -50616,7 +50822,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -55379,7 +55590,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1894,
+     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
+    }
+   ],
    "issues": []
   },
   {
