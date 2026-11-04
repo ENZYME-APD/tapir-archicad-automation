@@ -1,9 +1,9 @@
 {
- "generatedAt": "2026-11-04 11:47 UTC",
+ "generatedAt": "2026-11-04 12:04 UTC",
  "counts": {
   "done": 568,
   "merged": 147,
-  "open": 9,
+  "open": 12,
   "not applicable": 1
  },
  "parameters": {
@@ -1101,6 +1101,36 @@
    "coveredParameters": [
     "keys"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetAllAutoTextKeys",
+   "group": "Project Commands",
+   "version": "1.8.1",
+   "brief": "Retrieves every autotext key Archicad knows (not only the property-based ones returned by GetAutoTextKeys) with its current value, resolved without an element context.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "InterpretAutoTexts",
+   "group": "Project Commands",
+   "version": "1.8.1",
+   "brief": "Resolves one or more autotexts (e.g. '<LAYOUTID>') to their values, optionally in the context of an element, so a key can be tested before it is written into a Text or Label.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -10587,7 +10617,7 @@
    "id": "GetIFCExportTranslators",
    "group": "IFC Commands",
    "version": "1.6.0",
-   "brief": "Lists the IFC export translators of the project, the preview translator first. Pass one of the names to IFCFileOperation as translatorName.",
+   "brief": "Lists the IFC export translators of the project in the order of Archicad's translator list. preview marks the first one, which the Archicad API documents as the preview translator; no API identifies the preview translator otherwise, and in some projects the IFC Translators dialog shows another one as preview. Pass one of the names to IFCFileOperation as translatorName.",
    "status": "done",
    "reason": "",
    "components": [
@@ -11722,6 +11752,21 @@
    ],
    "parameters": "all",
    "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SearchLibraryParts",
+   "group": "Library Commands",
+   "version": "1.8.1",
+   "brief": "Finds the loaded library parts derived from an ancestor library part (by its unique ID) whose name matches a pattern with * wildcards. Archicad returns at most 50 of them.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
@@ -16028,7 +16073,7 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 15,
+   "parameterCount": 16,
    "coveredParameters": [
     "routingElementsData",
     "routingElementsData.crossSectionHeight",
@@ -16041,6 +16086,7 @@
     "routingElementsData.defaults.routingNode.elbow.factorRadius",
     "routingElementsData.defaults.routingNode.transition",
     "routingElementsData.domain",
+    "routingElementsData.floorIndex",
     "routingElementsData.layerIndex",
     "routingElementsData.mepSystemId",
     "routingElementsData.nodeCoordinates",
@@ -16064,13 +16110,14 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 19,
+   "parameterCount": 20,
    "coveredParameters": [
     "elementsData",
     "elementsData.defaults",
     "elementsData.defaults.insulationThickness",
     "elementsData.defaults.removeInsulation",
     "elementsData.domain",
+    "elementsData.floorIndex",
     "elementsData.libraryPartId",
     "elementsData.mepSystemId",
     "elementsData.orientationDirection",

@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-04 11:47 UTC",
+ "generatedAt": "2026-11-04 12:04 UTC",
  "versions": [
   25,
   26,
@@ -12,8 +12,8 @@
   "not applicable": 670,
   "done": 1859,
   "skipped": 28,
-  "merged": 297,
-  "in progress": 22,
+  "merged": 300,
+  "in progress": 19,
   "open": 3
  },
  "items": [
@@ -3738,20 +3738,10 @@
    "olderNames": [
     "APIAny_GetAutoTextKeysID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1094,
-     "title": "Add GetAllAutoTextKeys and InterpretAutoTexts commands"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1091,
-     "title": "Expose ACAPI_AutoText_GetAutoTextKeys and ACAPI_AutoText_InterpretAutoText (find and test non-property Autotext keys)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_AutoText_GetAutoTexts",
@@ -3841,12 +3831,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1091,
-     "title": "Expose ACAPI_AutoText_GetAutoTextKeys and ACAPI_AutoText_InterpretAutoText (find and test non-property Autotext keys)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_AutoText_InterpretAutoText",
@@ -3866,20 +3851,10 @@
    "olderNames": [
     "APIAny_InterpretAutoTextID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1094,
-     "title": "Add GetAllAutoTextKeys and InterpretAutoTexts commands"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1091,
-     "title": "Expose ACAPI_AutoText_GetAutoTextKeys and ACAPI_AutoText_InterpretAutoText (find and test non-property Autotext keys)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_AutoText_SetAnAutoText",
@@ -6771,7 +6746,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1835,
+     "title": "Get3DBoundingBoxes: measure Walls on their 3D model, with their connections"
+    }
+   ],
    "issues": []
   },
   {
@@ -6901,10 +6881,6 @@
     {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
-    },
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
     {
      "number": 1671,
@@ -7450,10 +7426,6 @@
      "title": "Add ModifyRailings: height, bottom offset and home story of railings"
     },
     {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
     },
@@ -7805,6 +7777,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1834,
+     "title": "[3/3] Notification clients: attribute replacement events"
+    },
     {
      "number": 1831,
      "title": "[2/3] Notification clients: window, floor and project events"
@@ -11441,12 +11417,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1310,
-     "title": "GetIFCExportTranslators marks the wrong translator as preview"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_IFC_GetIFCRelationshipData",
@@ -12827,14 +12798,9 @@
    "olderNames": [
     "ACAPI_LibPart_PatternSearch"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1353,
-     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -15045,7 +15011,12 @@
    ],
    "status": "not applicable",
    "reason": "event handlers, not commands",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1834,
+     "title": "[3/3] Notification clients: attribute replacement events"
+    }
+   ],
    "issues": [
     {
      "number": 1813,
@@ -15120,6 +15091,10 @@
    "status": "not applicable",
    "reason": "event handlers, not commands",
    "pullRequests": [
+    {
+     "number": 1834,
+     "title": "[3/3] Notification clients: attribute replacement events"
+    },
     {
      "number": 1831,
      "title": "[2/3] Notification clients: window, floor and project events"
@@ -16198,6 +16173,10 @@
    "reason": "event handlers, not commands",
    "pullRequests": [
     {
+     "number": 1834,
+     "title": "[3/3] Notification clients: attribute replacement events"
+    },
+    {
      "number": 1831,
      "title": "[2/3] Notification clients: window, floor and project events"
     }
@@ -16734,6 +16713,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1834,
+     "title": "[3/3] Notification clients: attribute replacement events"
+    },
     {
      "number": 1831,
      "title": "[2/3] Notification clients: window, floor and project events"
@@ -17941,6 +17924,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1834,
+     "title": "[3/3] Notification clients: attribute replacement events"
+    },
     {
      "number": 1832,
      "title": "[2/4] Report element changes made by the Modify<Tool> commands to notification clients"
@@ -20672,6 +20659,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1834,
+     "title": "[3/3] Notification clients: attribute replacement events"
+    },
+    {
      "number": 1831,
      "title": "[2/3] Notification clients: window, floor and project events"
     },
@@ -21737,10 +21728,6 @@
     {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
-    },
-    {
-     "number": 1094,
-     "title": "Add GetAllAutoTextKeys and InterpretAutoTexts commands"
     }
    ],
    "issues": [
@@ -21751,10 +21738,6 @@
     {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    },
-    {
-     "number": 1091,
-     "title": "Expose ACAPI_AutoText_GetAutoTextKeys and ACAPI_AutoText_InterpretAutoText (find and test non-property Autotext keys)"
     }
    ]
   },
@@ -30587,10 +30570,6 @@
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
     },
     {
-     "number": 1353,
-     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
-    },
-    {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
     },
@@ -30725,10 +30704,6 @@
     {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
-    },
-    {
-     "number": 1353,
-     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
     },
     {
      "number": 1273,
@@ -31905,12 +31880,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32228,10 +32198,6 @@
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
     {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
     },
@@ -32250,10 +32216,6 @@
     {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
-    },
-    {
-     "number": 1353,
-     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
     },
     {
      "number": 1292,
@@ -32420,12 +32382,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32700,12 +32657,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -32800,12 +32752,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -34031,12 +33978,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -34947,12 +34889,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35589,12 +35526,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36195,12 +36127,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36517,12 +36444,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37023,10 +36945,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     }
    ],
    "issues": []
@@ -37430,12 +37348,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37899,12 +37812,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38181,12 +38089,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38644,12 +38547,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38960,10 +38858,6 @@
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
     {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
      "number": 1703,
      "title": "Add CreateSkylights: place skylights in roofs and shells"
     },
@@ -38990,10 +38884,6 @@
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    },
-    {
-     "number": 1094,
-     "title": "Add GetAllAutoTextKeys and InterpretAutoTexts commands"
     },
     {
      "number": 995,
@@ -39046,12 +38936,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39749,12 +39634,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39890,12 +39770,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40050,12 +39925,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -41319,12 +41189,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -41525,12 +41390,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41702,12 +41562,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -42618,12 +42473,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43224,12 +43074,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43864,12 +43709,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44364,12 +44204,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44743,6 +44578,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1834,
+     "title": "[3/3] Notification clients: attribute replacement events"
+    },
+    {
      "number": 1832,
      "title": "[2/4] Report element changes made by the Modify<Tool> commands to notification clients"
     },
@@ -44753,10 +44592,6 @@
     {
      "number": 1823,
      "title": "[1/3] Notification clients: selection changes"
-    },
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     }
    ],
    "issues": []
@@ -44995,12 +44830,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45902,10 +45732,6 @@
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
     {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
     },
@@ -45924,10 +45750,6 @@
     {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
-    },
-    {
-     "number": 1353,
-     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
     },
     {
      "number": 1292,
@@ -46035,12 +45857,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46298,10 +46115,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     }
    ],
    "issues": [
@@ -46536,10 +46349,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     }
    ],
    "issues": []
@@ -47302,10 +47111,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     }
    ],
    "issues": [
@@ -47471,12 +47276,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48041,10 +47841,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     }
    ],
    "issues": [
@@ -49334,12 +49130,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49465,10 +49256,6 @@
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
     {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
     },
@@ -49487,10 +49274,6 @@
     {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
-    },
-    {
-     "number": 1353,
-     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
     },
     {
      "number": 1292,
@@ -49577,12 +49360,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49768,12 +49546,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49932,10 +49705,6 @@
     {
      "number": 1750,
      "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    },
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     }
    ],
    "issues": []
@@ -50412,12 +50181,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1727,
-     "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -57128,10 +56892,6 @@
     {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
-    },
-    {
-     "number": 1353,
-     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
     },
     {
      "number": 1292,
