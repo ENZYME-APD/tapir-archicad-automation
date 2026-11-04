@@ -8939,7 +8939,9 @@ static std::optional<GS::ObjectState> ModifyMEPElementPlacement (ModifiableEleme
 }
 
 // Makes the changes of one item of ModifyMEPElements. Every element the changes need is looked up
-// before anything is changed, so an item that does not fit its element changes nothing.
+// before anything is changed, so an item with a field that does not fit its element changes nothing.
+// The one exception: Archicad only shows that it did not find a 'libraryPartId' after the placement
+// was changed, so that error comes after the item's other changes were made.
 static GS::ObjectState ModifyMEPElement (const GS::ObjectState& elementData)
 {
     const GS::ObjectState* elementId = elementData.Get ("elementId");
