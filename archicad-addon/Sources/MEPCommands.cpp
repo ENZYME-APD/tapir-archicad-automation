@@ -1898,7 +1898,7 @@ GS::Optional<GS::UniString> GetMEPElementDetailsCommand::GetRawResponseSchema ()
                                 },
                                 "polyline": {
                                     "$ref": "#/MEPFlexibleSegmentPolyline",
-                                    "description": "The line and spline parts of the flexible segment, when Archicad gives them (a flexible segment placed as a polyline, see PlaceMEPFlexibleSegments). FlexibleSegment."
+                                    "description": "The line and spline parts of the flexible segment, when Archicad gives them (a flexible segment placed as a polyline, see CreateMEPFlexibleSegments). FlexibleSegment."
                                 },
                                 "factorRadius": {
                                     "type": "number",
@@ -8477,7 +8477,7 @@ static Orientation GetFlexibleSegmentEndOrientation (const GS::ObjectState* orie
     return Orientation { { direction.x, direction.y, direction.z }, { rotation.x, rotation.y, rotation.z } };
 }
 
-// Places one flexible segment of PlaceMEPFlexibleSegments given by its 'polyline'; gives its element id or the error.
+// Places one flexible segment of CreateMEPFlexibleSegments given by its 'polyline'; gives its element id or the error.
 static GS::ObjectState PlaceMEPFlexibleSegmentPolyline (const GS::ObjectState& flexibleSegmentData, Domain domain)
 {
     if (flexibleSegmentData.Contains ("controlPoints")) {
@@ -8510,17 +8510,17 @@ static GS::ObjectState PlaceMEPFlexibleSegmentPolyline (const GS::ObjectState& f
 
 #endif
 
-PlaceMEPFlexibleSegmentsCommand::PlaceMEPFlexibleSegmentsCommand () :
+CreateMEPFlexibleSegmentsCommand::CreateMEPFlexibleSegmentsCommand () :
     CommandBase (CommonSchema::Used)
 {
 }
 
-GS::String PlaceMEPFlexibleSegmentsCommand::GetName () const
+GS::String CreateMEPFlexibleSegmentsCommand::GetName () const
 {
-    return "PlaceMEPFlexibleSegments";
+    return "CreateMEPFlexibleSegments";
 }
 
-GS::Optional<GS::UniString> PlaceMEPFlexibleSegmentsCommand::GetInputParametersSchema () const
+GS::Optional<GS::UniString> CreateMEPFlexibleSegmentsCommand::GetInputParametersSchema () const
 {
     return R"({
         "type": "object",
@@ -8577,7 +8577,7 @@ GS::Optional<GS::UniString> PlaceMEPFlexibleSegmentsCommand::GetInputParametersS
     })";
 }
 
-GS::Optional<GS::UniString> PlaceMEPFlexibleSegmentsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateMEPFlexibleSegmentsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -8593,7 +8593,7 @@ GS::Optional<GS::UniString> PlaceMEPFlexibleSegmentsCommand::GetRawResponseSchem
     })";
 }
 
-GS::ObjectState PlaceMEPFlexibleSegmentsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState CreateMEPFlexibleSegmentsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
     GS::Array<GS::ObjectState> flexibleSegmentsData;
@@ -8604,7 +8604,7 @@ GS::ObjectState PlaceMEPFlexibleSegmentsCommand::Execute (const GS::ObjectState&
     GS::ObjectState response;
     const auto& elements = response.AddList<GS::ObjectState> ("elements");
 
-    ACAPI_CallUndoableCommand ("Place MEP Flexible Segments", [&]() -> GSErrCode {
+    ACAPI_CallUndoableCommand ("Create MEP Flexible Segments", [&]() -> GSErrCode {
         for (const GS::ObjectState& flexibleSegmentData : flexibleSegmentsData) {
             GS::UniString domainStr;
             flexibleSegmentData.Get ("domain", domainStr);
@@ -8655,17 +8655,17 @@ GS::ObjectState PlaceMEPFlexibleSegmentsCommand::Execute (const GS::ObjectState&
 #endif
 }
 
-PlaceMEPTakeOffsCommand::PlaceMEPTakeOffsCommand () :
+CreateMEPTakeOffsCommand::CreateMEPTakeOffsCommand () :
     CommandBase (CommonSchema::Used)
 {
 }
 
-GS::String PlaceMEPTakeOffsCommand::GetName () const
+GS::String CreateMEPTakeOffsCommand::GetName () const
 {
-    return "PlaceMEPTakeOffs";
+    return "CreateMEPTakeOffs";
 }
 
-GS::Optional<GS::UniString> PlaceMEPTakeOffsCommand::GetInputParametersSchema () const
+GS::Optional<GS::UniString> CreateMEPTakeOffsCommand::GetInputParametersSchema () const
 {
     return R"({
         "type": "object",
@@ -8713,7 +8713,7 @@ GS::Optional<GS::UniString> PlaceMEPTakeOffsCommand::GetInputParametersSchema ()
     })";
 }
 
-GS::Optional<GS::UniString> PlaceMEPTakeOffsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateMEPTakeOffsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -8729,7 +8729,7 @@ GS::Optional<GS::UniString> PlaceMEPTakeOffsCommand::GetRawResponseSchema () con
     })";
 }
 
-GS::ObjectState PlaceMEPTakeOffsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState CreateMEPTakeOffsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
     GS::Array<GS::ObjectState> takeOffsData;
@@ -8740,7 +8740,7 @@ GS::ObjectState PlaceMEPTakeOffsCommand::Execute (const GS::ObjectState& paramet
     GS::ObjectState response;
     const auto& elements = response.AddList<GS::ObjectState> ("elements");
 
-    ACAPI_CallUndoableCommand ("Place MEP Take-Offs", [&]() -> GSErrCode {
+    ACAPI_CallUndoableCommand ("Create MEP Take-Offs", [&]() -> GSErrCode {
         for (const GS::ObjectState& takeOffData : takeOffsData) {
             GS::UniString domainStr;
             takeOffData.Get ("domain", domainStr);

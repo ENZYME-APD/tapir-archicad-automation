@@ -9,14 +9,14 @@ using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.MEPComponents
 {
-    public class PlaceMEPFlexibleSegmentsComponent : ArchicadExecutorComponent
+    public class CreateMEPFlexibleSegmentsComponent : ArchicadExecutorComponent
     {
-        public override string CommandName => "PlaceMEPFlexibleSegments";
+        public override string CommandName => "CreateMEPFlexibleSegments";
 
-        public PlaceMEPFlexibleSegmentsComponent()
+        public CreateMEPFlexibleSegmentsComponent()
             : base(
-                "PlaceMEPFlexibleSegments",
-                "Places MEP flexible segments through the given control points with the current settings of the " +
+                "CreateMEPFlexibleSegments",
+                "Creates MEP flexible segments through the given control points with the current settings of the " +
                 "Flexible Segment tool of their domain, optionally with the orientation at both ends. " +
                 "Available from Archicad 28.",
                 GroupNames.MEP)

@@ -7,14 +7,14 @@ using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.MEPComponents
 {
-    public class PlaceMEPTakeOffsComponent : ArchicadExecutorComponent
+    public class CreateMEPTakeOffsComponent : ArchicadExecutorComponent
     {
-        public override string CommandName => "PlaceMEPTakeOffs";
+        public override string CommandName => "CreateMEPTakeOffs";
 
-        public PlaceMEPTakeOffsComponent()
+        public CreateMEPTakeOffsComponent()
             : base(
-                "PlaceMEPTakeOffs",
-                "Places MEP take-offs on the given routing segments, at a distance from the beginning of the " +
+                "CreateMEPTakeOffs",
+                "Creates MEP take-offs on the given routing segments, at a distance from the beginning of the " +
                 "segment and optionally rotated around its axis, with the current settings of the Take-Off tool " +
                 "of their domain, optionally with their length. Available from Archicad 28.",
                 GroupNames.MEP)

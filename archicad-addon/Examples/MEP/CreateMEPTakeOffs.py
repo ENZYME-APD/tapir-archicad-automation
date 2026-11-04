@@ -1,4 +1,4 @@
-"""Places a take-off 2 m from the start of a new pipe route with PlaceMEPTakeOffs.
+"""Creates a take-off 2 m from the start of a new pipe route with CreateMEPTakeOffs.
 
 Creates the pipe route first; the take-off uses the current settings of the Take-Off tool. Requires Archicad 28 or later.
 """
@@ -12,7 +12,7 @@ routeId = aclib.RunTapirCommand ('CreateMEPRoutingElements', {
 })['elements'][0]['elementId']
 route = aclib.RunTapirCommand ('GetMEPRoutingElements', {'elements': [{'elementId': routeId}]})['routingElements'][0]
 
-aclib.PrintJson (aclib.RunTapirCommand ('PlaceMEPTakeOffs', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateMEPTakeOffs', {
     'takeOffsData': [{
         'domain': 'Piping',
         'segmentId': route['segments'][0]['elementId'],
