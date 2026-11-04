@@ -3439,8 +3439,13 @@ GS::Optional<GS::UniString> SetGeoLocationCommand::GetRawResponseSchema () const
 
 GS::ObjectState SetGeoLocationCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    // The fields not given are written back as they are read here, so a failed read must not
+    // let zeros overwrite them.
     API_GeoLocation apiGeoLocation = {};
-    ACAPI_GeoLocation_GetGeoLocation (&apiGeoLocation);
+    const GSErrCode getErr = ACAPI_GeoLocation_GetGeoLocation (&apiGeoLocation);
+    if (getErr != NoError) {
+        return CreateFailedExecutionResult (getErr, "Failed to get the current geolocation.");
+    }
 
     bool hasGeoLocationInput = false;
     bool isVisible = false;
