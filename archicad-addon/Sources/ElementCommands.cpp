@@ -278,6 +278,16 @@ static const char* StairSegmentTypeToString (API_StairSegmentTypeID type)
     }
 }
 
+static const char* ElemProjectionModeToString (API_ElemProjectionModesID projectionMode)
+{
+    switch (projectionMode) {
+        case API_Projected: return "Projected";
+        case API_Hybrid:    return "Hybrid";
+        case API_Symbolic:
+        default:            return "Symbolic";
+    }
+}
+
 static const char* StairTurnTypeToString (API_StairTurnTypeID type)
 {
     switch (type) {
@@ -2450,6 +2460,39 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
                 typeSpecificDetails.Add ("angle", elem.curtainWall.angle);
                 typeSpecificDetails.Add ("flipped", elem.curtainWall.flipped);
+                typeSpecificDetails.Add ("displayOption", ElemDisplayOptionToString (elem.curtainWall.displayOption));
+                typeSpecificDetails.Add ("viewDepthLimitation", ViewDepthLimitationToString (elem.curtainWall.viewDepthLimitation));
+                typeSpecificDetails.Add ("visibility", CreateStoryVisibilityObjectState (elem.curtainWall.visibility));
+                typeSpecificDetails.Add ("isAutoOnStoryVisibility", elem.curtainWall.isAutoOnStoryVisibility);
+                typeSpecificDetails.Add ("cutProjectionMode", ElemProjectionModeToString (elem.curtainWall.cutProjectionMode));
+                typeSpecificDetails.Add ("uncutProjectionMode", ElemProjectionModeToString (elem.curtainWall.uncutProjectionMode));
+                typeSpecificDetails.Add ("overheadProjectionMode", ElemProjectionModeToString (elem.curtainWall.overheadProjectionMode));
+#ifdef ServerMainVers_2700
+                typeSpecificDetails.Add ("cutFillPen", CreateOverriddenPenObjectState (elem.curtainWall.cutFillPen));
+                typeSpecificDetails.Add ("cutFillBackgroundPen", CreateOverriddenPenObjectState (elem.curtainWall.cutFillBackgroundPen));
+#else
+                typeSpecificDetails.Add ("cutFillPen", GS::ObjectState ("overridden", false));
+                typeSpecificDetails.Add ("cutFillBackgroundPen", GS::ObjectState ("overridden", false));
+#endif
+                typeSpecificDetails.Add ("frameCutLinePen", (Int32) elem.curtainWall.frameCutLinePen);
+                if (elem.curtainWall.frameCutLineType != APIInvalidAttributeIndex) {
+                    typeSpecificDetails.Add ("frameCutLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.curtainWall.frameCutLineType)));
+                }
+                typeSpecificDetails.Add ("panelCutLinePen", (Int32) elem.curtainWall.panelCutLinePen);
+                if (elem.curtainWall.panelCutLineType != APIInvalidAttributeIndex) {
+                    typeSpecificDetails.Add ("panelCutLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.curtainWall.panelCutLineType)));
+                }
+                typeSpecificDetails.Add ("useFrameTypesAttributes", elem.curtainWall.useFrameTypesAttributes);
+                typeSpecificDetails.Add ("usePanelTypesAttributes", elem.curtainWall.usePanelTypesAttributes);
+                typeSpecificDetails.Add ("pen", (Int32) elem.curtainWall.pen);
+                typeSpecificDetails.Add ("belowViewLinePen", (Int32) elem.curtainWall.uncutLinePen);
+                if (elem.curtainWall.uncutLineType != APIInvalidAttributeIndex) {
+                    typeSpecificDetails.Add ("belowViewLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.curtainWall.uncutLineType)));
+                }
+                typeSpecificDetails.Add ("aboveViewLinePen", (Int32) elem.curtainWall.overheadLinePen);
+                if (elem.curtainWall.overheadLineType != APIInvalidAttributeIndex) {
+                    typeSpecificDetails.Add ("aboveViewLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.curtainWall.overheadLineType)));
+                }
             } break;
 
             case API_CurtainWallSegmentID: {

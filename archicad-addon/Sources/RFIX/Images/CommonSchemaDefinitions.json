@@ -3850,6 +3850,15 @@
             "EntireElement"
         ]
     },
+    "ElemProjectionMode": {
+        "type": "string",
+        "description": "Floor plan projection mode of an element part (API_ElemProjectionModesID).",
+        "enum": [
+            "Symbolic",
+            "Projected",
+            "Hybrid"
+        ]
+    },
     "TextureProjectionType": {
         "type": "string",
         "description": "Projection type of the 3D texture.",
@@ -10081,13 +10090,106 @@
             "angle": {
                 "type": "number",
                 "description": "The rotation angle of the curtain wall in radians."
+            },
+            "displayOption": {
+                "$ref": "#/DisplayOption"
+            },
+            "viewDepthLimitation": {
+                "$ref": "#/ViewDepthLimitation"
+            },
+            "visibility": {
+                "$ref": "#/StoryVisibility"
+            },
+            "isAutoOnStoryVisibility": {
+                "type": "boolean",
+                "description": "When true, Archicad recomputes 'visibility' automatically from the curtain wall's vertical extent."
+            },
+            "cutProjectionMode": {
+                "$ref": "#/ElemProjectionMode",
+                "description": "Projection mode of the cut part of the curtain wall on the floor plan (API_CurtainWallType::cutProjectionMode)."
+            },
+            "uncutProjectionMode": {
+                "$ref": "#/ElemProjectionMode",
+                "description": "Projection mode of the uncut part (below the cut plane) of the curtain wall on the floor plan (API_CurtainWallType::uncutProjectionMode)."
+            },
+            "overheadProjectionMode": {
+                "$ref": "#/ElemProjectionMode",
+                "description": "Projection mode of the overhead part (above the cut plane) of the curtain wall on the floor plan (API_CurtainWallType::overheadProjectionMode)."
+            },
+            "cutFillPen": {
+                "$ref": "#/OverriddenPen",
+                "description": "Cut fill foreground pen; the building material's pen can be overridden on the element level. Before Archicad 27 always reported as not overridden."
+            },
+            "cutFillBackgroundPen": {
+                "$ref": "#/OverriddenPen",
+                "description": "Cut fill background pen; the building material's pen can be overridden on the element level. Before Archicad 27 always reported as not overridden."
+            },
+            "frameCutLinePen": {
+                "type": "integer",
+                "description": "Pen index of the cut part of the frames on the floor plan (API_CurtainWallType::frameCutLinePen)."
+            },
+            "frameCutLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the cut part of the frames on the floor plan (API_CurtainWallType::frameCutLineType). Omitted when not set."
+            },
+            "panelCutLinePen": {
+                "type": "integer",
+                "description": "Pen index of the cut part of the panels on the floor plan (API_CurtainWallType::panelCutLinePen)."
+            },
+            "panelCutLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the cut part of the panels on the floor plan (API_CurtainWallType::panelCutLineType). Omitted when not set."
+            },
+            "useFrameTypesAttributes": {
+                "type": "boolean",
+                "description": "The frames use the attributes of their frame types instead of frameCutLinePen/frameCutLineTypeId."
+            },
+            "usePanelTypesAttributes": {
+                "type": "boolean",
+                "description": "The panels use the attributes of their panel types instead of panelCutLinePen/panelCutLineTypeId."
+            },
+            "pen": {
+                "type": "integer",
+                "description": "The pen index of the curtain wall (API_CurtainWallType::pen)."
+            },
+            "belowViewLinePen": {
+                "type": "integer",
+                "description": "Pen index of the curtain wall's view below the cut plane on the floor plan, the uncut lines (API_CurtainWallType::uncutLinePen)."
+            },
+            "belowViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the curtain wall's view below the cut plane on the floor plan, the uncut lines (API_CurtainWallType::uncutLineType). Omitted when not set."
+            },
+            "aboveViewLinePen": {
+                "type": "integer",
+                "description": "Pen index of the curtain wall's view above the cut plane on the floor plan, the overhead lines (API_CurtainWallType::overheadLinePen)."
+            },
+            "aboveViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the curtain wall's view above the cut plane on the floor plan, the overhead lines (API_CurtainWallType::overheadLineType). Omitted when not set."
             }
         },
         "additionalProperties": false,
         "required": [
             "height",
             "flipped",
-            "angle"
+            "angle",
+            "displayOption",
+            "viewDepthLimitation",
+            "visibility",
+            "isAutoOnStoryVisibility",
+            "cutProjectionMode",
+            "uncutProjectionMode",
+            "overheadProjectionMode",
+            "cutFillPen",
+            "cutFillBackgroundPen",
+            "frameCutLinePen",
+            "panelCutLinePen",
+            "useFrameTypesAttributes",
+            "usePanelTypesAttributes",
+            "pen",
+            "belowViewLinePen",
+            "aboveViewLinePen"
         ]
     },
     "CurtainWallSegmentDetails": {
