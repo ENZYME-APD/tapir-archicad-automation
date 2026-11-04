@@ -1,5 +1,6 @@
 #include "ElementCategoryCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "NotificationCommands.hpp"
 
 #include <map>
 
@@ -598,6 +599,16 @@ GS::ObjectState SetCategoryValuesOfElementsCommand::Execute (const GS::ObjectSta
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    // A category value change may leave the element's modification stamp as it was, so the
+    // elements changed are marked for the notification clients.
+    ElementChangeReporter changeReporter;
+    for (const GS::ObjectState& item : elementCategoryValues) {
+        const GS::ObjectState* elementId = item.Get ("elementId");
+        if (elementId != nullptr) {
+            changeReporter.Add (GetGuidFromObjectState (*elementId));
+        }
+    }
+
     ACAPI_CallUndoableCommand ("SetCategoryValuesOfElements", [&] () -> GSErrCode {
         for (const GS::ObjectState& item : elementCategoryValues) {
             const GS::ObjectState* elementId = item.Get ("elementId");
@@ -664,11 +675,14 @@ GS::ObjectState SetCategoryValuesOfElementsCommand::Execute (const GS::ObjectSta
                 continue;
             }
 
+            changeReporter.MarkChanged (elemGuid);
             executionResults (CreateSuccessfulExecutionResult ());
         }
 
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }

@@ -6709,6 +6709,38 @@ static GS::Optional<GS::UniString> ApplyOpeningExtrusionParametersChange (ACAPI:
     return failure;
 }
 
+// Runs setOne on each item, returns their execution results, and reports the openings it
+// changed to the notification clients: those it succeeded on, and those whose modification
+// stamp changed (a change that stopped halfway keeps what it made). Used by the Opening
+// setters, which take an elementId per item.
+static GS::ObjectState SetEachOpening (const GS::Array<GS::ObjectState>& items, GS::ObjectState (*setOne) (const GS::ObjectState&))
+{
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ElementChangeReporter changeReporter;
+    for (const GS::ObjectState& item : items) {
+        const GS::ObjectState* elementId = item.Get ("elementId");
+        if (elementId != nullptr) {
+            changeReporter.Add (GetGuidFromObjectState (*elementId));
+        }
+    }
+
+    for (const GS::ObjectState& item : items) {
+        const GS::ObjectState result = setOne (item);
+        bool success = false;
+        const GS::ObjectState* elementId = item.Get ("elementId");
+        if (elementId != nullptr && result.Get ("success", success) && success) {
+            changeReporter.MarkChanged (GetGuidFromObjectState (*elementId));
+        }
+        executionResults (result);
+    }
+
+    changeReporter.Report ();
+
+    return response;
+}
+
 static GS::ObjectState SetOpeningDetails (const GS::ObjectState& data)
 {
     using ACAPI::Element::Opening;
@@ -6838,12 +6870,7 @@ GS::ObjectState SetOpeningDetailsCommand::Execute (const GS::ObjectState& parame
     GS::Array<GS::ObjectState> openingsWithDetails;
     parameters.Get ("openingsWithDetails", openingsWithDetails);
 
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-    for (const GS::ObjectState& data : openingsWithDetails) {
-        executionResults (SetOpeningDetails (data));
-    }
-    return response;
+    return SetEachOpening (openingsWithDetails, SetOpeningDetails);
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
@@ -11603,12 +11630,7 @@ GS::ObjectState SetOpeningFloorPlanParametersCommand::Execute (const GS::ObjectS
     GS::Array<GS::ObjectState> openingsWithFloorPlanParameters;
     parameters.Get ("openingsWithFloorPlanParameters", openingsWithFloorPlanParameters);
 
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-    for (const GS::ObjectState& data : openingsWithFloorPlanParameters) {
-        executionResults (SetOpeningFloorPlanParameters (data));
-    }
-    return response;
+    return SetEachOpening (openingsWithFloorPlanParameters, SetOpeningFloorPlanParameters);
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
@@ -11902,12 +11924,7 @@ GS::ObjectState SetOpeningSymbolParametersCommand::Execute (const GS::ObjectStat
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
 
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-    for (const GS::ObjectState& data : elements) {
-        executionResults (SetOpeningSymbolParameters (data));
-    }
-    return response;
+    return SetEachOpening (elements, SetOpeningSymbolParameters);
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");

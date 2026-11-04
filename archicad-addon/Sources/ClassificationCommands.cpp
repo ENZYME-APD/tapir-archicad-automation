@@ -1,5 +1,6 @@
 #include "ClassificationCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "NotificationCommands.hpp"
 
 #ifdef ServerMainVers_2900
 #include <chrono>
@@ -250,6 +251,16 @@ GS::ObjectState SetClassificationsOfElementsCommand::Execute (const GS::ObjectSt
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    // A classification change may leave the element's modification stamp as it was, so the
+    // elements classified are marked changed for the notification clients.
+    ElementChangeReporter changeReporter;
+    for (const GS::ObjectState& elementClassification : elementClassifications) {
+        const GS::ObjectState* elementId = elementClassification.Get ("elementId");
+        if (elementId != nullptr) {
+            changeReporter.Add (GetGuidFromObjectState (*elementId));
+        }
+    }
+
     ACAPI_CallUndoableCommand ("SetClassificationsOfElementsCommand", [&] () -> GSErrCode {
         for (const GS::ObjectState& elementClassification : elementClassifications) {
             const GS::ObjectState* elementId = elementClassification.Get ("elementId");
@@ -298,11 +309,14 @@ GS::ObjectState SetClassificationsOfElementsCommand::Execute (const GS::ObjectSt
                 }
             }
 
+            changeReporter.MarkChanged (elemGuid);
             executionResults (CreateSuccessfulExecutionResult ());
         }
 
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }
