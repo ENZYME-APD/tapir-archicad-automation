@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-04 12:38 UTC",
+ "generatedAt": "2026-11-04 12:55 UTC",
  "versions": [
   25,
   26,
@@ -2915,10 +2915,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1777,
-     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
-    },
-    {
      "number": 1395,
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
     }
@@ -3438,12 +3434,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1777,
-     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4059,10 +4050,6 @@
     {
      "number": 1815,
      "title": "Project preferences: Reference Levels page and Floor Plan Cut Plane Settings"
-    },
-    {
-     "number": 1777,
-     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
     },
     {
      "number": 1757,
@@ -4827,10 +4814,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1777,
-     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
@@ -4949,12 +4932,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1777,
-     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5790,12 +5768,7 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "memory management",
-   "pullRequests": [
-    {
-     "number": 1777,
-     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25962,10 +25935,6 @@
      "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
     },
     {
-     "number": 1777,
-     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
-    },
-    {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
@@ -27460,10 +27429,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1777,
-     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
-    },
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
@@ -30601,10 +30566,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1777,
-     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
-    },
-    {
      "number": 1543,
      "title": "[5/6] Add UpdateLibraryPartSections and GetLibraryPart2DPrimitives"
     },
@@ -32111,10 +32072,6 @@
     {
      "number": 1796,
      "title": "GetDetailsOfElements: floor plan and section settings of Shells"
-    },
-    {
-     "number": 1777,
-     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
     },
     {
      "number": 1748,
@@ -38763,10 +38720,6 @@
     {
      "number": 1802,
      "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
-    },
-    {
-     "number": 1777,
-     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
     },
     {
      "number": 1750,
@@ -45647,10 +45600,6 @@
      "title": "GetDetailsOfElements: floor plan and section settings of Shells"
     },
     {
-     "number": 1777,
-     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
-    },
-    {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
@@ -49173,10 +49122,6 @@
     {
      "number": 1796,
      "title": "GetDetailsOfElements: floor plan and section settings of Shells"
-    },
-    {
-     "number": 1777,
-     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
     },
     {
      "number": 1748,
@@ -55770,10 +55715,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1777,
-     "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"

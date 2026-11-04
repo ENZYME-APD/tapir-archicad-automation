@@ -1,9 +1,9 @@
 {
- "generatedAt": "2026-11-04 12:38 UTC",
+ "generatedAt": "2026-11-04 12:55 UTC",
  "counts": {
   "done": 568,
   "merged": 148,
-  "open": 13,
+  "open": 14,
   "not applicable": 1
  },
  "parameters": {
@@ -9328,6 +9328,21 @@
     "dryRun",
     "maxPlaceholders"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "DeleteAndReplaceAttributes",
+   "group": "Attribute Commands",
+   "version": "1.8.1",
+   "brief": "Deletes fills, line types, surfaces or building materials and replaces each by another attribute of the same type wherever it was used, like Delete and Replace in the Attribute Manager. Every reference is rewritten to the replacement, the way ReindexAttributes rewrites them: the fields of the elements in the floor plan and in every view and layout, the parameters of library part based elements, their memo data, the tool defaults, the Favorites, the other attributes that refer to it (composites, building materials, surfaces, profiles, MEP systems) and the graphic override rules. Elements on a hidden or locked layer are changed too: their layers are shown and unlocked for the change and put back afterwards (in the current window). If an element cannot be changed (it is locked itself, or not reserved in Teamwork), everything is put back and that attribute is not deleted. Elements from hotlinked modules cannot be changed and are listed. Indices typed into GDL scripts are not found, and the frame and panel classes of curtain wall Favorites and of the Curtain Wall tool default keep the deleted attribute (named in the warnings). If a tool default, Favorite, attribute or rule cannot be rewritten to the replacement, it keeps a copy of the deleted attribute with its name and a new attribute id, named in the warnings. dryRun lists every reference without changing anything. The whole call is one undo step. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 5,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
