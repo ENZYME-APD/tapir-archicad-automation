@@ -40,7 +40,8 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         protected override IReadOnlyList<string> JsonGroups { get; } = new[]
         {
             "Geometry and Positioning",
-            "Segment Settings"
+            "Segment Settings",
+            "Floor Plan and Section"
         };
 
         public RailingsComponent()
