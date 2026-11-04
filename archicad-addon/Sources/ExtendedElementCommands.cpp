@@ -8413,6 +8413,152 @@ static GS::Optional<GS::UniString> ApplyPlaneRoofPivot (API_Element& element, AP
     return {};
 }
 
+// The edge data of one edge of a single-plane roof's polygon: its trim, its side surface and
+// its edge type, with the ends of the edge they belonged to. Edge i runs from coords[i] to
+// coords[i + 1]; index 0 and the closing vertex of each contour (the pends) carry no edge.
+struct RoofPolygonEdge {
+    Int32                   index;
+    API_Coord               begin;
+    API_Coord               end;
+    API_EdgeTrim            trim;
+    API_OverriddenAttribute sideMaterial;
+    API_RoofEdgeTypeID      edgeType;
+};
+
+static GS::Array<Int32> GetPolygonEdgeIndices (const API_ElementMemo& memo)
+{
+    GS::Array<Int32> indices;
+    if (memo.coords == nullptr || memo.pends == nullptr) {
+        return indices;
+    }
+    const Int32 nSubPolys = (Int32) (BMGetHandleSize ((GSHandle) memo.pends) / sizeof (Int32)) - 1;
+    for (Int32 subPoly = 1; subPoly <= nSubPolys; ++subPoly) {
+        for (Int32 i = (*memo.pends)[subPoly - 1] + 1; i < (*memo.pends)[subPoly]; ++i) {
+            indices.Push (i);
+        }
+    }
+    return indices;
+}
+
+static GS::Array<RoofPolygonEdge> GetRoofPolygonEdges (const API_ElementMemo& memo)
+{
+    GS::Array<RoofPolygonEdge> edges;
+    const GSSize nTrims = memo.edgeTrims == nullptr ? 0 : BMGetHandleSize ((GSHandle) memo.edgeTrims) / sizeof (API_EdgeTrim);
+    const GSSize nSideMaterials = memo.sideMaterials == nullptr ? 0 : BMGetPtrSize ((GSPtr) memo.sideMaterials) / sizeof (API_OverriddenAttribute);
+    const GSSize nEdgeTypes = memo.roofEdgeTypes == nullptr ? 0 : BMGetPtrSize ((GSPtr) memo.roofEdgeTypes) / sizeof (API_RoofEdgeTypeID);
+    for (const Int32 i : GetPolygonEdgeIndices (memo)) {
+        RoofPolygonEdge edge = {};
+        edge.index = i;
+        edge.begin = (*memo.coords)[i];
+        edge.end = (*memo.coords)[i + 1];
+        edge.trim.sideType = APIEdgeTrim_Vertical;
+        if (i < nTrims) {
+            edge.trim = (*memo.edgeTrims)[i];
+        }
+        if (i < nSideMaterials) {
+            edge.sideMaterial = memo.sideMaterials[i];
+        }
+        edge.edgeType = i < nEdgeTypes ? memo.roofEdgeTypes[i] : APIRoofEdgeType_Undefined;
+        edges.Push (edge);
+    }
+    return edges;
+}
+
+// The old edge a new edge lies on: the middle of the new edge is on the old edge, and both
+// run in the same direction. This keeps the data of an edge whose ends did not move, of both
+// parts of a split edge, and of an edge that was lengthened or merged with its neighbour.
+static const RoofPolygonEdge* FindRoofPolygonEdge (const GS::Array<RoofPolygonEdge>& oldEdges, const API_Coord& begin, const API_Coord& end)
+{
+    const double eps = 0.0001;
+    const API_Coord mid = { (begin.x + end.x) / 2.0, (begin.y + end.y) / 2.0 };
+    const double dx = end.x - begin.x;
+    const double dy = end.y - begin.y;
+    const double length = std::sqrt (dx * dx + dy * dy);
+    if (length < eps) {
+        return nullptr;
+    }
+    for (const RoofPolygonEdge& old : oldEdges) {
+        const double ox = old.end.x - old.begin.x;
+        const double oy = old.end.y - old.begin.y;
+        const double oldLength = std::sqrt (ox * ox + oy * oy);
+        if (oldLength < eps) {
+            continue;
+        }
+        const double cross = (dx * oy - dy * ox) / (length * oldLength);
+        const double dot = dx * ox + dy * oy;
+        if (std::abs (cross) > 1e-6 || dot <= 0.0) {
+            continue;
+        }
+        const double t = ((mid.x - old.begin.x) * ox + (mid.y - old.begin.y) * oy) / (oldLength * oldLength);
+        const double distance = std::abs ((mid.x - old.begin.x) * oy - (mid.y - old.begin.y) * ox) / oldLength;
+        if (distance < eps && t * oldLength > -eps && t * oldLength < oldLength + eps) {
+            return &old;
+        }
+    }
+    return nullptr;
+}
+
+// ApplySlabPolygonChange leaves every edge Vertical with the roof's side surface, and the edge
+// types would be cleared, so the edges of the old polygon are given back to the new one.
+// Each new edge takes the data of the old edge it lies on (see FindRoofPolygonEdge). An edge
+// that lies on none keeps the data of the old edge with the same index when the contours have
+// the same point counts as before (the points moved), and otherwise the defaults above.
+static void RestoreRoofPolygonEdges (API_ElementMemo& memo, const GS::Array<RoofPolygonEdge>& oldEdges, bool sameContours, bool hadEdgeTypes)
+{
+    const Int32 nCoords = (Int32) (BMGetHandleSize ((GSHandle) memo.coords) / sizeof (API_Coord)) - 1;
+    if (memo.roofEdgeTypes != nullptr) {
+        BMKillPtr (reinterpret_cast<GSPtr*> (&memo.roofEdgeTypes));
+    }
+    if (hadEdgeTypes) {
+        memo.roofEdgeTypes = reinterpret_cast<API_RoofEdgeTypeID*> (BMAllocatePtr ((nCoords + 1) * sizeof (API_RoofEdgeTypeID), ALLOCATE_CLEAR, 0));
+    }
+
+    GS::HashTable<Int32, const RoofPolygonEdge*> oldByIndex;
+    for (const RoofPolygonEdge& old : oldEdges) {
+        oldByIndex.Add (old.index, &old);
+    }
+    for (const Int32 i : GetPolygonEdgeIndices (memo)) {
+        const RoofPolygonEdge* old = FindRoofPolygonEdge (oldEdges, (*memo.coords)[i], (*memo.coords)[i + 1]);
+        if (old == nullptr && sameContours && oldByIndex.ContainsKey (i)) {
+            old = oldByIndex[i];
+        }
+        if (old == nullptr) {
+            continue;
+        }
+        (*memo.edgeTrims)[i] = old->trim;
+        memo.sideMaterials[i] = old->sideMaterial;
+        if (memo.roofEdgeTypes != nullptr) {
+            memo.roofEdgeTypes[i] = old->edgeType;
+        }
+    }
+
+    // The closing vertex of each contour repeats the data of its first vertex, as AddPolyToMemo
+    // (ElementCreationCommands.cpp) writes it.
+    const Int32 nSubPolys = (Int32) (BMGetHandleSize ((GSHandle) memo.pends) / sizeof (Int32)) - 1;
+    for (Int32 subPoly = 1; subPoly <= nSubPolys; ++subPoly) {
+        const Int32 first = (*memo.pends)[subPoly - 1] + 1;
+        const Int32 closing = (*memo.pends)[subPoly];
+        (*memo.edgeTrims)[closing] = (*memo.edgeTrims)[first];
+        memo.sideMaterials[closing] = memo.sideMaterials[first];
+        if (memo.roofEdgeTypes != nullptr) {
+            memo.roofEdgeTypes[closing] = memo.roofEdgeTypes[first];
+        }
+    }
+}
+
+static GS::Array<Int32> GetContourPointCounts (const API_ElementMemo& memo)
+{
+    GS::Array<Int32> counts;
+    if (memo.pends == nullptr) {
+        return counts;
+    }
+    const Int32 nSubPolys = (Int32) (BMGetHandleSize ((GSHandle) memo.pends) / sizeof (Int32)) - 1;
+    for (Int32 subPoly = 1; subPoly <= nSubPolys; ++subPoly) {
+        counts.Push ((*memo.pends)[subPoly] - (*memo.pends)[subPoly - 1]);
+    }
+    return counts;
+}
+
 ModifyRoofsCommand::ModifyRoofsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -8629,11 +8775,15 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     // point count changes, so the outline is edited in place as ModifySlabs does it:
                     // the other fields first with ACAPI_Element_Change, then the polygon with
                     // ACAPI_Element_ChangeMemo.
+                    const GS::Array<RoofPolygonEdge> oldEdges = GetRoofPolygonEdges (memo);
+                    const GS::Array<Int32> oldContours = GetContourPointCounts (memo);
+                    const bool hadEdgeTypes = memo.roofEdgeTypes != nullptr;
                     auto error = ApplySlabPolygonChange (memo, element.roof.shellBase.sidMat, polygonOutline, polygonArcs, holes);
                     if (error.HasValue ()) {
                         results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                         continue;
                     }
+                    RestoreRoofPolygonEdges (memo, oldEdges, GetContourPointCounts (memo) == oldContours, hadEdgeTypes);
                     if (changed) {
                         err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
                         if (err != NoError) {
@@ -8642,8 +8792,9 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                         }
                     }
                     // Passed as the DevKit's Element_Modify_Polygon example passes a roof's edited
-                    // polygon: only the polygon handles, with the roof's memo mask. The full memo
-                    // of ACAPI_Element_GetMemo makes ACAPI_Element_ChangeMemo answer APIERR_BADPARS.
+                    // polygon: only the polygon handles and the edge data, with the roof's memo
+                    // mask. The full memo of ACAPI_Element_GetMemo makes ACAPI_Element_ChangeMemo
+                    // answer APIERR_BADPARS. Edge data sent as nullptr would clear the edges.
                     API_ElementMemo polygonMemo = {};
                     polygonMemo.coords = memo.coords;
                     polygonMemo.pends = memo.pends;
@@ -8651,6 +8802,8 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     polygonMemo.vertexIDs = memo.vertexIDs;
                     polygonMemo.edgeIDs = memo.edgeIDs;
                     polygonMemo.edgeTrims = memo.edgeTrims;
+                    polygonMemo.sideMaterials = memo.sideMaterials;
+                    polygonMemo.roofEdgeTypes = memo.roofEdgeTypes;
                     polygonMemo.contourIDs = memo.contourIDs;
                     err = ACAPI_Element_ChangeMemo (element.header.guid, APIMemoMask_Polygon | APIMemoMask_EdgeTrims | APIMemoMask_SideMaterials | APIMemoMask_RoofEdgeTypes, &polygonMemo);
                     results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify roof geometry."));
