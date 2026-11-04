@@ -44,7 +44,7 @@ for name in sys.argv[1:]:
         raw = b'timeout'
     except subprocess.CalledProcessError as error:
         raw = error.output + b'\nexit code ' + str (error.returncode).encode ()
-    output = '\n'.join (raw.decode ('utf-8').split ('\r\n'))
+    output = '\n'.join (raw.decode ('utf-8', errors = 'replace').split ('\r\n'))
     output = Mask (output)
     os.makedirs (os.path.dirname (target), exist_ok = True)
     Path (target).write_text (output)

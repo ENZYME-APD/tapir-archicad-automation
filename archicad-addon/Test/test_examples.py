@@ -8,9 +8,11 @@ with the recorded one.
 
 A script without a recorded output passes and its output is recorded; a failing one gets its
 output written over the recorded one, so `git diff` shows what changed. Test/Scripts/manual/
-is not run (those scripts need a person). The project is reopened before every script. The
-script that quits Archicad (quit_archicad.py / QuitArchicad.py) runs last, only once; the ones
-that start another Archicad are not run.
+is not run (those scripts need a person), nor are the examples in EXAMPLES_NOT_SMOKE_TESTED
+(they wait for the user, switch projects, print, need Teamwork, ...). The project is reopened
+before every script. The script that quits Archicad (quit_archicad.py / QuitArchicad.py) runs
+last, only once; the ones that start another Archicad are not run. A script that fails, times
+out or prints something odd does not stop the run: its output is compared like any other.
 
 Usage: python test_examples.py [<name> ...]   (only the scripts with these file names)"""
 import os, subprocess, sys, time
@@ -22,6 +24,29 @@ testFolder = os.path.dirname (os.path.abspath (__file__))
 scriptsFolder = os.path.join (testFolder, 'Scripts')
 examplesFolder = os.path.join (testFolder, '..', 'Examples')
 expectedOutputsFolder = os.path.join (testFolder, 'ExpectedOutputs')
+
+# Examples (by file stem) the smoke run leaves out: they cannot run unattended against
+# TestProject.pla. QuitArchicad is not here: it runs last, as the quit script always has.
+EXAMPLES_NOT_SMOKE_TESTED = {
+    # Wait for the user to click, draw or answer in Archicad.
+    'GetPointFromUser', 'GetLineFromUser', 'GetPolygonFromUser', 'GetElementFromUser',
+    'ShowAlert', 'ShowScriptUI', 'GetScriptUIResult',
+    # Open, close, create or write the project, or switch to another one.
+    'OpenProject', 'CloseProject', 'NewProject', 'SaveProject', 'SaveProjectAsArchive',
+    # Print, publish or render: send jobs to devices or run for minutes.
+    'PrintView', 'PublishPublisherSet', 'PhotoRender',
+    # Run menu commands that may show a dialog.
+    'ConsolidateLines', 'ConsolidateFills',
+    # Need a Teamwork project or a BIMcloud server; the test project is a solo project.
+    'TeamworkSend', 'TeamworkReceive',
+    'ReserveElements', 'ReleaseElements', 'GrantElements',
+    'ReserveLockableObjectSet', 'ReleaseLockableObjectSet',
+    'ReserveHotlinkCacheManagement', 'ReleaseHotlinkCacheManagement',
+    'ReserveProjectData', 'ReleaseProjectData', 'RequestProjectData', 'GrantProjectData',
+    'UploadLibrariesToBIMcloud', 'RemoveLibrariesFromBIMcloud',
+    # Opens the GDL editor, a window of its own.
+    'OpenLibraryPartInEditor',
+}
 
 def IsQuitScript (fileName):
     return fileName.lower ().replace ('_', '').startswith ('quitarchicad')
@@ -54,8 +79,9 @@ def ListScripts (folderPath, expectedOutputsFolderPath):
             if fileName.lower ().endswith ('.py') and fileName != 'aclib.py']
 
 def GetTests (onlyNames):
-    tests = ListScripts (scriptsFolder, expectedOutputsFolder) + \
-            ListScripts (examplesFolder, os.path.join (expectedOutputsFolder, 'Examples'))
+    examples = [test for test in ListScripts (examplesFolder, os.path.join (expectedOutputsFolder, 'Examples'))
+                if os.path.splitext (os.path.basename (test[0]))[0] not in EXAMPLES_NOT_SMOKE_TESTED]
+    tests = ListScripts (scriptsFolder, expectedOutputsFolder) + examples
     if onlyNames:
         tests = [test for test in tests if os.path.basename (test[0]) in onlyNames]
     result = []
@@ -88,7 +114,7 @@ def ExecuteScript (scriptFilePath):
         return error.output + b'\nexit code ' + str (error.returncode).encode ()
 
 def CompareOutput (binaryOutput, expectedOutputFilePath):
-    output = '\n'.join (binaryOutput.decode ('utf-8').split ('\r\n'))
+    output = '\n'.join (binaryOutput.decode ('utf-8', errors='replace').split ('\r\n'))
     output = output_masks.Mask (output)
 
     isPassed = True
