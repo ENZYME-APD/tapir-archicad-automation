@@ -5,8 +5,8 @@
 The icons listed below, in
 [grasshopper-plugin/TapirGrasshopperPlugin/Resources/](grasshopper-plugin/TapirGrasshopperPlugin/Resources/),
 are Archicad user interface icons taken from Graphisoft's Archicad 29 help
-(help.graphisoft.com): the toolbox, the attribute managers, palettes and
-organizers. Where the component has an action, a small Tapir badge is added in
+(help.graphisoft.com): the toolbox, toolbars and menus, the attribute managers,
+palettes and organizers. Where the component has an action, a small Tapir badge is added in
 the corner (create, modify, delete, details); the others show the icon alone.
 
 These icons are © Graphisoft SE, and Tapir uses them with Graphisoft's
@@ -15,7 +15,7 @@ reuse them outside Tapir without Graphisoft's permission. They have no SVG sourc
 in `IconSource/`.
 
 `AddLibraries`, `AllClassifications`, `AttributesByType`, `BeamDetails`,
-`ClassificationById`, `ColumnDetails`, `CreateArcs`,
+`ClassificationById`, `ColumnDetails`, `ConvertAnalyticalLinksToNonShortest`, `CreateAnalyticalLinks`, `CreateAnalyticalLoads`, `CreateAnalyticalSupports`, `CreateArcs`,
 `CreateAssociativeDimensions`, `CreateAssociativeDimensionsOnSection`,
 `CreateBeams`, `CreateBuildingMaterials`, `CreateCircles`,
 `CreateClassificationItems`, `CreateClassificationSystems`, `CreateColumns`,
@@ -32,24 +32,24 @@ in `IconSource/`.
 `CreateWorksheets`, `CreateZoneCategories`, `CreateZones`, `DeleteAttributes`,
 `DeleteClassificationItems`, `DeleteClassificationSystems`,
 `DeleteDesignOptionCombinations`, `DeleteFavorites`, `DeleteProjectInfoFields`,
-`ExportIssuesToBCF`, `FavoritesByType`, `GetBuildingMaterials`,
+`ExportIssuesToBCF`, `FavoritesByType`, `Get3DDocumentSettings`, `Get3DFilterAndCutSettings`, `GetAnalyticalLinks`, `GetAnalyticalLoads`, `GetAnalyticalReleases`, `GetAnalyticalSupports`, `GetBuildingMaterials`,
 `GetClassificationsOfElements`, `GetComposites`,
 `GetCurrentRevisionChangesOfLayouts`, `GetDesignOptionCombinations`, `GetFills`,
-`GetLayers`, `GetLayoutSettings`, `GetLibraries`, `GetLines`, `GetMEPSystems`,
-`GetPenTables`, `GetProfiles`, `GetRevisionChanges`,
+`GetGridSettings`, `GetLayers`, `GetLayoutSettings`, `GetLibraries`, `GetLines`, `GetMEPSystems`,
+`GetPenTables`, `GetProfiles`, `GetPublisherSets`, `GetRevisionChanges`,
 `GetRevisionChangesOfElements`, `GetSolidElementLinks`, `GetSurfaces`,
 `GetSuspendGroupsMode`, `GetZoneCategories`, `ImportIssuesFromBCF`,
 `LabelDetails`, `LabelElements`, `LayerCombinations`, `Layers`, `LockElements`,
 `ModifyBeams`, `ModifyColumns`, `ModifyDoors`, `ModifyLabels`, `ModifyLamps`,
 `ModifyMeshes`, `ModifyMorphs`, `ModifyObjects`, `ModifyRoofs`, `ModifySlabs`,
 `ModifyTexts`, `ModifyWalls`, `ModifyWindows`, `MoveElements`,
-`PolylineDetails`, `ProjectInfo`, `PublishPublisherSet`, `PublisherSetNames`,
+`PlaceMEPTakeOffs`, `PolylineDetails`, `ProjectInfo`, `PublishPublisherSet`, `PublisherSetNames`,
 `ReleaseElements`, `RemoveSolidElementLinks`, `RenameDesignOptionCombinations`,
 `RenameFavorites`, `ReserveElements`, `RoofDetails`, `RotateElements`,
-`SetActiveDesignOptionsInCombinations`, `SetClassifications`,
-`SetLayerCombinations`, `SetLayers`, `SetLayoutSettings`, `SetLibraries`,
-`SetSuspendGroupsMode`, `SetTextDetails`, `SetWallDetails`, `SlabDetails`,
-`TeamworkReceive`, `TeamworkSend`, `TextDetails`, `UnlockElements`,
+`Set3DDocumentSettings`, `Set3DFilterAndCutSettings`, `SetActiveDesignOptionsInCombinations`, `SetAnalyticalReleases`, `SetClassifications`,
+`SetCurrent3DStyle`, `SetGridSettings`, `SetLayerCombinations`, `SetLayers`, `SetLayoutSettings`, `SetLibraries`,
+`SetPens`, `SetSuspendGroupsMode`, `SetTextDetails`, `SetWallDetails`, `SlabDetails`,
+`TeamworkReceive`, `TeamworkSend`, `TextDetails`, `TransferMEPSettings`, `UnlockElements`,
 `UpdateClassificationItems`, `UpdateClassificationSystems`, `WallDetails`,
 `ZoneDetails`
 (all `.png`).
