@@ -81,7 +81,6 @@
             "ACAPI_ListData_Search": "deprecated listing API of Archicad 25/26",
             "ACAPI_Teamwork_SendReleaseCommentMail": "needs the ids of a Teamwork reserve interface the add-on registered for its own dialog (add-on infrastructure)",
             "APIIo_AreCuttingPlanesVisibleID": "leftover command id; Get3DCutawayStatus reads the flag through ACAPI::CuttingPlane::AreCuttingPlanesVisible (Archicad 28+) and the C API (Archicad 25-27)",
-            "ACAPI::ElementBase::GetElemId": "Tapir gets element ids from its input, so it never holds an element object without its id",
             "ACAPI_Element_SetEmptyHoleUnId": "takes the signature of a library part subtype the add-on registers itself; Tapir registers none",
             "ACAPI_LibraryPart_GetBuiltInLibpartUnId": "returns the id of a library part compiled into the calling add-on as a resource; Tapir has none",
             "ACAPI_Database_GetDBUnIdFromGuid": "converts to the old userId/databaseId pair, which no JSON command or official command takes",
