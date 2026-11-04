@@ -119,9 +119,8 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
             da.SetDataList(4, errorMessages);
         }
 
-        // Shares the icon of GetIFCTypeOfElements until it gets its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetIFCTypeOfElements;
+            Properties.Resources.GetIFCSpatialStructure;
 
         public override Guid ComponentGuid =>
             new Guid("2b5b09aa-c5da-4293-9079-d7aedd6f5001");

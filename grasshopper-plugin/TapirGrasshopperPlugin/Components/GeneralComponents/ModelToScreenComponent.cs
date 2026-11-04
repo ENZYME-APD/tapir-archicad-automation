@@ -110,9 +110,8 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
                 errorMessages);
         }
 
-        // Shares the icon of GetPointFromUser until it gets its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetPointFromUser;
+            Properties.Resources.ModelToScreen;
 
         public override Guid ComponentGuid =>
             new Guid("19bfd49d-7855-4cdf-a25b-eaafab97008a");

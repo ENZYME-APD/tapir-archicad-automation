@@ -270,9 +270,8 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             da.SetDataList(13, errors);
         }
 
-        // Shares the icon of MoveAttributesAndFolders.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.MoveAttributesAndFolders;
+            Properties.Resources.ReindexAttributes;
 
         public override Guid ComponentGuid =>
             new Guid("431f0b14-681d-40a2-8775-035d6c31fc54");

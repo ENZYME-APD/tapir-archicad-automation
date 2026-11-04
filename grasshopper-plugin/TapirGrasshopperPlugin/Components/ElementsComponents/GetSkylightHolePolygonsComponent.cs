@@ -99,9 +99,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 errors);
         }
 
-        // Shares the icon of GetCutPolygonsOfElements until it gets one of its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetCutPolygonsOfElements;
+            Properties.Resources.GetSkylightHolePolygons;
 
         public override Guid ComponentGuid =>
             new Guid("7104029c-266d-4990-becd-dfac714c79db");

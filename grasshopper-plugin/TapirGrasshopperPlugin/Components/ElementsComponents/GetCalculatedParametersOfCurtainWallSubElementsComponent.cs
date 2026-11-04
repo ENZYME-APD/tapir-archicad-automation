@@ -132,9 +132,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 : value.ToString(Formatting.None);
         }
 
-        // Shares the icon of ElementGDLParameters until it gets one of its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.ElemGDLParameters;
+            Properties.Resources.GetCalculatedParametersOfCurtainWallSubElements;
 
         public override Guid ComponentGuid =>
             new Guid("29002d65-df09-49e2-bd83-540dfe57a4fc");

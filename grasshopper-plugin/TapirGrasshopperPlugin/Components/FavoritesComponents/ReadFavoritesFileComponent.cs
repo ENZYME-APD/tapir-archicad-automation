@@ -94,9 +94,8 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
             da.SetDataTree(2, folders);
         }
 
-        // Shares the icon of ImportFavorites.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.ImportFavorites;
+            Properties.Resources.ReadFavoritesFile;
 
         public override Guid ComponentGuid =>
             new Guid("69369cb9-cedc-44f6-8bbc-ed79d63eb0fe");

@@ -50,9 +50,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;
 
-        // Shares the icon of UpdateZones until it gets one of its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.UpdateZones;
+            Properties.Resources.ModifyZones;
 
         public override Guid ComponentGuid =>
             new Guid("4ffec0da-a093-4dcb-910b-01737d160522");

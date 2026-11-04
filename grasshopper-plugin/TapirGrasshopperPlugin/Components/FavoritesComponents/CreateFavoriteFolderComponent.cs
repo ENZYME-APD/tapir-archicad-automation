@@ -74,9 +74,8 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
                 FavoriteFolderOutputHelp.PathOf(response["folder"]));
         }
 
-        // Shares the icon of GetFavoriteFolders.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetFavoriteFolders;
+            Properties.Resources.CreateFavoriteFolder;
 
         public override Guid ComponentGuid =>
             new Guid("106553c4-a632-42bc-9457-7a47f422151d");

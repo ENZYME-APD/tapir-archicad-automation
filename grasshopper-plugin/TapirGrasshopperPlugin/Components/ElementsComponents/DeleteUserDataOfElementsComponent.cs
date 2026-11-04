@@ -50,9 +50,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 da);
         }
 
-        // Shares the icon of DeleteUserDataOfAttributes until it gets one of its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.DeleteUserDataOfAttributes;
+            Properties.Resources.DeleteUserDataOfElements;
 
         public override Guid ComponentGuid =>
             new Guid("254c7963-9dcb-484c-b290-44147e0bcefc");
