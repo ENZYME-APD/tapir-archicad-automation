@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-04 13:05 UTC",
+ "generatedAt": "2026-11-04 14:12 UTC",
  "versions": [
   25,
   26,
@@ -4814,6 +4814,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1809,
+     "title": "ReserveElements/ReleaseElements: report GUIDs that are not elements instead of success"
+    },
+    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
@@ -4909,7 +4913,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1809,
+     "title": "ReserveElements/ReleaseElements: report GUIDs that are not elements instead of success"
+    }
+   ],
    "issues": []
   },
   {
@@ -4932,7 +4941,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1809,
+     "title": "ReserveElements/ReleaseElements: report GUIDs that are not elements instead of success"
+    }
+   ],
    "issues": []
   },
   {
@@ -6675,7 +6689,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1840,
+     "title": "SetElementNotificationClient with modification notifications blocks Archicad for a long time on large projects"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_CalcBounds",
@@ -7210,7 +7229,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1840,
+     "title": "SetElementNotificationClient with modification notifications blocks Archicad for a long time on large projects"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_DrawElement",
@@ -7390,6 +7414,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1839,
+     "title": "GetAllElements and GetElementsByType Object take minutes on large projects (sub-element object check)"
+    },
     {
      "number": 1580,
      "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
@@ -7739,6 +7767,10 @@
    ],
    "issues": [
     {
+     "number": 1840,
+     "title": "SetElementNotificationClient with modification notifications blocks Archicad for a long time on large projects"
+    },
+    {
      "number": 1813,
      "title": "Notification clients: selection, window and project events"
     }
@@ -7956,6 +7988,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1839,
+     "title": "GetAllElements and GetElementsByType Object take minutes on large projects (sub-element object check)"
+    },
     {
      "number": 1808,
      "title": "ReserveElements reports success for GUIDs that are not elements, and nothing is reserved"
@@ -10831,7 +10867,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1839,
+     "title": "GetAllElements and GetElementsByType Object take minutes on large projects (sub-element object check)"
+    }
+   ]
   },
   {
    "id": "ACAPI_HierarchicalEditing_IsInBeamEditMode",
@@ -20594,6 +20635,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1809,
+     "title": "ReserveElements/ReleaseElements: report GUIDs that are not elements instead of success"
+    },
     {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
