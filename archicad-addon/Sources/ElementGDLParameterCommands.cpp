@@ -626,18 +626,24 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
 
         const Int32 libInd = GetLibIndOfElement (apiElement);
 
-        double a;
-        double b;
-        Int32 addParNum;
-        API_AddParType** addPars;
-        ACAPI_LibraryPart_GetParams (libInd, &a, &b, &addParNum, &addPars);
+        // The library part's own parameter list, for the display names. Its handle is the
+        // caller's to dispose of (ACAPI_LibraryPart_GetParams remarks in ACAPinc.h), and it is
+        // left unset when the call fails (e.g. no library part, libInd -1), so it is checked.
+        double a = 0.0;
+        double b = 0.0;
+        Int32 addParNum = 0;
+        API_AddParType** addPars = nullptr;
+        if (ACAPI_LibraryPart_GetParams (libInd, &a, &b, &addParNum, &addPars) != NoError) {
+            addPars = nullptr;
+        }
+        const GSSize nLibPartParams = addPars != nullptr ? BMGetHandleSize ((GSHandle) addPars) / sizeof (API_AddParType) : 0;
 
         const GSSize nParams = BMGetHandleSize ((GSHandle) getParams.params) / sizeof (API_AddParType);
         GS::ObjectState gdlParameters;
         const auto& parameterListAdder = gdlParameters.AddList<GS::ObjectState> ("parameters");
         for (GSIndex ii = 0; ii < nParams; ++ii) {
             const API_AddParType& actParam = (*getParams.params)[ii];
-            const API_AddParType& actLibPartParam = (*addPars)[ii];
+            const API_AddParType& actLibPartParam = ii < nLibPartParams ? (*addPars)[ii] : actParam;
 
             if (actParam.typeID == APIParT_Separator) {
                 continue;
@@ -715,6 +721,7 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
         // closed its own); the API pairs every ACAPI_LibraryPart_OpenParameters with a close.
         ACAPI_LibraryPart_CloseParameters ();
         ACAPI_DisposeAddParHdl (&getParams.params);
+        ACAPI_DisposeAddParHdl (&addPars);
     }
 
     return response;
@@ -2022,7 +2029,8 @@ GS::Optional<GS::UniString> SetMarkerLibraryPartOfElementsCommand::GetRawRespons
 static GSErrCode SearchMarkerLibraryPart (const GS::UniString& libName, API_LibPart& libPart)
 {
     libPart = {};
-    GS::ucscpy (libPart.docu_UName, libName.ToUStr ());
+    const USize maxNameLength = sizeof (libPart.docu_UName) / sizeof (libPart.docu_UName[0]) - 1;
+    GS::ucscpy (libPart.docu_UName, libName.ToUStr (0, GS::Min (libName.GetLength (), maxNameLength)).Get ());
     GSErrCode err = ACAPI_LibraryPart_Search (&libPart, false, true);
     delete libPart.location;
     libPart.location = nullptr;

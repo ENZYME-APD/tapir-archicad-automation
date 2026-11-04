@@ -73,6 +73,8 @@ static GS::Optional<GS::ObjectState> GetAttributeIdFromIndex (API_AttrTypeID att
     if (ACAPI_Attribute_Get (&attribute) != NoError) {
         return GS::NoValue;
     }
+    // A surface comes with texture.fileLoc allocated (ACAPI_Attribute_Get remarks, Attribute_Test.cpp).
+    DisposeAttribute (attribute);
     return CreateAttributeIdObjectState (attribute.header.guid);
 }
 
@@ -84,6 +86,7 @@ static bool GetAttributeIndexFromAttributeId (const GS::ObjectState& attributeId
     if (ACAPI_Attribute_Get (&attribute) != NoError) {
         return false;
     }
+    DisposeAttribute (attribute);
 
     attributeIndex = attribute.header.index;
     return true;
@@ -3271,6 +3274,7 @@ GS::ObjectState GetSurfacesCommand::Execute (const GS::ObjectState& parameters, 
         }
 
         surfaces (surface);
+        DisposeAttribute (attr);
     }
 
     return response;
@@ -4294,6 +4298,8 @@ GS::ObjectState CreateAttributesCommandBase::Execute (const GS::ObjectState& par
         }
 
         bool doesExist = (ACAPI_Attribute_Get (&attr) == NoError);
+        // A surface read by ACAPI_Attribute_Get holds an allocated texture.fileLoc (see its remarks).
+        const GS::OnExit disposeAttr ([&attr] () { DisposeAttribute (attr); });
         if (doesExist && !overwriteExisting) {
             attributeIds (CreateErrorResponse (APIERR_ATTREXIST, "Already exists."));
             continue;
@@ -4924,6 +4930,8 @@ GS::Optional<GS::ObjectState> CreateLinesCommand::SetTypeSpecificParameters (con
             attribute.linetype.nItems = (Int32) nItems;
 
             if (nItems > 0) {
+                // The handle seeded from the attribute being overwritten is replaced, so it is freed first.
+                BMKillHandle ((GSHandle*) &attributeDef.ltype_dashItems);
                 attributeDef.ltype_dashItems = (API_DashItems**) BMAllocateHandle (nItems * sizeof (API_DashItems), ALLOCATE_CLEAR, 0);
                 for (UInt32 i = 0; i < nItems; ++i) {
                     API_DashItems& item = (*attributeDef.ltype_dashItems)[i];
@@ -4944,6 +4952,8 @@ GS::Optional<GS::ObjectState> CreateLinesCommand::SetTypeSpecificParameters (con
             attribute.linetype.nItems = (Int32) nItems;
 
             if (nItems > 0) {
+                // The handle seeded from the attribute being overwritten is replaced, so it is freed first.
+                BMKillHandle ((GSHandle*) &attributeDef.ltype_lineItems);
                 attributeDef.ltype_lineItems = (API_LineItems**) BMAllocateHandle (nItems * sizeof (API_LineItems), ALLOCATE_CLEAR, 0);
                 for (UInt32 i = 0; i < nItems; ++i) {
                     API_LineItems& item = (*attributeDef.ltype_lineItems)[i];
@@ -5350,6 +5360,8 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
             fill.filltype.linNumb = (Int32) nItems;
 
             if (nItems > 0) {
+                // The handle seeded from the attribute being overwritten is replaced, so it is freed first.
+                BMKillHandle ((GSHandle*) &fillDefs.fill_lineItems);
                 fillDefs.fill_lineItems = (API_FillLine**) BMAllocateHandle (nItems * sizeof (API_FillLine), ALLOCATE_CLEAR, 0);
 
                 UInt32 totalLengths = 0;
@@ -5359,6 +5371,7 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
                     totalLengths += lineLengths.GetSize ();
                 }
                 if (totalLengths > 0) {
+                    BMKillHandle ((GSHandle*) &fillDefs.fill_lineLength);
                     fillDefs.fill_lineLength = (double**) BMAllocateHandle (totalLengths * sizeof (double), ALLOCATE_CLEAR, 0);
                 }
 
@@ -5395,6 +5408,8 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
             fill.filltype.linNumb = (Int32) nItems;
 
             if (nItems > 0) {
+                // The handle seeded from the attribute being overwritten is replaced, so it is freed first.
+                BMKillHandle ((GSHandle*) &fillDefs.sfill_Items.sfill_Lines);
                 fillDefs.sfill_Items.sfill_Lines = (API_SFill_Line**) BMAllocateHandle (nItems * sizeof (API_SFill_Line), ALLOCATE_CLEAR, 0);
                 for (UInt32 i = 0; i < nItems; ++i) {
                     API_SFill_Line& item = (*fillDefs.sfill_Items.sfill_Lines)[i];
@@ -5414,6 +5429,8 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
             fill.filltype.arcNumb = (Int32) nItems;
 
             if (nItems > 0) {
+                // The handle seeded from the attribute being overwritten is replaced, so it is freed first.
+                BMKillHandle ((GSHandle*) &fillDefs.sfill_Items.sfill_Arcs);
                 fillDefs.sfill_Items.sfill_Arcs = (API_SFill_Arc**) BMAllocateHandle (nItems * sizeof (API_SFill_Arc), ALLOCATE_CLEAR, 0);
                 for (UInt32 i = 0; i < nItems; ++i) {
                     API_SFill_Arc& item = (*fillDefs.sfill_Items.sfill_Arcs)[i];
@@ -5434,6 +5451,8 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
             fill.filltype.hotNumb = (Int32) nItems;
 
             if (nItems > 0) {
+                // The handle seeded from the attribute being overwritten is replaced, so it is freed first.
+                BMKillHandle ((GSHandle*) &fillDefs.sfill_Items.sfill_HotSpots);
                 fillDefs.sfill_Items.sfill_HotSpots = (API_Coord**) BMAllocateHandle (nItems * sizeof (API_Coord), ALLOCATE_CLEAR, 0);
                 for (UInt32 i = 0; i < nItems; ++i) {
                     (*fillDefs.sfill_Items.sfill_HotSpots)[i] = Get2DCoordinateFromObjectState (symbolHotspots[i]);
