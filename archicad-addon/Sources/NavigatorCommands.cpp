@@ -683,6 +683,8 @@ GS::ObjectState GetModelViewOptionsCommand::Execute (const GS::ObjectState& /*pa
 
         if (ACAPI_Navigator_ModelViewOptions_Get (&modelViewOption) == NoError) {
             modelViewOptions (GS::ObjectState ("name", name));
+            // The Get allocates the GDL options (as the DevKit's Environment_Control example frees them).
+            ACAPI_FreeGDLModelViewOptionsPtr (&modelViewOption.modelViewOpt.gdlOptions);
         }
     }
 #else
@@ -698,6 +700,7 @@ GS::ObjectState GetModelViewOptionsCommand::Execute (const GS::ObjectState& /*pa
 
         if (ACAPI_Attribute_Get (&attr) == NoError) {
             modelViewOptions (GS::ObjectState ("name", name));
+            ACAPI_FreeGDLModelViewOptionsPtr (&attr.modelViewOpt.modelViewOpt.gdlOptions);
         }
     }
 #endif
@@ -830,7 +833,11 @@ GS::ObjectState FindModelViewOptionCommand::Execute (const GS::ObjectState& para
             API_ModelViewOptionsType modelViewOption = {};
             modelViewOption.head.index = i;
 
-            if (ACAPI_Navigator_ModelViewOptions_Get (&modelViewOption) == NoError && modelViewOption.head.guid == guidToSearch) {
+            if (ACAPI_Navigator_ModelViewOptions_Get (&modelViewOption) != NoError) {
+                continue;
+            }
+            ACAPI_FreeGDLModelViewOptionsPtr (&modelViewOption.modelViewOpt.gdlOptions);
+            if (modelViewOption.head.guid == guidToSearch) {
                 searchHead.index = modelViewOption.head.index;
                 err = NoError;
                 break;
@@ -855,6 +862,7 @@ GS::ObjectState FindModelViewOptionCommand::Execute (const GS::ObjectState& para
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to read the model view option combination found.");
     }
+    ACAPI_FreeGDLModelViewOptionsPtr (&modelViewOption.modelViewOpt.gdlOptions);
     if (guidToSearch != APINULLGuid && modelViewOption.head.guid != guidToSearch) {
         return CreateErrorResponse (APIERR_BADID, "No model view option combination has the given modelViewOptionId.");
     }
@@ -1039,6 +1047,9 @@ void DisposeViewOptions (API_ViewOptions& viewOptions)
 }
 
 }
+
+// Defined at CreateViewsInViewMap below; frees what ACAPI_Navigator_GetNavigatorView allocates.
+static void FreeNavigatorView (API_NavigatorView& navigatorView);
 
 GetViewOptionsCommand::GetViewOptionsCommand () :
     CommandBase (CommonSchema::Used)
@@ -1254,6 +1265,7 @@ GS::ObjectState GetViewSettingsCommand::Execute (const GS::ObjectState& paramete
             viewSettings (CreateErrorResponse (err, "Failed to get view settings from the navigator item, probably it's not a view"));
             continue;
         }
+        const GS::OnExit freeView ([&navigatorView] () { FreeNavigatorView (navigatorView); });
 
         GS::UniString graphicOverrideCombinationName (navigatorView.overrideCombination);
         GS::ObjectState viewSetting (
@@ -1431,6 +1443,7 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
             executionResults (CreateFailedExecutionResult (err, "Failed to get navigator view settings from the navigator item"));
             continue;
         }
+        const GS::OnExit freeView ([&navigatorView] () { FreeNavigatorView (navigatorView); });
 
         SetCharProperty (viewSettingsOS, "modelViewOptions", navigatorView.modelViewOptName);
         SetCharProperty (viewSettingsOS, "layerCombination", navigatorView.layerCombination);
@@ -1509,6 +1522,7 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
                 executionResults (CreateFailedExecutionResult (err, "The view settings were written, but the view could not be read back to check the dimensionStyle."));
                 continue;
             }
+            const GS::OnExit freeChangedView ([&changedNavigatorView] () { FreeNavigatorView (changedNavigatorView); });
 
             const GS::UniString appliedDimensionStyle (changedNavigatorView.dimName);
             if (appliedDimensionStyle.Compare (GS::UniString (navigatorView.dimName), CaseInsensitive) != GS::UniString::Equal) {
@@ -2584,6 +2598,7 @@ GS::ObjectState SetViewRotationCommand::Execute (const GS::ObjectState& paramete
             executionResults (CreateFailedExecutionResult (err, "Failed to get navigator view"));
             continue;
         }
+        const GS::OnExit freeView ([&navigatorView] () { FreeNavigatorView (navigatorView); });
 
         // Obtain the axis-aligned model extent for this database without
         // modifying the database's live zoom state.
