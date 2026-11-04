@@ -1,5 +1,6 @@
 #include "PropertyCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "NotificationCommands.hpp"
 #include "HashTable.hpp"
 #include <tuple>
 #include <cmath>
@@ -1229,6 +1230,17 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
         results.PushNew ();
     }
 
+    // A property value change may leave the element's modification stamp as it was, so the
+    // elements with a value set are marked changed for the notification clients.
+    ElementChangeReporter changeReporter;
+    for (const auto& kv : propertiesForElements) {
+#ifdef ServerMainVers_2800
+        changeReporter.Add (kv.key);
+#else
+        changeReporter.Add (*kv.key);
+#endif
+    }
+
     ACAPI_CallUndoableCommand ("SetPropertyValuesOfElementsCommand", [&]() -> GSErrCode {
         for (const auto& kv : propertiesForElements) {
 #ifdef ServerMainVers_2800
@@ -1281,12 +1293,15 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
                     continue;
                 }
 
+                changeReporter.MarkChanged (elemGuid);
                 result = CreateSuccessfulExecutionResult ();
             }
         }
 
         return NoError;
     });
+
+    changeReporter.Report ();
 
     for (const GS::ObjectState& result : results) {
         executionResults (result);
