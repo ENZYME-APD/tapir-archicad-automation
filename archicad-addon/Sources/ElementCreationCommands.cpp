@@ -1584,6 +1584,9 @@ GS::ObjectState ModifyZonesCommand::Execute (const GS::ObjectState& parameters, 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (zonesWithDetails);
+
     ACAPI_CallUndoableCommand ("ModifyZones", [&] () -> GSErrCode {
         for (const GS::ObjectState& item : zonesWithDetails) {
             const GS::ObjectState* elementId = item.Get ("elementId");
@@ -1619,10 +1622,13 @@ GS::ObjectState ModifyZonesCommand::Execute (const GS::ObjectState& parameters, 
                 continue;
             }
 
+            changeReporter.MarkChanged (element.header.guid);
             executionResults (CreateSuccessfulExecutionResult ());
         }
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }
@@ -2958,6 +2964,9 @@ static GS::ObjectState ExecuteModifyObjectOrLamp (const GS::ObjectState& paramet
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (itemsWithDetails);
+
     ACAPI_CallUndoableCommand (undoableCommandName, [&] () -> GSErrCode {
         for (const GS::ObjectState& item : itemsWithDetails) {
             const GS::ObjectState* elementId = item.Get ("elementId");
@@ -2993,11 +3002,16 @@ static GS::ObjectState ExecuteModifyObjectOrLamp (const GS::ObjectState& paramet
             }
 
             err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AddPars, true);
+            if (err == NoError) {
+                changeReporter.MarkChanged (element.header.guid);
+            }
             executionResults (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify element."));
         }
 
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }
@@ -3143,6 +3157,9 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
     const Stories stories = GetStories ();
 
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (itemsWithDetails);
+
     ACAPI_CallUndoableCommand ("ModifyTexts", [&] () -> GSErrCode {
         // Same autotext flag handling as CreateTexts (CreateElementsCommandBase::Execute): with the
         // flag on, a content starting with a Project Info autotext key followed by a line break
@@ -3259,10 +3276,15 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
             if (err == NoError && contentChanged) {
                 err = TextLabelDetails::KeepTextFactors (element.header.guid, widthFactor, charSpaceFactor);
             }
+            if (err == NoError) {
+                changeReporter.MarkChanged (element.header.guid);
+            }
             executionResults (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the Text."));
         }
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }
@@ -3328,6 +3350,9 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (itemsWithDetails);
 
     ACAPI_CallUndoableCommand ("ModifyLabels", [&] () -> GSErrCode {
         // Same autotext flag handling as CreateLabels, see ModifyTexts.
@@ -3452,10 +3477,15 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
             if (err == NoError && contentChanged) {
                 err = TextLabelDetails::KeepTextFactors (element.header.guid, widthFactor, charSpaceFactor);
             }
+            if (err == NoError) {
+                changeReporter.MarkChanged (element.header.guid);
+            }
             executionResults (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the Label."));
         }
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }
@@ -3531,6 +3561,9 @@ GS::ObjectState ChangeTextContentCommand::Execute (const GS::ObjectState& parame
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
     // ACAPI_Element_ChangeContent modifies the database, so it runs in an undo scope.
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (contentChanges);
+
     ACAPI_CallUndoableCommand ("ChangeTextContent", [&] () -> GSErrCode {
         for (const GS::ObjectState& change : contentChanges) {
             const GS::ObjectState* elementId = change.Get ("elementId");
@@ -3579,10 +3612,15 @@ GS::ObjectState ChangeTextContentCommand::Execute (const GS::ObjectState& parame
             contentPars.content = contentChars.data ();
 
             err = ACAPI_Element_ChangeContent (&contentPars);
+            if (err == NoError) {
+                changeReporter.MarkChanged (element.header.guid);
+            }
             executionResults (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to change the content (a range over more than one paragraph or a from past the end of the content is refused)."));
         }
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }
