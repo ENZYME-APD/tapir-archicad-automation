@@ -1,10 +1,10 @@
-"""Places a flexible duct through three control points with PlaceMEPFlexibleSegments.
+"""Creates a flexible duct through three control points with CreateMEPFlexibleSegments.
 
 Uses the current settings of the Flexible Segment tool. Coordinates are in meters. Requires Archicad 28 or later.
 """
 import aclib
 
-aclib.PrintJson (aclib.RunTapirCommand ('PlaceMEPFlexibleSegments', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateMEPFlexibleSegments', {
     'flexibleSegmentsData': [{
         'domain': 'Ventilation',
         'controlPoints': [

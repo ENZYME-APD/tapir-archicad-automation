@@ -64,6 +64,13 @@ namespace TapirGrasshopperPlugin.Types.Element
             NullValueHandling = NullValueHandling.Ignore)]
         public MarqueeBox Box;
 
+        // Rotation of the box around the project origin, in radians; only
+        // sent together with a box.
+        [JsonProperty(
+            "rotationAngle",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public double? RotationAngle;
+
         [JsonProperty(
             "multiStory",
             NullValueHandling = NullValueHandling.Ignore)]

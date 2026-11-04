@@ -46,9 +46,8 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 response.Value<double?>("arcTolerance"));
         }
 
-        // Shares the icon of GetProjectPreferences until it gets its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetProjectPreferences;
+            Properties.Resources.GetExportTolerance;
 
         public override Guid ComponentGuid =>
             new Guid("5efbb878-8902-4456-bcff-0c4f87a24b84");

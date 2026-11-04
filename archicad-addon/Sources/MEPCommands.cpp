@@ -66,6 +66,8 @@
 #include "ACAPI/MEPTakeOff.hpp"
 #include "ACAPI/MEPTakeOffDefault.hpp"
 #include "ACAPI/MEPTransition.hpp"
+#include "ACAPI/MEPCableCarrierPort.hpp"
+#include "ACAPI/MEPModifiableElement.hpp"
 #ifdef ServerMainVers_2900
 #include "ACAPI/MEPElbowDefault.hpp"
 #include "ACAPI/MEPElbow.hpp"
@@ -82,16 +84,40 @@
 #include <optional>
 #include <utility>
 #include <type_traits>
+#include <variant>
 
 using namespace ACAPI::MEP;
 #elif defined (ServerMainVers_2700)
-// Archicad 27 only runs ConnectMEPElements and CheckMEPPortConnectability.
+// Archicad 27 runs ConnectMEPElements, CheckMEPPortConnectability, GetMEPPorts, GetMEPToolDefaults and
+// ModifyMEPElements with the MEP API of Archicad 27.
 #include "ACAPI/Result.hpp"
 #include "ACAPI/MEPAdapter.hpp"
+#include "ACAPI/MEPEnums.hpp"
+#include "ACAPI/MEPTypes.hpp"
+#include "ACAPI/MEPElement.hpp"
 #include "ACAPI/MEPPort.hpp"
+#include "ACAPI/MEPPipingPort.hpp"
+#include "ACAPI/MEPVentilationPort.hpp"
+#include "ACAPI/MEPCableCarrierPort.hpp"
 #include "ACAPI/MEPRoutingElement.hpp"
+#include "ACAPI/MEPRoutingElementDefault.hpp"
+#include "ACAPI/MEPRoutingSegmentDefault.hpp"
+#include "ACAPI/MEPRoutingNodeDefault.hpp"
+#include "ACAPI/MEPRigidSegmentDefault.hpp"
+#include "ACAPI/MEPBendDefault.hpp"
+#include "ACAPI/MEPBend.hpp"
+#include "ACAPI/MEPTransitionDefault.hpp"
+#include "ACAPI/MEPBranchDefault.hpp"
+#include "ACAPI/MEPTerminalDefault.hpp"
+#include "ACAPI/MEPAccessoryDefault.hpp"
+#include "ACAPI/MEPFittingDefault.hpp"
+#include "ACAPI/MEPEquipmentDefault.hpp"
+#include "ACAPI/MEPFlexibleSegmentDefault.hpp"
+#include "ACAPI/MEPFlexibleSegment.hpp"
+#include "ACAPI/MEPModifiableElement.hpp"
 
 #include <optional>
+#include <vector>
 
 using namespace ACAPI::MEP;
 #endif
@@ -103,6 +129,310 @@ using namespace ACAPI::MEP;
 #include "ACAPI/MEPElectricalProjectSettings.hpp"
 #include "ACAPI/MEPElectricalPanelDefault.hpp"
 #include "ACAPI/MEPElectricalDeviceDefault.hpp"
+#endif
+
+#if defined (ServerMainVers_2700) && !defined (ServerMainVers_2800)
+
+// The helpers of the Archicad 28 code below, for the MEP API of Archicad 27 (it has fewer connector
+// shapes and settings). GetMEPPorts and GetMEPToolDefaults use them on Archicad 27.
+static API_Guid MEPUniqueIDToAPIGuid (const ACAPI::MEP::UniqueID& id)
+{
+    return GSGuid2APIGuid (id.GetGuid ());
+}
+
+static GS::UniString DomainToString (Domain domain)
+{
+    switch (domain) {
+        case Domain::Ventilation:  return "Ventilation";
+        case Domain::Piping:       return "Piping";
+        case Domain::CableCarrier: return "CableCarrier";
+        default:                   return "Unknown";
+    }
+}
+
+static std::optional<Domain> DomainFromString (const GS::UniString& domain)
+{
+    if (domain == "Ventilation") {
+        return Domain::Ventilation;
+    }
+    if (domain == "Piping") {
+        return Domain::Piping;
+    }
+    if (domain == "CableCarrier") {
+        return Domain::CableCarrier;
+    }
+    return std::nullopt;
+}
+
+static GS::UniString ConnectorShapeToString (ConnectorShape shape)
+{
+    switch (shape) {
+        case ConnectorShape::Rectangular: return "Rectangular";
+        case ConnectorShape::Circular:    return "Circular";
+        case ConnectorShape::UShape:      return "UShape";
+        default:                          return "Unknown";
+    }
+}
+
+static GS::UniString PreferredTransitionPlacementToString (PreferredTransitionPlacement placement)
+{
+    return placement == PreferredTransitionPlacement::LargeToSmall ? "LargeToSmall" : "SmallToLarge";
+}
+
+static GS::ObjectState CreateMEPSystemIdObjectState (const API_AttributeIndex& attributeIndex)
+{
+    return CreateIdObjectState ("attributeId", GetAttributeGuidFromIndex (API_MEPSystemID, attributeIndex));
+}
+
+// The settings every port has (PortBase), read through the port class of the port's domain.
+template <typename PortT>
+static void AddMEPPortBaseDetails (GS::ObjectState& portOs, const ACAPI::MEP::UniqueID& portId, const PortT& port)
+{
+    portOs.Add ("portId", APIGuidToString (MEPUniqueIDToAPIGuid (portId)));
+    portOs.Add ("mepElementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (port.GetMEPElementId ())));
+    portOs.Add ("name", port.GetName ());
+    portOs.Add ("position", Create3DCoordinateObjectState (port.GetPosition ()));
+    const Orientation orientation = port.GetOrientation ();
+    portOs.Add ("direction", Create3DCoordinateObjectState (API_Coord3D { orientation.direction.x, orientation.direction.y, orientation.direction.z }));
+    portOs.Add ("shape", ConnectorShapeToString (port.GetShape ()));
+    portOs.Add ("width", port.GetWidth ());
+    portOs.Add ("height", port.GetHeight ());
+    portOs.Add ("domain", DomainToString (port.GetDomain ()));
+    portOs.Add ("mepSystemId", CreateMEPSystemIdObjectState (port.GetMEPSystem ()));
+    // Archicad 27 tells whether the port is connected to another port; from Archicad 28 the ports
+    // tell whether they are physically connected (isPhysicallyConnected).
+    portOs.Add ("isConnected", port.IsConnected ());
+
+    const std::optional<ACAPI::MEP::UniqueID> connectedPortId = port.GetConnectedPortId ();
+    if (connectedPortId.has_value ()) {
+        portOs.Add ("connectedPortId", APIGuidToString (MEPUniqueIDToAPIGuid (connectedPortId.value ())));
+    }
+    const std::optional<ACAPI::MEP::UniqueID> connectedElementId = port.GetConnectedMEPElementId ();
+    if (connectedElementId.has_value ()) {
+        portOs.Add ("connectedElementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (connectedElementId.value ())));
+    }
+}
+
+// GetMEPPorts on Archicad 27.
+static GS::ObjectState GetMEPPortsOfArchicad27 (const GS::ObjectState& parameters)
+{
+    GS::Array<GS::ObjectState> elements;
+    if (!parameters.Get ("elements", elements)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'elements' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& elementPorts = response.AddList<GS::ObjectState> ("elementPorts");
+
+    for (const GS::ObjectState& element : elements) {
+        const API_Guid elemGuid = GetGuidFromElementsArrayItem (element);
+
+        ACAPI::Result<Element> mepElement = Element::Get (Adapter::UniqueID (elemGuid));
+        if (mepElement.IsErr ()) {
+            elementPorts (CreateErrorResponse (mepElement.UnwrapErr ().kind, "Failed to get the MEP element."));
+            continue;
+        }
+        if (!mepElement->Exists ()) {
+            elementPorts (CreateErrorResponse (APIERR_BADID, "The MEP element was not found."));
+            continue;
+        }
+
+        GS::ObjectState elementPortsOs;
+        const auto& ports = elementPortsOs.AddList<GS::ObjectState> ("ports");
+
+        for (const ACAPI::MEP::UniqueID& portId : mepElement->GetPortIDs ()) {
+            ACAPI::Result<Port> port = Port::Get (portId);
+            if (port.IsErr () || !port->Exists ()) {
+                continue;
+            }
+
+            GS::ObjectState portOs;
+            const Domain portDomain = port->GetDomain ();
+            if (portDomain == Domain::Piping) {
+                ACAPI::Result<PipingPort> pipingPort = PipingPort::Get (portId);
+                if (pipingPort.IsOk ()) {
+                    AddMEPPortBaseDetails (portOs, portId, *pipingPort);
+                    portOs.Add ("outerDiameter", pipingPort->GetOuterDiameter ());
+                    portOs.Add ("wallThickness", pipingPort->GetWallThickness ());
+                    ports (portOs);
+                    continue;
+                }
+            } else if (portDomain == Domain::Ventilation) {
+                ACAPI::Result<VentilationPort> ventilationPort = VentilationPort::Get (portId);
+                if (ventilationPort.IsOk ()) {
+                    AddMEPPortBaseDetails (portOs, portId, *ventilationPort);
+                    portOs.Add ("wallThickness", ventilationPort->GetWallThickness ());
+                    ports (portOs);
+                    continue;
+                }
+            } else if (portDomain == Domain::CableCarrier) {
+                // Cable carrier ports have no settings besides those of every port.
+                ACAPI::Result<CableCarrierPort> cableCarrierPort = CableCarrierPort::Get (portId);
+                if (cableCarrierPort.IsOk ()) {
+                    AddMEPPortBaseDetails (portOs, portId, *cableCarrierPort);
+                    ports (portOs);
+                    continue;
+                }
+            }
+
+            AddMEPPortBaseDetails (portOs, portId, *port);
+            ports (portOs);
+        }
+
+        elementPorts (elementPortsOs);
+    }
+
+    return response;
+}
+
+// Adds the details of a tool default when Archicad gives one; a default that cannot be created is left out.
+template <typename DefaultT, typename CreateDetailsT>
+static void AddMEPToolDefault (GS::ObjectState& os, const char* fieldName, ACAPI::Result<DefaultT> toolDefault, CreateDetailsT&& createDetails)
+{
+    if (toolDefault.IsOk ()) {
+        os.Add (fieldName, createDetails (*toolDefault));
+    }
+}
+
+// The library part, the insulation and the shapes of the ports of a terminal, accessory, fitting,
+// equipment or branch default. Archicad 27 gives only the shape of the ports of a default.
+static GS::ObjectState CreateMEPElementDefaultDetails (const ACAPI::MEP::ElementDefault& elementDefault)
+{
+    GS::ObjectState elementOs;
+    elementOs.Add ("libraryPartId", CreateGuidObjectState (elementDefault.GetObjectId ()));
+    const std::optional<double> insulationThickness = elementDefault.GetInsulationThickness ();
+    if (insulationThickness.has_value ()) {
+        elementOs.Add ("insulationThickness", insulationThickness.value ());
+    }
+    const auto& ports = elementOs.AddList<GS::ObjectState> ("ports");
+    const uint32_t portCount = elementDefault.GetPortCount ();
+    for (uint32_t portIndex = 0; portIndex < portCount; ++portIndex) {
+        ACAPI::Result<ConnectorShape> shape = elementDefault.GetShapeOfPort (portIndex);
+        if (shape.IsErr ()) {
+            continue;
+        }
+        GS::ObjectState portOs;
+        portOs.Add ("index", static_cast<Int32> (portIndex));
+        portOs.Add ("shape", ConnectorShapeToString (shape.Unwrap ()));
+        ports (portOs);
+    }
+    return elementOs;
+}
+
+// The routing tool default of a domain, read from the defaults of the routing element, its segments,
+// its nodes and their bends (elbows) and transitions. Nothing when Archicad gives none for the domain.
+static std::optional<GS::ObjectState> CreateRoutingToolDefaultDetails (Domain domain)
+{
+    ACAPI::Result<RoutingElementDefault> routingElementDefault = CreateRoutingElementDefault (domain);
+    ACAPI::Result<RoutingSegmentDefault> segmentDefault = CreateRoutingSegmentDefault (domain);
+    ACAPI::Result<RoutingNodeDefault> nodeDefault = CreateRoutingNodeDefault (domain);
+    if (routingElementDefault.IsErr () || segmentDefault.IsErr () || nodeDefault.IsErr ()) {
+        return std::nullopt;
+    }
+
+    GS::ObjectState routingElementOs;
+    routingElementOs.Add ("mepSystemId", CreateMEPSystemIdObjectState (routingElementDefault->GetMEPSystem ()));
+
+    GS::ObjectState segmentOs;
+    segmentOs.Add ("crossSectionShape", ConnectorShapeToString (segmentDefault->GetCrossSectionShape ()));
+    segmentOs.Add ("crossSectionWidth", segmentDefault->GetCrossSectionWidth ());
+    segmentOs.Add ("crossSectionHeight", segmentDefault->GetCrossSectionHeight ());
+    segmentOs.Add ("preferenceTableId", segmentDefault->GetPreferenceTableId ().GetGuid ().ToUniString ());
+    routingElementOs.Add ("routingSegment", segmentOs);
+
+    GS::ObjectState nodeOs;
+    nodeOs.Add ("preferredTransitionPlacement", PreferredTransitionPlacementToString (nodeDefault->GetPreferredTransitionPlacement ()));
+    // Archicad 27 calls the elbows bends.
+    ACAPI::Result<BendDefault> bendDefault = CreateBendDefault (domain);
+    if (bendDefault.IsOk ()) {
+        GS::ObjectState elbowOs;
+        elbowOs.Add ("factorRadius", bendDefault->GetFactorRadius ());
+        nodeOs.Add ("elbow", elbowOs);
+    }
+    ACAPI::Result<TransitionDefault> transitionDefault = CreateTransitionDefault (domain);
+    if (transitionDefault.IsOk ()) {
+        GS::ObjectState transitionOs;
+        transitionOs.Add ("angle", transitionDefault->GetAngle ());
+        transitionOs.Add ("offsetY", transitionDefault->GetOffsetY ());
+        transitionOs.Add ("offsetZ", transitionDefault->GetOffsetZ ());
+        nodeOs.Add ("transition", transitionOs);
+    }
+    routingElementOs.Add ("routingNode", nodeOs);
+    return routingElementOs;
+}
+
+// GetMEPToolDefaults on Archicad 27.
+static GS::ObjectState GetMEPToolDefaultsOfArchicad27 (const GS::ObjectState& parameters)
+{
+    GS::Array<GS::UniString> domainNames;
+    if (!parameters.Get ("domains", domainNames)) {
+        domainNames.Push ("Ventilation");
+        domainNames.Push ("Piping");
+        domainNames.Push ("CableCarrier");
+    }
+
+    // The domains are checked before anything is read.
+    std::vector<Domain> domains;
+    for (const GS::UniString& domainName : domainNames) {
+        const std::optional<Domain> domain = DomainFromString (domainName);
+        if (!domain.has_value ()) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid value in the 'domains' parameter.");
+        }
+        domains.push_back (domain.value ());
+    }
+
+    // Each Create*Default call gives a copy of the current settings of that tool; nothing is changed.
+    GS::ObjectState response;
+    const auto& toolDefaults = response.AddList<GS::ObjectState> ("toolDefaults");
+    for (const Domain domain : domains) {
+        GS::ObjectState domainOs;
+        domainOs.Add ("domain", DomainToString (domain));
+        const std::optional<GS::ObjectState> routingElementOs = CreateRoutingToolDefaultDetails (domain);
+        if (routingElementOs.has_value ()) {
+            domainOs.Add ("routingElement", routingElementOs.value ());
+        }
+        AddMEPToolDefault (domainOs, "rigidSegment", CreateRigidSegmentDefault (domain), [] (const RigidSegmentDefault& d) {
+            GS::ObjectState rigidSegmentOs;
+            rigidSegmentOs.Add ("shape", ConnectorShapeToString (d.GetShape ()));
+            rigidSegmentOs.Add ("width", d.GetWidth ());
+            rigidSegmentOs.Add ("height", d.GetHeight ());
+            const std::optional<double> insulationThickness = d.GetInsulationThickness ();
+            if (insulationThickness.has_value ()) {
+                rigidSegmentOs.Add ("insulationThickness", insulationThickness.value ());
+            }
+            return rigidSegmentOs;
+        });
+        AddMEPToolDefault (domainOs, "branch", CreateBranchDefault (domain), [] (const BranchDefault& d) {
+            return CreateMEPElementDefaultDetails (d);
+        });
+        // The Flexible Segment tool of Archicad 27 has the Ventilation domain only.
+        if (domain == Domain::Ventilation) {
+            AddMEPToolDefault (domainOs, "flexibleSegment", CreateFlexibleSegmentDefault (), [] (const FlexibleSegmentDefault& d) {
+                GS::ObjectState flexibleSegmentOs;
+                flexibleSegmentOs.Add ("shape", ConnectorShapeToString (d.GetShape ()));
+                flexibleSegmentOs.Add ("width", d.GetWidth ());
+                flexibleSegmentOs.Add ("height", d.GetHeight ());
+                return flexibleSegmentOs;
+            });
+        }
+        AddMEPToolDefault (domainOs, "terminal", CreateTerminalDefault (domain), [] (const TerminalDefault& d) {
+            return CreateMEPElementDefaultDetails (d);
+        });
+        AddMEPToolDefault (domainOs, "accessory", CreateAccessoryDefault (domain), [] (const AccessoryDefault& d) {
+            return CreateMEPElementDefaultDetails (d);
+        });
+        AddMEPToolDefault (domainOs, "fitting", CreateFittingDefault (domain), [] (const FittingDefault& d) {
+            return CreateMEPElementDefaultDetails (d);
+        });
+        toolDefaults (domainOs);
+    }
+    AddMEPToolDefault (response, "equipment", CreateEquipmentDefault (), [] (const EquipmentDefault& d) {
+        return CreateMEPElementDefaultDetails (d);
+    });
+
+    return response;
+}
+
 #endif
 
 #ifdef ServerMainVers_2800
@@ -955,6 +1285,137 @@ static void AddGuidIfAvailable (GS::ObjectState& os, const char* name, Value&& v
     }
 }
 
+// The polyline of a flexible segment goes over JSON as its parts in order: {"type": "Line", "begin",
+// "end"} or {"type": "Spline", "controlPoints"} (FlexibleSegmentPolyline of MEPTypes.hpp).
+static void AddFlexibleSegmentPolyline (GS::ObjectState& os, const char* fieldName, const FlexibleSegmentPolyline& polyline)
+{
+    const auto& parts = os.AddList<GS::ObjectState> (fieldName);
+    for (const auto& part : polyline) {
+        GS::ObjectState partOs;
+        if (std::holds_alternative<FlexibleSegmentPolylineLinePart> (part)) {
+            const FlexibleSegmentPolylineLinePart& line = std::get<FlexibleSegmentPolylineLinePart> (part);
+            partOs.Add ("type", GS::UniString ("Line"));
+            partOs.Add ("begin", Create3DCoordinateObjectState (line.begin));
+            partOs.Add ("end", Create3DCoordinateObjectState (line.end));
+        } else {
+            const FlexibleSegmentPolylineSplinePart& spline = std::get<FlexibleSegmentPolylineSplinePart> (part);
+            partOs.Add ("type", GS::UniString ("Spline"));
+            const auto& controlPoints = partOs.AddList<GS::ObjectState> ("controlPoints");
+            for (const API_Coord3D& controlPoint : spline.controlPoints) {
+                controlPoints (Create3DCoordinateObjectState (controlPoint));
+            }
+        }
+        parts (partOs);
+    }
+}
+
+// Reads the polyline of a flexible segment from its JSON parts; std::nullopt with the reason when a
+// part is not valid. Archicad checks that the parts alternate and connect.
+static std::optional<FlexibleSegmentPolyline> GetFlexibleSegmentPolyline (const GS::Array<GS::ObjectState>& parts, GS::UniString& error)
+{
+    if (parts.IsEmpty ()) {
+        error = "The 'polyline' parameter must contain at least one part.";
+        return std::nullopt;
+    }
+    FlexibleSegmentPolyline polyline;
+    for (const GS::ObjectState& part : parts) {
+        GS::UniString type;
+        part.Get ("type", type);
+        if (type == "Line") {
+            const GS::ObjectState* begin = part.Get ("begin");
+            const GS::ObjectState* end = part.Get ("end");
+            if (begin == nullptr || end == nullptr) {
+                error = "A 'Line' part of 'polyline' needs 'begin' and 'end'.";
+                return std::nullopt;
+            }
+            polyline.push_back (FlexibleSegmentPolylineLinePart { Get3DCoordinateFromObjectState (*begin), Get3DCoordinateFromObjectState (*end) });
+        } else if (type == "Spline") {
+            GS::Array<GS::ObjectState> controlPointsData;
+            if (!part.Get ("controlPoints", controlPointsData) || controlPointsData.IsEmpty ()) {
+                error = "A 'Spline' part of 'polyline' needs 'controlPoints'.";
+                return std::nullopt;
+            }
+            FlexibleSegmentPolylineSplinePart spline;
+            for (const GS::ObjectState& controlPoint : controlPointsData) {
+                spline.controlPoints.push_back (Get3DCoordinateFromObjectState (controlPoint));
+            }
+            polyline.push_back (spline);
+        } else {
+            error = "The 'type' of a part of 'polyline' must be 'Line' or 'Spline'.";
+            return std::nullopt;
+        }
+    }
+    return polyline;
+}
+
+// The optional direction vector at one end of a polyline flexible segment.
+static std::optional<API_Vector3D> GetOptionalMEPVector (const GS::ObjectState& data, const char* fieldName)
+{
+    const GS::ObjectState* vectorOs = data.Get (fieldName);
+    if (vectorOs == nullptr) {
+        return std::nullopt;
+    }
+    const API_Coord3D vector = Get3DCoordinateFromObjectState (*vectorOs);
+    return API_Vector3D { vector.x, vector.y, vector.z };
+}
+
+// The details of one port of an MEP element, as GetMEPPorts returns them.
+static GS::ObjectState CreateMEPPortDetails (const ACAPI::MEP::UniqueID& portId, const Port& port)
+{
+    GS::ObjectState portOs;
+    portOs.Add ("portId", APIGuidToString (MEPUniqueIDToAPIGuid (portId)));
+    portOs.Add ("mepElementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (port.GetMEPElementId ())));
+    portOs.Add ("name", port.GetName ());
+    portOs.Add ("position", Create3DCoordinateObjectState (port.GetPosition ()));
+    const Orientation orientation = port.GetOrientation ();
+    portOs.Add ("direction", Create3DCoordinateObjectState (API_Coord3D { orientation.direction.x, orientation.direction.y, orientation.direction.z }));
+    portOs.Add ("shape", ConnectorShapeToString (port.GetShape ()));
+    portOs.Add ("width", port.GetWidth ());
+    portOs.Add ("height", port.GetHeight ());
+    const Domain portDomain = port.GetDomain ();
+    portOs.Add ("domain", DomainToString (portDomain));
+    portOs.Add ("mepSystemId", CreateMEPSystemIdObjectState (port.GetMEPSystem ()));
+    portOs.Add ("isPhysicallyConnected", port.IsPhysicallyConnected ());
+#ifdef ServerMainVers_3000
+    AddMEPEnumName (portOs, "connectionStyle", ConnectionStyleNames, port.GetConnectionStyle ());
+#endif
+
+    // The settings of the domain specific port classes. Cable carrier ports have none.
+    if (portDomain == Domain::Piping) {
+        ACAPI::Result<PipingPort> pipingPort = PipingPort::Get (portId);
+        if (pipingPort.IsOk ()) {
+            AddMEPEnumName (portOs, "flowDirection", FlowDirectionNames, pipingPort->GetFlowDirection ());
+#ifdef ServerMainVers_3000
+            portOs.Add ("nominalSize", pipingPort->GetNominalSize ());
+#endif
+            AddNumberIfAvailable (portOs, "outerDiameter", pipingPort->GetOuterDiameter ());
+            AddNumberIfAvailable (portOs, "wallThickness", pipingPort->GetWallThickness ());
+#ifdef ServerMainVers_3000
+            AddNumberIfAvailable (portOs, "flangeSize", pipingPort->GetFlangeSize ());
+#endif
+        }
+    } else if (portDomain == Domain::Ventilation) {
+        ACAPI::Result<VentilationPort> ventilationPort = VentilationPort::Get (portId);
+        if (ventilationPort.IsOk ()) {
+            AddMEPEnumName (portOs, "flowDirection", FlowDirectionNames, ventilationPort->GetFlowDirection ());
+            AddNumberIfAvailable (portOs, "wallThickness", ventilationPort->GetWallThickness ());
+#ifdef ServerMainVers_3000
+            AddNumberIfAvailable (portOs, "flangeSize", ventilationPort->GetFlangeSize ());
+#endif
+        }
+    }
+
+    const std::optional<ACAPI::MEP::UniqueID> connectedPortId = port.GetConnectedPortId ();
+    if (connectedPortId.has_value ()) {
+        portOs.Add ("connectedPortId", APIGuidToString (MEPUniqueIDToAPIGuid (connectedPortId.value ())));
+    }
+    const std::optional<ACAPI::MEP::UniqueID> connectedElementId = port.GetConnectedMEPElementId ();
+    if (connectedElementId.has_value ()) {
+        portOs.Add ("connectedElementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (connectedElementId.value ())));
+    }
+    return portOs;
+}
+
 #endif
 
 GetMEPElementsCommand::GetMEPElementsCommand () :
@@ -1336,74 +1797,33 @@ GS::ObjectState GetMEPPortsCommand::Execute (const GS::ObjectState& parameters, 
         GS::ObjectState elementPortsOs;
         const auto& ports = elementPortsOs.AddList<GS::ObjectState> ("ports");
 
+#ifdef ServerMainVers_3000
+        // Archicad 30 gives the ports themselves; each knows its own id.
+        for (const Port& port : mepElement->GetPorts ()) {
+            if (!port.Exists ()) {
+                continue;
+            }
+            ports (CreateMEPPortDetails (port.GetElemId (), port));
+        }
+#else
         for (const ACAPI::MEP::UniqueID& portId : mepElement->GetPortIDs ()) {
             ACAPI::Result<Port> port = Port::Get (portId);
             if (port.IsErr () || !port->Exists ()) {
                 continue;
             }
-
-            GS::ObjectState portOs;
-            portOs.Add ("portId", APIGuidToString (MEPUniqueIDToAPIGuid (portId)));
-            portOs.Add ("mepElementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (port->GetMEPElementId ())));
-            portOs.Add ("name", port->GetName ());
-            portOs.Add ("position", Create3DCoordinateObjectState (port->GetPosition ()));
-            const Orientation orientation = port->GetOrientation ();
-            portOs.Add ("direction", Create3DCoordinateObjectState (API_Coord3D { orientation.direction.x, orientation.direction.y, orientation.direction.z }));
-            portOs.Add ("shape", ConnectorShapeToString (port->GetShape ()));
-            portOs.Add ("width", port->GetWidth ());
-            portOs.Add ("height", port->GetHeight ());
-            const Domain portDomain = port->GetDomain ();
-            portOs.Add ("domain", DomainToString (portDomain));
-            portOs.Add ("mepSystemId", CreateMEPSystemIdObjectState (port->GetMEPSystem ()));
-            portOs.Add ("isPhysicallyConnected", port->IsPhysicallyConnected ());
-#ifdef ServerMainVers_3000
-            AddMEPEnumName (portOs, "connectionStyle", ConnectionStyleNames, port->GetConnectionStyle ());
-#endif
-
-            // The settings of the domain specific port classes. Cable carrier ports have none.
-            if (portDomain == Domain::Piping) {
-                ACAPI::Result<PipingPort> pipingPort = PipingPort::Get (portId);
-                if (pipingPort.IsOk ()) {
-                    AddMEPEnumName (portOs, "flowDirection", FlowDirectionNames, pipingPort->GetFlowDirection ());
-#ifdef ServerMainVers_3000
-                    portOs.Add ("nominalSize", pipingPort->GetNominalSize ());
-#endif
-                    AddNumberIfAvailable (portOs, "outerDiameter", pipingPort->GetOuterDiameter ());
-                    AddNumberIfAvailable (portOs, "wallThickness", pipingPort->GetWallThickness ());
-#ifdef ServerMainVers_3000
-                    AddNumberIfAvailable (portOs, "flangeSize", pipingPort->GetFlangeSize ());
-#endif
-                }
-            } else if (portDomain == Domain::Ventilation) {
-                ACAPI::Result<VentilationPort> ventilationPort = VentilationPort::Get (portId);
-                if (ventilationPort.IsOk ()) {
-                    AddMEPEnumName (portOs, "flowDirection", FlowDirectionNames, ventilationPort->GetFlowDirection ());
-                    AddNumberIfAvailable (portOs, "wallThickness", ventilationPort->GetWallThickness ());
-#ifdef ServerMainVers_3000
-                    AddNumberIfAvailable (portOs, "flangeSize", ventilationPort->GetFlangeSize ());
-#endif
-                }
-            }
-
-            const std::optional<ACAPI::MEP::UniqueID> connectedPortId = port->GetConnectedPortId ();
-            if (connectedPortId.has_value ()) {
-                portOs.Add ("connectedPortId", APIGuidToString (MEPUniqueIDToAPIGuid (connectedPortId.value ())));
-            }
-            const std::optional<ACAPI::MEP::UniqueID> connectedElementId = port->GetConnectedMEPElementId ();
-            if (connectedElementId.has_value ()) {
-                portOs.Add ("connectedElementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (connectedElementId.value ())));
-            }
-
-            ports (portOs);
+            ports (CreateMEPPortDetails (portId, *port));
         }
+#endif
 
         elementPorts (elementPortsOs);
     }
 
     return response;
+#elif defined (ServerMainVers_2700)
+    return GetMEPPortsOfArchicad27 (parameters);
 #else
     UNUSED_PARAMETER (parameters);
-    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
 #endif
 }
 
@@ -1475,6 +1895,10 @@ GS::Optional<GS::UniString> GetMEPElementDetailsCommand::GetRawResponseSchema ()
                                     "items": {
                                         "$ref": "#/Coordinate3D"
                                     }
+                                },
+                                "polyline": {
+                                    "$ref": "#/MEPFlexibleSegmentPolyline",
+                                    "description": "The line and spline parts of the flexible segment, when Archicad gives them (a flexible segment placed as a polyline, see CreateMEPFlexibleSegments). FlexibleSegment."
                                 },
                                 "factorRadius": {
                                     "type": "number",
@@ -1588,6 +2012,11 @@ GS::ObjectState GetMEPElementDetailsCommand::Execute (const GS::ObjectState& par
                 for (const auto& point : controlPoints.value ()) {
                     controlPointList (Create3DCoordinateObjectState (API_Coord3D { point.x, point.y, point.z }));
                 }
+            }
+            // A flexible segment placed as a polyline (Piping) has its line and spline parts.
+            ACAPI::Result<FlexibleSegmentPolyline> polyline = flexibleSegment->GetPolyline ();
+            if (polyline.IsOk ()) {
+                AddFlexibleSegmentPolyline (detailsOs, "polyline", *polyline);
             }
         } else if (typeName == "Elbow") {
 #ifdef ServerMainVers_2900
@@ -7502,12 +7931,14 @@ static void AddPortDefaultBaseDetails (GS::ObjectState& portOs, const PortDefaul
 #endif
 }
 
-// The library part and the ports of a terminal, accessory, fitting or equipment default (ElementDefault).
+// The library part, the insulation and the ports of a terminal, accessory, fitting, equipment or
+// branch default (ElementDefault).
 template <typename ElementDefaultT>
 static GS::ObjectState CreateMEPElementDefaultDetails (const ElementDefaultT& elementDefault)
 {
     GS::ObjectState elementOs;
     elementOs.Add ("libraryPartId", CreateGuidObjectState (elementDefault.GetObjectId ()));
+    AddMEPNumber (elementOs, "insulationThickness", elementDefault.GetInsulationThickness ());
     const auto& ports = elementOs.AddList<GS::ObjectState> ("ports");
     const uint32_t portCount = elementDefault.GetPortCount ();
     for (uint32_t portIndex = 0; portIndex < portCount; ++portIndex) {
@@ -7564,6 +7995,20 @@ static void AddMEPToolDefault (GS::ObjectState& os, const char* fieldName, ACAPI
     if (toolDefault.IsOk ()) {
         os.Add (fieldName, createDetails (*toolDefault));
     }
+}
+
+// The rigid segment default of the routing tool (CreateRigidSegmentDefault).
+static GS::ObjectState CreateRigidSegmentDefaultDetails (const RigidSegmentDefault& rigidSegmentDefault)
+{
+    GS::ObjectState rigidSegmentOs;
+#ifndef ServerMainVers_2900
+    // Archicad 29 has no size getters on the rigid segment default.
+    rigidSegmentOs.Add ("shape", ConnectorShapeToString (rigidSegmentDefault.GetShape ()));
+    rigidSegmentOs.Add ("width", rigidSegmentDefault.GetWidth ());
+    rigidSegmentOs.Add ("height", rigidSegmentDefault.GetHeight ());
+#endif
+    AddMEPNumber (rigidSegmentOs, "insulationThickness", rigidSegmentDefault.GetInsulationThickness ());
+    return rigidSegmentOs;
 }
 
 // The MEP element type name (as GetMEPElements gives it) and the domain name of an element; empty
@@ -7666,6 +8111,38 @@ GS::Optional<GS::UniString> GetMEPToolDefaultsCommand::GetRawResponseSchema () c
             "equipment": {
                 "$ref": "#/MEPElementDefaultDetails",
                 "description": "The default of the Equipment tool, which has no domain. Left out when Archicad gives none."
+            },
+            "electricalPanel": {
+                "type": "object",
+                "description": "The default of the Electrical Panel tool, which has no domain. Available from Archicad 30.",
+                "properties": {
+                    "libraryPartId": {
+                        "$ref": "#/LibPartUnId",
+                        "description": "The library part the tool places."
+                    },
+                    "panelName": {
+                        "type": "string"
+                    },
+                    "circuitNamePrefix": {
+                        "type": "string"
+                    },
+                    "circuitIdStyle": {
+                        "type": "integer",
+                        "description": "The index of the circuit id style."
+                    },
+                    "circuitDefaultCount": {
+                        "type": "integer",
+                        "description": "The number of circuit defaults of the panel default."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "libraryPartId",
+                    "panelName",
+                    "circuitNamePrefix",
+                    "circuitIdStyle",
+                    "circuitDefaultCount"
+                ]
             }
         },
         "additionalProperties": false,
@@ -7704,6 +8181,12 @@ GS::ObjectState GetMEPToolDefaultsCommand::Execute (const GS::ObjectState& param
         AddMEPToolDefault (domainOs, "routingElement", CreateRoutingElementDefault (domain), [] (const RoutingElementDefault& d) {
             return CreateRoutingElementDefaultDetails (d);
         });
+        AddMEPToolDefault (domainOs, "rigidSegment", CreateRigidSegmentDefault (domain), [] (const RigidSegmentDefault& d) {
+            return CreateRigidSegmentDefaultDetails (d);
+        });
+        AddMEPToolDefault (domainOs, "branch", CreateBranchDefault (domain), [] (const BranchDefault& d) {
+            return CreateMEPElementDefaultDetails (d);
+        });
         AddMEPToolDefault (domainOs, "flexibleSegment", CreateFlexibleSegmentDefault (domain), [] (const FlexibleSegmentDefault& d) {
             GS::ObjectState flexibleSegmentOs;
             flexibleSegmentOs.Add ("shape", ConnectorShapeToString (d.GetShape ()));
@@ -7725,11 +8208,24 @@ GS::ObjectState GetMEPToolDefaultsCommand::Execute (const GS::ObjectState& param
     AddMEPToolDefault (response, "equipment", CreateEquipmentDefault (), [] (const EquipmentDefault& d) {
         return CreateMEPElementDefaultDetails (d);
     });
+#ifdef ServerMainVers_3000
+    AddMEPToolDefault (response, "electricalPanel", CreateElectricalPanelDefault (), [] (const ElectricalPanelDefault& d) {
+        GS::ObjectState panelOs;
+        panelOs.Add ("libraryPartId", CreateGuidObjectState (d.GetObjectId ()));
+        panelOs.Add ("panelName", d.GetPanelName ());
+        panelOs.Add ("circuitNamePrefix", d.GetCircuitNamePrefix ());
+        panelOs.Add ("circuitIdStyle", static_cast<Int32> (d.GetCircuitIdStyle ()));
+        panelOs.Add ("circuitDefaultCount", static_cast<Int32> (d.GetCircuitDefaultCount ()));
+        return panelOs;
+    });
+#endif
 
     return response;
+#elif defined (ServerMainVers_2700)
+    return GetMEPToolDefaultsOfArchicad27 (parameters);
 #else
     UNUSED_PARAMETER (parameters);
-    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
 #endif
 }
 
@@ -7981,19 +8477,50 @@ static Orientation GetFlexibleSegmentEndOrientation (const GS::ObjectState* orie
     return Orientation { { direction.x, direction.y, direction.z }, { rotation.x, rotation.y, rotation.z } };
 }
 
+// Places one flexible segment of CreateMEPFlexibleSegments given by its 'polyline'; gives its element id or the error.
+static GS::ObjectState PlaceMEPFlexibleSegmentPolyline (const GS::ObjectState& flexibleSegmentData, Domain domain)
+{
+    if (flexibleSegmentData.Contains ("controlPoints")) {
+        return CreateErrorResponse (APIERR_BADPARS, "Give either 'controlPoints' or 'polyline', not both.");
+    }
+    GS::Array<GS::ObjectState> parts;
+    flexibleSegmentData.Get ("polyline", parts);
+    GS::UniString polylineError;
+    const std::optional<FlexibleSegmentPolyline> polyline = GetFlexibleSegmentPolyline (parts, polylineError);
+    if (!polyline.has_value ()) {
+        return CreateErrorResponse (APIERR_BADPARS, polylineError);
+    }
+
+    ACAPI::Result<FlexibleSegmentDefault> flexibleSegmentDefault = CreateFlexibleSegmentDefault (domain);
+    if (flexibleSegmentDefault.IsErr ()) {
+        return CreateErrorResponse (flexibleSegmentDefault.UnwrapErr ().kind, "Failed to create the flexible segment default.");
+    }
+    ACAPI::Result<ACAPI::MEP::UniqueID> newElementId = flexibleSegmentDefault->PlacePolyline (polyline.value (),
+        GetOptionalMEPVector (flexibleSegmentData, "startDirection"), GetOptionalMEPVector (flexibleSegmentData, "endDirection"));
+    if (newElementId.IsErr ()) {
+        const ACAPI::Error error = newElementId.UnwrapErr ();
+        GS::UniString message ("Failed to place the flexible segment polyline. Its parts must alternate between lines and splines and connect at their ends, a direction can only be given at a spline end, and Archicad places polylines in the Piping domain only.");
+        if (!error.text.empty ()) {
+            message += GS::UniString (" Archicad: ") + error.text.c_str ();
+        }
+        return CreateErrorResponse (error.kind, message);
+    }
+    return CreateElementIdObjectState (MEPUniqueIDToAPIGuid (newElementId.Unwrap ()));
+}
+
 #endif
 
-PlaceMEPFlexibleSegmentsCommand::PlaceMEPFlexibleSegmentsCommand () :
+CreateMEPFlexibleSegmentsCommand::CreateMEPFlexibleSegmentsCommand () :
     CommandBase (CommonSchema::Used)
 {
 }
 
-GS::String PlaceMEPFlexibleSegmentsCommand::GetName () const
+GS::String CreateMEPFlexibleSegmentsCommand::GetName () const
 {
-    return "PlaceMEPFlexibleSegments";
+    return "CreateMEPFlexibleSegments";
 }
 
-GS::Optional<GS::UniString> PlaceMEPFlexibleSegmentsCommand::GetInputParametersSchema () const
+GS::Optional<GS::UniString> CreateMEPFlexibleSegmentsCommand::GetInputParametersSchema () const
 {
     return R"({
         "type": "object",
@@ -8009,7 +8536,7 @@ GS::Optional<GS::UniString> PlaceMEPFlexibleSegmentsCommand::GetInputParametersS
                         },
                         "controlPoints": {
                             "type": "array",
-                            "description": "The control points of the flexible segment, from its beginning to its end.",
+                            "description": "The control points of the flexible segment, from its beginning to its end. Give either 'controlPoints' or 'polyline'.",
                             "items": {
                                 "$ref": "#/Coordinate3D"
                             },
@@ -8017,17 +8544,28 @@ GS::Optional<GS::UniString> PlaceMEPFlexibleSegmentsCommand::GetInputParametersS
                         },
                         "startOrientation": {
                             "$ref": "#/MEPOrientation",
-                            "description": "Optional orientation at the beginning. Defaults to the direction from the first control point to the second one, with a horizontal rotation vector perpendicular to it."
+                            "description": "Optional orientation at the beginning, with 'controlPoints'. Defaults to the direction from the first control point to the second one, with a horizontal rotation vector perpendicular to it."
                         },
                         "endOrientation": {
                             "$ref": "#/MEPOrientation",
-                            "description": "Optional orientation at the end. Defaults to the direction from the last but one control point to the last one, with a horizontal rotation vector perpendicular to it."
+                            "description": "Optional orientation at the end, with 'controlPoints'. Defaults to the direction from the last but one control point to the last one, with a horizontal rotation vector perpendicular to it."
+                        },
+                        "polyline": {
+                            "$ref": "#/MEPFlexibleSegmentPolyline",
+                            "description": "The flexible segment as alternating line and spline parts that connect at their ends, instead of 'controlPoints'. Archicad places polyline flexible segments in the Piping domain only."
+                        },
+                        "startDirection": {
+                            "$ref": "#/Coordinate3D",
+                            "description": "Optional direction vector at the beginning, with 'polyline'. Only when the first part is a spline."
+                        },
+                        "endDirection": {
+                            "$ref": "#/Coordinate3D",
+                            "description": "Optional direction vector at the end, with 'polyline'. Only when the last part is a spline."
                         }
                     },
                     "additionalProperties": false,
                     "required": [
-                        "domain",
-                        "controlPoints"
+                        "domain"
                     ]
                 }
             }
@@ -8039,7 +8577,7 @@ GS::Optional<GS::UniString> PlaceMEPFlexibleSegmentsCommand::GetInputParametersS
     })";
 }
 
-GS::Optional<GS::UniString> PlaceMEPFlexibleSegmentsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateMEPFlexibleSegmentsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -8055,7 +8593,7 @@ GS::Optional<GS::UniString> PlaceMEPFlexibleSegmentsCommand::GetRawResponseSchem
     })";
 }
 
-GS::ObjectState PlaceMEPFlexibleSegmentsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState CreateMEPFlexibleSegmentsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
     GS::Array<GS::ObjectState> flexibleSegmentsData;
@@ -8066,7 +8604,7 @@ GS::ObjectState PlaceMEPFlexibleSegmentsCommand::Execute (const GS::ObjectState&
     GS::ObjectState response;
     const auto& elements = response.AddList<GS::ObjectState> ("elements");
 
-    ACAPI_CallUndoableCommand ("Place MEP Flexible Segments", [&]() -> GSErrCode {
+    ACAPI_CallUndoableCommand ("Create MEP Flexible Segments", [&]() -> GSErrCode {
         for (const GS::ObjectState& flexibleSegmentData : flexibleSegmentsData) {
             GS::UniString domainStr;
             flexibleSegmentData.Get ("domain", domainStr);
@@ -8076,9 +8614,14 @@ GS::ObjectState PlaceMEPFlexibleSegmentsCommand::Execute (const GS::ObjectState&
                 continue;
             }
 
+            if (flexibleSegmentData.Contains ("polyline")) {
+                elements (PlaceMEPFlexibleSegmentPolyline (flexibleSegmentData, domain.value ()));
+                continue;
+            }
+
             GS::Array<GS::ObjectState> controlPointsData;
             if (!flexibleSegmentData.Get ("controlPoints", controlPointsData) || controlPointsData.GetSize () < 2) {
-                elements (CreateErrorResponse (APIERR_BADPARS, "The 'controlPoints' parameter must contain at least 2 coordinates."));
+                elements (CreateErrorResponse (APIERR_BADPARS, "The 'controlPoints' parameter must contain at least 2 coordinates, or 'polyline' must be given."));
                 continue;
             }
             std::vector<API_Coord3D> controlPoints;
@@ -8112,51 +8655,63 @@ GS::ObjectState PlaceMEPFlexibleSegmentsCommand::Execute (const GS::ObjectState&
 #endif
 }
 
-PlaceMEPTakeOffsCommand::PlaceMEPTakeOffsCommand () :
+CreateMEPTakeOffsCommand::CreateMEPTakeOffsCommand () :
     CommandBase (CommonSchema::Used)
 {
 }
 
-GS::String PlaceMEPTakeOffsCommand::GetName () const
+GS::String CreateMEPTakeOffsCommand::GetName () const
 {
-    return "PlaceMEPTakeOffs";
+    return "CreateMEPTakeOffs";
 }
 
-GS::Optional<GS::UniString> PlaceMEPTakeOffsCommand::GetInputParametersSchema () const
+GS::Optional<GS::UniString> CreateMEPTakeOffsCommand::GetInputParametersSchema () const
 {
     return R"({
         "type": "object",
         "properties": {
             "takeOffsData": {
                 "type": "array",
-                "description": "Array of data to place MEP take-offs on routing segments with the current settings of the Take-Off tool of their domain.",
+                "description": "Array of data to create MEP take-offs on routing segments with the current settings of the Take-Off tool of their domain.",
                 "items": {
                     "type": "object",
                     "properties": {
                         "domain": {
-                            "$ref": "#/MEPDomain"
+                            "$ref": "#/MEPDomain",
+                            "description": "Optional domain of the Take-Off tool whose settings are used. Defaults to the domain of the segment's routing element. Archicad currently only has Ventilation take-offs."
                         },
                         "segmentId": {
                             "$ref": "#/ElementId",
-                            "description": "The routing segment to place the take-off on (one of the segments GetMEPRoutingElements returns)."
+                            "description": "The routing segment to place the take-off on (the elementId of an item of 'segments' returned by GetMEPRoutingElements)."
                         },
                         "distanceFromBeginning": {
                             "type": "number",
-                            "description": "The distance of the take-off from the beginning of the segment.",
+                            "description": "The distance of the take-off from the beginning of the segment, in meters. Must not be negative or more than the length of the segment.",
                             "minimum": 0
                         },
                         "rotationAroundMainAxis": {
                             "type": "number",
-                            "description": "Optional rotation of the take-off around the axis of the segment, in radians. Defaults to 0."
+                            "description": "Optional rotation of the take-off around the axis of the segment, in radians. Archicad places take-offs only at quarter turns, so it must be a multiple of pi/2 (negative values and full turns are allowed). Defaults to 0, which places the take-off facing left relative to the segment's direction; pi/2 faces up, pi faces right, 3*pi/2 (or -pi/2) faces down."
                         },
                         "length": {
                             "type": "number",
-                            "description": "Optional length of the take-off, set after placing it. The length of the Take-Off tool when not given."
+                            "description": "Optional length of the take-off in meters, set after placing it; must be positive. The length of the Take-Off tool when not given.",
+                            "exclusiveMinimum": 0
+                        },
+                        "defaults": {
+                            "type": "object",
+                            "description": "Optional changes to the settings of the Take-Off tool before the take-off is placed. Only what is placed changes, not the tool's settings. A value that cannot be set gives an error for the item, and nothing is placed. The insulation thickness of a take-off cannot be set (Archicad stops with a fatal error).",
+                            "properties": {
+                                "removeInsulation": {
+                                    "type": "boolean",
+                                    "description": "If true, the take-off is placed without insulation."
+                                }
+                            },
+                            "additionalProperties": false
                         }
                     },
                     "additionalProperties": false,
                     "required": [
-                        "domain",
                         "segmentId",
                         "distanceFromBeginning"
                     ]
@@ -8170,7 +8725,7 @@ GS::Optional<GS::UniString> PlaceMEPTakeOffsCommand::GetInputParametersSchema ()
     })";
 }
 
-GS::Optional<GS::UniString> PlaceMEPTakeOffsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateMEPTakeOffsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -8186,7 +8741,133 @@ GS::Optional<GS::UniString> PlaceMEPTakeOffsCommand::GetRawResponseSchema () con
     })";
 }
 
-GS::ObjectState PlaceMEPTakeOffsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+#ifdef ServerMainVers_2800
+
+// Creates one take-off of CreateMEPTakeOffs; gives its element id or the error of the item.
+static GS::ObjectState CreateMEPTakeOff (const GS::ObjectState& takeOffData)
+{
+    const GS::ObjectState* segmentIdOs = takeOffData.Get ("segmentId");
+    if (segmentIdOs == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing 'segmentId' parameter.");
+    }
+    double distanceFromBeginning = 0.0;
+    if (!takeOffData.Get ("distanceFromBeginning", distanceFromBeginning)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'distanceFromBeginning' parameter.");
+    }
+    if (distanceFromBeginning < 0.0) {
+        return CreateErrorResponse (APIERR_BADPARS, "The 'distanceFromBeginning' parameter must not be negative.");
+    }
+
+    // Archicad places take-offs only at quarter turns, so the rotation must be a multiple of pi/2;
+    // it is normalized into [0, 2*pi), so a negative rotation or a full turn works too.
+    double rotationAroundMainAxis = 0.0;
+    if (takeOffData.Get ("rotationAroundMainAxis", rotationAroundMainAxis)) {
+        constexpr double halfPi = 1.57079632679489661923;
+        const double quarterTurns = rotationAroundMainAxis / halfPi;
+        const double roundedQuarterTurns = std::round (quarterTurns);
+        if (!std::isfinite (quarterTurns) || std::fabs (quarterTurns - roundedQuarterTurns) > 1e-6) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf (
+                "The 'rotationAroundMainAxis' parameter (%.15g) must be a multiple of pi/2, because Archicad places take-offs only at quarter turns.",
+                rotationAroundMainAxis));
+        }
+        const double normalizedQuarterTurns = std::fmod (std::fmod (roundedQuarterTurns, 4.0) + 4.0, 4.0);
+        rotationAroundMainAxis = normalizedQuarterTurns * halfPi;
+    }
+
+    double length = 0.0;
+    const bool hasLength = takeOffData.Get ("length", length);
+    if (hasLength && length <= 0.0) {
+        return CreateErrorResponse (APIERR_BADPARS, "The 'length' parameter must be positive.");
+    }
+
+    // Setting the insulation thickness of a take-off default stops Archicad with a fatal error
+    // (TakeOffDefault::SetInsulationThickness, seen in Archicad 30), so it is refused before the call.
+    const GS::ObjectState* defaults = takeOffData.Get ("defaults");
+    if (defaults != nullptr && defaults->Contains ("insulationThickness")) {
+        return CreateErrorResponse (APIERR_BADPARS, "The insulation thickness of a Take-off cannot be set; only 'removeInsulation' is supported.");
+    }
+
+    const ACAPI::MEP::UniqueID segmentId = Adapter::UniqueID (GetGuidFromObjectState (*segmentIdOs));
+    ACAPI::Result<RoutingSegment> segment = RoutingSegment::Get (segmentId);
+    if (segment.IsErr ()) {
+        return CreateErrorResponse (segment.UnwrapErr ().kind, "The 'segmentId' parameter does not refer to an MEP routing segment.");
+    }
+
+    // Archicad places a take-off beyond the segment at its end, so a longer distance is an error.
+    ACAPI::Result<RoutingNode> beginNode = RoutingNode::Get (segment->GetBeginNodeId ());
+    ACAPI::Result<RoutingNode> endNode = RoutingNode::Get (segment->GetEndNodeId ());
+    if (beginNode.IsErr () || endNode.IsErr ()) {
+        return CreateErrorResponse (APIERR_GENERAL, "Failed to get the begin and end nodes of the segment.");
+    }
+    const API_Coord3D beginPosition = beginNode->GetPosition ();
+    const API_Coord3D endPosition = endNode->GetPosition ();
+    const double segmentLength = std::sqrt (
+        (endPosition.x - beginPosition.x) * (endPosition.x - beginPosition.x) +
+        (endPosition.y - beginPosition.y) * (endPosition.y - beginPosition.y) +
+        (endPosition.z - beginPosition.z) * (endPosition.z - beginPosition.z));
+    if (distanceFromBeginning > segmentLength + 1e-6) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf (
+            "The 'distanceFromBeginning' parameter (%.4f m) is more than the length of the segment (%.4f m).",
+            distanceFromBeginning, segmentLength));
+    }
+
+    std::optional<Domain> domain;
+    GS::UniString domainStr;
+    if (takeOffData.Get ("domain", domainStr)) {
+        domain = DomainFromString (domainStr);
+        if (!domain.has_value ()) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid 'domain' parameter.");
+        }
+    } else {
+        ACAPI::Result<RoutingElement> routingElement = RoutingElement::Get (segment->GetRoutingElementId ());
+        if (routingElement.IsErr ()) {
+            return CreateErrorResponse (routingElement.UnwrapErr ().kind, "Failed to get the routing element of the segment, give the 'domain' parameter.");
+        }
+        domain = routingElement->GetDomain ();
+    }
+
+    ACAPI::Result<TakeOffDefault> takeOffDefault = CreateTakeOffDefault (domain.value ());
+    if (takeOffDefault.IsErr ()) {
+        const GS::UniString message = "Failed to get the Take-Off tool settings of the domain " + DomainToString (domain.value ()) + ". Archicad only has Ventilation take-offs.";
+        return CreateErrorResponse (takeOffDefault.UnwrapErr ().kind, message);
+    }
+    if (defaults != nullptr) {
+        ACAPI::Result<void> defaultsResult = ApplyMEPElementDefaults (*takeOffDefault, *defaults);
+        if (defaultsResult.IsErr ()) {
+            return CreateErrorResponse (defaultsResult.UnwrapErr ().kind, "Failed to apply the 'defaults' parameter; nothing was placed.");
+        }
+    }
+
+    ACAPI::Result<ACAPI::MEP::UniqueID> newElementId = takeOffDefault->Place (segmentId, distanceFromBeginning, rotationAroundMainAxis);
+    if (newElementId.IsErr ()) {
+        const ACAPI::Error error = newElementId.UnwrapErr ();
+        GS::UniString message = GS::UniString::Printf ("Failed to place the take-off on the segment (%.4f m long) of the domain ", segmentLength) + DomainToString (domain.value ()) + ".";
+        if (!error.text.empty ()) {
+            message += GS::UniString (" Archicad: ") + error.text.c_str ();
+        }
+        return CreateErrorResponse (error.kind, message);
+    }
+    const ACAPI::MEP::UniqueID placedId = newElementId.Unwrap ();
+
+    if (hasLength) {
+        ACAPI::Result<TakeOff> takeOff = TakeOff::Get (placedId);
+        ACAPI::Result<void> modifyResult = takeOff.IsErr () ? ACAPI::Result<void> (takeOff.UnwrapErr (), takeOff.Token ()) : takeOff->Modify ([&](TakeOff::Modifier& modifier) {
+            modifier.SetLength (length);
+        }, "Set MEP Take-Off Length");
+        if (modifyResult.IsErr ()) {
+            // The take-off stays placed, so its guid is given in the message to let the caller find it.
+            return CreateErrorResponse (modifyResult.UnwrapErr ().kind, GS::UniString::Printf (
+                "The take-off with guid %T was placed, but its length could not be set.",
+                APIGuidToString (MEPUniqueIDToAPIGuid (placedId)).ToPrintf ()));
+        }
+    }
+
+    return CreateElementIdObjectState (MEPUniqueIDToAPIGuid (placedId));
+}
+
+#endif
+
+GS::ObjectState CreateMEPTakeOffsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
     GS::Array<GS::ObjectState> takeOffsData;
@@ -8197,58 +8878,9 @@ GS::ObjectState PlaceMEPTakeOffsCommand::Execute (const GS::ObjectState& paramet
     GS::ObjectState response;
     const auto& elements = response.AddList<GS::ObjectState> ("elements");
 
-    ACAPI_CallUndoableCommand ("Place MEP Take-Offs", [&]() -> GSErrCode {
+    ACAPI_CallUndoableCommand ("Create MEP Take-Offs", [&]() -> GSErrCode {
         for (const GS::ObjectState& takeOffData : takeOffsData) {
-            GS::UniString domainStr;
-            takeOffData.Get ("domain", domainStr);
-            const std::optional<Domain> domain = DomainFromString (domainStr);
-            if (!domain.has_value ()) {
-                elements (CreateErrorResponse (APIERR_BADPARS, "Invalid 'domain' parameter."));
-                continue;
-            }
-            const GS::ObjectState* segmentId = takeOffData.Get ("segmentId");
-            if (segmentId == nullptr) {
-                elements (CreateErrorResponse (APIERR_BADPARS, "Missing 'segmentId' parameter."));
-                continue;
-            }
-            double distanceFromBeginning = 0.0;
-            if (!takeOffData.Get ("distanceFromBeginning", distanceFromBeginning) || distanceFromBeginning < 0.0) {
-                elements (CreateErrorResponse (APIERR_BADPARS, "The 'distanceFromBeginning' parameter must be a number not less than 0."));
-                continue;
-            }
-            double rotationAroundMainAxis = 0.0;
-            takeOffData.Get ("rotationAroundMainAxis", rotationAroundMainAxis);
-            double length = 0.0;
-            const bool hasLength = takeOffData.Get ("length", length);
-
-            ACAPI::Result<TakeOffDefault> takeOffDefault = CreateTakeOffDefault (domain.value ());
-            if (takeOffDefault.IsErr ()) {
-                elements (CreateErrorResponse (takeOffDefault.UnwrapErr ().kind, "Failed to create the take-off default."));
-                continue;
-            }
-            ACAPI::Result<ACAPI::MEP::UniqueID> newElementId = takeOffDefault->Place (
-                Adapter::UniqueID (GetGuidFromObjectState (*segmentId)), distanceFromBeginning, rotationAroundMainAxis);
-            if (newElementId.IsErr ()) {
-                elements (CreateErrorResponse (newElementId.UnwrapErr ().kind, "Failed to place the take-off."));
-                continue;
-            }
-            const ACAPI::MEP::UniqueID placedId = newElementId.Unwrap ();
-
-            if (hasLength) {
-                ACAPI::Result<TakeOff> takeOff = TakeOff::Get (placedId);
-                ACAPI::Result<void> modifyResult = takeOff.IsErr () ? ACAPI::Result<void> (takeOff.UnwrapErr (), takeOff.Token ()) : takeOff->Modify ([&](TakeOff::Modifier& modifier) {
-                    modifier.SetLength (length);
-                }, "Set MEP Take-Off Length");
-                if (modifyResult.IsErr ()) {
-                    // The take-off stays placed, so its guid is given in the message to let the caller find it.
-                    elements (CreateErrorResponse (modifyResult.UnwrapErr ().kind, GS::UniString::Printf (
-                        "The take-off with guid %T was placed, but its length could not be set.",
-                        APIGuidToString (MEPUniqueIDToAPIGuid (placedId)).ToPrintf ())));
-                    continue;
-                }
-            }
-
-            elements (CreateElementIdObjectState (MEPUniqueIDToAPIGuid (placedId)));
+            elements (CreateMEPTakeOff (takeOffData));
         }
         return NoError;
     });
@@ -8257,5 +8889,327 @@ GS::ObjectState PlaceMEPTakeOffsCommand::Execute (const GS::ObjectState& paramet
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
+}
+
+#ifdef ServerMainVers_2700
+
+// An MEPOrientation input (its schema requires both vectors).
+static Orientation GetMEPOrientationOfInput (const GS::ObjectState& orientationOs)
+{
+    Orientation orientation = { { 1.0, 0.0, 0.0 }, { 0.0, 1.0, 0.0 } };
+    const GS::ObjectState* direction = orientationOs.Get ("direction");
+    if (direction != nullptr) {
+        const API_Coord3D coord = Get3DCoordinateFromObjectState (*direction);
+        orientation.direction = { coord.x, coord.y, coord.z };
+    }
+    const GS::ObjectState* rotation = orientationOs.Get ("rotation");
+    if (rotation != nullptr) {
+        const API_Coord3D coord = Get3DCoordinateFromObjectState (*rotation);
+        orientation.rotation = { coord.x, coord.y, coord.z };
+    }
+    return orientation;
+}
+
+static GS::UniString MEPErrorText (const GS::UniString& message, const ACAPI::Error& error)
+{
+    if (error.text.empty ()) {
+        return message;
+    }
+    return message + " Archicad: " + error.text.c_str ();
+}
+
+// The changes ModifyMEPElements makes to one element, read and checked before anything is changed.
+struct MEPElementChanges {
+    const GS::ObjectState*      anchorPoint = nullptr;
+    const GS::ObjectState*      orientation = nullptr;
+    const GS::ObjectState*      libraryPartId = nullptr;
+    bool                        hasControlPoints = false;
+    std::vector<API_Coord3D>    controlPoints;
+#ifdef ServerMainVers_2800
+    std::optional<FlexibleSegmentPolyline> polyline;
+#endif
+    std::optional<double>       width;
+    std::optional<double>       height;
+
+    bool ChangesPlacement () const          { return anchorPoint != nullptr || orientation != nullptr || libraryPartId != nullptr; }
+    bool ChangesFlexibleSegment () const
+    {
+#ifdef ServerMainVers_2800
+        if (polyline.has_value ()) {
+            return true;
+        }
+#endif
+        return hasControlPoints || width.has_value () || height.has_value ();
+    }
+};
+
+// Reads the changes of one item of ModifyMEPElements; the failed execution result when they are not valid.
+static std::optional<GS::ObjectState> GetMEPElementChanges (const GS::ObjectState& elementData, MEPElementChanges& changes)
+{
+    changes.anchorPoint = elementData.Get ("anchorPoint");
+    changes.orientation = elementData.Get ("orientation");
+    changes.libraryPartId = elementData.Get ("libraryPartId");
+
+    if (elementData.Contains ("controlPoints") && elementData.Contains ("polyline")) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Give either 'controlPoints' or 'polyline', not both.");
+    }
+    GS::Array<GS::ObjectState> controlPointsData;
+    if (elementData.Get ("controlPoints", controlPointsData)) {
+        if (controlPointsData.GetSize () < 2) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "The 'controlPoints' parameter must contain at least 2 coordinates.");
+        }
+        changes.hasControlPoints = true;
+        for (const GS::ObjectState& controlPoint : controlPointsData) {
+            changes.controlPoints.push_back (Get3DCoordinateFromObjectState (controlPoint));
+        }
+    }
+    if (elementData.Contains ("polyline")) {
+#ifdef ServerMainVers_2800
+        GS::Array<GS::ObjectState> parts;
+        elementData.Get ("polyline", parts);
+        GS::UniString polylineError;
+        changes.polyline = GetFlexibleSegmentPolyline (parts, polylineError);
+        if (!changes.polyline.has_value ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, polylineError);
+        }
+#else
+        return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "Flexible segments have a 'polyline' from Archicad 28.");
+#endif
+    }
+
+    double value = 0.0;
+    if (elementData.Get ("width", value)) {
+        changes.width = value;
+    }
+    if (elementData.Get ("height", value)) {
+        changes.height = value;
+    }
+    return std::nullopt;
+}
+
+// Changes the control points, polyline (from Archicad 28), width and height of a flexible segment.
+static std::optional<GS::ObjectState> ModifyMEPFlexibleSegment (FlexibleSegment& flexibleSegment, const MEPElementChanges& changes)
+{
+    std::optional<GS::UniString> setterError;
+    const auto checkSetter = [&] (const ACAPI::Result<void>& result, const char* what) {
+        if (result.IsErr () && !setterError.has_value ()) {
+            setterError = MEPErrorText (GS::UniString ("Failed to set the '") + what + "' of the flexible segment.", result.UnwrapErr ());
+        }
+    };
+    ACAPI::Result<void> modifyResult = flexibleSegment.Modify ([&](FlexibleSegment::Modifier& modifier) {
+        if (changes.hasControlPoints) {
+#ifdef ServerMainVers_2800
+            checkSetter (modifier.SetControlPoints (changes.controlPoints), "controlPoints");
+#else
+            modifier.SetControlPoints (changes.controlPoints);
+#endif
+        }
+#ifdef ServerMainVers_2800
+        if (changes.polyline.has_value ()) {
+            checkSetter (modifier.SetPolyline (changes.polyline.value ()), "polyline");
+        }
+#endif
+        if (changes.width.has_value ()) {
+            checkSetter (modifier.SetWidth (changes.width.value ()), "width");
+        }
+        if (changes.height.has_value ()) {
+            checkSetter (modifier.SetHeight (changes.height.value ()), "height");
+        }
+    }, "Modify MEP Flexible Segment");
+    if (setterError.has_value ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, setterError.value ());
+    }
+    if (modifyResult.IsErr ()) {
+        return CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, MEPErrorText ("Failed to modify the flexible segment.", modifyResult.UnwrapErr ()));
+    }
+    return std::nullopt;
+}
+
+// Changes the anchor point, orientation and library part of a modifiable MEP element (a terminal,
+// accessory, equipment, fitting or flexible segment).
+static std::optional<GS::ObjectState> ModifyMEPElementPlacement (ModifiableElement& element, const ACAPI::MEP::UniqueID& elemId, const MEPElementChanges& changes)
+{
+    ACAPI::Result<void> modifyResult = element.Modify ([&](ModifiableElementBase::Modifier& modifier) {
+        // The library part first, the placement is meant for the new library part.
+        if (changes.libraryPartId != nullptr) {
+            modifier.SetObjectId (GetGuidFromObjectState (*changes.libraryPartId));
+        }
+        if (changes.anchorPoint != nullptr) {
+            modifier.SetAnchorPoint (Get3DCoordinateFromObjectState (*changes.anchorPoint));
+        }
+        if (changes.orientation != nullptr) {
+            modifier.SetOrientation (GetMEPOrientationOfInput (*changes.orientation));
+        }
+    }, "Modify MEP Element Placement");
+    if (modifyResult.IsErr ()) {
+        return CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, MEPErrorText ("Failed to modify the placement of the MEP element.", modifyResult.UnwrapErr ()));
+    }
+    if (changes.libraryPartId != nullptr) {
+        // Archicad keeps the old library part when the given one does not exist.
+        ACAPI::Result<ModifiableElement> modified = ModifiableElement::Get (elemId);
+        if (modified.IsOk () && modified->GetObjectId () != GetGuidFromObjectState (*changes.libraryPartId)) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "The library part given in 'libraryPartId' was not found, the element keeps its library part. The other changes were made.");
+        }
+    }
+    return std::nullopt;
+}
+
+// Makes the changes of one item of ModifyMEPElements. Every element the changes need is looked up
+// before anything is changed, so an item with a field that does not fit its element changes nothing.
+// The one exception: Archicad only shows that it did not find a 'libraryPartId' after the placement
+// was changed, so that error comes after the item's other changes were made.
+static GS::ObjectState ModifyMEPElement (const GS::ObjectState& elementData)
+{
+    const GS::ObjectState* elementId = elementData.Get ("elementId");
+    if (elementId == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'elementId' parameter.");
+    }
+    const ACAPI::MEP::UniqueID elemId = Adapter::UniqueID (GetGuidFromObjectState (*elementId));
+    ACAPI::Result<Element> mepElement = Element::Get (elemId);
+    if (mepElement.IsErr () || !mepElement->Exists ()) {
+        return CreateFailedExecutionResult (APIERR_BADID, "The MEP element was not found.");
+    }
+
+    MEPElementChanges changes;
+    const std::optional<GS::ObjectState> invalidChanges = GetMEPElementChanges (elementData, changes);
+    if (invalidChanges.has_value ()) {
+        return invalidChanges.value ();
+    }
+
+    ACAPI::Result<FlexibleSegment> flexibleSegment = FlexibleSegment::Get (elemId);
+    if (changes.ChangesFlexibleSegment () && flexibleSegment.IsErr ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "'controlPoints', 'polyline', 'width' and 'height' belong to flexible segments, and the element is not one.");
+    }
+    ACAPI::Result<ModifiableElement> modifiableElement = ModifiableElement::Get (elemId);
+    if (changes.ChangesPlacement () && modifiableElement.IsErr ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "'anchorPoint', 'orientation' and 'libraryPartId' belong to terminals, accessories, equipment, fittings and flexible segments, and the element is not one of them.");
+    }
+    if (changes.ChangesFlexibleSegment ()) {
+        const std::optional<GS::ObjectState> failure = ModifyMEPFlexibleSegment (*flexibleSegment.operator-> (), changes);
+        if (failure.has_value ()) {
+            return failure.value ();
+        }
+    }
+    if (changes.ChangesPlacement ()) {
+        const std::optional<GS::ObjectState> failure = ModifyMEPElementPlacement (*modifiableElement.operator-> (), elemId, changes);
+        if (failure.has_value ()) {
+            return failure.value ();
+        }
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
+#endif
+
+ModifyMEPElementsCommand::ModifyMEPElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyMEPElementsCommand::GetName () const
+{
+    return "ModifyMEPElements";
+}
+
+GS::Optional<GS::UniString> ModifyMEPElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "type": "array",
+                "description": "The MEP elements to modify, each with the fields to change. Only the given fields are changed.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "anchorPoint": {
+                            "$ref": "#/Coordinate3D",
+                            "description": "The new anchor point of a terminal, accessory, equipment, fitting or flexible segment."
+                        },
+                        "orientation": {
+                            "$ref": "#/MEPOrientation",
+                            "description": "The new orientation of a terminal, accessory, equipment, fitting or flexible segment."
+                        },
+                        "libraryPartId": {
+                            "$ref": "#/LibPartUnId",
+                            "description": "The library part a terminal, accessory, equipment or fitting uses, as listed by GetAvailableLibraryParts. If it is not found, the element keeps its library part and the item fails."
+                        },
+                        "controlPoints": {
+                            "type": "array",
+                            "description": "The new control points of a flexible segment, from its beginning to its end. Not together with 'polyline'.",
+                            "items": {
+                                "$ref": "#/Coordinate3D"
+                            },
+                            "minItems": 2
+                        },
+                        "polyline": {
+                            "$ref": "#/MEPFlexibleSegmentPolyline",
+                            "description": "The new geometry of a Piping flexible segment as alternating line and spline parts that connect at their ends. Not together with 'controlPoints'. Available from Archicad 28."
+                        },
+                        "width": {
+                            "type": "number",
+                            "description": "The new width of a flexible segment."
+                        },
+                        "height": {
+                            "type": "number",
+                            "description": "The new height of a flexible segment."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyMEPElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ModifyMEPElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> elements;
+    if (!parameters.Get ("elements", elements)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'elements' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("Modify MEP Elements", [&]() -> GSErrCode {
+        for (const GS::ObjectState& elementData : elements) {
+            executionResults (ModifyMEPElement (elementData));
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
 #endif
 }

@@ -98,9 +98,8 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             da.SetDataList(5, dates);
         }
 
-        // Shares the icon of the classification systems value list.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.ClassificationSystemsValueList;
+            Properties.Resources.GetAllClassificationSystems;
 
         public override Guid ComponentGuid =>
             new Guid("134e555d-e12f-4ba8-a775-f18a1f3298ab");

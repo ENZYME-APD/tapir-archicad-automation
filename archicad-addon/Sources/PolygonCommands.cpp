@@ -1,4 +1,5 @@
 #include "PolygonCommands.hpp"
+#include "MigrationHelper.hpp"
 
 #include <algorithm>
 
@@ -747,6 +748,176 @@ GS::ObjectState RegularizePolylinesCommand::Execute (const GS::ObjectState& para
     const auto& results = response.AddList<GS::ObjectState> ("results");
     for (const GS::ObjectState& polyline : polylines) {
         results (RegularizePolyline (polyline, withAncestry));
+    }
+    return response;
+}
+
+GetSplineMaxDistancesCommand::GetSplineMaxDistancesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetSplineMaxDistancesCommand::GetName () const
+{
+    return "GetSplineMaxDistances";
+}
+
+GS::Optional<GS::UniString> GetSplineMaxDistancesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "splines": {
+                "type": "array",
+                "description": "The spline segments to measure and the coordinates to measure from them.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "A Spline element."
+                        },
+                        "segmentIndex": {
+                            "type": "integer",
+                            "description": "The segment of the spline between its fit points segmentIndex and segmentIndex + 1, from 0 to the number of fit points - 2 (the fit points are the coordinates GetDetailsOfElements returns for the spline).",
+                            "minimum": 0
+                        },
+                        "coordinates": {
+                            "type": "array",
+                            "description": "The 2D coordinates to measure from the segment.",
+                            "items": {
+                                "$ref": "#/Coordinate2D"
+                            },
+                            "minItems": 1
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "segmentIndex",
+                        "coordinates"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "splines"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetSplineMaxDistancesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "results": {
+                "type": "array",
+                "description": "The result of each input item, in the same order, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "maxDistance": {
+                                    "type": "number",
+                                    "description": "The largest distance of the given coordinates from the spline segment."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "maxDistance"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "results"
+        ]
+    })";
+}
+
+// The fit points and the Bezier handles of the spline come from its memo (coords and bezierDirs,
+// both indexed from 0), as the DevKit's Goodie_Functions example passes them to
+// ACAPI_ProjectSetting_GetSplineMaxDist; its segment k (1 .. nFit - 1) runs from fit point k - 1 to k.
+static GS::ObjectState GetSplineMaxDistance (const GS::ObjectState& spline)
+{
+    const GS::ObjectState* elementId = spline.Get ("elementId");
+    if (elementId == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "elementId is missing");
+    }
+
+    Int32 segmentIndex = -1;
+    spline.Get ("segmentIndex", segmentIndex);
+
+    GS::Array<GS::ObjectState> coordinates;
+    spline.Get ("coordinates", coordinates);
+    if (coordinates.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "coordinates must not be empty");
+    }
+
+    API_Elem_Head elemHead = {};
+    elemHead.guid = GetGuidFromObjectState (*elementId);
+    GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to find element in Archicad");
+    }
+    if (GetElemTypeId (elemHead) != API_SplineID) {
+        return CreateErrorResponse (APIERR_BADID, "The element is not a Spline.");
+    }
+
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    err = ACAPI_Element_GetMemo (elemHead.guid, &memo, APIMemoMask_All);
+    if (err != NoError || memo.coords == nullptr || memo.bezierDirs == nullptr) {
+        return CreateErrorResponse (err != NoError ? err : APIERR_GENERAL, "Failed to get the fit points of the spline.");
+    }
+
+    const Int32 nFit = (Int32) (BMGetHandleSize ((GSHandle) memo.coords) / sizeof (API_Coord));
+    if (segmentIndex < 0 || segmentIndex > nFit - 2) {
+        return CreateErrorResponse (APIERR_BADINDEX, GS::UniString::Printf ("segmentIndex must be between 0 and %d.", nFit - 2));
+    }
+
+    API_TestSplineFit test = {};
+    test.splCoords = memo.coords;
+    test.splDirs = memo.bezierDirs;
+    test.nFit = nFit;
+    test.segment = segmentIndex + 1;
+    test.nCoords = (Int32) coordinates.GetSize ();
+    test.polyCoords = (API_Coord**) BMAllocateHandle (test.nCoords * sizeof (API_Coord), ALLOCATE_CLEAR, 0);
+    if (test.polyCoords == nullptr) {
+        return CreateErrorResponse (APIERR_MEMFULL, "Failed to allocate the coordinates.");
+    }
+    const GS::OnExit coordsGuard ([&test] () { BMKillHandle ((GSHandle*) &test.polyCoords); });
+    for (Int32 i = 0; i < test.nCoords; ++i) {
+        (*test.polyCoords)[i] = Get2DCoordinateFromObjectState (coordinates[(UIndex) i]);
+    }
+
+    double maxDistance = 0.0;
+    err = ACAPI_ProjectSetting_GetSplineMaxDist (&test, &maxDistance);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to measure the coordinates from the spline segment.");
+    }
+
+    return GS::ObjectState ("maxDistance", maxDistance);
+}
+
+GS::ObjectState GetSplineMaxDistancesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> splines;
+    parameters.Get ("splines", splines);
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("results");
+    for (const GS::ObjectState& spline : splines) {
+        results (GetSplineMaxDistance (spline));
     }
     return response;
 }
