@@ -19,7 +19,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             : base(
                 "MakePropertyAvailableForElements",
                 "Make a property definition available for all the given elements. " +
-                "Available only in Archicad 27.",
+                "Available in Archicad 25, 26 and 27.",
                 GroupNames.Properties)
         {
         }

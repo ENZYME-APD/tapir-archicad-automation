@@ -334,6 +334,46 @@ code.language-python.hljs {
     color: inherit;
 }
 
+details.command_example {
+    margin-top: 1.0em;
+}
+
+details.command_example > summary {
+    cursor: pointer;
+    font-weight: bold;
+    width: fit-content;
+}
+
+div.command_example_body {
+    margin-top: 0.5em;
+}
+
+div.command_example_body pre {
+    overflow-x: auto;
+    margin: 0.5em 0;
+}
+
+div.command_example_body code.hljs {
+    display: block;
+    padding: 0.8em;
+    font-size: 0.85em;
+    line-height: 1.4em;
+}
+
+p.command_example_description {
+    margin: 0.3em 0;
+}
+
+div.command_example_status {
+    color: var(--gray-70);
+    font-style: italic;
+}
+
+div.command_example_link {
+    font-size: 0.85em;
+    text-align: right;
+}
+
 .hljs-meta .hljs-string,
 .hljs-regexp,
 .hljs-string {
