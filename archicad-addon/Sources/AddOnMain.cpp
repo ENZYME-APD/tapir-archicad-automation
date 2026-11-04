@@ -264,6 +264,10 @@ GSErrCode Initialize (void)
             applicationCommands, "1.8.0",
             "Waits for the user to input a polygon in the active Archicad window and returns its points and arcs."
         );
+        err |= RegisterCommand<ConvertImagesCommand> (
+            applicationCommands, "1.8.1",
+            "Converts base64 encoded images from one image format to another with Archicad's own image converters, for example a PNG preview image to JPEG. The formats are Bitmap, GIF, TIFF, JPEG and PNG, or the MIME type of another format Archicad can read or write. The output is aligned with the input array of images. Changes nothing in the project."
+        );
         err |= RegisterCommand<GetCurrentWindowTypeCommand> (
             applicationCommands, "1.0.7",
             "Returns the type of the current (active) window and, when it has one, the databaseId of the database it shows, which ChangeWindow takes to bring the window back after a script switched to another one. The saved view (View Map item) the window was opened from is not returned, as Archicad does not tell which one it was."
@@ -739,7 +743,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetCutPolygonsOfElementsCommand> (
             elementCommands, "1.8.0",
-            "Cuts each body of the 3D model of the given elements with a plane and returns, for each body, its building material, the area of the cut surface and its polygons (outline and holes) in 2D coordinates of the plane. The 3D model is generated with separate components in a temporary sight, so a composite structure has one body per skin and the 3D window is not changed. The output is aligned with the input array of elements. Available from Archicad 28."
+            "Cuts each body of the 3D model of the given elements with a plane and returns, for each body, its building material, the area of the cut surface and its polygons (outline and holes) in 2D coordinates of the plane. From Archicad 28 the 3D model is generated with separate components in a temporary sight, so a composite structure has one body per skin and the 3D window is not changed. Before Archicad 28 the bodies are those of the element's 3D model (a composite structure is one body) and their building materials are left out. The output is aligned with the input array of elements."
         );
         err |= RegisterCommand<GetElementAtCoordinateCommand> (
             elementCommands, "1.7.3",
@@ -820,6 +824,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetStoryControlPrimitivesCommand> (
             elementCommands, "1.8.0",
             "Returns the 2D drawing primitives of the story levels (story lines and their markers) drawn in the given section, elevation or interior elevation database, as ACAPI_DrawingPrimitive_DrawStoryControl draws them, in the same format as GetDrawingPrimitivesOfElements. The databaseId can be obtained with GetDatabaseIdFromNavigatorItemId."
+        );
+        err |= RegisterCommand<GetShapePrimitivesOfElementsCommand> (
+            elementCommands, "1.8.1",
+            "Returns the 2D drawing primitives of each given floor plan element in the same format as GetDrawingPrimitivesOfElements, but drawn as ACAPI_DrawingPrimitive_ShapePrims draws it by default (on the current story, clipped as Archicad clips it) instead of on every story and unclipped. With includeMarkers the objects attached to the elements (window and door markers, drawing titles, ...) are drawn with them or left out; Archicad's setting is changed back afterwards. The floor plan must be the current database. The output is aligned with the input array of elements."
         );
         err |= RegisterCommand<GetSectionElementsCommand> (
             elementCommands, "1.5.8",
@@ -1251,6 +1259,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<RegularizePolylinesCommand> (
             elementCommands, "1.7.3",
             "Regularizes polylines with Archicad's own polyline regularization: removes repeated consecutive points. The result is in the format of CreatePolylines and may be empty, optionally with the input point and segment each result point and segment came from. Changes nothing in the project."
+        );
+        err |= RegisterCommand<GetSplineMaxDistancesCommand> (
+            elementCommands, "1.8.1",
+            "Measures how far the given 2D coordinates are from a segment of a Spline element, between two of its fit points, with its own Bezier handles: returns the largest distance, for example to check how well a polyline follows the spline. The output is aligned with the input array. Changes nothing in the project."
         );
         AddCommandGroup (elementCommands);
     }
@@ -1789,6 +1801,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetPensCommand> (
             attributeCommands, "1.8.0",
             "Returns the given pens, or all of them, in effect in the current window: index, color, width and description. It also works when the pens in effect are not a Pen Table attribute. Available from Archicad 27."
+        );
+        err |= RegisterCommand<SetPensCommand> (
+            attributeCommands, "1.8.1",
+            "Changes the color, width and description of the given pens in effect in the current window, the pens GetPens returns, in one undo step. Only the given fields of a listed pen are changed; each pen gets its own execution result. In a Teamwork project the PenTables lockable object set must be reserved first (see ReserveLockableObjectSet). Available from Archicad 27."
         );
         err |= RegisterCommand<GetProfilesCommand> (
             attributeCommands, "1.5.4",
@@ -2377,6 +2393,14 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.7.4",
             "Gets the names of the 3D styles of the project and the name of the current one, which the 3D window uses."
         );
+        err |= RegisterCommand<SetCurrent3DStyleCommand> (
+            navigatorCommands, "1.8.1",
+            "Makes the given 3D style, one of the names Get3DStyles returns, the current one, which the 3D window uses."
+        );
+        err |= RegisterCommand<StoreViewSettingsCommand> (
+            navigatorCommands, "1.8.1",
+            "Stores the current view settings (action Store) and puts them back later (action Restore), for example before and after a script that changes the view. The two must be called in pairs and cannot be stacked. Restoring may rebuild the view."
+        );
         err |= RegisterCommand<ShowElementsIn3DCommand> (
             navigatorCommands, "1.7.4",
             "Opens the 3D window on the given elements, as Show Selection in 3D does: they become the selection and only they are shown. Without elements it shows every element, as Show All in 3D does."
@@ -2798,6 +2822,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GrantProjectDataCommand> (
             projectDataCommands, "1.7.3",
             "Grants the project data with the given names, reserved by the current user, to another Teamwork user."
+        );
+        err |= RegisterCommand<GetModulDataCommand> (
+            projectDataCommands, "1.8.1",
+            "Gets the module data Tapir stored in the project with StoreModulData: the given names, or all of them, with their data version and, unless includeContent is false, their content. Module data are the custom data sections of Archicad's ModulData Manager: text saved in the project file under a name, kept apart from project data (SetProjectData)."
+        );
+        err |= RegisterCommand<StoreModulDataCommand> (
+            projectDataCommands, "1.8.1",
+            "Creates or overwrites module data: text (for example JSON) saved in the project under a name, with an optional data version. Prefix the names with the name of your tool (for example 'my-tool/settings') so scripts do not overwrite each other's data. Storing module data is not an undoable step."
+        );
+        err |= RegisterCommand<DeleteModulDataCommand> (
+            projectDataCommands, "1.8.1",
+            "Deletes the module data with the given names. Deleting module data is not an undoable step."
         );
         AddCommandGroup (projectDataCommands);
     }
