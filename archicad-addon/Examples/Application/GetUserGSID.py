@@ -4,4 +4,4 @@ Requires Archicad 27 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('GetUserGSID')
+aclib.PrintJson (aclib.RunTapirCommand ('GetUserGSID'))

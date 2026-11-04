@@ -8,8 +8,8 @@ walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['el
 if not walls:
     raise SystemExit ('No wall in the project.')
 
-aclib.RunTapirCommand ('CreateLabels', {'labelsData': [{
+aclib.PrintJson (aclib.RunTapirCommand ('CreateLabels', {'labelsData': [{
     'parentElementId': walls[0]['elementId'],
     'labelClass': 'Text',
     'text': 'Exterior wall'
-}]})
+}]}))

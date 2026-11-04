@@ -9,8 +9,9 @@ import aclib
 root = aclib.RunTapirCommand ('CreateAddOnViewpoints', {
     'viewpoints': [{'itemType': 'Root', 'displayId': 'TAPIR', 'displayName': 'Tapir Example Root'}]
 })['viewpoints'][0]
+aclib.PrintJson (root)
 
-aclib.RunTapirCommand ('CreateAddOnViewpoints', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateAddOnViewpoints', {
     'viewpoints': [{
         'itemType': 'Leaf',
         'parentViewpointId': root['viewpointId'],
@@ -18,4 +19,4 @@ aclib.RunTapirCommand ('CreateAddOnViewpoints', {
         'displayName': 'Tapir Example Leaf',
         'data': base64.b64encode (b'created by Tapir').decode ('ascii')
     }]
-})
+}))

@@ -4,6 +4,6 @@ Every run adds a new group; there is no command to delete it. Requires Archicad 
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateMEPSystemGroups', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateMEPSystemGroups', {
     'systemGroupsData': [{'name': 'Heating'}]
-})
+}))

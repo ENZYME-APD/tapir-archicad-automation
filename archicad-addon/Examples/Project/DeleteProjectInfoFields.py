@@ -10,4 +10,4 @@ created = aclib.RunTapirCommand ('CreateProjectInfoFields', {
 if 'projectInfoId' not in created:
     raise SystemExit ('The field could not be created.')
 
-aclib.RunTapirCommand ('DeleteProjectInfoFields', {'projectInfoIds': [created['projectInfoId']]})
+aclib.PrintJson (aclib.RunTapirCommand ('DeleteProjectInfoFields', {'projectInfoIds': [created['projectInfoId']]}))

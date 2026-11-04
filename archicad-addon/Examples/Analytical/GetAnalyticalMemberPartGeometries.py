@@ -9,9 +9,9 @@ if not curveMembers:
     raise SystemExit ('No analytical curve member in the current view.')
 memberId = curveMembers[0]['elementId']
 
-aclib.RunTapirCommand ('GetAnalyticalMemberPartGeometries', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetAnalyticalMemberPartGeometries', {
     'memberPartRefs': [
         {'elemGuid': memberId, 'partRefType': 'BegVertex'},
         {'elemGuid': memberId, 'partRefType': 'Edge'}
     ]
-})
+}))

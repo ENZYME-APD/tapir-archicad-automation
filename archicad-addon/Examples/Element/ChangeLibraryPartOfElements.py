@@ -12,9 +12,9 @@ if not objects:
 details = aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': objects})['detailsOfElements'][0]
 libraryPartName = details['details']['libPart']['name']
 
-aclib.RunTapirCommand ('ChangeLibraryPartOfElements', {'elementsWithLibraryPart': [{
+aclib.PrintJson (aclib.RunTapirCommand ('ChangeLibraryPartOfElements', {'elementsWithLibraryPart': [{
     'elementId': objects[0]['elementId'],
     'libraryPart': {'name': libraryPartName},
     'keepParameters': True,
     'keepSize': True
-}]})
+}]}))

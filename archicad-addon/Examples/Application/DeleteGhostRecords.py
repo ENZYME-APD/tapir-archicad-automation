@@ -8,6 +8,6 @@ sections = aclib.RunTapirCommand ('GetDatabases', {'types': ['Section']})['datab
 if not sections:
     raise SystemExit ('No section in the project.')
 
-aclib.RunTapirCommand ('DeleteGhostRecords', {
+aclib.PrintJson (aclib.RunTapirCommand ('DeleteGhostRecords', {
     'databases': [{'databaseId': sections[0]['databaseId']}]
-})
+}))

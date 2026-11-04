@@ -19,7 +19,7 @@ response = aclib.RunTapirCommand ('GetRoomImage', {
     'offset': 0.5,
     'scale': 0.02,
     'backgroundColor': {'red': 1.0, 'green': 1.0, 'blue': 1.0}
-}, debug = False)
+})
 
 path = os.path.join (tempfile.mkdtemp (), 'room.png')
 with open (path, 'wb') as file:

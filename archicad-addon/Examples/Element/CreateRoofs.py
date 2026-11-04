@@ -5,7 +5,7 @@ A pivotLine makes a single-plane roof that rises on the left of the line; angles
 import aclib
 import math
 
-aclib.RunTapirCommand ('CreateRoofs', {'roofsData': [
+aclib.PrintJson (aclib.RunTapirCommand ('CreateRoofs', {'roofsData': [
     {
         'level': 3.0,
         'polygonCoordinates': [
@@ -30,4 +30,4 @@ aclib.RunTapirCommand ('CreateRoofs', {'roofsData': [
         },
         'angle': math.radians (15)
     }
-]})
+]}))

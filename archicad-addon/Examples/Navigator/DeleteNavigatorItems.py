@@ -5,6 +5,6 @@ worksheet = aclib.RunTapirCommand ('CreateWorksheets', {
     'worksheetsData': [{'name': 'Tapir Example Worksheet', 'referenceId': 'TAPIR-W1'}]
 })['databases'][0]
 
-aclib.RunTapirCommand ('DeleteNavigatorItems', {
+aclib.PrintJson (aclib.RunTapirCommand ('DeleteNavigatorItems', {
     'navigatorItemIds': [{'navigatorItemId': worksheet['navigatorItemId']}]
-})
+}))

@@ -4,9 +4,9 @@ Every run adds two new load groups.
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateAnalyticalLoadGroups', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateAnalyticalLoadGroups', {
     'loadGroups': [
         {'name': 'Tapir Permanent', 'groupType': 'PermanentLoad', 'relation': 'StandardRelation'},
         {'name': 'Tapir Variable', 'groupType': 'VariableLoad', 'relation': 'StandardRelation'}
     ]
-})
+}))

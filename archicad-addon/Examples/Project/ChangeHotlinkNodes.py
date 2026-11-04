@@ -15,13 +15,13 @@ node = hotlinks[0]
 copyPath = os.path.join (tempfile.mkdtemp (), os.path.basename (node['location']))
 shutil.copyfile (node['location'], copyPath)
 
-aclib.RunTapirCommand ('ChangeHotlinkNodes', {
+aclib.PrintJson (aclib.RunTapirCommand ('ChangeHotlinkNodes', {
     'hotlinkNodes': [{'hotlinkNodeId': node['hotlinkNodeId'], 'sourceLocation': copyPath}]
-})
+}))
 aclib.RunTapirCommand ('UpdateHotlinks', {'hotlinkNodes': [{'hotlinkNodeId': node['hotlinkNodeId']}]})
 aclib.RunTapirCommand ('GetHotlinks')
 
-aclib.RunTapirCommand ('ChangeHotlinkNodes', {
+aclib.PrintJson (aclib.RunTapirCommand ('ChangeHotlinkNodes', {
     'hotlinkNodes': [{'hotlinkNodeId': node['hotlinkNodeId'], 'sourceLocation': node['location']}]
-})
+}))
 aclib.RunTapirCommand ('UpdateHotlinks', {'hotlinkNodes': [{'hotlinkNodeId': node['hotlinkNodeId']}]})

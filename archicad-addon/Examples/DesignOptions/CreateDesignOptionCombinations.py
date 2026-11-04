@@ -16,6 +16,7 @@ combination = aclib.RunTapirCommand ('CreateDesignOptionCombinations', {
         'activeDesignOptions': [{'designOptionId': option['designOptionId']}]
     }]
 })['designOptionCombinationIdsOrErrors'][0]
+aclib.PrintJson (combination)
 
 aclib.RunTapirCommand ('DeleteDesignOptionCombinations', {
     'designOptionCombinations': [{'designOptionCombinationId': combination['designOptionCombinationId']}]

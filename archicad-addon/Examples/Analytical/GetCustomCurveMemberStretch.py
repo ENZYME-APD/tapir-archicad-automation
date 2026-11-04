@@ -8,6 +8,6 @@ curveMembers = aclib.RunTapirCommand ('GetAnalyticalMembers', {})['curveMembers'
 if not curveMembers:
     raise SystemExit ('No analytical curve member in the current view.')
 
-aclib.RunTapirCommand ('GetCustomCurveMemberStretch', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetCustomCurveMemberStretch', {
     'elements': curveMembers[:3]
-})
+}))

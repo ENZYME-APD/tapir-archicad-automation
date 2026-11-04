@@ -8,12 +8,12 @@ aclib.RunTapirCommand ('CreateDesignOptionSets', {'designOptionSets': ['Tapir Ex
 sets = aclib.RunTapirCommand ('GetDesignOptionSets')['designOptionSets']
 setIds = {s['name']: s['designOptionSetId'] for s in sets}
 
-aclib.RunTapirCommand ('ReorderDesignOptionSets', {
+aclib.PrintJson (aclib.RunTapirCommand ('ReorderDesignOptionSets', {
     'designOptionSets': [{
         'designOptionSetId': setIds['Tapir Example Set 2'],
         'beforeDesignOptionSetId': setIds['Tapir Example Set 1']
     }]
-})
+}))
 aclib.RunTapirCommand ('GetDesignOptionSets')
 
 aclib.RunTapirCommand ('DeleteDesignOptionSets', {

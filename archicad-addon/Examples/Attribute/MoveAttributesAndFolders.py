@@ -5,16 +5,16 @@ Deleting the folder at the end deletes the layer in it too. Requires Archicad 26
 import aclib
 
 folder = {'attributeType': 'Layer', 'path': ['Tapir Example Folder']}
-aclib.RunTapirCommand ('CreateAttributeFolders', {'attributeFolders': [folder]}, debug = False)
+aclib.RunTapirCommand ('CreateAttributeFolders', {'attributeFolders': [folder]})
 layerId = aclib.RunTapirCommand ('CreateLayers', {
     'layerDataArray': [{'name': 'Tapir Example Layer To Move'}]
-}, debug = False)['attributeIds'][0]
+})['attributeIds'][0]
 if 'error' in layerId:
     raise SystemExit ('Could not create the layer: ' + layerId['error']['message'])
 
-aclib.RunTapirCommand ('MoveAttributesAndFolders', {
+aclib.PrintJson (aclib.RunTapirCommand ('MoveAttributesAndFolders', {
     'attributeIds': [layerId],
     'targetFolder': folder
-})
+}))
 
-aclib.RunTapirCommand ('DeleteAttributeFolders', {'attributeFolders': [folder]}, debug = False)
+aclib.RunTapirCommand ('DeleteAttributeFolders', {'attributeFolders': [folder]})

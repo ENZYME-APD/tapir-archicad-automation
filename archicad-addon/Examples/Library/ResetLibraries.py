@@ -1,4 +1,4 @@
 """Resets the loaded libraries with ResetLibraries."""
 import aclib
 
-aclib.RunTapirCommand ('ResetLibraries')
+aclib.PrintJson (aclib.RunTapirCommand ('ResetLibraries'))

@@ -4,15 +4,15 @@ Captures a state, creates a wall, reads the changes (the new wall), then deletes
 """
 import aclib
 
-stateId = aclib.RunTapirCommand ('CaptureElementState', {}, debug = False)['stateId']
+stateId = aclib.RunTapirCommand ('CaptureElementState', {})['stateId']
 
 walls = aclib.RunTapirCommand ('CreateWalls', {
     'wallsData': [{'begCoordinate': {'x': 0.0, 'y': 0.0}, 'endCoordinate': {'x': 5.0, 'y': 0.0}, 'height': 3.0}]
-}, debug = False)['elements']
+})['elements']
 
 changes = aclib.RunTapirCommand ('GetElementChangesSince', {'stateId': stateId})
 print ('{} new, {} modified, {} deleted elements.'.format (
     len (changes['newElements']), len (changes['modifiedElements']), len (changes['deletedElements'])))
 
-aclib.RunTapirCommand ('DeleteElements', {'elements': walls}, debug = False)
-aclib.RunTapirCommand ('ReleaseElementState', {'stateId': stateId}, debug = False)
+aclib.RunTapirCommand ('DeleteElements', {'elements': walls})
+aclib.RunTapirCommand ('ReleaseElementState', {'stateId': stateId})

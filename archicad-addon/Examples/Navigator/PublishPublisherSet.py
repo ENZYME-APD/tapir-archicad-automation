@@ -11,8 +11,8 @@ if not publisherSets:
     raise SystemExit ('No publisher set in the project.')
 
 outputPath = tempfile.mkdtemp (prefix = 'TapirPublish_')
-aclib.RunTapirCommand ('PublishPublisherSet', {
+aclib.PrintJson (aclib.RunTapirCommand ('PublishPublisherSet', {
     'publisherSetName': publisherSets[0]['name'],
     'outputPath': outputPath
-})
+}))
 print ('Published to', outputPath)

@@ -6,7 +6,7 @@ import aclib
 
 original = aclib.RunTapirCommand ('GetDialogAutoClose')['enabled']
 
-aclib.RunTapirCommand ('SetDialogAutoClose', {'enabled': True})
+aclib.PrintJson (aclib.RunTapirCommand ('SetDialogAutoClose', {'enabled': True}))
 aclib.RunTapirCommand ('GetDialogAutoClose')
 
-aclib.RunTapirCommand ('SetDialogAutoClose', {'enabled': original})
+aclib.PrintJson (aclib.RunTapirCommand ('SetDialogAutoClose', {'enabled': original}))

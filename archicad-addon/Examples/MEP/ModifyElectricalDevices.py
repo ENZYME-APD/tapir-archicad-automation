@@ -9,11 +9,11 @@ if not devices:
     raise SystemExit ('No electrical device in the project.')
 device = devices[0]
 
-aclib.RunTapirCommand ('ModifyElectricalDevices', {
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyElectricalDevices', {
     'electricalDevicesData': [{'elementId': device['elementId'], 'apparentPower': 100}]
-})
+}))
 aclib.RunTapirCommand ('GetElectricalDevices', {'elements': [{'elementId': device['elementId']}]})
 
-aclib.RunTapirCommand ('ModifyElectricalDevices', {
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyElectricalDevices', {
     'electricalDevicesData': [{'elementId': device['elementId'], 'apparentPower': round (device['apparentPower'])}]
-})
+}))

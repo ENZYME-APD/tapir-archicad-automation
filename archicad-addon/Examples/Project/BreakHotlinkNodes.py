@@ -15,6 +15,6 @@ aclib.RunTapirCommand ('SaveAsModuleFile', {'moduleFilePath': modulePath, 'eleme
 nodeId = aclib.RunTapirCommand ('CreateHotlinkNodes', {'hotlinkNodes': [{'sourceLocation': modulePath}]})['hotlinkNodes'][0]['hotlinkNodeId']
 aclib.RunTapirCommand ('CreateHotlinkInstances', {'hotlinkInstances': [{'hotlinkNodeId': nodeId, 'origin': {'x': 50.0, 'y': 0.0}}]})
 
-aclib.RunTapirCommand ('BreakHotlinkNodes', {
+aclib.PrintJson (aclib.RunTapirCommand ('BreakHotlinkNodes', {
     'hotlinkNodes': [{'hotlinkNodeId': nodeId}]
-})
+}))

@@ -9,7 +9,7 @@ reserved = [k['name'] for k in keys if 'teamworkOwner' in k]
 if not reserved:
     raise SystemExit ('No reserved project data.')
 
-aclib.RunTapirCommand ('RequestProjectData', {
+aclib.PrintJson (aclib.RunTapirCommand ('RequestProjectData', {
     'names': reserved,
     'mailText': 'Please release the Tapir project data.'
-})
+}))

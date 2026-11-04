@@ -4,12 +4,12 @@ Saved views are not changed. The previous state is only restored when it matched
 """
 import aclib
 
-layerCombinations = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'LayerCombination'}, debug = False)['attributes']
+layerCombinations = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'LayerCombination'})['attributes']
 if not layerCombinations:
     raise SystemExit ('No Layer Combination in the project.')
-current = aclib.RunTapirCommand ('GetCurrentLayerCombination', debug = False)
+current = aclib.RunTapirCommand ('GetCurrentLayerCombination')
 
-aclib.RunTapirCommand ('ActivateLayerCombination', {'attributeId': layerCombinations[0]['attributeId']})
+aclib.PrintJson (aclib.RunTapirCommand ('ActivateLayerCombination', {'attributeId': layerCombinations[0]['attributeId']}))
 
 if 'layerCombinationId' in current:
-    aclib.RunTapirCommand ('ActivateLayerCombination', {'attributeId': current['layerCombinationId']})
+    aclib.PrintJson (aclib.RunTapirCommand ('ActivateLayerCombination', {'attributeId': current['layerCombinationId']}))

@@ -9,9 +9,9 @@ text = aclib.RunTapirCommand ('CreateTexts', {'textsData': [{
     'text': 'Draft'
 }]})['elements'][0]
 
-aclib.RunTapirCommand ('ModifyTexts', {'textsWithDetails': [{
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyTexts', {'textsWithDetails': [{
     'elementId': text['elementId'],
     'coordinate': {'x': 2.0, 'y': 1.0, 'z': 0.0},
     'text': 'Final',
     'style': {'bold': True, 'height': 5.0}
-}]})
+}]}))

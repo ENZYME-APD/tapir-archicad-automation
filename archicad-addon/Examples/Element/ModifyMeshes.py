@@ -15,7 +15,7 @@ mesh = aclib.RunTapirCommand ('CreateMeshes', {'meshesData': [{
     ]
 }]})['elements'][0]
 
-aclib.RunTapirCommand ('ModifyMeshes', {'meshesData': [{
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyMeshes', {'meshesData': [{
     'elementId': mesh['elementId'],
     'meshData': {
         'skirtType': 'SolidBodyWithSkirt',
@@ -28,4 +28,4 @@ aclib.RunTapirCommand ('ModifyMeshes', {'meshesData': [{
             {'x': 0.0, 'y': 10.0, 'z': 0.0}
         ]
     }
-}]})
+}]}))

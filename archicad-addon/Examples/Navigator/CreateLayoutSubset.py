@@ -4,7 +4,7 @@ The new subset stays in the Layout Book: subsets cannot be deleted through the A
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateLayoutSubset', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateLayoutSubset', {
     'subsetsData': [{
         'name': 'Tapir Example Subset',
         'addOwnPrefix': True,
@@ -12,4 +12,4 @@ aclib.RunTapirCommand ('CreateLayoutSubset', {
         'numberingStyle': '01',
         'startAt': 1
     }]
-})
+}))

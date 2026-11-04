@@ -4,4 +4,4 @@ Requires Archicad 28 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('GetProductVersionInfo')
+aclib.PrintJson (aclib.RunTapirCommand ('GetProductVersionInfo'))

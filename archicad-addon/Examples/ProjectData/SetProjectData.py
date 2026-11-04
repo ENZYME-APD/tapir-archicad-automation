@@ -4,11 +4,11 @@ import aclib
 
 name = 'tapir-example/settings'
 
-aclib.RunTapirCommand ('SetProjectData', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetProjectData', {
     'values': [
         {'name': name, 'content': json.dumps ({'scale': 100, 'layer': 'Tapir'})}
     ]
-})
+}))
 aclib.RunTapirCommand ('GetProjectData', {'names': [name]})
 
 aclib.RunTapirCommand ('DeleteProjectData', {'names': [name]})

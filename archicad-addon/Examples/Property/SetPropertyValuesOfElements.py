@@ -4,7 +4,7 @@ Needs at least one Wall.
 """
 import aclib
 
-walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'}, debug = False)['elements'][:1]
+walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]
 if not walls:
     raise SystemExit ('No wall in the project.')
 elementIdPropertyId = aclib.RunCommand ('API.GetPropertyIds', {
@@ -15,23 +15,23 @@ def ReadElementId ():
     return aclib.RunTapirCommand ('GetPropertyValuesOfElements', {
         'elements': walls,
         'properties': [{'propertyId': elementIdPropertyId}]
-    }, debug = False)['propertyValuesForElements'][0]['propertyValues'][0]['propertyValue']['value']
+    })['propertyValuesForElements'][0]['propertyValues'][0]['propertyValue']['value']
 
 oldValue = ReadElementId ()
 
-aclib.RunTapirCommand ('SetPropertyValuesOfElements', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetPropertyValuesOfElements', {
     'elementPropertyValues': [{
         'elementId': walls[0]['elementId'],
         'propertyId': elementIdPropertyId,
         'propertyValue': {'value': 'TAPIR-EXAMPLE'}
     }]
-})
+}))
 print ('Element ID after the change:', ReadElementId ())
 
-aclib.RunTapirCommand ('SetPropertyValuesOfElements', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetPropertyValuesOfElements', {
     'elementPropertyValues': [{
         'elementId': walls[0]['elementId'],
         'propertyId': elementIdPropertyId,
         'propertyValue': {'value': oldValue}
     }]
-})
+}))

@@ -9,11 +9,11 @@ if not roots:
     raise SystemExit ('No add-on viewpoint in the project.')
 root = aclib.RunTapirCommand ('GetAddOnViewpoints', {'viewpointIds': roots[:1]})['viewpoints'][0]
 
-aclib.RunTapirCommand ('ChangeAddOnViewpoints', {
+aclib.PrintJson (aclib.RunTapirCommand ('ChangeAddOnViewpoints', {
     'viewpoints': [{'viewpointId': root['viewpointId'], 'displayName': root['displayName'] + ' (Tapir)'}]
-})
+}))
 aclib.RunTapirCommand ('GetAddOnViewpoints', {'viewpointIds': roots[:1]})
 
-aclib.RunTapirCommand ('ChangeAddOnViewpoints', {
+aclib.PrintJson (aclib.RunTapirCommand ('ChangeAddOnViewpoints', {
     'viewpoints': [{'viewpointId': root['viewpointId'], 'displayName': root['displayName']}]
-})
+}))

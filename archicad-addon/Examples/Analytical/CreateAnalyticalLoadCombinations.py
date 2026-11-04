@@ -8,11 +8,11 @@ loadCases = [c for c in aclib.RunTapirCommand ('GetAnalyticalLoadCases', {})['lo
 if not loadCases:
     raise SystemExit ('No load case in the project.')
 
-aclib.RunTapirCommand ('CreateAnalyticalLoadCombinations', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateAnalyticalLoadCombinations', {
     'loadCombinations': [{
         'name': 'Tapir ULS',
         'category': 'ULS',
         'type': 'Linear',
         'loadFactors': [{'loadCaseId': loadCases[0]['loadCaseId'], 'factor': 1.35, 'multiplier': 1.0}]
     }]
-})
+}))

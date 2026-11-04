@@ -4,12 +4,12 @@ Links the first wall to the second one first, so it needs at least two Walls. On
 """
 import aclib
 
-walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'}, debug = False)['elements'][:2]
+walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:2]
 if len (walls) < 2:
     raise SystemExit ('Fewer than two walls in the project.')
 link = {'fromElementId': walls[0]['elementId'], 'toElementId': walls[1]['elementId']}
 
-aclib.RunTapirCommand ('LinkElements', {'links': [link]}, debug = False)
+aclib.RunTapirCommand ('LinkElements', {'links': [link]})
 
-aclib.RunTapirCommand ('UnlinkElements', {'links': [{'fromElementId': walls[0]['elementId'], 'toElementId': walls[1]['elementId']}]})
+aclib.PrintJson (aclib.RunTapirCommand ('UnlinkElements', {'links': [{'fromElementId': walls[0]['elementId'], 'toElementId': walls[1]['elementId']}]}))
 aclib.RunTapirCommand ('GetLinksOfElements', {'elements': walls[:1]})

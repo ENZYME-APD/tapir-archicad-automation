@@ -4,8 +4,8 @@ Needs at least one Wall. The floor plan must be the current window.
 """
 import aclib
 
-walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'}, debug = False)['elements'][:1]
+walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]
 if not walls:
     raise SystemExit ('No wall in the project.')
 
-aclib.RunTapirCommand ('GetDrawingPrimitivesOfElements', {'elements': walls})
+aclib.PrintJson (aclib.RunTapirCommand ('GetDrawingPrimitivesOfElements', {'elements': walls}))

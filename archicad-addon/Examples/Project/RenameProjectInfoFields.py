@@ -11,11 +11,11 @@ if 'projectInfoFieldId' not in created:
     raise SystemExit ('The field could not be created.')
 fieldId = created['projectInfoFieldId']
 
-aclib.RunTapirCommand ('RenameProjectInfoFields', {
+aclib.PrintJson (aclib.RunTapirCommand ('RenameProjectInfoFields', {
     'projectInfoFields': [
         {'projectInfoFieldId': fieldId, 'name': 'Tapir Renamed Field'}
     ]
-})
+}))
 aclib.RunTapirCommand ('GetProjectInfoGroups')
 
 aclib.RunTapirCommand ('DeleteProjectInfoFields', {'projectInfoFieldIds': [{'projectInfoFieldId': fieldId}]})

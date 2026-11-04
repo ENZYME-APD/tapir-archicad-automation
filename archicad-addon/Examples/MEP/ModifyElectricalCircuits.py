@@ -9,11 +9,11 @@ if not circuits:
     raise SystemExit ('No electrical circuit in the project.')
 circuit = circuits[0]
 
-aclib.RunTapirCommand ('ModifyElectricalCircuits', {
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyElectricalCircuits', {
     'electricalCircuitsData': [{'elementId': circuit['elementId'], 'description': 'Changed by Tapir'}]
-})
+}))
 aclib.RunTapirCommand ('GetElectricalCircuits', {'elements': [{'elementId': circuit['elementId']}]})
 
-aclib.RunTapirCommand ('ModifyElectricalCircuits', {
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyElectricalCircuits', {
     'electricalCircuitsData': [{'elementId': circuit['elementId'], 'description': circuit['description']}]
-})
+}))

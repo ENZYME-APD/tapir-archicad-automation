@@ -10,4 +10,4 @@ pdfFilePath = os.path.join (os.path.expanduser ('~'), 'markups.pdf')
 if not os.path.isfile (pdfFilePath):
     raise SystemExit ('No PDF at {}.'.format (pdfFilePath))
 
-aclib.RunTapirCommand ('ImportMarkupsFromPDF', {'pdfFilePath': pdfFilePath})
+aclib.PrintJson (aclib.RunTapirCommand ('ImportMarkupsFromPDF', {'pdfFilePath': pdfFilePath}))

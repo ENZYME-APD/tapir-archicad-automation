@@ -22,6 +22,7 @@ response = aclib.RunTapirCommand ('CreateLibraryParts', {
     }],
     'overwriteExisting': True
 })
+aclib.PrintJson (response)
 createdPart = response['libraryParts'][0]
 if 'error' in createdPart:
     raise SystemExit (createdPart['error']['message'])

@@ -22,10 +22,10 @@ sourceId, targetId = [element['elementId'] for element in aclib.RunTapirCommand 
     ]
 })['elements']]
 
-aclib.RunTapirCommand ('TransferMEPSettings', {
+aclib.PrintJson (aclib.RunTapirCommand ('TransferMEPSettings', {
     'sourceElementId': sourceId,
     'targetElements': [{'elementId': targetId}]
-})
+}))
 
 aclib.RunTapirCommand ('GetMEPRoutingElements', {'elements': [{'elementId': targetId}]})
 aclib.RunTapirCommand ('DeleteElements', {'elements': [{'elementId': sourceId}, {'elementId': targetId}]})

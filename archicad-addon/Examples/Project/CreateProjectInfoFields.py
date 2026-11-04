@@ -9,6 +9,7 @@ created = aclib.RunTapirCommand ('CreateProjectInfoFields', {
         {'projectInfoName': 'Tapir Example Field', 'projectInfoValue': 'Created by Tapir'}
     ]
 })['fields'][0]
+aclib.PrintJson (created)
 if 'error' in created:
     raise SystemExit ('The field could not be created.')
 

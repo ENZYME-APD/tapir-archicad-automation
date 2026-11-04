@@ -12,4 +12,4 @@ drawings = aclib.RunTapirCommand ('GetElementsByType', {
 if not drawings:
     raise SystemExit ('No Drawing on the layouts.')
 
-aclib.RunTapirCommand ('UpdateDrawings', {'elements': drawings})
+aclib.PrintJson (aclib.RunTapirCommand ('UpdateDrawings', {'elements': drawings}))

@@ -5,7 +5,7 @@ Overwrites the fill of the same name when the script is run again.
 import math
 import aclib
 
-aclib.RunTapirCommand ('CreateFills', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateFills', {
     'fillDataArray': [{
         'name': 'Tapir Example Hatching',
         'subType': 'Vector',
@@ -24,4 +24,4 @@ aclib.RunTapirCommand ('CreateFills', {
         }]
     }],
     'overwriteExisting': True
-})
+}))

@@ -12,8 +12,8 @@ layoutId = layouts[0]['databaseId']
 aclib.RunTapirCommand ('ChangeWindow', {'databaseId': layoutId})
 aclib.RunTapirCommand ('ChangeWindow', {'windowType': 'FloorPlan'})
 
-aclib.RunTapirCommand ('CloseWindows', {
+aclib.PrintJson (aclib.RunTapirCommand ('CloseWindows', {
     'windows': [
         {'databaseId': layoutId, 'windowType': 'Layout'}
     ]
-})
+}))

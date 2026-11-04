@@ -16,13 +16,13 @@ if not stringParameters:
     raise SystemExit ('The marker of the first opening has no String parameter.')
 
 parameter = stringParameters[0]
-aclib.RunTapirCommand ('SetMarkerParametersOfElements', {'elementsWithMarkerParameters': [{
+aclib.PrintJson (aclib.RunTapirCommand ('SetMarkerParametersOfElements', {'elementsWithMarkerParameters': [{
     'elementId': opening['elementId'],
     'markerParameters': [{'name': parameter['name'], 'value': 'Tapir'}]
-}]})
+}]}))
 aclib.RunTapirCommand ('GetMarkerParametersOfElements', {'elements': [opening]})
 
-aclib.RunTapirCommand ('SetMarkerParametersOfElements', {'elementsWithMarkerParameters': [{
+aclib.PrintJson (aclib.RunTapirCommand ('SetMarkerParametersOfElements', {'elementsWithMarkerParameters': [{
     'elementId': opening['elementId'],
     'markerParameters': [{'name': parameter['name'], 'value': parameter['value']}]
-}]})
+}]}))

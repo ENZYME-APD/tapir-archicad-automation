@@ -4,26 +4,26 @@ Needs at least one editable Wall.
 """
 import aclib
 
-walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall', 'filters': ['IsEditable']}, debug = False)['elements'][:1]
+walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall', 'filters': ['IsEditable']})['elements'][:1]
 if not walls:
     raise SystemExit ('No editable wall in the project.')
 wallId = walls[0]['elementId']
 
 def GetStructuralFunction ():
-    result = aclib.RunTapirCommand ('GetCategoryValuesOfElements', {'elements': walls, 'categories': ['StructuralFunction']}, debug = False)
+    result = aclib.RunTapirCommand ('GetCategoryValuesOfElements', {'elements': walls, 'categories': ['StructuralFunction']})
     return result['categoryValuesOfElements'][0]['categoryValues'][0]
 
-categories = aclib.RunTapirCommand ('GetElementCategories', {}, debug = False)['categories']
+categories = aclib.RunTapirCommand ('GetElementCategories', {})['categories']
 structuralFunction = next (category for category in categories if category['type'] == 'StructuralFunction')
 original = GetStructuralFunction ()
 newValue = next (value for value in structuralFunction['values']
                  if value['isVisibleOnUI'] and value['categoryValueId'] != original['categoryValueId'])
 
-aclib.RunTapirCommand ('SetCategoryValuesOfElements', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetCategoryValuesOfElements', {
     'elementCategoryValues': [{'elementId': wallId, 'type': 'StructuralFunction', 'categoryValueId': newValue['categoryValueId']}]
-})
+}))
 print ('Structural Function: {} -> {}'.format (original['name'], GetStructuralFunction ()['name']))
 
 aclib.RunTapirCommand ('SetCategoryValuesOfElements', {
     'elementCategoryValues': [{'elementId': wallId, 'type': 'StructuralFunction', 'categoryValueId': original['categoryValueId']}]
-}, debug = False)
+})

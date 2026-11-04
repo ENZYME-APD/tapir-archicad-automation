@@ -10,11 +10,11 @@ beam = aclib.RunTapirCommand ('CreateBeams', {'beamsData': [{
     'zCoordinate': 3.0
 }]})['elements'][0]
 
-aclib.RunTapirCommand ('ModifyBeams', {'beamsWithDetails': [{
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyBeams', {'beamsWithDetails': [{
     'elementId': beam['elementId'],
     'isWidthAndHeightLinked': False,
     'width': 0.3,
     'height': 0.6,
     'holes': [{'type': 'Circular', 'centerX': 3.0, 'centerZ': 0.3, 'width': 0.15}]
-}]})
+}]}))
 aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': [beam], 'fields': ['details']})

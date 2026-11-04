@@ -9,7 +9,7 @@ column = aclib.RunTapirCommand ('CreateColumns', {'columnsData': [{
     'coordinates': {'x': 0.0, 'y': 0.0, 'z': 0.0}
 }]})['elements'][0]
 
-aclib.RunTapirCommand ('ModifyColumns', {'columnsWithDetails': [{
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyColumns', {'columnsWithDetails': [{
     'elementId': column['elementId'],
     'origin': {'x': 2.0, 'y': 1.0},
     'axisRotationAngle': math.radians (45),
@@ -17,5 +17,5 @@ aclib.RunTapirCommand ('ModifyColumns', {'columnsWithDetails': [{
     'isWidthAndHeightLinked': False,
     'width': 0.5,
     'depth': 0.3
-}]})
+}]}))
 aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': [column], 'fields': ['details']})

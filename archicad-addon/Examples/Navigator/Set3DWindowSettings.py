@@ -4,6 +4,6 @@ import aclib
 original = aclib.RunTapirCommand ('Get3DWindowSettings')
 
 # The values not given are kept; the response holds the settings read back.
-aclib.RunTapirCommand ('Set3DWindowSettings', {'hSize': 800, 'vSize': 600})
+aclib.PrintJson (aclib.RunTapirCommand ('Set3DWindowSettings', {'hSize': 800, 'vSize': 600}))
 
-aclib.RunTapirCommand ('Set3DWindowSettings', original)
+aclib.PrintJson (aclib.RunTapirCommand ('Set3DWindowSettings', original))

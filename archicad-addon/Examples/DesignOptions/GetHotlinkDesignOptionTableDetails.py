@@ -13,6 +13,6 @@ nodes = [n for n in AllNodes (aclib.RunTapirCommand ('GetHotlinks')['hotlinks'])
 if not nodes:
     raise SystemExit ('No hotlink in the project.')
 
-aclib.RunTapirCommand ('GetHotlinkDesignOptionTableDetails', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetHotlinkDesignOptionTableDetails', {
     'hotlinkNodes': [{'hotlinkNodeId': n['hotlinkNodeId']} for n in nodes]
-})
+}))

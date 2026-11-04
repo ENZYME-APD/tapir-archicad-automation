@@ -4,11 +4,11 @@ Overwrites the Profile of the same name when the script is run again.
 """
 import aclib
 
-profiles = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'Profile'}, debug = False)['attributes']
+profiles = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'Profile'})['attributes']
 if not profiles:
     raise SystemExit ('No Profile in the project.')
 
-aclib.RunTapirCommand ('CreateProfiles', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateProfiles', {
     'profileDataArray': [{
         'name': 'Tapir Example Profile',
         'sourceAttributeId': {'attributeId': profiles[0]['attributeId']},
@@ -16,4 +16,4 @@ aclib.RunTapirCommand ('CreateProfiles', {
         'beamType': True
     }],
     'overwriteExisting': True
-})
+}))

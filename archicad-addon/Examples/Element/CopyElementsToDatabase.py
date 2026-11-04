@@ -6,16 +6,16 @@ import aclib
 
 polylines = aclib.RunTapirCommand ('CreatePolylines', {
     'polylinesData': [{'coordinates': [{'x': 0.0, 'y': 0.0}, {'x': 3.0, 'y': 3.0}, {'x': 6.0, 'y': 0.0}]}]
-}, debug = False)['elements']
+})['elements']
 worksheet = aclib.RunTapirCommand ('CreateWorksheets', {
     'worksheetsData': [{'name': 'Tapir Example', 'referenceId': 'TAPIR-EX'}]
-}, debug = False)['databases'][0]
+})['databases'][0]
 
-aclib.RunTapirCommand ('CopyElementsToDatabase', {
+aclib.PrintJson (aclib.RunTapirCommand ('CopyElementsToDatabase', {
     'elements': polylines,
     'targetDatabaseId': worksheet['databaseId'],
     'offset': {'x': 1.0, 'y': 0.0}
-})
+}))
 
-aclib.RunTapirCommand ('DeleteElements', {'elements': polylines}, debug = False)
-aclib.RunTapirCommand ('DeleteNavigatorItems', {'navigatorItemIds': [{'navigatorItemId': worksheet['navigatorItemId']}]}, debug = False)
+aclib.RunTapirCommand ('DeleteElements', {'elements': polylines})
+aclib.RunTapirCommand ('DeleteNavigatorItems', {'navigatorItemIds': [{'navigatorItemId': worksheet['navigatorItemId']}]})

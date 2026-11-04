@@ -21,6 +21,7 @@ views = aclib.RunTapirCommand ('CreateViewsInViewMap', {
         'name': 'Tapir Example View'
     }]
 })['navigatorItems']
+aclib.PrintJson (views)
 
 aclib.RunTapirCommand ('DeleteNavigatorItems', {'navigatorItemIds': [v for v in views if 'navigatorItemId' in v]})
 aclib.RunTapirCommand ('DeleteNavigatorItems', {'navigatorItemIds': [{'navigatorItemId': folder['navigatorItemId']}]})

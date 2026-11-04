@@ -9,6 +9,6 @@ def AllItems (item):
 projectMap = aclib.RunTapirCommand ('GetNavigatorItemTree', {'navigatorMapId': 'ProjectMap'})['navigatorItemTree']
 stories = [item for item in AllItems (projectMap) if item['type'] == 'StoryItem']
 
-aclib.RunTapirCommand ('GetView2DTransformations', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetView2DTransformations', {
     'navigatorItemIds': [{'navigatorItemId': story['navigatorItemId']} for story in stories]
-})
+}))

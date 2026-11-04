@@ -4,4 +4,4 @@ Requires Archicad 27 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('GetRenovationStatusNames')
+aclib.PrintJson (aclib.RunTapirCommand ('GetRenovationStatusNames'))

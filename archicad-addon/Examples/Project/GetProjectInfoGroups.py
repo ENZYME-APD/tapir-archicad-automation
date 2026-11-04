@@ -4,4 +4,4 @@ Requires Archicad 30 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('GetProjectInfoGroups')
+aclib.PrintJson (aclib.RunTapirCommand ('GetProjectInfoGroups'))

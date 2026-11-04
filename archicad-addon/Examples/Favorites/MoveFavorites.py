@@ -5,7 +5,7 @@ script and deleted at the end. Requires Archicad 29 or later.
 """
 import aclib
 
-favorites = aclib.RunTapirCommand ('GetAllFavorites', debug = False)['favorites']
+favorites = aclib.RunTapirCommand ('GetAllFavorites')['favorites']
 if not favorites:
     raise SystemExit ('The project has no Favorite.')
 
@@ -13,13 +13,13 @@ created = aclib.RunTapirCommand ('CreateFavorite', {
     'name': 'Tapir Example Favorite',
     'source': {'favoriteName': favorites[0]['name']},
     'conflictPolicy': 'RenameNew'
-}, debug = False)
-aclib.RunTapirCommand ('CreateFavoriteFolder', {'parentPath': [], 'name': 'Tapir Example Folder'}, debug = False)
+})
+aclib.RunTapirCommand ('CreateFavoriteFolder', {'parentPath': [], 'name': 'Tapir Example Folder'})
 
-aclib.RunTapirCommand ('MoveFavorites', {
+aclib.PrintJson (aclib.RunTapirCommand ('MoveFavorites', {
     'favorites': [created['name']],
     'targetPath': ['Tapir Example Folder']
-})
+}))
 
 # Deleting the folder deletes the moved Favorite with it.
-aclib.RunTapirCommand ('DeleteFavoriteFolder', {'path': ['Tapir Example Folder'], 'recursive': True}, debug = False)
+aclib.RunTapirCommand ('DeleteFavoriteFolder', {'path': ['Tapir Example Folder'], 'recursive': True})

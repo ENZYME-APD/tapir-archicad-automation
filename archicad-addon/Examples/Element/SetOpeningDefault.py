@@ -7,11 +7,11 @@ import aclib
 default = aclib.RunTapirCommand ('GetOpeningDefault', {})
 oldMode = default['floorPlanParameters'].get ('floorPlanDisplayMode', 'Symbolic')
 
-aclib.RunTapirCommand ('SetOpeningDefault', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetOpeningDefault', {
     'floorPlanParameters': {'floorPlanDisplayMode': 'Projected'}
-})
+}))
 aclib.RunTapirCommand ('GetOpeningDefault', {})
 
-aclib.RunTapirCommand ('SetOpeningDefault', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetOpeningDefault', {
     'floorPlanParameters': {'floorPlanDisplayMode': oldMode}
-})
+}))

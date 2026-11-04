@@ -3,4 +3,4 @@ import aclib
 
 aclib.RunTapirCommand ('FitInWindow')
 
-aclib.RunTapirCommand ('ResetZoom', {'numberOfStepsBack': 1})
+aclib.PrintJson (aclib.RunTapirCommand ('ResetZoom', {'numberOfStepsBack': 1}))

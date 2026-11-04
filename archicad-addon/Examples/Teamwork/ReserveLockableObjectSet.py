@@ -4,11 +4,11 @@ Needs an open Teamwork project. Favorites that were free before are released aga
 """
 import aclib
 
-wasFree = aclib.RunTapirCommand ('GetLockableObjectSetStatus', {'objectSetName': 'Favorites'}, debug = False).get ('status') == 'Free'
+wasFree = aclib.RunTapirCommand ('GetLockableObjectSetStatus', {'objectSetName': 'Favorites'}).get ('status') == 'Free'
 
-aclib.RunTapirCommand ('ReserveLockableObjectSet', {'objectSetName': 'Favorites'})
+aclib.PrintJson (aclib.RunTapirCommand ('ReserveLockableObjectSet', {'objectSetName': 'Favorites'}))
 
 aclib.RunTapirCommand ('GetLockableObjectSetStatus', {'objectSetName': 'Favorites'})
 
 if wasFree:
-    aclib.RunTapirCommand ('ReleaseLockableObjectSet', {'objectSetName': 'Favorites'}, debug = False)
+    aclib.RunTapirCommand ('ReleaseLockableObjectSet', {'objectSetName': 'Favorites'})

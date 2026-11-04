@@ -11,10 +11,10 @@ wall = aclib.RunTapirCommand ('CreateWalls', {'wallsData': [{
     'height': 3.0
 }]})['elements'][0]
 
-aclib.RunTapirCommand ('CreateWindows', {'windowsData': [{
+aclib.PrintJson (aclib.RunTapirCommand ('CreateWindows', {'windowsData': [{
     'ownerWallId': wall['elementId'],
     'centerOffset': 3.0,
     'sillHeight': 0.9,
     'width': 1.0,
     'height': 1.5
-}]})
+}]}))

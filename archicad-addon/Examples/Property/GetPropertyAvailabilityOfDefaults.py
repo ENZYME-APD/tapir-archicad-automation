@@ -4,11 +4,11 @@ Requires Archicad 26 or later.
 """
 import aclib
 
-customProperties = aclib.RunTapirCommand ('GetAllProperties', {'propertyTypes': ['Custom'], 'includeAvailability': False}, debug = False)['properties']
+customProperties = aclib.RunTapirCommand ('GetAllProperties', {'propertyTypes': ['Custom'], 'includeAvailability': False})['properties']
 if not customProperties:
     raise SystemExit ('No custom property in the project.')
 
-aclib.RunTapirCommand ('GetPropertyAvailabilityOfDefaults', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetPropertyAvailabilityOfDefaults', {
     'elementType': 'Wall',
     'properties': [{'propertyId': p['propertyId']} for p in customProperties]
-})
+}))

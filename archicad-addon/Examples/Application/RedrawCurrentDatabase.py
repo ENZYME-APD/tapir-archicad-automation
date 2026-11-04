@@ -1,4 +1,4 @@
 """Redraws the current database with RedrawCurrentDatabase."""
 import aclib
 
-aclib.RunTapirCommand ('RedrawCurrentDatabase')
+aclib.PrintJson (aclib.RunTapirCommand ('RedrawCurrentDatabase'))

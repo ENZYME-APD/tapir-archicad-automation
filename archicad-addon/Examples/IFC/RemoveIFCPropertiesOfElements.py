@@ -5,7 +5,7 @@ Available only in Archicad 25, 26 and 27.
 """
 import aclib
 
-walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'}, debug = False)['elements'][:1]
+walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]
 if not walls:
     raise SystemExit ('No wall in the project.')
 elementId = walls[0]['elementId']
@@ -18,12 +18,12 @@ aclib.RunTapirCommand ('SetIFCPropertiesOfElements', {
         'type': 'IfcLabel',
         'value': 'Set by Tapir'
     }]
-}, debug = False)
+})
 
-aclib.RunTapirCommand ('RemoveIFCPropertiesOfElements', {
+aclib.PrintJson (aclib.RunTapirCommand ('RemoveIFCPropertiesOfElements', {
     'elementIFCProperties': [{
         'elementId': elementId,
         'propertySetName': 'Tapir_Example',
         'propertyName': 'Note'
     }]
-})
+}))

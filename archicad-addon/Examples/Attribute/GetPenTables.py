@@ -4,9 +4,9 @@ The pens field is left out, as it lists 255 pens per table.
 """
 import aclib
 
-penTables = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'PenTable'}, debug = False)['attributes']
+penTables = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'PenTable'})['attributes']
 
-aclib.RunTapirCommand ('GetPenTables', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetPenTables', {
     'attributeIds': [{'attributeId': penTable['attributeId']} for penTable in penTables],
     'fields': ['isActiveForModel', 'isActiveForLayout']
-})
+}))

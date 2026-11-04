@@ -8,6 +8,6 @@ hotlinks = aclib.RunTapirCommand ('GetHotlinks')['hotlinks']
 if not hotlinks:
     raise SystemExit ('No hotlink in the project.')
 
-aclib.RunTapirCommand ('UpdateHotlinks', {
+aclib.PrintJson (aclib.RunTapirCommand ('UpdateHotlinks', {
     'hotlinkNodes': [{'hotlinkNodeId': h['hotlinkNodeId']} for h in hotlinks]
-})
+}))

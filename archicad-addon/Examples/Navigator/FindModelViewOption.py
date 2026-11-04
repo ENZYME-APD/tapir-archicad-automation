@@ -9,4 +9,5 @@ if not modelViewOptions:
     raise SystemExit ('No model view option combination in the project.')
 
 found = aclib.RunTapirCommand ('FindModelViewOption', {'name': modelViewOptions[0]['name']})
-aclib.RunTapirCommand ('FindModelViewOption', {'modelViewOptionId': found['modelViewOptionId']})
+aclib.PrintJson (found)
+aclib.PrintJson (aclib.RunTapirCommand ('FindModelViewOption', {'modelViewOptionId': found['modelViewOptionId']}))

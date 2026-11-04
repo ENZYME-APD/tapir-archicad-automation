@@ -5,15 +5,15 @@ so the script works on a layer it creates and deletes.
 """
 import aclib
 
-layerId = aclib.RunTapirCommand ('CreateLayers', {'layerDataArray': [{'name': 'Tapir Example User Data Layer'}]}, debug = False)['attributeIds'][0]
+layerId = aclib.RunTapirCommand ('CreateLayers', {'layerDataArray': [{'name': 'Tapir Example User Data Layer'}]})['attributeIds'][0]
 if 'error' in layerId:
     raise SystemExit ('Could not create the layer: ' + layerId['error']['message'])
 aclib.RunTapirCommand ('SetUserDataOfAttributes', {
     'attributeIds': [layerId],
     'pairs': [{'key': 'tapirExample.note', 'value': 'To be deleted'}]
-}, debug = False)
+})
 
-aclib.RunTapirCommand ('DeleteUserDataOfAttributes', {'attributeIds': [layerId]})
+aclib.PrintJson (aclib.RunTapirCommand ('DeleteUserDataOfAttributes', {'attributeIds': [layerId]}))
 aclib.RunTapirCommand ('GetUserDataOfAttributes', {'attributeIds': [layerId]})
 
-aclib.RunTapirCommand ('DeleteAttributes', {'attributesToDelete': [{'attributeType': 'Layer', 'attributeId': layerId}]}, debug = False)
+aclib.RunTapirCommand ('DeleteAttributes', {'attributesToDelete': [{'attributeType': 'Layer', 'attributeId': layerId}]})

@@ -1,8 +1,8 @@
 """Reads the classifications of the first three Building Materials in every classification system with GetClassificationsOfAttributes."""
 import aclib
 
-buildingMaterials = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'BuildingMaterial'}, debug = False)['attributes'][:3]
+buildingMaterials = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'BuildingMaterial'})['attributes'][:3]
 
-aclib.RunTapirCommand ('GetClassificationsOfAttributes', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetClassificationsOfAttributes', {
     'attributeIds': [{'attributeId': buildingMaterial['attributeId']} for buildingMaterial in buildingMaterials]
-})
+}))

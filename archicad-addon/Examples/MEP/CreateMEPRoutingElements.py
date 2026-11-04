@@ -4,7 +4,7 @@ Coordinates are in meters. Requires Archicad 28 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateMEPRoutingElements', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateMEPRoutingElements', {
     'routingElementsData': [
         {
             'domain': 'Ventilation',
@@ -28,4 +28,4 @@ aclib.RunTapirCommand ('CreateMEPRoutingElements', {
             'crossSectionHeight': 0.05
         }
     ]
-})
+}))

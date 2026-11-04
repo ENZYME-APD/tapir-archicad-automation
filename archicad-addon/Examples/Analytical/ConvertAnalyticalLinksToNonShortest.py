@@ -26,6 +26,6 @@ links = aclib.RunTapirCommand ('CreateAnalyticalLinks', {
     }]
 })['elements']
 
-aclib.RunTapirCommand ('ConvertAnalyticalLinksToNonShortest', {
+aclib.PrintJson (aclib.RunTapirCommand ('ConvertAnalyticalLinksToNonShortest', {
     'elements': links
-})
+}))

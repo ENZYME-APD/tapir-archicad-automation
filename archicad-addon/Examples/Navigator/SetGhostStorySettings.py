@@ -7,13 +7,13 @@ import aclib
 original = aclib.RunTapirCommand ('GetGhostStorySettings')
 
 # The fields left out keep their value.
-aclib.RunTapirCommand ('SetGhostStorySettings', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetGhostStorySettings', {
     'on': True,
     'showBelow': True,
     'ghostColor': {'red': 1.0, 'green': 0.6, 'blue': 0.6},
     'filter': ['Wall', 'Slab']
-})
+}))
 aclib.RunTapirCommand ('GetGhostStorySettings')
 
 # What GetGhostStorySettings returns is valid input.
-aclib.RunTapirCommand ('SetGhostStorySettings', original)
+aclib.PrintJson (aclib.RunTapirCommand ('SetGhostStorySettings', original))

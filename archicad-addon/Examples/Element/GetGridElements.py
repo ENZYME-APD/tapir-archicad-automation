@@ -4,4 +4,4 @@ Set includeParameters to True to get their GDL parameters as well. Requires Arch
 """
 import aclib
 
-aclib.RunTapirCommand ('GetGridElements', {'includeParameters': False})
+aclib.PrintJson (aclib.RunTapirCommand ('GetGridElements', {'includeParameters': False}))

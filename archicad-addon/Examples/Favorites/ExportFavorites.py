@@ -7,15 +7,15 @@ import tempfile
 
 import aclib
 
-wallFavorites = aclib.RunTapirCommand ('GetFavoritesByType', {'elementType': 'Wall'}, debug = False)['favorites']
+wallFavorites = aclib.RunTapirCommand ('GetFavoritesByType', {'elementType': 'Wall'})['favorites']
 if not wallFavorites:
     raise SystemExit ('The project has no Wall Favorite.')
 
 favoritesFile = os.path.join (tempfile.mkdtemp (), 'WallFavorites.prefs')
 
-aclib.RunTapirCommand ('ExportFavorites', {
+aclib.PrintJson (aclib.RunTapirCommand ('ExportFavorites', {
     'path': favoritesFile,
     'names': wallFavorites,
     'format': 'prefs'
-})
+}))
 print ('Favorites exported to', favoritesFile)
