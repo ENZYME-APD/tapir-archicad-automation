@@ -20,6 +20,6 @@ aclib.PrintJson (aclib.RunTapirCommand ('SetDetailsOfElements', {
 }))
 print ('Height: {:.3f} m -> {:.3f} m'.format (originalHeight, GetHeight ()))
 
-aclib.PrintJson (aclib.RunTapirCommand ('SetDetailsOfElements', {
+aclib.RunTapirCommand ('SetDetailsOfElements', {
     'elementsWithDetails': [{'elementId': wallId, 'details': {'typeSpecificDetails': {'height': originalHeight}}}]
-}))
+})

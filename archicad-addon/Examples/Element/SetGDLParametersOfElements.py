@@ -20,6 +20,6 @@ aclib.PrintJson (aclib.RunTapirCommand ('SetGDLParametersOfElements', {
 }))
 print ('A: {:.3f} m -> {:.3f} m'.format (originalWidth, GetWidth ()))
 
-aclib.PrintJson (aclib.RunTapirCommand ('SetGDLParametersOfElements', {
+aclib.RunTapirCommand ('SetGDLParametersOfElements', {
     'elementsWithGDLParameters': [{'elementId': objectId, 'gdlParameters': [{'name': 'A', 'value': originalWidth}]}]
-}))
+})

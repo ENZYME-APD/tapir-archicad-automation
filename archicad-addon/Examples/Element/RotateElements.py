@@ -17,6 +17,6 @@ aclib.PrintJson (aclib.RunTapirCommand ('RotateElements', {
     'elementsWithRotations': [{'elementId': wallId, 'rotation': {'beginPoint': xAxis, 'endPoint': yAxis, 'origin': origin}}]
 }))
 
-aclib.PrintJson (aclib.RunTapirCommand ('RotateElements', {
+aclib.RunTapirCommand ('RotateElements', {
     'elementsWithRotations': [{'elementId': wallId, 'rotation': {'beginPoint': yAxis, 'endPoint': xAxis, 'origin': origin}}]
-}))
+})
