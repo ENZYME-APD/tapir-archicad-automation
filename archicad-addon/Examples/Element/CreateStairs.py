@@ -1,13 +1,15 @@
 """Creates a straight stair and a U-shaped stair with a half landing with CreateStairs.
 
-Two baseline points make a straight stair; more points make an L- or U-shaped one. Fields not given
-come from the Stair tool defaults.
+Two baseline points make a straight stair; more points make an L- or U-shaped one. The straight
+stair's baseline runs along the middle of its flight (baselinePosition). Fields not given come from
+the Stair tool defaults.
 """
 import aclib
 
 aclib.PrintJson (aclib.RunTapirCommand ('CreateStairs', {'stairsData': [
     {
         'baseLinePoints': [{'x': 0.0, 'y': 0.0}, {'x': 4.0, 'y': 0.0}],
+        'baselinePosition': 'Center',
         'zCoordinate': 0.0,
         'totalHeight': 3.0,
         'flightWidth': 1.2,
