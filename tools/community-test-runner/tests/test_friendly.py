@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import itertools
 import json
+import os
 import sys
 import tempfile
 import unittest
@@ -149,6 +150,7 @@ class AddOnListTest(unittest.TestCase):
                "  TCP    127.0.0.1:19723        127.0.0.1:63357        WARTEND         45264\n")
         self.assertEqual(r.listening_ports(out, {45264}), {19723, 19725})
 
+    @unittest.skipUnless(os.name == "nt", "a Windows path")
     def test_urls_round_trip(self):
         path = Path(r"C:\Users\A B\Tapir #1\TapirAddOn_AC30_Win.apx")
         self.assertEqual(rw.to_url(path), "lan.flat:///C:/Users/A%20B/Tapir%20%231/TapirAddOn_AC30_Win.apx")
@@ -156,8 +158,12 @@ class AddOnListTest(unittest.TestCase):
 
 
 class InstallationTest(unittest.TestCase):
+    """Windows' side, on any system."""
+
     def setUp(self):
-        self.patches = [unittest.mock.patch.object(r, "archicad_running", return_value=False),
+        self.patches = [unittest.mock.patch.object(r, "MACOS", False),
+                        unittest.mock.patch.object(r, "host", rw),
+                        unittest.mock.patch.object(r, "archicad_running", return_value=False),
                         unittest.mock.patch.object(r, "archicad_pids", return_value={1}),
                         unittest.mock.patch.object(r.subprocess, "Popen"),
                         unittest.mock.patch.object(r.time, "sleep")]
@@ -172,7 +178,6 @@ class InstallationTest(unittest.TestCase):
 
     def test_a_dialog_stops_the_start_and_is_named(self):
         with unittest.mock.patch.object(r, "find_port", return_value=None), \
-                unittest.mock.patch.object(r.os, "name", "nt"), \
                 unittest.mock.patch.object(rw, "dialogs", return_value=["Archicad-Umgebung"]) as dialogs, \
                 self.assertRaisesRegex(RuntimeError, "Archicad-Umgebung.*1150"):
             r.Installation(self.ac).start()
