@@ -19,8 +19,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "TriangulatePolygonsOfElements",
                 "Triangulates the plan polygon of the given elements, holes excluded, as Archicad does it: the " +
                 "outline of a Slab, Zone, Hatch or Mesh and the polygon of a Roof. Each triangle is given by " +
-                "the 2D coordinates of its three vertices. The output is aligned with the input list of " +
-                "elements; an element of another type gets an error item.",
+                "the 2D coordinates of its three vertices. With Convex, the faces of the 3D model of each " +
+                "element (any element type) are decomposed into convex polygons instead, as Archicad does it. " +
+                "The output is aligned with the input list of elements; an element of another type gets an " +
+                "error item.",
                 GroupNames.ElementDetails)
         {
         }
@@ -31,7 +33,29 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             InGenerics(
                 "ElementGuids",
-                "Identifiers of Slabs, Zones, Hatches, Meshes or Roofs.");
+                "Identifiers of Slabs, Zones, Hatches, Meshes or Roofs (any element with a 3D model with Convex).");
+
+            InBoolean(
+                "Convex",
+                "Optional. True decomposes the faces of the 3D model of each element (its own bodies) into " +
+                "convex polygons instead, returned in ConvexPolygons. The default is false: the plan polygon " +
+                "is triangulated.");
+
+            SetOptionality(1);
+        }
+
+        protected override bool TryAddParameters(
+            IGH_DataAccess da,
+            JObject parameters)
+        {
+            if (da.GetOptional(
+                    1,
+                    false))
+            {
+                parameters["convex"] = true;
+            }
+
+            return true;
         }
 
         protected override void AddOutputs()
@@ -43,10 +67,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             OutMeshes(
                 "Meshes",
-                "The triangles of each element joined into one mesh on the XY plane (null for an error).");
+                "The triangles of each element joined into one mesh on the XY plane, or with Convex its " +
+                "convex polygons joined into one mesh in 3D (null for an error).");
 
             OutErrorMessages(
                 "Error message of each element (empty when successful).");
+
+            OutCurveTree(
+                "ConvexPolygons",
+                "With Convex, the convex polygons of the faces of each element's 3D model as closed 3D " +
+                "polylines in world coordinates (one branch per element).");
         }
 
         protected override void SetOutputs(
@@ -54,6 +84,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             List<JToken> items)
         {
             var triangles = new DataTree<object>();
+            var convexPolygons = new DataTree<object>();
             var meshes = new List<object>();
             var errors = new List<string>();
 
@@ -62,6 +93,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 var item = items[i];
                 var path = new GH_Path(i);
                 triangles.EnsurePath(path);
+                convexPolygons.EnsurePath(path);
 
                 if (JsonOutputHelp.IsError(item))
                 {
@@ -100,6 +132,39 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     }
                 }
 
+                if (item["convexPolygons"] is JArray itemPolygons)
+                {
+                    foreach (var polygon in itemPolygons)
+                    {
+                        if (!(polygon["vertices"] is JArray vertices) ||
+                            vertices.Count < 3)
+                        {
+                            continue;
+                        }
+
+                        convexPolygons.Add(
+                            ElementGeometryJsonHelp.Polyline3D(
+                                vertices,
+                                true),
+                            path);
+
+                        // A convex polygon is covered by the fan of triangles
+                        // from its first vertex.
+                        var first = mesh.Vertices.Count;
+                        foreach (var vertex in vertices)
+                        {
+                            mesh.Vertices.Add(ElementGeometryJsonHelp.Point3D(vertex));
+                        }
+                        for (var v = 1; v < vertices.Count - 1; v++)
+                        {
+                            mesh.Faces.AddFace(
+                                first,
+                                first + v,
+                                first + v + 1);
+                        }
+                    }
+                }
+
                 mesh.Vertices.CombineIdentical(
                     true,
                     true);
@@ -116,6 +181,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             da.SetDataList(
                 2,
                 errors);
+            da.SetDataTree(
+                3,
+                convexPolygons);
         }
 
         protected override System.Drawing.Bitmap Icon =>
