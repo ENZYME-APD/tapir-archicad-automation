@@ -3,10 +3,11 @@ reopening the project: python record_expected_output.py <name>.py [...]
 
 test_examples.py runs every script of Test/Scripts/ and every example of Examples/ against a
 freshly opened TestProject.pla and writes their output through the same masks (guids, times,
-path-like fields): Test/Scripts/<name>.py to ExpectedOutputs/<name>.output, Examples/<name>.py
-to ExpectedOutputs/Examples/<name>.output. This does the same for the named scripts against
-whatever project is open, for recording a new golden without a full suite run. A name is
-looked up in Test/Scripts/ first, then in Examples/; a path to the script works too."""
+path-like fields): Test/Scripts/<name>.py to ExpectedOutputs/<name>.output,
+Examples/<GroupFolder>/<name>.py to ExpectedOutputs/Examples/<GroupFolder>/<name>.output. This
+does the same for the named scripts against whatever project is open, for recording a new golden
+without a full suite run. A name is looked up in Test/Scripts/ first, then in the group folders
+of Examples/; a path to the script works too."""
 import os
 import subprocess
 import sys
@@ -22,20 +23,24 @@ expectedOutputsFolder = os.path.join (testFolder, 'ExpectedOutputs')
 def FindScript (name):
     """(script path, expected output path) of a script name or path, or None."""
     fileName = os.path.basename (name)
-    candidates = [os.path.join (scriptsFolder, fileName), os.path.join (examplesFolder, fileName)]
+    candidates = [os.path.join (scriptsFolder, fileName)]
+    candidates += [os.path.join (examplesFolder, groupFolder, fileName) for groupFolder in sorted (os.listdir (examplesFolder)) if groupFolder != 'aclib']
     if os.path.dirname (name):
         candidates.insert (0, os.path.abspath (name))
     for script in candidates:
-        if os.path.isfile (script):
-            inExamples = os.path.normpath (os.path.dirname (script)) == examplesFolder
-            target = os.path.join (expectedOutputsFolder, 'Examples', fileName) if inExamples else os.path.join (expectedOutputsFolder, fileName)
+        if os.path.isfile (script) and fileName != 'aclib.py':
+            groupFolder = os.path.normpath (os.path.dirname (script))
+            if os.path.dirname (groupFolder) == examplesFolder:
+                target = os.path.join (expectedOutputsFolder, 'Examples', os.path.basename (groupFolder), fileName)
+            else:
+                target = os.path.join (expectedOutputsFolder, fileName)
             return script, target + '.output'
     return None
 
 for name in sys.argv[1:]:
     found = FindScript (name)
     if found is None:
-        print ('{}: not found in Test/Scripts or Examples'.format (name))
+        print ('{}: not found in Test/Scripts or Examples/<GroupFolder>'.format (name))
         continue
     script, target = found
     try:

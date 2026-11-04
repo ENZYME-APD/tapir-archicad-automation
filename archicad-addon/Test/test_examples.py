@@ -3,8 +3,9 @@ with the recorded one.
 
 - Test/Scripts/*.py are the regression tests: the output of <name>.py is compared with
   ExpectedOutputs/<name>.output.
-- Examples/*.py (one per command) run as a smoke test: the output of <CommandName>.py is
-  compared with ExpectedOutputs/Examples/<CommandName>.py.output.
+- Examples/<GroupFolder>/*.py (one per command) run as a smoke test: the output of
+  <GroupFolder>/<CommandName>.py is compared with
+  ExpectedOutputs/Examples/<GroupFolder>/<CommandName>.py.output.
 
 A script without a recorded output passes and its output is recorded; a failing one gets its
 output written over the recorded one, so `git diff` shows what changed. Test/Scripts/manual/
@@ -71,7 +72,7 @@ def ExecuteTapirCommand (commandName, inputParameters = None):
     return acConnection.commands.ExecuteAddOnCommand (command, inputParameters)
 
 def ListScripts (folderPath, expectedOutputsFolderPath):
-    """(script path, expected output path) of every .py file of the folder, aclib.py excluded."""
+    """(script path, expected output path) of every .py file of the folder, the aclib.py shim excluded."""
     if not os.path.isdir (folderPath):
         return []
     return [(os.path.join (folderPath, fileName), os.path.join (expectedOutputsFolderPath, fileName + '.output'))
@@ -79,8 +80,13 @@ def ListScripts (folderPath, expectedOutputsFolderPath):
             if fileName.lower ().endswith ('.py') and fileName != 'aclib.py']
 
 def GetTests (onlyNames):
-    examples = [test for test in ListScripts (examplesFolder, os.path.join (expectedOutputsFolder, 'Examples'))
-                if os.path.splitext (os.path.basename (test[0]))[0] not in EXAMPLES_NOT_SMOKE_TESTED]
+    examples = []
+    for groupFolder in sorted (os.listdir (examplesFolder)):
+        # aclib/ is the helper package; every other folder holds the examples of one command group.
+        if groupFolder == 'aclib' or not os.path.isdir (os.path.join (examplesFolder, groupFolder)):
+            continue
+        examples += [test for test in ListScripts (os.path.join (examplesFolder, groupFolder), os.path.join (expectedOutputsFolder, 'Examples', groupFolder))
+                     if os.path.splitext (os.path.basename (test[0]))[0] not in EXAMPLES_NOT_SMOKE_TESTED]
     tests = ListScripts (scriptsFolder, expectedOutputsFolder) + examples
     if onlyNames:
         tests = [test for test in tests if os.path.basename (test[0]) in onlyNames]
