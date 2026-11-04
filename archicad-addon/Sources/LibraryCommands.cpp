@@ -93,6 +93,82 @@ static const LibraryPartScriptSection libraryPartScriptSections[] = {
         [] (GSMObject::Modifier& modifier) { return modifier.DeleteBackwardMigrationScript (); } }
 };
 
+struct LibraryPartScriptReader
+{
+    const char* key;
+    std::function<bool (const GSMObject&)> has;
+    std::function<ACAPI::Result<GS::UniString> (const GSMObject&, const GS::UniString&)> get;
+};
+
+static const LibraryPartScriptReader libraryPartScriptReaders[] = {
+    { "master",     [] (const GSMObject& gsmObject) { return gsmObject.HasMasterScript (); },     [] (const GSMObject& gsmObject, const GS::UniString& password) { return gsmObject.GetMasterScript (password); } },
+    { "parameter",  [] (const GSMObject& gsmObject) { return gsmObject.HasParameterScript (); },  [] (const GSMObject& gsmObject, const GS::UniString& password) { return gsmObject.GetParameterScript (password); } },
+    { "2d",         [] (const GSMObject& gsmObject) { return gsmObject.Has2DScript (); },         [] (const GSMObject& gsmObject, const GS::UniString& password) { return gsmObject.Get2DScript (password); } },
+    { "3d",         [] (const GSMObject& gsmObject) { return gsmObject.Has3DScript (); },         [] (const GSMObject& gsmObject, const GS::UniString& password) { return gsmObject.Get3DScript (password); } },
+    { "properties", [] (const GSMObject& gsmObject) { return gsmObject.HasPropertiesScript (); }, [] (const GSMObject& gsmObject, const GS::UniString& password) { return gsmObject.GetPropertiesScript (password); } }
+};
+
+static Int32 GetLibIndOfElement (const API_Element& element)
+{
+    switch (GetElemTypeId (element.header)) {
+        case API_ObjectID:                return element.object.libInd;
+        case API_LampID:                  return element.lamp.libInd;
+        case API_WindowID:                return element.window.openingBase.libInd;
+        case API_DoorID:                  return element.door.openingBase.libInd;
+        case API_SkylightID:              return element.skylight.openingBase.libInd;
+        case API_ZoneID:                  return element.zone.libInd;
+        case API_CurtainWallFrameID:      return element.cwFrame.libInd;
+        case API_CurtainWallPanelID:      return element.cwPanel.libInd;
+        case API_CurtainWallJunctionID:   return element.cwJunction.libInd;
+        case API_CurtainWallAccessoryID:  return element.cwAccessory.libInd;
+        default:                          return 0;
+    }
+}
+
+static GS::UniString GetResultErrorText (const ACAPI::Error& error)
+{
+    GS::UniString text (error.text.c_str ());
+    return text.IsEmpty () ? GS::UniString () : " (" + text + ")";
+}
+
+// Finds the library part given by 'libraryPartName' or by the element in 'elementId'.
+static std::optional<ACAPI::Library::LibPart> FindLibPartOfItem (const ACAPI::Library::LibraryManager& libraryManager, const GS::ObjectState& item, GS::ObjectState& error)
+{
+    const GS::ObjectState* elementId = item.Get ("elementId");
+    if (elementId == nullptr) {
+        GS::UniString name;
+        if (!item.Get ("libraryPartName", name) || name.IsEmpty ()) {
+            error = CreateErrorResponse (APIERR_BADPARS, "Missing 'libraryPartName' or 'elementId' parameter.");
+            return std::nullopt;
+        }
+        auto libPart = libraryManager.GetLibPartByName (name);
+        if (libPart.IsErr ()) {
+            error = CreateErrorResponse (libPart.UnwrapErr ().kind, "No loaded library part with the name '" + name + "'. Use the fileName (with extension) returned by GetAvailableLibraryParts.");
+            return std::nullopt;
+        }
+        return libPart.Unwrap ();
+    }
+
+    API_Element element = {};
+    element.header.guid = GetGuidFromObjectState (*elementId);
+    const GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        error = CreateErrorResponse (err, "Not found element with guid " + APIGuidToString (element.header.guid) + ".");
+        return std::nullopt;
+    }
+    const Int32 libInd = GetLibIndOfElement (element);
+    if (libInd <= 0) {
+        error = CreateErrorResponse (APIERR_BADPARS, "The element with guid " + APIGuidToString (element.header.guid) + " is not placed from a library part.");
+        return std::nullopt;
+    }
+    auto libPart = libraryManager.GetLibPartByLibInd (libInd);
+    if (libPart.IsErr ()) {
+        error = CreateErrorResponse (libPart.UnwrapErr ().kind, "Failed to get the library part of the element with guid " + APIGuidToString (element.header.guid) + GetResultErrorText (libPart.UnwrapErr ()) + ".");
+        return std::nullopt;
+    }
+    return libPart.Unwrap ();
+}
+
 static const LibraryPartScriptSection* FindLibraryPartScriptSection (const GS::UniString& key)
 {
     for (const LibraryPartScriptSection& section : libraryPartScriptSections) {
@@ -171,82 +247,6 @@ static GS::ObjectState ModifyLibraryPart (
     }
     errorMessage += ".";
     return CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, errorMessage);
-}
-
-struct LibraryPartScriptReader
-{
-    const char* key;
-    std::function<bool (const GSMObject&)> has;
-    std::function<ACAPI::Result<GS::UniString> (const GSMObject&, const GS::UniString&)> get;
-};
-
-static const LibraryPartScriptReader libraryPartScriptReaders[] = {
-    { "master",     [] (const GSMObject& gsmObject) { return gsmObject.HasMasterScript (); },     [] (const GSMObject& gsmObject, const GS::UniString& password) { return gsmObject.GetMasterScript (password); } },
-    { "parameter",  [] (const GSMObject& gsmObject) { return gsmObject.HasParameterScript (); },  [] (const GSMObject& gsmObject, const GS::UniString& password) { return gsmObject.GetParameterScript (password); } },
-    { "2d",         [] (const GSMObject& gsmObject) { return gsmObject.Has2DScript (); },         [] (const GSMObject& gsmObject, const GS::UniString& password) { return gsmObject.Get2DScript (password); } },
-    { "3d",         [] (const GSMObject& gsmObject) { return gsmObject.Has3DScript (); },         [] (const GSMObject& gsmObject, const GS::UniString& password) { return gsmObject.Get3DScript (password); } },
-    { "properties", [] (const GSMObject& gsmObject) { return gsmObject.HasPropertiesScript (); }, [] (const GSMObject& gsmObject, const GS::UniString& password) { return gsmObject.GetPropertiesScript (password); } }
-};
-
-static Int32 GetLibIndOfElement (const API_Element& element)
-{
-    switch (GetElemTypeId (element.header)) {
-        case API_ObjectID:                return element.object.libInd;
-        case API_LampID:                  return element.lamp.libInd;
-        case API_WindowID:                return element.window.openingBase.libInd;
-        case API_DoorID:                  return element.door.openingBase.libInd;
-        case API_SkylightID:              return element.skylight.openingBase.libInd;
-        case API_ZoneID:                  return element.zone.libInd;
-        case API_CurtainWallFrameID:      return element.cwFrame.libInd;
-        case API_CurtainWallPanelID:      return element.cwPanel.libInd;
-        case API_CurtainWallJunctionID:   return element.cwJunction.libInd;
-        case API_CurtainWallAccessoryID:  return element.cwAccessory.libInd;
-        default:                          return 0;
-    }
-}
-
-static GS::UniString GetResultErrorText (const ACAPI::Error& error)
-{
-    GS::UniString text (error.text.c_str ());
-    return text.IsEmpty () ? GS::UniString () : " (" + text + ")";
-}
-
-// Finds the library part given by 'libraryPartName' or by the element in 'elementId'.
-static std::optional<ACAPI::Library::LibPart> FindLibPartOfItem (const ACAPI::Library::LibraryManager& libraryManager, const GS::ObjectState& item, GS::ObjectState& error)
-{
-    const GS::ObjectState* elementId = item.Get ("elementId");
-    if (elementId == nullptr) {
-        GS::UniString name;
-        if (!item.Get ("libraryPartName", name) || name.IsEmpty ()) {
-            error = CreateErrorResponse (APIERR_BADPARS, "Missing 'libraryPartName' or 'elementId' parameter.");
-            return std::nullopt;
-        }
-        auto libPart = libraryManager.GetLibPartByName (name);
-        if (libPart.IsErr ()) {
-            error = CreateErrorResponse (libPart.UnwrapErr ().kind, "No loaded library part with the name '" + name + "'. Use the fileName (with extension) returned by GetAvailableLibraryParts.");
-            return std::nullopt;
-        }
-        return libPart.Unwrap ();
-    }
-
-    API_Element element = {};
-    element.header.guid = GetGuidFromObjectState (*elementId);
-    const GSErrCode err = ACAPI_Element_Get (&element);
-    if (err != NoError) {
-        error = CreateErrorResponse (err, "Not found element with guid " + APIGuidToString (element.header.guid) + ".");
-        return std::nullopt;
-    }
-    const Int32 libInd = GetLibIndOfElement (element);
-    if (libInd <= 0) {
-        error = CreateErrorResponse (APIERR_BADPARS, "The element with guid " + APIGuidToString (element.header.guid) + " is not placed from a library part.");
-        return std::nullopt;
-    }
-    auto libPart = libraryManager.GetLibPartByLibInd (libInd);
-    if (libPart.IsErr ()) {
-        error = CreateErrorResponse (libPart.UnwrapErr ().kind, "Failed to get the library part of the element with guid " + APIGuidToString (element.header.guid) + GetResultErrorText (libPart.UnwrapErr ()) + ".");
-        return std::nullopt;
-    }
-    return libPart.Unwrap ();
 }
 #endif
 
@@ -1748,6 +1748,93 @@ GS::ObjectState ReloadLibrariesCommand::Execute (const GS::ObjectState& /*parame
     return CreateSuccessfulExecutionResult ();
 }
 
+GetGDLDateCommand::GetGDLDateCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetGDLDateCommand::GetName () const
+{
+    return "GetGDLDate";
+}
+
+GS::Optional<GS::UniString> GetGDLDateCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "date": {
+                "type": "integer",
+                "description": "The date GDL scripts see, as the Int32 value of ACAPI_LibraryManagement_GetGDLDate."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "date"
+        ]
+    })";
+}
+
+GS::ObjectState GetGDLDateCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    Int32 date = 0;
+    GSErrCode err = ACAPI_LibraryManagement_GetGDLDate (&date);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the GDL date.");
+    }
+
+    return GS::ObjectState ("date", date);
+}
+
+SetGDLDateCommand::SetGDLDateCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetGDLDateCommand::GetName () const
+{
+    return "SetGDLDate";
+}
+
+GS::Optional<GS::UniString> SetGDLDateCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "date": {
+                "type": "integer",
+                "description": "The date GDL scripts should see, in the same Int32 format GetGDLDate returns."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "date"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetGDLDateCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetGDLDateCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    Int32 date = 0;
+    if (!parameters.Get ("date", date)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "The date parameter is missing.");
+    }
+
+    GSErrCode err = ACAPI_LibraryManagement_ChangeGDLDate (&date);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to set the GDL date.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
 CheckLibrariesCommand::CheckLibrariesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -1986,6 +2073,121 @@ GS::ObjectState GetAvailableLibraryPartsCommand::Execute (const GS::ObjectState&
     }
 
     response.Add ("skippedCount", skippedCount);
+
+    return response;
+}
+
+GetMissingLibPartNamesCommand::GetMissingLibPartNamesCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetMissingLibPartNamesCommand::GetName () const
+{
+    return "GetMissingLibPartNames";
+}
+
+GS::Optional<GS::UniString> GetMissingLibPartNamesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetMissingLibPartNamesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libPartNames": {
+                "type": "array",
+                "description": "The library part name of each given element, in the order of the input, or an error.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementId": {
+                                    "$ref": "#/ElementId"
+                                },
+                                "libPartName": {
+                                    "type": "string",
+                                    "description": "The name of the element's library part, also when the library containing it is not loaded."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementId",
+                                "libPartName"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libPartNames"
+        ]
+    })";
+}
+
+GS::ObjectState GetMissingLibPartNamesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& libPartNames = response.AddList<GS::ObjectState> ("libPartNames");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            libPartNames (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+        API_Elem_Head elemHeader;
+        if (!LoadElementHeaderByGuid (elemGuid, elemHeader)) {
+            libPartNames (CreateErrorResponse (APIERR_BADID, "The given element was not found"));
+            continue;
+        }
+
+        switch (GetElemTypeId (elemHeader)) {
+            case API_ObjectID:
+            case API_LampID:
+            case API_WindowID:
+            case API_DoorID:
+                break;
+            default:
+                libPartNames (CreateErrorResponse (APIERR_BADPARS, "The given element is not an Object, Lamp, Window or Door"));
+                continue;
+        }
+
+        GS::UniString libPartName;
+        const GSErrCode err = ACAPI_LibraryPart_GetUnloadedLibpartName (&elemGuid, &libPartName);
+        if (err != NoError) {
+            libPartNames (CreateErrorResponse (err, "Failed to get the library part name of the element"));
+            continue;
+        }
+
+        GS::ObjectState libPartNameOfElement = CreateElementIdObjectState (elemGuid);
+        libPartNameOfElement.Add ("libPartName", libPartName);
+        libPartNames (libPartNameOfElement);
+    }
 
     return response;
 }
@@ -3606,6 +3808,52 @@ GS::ObjectState SetLibraryPartMetadataCommand::Execute (const GS::ObjectState& p
 #endif
 }
 
+// A library part unique ID string is "{main GUID}-{revision GUID}".
+static bool SplitLibPartUnId (const char* unId, std::string& mainGuid, std::string& revisionGuid)
+{
+    const std::string str (unId);
+    const size_t separator = str.find ("}-{");
+    if (str.size () < 6 || str.front () != '{' || str.back () != '}' || separator == std::string::npos) {
+        return false;
+    }
+    mainGuid = str.substr (1, separator - 1);
+    revisionGuid = str.substr (separator + 3, str.size () - separator - 4);
+    // APIGuidFromString returns APINULLGuid for a string that is not a GUID.
+    return APIGuidFromString (mainGuid.c_str ()) != APINULLGuid && APIGuidFromString (revisionGuid.c_str ()) != APINULLGuid;
+}
+
+// The file of a library part given by its index (as GetAvailableLibraryParts returns it) or by its path.
+static GSErrCode GetLibraryPartLocation (const GS::ObjectState& libraryPart, IO::Location& location, GS::UniString& errorMessage)
+{
+    Int32 index = 0;
+    if (libraryPart.Get ("index", index)) {
+        API_LibPart libPart = {};
+        libPart.index = index;
+        const GSErrCode err = ACAPI_LibraryPart_Get (&libPart);
+        if (err != NoError) {
+            // libPart.location is not allocated on failure.
+            errorMessage = GS::UniString::Printf ("No library part with index %d.", static_cast<int> (index));
+            return err;
+        }
+        if (libPart.location == nullptr) {
+            errorMessage = GS::UniString::Printf ("The library part with index %d has no file.", static_cast<int> (index));
+            return APIERR_GENERAL;
+        }
+        location = *libPart.location;
+        delete libPart.location;
+        return NoError;
+    }
+
+    GS::UniString path;
+    if (libraryPart.Get ("path", path) && !path.IsEmpty ()) {
+        location = IO::Location (path);
+        return NoError;
+    }
+
+    errorMessage = "Give either the index or the path of the library part.";
+    return APIERR_BADPARS;
+}
+
 GetLibraryPartScriptsCommand::GetLibraryPartScriptsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -4087,51 +4335,6 @@ GS::ObjectState CopyLibraryPartsCommand::Execute (const GS::ObjectState& paramet
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
 #endif
-}
-
-// A library part unique ID string is "{main GUID}-{revision GUID}".
-static bool SplitLibPartUnId (const char* unId, std::string& mainGuid, std::string& revisionGuid)
-{
-    const std::string str (unId);
-    const size_t separator = str.find ("}-{");
-    if (str.size () < 6 || str.front () != '{' || str.back () != '}' || separator == std::string::npos) {
-        return false;
-    }
-    mainGuid = str.substr (1, separator - 1);
-    revisionGuid = str.substr (separator + 3, str.size () - separator - 4);
-    return !mainGuid.empty () && !revisionGuid.empty ();
-}
-
-// The file of a library part given by its index (as GetAvailableLibraryParts returns it) or by its path.
-static GSErrCode GetLibraryPartLocation (const GS::ObjectState& libraryPart, IO::Location& location, GS::UniString& errorMessage)
-{
-    Int32 index = 0;
-    if (libraryPart.Get ("index", index)) {
-        API_LibPart libPart = {};
-        libPart.index = index;
-        const GSErrCode err = ACAPI_LibraryPart_Get (&libPart);
-        if (err != NoError) {
-            // libPart.location is not allocated on failure.
-            errorMessage = GS::UniString::Printf ("No library part with index %d.", static_cast<int> (index));
-            return err;
-        }
-        if (libPart.location == nullptr) {
-            errorMessage = GS::UniString::Printf ("The library part with index %d has no file.", static_cast<int> (index));
-            return APIERR_GENERAL;
-        }
-        location = *libPart.location;
-        delete libPart.location;
-        return NoError;
-    }
-
-    GS::UniString path;
-    if (libraryPart.Get ("path", path) && !path.IsEmpty ()) {
-        location = IO::Location (path);
-        return NoError;
-    }
-
-    errorMessage = "Give either the index or the path of the library part.";
-    return APIERR_BADPARS;
 }
 
 GetLibraryPartIdentitiesCommand::GetLibraryPartIdentitiesCommand () :
