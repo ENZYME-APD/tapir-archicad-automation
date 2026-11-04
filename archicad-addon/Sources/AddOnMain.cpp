@@ -12,6 +12,7 @@
 #include "3DProjectionCommands.hpp"
 #include "DocumentFrom3DDefaultsCommands.hpp"
 #include "3DStyleCommands.hpp"
+#include "3DDocumentCommands.hpp"
 
 
 
@@ -682,7 +683,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetDetailsOfElementsCommand> (
             elementCommands, "1.0.7",
-            "Sets the details of the given elements (floor, layer, order, Element ID etc)."
+            "Sets the details of the given elements (floor, layer, order, Element ID etc). An element Archicad does not let you edit (its layer is hidden or locked, it is locked, or it is not reserved by you in teamwork) gets a failed execution result naming the reason."
         );
         err |= RegisterCommand<SetElementInfoStringsCommand> (
             elementCommands, "1.8.0",
@@ -715,6 +716,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetLibPartTransformationsCommand> (
             elementCommands, "1.8.0",
             "Gets the placement transformation of library part instances (Window, Door, Object, Lamp, Zone) as Archicad computes it: the location, the rotation angle and the x/y scaling. The output is aligned with the input array of elements."
+        );
+        err |= RegisterCommand<GetSnapPointsOfElementsCommand> (
+            elementCommands, "1.8.1",
+            "Gets the snap points (hotspots) of the given elements, of any element type: the points of an element that the cursor snaps to and dimensions attach to (for example the endpoints of a Wall's reference line or the vertices of a Slab), in world coordinates, each with the neig kind and subindex identifying which point of the element it is. For the 2D hotspots of library part instances see GetHotspotsOfElements. The output is aligned with the input array of elements."
         );
         err |= RegisterCommand<ConvertRevealOffsetsCommand> (
             elementCommands, "1.7.3",
@@ -883,6 +888,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<MoveElementsCommand> (
             elementCommands, "1.0.2",
             "Moves elements with a given vector. An element that cannot be edited (its layer is hidden or locked, it is locked, or it is not available in teamwork) gets a failed execution result naming the reason instead of being skipped silently."
+        );
+        err |= RegisterCommand<CopyElementsToDatabaseCommand> (
+            elementCommands, "1.8.1",
+            "Copies 2D elements (lines, polylines, arcs, circles, splines, hotspots, texts, hatches, independent labels) from one database into another, e.g. from a worksheet into another worksheet, a detail or a layout, optionally moved by an offset. Returns the new elements in the order of the given ones."
         );
         err |= RegisterCommand<ElevateElementsCommand> (
             elementCommands, "1.7.4",
@@ -1465,6 +1474,10 @@ GSErrCode Initialize (void)
             propertyCommands, "1.0.6",
             "Sets the property values of elements. It works for subelements of hierarchal elements also."
         );
+        err |= RegisterCommand<SetPropertyValuesOfElementDefaultsCommand> (
+            propertyCommands, "1.8.1",
+            "Sets the property values of the tool defaults (the settings new elements get) of element types, so every element placed afterwards gets them, without saving and applying a favorite."
+        );
         err |= RegisterCommand<GetPropertyValuesOfAttributesCommand> (
             propertyCommands, "1.1.8",
             "Returns the property values of the attributes for the given property. With includeStatus it also returns whether each property is available, editable and visible for the attribute (from 1.7.3)."
@@ -1531,7 +1544,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyPropertyValueOfElementsCommand> (
             propertyCommands, "1.8.0",
-            "Sets one property value on all the given elements in a single step. If the property is not available for any of the elements, none of them is changed. Available from Archicad 27."
+            "Sets one property value on all the given elements in a single step. If the property is not available for any of the elements, none of them is changed."
+        );
+        err |= RegisterCommand<GetPropertyExpressionReferencesCommand> (
+            propertyCommands, "1.8.1",
+            "Returns the strings that refer to the given properties in property expressions."
         );
         err |= RegisterCommand<GetPropertyEditabilityCommand> (
             propertyCommands, "1.7.4",
@@ -1543,11 +1560,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<MakePropertyAvailableForElementsCommand> (
             propertyCommands, "1.7.3",
-            "Makes a property definition available for all the given elements. Available only in Archicad 27."
+            "Makes a property definition available for all the given elements. Available in Archicad 25, 26 and 27."
         );
         err |= RegisterCommand<MakePropertyUnavailableForElementsCommand> (
             propertyCommands, "1.7.3",
-            "Makes a property definition unavailable for all the given elements. Available only in Archicad 27."
+            "Makes a property definition unavailable for all the given elements. Available in Archicad 25, 26 and 27."
         );
         AddCommandGroup (propertyCommands);
     }
@@ -1639,6 +1656,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetAttributesByTypeCommand> (
             attributeCommands, "1.1.3",
             "Returns the details of every attribute of the given type, including the path of the attribute folder holding it (Archicad 26 and newer). From Archicad 30 an attribute that Archicad keeps a creation record of also carries creationInfo: how (method), from where (source), by whom and when it was created."
+        );
+        err |= RegisterCommand<GetAttributeIndexesCommand> (
+            attributeCommands, "1.8.1",
+            "Reports for each given attribute type how many attributes there are, the first valid and the highest index in use, and the free indexes between them (for example those of deleted attributes). Available from Archicad 27."
         );
         err |= RegisterCommand<GetAttributesFromProjectCommand> (
             attributeCommands, "1.7.3",
@@ -1990,6 +2011,11 @@ GSErrCode Initialize (void)
             libraryCommands, "1.5.0",
             "Lists library parts currently available to the project. Filter by typeId (e.g. 'Door', 'Window', 'Object', 'Lamp')."
         );
+        err |= RegisterCommand<GetMissingLibPartNamesCommand> (
+            libraryCommands, "1.8.1",
+            "Gets the library part name of the given placed Object, Lamp, Window or Door elements, even if the library containing the part is not loaded. Use it to find the parts of elements that are shown as dots because their library part is missing."
+        );
+
         err |= RegisterCommand<FindLibraryPartsCommand> (
             libraryCommands, "1.8.1",
             "Finds loaded library parts with the Library Manager: all of them, GDL objects, images or text files, optionally only those whose name contains a text. Returns the name, path and index of each. Available from Archicad 28."
@@ -2013,6 +2039,14 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<IsUsableGDLStringCommand> (
             libraryCommands, "1.8.0",
             "Checks whether each of the given strings is usable in GDL, e.g. before writing it into a GDL parameter or script. Returns one boolean for each string."
+        );
+        err |= RegisterCommand<GetGDLDateCommand> (
+            libraryCommands, "1.8.1",
+            "Gets the date GDL scripts see, as the integer value the Archicad API returns."
+        );
+        err |= RegisterCommand<SetGDLDateCommand> (
+            libraryCommands, "1.8.1",
+            "Sets the date GDL scripts see, in the integer format GetGDLDate returns. Useful to test date-dependent library parts; set the value read with GetGDLDate back to restore it."
         );
         err |= RegisterCommand<CheckLibrariesCommand> (
             libraryCommands, "1.8.0",
@@ -2053,6 +2087,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetLibraryPartParameterValuesCommand> (
             libraryCommands, "1.8.1",
             "Returns the parameters of loaded library parts with their default values and descriptions, in the format of GetGDLParametersOfElements. Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetLibraryPartScriptsCommand> (
+            libraryCommands, "1.8.1",
+            "Gets the master, parameter, 2D, 3D and properties scripts of loaded library parts, given by name or by an element placed from them, with the unique ID of each part. A script section the part does not have is reported as not present. Password protected parts need their password. Available from Archicad 28."
         );
         err |= RegisterCommand<GetLibraryPartIdentitiesCommand> (
             libraryCommands, "1.7.4",
@@ -2143,6 +2181,10 @@ GSErrCode Initialize (void)
             teamworkCommands, "1.7.4",
             "Returns for each given object, for example an element, whether the current Teamwork user has the right to create objects of its kind and to delete or modify it."
         );
+        err |= RegisterCommand<GetTeamworkAccessRightsCommand> (
+            teamworkCommands, "1.8.1",
+            "Returns whether the role of the current user has the given Teamwork access rights (API_TWAccessRights names without the API prefix, e.g. LayersCreate), all of them when no names are given."
+        );
         AddCommandGroup (teamworkCommands);
     }
 
@@ -2180,6 +2222,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateWorksheetsCommand> (
             navigatorCommands, "1.4.0",
             "Creates independent Worksheet databases. Returns the databaseId and the Project Map navigatorItemId of each new worksheet."
+        );
+        err |= RegisterCommand<CreateDetailMarkersCommand> (
+            navigatorCommands, "1.8.1",
+            "Places Detail markers with their clip polygon in the current floor plan, section or elevation, each with a new Detail viewpoint, like the Detail tool. GetDetailsOfElements reads them back."
+        );
+        err |= RegisterCommand<CreateWorksheetMarkersCommand> (
+            navigatorCommands, "1.8.1",
+            "Places Worksheet markers with their clip polygon in the current floor plan, section or elevation, each with a new Worksheet viewpoint, like the Worksheet tool. GetDetailsOfElements reads them back."
+        );
+        err |= RegisterCommand<ModifyDetailMarkersCommand> (
+            navigatorCommands, "1.8.1",
+            "Changes the name, the reference ID and the clip polygon of Detail and Worksheet markers."
         );
         err |= RegisterCommand<CreateLayoutCommand> (
             navigatorCommands, "1.4.0",
@@ -2358,6 +2412,14 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.7.3",
             "Changes the pixel size of the 3D window and/or the zoom (scale and displacement) of its projection; the values not given are kept. Returns the settings read back after the change. Archicad may need a rebuild of the 3D window (RebuildView) before it shows the change, e.g. before SaveCurrentWindowAsImage."
         );
+        err |= RegisterCommand<Get3DDocumentSettingsCommand> (
+            navigatorCommands, "1.8.1",
+            "Gets the settings of a 3D Document, given by its navigator item: the element and story filter, the 3D cut, the projection, the window and zoom, the uniform cut and uncut surface attributes, the source and the boundary contours, with the field names of API_DocumentFrom3DType."
+        );
+        err |= RegisterCommand<Set3DDocumentSettingsCommand> (
+            navigatorCommands, "1.8.1",
+            "Changes the given settings of a 3D Document, given by its navigator item, in the form Get3DDocumentSettings returns; the settings not given are kept. Returns the settings read back after the change."
+        );
         err |= RegisterCommand<Get3DFilterAndCutSettingsCommand> (
             navigatorCommands, "1.8.0",
             "Gets the 'Filter and Cut Elements in 3D' settings of the 3D window: the stories shown, the filter mode and which element types are shown. Available from Archicad 27."
@@ -2408,7 +2470,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<RenameNavigatorItemCommand> (
             navigatorCommands, "1.1.7",
-            "Renames a navigator item or changes its ID. newId sets the custom layout number of a layout and the custom ID of any other item. For a Project Map section, elevation, detail or worksheet the name and ID of the element behind the viewpoint are changed, for an interior elevation those of the segment the item stands for; the change is undone when the item does not show the new name. The name and ID of other Project Map items (stories, schedules, ...) cannot be changed. Fails when Archicad refuses the change or does not apply the new name or ID. With customName false the item drops its custom name and follows its Project Map source again."
+            "Renames a navigator item or changes its ID. Renaming the Layout Book item of a placed Drawing also sets the custom name of the Drawing. newId sets the custom layout number of a layout and the custom ID of any other item. For a Project Map section, elevation, detail or worksheet the name and ID of the element behind the viewpoint are changed, for an interior elevation those of the segment the item stands for; the change is undone when the item does not show the new name. The name and ID of other Project Map items (stories, schedules, ...) cannot be changed. Fails when Archicad refuses the change or does not apply the new name or ID. With customName false the item drops its custom name and follows its Project Map source again."
         );
         err |= RegisterCommand<DeleteNavigatorItemsCommand> (
             navigatorCommands, "1.1.7",
@@ -2634,6 +2696,14 @@ GSErrCode Initialize (void)
             designOptionsCommands, "1.7.2",
             "Deletes the given design option combinations. Available from Archicad 29."
         );
+        err |= RegisterCommand<GetHotlinkDesignOptionTablesCommand> (
+            designOptionsCommands, "1.8.1",
+            "Retrieves the design option table of the given hotlink nodes and placed hotlink instances: the filter mode (main model only, by options or by combination), the design option sets, options and combinations of the hotlinked module and which of them are active. Available from Archicad 29."
+        );
+        err |= RegisterCommand<SetHotlinkDesignOptionTablesCommand> (
+            designOptionsCommands, "1.8.1",
+            "Sets the filter mode, the active combination and the active option of sets in the design option table of the given placed hotlink instances. Available from Archicad 29."
+        );
         err |= RegisterCommand<SetDefaultDesignOptionCommand> (
             designOptionsCommands, "1.8.0",
             "Sets the given design option as the default, or the Main Model when no design option is given. Available from Archicad 29."
@@ -2751,7 +2821,7 @@ GSErrCode Initialize (void)
         CommandGroup mepCommands ("MEP Commands");
         err |= RegisterCommand<GetMEPElementsCommand> (
             mepCommands, "1.5.6",
-            "Retrieves the MEP (Mechanical, Electrical, Plumbing) elements of the project, optionally filtered by type and domain. MEP elements are ordinary elements, so the generic element commands work on them as well (for example they can be deleted with the DeleteElements command). Available from Archicad 28."
+            "Retrieves the MEP (Mechanical, Electrical, Plumbing) elements of the project (every element the MEP API lists, and from Archicad 30 the electrical panels and devices), optionally filtered by type and domain. MEP elements are ordinary elements, so the generic element commands work on them as well (for example they can be deleted with the DeleteElements command). Available from Archicad 28."
         );
         err |= RegisterCommand<GetMEPRoutingElementsCommand> (
             mepCommands, "1.5.6",
@@ -2763,7 +2833,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetMEPDistributionSystemsCommand> (
             mepCommands, "1.5.6",
-            "Retrieves the MEP distribution systems of the project with their domain, MEP system attribute and member elements. Available from Archicad 28."
+            "Retrieves the MEP distribution systems of the project with their domain, MEP system attribute, member elements, physical systems (from Archicad 29) and optionally their tree: the elements from the root element on, each with its previous and next elements and the connecting ports. Available from Archicad 28."
         );
         err |= RegisterCommand<CreateMEPRoutingElementsCommand> (
             mepCommands, "1.5.6",
@@ -2771,7 +2841,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateMEPElementsCommand> (
             mepCommands, "1.5.6",
-            "Creates MEP elements (Terminal, Accessory, Equipment or Fitting) at the given positions, optionally with a changed insulation that applies only to what is placed. Available from Archicad 28."
+            "Creates MEP elements (Terminal, Accessory, Equipment or Fitting) at the given positions, optionally with another library part, size (from Archicad 30), MEP system, port sizes and shapes and a changed insulation, which apply only to what is placed. Available from Archicad 28."
         );
         err |= RegisterCommand<ModifyMEPRoutingElementsCommand> (
             mepCommands, "1.5.6",
@@ -2828,6 +2898,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<TransferMEPSettingsCommand> (
             mepCommands, "1.7.4",
             "Picks up the settings of an MEP element and injects them into other MEP elements of the same type and domain, like Archicad's pick up and inject parameters. Works for routing elements, terminals, accessories, equipment, fittings, flexible segments, branches, take-offs and (from Archicad 30) electrical panels and devices. Each target is changed in its own undoable step. Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetMEPPhysicalSystemsOfElementsCommand> (
+            mepCommands, "1.8.1",
+            "Returns the physical systems each of the given MEP elements is part of. Available from Archicad 29."
+        );
+        err |= RegisterCommand<PlaceMEPFlexibleSegmentsCommand> (
+            mepCommands, "1.8.1",
+            "Places MEP flexible segments through the given control points with the current settings of the Flexible Segment tool of their domain, optionally with the orientation at both ends. Available from Archicad 28."
+        );
+        err |= RegisterCommand<PlaceMEPTakeOffsCommand> (
+            mepCommands, "1.8.1",
+            "Places MEP take-offs on the given routing segments, at a distance from the beginning of the segment and optionally rotated around its axis, with the current settings of the Take-Off tool of their domain, optionally with their length. Available from Archicad 28."
         );
         err |= RegisterCommand<GetMEPRoutingParametersCommand> (
             mepCommands, "1.8.0",

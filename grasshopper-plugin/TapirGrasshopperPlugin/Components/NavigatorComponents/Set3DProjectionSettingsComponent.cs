@@ -14,9 +14,12 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         public Set3DProjectionSettingsComponent()
             : base(
                 "Set3DProjectionSettings",
-                "Set a perspective projection for the 3D window. Every perspective parameter is " +
-                "required: read a known good set with Get3DProjectionSettings and pass it back, " +
-                "with the values to change replaced.",
+                "Set a perspective or an axonometric projection for the 3D window. For a perspective " +
+                "every perspective parameter is required: read a known good set with " +
+                "Get3DProjectionSettings and pass it back, with the values to change replaced. For an " +
+                "axonometry give AxonometryProjectionType, AxonometryAzimuth and/or TransformationMatrix " +
+                "instead (and no perspective parameter); only the given values change. The 3D window " +
+                "shows the change after a rebuild (RebuildView).",
                 GroupNames.Navigator)
         {
         }
@@ -50,6 +53,29 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             InBoolean(
                 "IsTwoPointPerspective",
                 "True for a two-point perspective (vertical edges stay vertical).");
+
+            NavigatorComponentHelp.AddOptionalText(
+                this,
+                "AxonometryProjectionType",
+                "Makes the projection axonometric with this projection type: YZ, XZ, XY, Frontal, Monometric, " +
+                "Isometric, Dimetric, Bottom, FrontalBottom, MonometricBottom, IsometricBottom, DimetricBottom " +
+                "or Custom (Custom keeps TransformationMatrix as given). Optional.");
+
+            NavigatorComponentHelp.AddOptionalNumber(
+                this,
+                "AxonometryAzimuth",
+                "Makes the projection axonometric with this camera azimuth in degrees, counterclockwise from " +
+                "the X axis (270 looks from the south). Optional.");
+
+            inManager.AddNumberParameter(
+                "TransformationMatrix",
+                "TransformationMatrix",
+                ("Makes the projection axonometric with this 3x4 transformation matrix, row by row (12 numbers), " +
+                 "as Get3DProjectionSettings returns it. Optional.").WithTypeName("numberList"),
+                GH_ParamAccess.list);
+
+            // The perspective inputs are only required for a perspective.
+            SetOptionality(new[] { 0, 1, 2, 3, 4, 5, 6, 9 });
         }
 
         private void InPointItem(
@@ -84,6 +110,46 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
+            var axonometry = new JObject();
+            NavigatorComponentHelp.CopyOptional<string>(da, 7, axonometry, "projectionType");
+            NavigatorComponentHelp.CopyOptional<double>(da, 8, axonometry, "azimuth");
+
+            var matrix = da.OptionalList<double>(9);
+            if (matrix.Count > 0)
+            {
+                if (matrix.Count != 12)
+                {
+                    this.AddError(
+                        "The input TransformationMatrix must hold 12 numbers (a 3x4 matrix, row by row).");
+                    return;
+                }
+
+                axonometry["transformationMatrix"] = new JArray(matrix);
+            }
+
+            if (axonometry.Count > 0)
+            {
+                var point = default(Point3d);
+                var number = 0.0;
+                if (da.GetData(0, ref point) ||
+                    da.GetData(1, ref point) ||
+                    da.GetData(2, ref number) ||
+                    da.GetData(3, ref number) ||
+                    da.GetData(4, ref number) ||
+                    da.GetData(5, ref number))
+                {
+                    this.AddError(
+                        "Give either the perspective inputs or the axonometry inputs (AxonometryProjectionType, " +
+                        "AxonometryAzimuth, TransformationMatrix), not both.");
+                    return;
+                }
+
+                SendProjection(
+                    da,
+                    new JObject { ["axonometry"] = axonometry });
+                return;
+            }
+
             if (!da.TryGet(0, out Point3d cameraPosition) ||
                 !da.TryGet(1, out Point3d targetPosition) ||
                 !da.TryGet(2, out double distance) ||
@@ -92,6 +158,9 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 !da.TryGet(5, out double rollAngle) ||
                 !da.TryGet(6, out bool isTwoPointPersp))
             {
+                this.AddError(
+                    "Give every perspective input (CameraPosition, TargetPosition, Distance, Azimuth, ViewCone, " +
+                    "RollAngle, IsTwoPointPerspective), or the axonometry inputs instead.");
                 return;
             }
 
@@ -109,6 +178,15 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 }
             };
 
+            SendProjection(
+                da,
+                parameters);
+        }
+
+        private void SendProjection(
+            IGH_DataAccess da,
+            JObject parameters)
+        {
             if (!TryGetConvertedCadValues(
                     CommandName,
                     parameters,
