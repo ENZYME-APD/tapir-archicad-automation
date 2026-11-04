@@ -1213,6 +1213,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.5.4",
             "Modifies the attributes of Mesh elements based on the given parameters."
         );
+        err |= RegisterCommand<ModifyRailingsCommand> (
+            elementCommands, "1.8.1",
+            "Modifies Railing elements in place: the height of their segments, the bottom offset and the home story. The reference line, the nodes and segments, and the posts, rails and panels stay as they are. Each railing is read back after the change, and a value Archicad did not apply gets a failed execution result."
+        );
         err |= RegisterCommand<ModifyObjectsCommand> (
             elementCommands, "1.5.7",
             "Modifies Object elements based on the given parameters."

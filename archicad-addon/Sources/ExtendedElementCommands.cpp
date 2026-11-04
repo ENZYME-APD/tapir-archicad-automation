@@ -12649,3 +12649,169 @@ GS::ObjectState ModifyDetailMarkersCommand::Execute (const GS::ObjectState& para
         }
     });
 }
+
+ModifyRailingsCommand::ModifyRailingsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyRailingsCommand::GetName () const
+{
+    return "ModifyRailings";
+}
+
+GS::Optional<GS::UniString> ModifyRailingsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "railingsWithDetails": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "height": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "description": "The new height of the railing segments (the height GetDetailsOfElements returns), applied to every segment of the railing."
+                        },
+                        "bottomOffset": {
+                            "type": "number",
+                            "description": "The new base height of the railing relative to its home story."
+                        },
+                        "floorIndex": {
+                            "type": "integer",
+                            "description": "The new home story index (as returned by GetStories). The bottom offset is kept, or set from bottomOffset when that is given too, so the railing moves with the story."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "railingsWithDetails"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyRailingsCommand::GetRawResponseSchema () const
+{
+    return ModifyWallsCommand ().GetRawResponseSchema ();
+}
+
+// Only fields of the railing element itself are changed, never its memo: the reference line, nodes,
+// segments, posts and rails stay as they are. The height goes to defSegment.height, as the DevKit's
+// Element_Test (Do_Railing_Edit) changes it. The railing is read back afterwards, so a value Archicad
+// did not take (for example a base it derives from the elevations of the reference line vertices,
+// memo.polyZCoords) is reported as a failure instead of a success.
+GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> items;
+    auto error = GetElementArray (parameters, "railingsWithDetails", items);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+
+    const Stories stories = GetStories ();
+    const double tolerance = 1e-6;
+
+    return ExecuteModifyWithResults ("Modify Railings", [&](GS::Array<GS::ObjectState>& results) {
+        for (const auto& item : items) {
+            if (item.Get ("elementId") == nullptr) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
+                continue;
+            }
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to load railing."));
+                continue;
+            }
+            if (GetElemTypeId (element.header) != API_RailingID) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADID, "Element is not a Railing."));
+                continue;
+            }
+
+            double height = 0.0;
+            const bool hasHeight = item.Get ("height", height);
+            if (hasHeight && height <= 0.0) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "height must be positive."));
+                continue;
+            }
+            double bottomOffset = 0.0;
+            const bool hasBottomOffset = item.Get ("bottomOffset", bottomOffset);
+            short floorIndex = 0;
+            const bool hasFloorIndex = item.Get ("floorIndex", floorIndex);
+            if (hasFloorIndex && stories.find (floorIndex) == stories.end ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf ("floorIndex %d is not a story of the project; see GetStories for the valid story indices.", static_cast<int> (floorIndex))));
+                continue;
+            }
+            if (!hasHeight && !hasBottomOffset && !hasFloorIndex) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No railing fields to modify."));
+                continue;
+            }
+
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+            if (hasHeight) {
+                element.railing.defSegment.height = height;
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, defSegment.height);
+            }
+            if (hasBottomOffset) {
+                element.railing.bottomOffset = bottomOffset;
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, bottomOffset);
+            }
+            if (hasFloorIndex) {
+                element.header.floorInd = floorIndex;
+                ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+            }
+
+            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to modify railing."));
+                continue;
+            }
+
+            // Read back, so a value Archicad did not take is reported instead of a success.
+            API_Element changed = {};
+            changed.header.guid = element.header.guid;
+            err = ACAPI_Element_Get (&changed);
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to read the railing back after the change."));
+                continue;
+            }
+            GS::UniString notApplied;
+            if (hasFloorIndex && changed.header.floorInd != floorIndex) {
+                notApplied += GS::UniString::Printf (" floorIndex is %d.", static_cast<int> (changed.header.floorInd));
+            }
+            if (std::abs (changed.railing.bottomOffset - element.railing.bottomOffset) > tolerance) {
+                notApplied += GS::UniString::Printf (" bottomOffset is %.4f instead of %.4f.", changed.railing.bottomOffset, element.railing.bottomOffset);
+            }
+            if (hasHeight) {
+                API_ElementMemo memo = {};
+                const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+                if (ACAPI_Element_GetMemo (changed.header.guid, &memo, APIMemoMask_RailingSegment) == NoError && memo.railingSegments != nullptr) {
+                    for (UInt32 i = 0; i < changed.railing.nSegments; ++i) {
+                        if (std::abs (memo.railingSegments[i].height - height) > tolerance) {
+                            notApplied += GS::UniString::Printf (" The height of segment %u is %.4f.", i, memo.railingSegments[i].height);
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!notApplied.IsEmpty ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_REFUSEDPAR, GS::UniString ("Archicad did not apply every value; the railing was changed as follows:") + notApplied));
+                continue;
+            }
+            results.Push (CreateSuccessfulExecutionResult ());
+        }
+    });
+}
