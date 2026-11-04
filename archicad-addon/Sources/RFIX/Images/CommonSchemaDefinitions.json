@@ -7254,6 +7254,14 @@
                 "type": "string",
                 "description": "The description of the classification reference. Given from Archicad 29."
             },
+            "sort": {
+                "type": "string",
+                "description": "The sort key of the classification reference (its Sort attribute). Given from Archicad 29, missing when it has no value."
+            },
+            "relAssociatesClassificationName": {
+                "type": "string",
+                "description": "The name of the IfcRelAssociatesClassification relationship that links the reference to the element. Given from Archicad 28, missing when it is empty."
+            },
             "referencedSource": {
                 "type": "object",
                 "description": "The classification (IfcClassification) the reference belongs to.",
@@ -7272,15 +7280,15 @@
                     },
                     "editionDate": {
                         "type": "string",
-                        "description": "The edition date of the classification. Given only in Archicad 25, 26 and 27, missing when it has no value."
+                        "description": "The edition date of the classification. Missing when it has no value."
                     },
                     "description": {
                         "type": "string",
-                        "description": "The description of the classification. Given only in Archicad 25, 26 and 27, missing when it has no value."
+                        "description": "The description of the classification. Missing when it has no value."
                     },
                     "location": {
                         "type": "string",
-                        "description": "The location of the classification, for example a URL. Given only in Archicad 25, 26 and 27, missing when it has no value."
+                        "description": "The location of the classification, for example a URL. Missing when it has no value."
                     }
                 },
                 "additionalProperties": false,

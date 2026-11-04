@@ -1458,6 +1458,13 @@ GSErrCode Initialize (void)
             "Moves Favorites given by their names into a folder of the Favorites palette given by its path. "
             "Returns an execution result for each Favorite. Available from Archicad 29."
         );
+        err |= RegisterCommand<GetFavoriteDefaultsCommand> (
+            favoritesCommands, "1.8.1",
+            "Reads the element default stored in each given Favorite through the Favorite manager, without applying it or "
+            "placing an element: the element type, the layer, the element ID, the folder, the library part and GDL parameters, "
+            "the marker of every element type that has one, and the sub-elements with each of their kinds (Curtain Wall "
+            "frames and panels, Stair treads and risers, Railing posts and rails, markers ...). Available from Archicad 29."
+        );
         AddCommandGroup (favoritesCommands);
     }
 
@@ -1949,7 +1956,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetIFCClassificationReferencesOfElementsCommand> (
             ifcCommands, "1.8.0",
-            "Retrieves the IFC classification references of the given elements, subelements included: identification, name, location, description (from Archicad 29), the referenced classification (name, source, edition) and whether the reference comes from the preview translator or is stored locally. On Archicad 25, 26 and 27 the source is not given, the referenced classification also has its edition date, description and location, and storedOnly returns only the references stored on the elements."
+            "Retrieves the IFC classification references of the given elements, subelements included: identification, name, location, description and sort (from Archicad 29), the name of the IfcRelAssociatesClassification (from Archicad 28), the referenced classification (name, source, edition, edition date, description and location) and whether the reference comes from the preview translator or is stored locally. On Archicad 25, 26 and 27 the source is not given and storedOnly returns only the references stored on the elements."
         );
         err |= RegisterCommand<SetIFCClassificationReferencesOfElementsCommand> (
             ifcCommands, "1.8.0",

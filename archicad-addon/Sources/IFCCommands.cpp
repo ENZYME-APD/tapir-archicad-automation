@@ -1569,12 +1569,23 @@ static GS::ObjectState ClassificationReferenceToObjectState (const IFCAPI::Class
     AddOptionalString (ifcClassificationReference, "location", classificationReference.GetLocation ());
 #ifdef ServerMainVers_2900
     AddOptionalString (ifcClassificationReference, "description", classificationReference.GetDescription ());
+    AddOptionalString (ifcClassificationReference, "sort", classificationReference.GetSort ());
 #endif
+
+    // The name of the IfcRelAssociatesClassification that links the reference to the element;
+    // left out when it is empty, as the other texts are when they have no value.
+    const GS::UniString relAssociatesClassificationName = classificationReference.GetIfcRelAssociatesClassificationName ();
+    if (!relAssociatesClassificationName.IsEmpty ()) {
+        ifcClassificationReference.Add ("relAssociatesClassificationName", relAssociatesClassificationName);
+    }
 
     const IFCAPI::Classification referencedSource = classificationReference.GetReferencedSource ();
     GS::ObjectState referencedSourceObject ("name", referencedSource.GetName ());
     AddOptionalString (referencedSourceObject, "source", referencedSource.GetSource ());
     AddOptionalString (referencedSourceObject, "edition", referencedSource.GetEdition ());
+    AddOptionalString (referencedSourceObject, "editionDate", referencedSource.GetEditionDate ());
+    AddOptionalString (referencedSourceObject, "description", referencedSource.GetDescription ());
+    AddOptionalString (referencedSourceObject, "location", referencedSource.GetLocation ());
     ifcClassificationReference.Add ("referencedSource", referencedSourceObject);
 
     ifcClassificationReference.Add ("source", GS::UniString (source));
