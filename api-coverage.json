@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-04 12:27 UTC",
+ "generatedAt": "2026-11-04 12:38 UTC",
  "versions": [
   25,
   26,
@@ -262,12 +262,7 @@
    "status": "not applicable",
    "reason": "communication between add-ons",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 781,
-     "title": "Full Get/Set/Create access to Model View Option combinations, including custom GDL-contributed fields"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_AddOnAddOnCommunication_RegisterSupportedService",
@@ -2756,12 +2751,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 781,
-     "title": "Full Get/Set/Create access to Model View Option combinations, including custom GDL-contributed fields"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Attribute_CreateAttributeFolderPicker",
@@ -5878,10 +5868,6 @@
      "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
     },
     {
-     "number": 1793,
-     "title": "Add ModifyRailings: height, bottom offset and home story of railings"
-    },
-    {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
@@ -6867,10 +6853,6 @@
      "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
     },
     {
-     "number": 1793,
-     "title": "Add ModifyRailings: height, bottom offset and home story of railings"
-    },
-    {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
@@ -7412,10 +7394,6 @@
     {
      "number": 1802,
      "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
-    },
-    {
-     "number": 1793,
-     "title": "Add ModifyRailings: height, bottom offset and home story of railings"
     },
     {
      "number": 1671,
@@ -8054,10 +8032,6 @@
     {
      "number": 1802,
      "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
-    },
-    {
-     "number": 1793,
-     "title": "Add ModifyRailings: height, bottom offset and home story of railings"
     },
     {
      "number": 1748,
@@ -9763,18 +9737,8 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "memory management",
-   "pullRequests": [
-    {
-     "number": 1778,
-     "title": "Add GetModelViewOptionDetails: read the settings of stored model view option combinations"
-    }
-   ],
-   "issues": [
-    {
-     "number": 781,
-     "title": "Full Get/Set/Create access to Model View Option combinations, including custom GDL-contributed fields"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_GeoLocation_CalcSunOnPlace",
@@ -14204,12 +14168,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 781,
-     "title": "Full Get/Set/Create access to Model View Option combinations, including custom GDL-contributed fields"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_CloneProjectMapItemToViewMap",
@@ -14795,12 +14754,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 781,
-     "title": "Full Get/Set/Create access to Model View Option combinations, including custom GDL-contributed fields"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_ModelViewOptions_Get",
@@ -14818,12 +14772,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1778,
-     "title": "Add GetModelViewOptionDetails: read the settings of stored model view option combinations"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14842,12 +14791,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1778,
-     "title": "Add GetModelViewOptionDetails: read the settings of stored model view option combinations"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14867,12 +14811,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 781,
-     "title": "Full Get/Set/Create access to Model View Option combinations, including custom GDL-contributed fields"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_NewNavigatorView",
@@ -26021,10 +25960,6 @@
     {
      "number": 1802,
      "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
-    },
-    {
-     "number": 1793,
-     "title": "Add ModifyRailings: height, bottom offset and home story of railings"
     },
     {
      "number": 1777,
@@ -38828,10 +38763,6 @@
     {
      "number": 1802,
      "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
-    },
-    {
-     "number": 1793,
-     "title": "Add ModifyRailings: height, bottom offset and home story of railings"
     },
     {
      "number": 1777,
@@ -55839,10 +55770,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1778,
-     "title": "Add GetModelViewOptionDetails: read the settings of stored model view option combinations"
-    },
     {
      "number": 1777,
      "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
