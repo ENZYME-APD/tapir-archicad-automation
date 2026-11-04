@@ -1501,6 +1501,9 @@ static void AddLibPartBasedElementDetails (GS::ObjectState& os, const Int32 libI
     API_LibPart	lp = {};
     lp.index = libInd;
     ACAPI_LibraryPart_Get (&lp);
+    // ACAPI_LibraryPart_Get allocates the location, which the caller frees (ACAPinc.h remarks).
+    delete lp.location;
+    lp.location = nullptr;
     os.Add ("libPart", GS::ObjectState (
         "name", GS::UniString (lp.docu_UName),
         "parentUnID", CreateGuidObjectState (GS::UnID (lp.parentUnID).GetMainGuid ()),
@@ -8365,6 +8368,10 @@ static GSErrCode CollectSolidBodies (const API_Elem_Head& elemHead, GS::Array<GS
                 component.header.typeID = API_UmatID;
                 component.header.index = pgon.iumat;
                 if (ACAPI_ModelAccess_GetComponent (&component) == NoError) {
+                    // The material comes with its texture's file location allocated, which the
+                    // caller deletes (3D_Test.c, after ACAPI_ModelAccess_GetComponent of API_UmatID).
+                    delete component.umat.mater.texture.fileLoc;
+                    component.umat.mater.texture.fileLoc = nullptr;
                     const API_Guid surfaceGuid = GetAttributeGuidFromIndex (API_MaterialID, component.umat.mater.head.index);
                     if (surfaceGuid != APINULLGuid) {
                         polygonOS.Add ("surfaceId", CreateGuidObjectState (surfaceGuid));
