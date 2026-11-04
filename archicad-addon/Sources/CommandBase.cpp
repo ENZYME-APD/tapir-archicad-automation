@@ -2,6 +2,7 @@
 
 #include "SchemaDefinitions.hpp"
 #include "MigrationHelper.hpp"
+#include "FileSystem.hpp"
 
 #include <cmath>
 
@@ -87,6 +88,23 @@ GS::ObjectState CreateSuccessfulExecutionResult ()
 {
     return GS::ObjectState (
         "success", true);
+}
+
+GS::UniString GetOverwriteRefusal (const GS::ObjectState& parameters, const IO::Location& location)
+{
+    bool overwrite = true;
+    parameters.Get ("overwrite", overwrite);
+    if (overwrite) {
+        return {};
+    }
+    bool exists = false;
+    if (IO::fileSystem.Contains (location, &exists) != NoError) {
+        return "Failed to check whether '" + location.ToDisplayText () + "' already exists, and overwrite is false: nothing was written.";
+    }
+    if (exists) {
+        return "The file '" + location.ToDisplayText () + "' already exists and overwrite is false: nothing was written.";
+    }
+    return {};
 }
 
 const char* LockableStatusToString (API_LockableStatus status)

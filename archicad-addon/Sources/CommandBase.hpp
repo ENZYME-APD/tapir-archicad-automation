@@ -49,6 +49,11 @@ GS::ObjectState CreateFailedExecutionResult (GSErrCode errorCode, const GS::UniS
 // The FailedExecutionResult shape for an error already built with CreateErrorResponse.
 GS::ObjectState CreateFailedExecutionResult (const GS::ObjectState& errorResponse);
 GS::ObjectState CreateSuccessfulExecutionResult ();
+// The optional boolean "overwrite" input of the commands that write a file to a path the caller
+// gives (#1856): omitted or true, an existing file is overwritten. When it is false and something
+// already exists at location (or that cannot be checked), returns the message to fail with, naming
+// the path; empty otherwise.
+GS::UniString GetOverwriteRefusal (const GS::ObjectState& parameters, const IO::Location& location);
 GS::UniString DescribeDefinitionChangeError (GSErrCode err);
 // Why Archicad refused to change an element the user could not edit in Archicad either, as the end
 // of a sentence ("its layer is hidden"); empty when the refusal has another cause. elemHead is the
