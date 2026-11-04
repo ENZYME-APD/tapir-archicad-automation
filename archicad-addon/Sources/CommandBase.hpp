@@ -71,6 +71,13 @@ void AddGuidDifference (const GS::HashSet<API_Guid>& from, const GS::HashSet<API
 }
 
 API_Guid    GetGuidFromObjectState (const GS::ObjectState& os);
+
+// A guid string field that may be left out. Archicad does not check the type of fields whose schema
+// is a $ref (e.g. "#/Guid"), so a wrapped {"guid": ...} object would otherwise read as "not given".
+enum class OptionalGuidField { NotGiven, Valid, Invalid };
+// Reads the guid string field 'name' of 'os' into 'guid'. Invalid when the field is given but is not
+// a string holding a guid.
+OptionalGuidField GetOptionalGuidField (const GS::ObjectState& os, const GS::String& name, API_Guid& guid);
 API_Guid    GetGuidFromArrayItem (const GS::String& idFieldName, const GS::ObjectState& os);
 inline API_Guid GetGuidFromElementsArrayItem (const GS::ObjectState& os)        { return GetGuidFromArrayItem ("elementId", os); }
 inline API_Guid GetGuidFromAttributesArrayItem (const GS::ObjectState& os)      { return GetGuidFromArrayItem ("attributeId", os); }
