@@ -1,3 +1,4 @@
+using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Newtonsoft.Json;
@@ -20,7 +21,9 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
     //   Refresh  reads the elements (GetDetailsOfElements),
     //   Execute  writes the given settings to them (the tool's Modify command,
     //            SetDetailsOfElements and the Element ID property),
-    //   Create   makes new elements from the geometry inputs and the same JSON.
+    //   Create   makes new elements from the geometry inputs and the same JSON;
+    //            in a tool with CanUpdateCreatedElements it updates the
+    //            elements it made before instead (saved with the .gh file).
     // Writing and creating only happen on a button press, never through
     // AutoExecute. Deleting elements is left to the DeleteElements component
     // on purpose. See CLAUDE.md, "Archicad tool components".
@@ -48,6 +51,25 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         private bool _executeRequested;
         private bool _createRequested;
         private ToolAction _action;
+
+        // The elements Create made, one per geometry item (null where none
+        // was made), saved with the .gh file: the next Create updates them
+        // instead of making new ones (#521). _createdBy is the component they
+        // belong to, so a pasted copy starts without them and two components
+        // never drive the same elements.
+        private List<string> _createdGuids = new List<string>();
+        private Guid _createdBy = Guid.Empty;
+        private bool _updateCreatedElements = true;
+
+        private const string UpdateCreatedElementsText = "Create Updates the Elements Created Here";
+        private const string ForgetCreatedElementsText = "Forget the Elements Created Here";
+        private const string UpdateCreatedElementsKey = "UpdateCreatedElements";
+        private const string CreatedElementCountKey = "CreatedElementCount";
+        private const string CreatedElementGuidKey = "CreatedElementGuid";
+
+        // True for a tool whose Modify command takes everything Create writes,
+        // the geometry included, so Create can update its own elements.
+        protected virtual bool CanUpdateCreatedElements => false;
 
         // The tool's table name (ToolSettings/<ToolName>.json).
         protected abstract string ToolName { get; }
@@ -226,6 +248,85 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             Menu_AppendItem(menu, "Refresh from Archicad", (s, e) => Request(ToolAction.Refresh));
             Menu_AppendItem(menu, "Execute in Archicad", (s, e) => Request(ToolAction.Execute));
             Menu_AppendItem(menu, "Create in Archicad", (s, e) => Request(ToolAction.Create));
+            if (!CanUpdateCreatedElements)
+            {
+                return;
+            }
+
+            Menu_AppendItem(
+                menu,
+                UpdateCreatedElementsText,
+                (s, e) =>
+                {
+                    RecordUndoEvent(UpdateCreatedElementsText);
+                    _updateCreatedElements = !_updateCreatedElements;
+                },
+                true,
+                _updateCreatedElements);
+            var createdCount = OwnCreatedGuids().Count(g => g != null);
+            Menu_AppendItem(
+                menu,
+                $"{ForgetCreatedElementsText} ({createdCount})",
+                (s, e) =>
+                {
+                    RecordUndoEvent(ForgetCreatedElementsText);
+                    _createdGuids = new List<string>();
+                },
+                createdCount > 0);
+        }
+
+        // The elements this component created; none for a pasted copy,
+        // whose instance id differs from the one that created them.
+        private List<string> OwnCreatedGuids()
+        {
+            if (_createdBy != InstanceGuid)
+            {
+                _createdGuids = new List<string>();
+                _createdBy = InstanceGuid;
+            }
+            return _createdGuids;
+        }
+
+        public override bool Write(
+            GH_IWriter writer)
+        {
+            if (CanUpdateCreatedElements)
+            {
+                var created = OwnCreatedGuids();
+                writer.SetBoolean(UpdateCreatedElementsKey, _updateCreatedElements);
+                writer.SetInt32(CreatedElementCountKey, created.Count);
+                for (var i = 0; i < created.Count; i++)
+                {
+                    writer.SetString(CreatedElementGuidKey, i, created[i] ?? "");
+                }
+            }
+            return base.Write(writer);
+        }
+
+        public override bool Read(
+            GH_IReader reader)
+        {
+            var result = base.Read(reader);
+            _createdGuids = new List<string>();
+            _createdBy = InstanceGuid;
+            if (CanUpdateCreatedElements)
+            {
+                if (reader.ItemExists(UpdateCreatedElementsKey))
+                {
+                    _updateCreatedElements = reader.GetBoolean(UpdateCreatedElementsKey);
+                }
+                var count = reader.ItemExists(CreatedElementCountKey)
+                    ? reader.GetInt32(CreatedElementCountKey)
+                    : 0;
+                for (var i = 0; i < count; i++)
+                {
+                    var guid = reader.ItemExists(CreatedElementGuidKey, i)
+                        ? reader.GetString(CreatedElementGuidKey, i)
+                        : null;
+                    _createdGuids.Add(string.IsNullOrEmpty(guid) ? null : guid);
+                }
+            }
+            return result;
         }
 
         public void OnCapsuleButtonPressed(
@@ -448,36 +549,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                     continue;
                 }
                 PrepareSettings(settings, notes);
-
-                var modify = new JObject();
-                var details = new JObject();
-                foreach (var setting in settings)
-                {
-                    if (setting.Key == "floorIndex")
-                    {
-                        details["floorIndex"] = setting.Value;
-                    }
-                    else if (ModifyKeys.Contains(setting.Key))
-                    {
-                        modify[setting.Key] = setting.Value;
-                    }
-                    else
-                    {
-                        // E.g. the bottom elevation of a JSON read by Refresh.
-                        createOnly.Add(KeyOf(setting.Key));
-                    }
-                }
-                AddPlainDetails(inputs, i, details);
-
-                if (modify.Count > 0)
-                {
-                    modify["elementId"] = ElementIdObject(guids[i]);
-                    modifyItems.Add(new KeyValuePair<int, JObject>(i, modify));
-                }
-                if (details.Count > 0)
-                {
-                    detailItems.Add(new KeyValuePair<int, JObject>(i, details));
-                }
+                AddWriteItems(inputs, i, guids[i], settings, null, createOnly, modifyItems, detailItems);
             }
 
             SendModify(modifyItems, errors);
@@ -499,6 +571,67 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             }
 
             Refresh(da, guids, errors);
+        }
+
+        // Splits the settings of element i (and, when updating an element
+        // Create made, its geometry) into its Modify item and its
+        // SetDetailsOfElements item. Settings only the Create command takes
+        // go to createOnly.
+        private void AddWriteItems(
+            SettingInputs inputs,
+            int i,
+            string guid,
+            JObject settings,
+            JObject geometry,
+            ISet<string> createOnly,
+            List<KeyValuePair<int, JObject>> modifyItems,
+            List<KeyValuePair<int, JObject>> detailItems)
+        {
+            var modify = new JObject();
+            var details = new JObject();
+            foreach (var setting in settings)
+            {
+                if (setting.Key == "floorIndex")
+                {
+                    details["floorIndex"] = setting.Value;
+                }
+                else if (ModifyKeys.Contains(setting.Key))
+                {
+                    modify[setting.Key] = setting.Value;
+                }
+                else
+                {
+                    // E.g. the bottom elevation of a JSON read by Refresh.
+                    createOnly.Add(KeyOf(setting.Key));
+                }
+            }
+
+            // As on Create, the geometry inputs win over geometry in the JSON.
+            if (geometry != null)
+            {
+                foreach (var property in geometry.Properties())
+                {
+                    if (ModifyKeys.Contains(property.Name))
+                    {
+                        modify[property.Name] = property.Value;
+                    }
+                    else
+                    {
+                        createOnly.Add(KeyOf(property.Name));
+                    }
+                }
+            }
+            AddPlainDetails(inputs, i, details);
+
+            if (modify.Count > 0)
+            {
+                modify["elementId"] = ElementIdObject(guid);
+                modifyItems.Add(new KeyValuePair<int, JObject>(i, modify));
+            }
+            if (details.Count > 0)
+            {
+                detailItems.Add(new KeyValuePair<int, JObject>(i, details));
+            }
         }
 
         // ---------------------------------------------------------------
@@ -526,16 +659,54 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
 
             var errors = Enumerable.Repeat("", count).ToList();
             var notes = new SortedSet<string>();
+
+            // Item i of the geometry updates the element an earlier Create
+            // made from item i, when it still exists; a deleted one is an
+            // error, never made again (#521).
+            var update = CanUpdateCreatedElements && _updateCreatedElements;
+            var created = CanUpdateCreatedElements ? OwnCreatedGuids() : new List<string>();
+            var remembered = Enumerable.Range(0, count)
+                .Select(i => update && i < created.Count ? created[i] : null)
+                .ToList();
+            var existing = KeepElementsOfTool(remembered, errors);
+
+            var guids = Enumerable.Repeat((string) null, count).ToList();
+            var createOnly = new SortedSet<string>();
+            var modifyItems = new List<KeyValuePair<int, JObject>>();
+            var detailItems = new List<KeyValuePair<int, JObject>>();
+            var updated = 0;
             var createIndices = new List<int>();
             var createItems = new JArray();
             var postModify = new Dictionary<int, JObject>();
             for (var i = 0; i < count; i++)
             {
+                if (remembered[i] != null && existing[i] == null)
+                {
+                    AddMessage(
+                        errors,
+                        i,
+                        "This component created it on an earlier Create; it was not created again. " +
+                        $"\"{ForgetCreatedElementsText}\" in the component menu makes Create make new elements.");
+                    continue;
+                }
+
                 if (!TryMergeSettings(inputs, i, errors, out var settings))
                 {
                     continue;
                 }
                 PrepareSettings(settings, notes);
+
+                if (existing[i] != null)
+                {
+                    guids[i] = existing[i];
+                    AddWriteItems(inputs, i, guids[i], settings, geometry[i], createOnly, modifyItems, detailItems);
+                    if (!string.IsNullOrEmpty(ItemOf(inputs.FavoriteNames, i)))
+                    {
+                        createOnly.Add("FavoriteName");
+                    }
+                    updated++;
+                    continue;
+                }
 
                 var item = new JObject();
                 var rest = new JObject();
@@ -577,7 +748,6 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 }
             }
 
-            var guids = Enumerable.Repeat((string) null, count).ToList();
             if (createItems.Count > 0 &&
                 TryGetCadResponse(CreateCommand, new JObject { [CreateArrayKey] = createItems }, ToAddOn, out var response))
             {
@@ -598,9 +768,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 }
             }
 
-            var modifyItems = new List<KeyValuePair<int, JObject>>();
-            var detailItems = new List<KeyValuePair<int, JObject>>();
-            for (var i = 0; i < count; i++)
+            foreach (var i in createIndices)
             {
                 if (guids[i] == null)
                 {
@@ -622,8 +790,60 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             SendDetails(guids, detailItems, errors);
             SetElementIds(guids, inputs.ElementIds, errors);
 
+            if (CanUpdateCreatedElements)
+            {
+                RememberCreated(guids, createIndices, update);
+            }
+
             AddNotes(notes);
+            if (updated > 0)
+            {
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Remark,
+                    $"Updated {updated} element(s) this component created before instead of creating new ones " +
+                    $"(\"{UpdateCreatedElementsText}\" in the component menu).");
+            }
+            if (createOnly.Count > 0)
+            {
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Remark,
+                    $"{string.Join(", ", createOnly)} can only be given when creating; not changed on the elements created before.");
+            }
+            var unused = update ? created.Skip(count).Count(g => g != null) : 0;
+            if (unused > 0)
+            {
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Remark,
+                    $"{unused} element(s) created before have no geometry item now; they were left unchanged.");
+            }
             Refresh(da, guids, errors);
+        }
+
+        // Stores the elements made by this Create at their geometry item's
+        // position. Without updating, this Create's elements replace the
+        // earlier ones, so switching updating on later updates these.
+        private void RememberCreated(
+            List<string> guids,
+            List<int> createIndices,
+            bool update)
+        {
+            var created = OwnCreatedGuids();
+            if (!update)
+            {
+                created.Clear();
+            }
+            foreach (var i in createIndices)
+            {
+                if (guids[i] == null)
+                {
+                    continue;
+                }
+                while (created.Count <= i)
+                {
+                    created.Add(null);
+                }
+                created[i] = guids[i];
+            }
         }
 
         // ---------------------------------------------------------------
