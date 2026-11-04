@@ -8,6 +8,7 @@
 #include "FileSystem.hpp"
 #include "UserDataPairs.hpp"
 #include "OnExit.hpp"
+#include <set>
 #ifdef ServerMainVers_2700
 #include "ADBAttributeIndex.hpp"
 #endif
@@ -73,6 +74,8 @@ static GS::Optional<GS::ObjectState> GetAttributeIdFromIndex (API_AttrTypeID att
     if (ACAPI_Attribute_Get (&attribute) != NoError) {
         return GS::NoValue;
     }
+    // A surface comes with texture.fileLoc allocated (ACAPI_Attribute_Get remarks, Attribute_Test.cpp).
+    DisposeAttribute (attribute);
     return CreateAttributeIdObjectState (attribute.header.guid);
 }
 
@@ -84,6 +87,7 @@ static bool GetAttributeIndexFromAttributeId (const GS::ObjectState& attributeId
     if (ACAPI_Attribute_Get (&attribute) != NoError) {
         return false;
     }
+    DisposeAttribute (attribute);
 
     attributeIndex = attribute.header.index;
     return true;
@@ -483,6 +487,163 @@ GS::ObjectState GetAttributesFromProjectCommand::Execute (const GS::ObjectState&
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_GENERAL, "GetAttributesFromProject needs Archicad 27 or later.");
+#endif
+}
+
+GetAttributeIndexesCommand::GetAttributeIndexesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetAttributeIndexesCommand::GetName () const
+{
+    return "GetAttributeIndexes";
+}
+
+GS::Optional<GS::UniString> GetAttributeIndexesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeTypes": {
+                "type": "array",
+                "description": "The attribute types to report the indexes of.",
+                "items": {
+                    "$ref": "#/AttributeType"
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeTypes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetAttributeIndexesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "oneOf": [
+            {
+                "type": "object",
+                "properties": {
+                    "attributeIndexes": {
+                        "type": "array",
+                        "description": "One item per requested attribute type, in the order of attributeTypes.",
+                        "items": {
+                            "type": "object",
+                            "oneOf": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "attributeType": {
+                                            "$ref": "#/AttributeType"
+                                        },
+                                        "count": {
+                                            "type": "integer",
+                                            "description": "The number of attributes of the type."
+                                        },
+                                        "firstIndex": {
+                                            "type": "integer",
+                                            "description": "The index of the first valid attribute of the type, as Archicad reports it. Left out when the type has no attribute."
+                                        },
+                                        "lastIndex": {
+                                            "type": "integer",
+                                            "description": "The highest index in use. Left out when the type has no attribute."
+                                        },
+                                        "freeIndexes": {
+                                            "type": "array",
+                                            "description": "The indexes between firstIndex and lastIndex that no attribute uses, for example those of deleted attributes, in ascending order. Archicad 29 gives a new Layer the lowest free index.",
+                                            "items": {
+                                                "type": "integer"
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "attributeType",
+                                        "count",
+                                        "freeIndexes"
+                                    ]
+                                },
+                                {
+                                    "$ref": "#/ErrorItem"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "attributeIndexes"
+                ]
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    })";
+}
+
+GS::ObjectState GetAttributeIndexesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::UniString> attributeTypes;
+    parameters.Get ("attributeTypes", attributeTypes);
+
+    GS::ObjectState response;
+    const auto& attributeIndexes = response.AddList<GS::ObjectState> ("attributeIndexes");
+
+    for (const GS::UniString& typeStr : attributeTypes) {
+        const API_AttrTypeID typeID = ConvertAttributeTypeStringToID (typeStr);
+        if (typeID == API_ZombieAttrID) {
+            attributeIndexes (CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid attributeType '%T'.", typeStr.ToPrintf ())));
+            continue;
+        }
+
+        // Only the indexes are kept. The texture location of a Surface is the one member allocated
+        // for the caller (see DisposeAttribute); it is freed and cleared here, so it is released
+        // once whether or not the enumeration frees it after the processor.
+        std::set<Int32> usedIndexes;
+        const GSErrCode err = ACAPI_Attribute_EnumerateAttributesByType (typeID, [&usedIndexes] (API_Attribute& attr) {
+            usedIndexes.insert (GetAttributeIndex (attr.header.index));
+            if (attr.header.typeID == API_MaterialID) {
+                DisposeAttribute (attr);
+                attr.material.texture.fileLoc = nullptr;
+            }
+        });
+        if (err != NoError) {
+            attributeIndexes (CreateErrorResponse (err,
+                GS::UniString::Printf ("Failed to enumerate the %T attributes.", typeStr.ToPrintf ())));
+            continue;
+        }
+
+        GS::ObjectState typeResult;
+        typeResult.Add ("attributeType", typeStr);
+        typeResult.Add ("count", (Int32) usedIndexes.size ());
+        const auto& freeIndexes = typeResult.AddList<Int32> ("freeIndexes");
+        if (!usedIndexes.empty ()) {
+            const API_AttributeIndex firstValid = ACAPI_Attribute_GetFirstValidAttribute (typeID);
+            const Int32 firstIndex = firstValid != APIInvalidAttributeIndex ? GetAttributeIndex (firstValid) : *usedIndexes.begin ();
+            const Int32 lastIndex = *usedIndexes.rbegin ();
+            typeResult.Add ("firstIndex", firstIndex);
+            typeResult.Add ("lastIndex", lastIndex);
+            for (Int32 index = firstIndex; index < lastIndex; ++index) {
+                if (usedIndexes.find (index) == usedIndexes.end ()) {
+                    freeIndexes (index);
+                }
+            }
+        }
+        attributeIndexes (typeResult);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetAttributeIndexes needs Archicad 27 or later.");
 #endif
 }
 
@@ -3271,6 +3432,7 @@ GS::ObjectState GetSurfacesCommand::Execute (const GS::ObjectState& parameters, 
         }
 
         surfaces (surface);
+        DisposeAttribute (attr);
     }
 
     return response;
@@ -4294,6 +4456,8 @@ GS::ObjectState CreateAttributesCommandBase::Execute (const GS::ObjectState& par
         }
 
         bool doesExist = (ACAPI_Attribute_Get (&attr) == NoError);
+        // A surface read by ACAPI_Attribute_Get holds an allocated texture.fileLoc (see its remarks).
+        const GS::OnExit disposeAttr ([&attr] () { DisposeAttribute (attr); });
         if (doesExist && !overwriteExisting) {
             attributeIds (CreateErrorResponse (APIERR_ATTREXIST, "Already exists."));
             continue;
@@ -4924,6 +5088,8 @@ GS::Optional<GS::ObjectState> CreateLinesCommand::SetTypeSpecificParameters (con
             attribute.linetype.nItems = (Int32) nItems;
 
             if (nItems > 0) {
+                // The handle seeded from the attribute being overwritten is replaced, so it is freed first.
+                BMKillHandle ((GSHandle*) &attributeDef.ltype_dashItems);
                 attributeDef.ltype_dashItems = (API_DashItems**) BMAllocateHandle (nItems * sizeof (API_DashItems), ALLOCATE_CLEAR, 0);
                 for (UInt32 i = 0; i < nItems; ++i) {
                     API_DashItems& item = (*attributeDef.ltype_dashItems)[i];
@@ -4944,6 +5110,8 @@ GS::Optional<GS::ObjectState> CreateLinesCommand::SetTypeSpecificParameters (con
             attribute.linetype.nItems = (Int32) nItems;
 
             if (nItems > 0) {
+                // The handle seeded from the attribute being overwritten is replaced, so it is freed first.
+                BMKillHandle ((GSHandle*) &attributeDef.ltype_lineItems);
                 attributeDef.ltype_lineItems = (API_LineItems**) BMAllocateHandle (nItems * sizeof (API_LineItems), ALLOCATE_CLEAR, 0);
                 for (UInt32 i = 0; i < nItems; ++i) {
                     API_LineItems& item = (*attributeDef.ltype_lineItems)[i];
@@ -5350,6 +5518,8 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
             fill.filltype.linNumb = (Int32) nItems;
 
             if (nItems > 0) {
+                // The handle seeded from the attribute being overwritten is replaced, so it is freed first.
+                BMKillHandle ((GSHandle*) &fillDefs.fill_lineItems);
                 fillDefs.fill_lineItems = (API_FillLine**) BMAllocateHandle (nItems * sizeof (API_FillLine), ALLOCATE_CLEAR, 0);
 
                 UInt32 totalLengths = 0;
@@ -5359,6 +5529,7 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
                     totalLengths += lineLengths.GetSize ();
                 }
                 if (totalLengths > 0) {
+                    BMKillHandle ((GSHandle*) &fillDefs.fill_lineLength);
                     fillDefs.fill_lineLength = (double**) BMAllocateHandle (totalLengths * sizeof (double), ALLOCATE_CLEAR, 0);
                 }
 
@@ -5395,6 +5566,8 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
             fill.filltype.linNumb = (Int32) nItems;
 
             if (nItems > 0) {
+                // The handle seeded from the attribute being overwritten is replaced, so it is freed first.
+                BMKillHandle ((GSHandle*) &fillDefs.sfill_Items.sfill_Lines);
                 fillDefs.sfill_Items.sfill_Lines = (API_SFill_Line**) BMAllocateHandle (nItems * sizeof (API_SFill_Line), ALLOCATE_CLEAR, 0);
                 for (UInt32 i = 0; i < nItems; ++i) {
                     API_SFill_Line& item = (*fillDefs.sfill_Items.sfill_Lines)[i];
@@ -5414,6 +5587,8 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
             fill.filltype.arcNumb = (Int32) nItems;
 
             if (nItems > 0) {
+                // The handle seeded from the attribute being overwritten is replaced, so it is freed first.
+                BMKillHandle ((GSHandle*) &fillDefs.sfill_Items.sfill_Arcs);
                 fillDefs.sfill_Items.sfill_Arcs = (API_SFill_Arc**) BMAllocateHandle (nItems * sizeof (API_SFill_Arc), ALLOCATE_CLEAR, 0);
                 for (UInt32 i = 0; i < nItems; ++i) {
                     API_SFill_Arc& item = (*fillDefs.sfill_Items.sfill_Arcs)[i];
@@ -5434,6 +5609,8 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
             fill.filltype.hotNumb = (Int32) nItems;
 
             if (nItems > 0) {
+                // The handle seeded from the attribute being overwritten is replaced, so it is freed first.
+                BMKillHandle ((GSHandle*) &fillDefs.sfill_Items.sfill_HotSpots);
                 fillDefs.sfill_Items.sfill_HotSpots = (API_Coord**) BMAllocateHandle (nItems * sizeof (API_Coord), ALLOCATE_CLEAR, 0);
                 for (UInt32 i = 0; i < nItems; ++i) {
                     (*fillDefs.sfill_Items.sfill_HotSpots)[i] = Get2DCoordinateFromObjectState (symbolHotspots[i]);
