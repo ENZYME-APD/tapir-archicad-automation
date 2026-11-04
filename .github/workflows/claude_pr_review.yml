@@ -289,7 +289,14 @@ jobs:
             '{event: $event, comment: (if $author == "" then null
                                        else {author: $author, body: $body, path: $path, line: $line} end)}' \
             > .review-context/trigger.json
+          # The checked-out base can be older than main (it is the base of the
+          # pull request's last update), so its tools/package_info.json can
+          # name a version that has already shipped. Give the review main's
+          # current file for the version check.
+          git fetch --quiet --depth=1 origin main
+          git show FETCH_HEAD:tools/package_info.json > .review-context/main_package_info.json
           echo "Earlier bot threads: $(jq length .review-context/threads.json)"
+          echo "Version main carries: $(jq -r .version .review-context/main_package_info.json)"
 
       # Holds the model call back while CLAUDE_MAX_RUNS or more Claude runs
       # started before this one are in progress (see the header of claude_issue_triage.yml).
@@ -391,8 +398,11 @@ jobs:
                response field usually needs the matching Grasshopper output.
 
             4. The registered version. A new command must carry the UNRELEASED
-               version from tools/package_info.json, never one that has already
-               shipped.
+               version that main carries now, never one that has already
+               shipped. Read it from .review-context/main_package_info.json
+               (main's current tools/package_info.json), not from the
+               checked-out tools/package_info.json, which is the pull
+               request's base and can be older than main.
 
             5. Schema honesty. If a command can answer with a per item error,
                its response schema has to allow that - the *OrErrors unions in
@@ -453,7 +463,7 @@ jobs:
               (it ends with a `steward-fix-outcome` marker; read the
               conversation with `gh pr view <PR NUMBER> --comments`) counts
               as a reply on each finding it answers - check its reasons
-              against the code and main's tools/package_info.json like any
+              against the code and .review-context/main_package_info.json like any
               reply; a dispatched review may follow one that disputed your
               findings, so judge them afresh. List every
               settled thread that is not yet resolved in the marker below;
