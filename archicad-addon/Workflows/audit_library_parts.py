@@ -22,7 +22,7 @@ if unIds:
     response = aclib.RunTapirCommand ('SearchLibraryParts', {
         'ancestorUnId': unIds[0],
         'pattern': '*'
-    }, debug = False)
+    })
     print (response)
 
 response = aclib.RunTapirCommand ('GetLastValidEmbeddedLibraryPartName', {}, debug = False)
