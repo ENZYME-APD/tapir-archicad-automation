@@ -1818,59 +1818,7 @@ GS::Optional<GS::UniString> SetMarkerParametersOfElementsCommand::GetInputParame
             "type": "array",
             "description": "The elements with the marker parameters to change.",
             "items": {
-                "type": "object",
-                "properties": {
-                    "elementId": {
-                        "$ref": "#/ElementId"
-                    },
-                    "markerParameters": {
-                        "type": "array",
-                        "description": "The marker parameters to change, each given by name or by index. The other marker parameters and the opening's own settings are left as they are.",
-                        "items": {
-                            "oneOf": [
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "name": {
-                                            "type": "string",
-                                            "description": "The name of the marker parameter."
-                                        },
-                                        "value": {
-                                            "description": "The new value of the marker parameter: a number for the numeric types (Integer, Length, Angle, RealNumber, PenColor, LineType, Material, FillPattern, BuildingMaterial, Profile, RGBColor, Intensity), a string for String and Title, true/false for Boolean and 'On'/'Off' for LightSwitch. Array parameters are not supported."
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "name",
-                                        "value"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "index": {
-                                            "type": "integer",
-                                            "description": "The index of the marker parameter, as GetMarkerParametersOfElements reports it."
-                                        },
-                                        "value": {
-                                            "description": "The new value of the marker parameter, see the value given with a name."
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "index",
-                                        "value"
-                                    ]
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "elementId",
-                    "markerParameters"
-                ]
+                "$ref": "#/ElementWithMarkerParameters"
             }
         }
     },

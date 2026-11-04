@@ -78,32 +78,8 @@ GS::Optional<GS::UniString> Get3DProjectionSettingsCommand::GetRawResponseSchema
             "description": "The perspective parameters. Present only when isPersp is true."
         },
         "axonometric": {
-            "type": "object",
-            "description": "The parameters of an axonometric projection. Present only when isPersp is false.",
-            "properties": {
-                "projectionType": {
-                    "$ref": "#/AxonometryProjectionType"
-                },
-                "azimuth": {
-                    "type": "number",
-                    "description": "The camera azimuth in degrees, the Azimuth of the 3D Projection Settings dialog: for a side view the direction from the model to the camera, counterclockwise from the X axis (270 looks from the south). A predefined axonometry looks from 45 degrees further on."
-                },
-                "transformationMatrix": {
-                    "type": "array",
-                    "description": "The 3x4 transformation matrix of the axonometric projection, row by row (12 numbers).",
-                    "items": {
-                        "type": "number"
-                    },
-                    "minItems": 12,
-                    "maxItems": 12
-                }
-            },
-            "additionalProperties": false,
-            "required": [
-                "projectionType",
-                "azimuth",
-                "transformationMatrix"
-            ]
+            "$ref": "#/AxonometricProjectionParameters",
+            "description": "Present only when isPersp is false."
         }
     },
     "additionalProperties": false,

@@ -5619,41 +5619,13 @@ GS::Optional<GS::UniString> GetElectricalProjectSettingsCommand::GetRawResponseS
             "wiringTypes": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string"
-                        },
-                        "crossSectionalArea": {
-                            "type": "number",
-                            "description": "The cross-sectional area of the wire in square millimeters."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "crossSectionalArea"
-                    ]
+                    "$ref": "#/ElectricalWiringType"
                 }
             },
             "loadClassifications": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string"
-                        },
-                        "demandFactor": {
-                            "type": "number",
-                            "description": "The demand factor, between 0 and 1."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "demandFactor"
-                    ]
+                    "$ref": "#/ElectricalLoadClassification"
                 }
             }
         },
@@ -7050,20 +7022,7 @@ GS::Optional<GS::UniString> ModifyElectricalProjectSettingsCommand::GetInputPara
             "wiringTypesToAdd": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string"
-                        },
-                        "crossSectionalArea": {
-                            "type": "number"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "crossSectionalArea"
-                    ]
+                    "$ref": "#/ElectricalWiringType"
                 }
             },
             "wiringTypesToRemove": {
@@ -7076,20 +7035,7 @@ GS::Optional<GS::UniString> ModifyElectricalProjectSettingsCommand::GetInputPara
             "loadClassificationsToAdd": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string"
-                        },
-                        "demandFactor": {
-                            "type": "number"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "demandFactor"
-                    ]
+                    "$ref": "#/ElectricalLoadClassification"
                 }
             },
             "loadClassificationsToRemove": {
