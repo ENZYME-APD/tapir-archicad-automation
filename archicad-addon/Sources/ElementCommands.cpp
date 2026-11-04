@@ -2153,6 +2153,36 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 // its own write back (#895).
                 typeSpecificDetails.Add ("reveal", elem.window.reveal);
                 typeSpecificDetails.Add ("revealDepthOffset", elem.window.revealDepthOffset);
+                // Floor plan and section settings (API_OpeningBaseType), with the key names of the
+                // Wall and Object cases (#1791).
+                {
+                    const API_OpeningBaseType& opening = elem.window.openingBase;
+                    typeSpecificDetails.Add ("displayOption", ElemDisplayOptionToString (opening.displayOption));
+                    typeSpecificDetails.Add ("pen", (Int32) opening.pen);
+                    if (opening.ltypeInd != APIInvalidAttributeIndex) {
+                        typeSpecificDetails.Add ("lineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, opening.ltypeInd)));
+                    }
+                    if (opening.cutLineType != APIInvalidAttributeIndex) {
+                        typeSpecificDetails.Add ("cutLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, opening.cutLineType)));
+                    }
+                    if (opening.sectFill != APIInvalidAttributeIndex) {
+                        typeSpecificDetails.Add ("sectionFillId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_FilltypeID, opening.sectFill)));
+                    }
+                    typeSpecificDetails.Add ("sectionFillPen", (Int32) opening.sectFillPen);
+                    typeSpecificDetails.Add ("sectionFillBackgroundPen", (Int32) opening.sectBGPen);
+                    typeSpecificDetails.Add ("sectionContourPen", (Int32) opening.sectContPen);
+                    typeSpecificDetails.Add ("aboveViewLinePen", (Int32) opening.aboveViewLinePen);
+                    if (opening.aboveViewLineType != APIInvalidAttributeIndex) {
+                        typeSpecificDetails.Add ("aboveViewLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, opening.aboveViewLineType)));
+                    }
+                    typeSpecificDetails.Add ("belowViewLinePen", (Int32) opening.belowViewLinePen);
+                    if (opening.belowViewLineType != APIInvalidAttributeIndex) {
+                        typeSpecificDetails.Add ("belowViewLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, opening.belowViewLineType)));
+                    }
+                    typeSpecificDetails.Add ("useObjectPens", opening.useObjPens);
+                    typeSpecificDetails.Add ("useObjectLineTypes", opening.useObjLtypes);
+                    typeSpecificDetails.Add ("useObjectSectionAttributes", opening.useObjSectAttrs);
+                }
                 break;
 
             case API_LabelID: {

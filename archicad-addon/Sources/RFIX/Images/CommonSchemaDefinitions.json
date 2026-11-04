@@ -9532,6 +9532,65 @@
             "revealDepthOffset": {
                 "type": "number",
                 "description": "Distance the frame plane is moved across the wall thickness, along the wall normal. The same value ModifyWindows and ModifyDoors take."
+            },
+            "displayOption": {
+                "$ref": "#/DisplayOption"
+            },
+            "pen": {
+                "type": "integer",
+                "description": "Pen of the opening's floor plan symbol (API_OpeningBaseType::pen); used unless useObjectPens is true."
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the opening's floor plan symbol (API_OpeningBaseType::ltypeInd); used unless useObjectLineTypes is true."
+            },
+            "cutLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the cut lines of the opening (API_OpeningBaseType::cutLineType)."
+            },
+            "sectionFillId": {
+                "$ref": "#/AttributeId",
+                "description": "Fill of the section of the opening (API_OpeningBaseType::sectFill); used unless useObjectSectionAttributes is true."
+            },
+            "sectionFillPen": {
+                "type": "integer",
+                "description": "Pen of the fill of the section of the opening (API_OpeningBaseType::sectFillPen)."
+            },
+            "sectionFillBackgroundPen": {
+                "type": "integer",
+                "description": "Background pen of the fill of the section of the opening (API_OpeningBaseType::sectBGPen)."
+            },
+            "sectionContourPen": {
+                "type": "integer",
+                "description": "Contour pen of the fill of the section of the opening (API_OpeningBaseType::sectContPen)."
+            },
+            "aboveViewLinePen": {
+                "type": "integer",
+                "description": "Pen used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup. Corresponds to the \"Overhead Line Pens\" value in the Door/Window Settings dialog."
+            },
+            "aboveViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup. Corresponds to the \"Overhead Lines\" value in the Door/Window Settings dialog."
+            },
+            "belowViewLinePen": {
+                "type": "integer",
+                "description": "Pen of the uncut lines of the opening (API_OpeningBaseType::belowViewLinePen)."
+            },
+            "belowViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type used when \"OutLines Only\" is selected from the \"Floor Plan Display\" popup. Corresponds to the \"Uncut Lines\" value in the Door/Window Settings dialog."
+            },
+            "useObjectPens": {
+                "type": "boolean",
+                "description": "Use the pens defined in the library part instead of 'pen'."
+            },
+            "useObjectLineTypes": {
+                "type": "boolean",
+                "description": "Use the line types defined in the library part instead of 'lineTypeId'."
+            },
+            "useObjectSectionAttributes": {
+                "type": "boolean",
+                "description": "Use the section attributes defined in the library part instead of 'sectionFillId'/'sectionFillPen'/'sectionFillBackgroundPen'/'sectionContourPen'."
             }
         },
         "additionalProperties": false,
