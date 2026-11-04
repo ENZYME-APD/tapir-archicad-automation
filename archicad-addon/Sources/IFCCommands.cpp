@@ -1473,7 +1473,7 @@ GS::Optional<GS::UniString> GetIFCExportTranslatorsCommand::GetRawResponseSchema
         "properties": {
             "translators": {
                 "type": "array",
-                "description": "The IFC export translators of the project, the preview translator first.",
+                "description": "The IFC export translators of the project, in the order of Archicad's translator list. The first one, which the Archicad API documents as the preview translator, has preview true.",
                 "items": {
                     "$ref": "#/IFCExportTranslator"
                 }
