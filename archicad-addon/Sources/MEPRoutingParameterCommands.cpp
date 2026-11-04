@@ -121,11 +121,6 @@ static const RoutingParameterEnumName<PreferredTransitionPlacement> RoutingParam
     { PreferredTransitionPlacement::LargeToSmall, "LargeToSmall" }
 };
 
-static ACAPI::MEP::UniqueID RoutingParameterTableIdFromString (const GS::UniString& tableIdStr)
-{
-    return Adapter::UniqueID (APIGuidFromString (tableIdStr.ToCStr ()));
-}
-
 static GS::ObjectState CreateRoutingSegmentParametersObjectState (const RoutingSegmentDefault& segmentDefault)
 {
     GS::ObjectState segmentOs;
@@ -192,12 +187,16 @@ static bool ApplyRoutingSegmentParameters (RoutingSegmentDefault& segmentDefault
     double height = 0.0;
     GS::UniString shapeStr;
     Int32 referenceId = -1;
-    GS::UniString preferenceTableIdStr;
+    API_Guid preferenceTableGuid = APINULLGuid;
     const bool hasWidth = parameters.Get ("crossSectionWidth", width);
     const bool hasHeight = parameters.Get ("crossSectionHeight", height);
     const bool hasShape = parameters.Get ("crossSectionShape", shapeStr);
     const bool hasReferenceId = parameters.Get ("crossSectionReferenceId", referenceId);
-    const bool hasPreferenceTableId = parameters.Get ("preferenceTableId", preferenceTableIdStr);
+    const OptionalGuidField preferenceTableIdField = GetOptionalGuidField (parameters, "preferenceTableId", preferenceTableGuid);
+    if (preferenceTableIdField == OptionalGuidField::Invalid) {
+        return false;
+    }
+    const bool hasPreferenceTableId = preferenceTableIdField == OptionalGuidField::Valid;
     if (!hasWidth && !hasHeight && !hasShape && !hasReferenceId && !hasPreferenceTableId) {
         return true;
     }
@@ -216,7 +215,7 @@ static bool ApplyRoutingSegmentParameters (RoutingSegmentDefault& segmentDefault
         // The preference table is set before the reference id, because the reference id is resolved
         // against the table the segment uses.
         if (hasPreferenceTableId) {
-            settersSucceeded &= modifier.SetPreferenceTableId (RoutingParameterTableIdFromString (preferenceTableIdStr)).IsOk ();
+            settersSucceeded &= modifier.SetPreferenceTableId (Adapter::UniqueID (preferenceTableGuid)).IsOk ();
         }
         if (hasShape) {
             settersSucceeded &= modifier.SetCrossSectionShape (shape.value ()).IsOk ();
@@ -239,16 +238,20 @@ static bool ApplyRoutingSegmentParameters (RoutingSegmentDefault& segmentDefault
 static bool ApplyElbowParameters (ElbowDefault& elbowDefault, const GS::ObjectState& parameters)
 {
     double factorRadius = 0.0;
-    GS::UniString preferenceTableIdStr;
+    API_Guid preferenceTableGuid = APINULLGuid;
     const bool hasFactorRadius = parameters.Get ("factorRadius", factorRadius);
-    const bool hasPreferenceTableId = parameters.Get ("preferenceTableId", preferenceTableIdStr);
+    const OptionalGuidField preferenceTableIdField = GetOptionalGuidField (parameters, "preferenceTableId", preferenceTableGuid);
+    if (preferenceTableIdField == OptionalGuidField::Invalid) {
+        return false;
+    }
+    const bool hasPreferenceTableId = preferenceTableIdField == OptionalGuidField::Valid;
     if (!hasFactorRadius && !hasPreferenceTableId) {
         return true;
     }
     bool settersSucceeded = true;
     elbowDefault.Modify ([&](ElbowDefault::Modifier& modifier) {
         if (hasPreferenceTableId) {
-            settersSucceeded &= modifier.SetPreferenceTable (RoutingParameterTableIdFromString (preferenceTableIdStr)).IsOk ();
+            settersSucceeded &= modifier.SetPreferenceTable (Adapter::UniqueID (preferenceTableGuid)).IsOk ();
         }
         if (hasFactorRadius) {
             settersSucceeded &= modifier.SetFactorRadius (factorRadius).IsOk ();
@@ -260,13 +263,14 @@ static bool ApplyElbowParameters (ElbowDefault& elbowDefault, const GS::ObjectSt
 // Changes the given keys of a transition default. Returns false when a setter failed.
 static bool ApplyTransitionParameters (TransitionDefault& transitionDefault, const GS::ObjectState& parameters)
 {
-    GS::UniString preferenceTableIdStr;
-    if (!parameters.Get ("preferenceTableId", preferenceTableIdStr)) {
-        return true;
+    API_Guid preferenceTableGuid = APINULLGuid;
+    const OptionalGuidField preferenceTableIdField = GetOptionalGuidField (parameters, "preferenceTableId", preferenceTableGuid);
+    if (preferenceTableIdField != OptionalGuidField::Valid) {
+        return preferenceTableIdField == OptionalGuidField::NotGiven;
     }
     bool settersSucceeded = true;
     transitionDefault.Modify ([&](TransitionDefault::Modifier& modifier) {
-        settersSucceeded &= modifier.SetPreferenceTable (RoutingParameterTableIdFromString (preferenceTableIdStr)).IsOk ();
+        settersSucceeded &= modifier.SetPreferenceTable (Adapter::UniqueID (preferenceTableGuid)).IsOk ();
     });
     return settersSucceeded;
 }
