@@ -14,5 +14,5 @@ aclib.PrintJson (aclib.RunTapirCommand ('ChangeSelectionOfElements', {'removeEle
 aclib.RunTapirCommand ('GetSelectedElements', {})
 
 # Restore the original selection.
-aclib.PrintJson (aclib.RunTapirCommand ('ChangeSelectionOfElements', {'removeElementsFromSelection': walls}))
-aclib.PrintJson (aclib.RunTapirCommand ('ChangeSelectionOfElements', {'addElementsToSelection': originalSelection}))
+aclib.RunTapirCommand ('ChangeSelectionOfElements', {'removeElementsFromSelection': walls})
+aclib.RunTapirCommand ('ChangeSelectionOfElements', {'addElementsToSelection': originalSelection})
