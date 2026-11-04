@@ -7,7 +7,7 @@ import aclib
 goodScript = 'BLOCK 1, 2, 3'
 response = aclib.RunTapirCommand ('InterpretGDLScript3D', {
     'script': goodScript
-}, debug = False)
+})
 print ('Good script ran:', response['success'])
 print ('Elements:', response.get ('elementCount'))
 if 'boundingBox3D' in response:
@@ -18,7 +18,7 @@ if 'boundingBox3D' in response:
 badScript = 'DIM arr[2]\nBLOCK arr[5], 1, 1'
 response = aclib.RunTapirCommand ('InterpretGDLScript3D', {
     'script': badScript
-}, debug = False)
+})
 print ('Bad script ran:', response['success'])
 
 # With a library part: its master and 3D scripts run with its default parameters.
@@ -26,5 +26,5 @@ print ('Bad script ran:', response['success'])
 libraryPartName = 'Tapir Example Symbol'
 response = aclib.RunTapirCommand ('InterpretGDLScript3D', {
     'libraryPartName': libraryPartName
-}, debug = False)
+})
 print (libraryPartName, 'ran:', response.get ('success'), response.get ('error', {}).get ('message', ''))

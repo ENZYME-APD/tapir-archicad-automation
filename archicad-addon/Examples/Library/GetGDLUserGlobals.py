@@ -3,7 +3,7 @@ or newer). This prints how many there are and the first few.
 """
 import aclib
 
-response = aclib.RunTapirCommand ('GetGDLUserGlobals', {}, debug = False)
+response = aclib.RunTapirCommand ('GetGDLUserGlobals', {})
 if 'error' in response:
     print (response['error']['message'])
 else:

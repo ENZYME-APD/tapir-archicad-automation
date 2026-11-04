@@ -13,6 +13,6 @@ aclib.PrintJson (aclib.RunTapirCommand ('MoveElements', {
     'elementsWithMoveVectors': [{'elementId': wallId, 'moveVector': {'x': 1.0, 'y': 0.0, 'z': 0.0}}]
 }))
 
-aclib.RunTapirCommand ('MoveElements', {
+aclib.PrintJson (aclib.RunTapirCommand ('MoveElements', {
     'elementsWithMoveVectors': [{'elementId': wallId, 'moveVector': {'x': -1.0, 'y': 0.0, 'z': 0.0}}]
-})
+}))

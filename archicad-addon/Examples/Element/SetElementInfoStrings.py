@@ -19,6 +19,6 @@ aclib.PrintJson (aclib.RunTapirCommand ('SetElementInfoStrings', {
 }))
 print ('Element ID: {} -> {}'.format (originalId, GetElementId ()))
 
-aclib.RunTapirCommand ('SetElementInfoStrings', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetElementInfoStrings', {
     'elements': [{'elementId': wallId, 'infoString': originalId}]
-})
+}))

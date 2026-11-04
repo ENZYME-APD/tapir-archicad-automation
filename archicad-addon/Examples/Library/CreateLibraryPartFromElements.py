@@ -11,7 +11,7 @@ libraryPartName = 'Tapir Example Symbol'
 subtypeNames = ['Model Element', 'General Object', 'General GDL Object']
 availableLibraryParts = aclib.RunTapirCommand ('GetAvailableLibraryParts', {
     'filterByTypeId': 'Object'
-}, debug = False)['libraryParts']
+})['libraryParts']
 subtypeGuids = { part['documentName']: part['guid'] for part in availableLibraryParts }
 parentGuid = next ((subtypeGuids[name] for name in subtypeNames if name in subtypeGuids), None)
 print ('Parent subtype found:', parentGuid is not None)
@@ -28,12 +28,12 @@ drawnElements += aclib.RunTapirCommand ('CreatePolylines', {
             { 'x': 0.0, 'y': 0.0 }
         ]
     }]
-}, debug = False)['elements']
+})['elements']
 drawnElements += aclib.RunTapirCommand ('CreateCircles', {
     'circlesData': [
         { 'origin': { 'x': 0.5, 'y': 0.5 }, 'radius': 0.3 }
     ]
-}, debug = False)['elements']
+})['elements']
 
 response = aclib.RunTapirCommand ('CreateLibraryPartFromElements', {
     'name': libraryPartName,
@@ -46,7 +46,7 @@ response = aclib.RunTapirCommand ('CreateLibraryPartFromElements', {
     },
     'comment': 'Created by the Tapir example CreateLibraryPartFromElements.py',
     'keywords': 'Tapir example'
-}, debug = False)
+})
 print ('Library part created:', 'error' not in response)
 if 'error' in response:
     print (response['error']['message'])
@@ -58,7 +58,7 @@ else:
             'libraryPartName': response['name'],
             'coordinates': { 'x': 5.0, 'y': 0.0, 'z': 0.0 }
         }]
-    }, debug = False)['elements'][0]['elementId']
-    aclib.RunTapirCommand ('DeleteElements', { 'elements': [{ 'elementId': elementId }] }, debug = False)
+    })['elements'][0]['elementId']
+    aclib.RunTapirCommand ('DeleteElements', { 'elements': [{ 'elementId': elementId }] })
 
-aclib.RunTapirCommand ('DeleteElements', { 'elements': drawnElements }, debug = False)
+aclib.RunTapirCommand ('DeleteElements', { 'elements': drawnElements })
