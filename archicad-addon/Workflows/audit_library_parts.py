@@ -34,5 +34,13 @@ if libraryParts:
         })
         print (response)
 
+# The library parts derived from the first one, matched by name.
+if unIds:
+    response = aclib.RunTapirCommand ('SearchLibraryParts', {
+        'ancestorUnId': unIds[0],
+        'pattern': '*'
+    })
+    print (response)
+
 response = aclib.RunTapirCommand ('GetLastValidEmbeddedLibraryPartName', {}, debug = False)
 print (response)

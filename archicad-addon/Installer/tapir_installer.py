@@ -19,6 +19,7 @@ import http.client
 import json
 import os
 import platform
+import plistlib
 import re
 import shlex
 import shutil
@@ -1245,7 +1246,8 @@ def RunConsoleInstaller (args):
             raise InstallerError ('No Archicad installation was found. See {0} for manual installation.'.format (MANUAL_INSTALL_URL))
         print ('Found Archicad installations:')
         for installation in installations:
-            print ('  {0}'.format (installation))
+            installedVersion = GetInstalledTapirVersion (installation.addOnsFolderPath)
+            print ('  {0}{1}'.format (installation, '' if installedVersion is None else ', Tapir {0} installed'.format (installedVersion)))
         if args.uninstall:
             for installation in installations:
                 if args.dryRun:
@@ -1371,6 +1373,61 @@ TAPIR_LOGO_PNG_BASE64 = (
 
 def IsTapirInstalled (addOnsFolderPath):
     return os.path.isdir (os.path.join (addOnsFolderPath, TAPIR_SUBFOLDER_NAME)) or len (GetStrayTapirAddOnPaths (addOnsFolderPath)) > 0
+
+
+def ReadAddOnVersionWin (addOnFilePath):
+    # The ProductVersion of the add-on's VERSIONINFO resource
+    # (archicad-addon/Tools/CompileResources.py writes it from ADDON_VERSION).
+    import ctypes
+    import ctypes.wintypes
+    versionDll = ctypes.WinDLL ('version', use_last_error = True)
+    versionDll.GetFileVersionInfoSizeW.argtypes = [ctypes.wintypes.LPCWSTR, ctypes.POINTER (ctypes.wintypes.DWORD)]
+    versionDll.GetFileVersionInfoSizeW.restype = ctypes.wintypes.DWORD
+    versionDll.GetFileVersionInfoW.argtypes = [ctypes.wintypes.LPCWSTR, ctypes.wintypes.DWORD, ctypes.wintypes.DWORD, ctypes.c_void_p]
+    versionDll.GetFileVersionInfoW.restype = ctypes.wintypes.BOOL
+    versionDll.VerQueryValueW.argtypes = [ctypes.c_void_p, ctypes.wintypes.LPCWSTR, ctypes.POINTER (ctypes.c_void_p), ctypes.POINTER (ctypes.wintypes.UINT)]
+    versionDll.VerQueryValueW.restype = ctypes.wintypes.BOOL
+    size = versionDll.GetFileVersionInfoSizeW (addOnFilePath, None)
+    if size == 0:
+        return None
+    buffer = ctypes.create_string_buffer (size)
+    if not versionDll.GetFileVersionInfoW (addOnFilePath, 0, size, buffer):
+        return None
+    valuePointer = ctypes.c_void_p ()
+    valueLength = ctypes.wintypes.UINT ()
+    if not versionDll.VerQueryValueW (buffer, '\\StringFileInfo\\040904B0\\ProductVersion', ctypes.byref (valuePointer), ctypes.byref (valueLength)):
+        return None
+    if not valuePointer.value or valueLength.value == 0:
+        return None
+    return ctypes.wstring_at (valuePointer.value, valueLength.value).rstrip ('\0')
+
+
+def ReadAddOnVersionMac (addOnBundlePath):
+    # CFBundleShortVersionString of the bundle (archicad-addon/Tools/CMakeCommon.cmake
+    # sets it to ADDON_VERSION).
+    with open (os.path.join (addOnBundlePath, 'Contents', 'Info.plist'), 'rb') as plistFile:
+        return plistlib.load (plistFile).get ('CFBundleShortVersionString')
+
+
+def GetInstalledTapirVersion (addOnsFolderPath):
+    # The version of the installed Tapir, or None when it cannot be read: older
+    # add-ons carry none (on macOS their CFBundleShortVersionString is the
+    # 4-part Archicad build, not the Tapir version).
+    tapirFolderPath = os.path.join (addOnsFolderPath, TAPIR_SUBFOLDER_NAME)
+    addOnPaths = GetStrayTapirAddOnPaths (tapirFolderPath) + GetStrayTapirAddOnPaths (addOnsFolderPath)
+    for addOnPath in addOnPaths:
+        try:
+            version = ReadAddOnVersionMac (addOnPath) if IsUsingMacOS () else ReadAddOnVersionWin (addOnPath)
+        except Exception:
+            continue
+        if isinstance (version, str) and re.fullmatch (r'\d+\.\d+\.\d+', version):
+            return version
+    return None
+
+
+def GetInstalledStatusText (addOnsFolderPath):
+    version = GetInstalledTapirVersion (addOnsFolderPath)
+    return 'Installed' if version is None else 'Installed {0}'.format (version)
 
 
 def EnableWindowsHighDpi ():
@@ -1539,7 +1596,7 @@ def RunGuiInstaller (args):
                 font = app.fonts['small'], bg = COLORS['surface'], fg = COLORS['mutedText'], anchor = 'w')
             self.pathLabel.pack (fill = 'x')
             # The update statuses are longer ("Restarting Archicad...").
-            self.statusLabel = tkinter.Label (contentFrame, font = app.fonts['badge'], width = 19 if isUpdateMode else 16, padx = Px (6), pady = Px (3))
+            self.statusLabel = tkinter.Label (contentFrame, font = app.fonts['badge'], width = 19 if isUpdateMode else 17, padx = Px (6), pady = Px (3))
             self.statusLabel.pack (side = 'right', padx = (Px (12), 0))
             # The bar is always packed, so the card does not change height when
             # it appears; it is only invisible while there is no progress.
@@ -1552,7 +1609,7 @@ def RunGuiInstaller (args):
             for widget in [self.card, contentFrame, self.checkBox, textFrame, self.titleLabel, self.pathLabel]:
                 widget.bind ('<Button-1>', lambda event : self.Toggle ())
             if IsTapirInstalled (installation.addOnsFolderPath):
-                self.SetStatus ('Installed', 'success')
+                self.SetStatus (GetInstalledStatusText (installation.addOnsFolderPath), 'success')
             else:
                 self.SetStatus ('Not installed', 'neutral')
             self.UpdateLook ()
@@ -1843,7 +1900,7 @@ def RunGuiInstaller (args):
                             InstallAddOn (row.installation.addOnsFolderPath, downloadedFilePath)
                     finally:
                         shutil.rmtree (downloadFolderPath, ignore_errors = True)
-                    self.SetRowStatus (row, 'Installed', 'success')
+                    self.SetRowStatus (row, GetInstalledStatusText (row.installation.addOnsFolderPath), 'success')
                 except Exception as e:
                     self.SetRowStatus (row, 'Failed', 'error')
                     errorTexts[rowIndex] = 'Archicad {0}: {1}'.format (row.installation.version, e)

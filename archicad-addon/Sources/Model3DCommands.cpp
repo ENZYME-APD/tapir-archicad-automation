@@ -1,11 +1,12 @@
 #include "Model3DCommands.hpp"
 #include "MigrationHelper.hpp"
 
+#include "Polygon2D.hpp"
+
 #ifdef ServerMainVers_2800
 #include "Model.hpp"
 #include "ModelElement.hpp"
 #include "ModelMeshBody.hpp"
-#include "Polygon2D.hpp"
 
 #include <optional>
 
@@ -91,8 +92,11 @@ static GSErrCode CreateBodyMaterialObjectState (Int32 elemIdx, UInt32 bodyIdx, G
     return NoError;
 }
 
+#endif
+
 // The first contour of a Geometry::Polygon2D is its outline, the others are its holes. The
 // coordinates are 2D in the cutting plane (axisX, axisY); curved edges are given by their ends.
+// Used by GetCutPolygonsOfElements in every Archicad version.
 static GS::ObjectState CreateCutPolygonObjectState (const Geometry::Polygon2D& polygon)
 {
     GS::ObjectState polygonOS;
@@ -121,6 +125,8 @@ static GS::ObjectState CreateCutPolygonObjectState (const Geometry::Polygon2D& p
 
     return polygonOS;
 }
+
+#ifdef ServerMainVers_2800
 
 // The surface type of every polygon of every body of one element of the model. The element is read
 // whole, because ACAPI_Polygon_PolygonId2SurfaceType needs the roofClass of a Roof.
@@ -692,6 +698,119 @@ GS::Optional<GS::UniString> GetCutPolygonsOfElementsCommand::GetRawResponseSchem
     })";
 }
 
+#ifndef ServerMainVers_2800
+// Before Archicad 28 there is neither a model generated with separate components nor
+// ACAPI_CuttingPlane_GetCutPolygonInfo_New: the bodies of an element are those of its 3D model
+// (fbody..lbody of ACAPI_ModelAccess_Get3DInfo, so a composite structure is one body), each cut
+// with ACAPI_CuttingPlane_GetCutPolygonInfo (ACAPI_3D_GetCutPolygonInfo in AC25/26) by its index
+// in the 3D database. The building material of a body is not known there, so it is left out.
+static GS::ObjectState GetCutPolygonsOfElementsFrom3DBodies (const GS::ObjectState& parameters)
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    const GS::ObjectState* cutPlaneOS = parameters.Get ("cutPlane");
+    if (cutPlaneOS == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "cutPlane is missing");
+    }
+
+    const GS::ObjectState* basePoint = cutPlaneOS->Get ("basePoint");
+    const GS::ObjectState* axisX = cutPlaneOS->Get ("axisX");
+    const GS::ObjectState* axisY = cutPlaneOS->Get ("axisY");
+    const GS::ObjectState* axisZ = cutPlaneOS->Get ("axisZ");
+    if (basePoint == nullptr || axisX == nullptr || axisY == nullptr || axisZ == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "cutPlane needs basePoint, axisX, axisY and axisZ");
+    }
+
+    API_Plane3D cutPlane = {};
+    cutPlane.basePoint = Get3DCoordinateFromObjectState (*basePoint);
+    const API_Coord3D x = Get3DCoordinateFromObjectState (*axisX);
+    const API_Coord3D y = Get3DCoordinateFromObjectState (*axisY);
+    const API_Coord3D z = Get3DCoordinateFromObjectState (*axisZ);
+    cutPlane.axisX = { x.x, x.y, x.z };
+    cutPlane.axisY = { y.x, y.y, y.z };
+    cutPlane.axisZ = { z.x, z.y, z.z };
+
+    // ACAPI_ModelAccess_Get3DInfo works from the floor plan and the 3D window only, so the current
+    // database is switched to the floor plan for the reads otherwise, as Get3DGeometryOfElements does.
+    API_DatabaseInfo previousDatabase = {};
+    bool databaseSwitched = false;
+    const GS::OnExit restoreDatabase ([&] () {
+        if (databaseSwitched) {
+            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
+        }
+    });
+    if (ACAPI_Database_GetCurrentDatabase (&previousDatabase) == NoError &&
+        previousDatabase.typeID != APIWind_FloorPlanID &&
+        previousDatabase.typeID != APIWind_3DModelID)
+    {
+        API_DatabaseInfo floorPlanDatabase = {};
+        floorPlanDatabase.typeID = APIWind_FloorPlanID;
+        if (ACAPI_Window_GetDatabaseInfo (&floorPlanDatabase) == NoError &&
+            ACAPI_Database_ChangeCurrentDatabase (&floorPlanDatabase) == NoError)
+        {
+            databaseSwitched = true;
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& cutPolygons = response.AddList<GS::ObjectState> ("cutPolygons");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            cutPolygons (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            cutPolygons (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+
+        API_ElemInfo3D info3D = {};
+        err = ACAPI_ModelAccess_Get3DInfo (elemHead, &info3D);
+        if (err != NoError) {
+            cutPolygons (CreateErrorResponse (err, "Failed to get the 3D model of the element"));
+            continue;
+        }
+
+        GS::ObjectState result;
+        const auto& bodies = result.AddList<GS::ObjectState> ("bodies");
+
+        GSErrCode bodyErr = NoError;
+        for (Int32 iBody = info3D.fbody; iBody <= info3D.lbody && info3D.fbody > 0; ++iBody) {
+            GS::Array<Geometry::MultiPolygon2D> resPolygons;
+            double area = 0.0;
+            bodyErr = ACAPI_CuttingPlane_GetCutPolygonInfo (iBody, cutPlane, &resPolygons, &area);
+            if (bodyErr != NoError) {
+                break;
+            }
+
+            GS::ObjectState bodyOS ("bodyIndex", iBody - info3D.fbody, "area", area);
+            const auto& polygons = bodyOS.AddList<GS::ObjectState> ("polygons");
+            for (const Geometry::MultiPolygon2D& multiPolygon : resPolygons) {
+                for (const Geometry::Polygon2D& polygon : multiPolygon) {
+                    polygons (CreateCutPolygonObjectState (polygon));
+                }
+            }
+            bodies (bodyOS);
+        }
+
+        if (bodyErr != NoError) {
+            cutPolygons (CreateErrorResponse (bodyErr, "Failed to cut a body of the element with the plane"));
+        } else {
+            cutPolygons (result);
+        }
+    }
+
+    return response;
+}
+#endif
+
 GS::ObjectState GetCutPolygonsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
@@ -836,8 +955,7 @@ GS::ObjectState GetCutPolygonsOfElementsCommand::Execute (const GS::ObjectState&
 
     return response;
 #else
-    UNUSED_PARAMETER (parameters);
-    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command is only supported in Archicad 28 or later.");
+    return GetCutPolygonsOfElementsFrom3DBodies (parameters);
 #endif
 }
 
