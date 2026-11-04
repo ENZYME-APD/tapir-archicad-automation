@@ -1,6 +1,6 @@
 {
   "title": "CreateShells makes extruded, revolved and ruled shells and refuses incomplete geometry",
-  "minTapir": "1.7.4",
+  "minTapir": "1.8.1",
   "requiresEmpty": [ "Shell" ],
   "steps": [
     {

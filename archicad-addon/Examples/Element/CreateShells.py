@@ -1,3 +1,8 @@
+"""Creates an extruded barrel vault, a revolved dome and a ruled shell with CreateShells.
+
+The vault has a square opening, and the dome has a circular oculus.
+Profiles, placement planes and cutting polygons define the three shells.
+"""
 import aclib
 import math
 
