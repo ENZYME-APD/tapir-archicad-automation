@@ -73,6 +73,8 @@ static GS::Optional<GS::ObjectState> GetAttributeIdFromIndex (API_AttrTypeID att
     if (ACAPI_Attribute_Get (&attribute) != NoError) {
         return GS::NoValue;
     }
+    // A surface comes with texture.fileLoc allocated (ACAPI_Attribute_Get remarks, Attribute_Test.cpp).
+    DisposeAttribute (attribute);
     return CreateAttributeIdObjectState (attribute.header.guid);
 }
 
@@ -84,6 +86,7 @@ static bool GetAttributeIndexFromAttributeId (const GS::ObjectState& attributeId
     if (ACAPI_Attribute_Get (&attribute) != NoError) {
         return false;
     }
+    DisposeAttribute (attribute);
 
     attributeIndex = attribute.header.index;
     return true;
@@ -3271,6 +3274,7 @@ GS::ObjectState GetSurfacesCommand::Execute (const GS::ObjectState& parameters, 
         }
 
         surfaces (surface);
+        DisposeAttribute (attr);
     }
 
     return response;
@@ -4294,6 +4298,8 @@ GS::ObjectState CreateAttributesCommandBase::Execute (const GS::ObjectState& par
         }
 
         bool doesExist = (ACAPI_Attribute_Get (&attr) == NoError);
+        // A surface read by ACAPI_Attribute_Get holds an allocated texture.fileLoc (see its remarks).
+        const GS::OnExit disposeAttr ([&attr] () { DisposeAttribute (attr); });
         if (doesExist && !overwriteExisting) {
             attributeIds (CreateErrorResponse (APIERR_ATTREXIST, "Already exists."));
             continue;
