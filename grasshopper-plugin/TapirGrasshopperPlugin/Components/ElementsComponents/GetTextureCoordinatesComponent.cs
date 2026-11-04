@@ -161,9 +161,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 bodyErrors);
         }
 
-        // Shares the icon of GetBodyMaterialsOfElements until it gets one of its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetBodyMaterialsOfElements;
+            Properties.Resources.GetTextureCoordinates;
 
         public override Guid ComponentGuid =>
             new Guid("4f1d8644-21a1-46a7-b186-95174b4eac17");

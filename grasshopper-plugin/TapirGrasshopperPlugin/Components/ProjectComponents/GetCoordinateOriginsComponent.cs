@@ -61,9 +61,8 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 JsonOutputHelp.Point(response["userOrigin"]));
         }
 
-        // Shares the icon of GetSurveyPointTransformation until it gets its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetSurveyPointTransformation;
+            Properties.Resources.GetCoordinateOrigins;
 
         public override Guid ComponentGuid =>
             new Guid("b7376269-9143-4c6f-8177-d031e6580a15");

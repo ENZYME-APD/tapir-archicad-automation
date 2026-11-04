@@ -210,9 +210,8 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             da.SetDataList(6, errors);
         }
 
-        // Shares the icon of GetAttributesFromProject.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetAttributesFromProject;
+            Properties.Resources.ImportAttributesFromProject;
 
         public override Guid ComponentGuid =>
             new Guid("24846a5e-06e6-48e6-8d6f-4b5961b38e0d");

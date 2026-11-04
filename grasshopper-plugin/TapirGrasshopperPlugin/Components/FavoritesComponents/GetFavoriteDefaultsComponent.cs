@@ -193,7 +193,7 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetFavoriteSettings;
+            Properties.Resources.GetFavoriteDefaults;
 
         public override Guid ComponentGuid =>
             new Guid("d5032425-f1bd-4b40-9131-b6deaa9066b7");

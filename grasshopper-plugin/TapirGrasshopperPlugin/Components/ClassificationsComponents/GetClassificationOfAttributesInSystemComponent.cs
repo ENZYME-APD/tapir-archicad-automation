@@ -142,9 +142,8 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             da.SetDataList(1, errors);
         }
 
-        // Shares the icon of GetClassificationsOfElements.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetClassificationsOfElements;
+            Properties.Resources.GetClassificationOfAttributesInSystem;
 
         public override Guid ComponentGuid =>
             new Guid("5421c8d6-b70c-4f66-b777-09b25d25557d");

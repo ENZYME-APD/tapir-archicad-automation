@@ -4921,5 +4921,550 @@ namespace TapirGrasshopperPlugin.Properties
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
+    
+
+        internal static System.Drawing.Bitmap GetHotlinkDesignOptionTableDetails
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetHotlinkDesignOptionTableDetails", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetHotlinkDesignOptionTables
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetHotlinkDesignOptionTables", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetHotlinkDesignOptionTables
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetHotlinkDesignOptionTables", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap DeleteGhostRecords
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteGhostRecords", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetArchicadVisibility
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetArchicadVisibility", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetDialogAutoClose
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetDialogAutoClose", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModelToScreen
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModelToScreen", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap RedrawCurrentDatabase
+        {
+            get {
+                object obj = ResourceManager.GetObject ("RedrawCurrentDatabase", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap RunActionCenterChecks
+        {
+            get {
+                object obj = ResourceManager.GetObject ("RunActionCenterChecks", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ScreenToModel
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ScreenToModel", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetArchicadVisibility
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetArchicadVisibility", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetIFCAssignments
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetIFCAssignments", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetIFCSpatialStructure
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetIFCSpatialStructure", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap FindDimensionStandard
+        {
+            get {
+                object obj = ResourceManager.GetObject ("FindDimensionStandard", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetCoordinateOrigins
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetCoordinateOrigins", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetExportTolerance
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetExportTolerance", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetHotlinkSourceStatus
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetHotlinkSourceStatus", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetLast3DDefaultLevels
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetLast3DDefaultLevels", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetNoteAutotexts
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetNoteAutotexts", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetLast3DDefaultLevels
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetLast3DDefaultLevels", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetPlaceSettings
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetPlaceSettings", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetTeamworkAccessRights
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetTeamworkAccessRights", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetTeamworkOwnersOfDatabases
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetTeamworkOwnersOfDatabases", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetTeamworkRightsOfObjects
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetTeamworkRightsOfObjects", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateRailingsFromPolyline
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateRailingsFromPolyline", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap DeleteUserDataOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteUserDataOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap Get2DBoundingBoxes
+        {
+            get {
+                object obj = ResourceManager.GetObject ("Get2DBoundingBoxes", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetCalculatedParametersOfCurtainWallSubElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetCalculatedParametersOfCurtainWallSubElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetCurtainWallAbsoluteBottoms
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetCurtainWallAbsoluteBottoms", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetElementsInCreationOrder
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetElementsInCreationOrder", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetHotspotsOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetHotspotsOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetOpeningSymbolParameters
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetOpeningSymbolParameters", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetRoofPlanes
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetRoofPlanes", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetSkylightHolePolygons
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetSkylightHolePolygons", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetSurfaceTypesOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetSurfaceTypesOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetTextureCoordinates
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetTextureCoordinates", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetURLReferencesOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetURLReferencesOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyShells
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyShells", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyZones
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyZones", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetElementInfoStrings
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetElementInfoStrings", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetMarkerLibraryPartOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetMarkerLibraryPartOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetOpeningSymbolParameters
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetOpeningSymbolParameters", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetURLReferencesOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetURLReferencesOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetPens
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetPens", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ImportAttributesFromProject
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ImportAttributesFromProject", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ReindexAttributes
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ReindexAttributes", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ReindexLayers
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ReindexLayers", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetGraphicOverrideRuleGroupOrder
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetGraphicOverrideRuleGroupOrder", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetClassificationOfAttributesInSystem
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetClassificationOfAttributesInSystem", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetAllClassificationSystems
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAllClassificationSystems", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap DeleteElementSets
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteElementSets", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetAllElementsOfGroups
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAllElementsOfGroups", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetAutoGroupMode
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAutoGroupMode", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetMainGroups
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetMainGroups", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateFavoriteFolder
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateFavoriteFolder", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap DeleteFavoriteFolder
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteFavoriteFolder", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap MoveFavorites
+        {
+            get {
+                object obj = ResourceManager.GetObject ("MoveFavorites", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ReadFavoritesFile
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ReadFavoritesFile", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap RenameFavoriteFolder
+        {
+            get {
+                object obj = ResourceManager.GetObject ("RenameFavoriteFolder", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetPropertyAvailabilityOfDefaults
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetPropertyAvailabilityOfDefaults", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetPropertyEditability
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetPropertyEditability", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetPropertyExpressionReferences
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetPropertyExpressionReferences", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetBuiltInPropertyValuesOfAttributes
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetBuiltInPropertyValuesOfAttributes", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetPropertyValueOfAttributes
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetPropertyValueOfAttributes", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetFavoriteDefaults
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetFavoriteDefaults", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateLibraryPartFromElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateLibraryPartFromElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetGDLUserGlobals
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetGDLUserGlobals", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap InterpretGDLScript3D
+        {
+            get {
+                object obj = ResourceManager.GetObject ("InterpretGDLScript3D", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
     }
 }

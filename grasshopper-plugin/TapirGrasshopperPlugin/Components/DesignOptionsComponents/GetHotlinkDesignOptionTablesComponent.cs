@@ -221,9 +221,8 @@ namespace TapirGrasshopperPlugin.Components.DesignOptionsComponents
             da.SetDataList(7, errorMessages);
         }
 
-        // Shares the icon of GetDesignOptions until it gets its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetDesignOptions;
+            Properties.Resources.GetHotlinkDesignOptionTables;
 
         public override Guid ComponentGuid =>
             new Guid("838b7d60-6702-414d-96c8-ccba1447cf82");
