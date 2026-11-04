@@ -17,6 +17,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         private static readonly string[] SettingsKeys =
         {
             "filterAndCutSettings",
+            "window3DFilter",
             "cutSetting",
             "cutaway3D",
             "projectionSetting",
