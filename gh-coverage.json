@@ -1,9 +1,9 @@
 {
- "generatedAt": "2026-11-04 11:05 UTC",
+ "generatedAt": "2026-11-04 11:47 UTC",
  "counts": {
   "done": 568,
   "merged": 147,
-  "open": 8,
+  "open": 9,
   "not applicable": 1
  },
  "parameters": {
@@ -1024,6 +1024,10 @@
    "reason": "",
    "components": [
     {
+     "name": "GetDetailsOfElementsComponent",
+     "path": "Components/ElementsComponents/GetDetailsOfElementsComponent.cs"
+    },
+    {
      "name": "GetStoriesComponent",
      "path": "Components/ProjectComponents/GetStoriesComponent.cs"
     }
@@ -1032,12 +1036,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1781,
-     "title": "Grasshopper ElementDetails: absolute Elevations output"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6656,6 +6655,21 @@
    "issues": []
   },
   {
+   "id": "ModifyStairs",
+   "group": "Element Commands",
+   "version": "1.8.1",
+   "brief": "Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the finish visibility, and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness). Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 27,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "ChangeTextContent",
    "group": "Element Commands",
    "version": "1.8.0",
@@ -7886,7 +7900,7 @@
    "id": "SetPropertyValuesOfElements",
    "group": "Property Commands",
    "version": "1.0.6",
-   "brief": "Sets the property values of elements. It works for subelements of hierarchal elements also.",
+   "brief": "Sets the property values of elements. It works for subelements of hierarchal elements also. With valueStatus an element's value can also be reset to the default value of the property (Default) or made undefined (UserUndefined, from 1.8.1).",
    "status": "done",
    "reason": "",
    "components": [

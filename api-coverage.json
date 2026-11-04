@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-04 11:05 UTC",
+ "generatedAt": "2026-11-04 11:47 UTC",
  "versions": [
   25,
   26,
@@ -3573,7 +3573,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1828,
+     "title": "fontName: fall back to Archicad's font search as GetFontsByName does"
+    }
+   ],
    "issues": [
     {
      "number": 1824,
@@ -4093,10 +4098,6 @@
     {
      "number": 1777,
      "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
-    },
-    {
-     "number": 1774,
-     "title": "Add ModifyStairs: change the settings of existing stairs"
     },
     {
      "number": 1757,
@@ -6898,10 +6899,6 @@
      "title": "Add ModifyRailings: height, bottom offset and home story of railings"
     },
     {
-     "number": 1774,
-     "title": "Add ModifyStairs: change the settings of existing stairs"
-    },
-    {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
@@ -7453,10 +7450,6 @@
      "title": "Add ModifyRailings: height, bottom offset and home story of railings"
     },
     {
-     "number": 1774,
-     "title": "Add ModifyStairs: change the settings of existing stairs"
-    },
-    {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
     },
@@ -7812,6 +7805,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1831,
+     "title": "[2/3] Notification clients: window, floor and project events"
+    },
     {
      "number": 1823,
      "title": "[1/3] Notification clients: selection changes"
@@ -9746,7 +9743,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1828,
+     "title": "fontName: fall back to Archicad's font search as GetFontsByName does"
+    }
+   ],
    "issues": [
     {
      "number": 1824,
@@ -15119,6 +15121,10 @@
    "reason": "event handlers, not commands",
    "pullRequests": [
     {
+     "number": 1831,
+     "title": "[2/3] Notification clients: window, floor and project events"
+    },
+    {
      "number": 1823,
      "title": "[1/3] Notification clients: selection changes"
     }
@@ -16190,7 +16196,12 @@
    ],
    "status": "not applicable",
    "reason": "event handlers, not commands",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1831,
+     "title": "[2/3] Notification clients: window, floor and project events"
+    }
+   ],
    "issues": [
     {
      "number": 1813,
@@ -16722,7 +16733,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1831,
+     "title": "[2/3] Notification clients: window, floor and project events"
+    }
+   ],
    "issues": []
   },
   {
@@ -17925,6 +17941,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1832,
+     "title": "[2/4] Report element changes made by the Modify<Tool> commands to notification clients"
+    },
+    {
+     "number": 1831,
+     "title": "[2/3] Notification clients: window, floor and project events"
+    },
+    {
+     "number": 1829,
+     "title": "[1/4] Report element changes and deletions made by Tapir commands to notification clients"
+    },
     {
      "number": 1823,
      "title": "[1/3] Notification clients: selection changes"
@@ -20643,6 +20671,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1831,
+     "title": "[2/3] Notification clients: window, floor and project events"
+    },
     {
      "number": 1776,
      "title": "2D creation commands: optional databaseId to create in a worksheet, detail or layout without opening it"
@@ -25992,6 +26024,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1832,
+     "title": "[2/4] Report element changes made by the Modify<Tool> commands to notification clients"
+    },
+    {
      "number": 1826,
      "title": "CreateMorphs: favoriteName, layerIndex and id per item"
     },
@@ -26026,10 +26062,6 @@
     {
      "number": 1776,
      "title": "2D creation commands: optional databaseId to create in a worksheet, detail or layout without opening it"
-    },
-    {
-     "number": 1774,
-     "title": "Add ModifyStairs: change the settings of existing stairs"
     },
     {
      "number": 1748,
@@ -32139,6 +32171,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1832,
+     "title": "[2/4] Report element changes made by the Modify<Tool> commands to notification clients"
+    },
+    {
+     "number": 1829,
+     "title": "[1/4] Report element changes and deletions made by Tapir commands to notification clients"
+    },
     {
      "number": 1822,
      "title": "CreateProfiles: moveVertices edits geometry in place; edgeOverrides take isInnerLine/isCutEndLine"
@@ -38864,6 +38904,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1832,
+     "title": "[2/4] Report element changes made by the Modify<Tool> commands to notification clients"
+    },
+    {
+     "number": 1829,
+     "title": "[1/4] Report element changes and deletions made by Tapir commands to notification clients"
+    },
+    {
      "number": 1826,
      "title": "CreateMorphs: favoriteName, layerIndex and id per item"
     },
@@ -38896,20 +38944,12 @@
      "title": "Add ModifyRailings: height, bottom offset and home story of railings"
     },
     {
-     "number": 1779,
-     "title": "SetPropertyValuesOfElements: reset a value to the default or make it undefined"
-    },
-    {
      "number": 1777,
      "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
     },
     {
      "number": 1776,
      "title": "2D creation commands: optional databaseId to create in a worksheet, detail or layout without opening it"
-    },
-    {
-     "number": 1774,
-     "title": "Add ModifyStairs: change the settings of existing stairs"
     },
     {
      "number": 1750,
@@ -44703,6 +44743,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1832,
+     "title": "[2/4] Report element changes made by the Modify<Tool> commands to notification clients"
+    },
+    {
+     "number": 1831,
+     "title": "[2/3] Notification clients: window, floor and project events"
+    },
+    {
      "number": 1823,
      "title": "[1/3] Notification clients: selection changes"
     },
@@ -45797,6 +45845,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1832,
+     "title": "[2/4] Report element changes made by the Modify<Tool> commands to notification clients"
+    },
+    {
+     "number": 1829,
+     "title": "[1/4] Report element changes and deletions made by Tapir commands to notification clients"
+    },
     {
      "number": 1822,
      "title": "CreateProfiles: moveVertices edits geometry in place; edgeOverrides take isInnerLine/isCutEndLine"
@@ -49352,6 +49408,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1832,
+     "title": "[2/4] Report element changes made by the Modify<Tool> commands to notification clients"
+    },
+    {
+     "number": 1829,
+     "title": "[1/4] Report element changes and deletions made by Tapir commands to notification clients"
+    },
     {
      "number": 1822,
      "title": "CreateProfiles: moveVertices edits geometry in place; edgeOverrides take isInnerLine/isCutEndLine"
