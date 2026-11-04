@@ -447,6 +447,8 @@ static void SetTablesOnSegmentsAndNodes (const RoutingElement& routingElement, c
             notes.Push ("node: " + error.value ());
         }
     }
+#else
+    (void) tables;
 #endif
 }
 
