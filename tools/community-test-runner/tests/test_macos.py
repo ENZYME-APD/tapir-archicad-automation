@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import plistlib
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -64,11 +65,19 @@ class AddOnListTest(unittest.TestCase):
         self.assertIsNone(rm.manager_domain(self.prefs, "30"))
         self.assertEqual(self.list.tapirs(), [self.folder_tapir])
 
+    def without_folder_tapir(self) -> Path:
+        """The tester's Tapir only in the add-on list (a dev build), the case the list method serves."""
+        shutil.rmtree(self.folder_tapir)
+        own = Path("/Users/me/dev/TapirAddOn_AC29_Mac.bundle")
+        self.manager()["Include"] = rm.numbered("Include", [OTHER, rm.to_url(own)])
+        self.original = json.dumps(self.prefs.data, sort_keys=True)
+        return own
+
     def test_install_loads_only_the_build_and_restore_puts_everything_back(self):
+        self.without_folder_tapir()
         self.list.install(self.build)
         self.assertEqual(rm.entries(self.manager()["Include"]), [OTHER, rm.to_url(self.build)])
         self.assertEqual(self.manager()["Include"]["Include Number"], 2)
-        self.assertEqual(rm.entries(self.manager()["Disable"]), [rm.to_url(self.folder_tapir)])
         self.assertEqual(self.manager()["Manager Dialog"], {"SortListBy": 3})
         self.assertEqual(self.list.tapirs(), [self.build])
         with self.assertRaises(RuntimeError):  # a second install before restoring would lose the backup
@@ -80,6 +89,7 @@ class AddOnListTest(unittest.TestCase):
         self.assertFalse(self.list.restore())
 
     def test_restore_works_from_a_new_process(self):
+        self.without_folder_tapir()
         self.list.install(self.build)
         fresh = rm.AddOnList("29", self.addons, self.prefs, Path(self.tmp.name))
         self.assertTrue(fresh.restore())
@@ -95,7 +105,7 @@ class AddOnListTest(unittest.TestCase):
         self.assertEqual(rm.entries(self.manager()["Disable"]), [rm.to_url(self.folder_tapir)])
         self.list.restore()
 
-    def test_up_to_ac28_a_tapir_in_the_addons_folder_is_swapped_not_listed(self):
+    def test_a_tapir_in_the_addons_folder_is_swapped_not_listed_on_every_version(self):
         folder = Path(self.tmp.name) / "Archicad 28 INT" / "Add-Ons"
         (folder / "TapirAddOn_AC28_Mac.bundle").mkdir(parents=True)
         ac28 = rm.AddOnList("28", folder, self.prefs, Path(self.tmp.name))
@@ -104,7 +114,7 @@ class AddOnListTest(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "addonFile"):
             ac28.install(self.build)
         self.assertEqual(json.dumps(self.prefs.data, sort_keys=True), before)
-        self.assertEqual(self.list.swap_files(), [])
+        self.assertEqual(self.list.swap_files(), [self.folder_tapir])  # Archicad 29 on macOS too
 
     def test_an_archicad_never_started_is_said_plainly(self):
         with self.assertRaisesRegex(RuntimeError, "start it once"):

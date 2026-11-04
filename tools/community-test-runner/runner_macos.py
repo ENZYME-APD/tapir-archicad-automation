@@ -145,11 +145,10 @@ class AddOnList:
         return [p for p in listed if rw.is_tapir(p) and p not in disabled] + self.folder_tapirs(disabled)
 
     def swap_files(self) -> list[Path]:
-        """The Tapirs to swap instead of changing the list: up to Archicad 28, a Tapir in the Add-Ons folder
-        that is switched off keeps the build from loading too (#1150). A list a test left changed counts as
-        it was before that test."""
-        if int(self.version) > rw.COLLIDES_UP_TO:
-            return []
+        """The Tapirs to swap instead of changing the list. On macOS a Tapir in the Add-Ons folder that is
+        switched off keeps the build from loading too, as up to Archicad 28 on Windows (#1150): Archicad 29
+        maps the switched-off Tapir, registers no Tapir command and never loads the listed build. So every
+        version swaps. A list a test left changed counts as it was before that test."""
         _, manager = self.manager()
         if self.backup_file.exists():
             manager = json.loads(self.backup_file.read_text(encoding="utf-8"))["lists"]

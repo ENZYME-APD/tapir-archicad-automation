@@ -66,8 +66,10 @@ instead.
 `com.graphisoft.AC-ARM <version> <language> v1` (`~/Library/Preferences`) under `Add-On Manager`,
 with `lan.null2:///` URLs. The runner reads and writes them with `defaults` (a plist edited directly
 can be overwritten by the preferences daemon's cached copy), copies the build to
-`~/.local/share/TapirRunner/builds`, and switches off the Tapir in the Archicad folder's `Add-Ons`.
-With `addonFile` it swaps that `.bundle` with `ditto`, which keeps its signature and extended
+`~/.local/share/TapirRunner/builds`, and leaves the tester's Tapir out of the list. A Tapir in the
+Archicad folder's `Add-Ons` is swapped instead, on every version: switched off there, it keeps the
+build from loading too, as on Windows up to Archicad 28 (#1150), so `setup` sets `addonFile` for it.
+The runner swaps that `.bundle` with `ditto`, which keeps its signature and extended
 attributes, and keeps the original in `~/.local/share/TapirRunner/originals` meanwhile: a copy
 left in `Add-Ons` would load next to the build. Archicad is started with `open -n -a` and brought
 to the front through System Events (macOS asks once to let the terminal control it): started in
@@ -241,14 +243,22 @@ The runner installs native code from a pull request. Hence:
   configuration. `prs` lists the build check's Mac builds, and the runner downloads one (#1757) and
   unpacks the `.bundle` from the zip in the artifact. The token is saved in, read from and deleted
   from the login keychain. Archicad 29 keeps the add-on list in its preferences as described above.
+- 2026-11-04, Archicad 29 INT, with Archicad: through the add-on list, with the `Add-Ons` Tapir
+  switched off, Archicad 29 mapped that switched-off Tapir, registered no Tapir command and did not
+  load the listed build; the run stopped after `startTimeout`, and `restore` put the lists back
+  exactly. Hence the swap on macOS. With `addonFile`: `trial` with #1757's build gave
+  `AC29 INT FAIL 112/114 build local tapir 1.8.1`, and `test 1757 --ac 29 --every-check --brief
+  --no-post` gave `#1757 AC29 INT FAIL 112/114 build 50069df tapir 1.8.1` (the 2 failures are
+  `create_windows_doors_keep_marker.json`, which fails the same way with the release build: the
+  template's window and door get no marker there). A trial killed once Archicad answered, then that
+  Archicad quit and `restore` run, put the `.bundle` back identical (same files and extended
+  attributes). Every start got past the splash screen through the activation, and the Add-On
+  Manager lists were identical after each run.
 
 ## Not verified yet
 
 - `once`/`poll`/`test` posting end to end: no pull request carries the `needs-test` label yet,
   and bot pull requests get no build today; the build check has to be dispatched for them.
-- macOS with Archicad running: `trial`, `test` and `restore` have not started Archicad yet, so it
-  is open whether Archicad 29 loads a build from the add-on list while the `Add-Ons` folder's Tapir
-  is switched off (as Archicad 30 does on Windows, or not, as 25-28 do), whether it reads a switched
-  off path with spaces as written, the `addonFile` swap of a `.bundle`, and the activation at the
-  start. The window (`gui`, which needs Python with tkinter) is not tried on macOS; the start at
+- macOS: only Archicad 29 was tried; the add-on list with a tester's Tapir that is only in the list
+  (a dev build), posting, and start-up dialogs (the runner does not see them on macOS). The window (`gui`, which needs Python with tkinter) is not tried on macOS; the start at
   logon and the double-click start are Windows only.
