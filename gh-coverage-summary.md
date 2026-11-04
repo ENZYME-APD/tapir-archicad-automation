@@ -1,6 +1,6 @@
-**613 of 701** applicable Tapir commands have a Grasshopper component (87 %): ✅ 568 done, 🔀 45 merged, 🚧 88 in progress, ➖ 1 not applicable.
+**659 of 702** applicable Tapir commands have a Grasshopper component (93 %): ✅ 568 done, 🔀 91 merged, 🚧 42 in progress, ⬜ 1 open, ➖ 1 not applicable.
 
-Parameters of the 613 used commands: 🟢 556 every parameter has an input, 🟡 46 the rest through a JSON input, 🟠 11 some parameters missing.
+Parameters of the 659 used commands: 🟢 604 every parameter has an input, 🟡 47 the rest through a JSON input, 🟠 8 some parameters missing.
 
 | Command group | Used | Applicable | ✅ | 🔀 | 🚧 | 🙋 | ⬜ | ⛔ | ➖ | 🟢 | 🟡 | 🟠 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -8,15 +8,15 @@ Parameters of the 613 used commands: 🟢 556 every parameter has an input, 🟡
 | Project Commands | 100 % | 63 | 50 | 13 |  |  |  |  |  | 63 |  |  |
 | Custom Data Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
 | Element Commands | 87 % | 156 | 130 | 7 | 19 |  |  |  |  | 100 | 34 | 3 |
-| Element grouping Commands | 73 % | 15 | 11 |  | 4 |  |  |  |  | 11 |  |  |
-| Favorites Commands | 78 % | 23 | 18 |  | 5 |  |  |  |  | 18 |  |  |
-| Property Commands | 80 % | 26 | 21 |  | 5 |  |  |  |  | 19 |  | 2 |
-| Classification Commands | 89 % | 19 | 17 |  | 2 |  |  |  |  | 17 |  |  |
-| Attribute Commands | 91 % | 61 | 55 | 1 | 5 |  |  |  |  | 47 | 9 |  |
+| Element grouping Commands | 100 % | 15 | 11 | 4 |  |  |  |  |  | 15 |  |  |
+| Favorites Commands | 100 % | 23 | 18 | 5 |  |  |  |  |  | 23 |  |  |
+| Property Commands | 100 % | 26 | 21 | 5 |  |  |  |  |  | 26 |  |  |
+| Classification Commands | 100 % | 19 | 17 | 2 |  |  |  |  |  | 19 |  |  |
+| Attribute Commands | 98 % | 62 | 55 | 6 |  |  | 1 |  |  | 52 | 9 |  |
 | IFC Commands | 100 % | 15 | 13 | 2 |  |  |  |  |  | 15 |  |  |
-| Library Commands | 54 % | 33 | 18 |  | 15 |  |  |  |  | 18 |  |  |
+| Library Commands | 100 % | 33 | 18 | 15 |  |  |  |  |  | 33 |  |  |
 | Teamwork Commands | 100 % | 18 | 15 | 3 |  |  |  |  |  | 18 |  |  |
-| Navigator Commands | 87 % | 77 | 61 | 6 | 10 |  |  |  |  | 64 | 2 | 1 |
+| Navigator Commands | 100 % | 77 | 61 | 16 |  |  |  |  |  | 74 | 3 |  |
 | Graphic Override Commands | 100 % | 4 | 4 |  |  |  |  |  |  | 4 |  |  |
 | Issue Management Commands | 100 % | 11 | 11 |  |  |  |  |  |  | 11 |  |  |
 | Revision Management Commands | 100 % | 7 | 7 |  |  |  |  |  |  | 7 |  |  |
@@ -30,4 +30,4 @@ Parameters of the 613 used commands: 🟢 556 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-04 06:23 UTC.
+Updated 2026-11-04 06:54 UTC.

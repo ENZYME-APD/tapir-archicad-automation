@@ -1,15 +1,16 @@
 {
- "generatedAt": "2026-11-04 06:23 UTC",
+ "generatedAt": "2026-11-04 06:54 UTC",
  "counts": {
   "done": 568,
-  "merged": 45,
-  "in progress": 88,
+  "merged": 91,
+  "in progress": 42,
+  "open": 1,
   "not applicable": 1
  },
  "parameters": {
-  "all": 556,
-  "partial": 11,
-  "json": 46
+  "all": 604,
+  "partial": 8,
+  "json": 47
  },
  "items": [
   {
@@ -6807,19 +6808,21 @@
    "group": "Element grouping Commands",
    "version": "1.8.0",
    "brief": "Gets the top level group of each given group. A group that is not nested in another group is its own top level group.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1762,
-     "title": "Grasshopper: components for the property, Favorites, attribute, grouping and classification commands"
+     "name": "GetMainGroupsComponent",
+     "path": "Components/ElementsComponents/GetMainGroupsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "groups"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6827,19 +6830,21 @@
    "group": "Element grouping Commands",
    "version": "1.8.0",
    "brief": "Gets all the elements of each given group, including the elements of its nested groups.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1762,
-     "title": "Grasshopper: components for the property, Favorites, attribute, grouping and classification commands"
+     "name": "GetAllElementsOfGroupsComponent",
+     "path": "Components/ElementsComponents/GetAllElementsOfGroupsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "groups"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6847,19 +6852,19 @@
    "group": "Element grouping Commands",
    "version": "1.8.0",
    "brief": "Gets the current state of the Auto Group mode.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetAutoGroupModeComponent",
+     "path": "Components/ElementsComponents/GetAutoGroupModeComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1762,
-     "title": "Grasshopper: components for the property, Favorites, attribute, grouping and classification commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7002,19 +7007,23 @@
    "group": "Element grouping Commands",
    "version": "1.8.0",
    "brief": "Deletes the given element sets. The elements of a set are not deleted. Only element sets created by the Tapir Add-On can be deleted; sets created by other add-ons are reported as failed.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1762,
-     "title": "Grasshopper: components for the property, Favorites, attribute, grouping and classification commands"
+     "name": "DeleteElementSetsComponent",
+     "path": "Components/ElementsComponents/DeleteElementSetsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "elementSets",
+    "elementSets.elementSetId",
+    "elementSets.elementSetId.guid"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7349,19 +7358,21 @@
    "group": "Favorites Commands",
    "version": "1.7.4",
    "brief": "Read the Favorites of a .prefs file or folder without importing them, returning the name, element type and folder of each. Nothing in the project changes, so the result can be compared with the project's Favorites before ImportFavorites.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1762,
-     "title": "Grasshopper: components for the property, Favorites, attribute, grouping and classification commands"
+     "name": "ReadFavoritesFileComponent",
+     "path": "Components/FavoritesComponents/ReadFavoritesFileComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "path"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7369,19 +7380,22 @@
    "group": "Favorites Commands",
    "version": "1.8.0",
    "brief": "Creates a folder in the Favorites palette, in the parent folder given by its path. Returns the new folder. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1762,
-     "title": "Grasshopper: components for the property, Favorites, attribute, grouping and classification commands"
+     "name": "CreateFavoriteFolderComponent",
+     "path": "Components/FavoritesComponents/CreateFavoriteFolderComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "name",
+    "parentPath"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7389,19 +7403,22 @@
    "group": "Favorites Commands",
    "version": "1.8.0",
    "brief": "Renames a folder of the Favorites palette given by its path. The root folder cannot be renamed. Returns the renamed folder. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1762,
-     "title": "Grasshopper: components for the property, Favorites, attribute, grouping and classification commands"
+     "name": "RenameFavoriteFolderComponent",
+     "path": "Components/FavoritesComponents/RenameFavoriteFolderComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "newName",
+    "path"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7409,19 +7426,22 @@
    "group": "Favorites Commands",
    "version": "1.8.0",
    "brief": "Deletes a folder of the Favorites palette given by its path. Archicad deletes the folder's Favorites and subfolders with it, so a folder that is not empty is deleted only if recursive is true. The root folder cannot be deleted. Returns the deleted folder. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1762,
-     "title": "Grasshopper: components for the property, Favorites, attribute, grouping and classification commands"
+     "name": "DeleteFavoriteFolderComponent",
+     "path": "Components/FavoritesComponents/DeleteFavoriteFolderComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "path",
+    "recursive"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7547,19 +7567,22 @@
    "group": "Favorites Commands",
    "version": "1.8.0",
    "brief": "Moves Favorites given by their names into a folder of the Favorites palette given by its path. Returns an execution result for each Favorite. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1762,
-     "title": "Grasshopper: components for the property, Favorites, attribute, grouping and classification commands"
+     "name": "MoveFavoritesComponent",
+     "path": "Components/FavoritesComponents/MoveFavoritesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "favorites",
+    "targetPath"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7615,16 +7638,15 @@
      "path": "Components/PropertiesComponents/GetPropertyValuesOfElementsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 4,
    "coveredParameters": [
     "elements",
     "includeAvailability",
-    "properties"
-   ],
-   "missingParameters": [
+    "properties",
     "useSIUnits"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -7746,19 +7768,25 @@
    "group": "Property Commands",
    "version": "1.8.0",
    "brief": "Sets built-in property values of attributes, writing the values of each attribute together. Custom properties are refused; set them with SetPropertyValuesOfAttributes. Returns one execution result per value.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 5,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1762,
-     "title": "Grasshopper: components for the property, Favorites, attribute, grouping and classification commands"
+     "name": "SetBuiltInPropertyValuesOfAttributesComponent",
+     "path": "Components/PropertiesComponents/SetBuiltInPropertyValuesOfAttributesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 5,
+   "coveredParameters": [
+    "attributes",
+    "attributes.attributeId",
+    "attributes.properties",
+    "attributes.properties.propertyId",
+    "attributes.properties.propertyValue"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7766,19 +7794,23 @@
    "group": "Property Commands",
    "version": "1.8.1",
    "brief": "Sets one property value on several attributes (for example Building Materials) in one undo step. If the property is not available for any of the given attributes, no attribute is changed.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1762,
-     "title": "Grasshopper: components for the property, Favorites, attribute, grouping and classification commands"
+     "name": "SetPropertyValueOfAttributesComponent",
+     "path": "Components/PropertiesComponents/SetPropertyValueOfAttributesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "attributeIds",
+    "propertyId",
+    "propertyValue"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8050,14 +8082,13 @@
      "path": "Components/PropertiesComponents/GetPropertyValuesOfElementDefaultsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
+    "elementType",
     "properties"
    ],
-   "missingParameters": [
-    "elementType"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -8090,19 +8121,21 @@
    "group": "Property Commands",
    "version": "1.8.1",
    "brief": "Returns the strings that refer to the given properties in property expressions.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1762,
-     "title": "Grasshopper: components for the property, Favorites, attribute, grouping and classification commands"
+     "name": "GetPropertyExpressionReferencesComponent",
+     "path": "Components/PropertiesComponents/GetPropertyExpressionReferencesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "propertyIds"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8110,19 +8143,24 @@
    "group": "Property Commands",
    "version": "1.7.4",
    "brief": "Tells whether the values of the given properties can be modified, and whether the properties are visible, for the given elements. Also tells whether they can be modified in the tool defaults of element types (from Archicad 26) and in the default values of the property definitions themselves. Unknown elements, element types and properties are reported as errors, not as locked properties.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 4,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1762,
-     "title": "Grasshopper: components for the property, Favorites, attribute, grouping and classification commands"
+     "name": "GetPropertyEditabilityComponent",
+     "path": "Components/PropertiesComponents/GetPropertyEditabilityComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "elementTypes",
+    "elements",
+    "properties",
+    "propertyDefinitionDefaults"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8130,19 +8168,22 @@
    "group": "Property Commands",
    "version": "1.8.0",
    "brief": "Tells whether the given properties are available and whether they are visible in the current tool default of an element type, before creating new elements. It checks the native tool default only, not a Favorite that is not applied. Unknown properties are reported as errors, not as unavailable. Available from Archicad 26.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1762,
-     "title": "Grasshopper: components for the property, Favorites, attribute, grouping and classification commands"
+     "name": "GetPropertyAvailabilityOfDefaultsComponent",
+     "path": "Components/PropertiesComponents/GetPropertyAvailabilityOfDefaultsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "elementType",
+    "properties"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8309,19 +8350,22 @@
    "group": "Classification Commands",
    "version": "1.8.0",
    "brief": "Returns the classification of the given attributes (for example Building Materials) in the given classification system. classificationItemId is omitted for an unclassified attribute.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1762,
-     "title": "Grasshopper: components for the property, Favorites, attribute, grouping and classification commands"
+     "name": "GetClassificationOfAttributesInSystemComponent",
+     "path": "Components/ClassificationsComponents/GetClassificationOfAttributesInSystemComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "attributeIds",
+    "classificationSystemId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8398,19 +8442,19 @@
    "group": "Classification Commands",
    "version": "1.8.0",
    "brief": "Returns the classification systems of the project with their guid, name, description, source, version and date. Same output as the official GetAllClassificationSystems command, so scripts can rely on Tapir commands only.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetClassificationSystemsComponent",
+     "path": "Components/ClassificationsComponents/GetClassificationSystemsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1762,
-     "title": "Grasshopper: components for the property, Favorites, attribute, grouping and classification commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8640,6 +8684,21 @@
    "issues": []
   },
   {
+   "id": "GetAttributeIndexes",
+   "group": "Attribute Commands",
+   "version": "1.8.1",
+   "brief": "Reports for each given attribute type how many attributes there are, the first valid and the highest index in use, and the free indexes between them (for example those of deleted attributes). Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetAttributesFromProject",
    "group": "Attribute Commands",
    "version": "1.7.3",
@@ -8691,19 +8750,25 @@
    "group": "Attribute Commands",
    "version": "1.8.1",
    "brief": "Imports Line, Fill, ZoneCategory, PenTable and OperationProfile attributes from another project or template file into the open project, with their complete definition (symbol and percent fills included), like Append or Overwrite by name in Archicad's Attribute Manager. A new attribute gets a new guid: Archicad does not hand out the guids stored in the source file. An attribute whose name already exists is skipped, or overwritten in place with overwriteExisting. dryRun reports what would happen without changing anything. The names are the legacy 8-bit names of the source file. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 5,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1762,
-     "title": "Grasshopper: components for the property, Favorites, attribute, grouping and classification commands"
+     "name": "ImportAttributesFromProjectComponent",
+     "path": "Components/AttributesComponents/ImportAttributesFromProjectComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 5,
+   "coveredParameters": [
+    "attributeNames",
+    "attributeTypes",
+    "dryRun",
+    "overwriteExisting",
+    "projectFilePath"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8864,19 +8929,25 @@
    "group": "Attribute Commands",
    "version": "1.8.1",
    "brief": "Moves layers to new indices. Archicad cannot renumber an attribute, so each layer is recreated at its new index (free indices below it are filled with temporary layers, which are deleted again), gets the old layer's state in every layer combination, and then every element of the old layer is moved to it, in the floor plan and in every view and layout database, with the tool defaults on that layer. Only when the old layer is empty everywhere is it deleted, and the new layer gets its name, flags and folder. If an element cannot be moved (it is locked, not reserved in Teamwork, or comes from a hotlinked module), that layer is left as it was. The new layer has a new attribute id; Favorites that use the layer are not updated. Archicad keeps the shown, locked and wireframe state of a layer per open window: the new layer gets the old one's state in the current window and in every layer combination, and starts shown and unlocked in the other open windows. The model elements that sections, elevations, interior elevations and 3D documents show of the layer come back on the new layer when those views are rebuilt (listed as viewsToRebuild). dryRun lists the elements and tool defaults on each layer without changing anything. The whole call is one undo step. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 5,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1762,
-     "title": "Grasshopper: components for the property, Favorites, attribute, grouping and classification commands"
+     "name": "ReindexLayersComponent",
+     "path": "Components/AttributesComponents/ReindexLayersComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 5,
+   "coveredParameters": [
+    "dryRun",
+    "layers",
+    "layers.attributeId",
+    "layers.newIndex",
+    "maxPlaceholders"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8884,19 +8955,26 @@
    "group": "Attribute Commands",
    "version": "1.8.1",
    "brief": "Moves fills, line types, surfaces and building materials to new indices, the way ReindexLayers moves layers. Archicad cannot renumber an attribute, so the attribute is recreated at its new index (free indices below it are filled with temporary attributes, which are deleted again) and every reference to the old index is rewritten to the new one: the fields of the elements in the floor plan and in every view and layout, the parameters of library part based elements, the memo data of roofs, slabs, meshes, morphs, curtain walls, beams, columns, stairs and interior elevations, the tool defaults, the Favorites (with their sub-elements: a curtain wall's frame and panel classes, a stair's structures), the other attributes that refer to it (composites, building materials, surfaces, profiles, MEP systems) and the graphic override rules. Only then is the old attribute deleted. The new attribute has a new attribute id (Archicad does not keep a given id); its name, definition and attribute folder are the old ones. Elements on a hidden or locked layer cannot be changed, so their layers are shown and unlocked for the move and put back afterwards (in the current window, as Archicad keeps these flags per window). If an element still cannot be changed (it is locked itself, or not reserved in Teamwork), everything is put back and that attribute is not moved. Elements from hotlinked modules cannot be changed and are listed; their module file has to be reindexed on its own. Indices typed into GDL scripts are not found, and the frame and panel classes of curtain wall Favorites and of the Curtain Wall tool default keep the old index (Archicad does not take them from ACAPI_Favorite_Change, so such Favorites are left as they are and named in the warnings). dryRun lists every reference without changing anything. The whole call is one undo step. Pens, layers (see ReindexLayers) and the other attribute types are not supported. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 6,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1762,
-     "title": "Grasshopper: components for the property, Favorites, attribute, grouping and classification commands"
+     "name": "ReindexAttributesComponent",
+     "path": "Components/AttributesComponents/ReindexAttributesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 6,
+   "coveredParameters": [
+    "attributeType",
+    "attributes",
+    "attributes.attributeId",
+    "attributes.newIndex",
+    "dryRun",
+    "maxPlaceholders"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9556,19 +9634,21 @@
    "group": "Attribute Commands",
    "version": "1.8.0",
    "brief": "Returns the given pens, or all of them, in effect in the current window: index, color, width and description. It also works when the pens in effect are not a Pen Table attribute. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1762,
-     "title": "Grasshopper: components for the property, Favorites, attribute, grouping and classification commands"
+     "name": "GetPensComponent",
+     "path": "Components/AttributesComponents/GetPensComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "indices"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10038,19 +10118,21 @@
    "group": "Attribute Commands",
    "version": "1.8.0",
    "brief": "Sets the order of the graphic override rule groups, found by name. The groups not listed keep their order and follow the listed ones. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1762,
-     "title": "Grasshopper: components for the property, Favorites, attribute, grouping and classification commands"
+     "name": "SetGraphicOverrideRuleGroupOrderComponent",
+     "path": "Components/AttributesComponents/SetGraphicOverrideRuleGroupOrderComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "ruleGroupNames"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10746,19 +10828,21 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Gets the library part name of the given placed Object, Lamp, Window or Door elements, even if the library containing the part is not loaded. Use it to find the parts of elements that are shown as dots because their library part is missing.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1763,
-     "title": "Grasshopper: components for the remaining library and navigator commands"
+     "name": "GetMissingLibPartNamesComponent",
+     "path": "Components/LibraryComponents/GetMissingLibPartNamesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10766,19 +10850,23 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Finds loaded library parts with the Library Manager: all of them, GDL objects, images or text files, optionally only those whose name contains a text. Returns the name, path and index of each. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1763,
-     "title": "Grasshopper: components for the remaining library and navigator commands"
+     "name": "FindLibraryPartsComponent",
+     "path": "Components/LibraryComponents/FindLibraryPartsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "firstOnly",
+    "kind",
+    "nameContains"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10786,19 +10874,26 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Gets the details of loaded library parts, by name or index: path, library tree path, containing library, and for GDL objects the GUID, subtype, license, UI default flag, which scripts and pictures they have, and optionally the interface and migration scripts. Can also tell whether each one is in the subtype of another library part. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 6,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1763,
-     "title": "Grasshopper: components for the remaining library and navigator commands"
+     "name": "GetLibraryPartDetailsComponent",
+     "path": "Components/LibraryComponents/GetLibraryPartDetailsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 6,
+   "coveredParameters": [
+    "includeScripts",
+    "libraryParts",
+    "libraryParts.index",
+    "libraryParts.name",
+    "libraryParts.password",
+    "subTypeOf"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10806,19 +10901,24 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Adds libraries by path and removes loaded libraries by name or path, in one change of the library list. Returns the result of each addition and removal. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 4,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1763,
-     "title": "Grasshopper: components for the remaining library and navigator commands"
+     "name": "ModifyLibraryListComponent",
+     "path": "Components/LibraryComponents/ModifyLibraryListComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "add",
+    "remove",
+    "remove.name",
+    "remove.path"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10826,19 +10926,22 @@
    "group": "Library Commands",
    "version": "1.7.4",
    "brief": "Returns the description, keywords, author and placeable, password protected and hierarchical pages flags of loaded library parts, given by file name. Use it to search library parts by description or keywords and to tell placeable parts from macros. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1763,
-     "title": "Grasshopper: components for the remaining library and navigator commands"
+     "name": "GetLibraryPartMetadataComponent",
+     "path": "Components/LibraryComponents/GetLibraryPartMetadataComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "libraryParts",
+    "libraryParts.name"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10846,19 +10949,22 @@
    "group": "Library Commands",
    "version": "1.8.0",
    "brief": "Gets the original location of the given library parts, the file they came from, e.g. before they were embedded into the project. The library parts are given by the index GetAvailableLibraryParts returns. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1763,
-     "title": "Grasshopper: components for the remaining library and navigator commands"
+     "name": "GetLibraryPartOriginalLocationsComponent",
+     "path": "Components/LibraryComponents/GetLibraryPartOriginalLocationsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "libraryParts",
+    "libraryParts.index"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10888,19 +10994,19 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Gets the date GDL scripts see, as the integer value the Archicad API returns.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetGDLDateComponent",
+     "path": "Components/LibraryComponents/GetGDLDateComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1763,
-     "title": "Grasshopper: components for the remaining library and navigator commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10908,19 +11014,21 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Sets the date GDL scripts see, in the integer format GetGDLDate returns. Useful to test date-dependent library parts; set the value read with GetGDLDate back to restore it.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1763,
-     "title": "Grasshopper: components for the remaining library and navigator commands"
+     "name": "SetGDLDateComponent",
+     "path": "Components/LibraryComponents/SetGDLDateComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "date"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10928,19 +11036,19 @@
    "group": "Library Commands",
    "version": "1.8.0",
    "brief": "Checks the loaded libraries with the Archicad API's library check. Returns the error the API reports, if any.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "CheckLibrariesComponent",
+     "path": "Components/LibraryComponents/CheckLibrariesComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1763,
-     "title": "Grasshopper: components for the remaining library and navigator commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10948,19 +11056,19 @@
    "group": "Library Commands",
    "version": "1.8.0",
    "brief": "Resets the loaded libraries with the Archicad API's library reset.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "ResetLibrariesComponent",
+     "path": "Components/LibraryComponents/ResetLibrariesComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1763,
-     "title": "Grasshopper: components for the remaining library and navigator commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11158,19 +11266,25 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Gets the master, parameter, 2D, 3D and properties scripts of loaded library parts, given by name or by an element placed from them, with the unique ID of each part. A script section the part does not have is reported as not present. Password protected parts need their password. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 5,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1763,
-     "title": "Grasshopper: components for the remaining library and navigator commands"
+     "name": "GetLibraryPartScriptsComponent",
+     "path": "Components/LibraryComponents/GetLibraryPartScriptsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 5,
+   "coveredParameters": [
+    "libraryParts",
+    "libraryParts.elementId",
+    "libraryParts.libraryPartName",
+    "password",
+    "scripts"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11178,19 +11292,23 @@
    "group": "Library Commands",
    "version": "1.7.4",
    "brief": "Gets the unique ID (main and revision GUID), the reference GUID and the Teamwork lock status of library parts given by index or file path, and whether they are in a server library.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1763,
-     "title": "Grasshopper: components for the remaining library and navigator commands"
+     "name": "GetLibraryPartIdentitiesComponent",
+     "path": "Components/LibraryComponents/GetLibraryPartIdentitiesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "libraryParts",
+    "libraryParts.index",
+    "libraryParts.path"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11198,19 +11316,22 @@
    "group": "Library Commands",
    "version": "1.7.4",
    "brief": "Compares two library part unique IDs with Archicad's own comparison and tells whether their main and revision GUIDs are the same.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1763,
-     "title": "Grasshopper: components for the remaining library and navigator commands"
+     "name": "CompareLibraryPartUnIdsComponent",
+     "path": "Components/LibraryComponents/CompareLibraryPartUnIdsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "unId1",
+    "unId2"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11218,19 +11339,19 @@
    "group": "Library Commands",
    "version": "1.7.4",
    "brief": "Gets the name and file path of the last valid library part of the embedded library.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetLastValidEmbeddedLibraryPartNameComponent",
+     "path": "Components/LibraryComponents/GetLastValidEmbeddedLibraryPartNameComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1763,
-     "title": "Grasshopper: components for the remaining library and navigator commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11238,19 +11359,21 @@
    "group": "Library Commands",
    "version": "1.8.0",
    "brief": "Opens a loaded library part, given by its fileName or documentName as returned by GetAvailableLibraryParts, in Archicad's library part editor. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1763,
-     "title": "Grasshopper: components for the remaining library and navigator commands"
+     "name": "OpenLibraryPartInEditorComponent",
+     "path": "Components/LibraryComponents/OpenLibraryPartInEditorComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "name"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11671,19 +11794,19 @@
    "group": "Navigator Commands",
    "version": "1.8.1",
    "brief": "Returns the publisher sets of the project with their saved output: the local or LAN path, the Teamwork file server path, or the Internet host and directory name.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetPublisherSetsComponent",
+     "path": "Components/NavigatorComponents/GetPublisherSetsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1763,
-     "title": "Grasshopper: components for the remaining library and navigator commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12223,19 +12346,19 @@
    "group": "Navigator Commands",
    "version": "1.8.0",
    "brief": "Gets the model view options and on-screen view options of the current plan window, and the index of the model view option combination it applies.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetViewOptionsComponent",
+     "path": "Components/NavigatorComponents/GetViewOptionsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1763,
-     "title": "Grasshopper: components for the remaining library and navigator commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12243,19 +12366,24 @@
    "group": "Navigator Commands",
    "version": "1.8.0",
    "brief": "Switches the current plan window to a model view option combination by index, and/or changes the given model view options and on-screen view options.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 4,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1763,
-     "title": "Grasshopper: components for the remaining library and navigator commands"
+     "name": "SetViewOptionsComponent",
+     "path": "Components/NavigatorComponents/SetViewOptionsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "modelViewOptionIndex",
+    "viewOptions",
+    "viewOptions.modelViewOptions",
+    "viewOptions.onScreenViewOptions"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12789,17 +12917,16 @@
      "path": "Components/NavigatorComponents/Set3DProjectionSettingsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 5,
    "coveredParameters": [
+    "axonometry",
     "axonometry.azimuth",
+    "axonometry.projectionType",
+    "axonometry.transformationMatrix",
     "perspective"
    ],
-   "missingParameters": [
-    "axonometry",
-    "axonometry.projectionType",
-    "axonometry.transformationMatrix"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -12965,19 +13092,21 @@
    "group": "Navigator Commands",
    "version": "1.8.1",
    "brief": "Gets the settings of a 3D Document, given by its navigator item: the element and story filter, the 3D cut, the projection, the window and zoom, the uniform cut and uncut surface attributes, the source and the boundary contours, with the field names of API_DocumentFrom3DType.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1763,
-     "title": "Grasshopper: components for the remaining library and navigator commands"
+     "name": "Get3DDocumentSettingsComponent",
+     "path": "Components/NavigatorComponents/Get3DDocumentSettingsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "navigatorItemId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12985,19 +13114,105 @@
    "group": "Navigator Commands",
    "version": "1.8.1",
    "brief": "Changes the given settings of a 3D Document, given by its navigator item, in the form Get3DDocumentSettings returns; the settings not given are kept. Returns the settings read back after the change.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 84,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1763,
-     "title": "Grasshopper: components for the remaining library and navigator commands"
+     "name": "Set3DDocumentSettingsComponent",
+     "path": "Components/NavigatorComponents/Set3DDocumentSettingsComponent.cs"
     }
    ],
+   "parameters": "json",
+   "parameterCount": 84,
+   "coveredParameters": [
+    "navigatorItemId",
+    "settings",
+    "settings.attributeOptions",
+    "settings.boundaryDisplay",
+    "settings.boundaryLineType",
+    "settings.boundaryPen",
+    "settings.currPlanConn",
+    "settings.cutSetting",
+    "settings.cutaway3D",
+    "settings.docSrc",
+    "settings.drawRect",
+    "settings.effects3D",
+    "settings.filterAndCutSettings",
+    "settings.floorPlanRotationOrigo",
+    "settings.hiddenLineLen",
+    "settings.hiddenLineType",
+    "settings.intPlanConn",
+    "settings.materialFrom3D",
+    "settings.projectionSetting",
+    "settings.skeletonOptions",
+    "settings.transparency",
+    "settings.window3DInfo"
+   ],
+   "missingParameters": [
+    "settings.attributeOptions.elemPen",
+    "settings.attributeOptions.fillCutSurfacesWith",
+    "settings.attributeOptions.hiddenEdgeLinePen",
+    "settings.attributeOptions.hiddenEdgeLineType",
+    "settings.attributeOptions.hiddenEdgeVisibility",
+    "settings.attributeOptions.onCutPlaneVisibility",
+    "settings.attributeOptions.shadContPen",
+    "settings.attributeOptions.shadFill",
+    "settings.attributeOptions.shadFillBkgPen",
+    "settings.attributeOptions.shadFillPen",
+    "settings.attributeOptions.shouldUseElemPen",
+    "settings.attributeOptions.shouldUseUncutSurfaceFill",
+    "settings.attributeOptions.shouldUseUniformCutAttributes",
+    "settings.attributeOptions.uncutSurfaceBkgPen",
+    "settings.attributeOptions.uncutSurfaceFillType",
+    "settings.attributeOptions.uniformFillBkgPen",
+    "settings.attributeOptions.uniformFillPen",
+    "settings.attributeOptions.uniformLineType",
+    "settings.cutSetting.customMater",
+    "settings.cutSetting.customPen",
+    "settings.cutSetting.isCutPlanes",
+    "settings.cutSetting.useCustom",
+    "settings.drawRect.bottom",
+    "settings.drawRect.left",
+    "settings.drawRect.right",
+    "settings.drawRect.top",
+    "settings.filterAndCutSettings.allStories",
+    "settings.filterAndCutSettings.elemTypeFilter",
+    "settings.filterAndCutSettings.elemTypeFilter.elementType",
+    "settings.filterAndCutSettings.elemTypeFilter.show",
+    "settings.filterAndCutSettings.filterMode",
+    "settings.filterAndCutSettings.firstStory3D",
+    "settings.filterAndCutSettings.lastStory3D",
+    "settings.filterAndCutSettings.trimToStoryRange",
+    "settings.projectionSetting.actCamSet",
+    "settings.projectionSetting.axono",
+    "settings.projectionSetting.axono.tranmat",
+    "settings.projectionSetting.camGuid",
+    "settings.projectionSetting.isPersp",
+    "settings.projectionSetting.persp",
+    "settings.projectionSetting.persp.azimuth",
+    "settings.projectionSetting.persp.cameraZ",
+    "settings.projectionSetting.persp.distance",
+    "settings.projectionSetting.persp.isTwoPointPersp",
+    "settings.projectionSetting.persp.pos",
+    "settings.projectionSetting.persp.rollAngle",
+    "settings.projectionSetting.persp.target",
+    "settings.projectionSetting.persp.targetZ",
+    "settings.projectionSetting.persp.viewCone",
+    "settings.skeletonOptions.cutHeight",
+    "settings.skeletonOptions.cutOffset",
+    "settings.skeletonOptions.floorIdx",
+    "settings.skeletonOptions.floorOffset",
+    "settings.skeletonOptions.viewSrc",
+    "settings.window3DInfo.hSize",
+    "settings.window3DInfo.setWindowSize",
+    "settings.window3DInfo.setZoom",
+    "settings.window3DInfo.vSize",
+    "settings.window3DInfo.zoomDispX",
+    "settings.window3DInfo.zoomDispY",
+    "settings.window3DInfo.zoomScaleX",
+    "settings.window3DInfo.zoomScaleY"
+   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13005,19 +13220,19 @@
    "group": "Navigator Commands",
    "version": "1.8.0",
    "brief": "Gets the 'Filter and Cut Elements in 3D' settings of the 3D window: the stories shown, the filter mode and which element types are shown. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "Get3DFilterAndCutSettingsComponent",
+     "path": "Components/NavigatorComponents/Get3DFilterAndCutSettingsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1763,
-     "title": "Grasshopper: components for the remaining library and navigator commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13025,19 +13240,30 @@
    "group": "Navigator Commands",
    "version": "1.8.0",
    "brief": "Changes the 'Filter and Cut Elements in 3D' settings of the 3D window; only the given fields and the listed element types change. Returns the settings read back after the change. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 10,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1763,
-     "title": "Grasshopper: components for the remaining library and navigator commands"
+     "name": "Set3DFilterAndCutSettingsComponent",
+     "path": "Components/NavigatorComponents/Set3DFilterAndCutSettingsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 10,
+   "coveredParameters": [
+    "rebuild",
+    "settings",
+    "settings.allStories",
+    "settings.elemTypeFilter",
+    "settings.elemTypeFilter.elementType",
+    "settings.elemTypeFilter.show",
+    "settings.filterMode",
+    "settings.firstStory3D",
+    "settings.lastStory3D",
+    "settings.trimToStoryRange"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13045,19 +13271,19 @@
    "group": "Navigator Commands",
    "version": "1.8.0",
    "brief": "Gets the grid and snap grid settings of the database of the current window, and which database that is. Each database has its own grid settings. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetGridSettingsComponent",
+     "path": "Components/NavigatorComponents/GetGridSettingsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1763,
-     "title": "Grasshopper: components for the remaining library and navigator commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13065,19 +13291,46 @@
    "group": "Navigator Commands",
    "version": "1.8.0",
    "brief": "Changes the grid and snap grid settings of the database of the current window; only the given fields change. Returns the settings read back after the change. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 26,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1763,
-     "title": "Grasshopper: components for the remaining library and navigator commands"
+     "name": "SetGridSettingsComponent",
+     "path": "Components/NavigatorComponents/SetGridSettingsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 26,
+   "coveredParameters": [
+    "settings",
+    "settings.backColor",
+    "settings.backColor.alpha",
+    "settings.backColor.blue",
+    "settings.backColor.green",
+    "settings.backColor.red",
+    "settings.gridAngle",
+    "settings.gridColor",
+    "settings.gridMode",
+    "settings.gridOffsX",
+    "settings.gridOffsY",
+    "settings.gridOffsZ",
+    "settings.gridSwitch",
+    "settings.nLineAuxX",
+    "settings.nLineAuxY",
+    "settings.nLineMainX",
+    "settings.nLineMainY",
+    "settings.snapOffsX",
+    "settings.snapOffsY",
+    "settings.snapStepX",
+    "settings.snapStepY",
+    "settings.spaceAuxX",
+    "settings.spaceAuxY",
+    "settings.spaceMainX",
+    "settings.spaceMainY",
+    "settings.status"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13281,7 +13534,7 @@
    "id": "RenameNavigatorItem",
    "group": "Navigator Commands",
    "version": "1.1.7",
-   "brief": "Renames a navigator item or changes its ID. newId sets the custom layout number of a layout and the custom ID of any other item. For a Project Map section, elevation, detail or worksheet the name and ID of the element behind the viewpoint are changed, for an interior elevation those of the segment the item stands for; the change is undone when the item does not show the new name. The name and ID of other Project Map items (stories, schedules, ...) cannot be changed. Fails when Archicad refuses the change or does not apply the new name or ID. With customName false the item drops its custom name and follows its Project Map source again.",
+   "brief": "Renames a navigator item or changes its ID. Renaming the Layout Book item of a placed Drawing also sets the custom name of the Drawing. newId sets the custom layout number of a layout and the custom ID of any other item. For a Project Map section, elevation, detail or worksheet the name and ID of the element behind the viewpoint are changed, for an interior elevation those of the segment the item stands for; the change is undone when the item does not show the new name. The name and ID of other Project Map items (stories, schedules, ...) cannot be changed. Fails when Archicad refuses the change or does not apply the new name or ID. With customName false the item drops its custom name and follows its Project Map source again.",
    "status": "done",
    "reason": "",
    "components": [
@@ -13525,19 +13778,22 @@
    "group": "Navigator Commands",
    "version": "1.7.3",
    "brief": "Reorders the children of a navigator item to match the given order. Works around MoveNavigatorItem being unable to reposition an item within its current parent, by bouncing it through a sibling.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1763,
-     "title": "Grasshopper: components for the remaining library and navigator commands"
+     "name": "ReorderNavigatorItemsComponent",
+     "path": "Components/NavigatorComponents/ReorderNavigatorItemsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "orderedNavigatorItemIds",
+    "parentNavigatorItemId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {

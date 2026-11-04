@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-04 06:23 UTC",
+ "generatedAt": "2026-11-04 06:54 UTC",
  "versions": [
   25,
   26,
@@ -9,12 +9,12 @@
   30
  ],
  "counts": {
-  "not applicable": 669,
+  "not applicable": 670,
   "done": 1860,
   "skipped": 28,
-  "merged": 226,
-  "in progress": 93,
-  "open": 3
+  "merged": 228,
+  "in progress": 91,
+  "open": 2
  },
  "items": [
   {
@@ -2900,14 +2900,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1717,
-     "title": "Add GetAttributeIndexes; mark GetCurrentAttributeSetReader as not applicable"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3077,8 +3072,8 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "a C++ attribute reader the add-on passes to its own 3D model export (EXPGetModel); what it reads (surfaces, pens, fills, line types, building materials) the attribute commands already return, and its texture data holds only the image name",
    "pullRequests": [],
    "issues": []
   },
@@ -3138,14 +3133,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1717,
-     "title": "Add GetAttributeIndexes; mark GetCurrentAttributeSetReader as not applicable"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4133,10 +4123,6 @@
      "title": "Add CreateMEPTakeOffs: place Take-offs on MEP routing segments"
     },
     {
-     "number": 1640,
-     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
-    },
-    {
      "number": 1543,
      "title": "[5/6] Add UpdateLibraryPartSections and GetLibraryPart2DPrimitives"
     },
@@ -4927,10 +4913,6 @@
      "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
     },
     {
-     "number": 1640,
-     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
@@ -5058,10 +5040,6 @@
     {
      "number": 1766,
      "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    },
-    {
-     "number": 1640,
-     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
     }
    ],
    "issues": []
@@ -6385,12 +6363,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1640,
-     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6992,10 +6965,6 @@
      "title": "Drawing anchor placement, offset, and pen table control"
     },
     {
-     "number": 1640,
-     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     },
@@ -7555,16 +7524,8 @@
      "title": "Drawing anchor placement, offset, and pen table control"
     },
     {
-     "number": 1640,
-     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
-    },
-    {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
     },
     {
      "number": 1292,
@@ -7925,10 +7886,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1640,
-     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -14446,12 +14403,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1640,
-     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14929,12 +14881,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1640,
-     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -21093,10 +21040,6 @@
      "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
     },
     {
-     "number": 1640,
-     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item (replaces #1489)"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
@@ -26476,6 +26419,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1772,
+     "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands (#1668, merged with main)"
+    },
+    {
      "number": 1766,
      "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
     },
@@ -26486,10 +26433,6 @@
     {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
-    },
-    {
-     "number": 1717,
-     "title": "Add GetAttributeIndexes; mark GetCurrentAttributeSetReader as not applicable"
     },
     {
      "number": 1703,
@@ -27789,10 +27732,6 @@
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
     }
    ],
    "issues": []
@@ -28021,10 +27960,6 @@
     {
      "number": 1761,
      "title": "API coverage: IFC classification details, GetFavoriteDefaults, Teamwork online status"
-    },
-    {
-     "number": 1717,
-     "title": "Add GetAttributeIndexes; mark GetCurrentAttributeSetReader as not applicable"
     },
     {
      "number": 1537,
@@ -29449,10 +29384,6 @@
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
     }
    ],
    "issues": [
@@ -29499,10 +29430,6 @@
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
     }
    ],
    "issues": [
@@ -29745,10 +29672,6 @@
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
     }
    ],
    "issues": [
@@ -29809,10 +29732,6 @@
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
     }
    ],
    "issues": [
@@ -29891,10 +29810,6 @@
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
     }
    ],
    "issues": [
@@ -29973,10 +29888,6 @@
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
     }
    ],
    "issues": [
@@ -30023,10 +29934,6 @@
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
     }
    ],
    "issues": [
@@ -30179,10 +30086,6 @@
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
     }
    ],
    "issues": [
@@ -30211,10 +30114,6 @@
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
     }
    ],
    "issues": [
@@ -30261,10 +30160,6 @@
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
     }
    ],
    "issues": [
@@ -31429,10 +31324,6 @@
      "title": "Add CreateLibraryPartFromElements, InterpretGDLScript3D and GetGDLUserGlobals"
     },
     {
-     "number": 1717,
-     "title": "Add GetAttributeIndexes; mark GetCurrentAttributeSetReader as not applicable"
-    },
-    {
      "number": 1543,
      "title": "[5/6] Add UpdateLibraryPartSections and GetLibraryPart2DPrimitives"
     },
@@ -32020,10 +31911,6 @@
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     },
     {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
-    },
-    {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
     }
@@ -32065,10 +31952,6 @@
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
-     "number": 1502,
-     "title": "[3/4] Add CopyLibraryParts command"
     },
     {
      "number": 1244,
@@ -33039,6 +32922,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1772,
+     "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands (#1668, merged with main)"
+    },
+    {
      "number": 1767,
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
     },
@@ -33049,10 +32936,6 @@
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1717,
-     "title": "Add GetAttributeIndexes; mark GetCurrentAttributeSetReader as not applicable"
     },
     {
      "number": 1671,
@@ -40287,6 +40170,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1772,
+     "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands (#1668, merged with main)"
+    },
+    {
      "number": 1767,
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
     },
@@ -40317,10 +40204,6 @@
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1717,
-     "title": "Add GetAttributeIndexes; mark GetCurrentAttributeSetReader as not applicable"
     },
     {
      "number": 1703,
@@ -47889,6 +47772,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1772,
+     "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands (#1668, merged with main)"
+    },
+    {
      "number": 1767,
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
     },
@@ -47899,10 +47786,6 @@
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1717,
-     "title": "Add GetAttributeIndexes; mark GetCurrentAttributeSetReader as not applicable"
     },
     {
      "number": 1671,
@@ -51740,6 +51623,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1772,
+     "title": "Dimensions: appearance (Cumulative, Baseline, Elevation) and elevationOrigin on the creation commands (#1668, merged with main)"
+    },
+    {
      "number": 1767,
      "title": "MEP: ports and tool defaults on Archicad 27, flexible segment polylines, new ModifyMEPElements"
     },
@@ -51750,10 +51637,6 @@
     {
      "number": 1727,
      "title": "CreateMEPRoutingElements, CreateMEPElements: optional floorIndex for the home story"
-    },
-    {
-     "number": 1717,
-     "title": "Add GetAttributeIndexes; mark GetCurrentAttributeSetReader as not applicable"
     },
     {
      "number": 1671,
@@ -58595,10 +58478,6 @@
     {
      "number": 1766,
      "title": "API coverage: SetPens, module data, shape primitives, spline distances, 3D style, view settings, image conversion"
-    },
-    {
-     "number": 1717,
-     "title": "Add GetAttributeIndexes; mark GetCurrentAttributeSetReader as not applicable"
     },
     {
      "number": 1292,
