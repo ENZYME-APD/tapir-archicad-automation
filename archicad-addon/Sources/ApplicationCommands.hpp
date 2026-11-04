@@ -320,6 +320,18 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+// Converts base64 encoded images from one image format to another with Archicad's own
+// converters (ACAPI_Conversion_ConvertPicture, ACAPI_Conversion_ConvertMimePicture).
+class ConvertImagesCommand : public CommandBase
+{
+public:
+    ConvertImagesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 // Turns the dialog auto close on when the TAPIR_DIALOG_AUTOCLOSE environment variable is true,
 // so that the dialogs Archicad shows while it opens the first project are closed too.
 void ApplyDialogAutoCloseFromEnvironment ();

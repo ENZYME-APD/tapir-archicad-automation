@@ -2,7 +2,7 @@
 
 #include "CommandBase.hpp"
 
-// The display string of a property value, as GetPropertyValuesOfElements returns it.
+// The project-formatted display string of a property value.
 // Only meaningful for a value whose status is API_Property_HasValue.
 GSErrCode GetPropertyValueString (const API_Property& propertyValue, GS::UniString& resultString);
 
@@ -36,6 +36,46 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class GetComponentsOfElementsCommand : public CommandBase
+{
+public:
+    GetComponentsOfElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetPropertyDefinitionsOfElementComponentsCommand : public CommandBase
+{
+public:
+    GetPropertyDefinitionsOfElementComponentsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetPropertyValuesOfElementComponentsCommand : public CommandBase
+{
+public:
+    GetPropertyValuesOfElementComponentsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class SetPropertyValuesOfElementDefaultsCommand : public CommandBase
+{
+public:
+    SetPropertyValuesOfElementDefaultsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class GetPropertyValuesOfAttributesCommand : public CommandBase
 {
 public:
@@ -60,6 +100,16 @@ class SetBuiltInPropertyValuesOfAttributesCommand : public CommandBase
 {
 public:
     SetBuiltInPropertyValuesOfAttributesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class SetPropertyValueOfAttributesCommand : public CommandBase
+{
+public:
+    SetPropertyValueOfAttributesCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
@@ -176,10 +226,50 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class GetPropertyValuesOfElementDefaultsCommand : public CommandBase
+{
+public:
+    GetPropertyValuesOfElementDefaultsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class ModifyPropertyValueOfElementsCommand : public CommandBase
 {
 public:
     ModifyPropertyValueOfElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class CheckPropertyValuesCommand : public CommandBase
+{
+public:
+    CheckPropertyValuesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetPropertyExpressionReferencesCommand : public CommandBase
+{
+public:
+    GetPropertyExpressionReferencesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetPropertyEditabilityCommand : public CommandBase
+{
+public:
+    GetPropertyEditabilityCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;

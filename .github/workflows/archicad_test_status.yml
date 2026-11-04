@@ -1,0 +1,101 @@
+name: Archicad Test Status
+
+# Turns a community test result into a commit status (#1577).
+#
+# The community test runner (tools/community-test-runner/) tests a pull
+# request's build on real Archicad and posts one comment per Archicad version
+# whose first line is
+#
+#   tapir-test: AC28 GER PASS 12/12 build 1a2b3c4 tapir 1.7.1
+#
+# (Archicad version, its language when known, verdict, passed/scored, the
+# tested commit, the add-on version). This workflow reads that line and sets
+# the commit status `archicad-test/AC<version>` on the pull request's head:
+# success for PASS, failure for FAIL. claude_auto_merge.yml does not merge a
+# bot pull request whose newest status of any `archicad-test/*` context is a
+# failure; a head nobody tested has none, which does not block. A new push
+# makes a new head without the status, so the test is repeated for it.
+#
+# Who counts: everyone (the maintainer's decision). Testers run the runner
+# under their own GitHub accounts, which need no access to this repository, and
+# every person's result line counts; only bots are left out. The newest result
+# of an Archicad version on a head is the one that counts, so a later result
+# replaces an earlier one. Anything else in a comment is ignored.
+#
+# Security: the job runs no model and never checks out or runs the pull
+# request's code. It reads nothing from the comment but its first line, which
+# must match the runner's format exactly; the commit it sets the status on is
+# the head read from the API, and the comment's commit only has to be a prefix
+# of it (a result for an older head is ignored). The comment text reaches the
+# shell only through an environment variable.
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  status:
+    # Pull request conversations only, comments by people, and only comments
+    # that start with the runner's marker (it writes nothing in front of it).
+    if: >
+      github.event.issue.pull_request &&
+      github.event.issue.state == 'open' &&
+      github.event.comment.user.type != 'Bot' &&
+      startsWith(github.event.comment.body, 'tapir-test: ')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+      statuses: write        # the archicad-test/AC<version> status
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
+      PR_NUMBER: ${{ github.event.issue.number }}
+      AUTHOR: ${{ github.event.comment.user.login }}
+      COMMENT_URL: ${{ github.event.comment.html_url }}
+      BODY: ${{ github.event.comment.body }}
+    steps:
+      - name: Set the status from the result line
+        run: |
+          set -euo pipefail
+
+          line=${BODY%%$'\n'*}
+          line=${line%$'\r'}
+          re='^tapir-test: AC([0-9]{2}) ([A-Za-z_-]{2,8} )?(PASS|FAIL) ([0-9]+)/([0-9]+) build ([0-9a-f]{7,40}) '
+          if ! [[ "$line" =~ $re ]]; then
+            echo "The first line is not a result line of the test runner: ignored."
+            exit 0
+          fi
+          version=${BASH_REMATCH[1]}
+          verdict=${BASH_REMATCH[3]}
+          passed=${BASH_REMATCH[4]}
+          scored=${BASH_REMATCH[5]}
+          sha=${BASH_REMATCH[6]}
+
+          info=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json state,headRefOid)
+          state=$(jq -r '.state' <<<"$info")
+          head=$(jq -r '.headRefOid' <<<"$info")
+          if [ "$state" != "OPEN" ]; then
+            echo "#$PR_NUMBER is not open: ignored."
+            exit 0
+          fi
+          case "$head" in
+            "$sha"*) ;;
+            *)
+              echo "The result is for $sha, the head of #$PR_NUMBER is $head: ignored."
+              exit 0
+              ;;
+          esac
+
+          # FAIL 0/0 means nothing was scored (for example every check skipped by
+          # minArchicad on an older Archicad): no check failed, so no status is set.
+          if [ "$scored" = "0" ]; then
+            echo "No check was scored ($verdict $passed/$scored): no status set."
+            exit 0
+          fi
+          if [ "$verdict" = "PASS" ]; then status=success; else status=failure; fi
+          gh api "repos/$REPO/statuses/$head" -f state="$status" -f context="archicad-test/AC$version" \
+            -f description="$verdict $passed/$scored, tested by $AUTHOR" \
+            -f target_url="$COMMENT_URL" >/dev/null
+          echo "archicad-test/AC$version = $status on $head"

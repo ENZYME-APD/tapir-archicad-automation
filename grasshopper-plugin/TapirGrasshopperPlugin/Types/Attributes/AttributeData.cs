@@ -63,6 +63,11 @@ namespace TapirGrasshopperPlugin.Types.Attributes
         [JsonProperty("name")]
         public string Name;
 
+        // The names of the attribute folders from the root folder down to the one holding
+        // the attribute; empty for the root folder and before Archicad 26.
+        [JsonProperty("folderPath")]
+        public List<string> FolderPath;
+
         // Seconds since 1970-01-01 00:00:00 UTC.
         [JsonProperty("modificationTime")]
         public long ModificationTime;

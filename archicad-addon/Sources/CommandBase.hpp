@@ -50,6 +50,13 @@ GS::ObjectState CreateFailedExecutionResult (GSErrCode errorCode, const GS::UniS
 GS::ObjectState CreateFailedExecutionResult (const GS::ObjectState& errorResponse);
 GS::ObjectState CreateSuccessfulExecutionResult ();
 GS::UniString DescribeDefinitionChangeError (GSErrCode err);
+// Why Archicad refused to change an element the user could not edit in Archicad either, as the end
+// of a sentence ("its layer is hidden"); empty when the refusal has another cause. elemHead is the
+// element as it is in the project; targetLayer is the layer a change moves it to, if any.
+GS::UniString DescribeElementEditRefusal (GSErrCode err, const API_Elem_Head& elemHead, const GS::Optional<API_AttributeIndex>& targetLayer = GS::NoValue);
+
+// One of "Free", "Editable", "Locked", "NotAvailable", "NotExist".
+const char* LockableStatusToString (API_LockableStatus status);
 
 // Adds {"guid": ...} to `list` for every guid in `from` that is not in `minus`. The import
 // commands use it to report what an import created and removed.
@@ -64,6 +71,13 @@ void AddGuidDifference (const GS::HashSet<API_Guid>& from, const GS::HashSet<API
 }
 
 API_Guid    GetGuidFromObjectState (const GS::ObjectState& os);
+
+// A guid string field that may be left out. Archicad does not check the type of fields whose schema
+// is a $ref (e.g. "#/Guid"), so a wrapped {"guid": ...} object would otherwise read as "not given".
+enum class OptionalGuidField { NotGiven, Valid, Invalid };
+// Reads the guid string field 'name' of 'os' into 'guid'. Invalid when the field is given but is not
+// a string holding a guid.
+OptionalGuidField GetOptionalGuidField (const GS::ObjectState& os, const GS::String& name, API_Guid& guid);
 API_Guid    GetGuidFromArrayItem (const GS::String& idFieldName, const GS::ObjectState& os);
 inline API_Guid GetGuidFromElementsArrayItem (const GS::ObjectState& os)        { return GetGuidFromArrayItem ("elementId", os); }
 inline API_Guid GetGuidFromAttributesArrayItem (const GS::ObjectState& os)      { return GetGuidFromArrayItem ("attributeId", os); }
@@ -78,6 +92,8 @@ API_Coord   Get2DCoordinateFromObjectState (const GS::ObjectState& objectState);
 API_Coord3D Get3DCoordinateFromObjectState (const GS::ObjectState& objectState);
 API_RGBColor GetColorFromObjectState (const GS::ObjectState& objectState);
 bool GetColor (const GS::ObjectState& objectState, const GS::String& fieldName, API_RGBColor& outColor);
+// Reads a list of numbers, integer items included; false when the field is not a list of numbers.
+bool GetDoubleList (const GS::ObjectState& parameters, const char* fieldName, GS::Array<double>& outValues);
 GS::ObjectState Create2DCoordinateObjectState (const API_Coord& c);
 GS::ObjectState Create3DCoordinateObjectState (const API_Coord3D& c);
 GS::ObjectState CreatePolyArcObjectState (const API_PolyArc& a);
@@ -88,6 +104,10 @@ inline GS::ObjectState CreateElementIdObjectState (const API_Guid& guid)   { ret
 inline GS::ObjectState CreateAttributeIdObjectState (const API_Guid& guid) { return CreateIdObjectState ("attributeId", guid); }
 inline GS::ObjectState CreateIssueIdObjectState (const API_Guid& guid)     { return CreateIdObjectState ("issueId", guid); }
 inline GS::ObjectState CreateDatabaseIdObjectState (const API_Guid& guid)  { return CreateIdObjectState ("databaseId", guid); }
+
+// Inverts the affine transformation of a 3x4 API_Tranmat (rotation/scale part plus translation).
+// Returns false, leaving inverse unchanged, when the 3x3 part is singular.
+bool InvertTranmat (const API_Tranmat& tranmat, API_Tranmat& inverse);
 
 // A hotlink instance is placed by an API_Tranmat. Every caller of this add-on
 // thinks in an origin, a rotation and a mirror flag, so the two directions of
@@ -104,8 +124,12 @@ struct PolygonData {
     std::vector<double>      zCoords;
 };
 std::vector<PolygonData> GetPolygonsFromMemoCoords (const API_Guid& elemGuid, bool includeZCoords = false);
+// The same from a memo the caller already has (coords, pends, parcs and, with
+// includeZCoords, meshPolyZ); the memo is only read, never modified or disposed.
+std::vector<PolygonData> GetPolygonsFromMemoCoords (const API_ElementMemo& memo, bool includeZCoords = false);
 void AddPolygonFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName = {});
 void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName, bool includeZCoords = false);
+void AddPolygonWithHolesFromMemoCoords (const API_ElementMemo& memo, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName, bool includeZCoords = false);
 bool GetHoleGeometry (const GS::ObjectState& holeOs, GS::Array<GS::ObjectState>& outCoords, GS::Array<GS::ObjectState>& outArcs);
 GS::Optional<GS::UniString> ValidateHoles (const GS::Array<GS::ObjectState>& holes);
 bool BuildHatchPolygonMemo (const GS::Array<GS::ObjectState>& coordinates, const GS::Array<GS::ObjectState>& arcs, const GS::Array<GS::ObjectState>& holes, API_Polygon& poly, API_ElementMemo& memo);
@@ -137,6 +161,20 @@ GS::UniString HatchOrientationTypeToString (API_HatchOrientationTypeID type);
 API_HatchOrientationTypeID HatchOrientationTypeFromString (const GS::UniString& str, API_HatchOrientationTypeID defaultValue = API_HatchGlobal);
 GS::ObjectState CreateHatchOrientationObjectState (const API_HatchOrientation& orientation);
 API_HatchOrientation GetHatchOrientationFromObjectState (const GS::ObjectState& os, const API_HatchOrientation& currentOrientation);
+
+// ACAPI_ELEMENT_MASK_SET marks only the first byte of a field, so masking a whole
+// API_HatchOrientation would let only its type through: every member is masked on its own.
+#define TAPIR_MASK_SET_HATCH_ORIENTATION(mask, typ, varnam)         \
+    do {                                                            \
+        ACAPI_ELEMENT_MASK_SET (mask, typ, varnam.type);            \
+        ACAPI_ELEMENT_MASK_SET (mask, typ, varnam.flags);           \
+        ACAPI_ELEMENT_MASK_SET (mask, typ, varnam.origo);           \
+        ACAPI_ELEMENT_MASK_SET (mask, typ, varnam.matrix00);        \
+        ACAPI_ELEMENT_MASK_SET (mask, typ, varnam.matrix10);        \
+        ACAPI_ELEMENT_MASK_SET (mask, typ, varnam.matrix01);        \
+        ACAPI_ELEMENT_MASK_SET (mask, typ, varnam.matrix11);        \
+        ACAPI_ELEMENT_MASK_SET (mask, typ, varnam.innerRadius);     \
+    } while (false)
 GS::UniString DrawingNameTypeToString (API_NameTypeValues nameType);
 API_NameTypeValues DrawingNameTypeFromString (const GS::UniString& str, API_NameTypeValues defaultValue = APIName_ViewOrSrcFileName);
 
@@ -186,6 +224,15 @@ API_Guid GetAttributeGuidFromIndex (API_AttrTypeID typeID, API_AttributeIndex in
 API_Attr_Head GetAttributeHeadFromGuid (API_Guid guid);
 API_AttributeIndex GetAttributeIndexFromGuid (API_AttrTypeID typeID, API_Guid guid);
 
+// The veneer of a column segment (#1044): type ("Core", "Finish" or "Other"), thickness and,
+// for a segment with a building material cross section, the building material of the veneer.
+// A thickness of 0 means no veneer. CreateColumns and ModifyColumns apply one veneer object to
+// every segment of the column, as they do with the cross section fields.
+GS::ObjectState CreateColumnVeneerObjectState (const API_ColumnSegmentType& segment);
+// Applies the given fields of veneer to segment; returns an error message for an unknown type or
+// building material, and changes nothing then.
+GS::Optional<GS::UniString> ApplyColumnVeneer (const GS::ObjectState& veneer, API_ColumnSegmentType& segment);
+
 // Text and Label fields reference fonts by index (from 1), which is what the commands carry as
 // fontIndex. These map that index to and from the font's name (the name the Text tool's font list
 // shows), through the Font API from Archicad 27 and the Font attributes (API_FontID) before. The
@@ -217,6 +264,21 @@ GSErrCode ExecuteActionForEachDatabase (
 // The Project Map item of an independent worksheet or detail database, found by its database;
 // NoValue for any other database type or when the Project Map has no such item.
 GS::Optional<API_Guid> FindProjectMapItemOfWorksheetOrDetail (const API_DatabaseInfo& database);
+
+// Makes the database with this id (as GetDatabases and the databaseId inputs give it) the current
+// database, without changing the front window.
+GSErrCode ChangeCurrentDatabaseTo (const API_Guid& databaseId);
+
+// A worksheet or detail whose window was never opened, e.g. one just made by CreateWorksheets,
+// cannot be made the current database (APIERR_BADDATABASE) until its Project Map item has been
+// opened once, as ChangeWindow does it (#1602). Called outside the undoable command; returns
+// whether a window was opened, so the caller can bring the starting window back.
+bool OpenDatabaseIfNeverOpened (const API_Guid& databaseId);
+
+// The name and the reference ID of a Detail or Worksheet marker. A Worksheet element reports an
+// empty detailIdStr (Archicad 29) while its viewpoint has the ID, so both are taken from the
+// viewpoint's database when it can be read, and from the element otherwise.
+void GetDetailMarkerNameAndId (const API_Element& element, GS::UniString& name, GS::UniString& id);
 
 template<std::size_t N>
 bool SetCharProperty (const GS::ObjectState* os, const char* propertyKey, char (&targetProperty)[N])
@@ -283,6 +345,11 @@ GSErrCode SwitchCurrentDatabaseToFloorPlan (API_DatabaseInfo& previousDatabase, 
 
 bool LoadElementHeaderByGuid (const API_Guid& elementGuid, API_Elem_Head& elementHeader);
 bool DoesElementExist (const API_Guid& elementGuid, API_ElemTypeID expectedTypeId);
+
+// Why an element on this layer cannot be created or changed: APIERR_LOCKEDLAY with the reason
+// "its layer is locked", APIERR_HIDDENLAY with "its layer is hidden", or NoError when the layer
+// is shown and unlocked.
+GSErrCode GetLayerChangeError (const API_AttributeIndex& layer, GS::UniString& reason);
 
 // Writes the Element ID of an existing element: the elemInfoString memo part, which
 // GetDetailsOfElements reads back as "id" (APIMemoMask_ElemInfoString). Must be called

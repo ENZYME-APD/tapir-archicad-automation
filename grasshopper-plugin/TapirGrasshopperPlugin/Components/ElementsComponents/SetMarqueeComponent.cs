@@ -18,8 +18,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "SetMarquee",
                 "Draws a marquee in the current window of Archicad from a closed curve in the XY plane: " +
                 "an axis-aligned rectangle becomes a rectangle marquee, any other closed curve a polygon " +
-                "marquee (curved segments are approximated with a polyline). Without an outline the " +
-                "marquee is removed.",
+                "marquee (curved segments are approximated with a polyline). With RotationAngle the outline " +
+                "has to be a rectangle rotated by that angle, and it becomes a rotated rectangle marquee. " +
+                "Without an outline the marquee is removed.",
                 GroupNames.Elements)
         {
         }
@@ -37,7 +38,17 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "MultiStory",
                 "True for a multi-story (thick) marquee, false (default) for a single-story (thin) one.");
 
-            SetOptionality(new[] { 0, 1 });
+            inManager.AddNumberParameter(
+                "RotationAngle",
+                "RotationAngle",
+                ("Optional. Rotation angle (radians) of a rectangle marquee. The Outline has to be a rectangle " +
+                 "whose sides are rotated by this angle from the X and Y axes; it becomes a rotated rectangle " +
+                 "marquee. When not given (or 0), an axis-aligned rectangle becomes a rectangle marquee and " +
+                 "any other outline a polygon marquee.")
+                    .WithTypeName("numberItem"),
+                GH_ParamAccess.item);
+
+            SetOptionality(new[] { 0, 1, 2 });
         }
 
         protected override void AddOutputs()
@@ -58,12 +69,18 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 1,
                 false);
 
+            var rotationAngle = 0.0;
+            da.GetData(
+                2,
+                ref rotationAngle);
+
             var parameters = new SetMarqueeParameters();
 
             if (outline != null)
             {
                 if (!TryConvertOutline(
                         outline,
+                        rotationAngle,
                         parameters,
                         out string error))
                 {
@@ -91,9 +108,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         // Fills either the box (axis-aligned rectangle) or the polygon of the
         // parameters from the curve. The add-on closes the polygon itself, so
-        // the closing repeat of the first vertex is dropped.
+        // the closing repeat of the first vertex is dropped. With a rotation
+        // angle the curve has to be a rectangle rotated by it: Archicad stores
+        // such a box in the coordinate system rotated by the angle around the
+        // project origin, so the corners are rotated back by the angle.
         private static bool TryConvertOutline(
             Curve outline,
+            double rotationAngle,
             SetMarqueeParameters parameters,
             out string error)
         {
@@ -138,7 +159,32 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return false;
             }
 
-            if (IsAxisAlignedRectangle(vertices))
+            if (Math.Abs(rotationAngle) > 1e-9)
+            {
+                var cos = Math.Cos(-rotationAngle);
+                var sin = Math.Sin(-rotationAngle);
+                var rotated = vertices
+                    .Select(v => new Point3d(
+                        v.X * cos - v.Y * sin,
+                        v.X * sin + v.Y * cos,
+                        0.0))
+                    .ToList();
+                if (!IsAxisAlignedRectangle(rotated))
+                {
+                    error = "With RotationAngle the outline has to be a rectangle whose sides are rotated by that angle.";
+                    return false;
+                }
+
+                parameters.Box = new MarqueeBox
+                {
+                    XMin = rotated.Min(v => v.X),
+                    YMin = rotated.Min(v => v.Y),
+                    XMax = rotated.Max(v => v.X),
+                    YMax = rotated.Max(v => v.Y)
+                };
+                parameters.RotationAngle = rotationAngle;
+            }
+            else if (IsAxisAlignedRectangle(vertices))
             {
                 parameters.Box = new MarqueeBox
                 {

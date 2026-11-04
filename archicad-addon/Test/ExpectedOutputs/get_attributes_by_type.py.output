@@ -12,6 +12,7 @@ Response:
             },
             "index": 1,
             "name": "\u0014",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -20,6 +21,7 @@ Response:
             },
             "index": 2,
             "name": "Interior - Partition",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -28,6 +30,7 @@ Response:
             },
             "index": 3,
             "name": "Interior - Furniture ",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -36,6 +39,7 @@ Response:
             },
             "index": 4,
             "name": "Shell - Roof",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -44,6 +48,7 @@ Response:
             },
             "index": 5,
             "name": "Site & Landscape - General",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -52,6 +57,7 @@ Response:
             },
             "index": 6,
             "name": "Interior - Stair & Railing",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -60,6 +66,7 @@ Response:
             },
             "index": 7,
             "name": "Annotation - Structure",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -68,6 +75,7 @@ Response:
             },
             "index": 12,
             "name": "Dimensioning - Structure",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -76,6 +84,7 @@ Response:
             },
             "index": 14,
             "name": "Annotation - General",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -84,6 +93,7 @@ Response:
             },
             "index": 16,
             "name": "2D Drafting - Hotspot",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -92,6 +102,7 @@ Response:
             },
             "index": 19,
             "name": "MEP - HVAC",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -100,6 +111,7 @@ Response:
             },
             "index": 20,
             "name": "MEP - Electrical",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -108,6 +120,7 @@ Response:
             },
             "index": 26,
             "name": "Dimensioning - Site ",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -116,6 +129,7 @@ Response:
             },
             "index": 29,
             "name": "Annotation - Label",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -124,6 +138,7 @@ Response:
             },
             "index": 31,
             "name": "Marker - Section",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -132,6 +147,7 @@ Response:
             },
             "index": 32,
             "name": "Structural - Shear",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -140,6 +156,7 @@ Response:
             },
             "index": 33,
             "name": "Structural - Bearing",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -148,6 +165,7 @@ Response:
             },
             "index": 34,
             "name": "Structural - Stair & Railing",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -156,6 +174,7 @@ Response:
             },
             "index": 35,
             "name": "Interior - Lamp",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -164,6 +183,7 @@ Response:
             },
             "index": 36,
             "name": "Model Unit - Zone",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -172,6 +192,7 @@ Response:
             },
             "index": 38,
             "name": "Dimensioning - Detail",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -180,6 +201,7 @@ Response:
             },
             "index": 39,
             "name": "MEP - Plumbing",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -188,6 +210,7 @@ Response:
             },
             "index": 42,
             "name": "Annotation - Text",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -196,6 +219,7 @@ Response:
             },
             "index": 44,
             "name": "2D Drafting - General",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -204,6 +228,7 @@ Response:
             },
             "index": 45,
             "name": "Site & Landscape - Terrain",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -212,6 +237,7 @@ Response:
             },
             "index": 46,
             "name": "Model Unit - Module",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -220,6 +246,7 @@ Response:
             },
             "index": 47,
             "name": "Marker - Detail",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -228,6 +255,7 @@ Response:
             },
             "index": 48,
             "name": "Drawing & Figure",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -236,6 +264,7 @@ Response:
             },
             "index": 49,
             "name": "Finish - Ceiling",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -244,6 +273,7 @@ Response:
             },
             "index": 50,
             "name": "Marker - Elevation",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -252,6 +282,7 @@ Response:
             },
             "index": 51,
             "name": "Finish - Floor",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -260,6 +291,7 @@ Response:
             },
             "index": 52,
             "name": "Interior - Equipment",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -268,6 +300,7 @@ Response:
             },
             "index": 53,
             "name": "Finish - Wall",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -276,6 +309,7 @@ Response:
             },
             "index": 54,
             "name": "Shell - General",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -284,6 +318,7 @@ Response:
             },
             "index": 55,
             "name": "Dimensioning - General",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -292,6 +327,7 @@ Response:
             },
             "index": 56,
             "name": "- Hidden",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -300,6 +336,7 @@ Response:
             },
             "index": 57,
             "name": "Structural - Grid",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -308,6 +345,7 @@ Response:
             },
             "index": 58,
             "name": "Marker - Interior Elevation",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -316,6 +354,7 @@ Response:
             },
             "index": 59,
             "name": "Marker - Worksheet",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -324,6 +363,7 @@ Response:
             },
             "index": 60,
             "name": "Morph - General",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -332,6 +372,7 @@ Response:
             },
             "index": 61,
             "name": "Marker - Change",
+            "folderPath": [],
             "modificationTime": <TIME>
         }
     ]
@@ -350,6 +391,7 @@ Response:
             },
             "index": 1,
             "name": "Solid",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -358,6 +400,7 @@ Response:
             },
             "index": 2,
             "name": "Dotted Dense",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -366,6 +409,7 @@ Response:
             },
             "index": 3,
             "name": "Dotted",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -374,6 +418,7 @@ Response:
             },
             "index": 4,
             "name": "Dashed",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -382,6 +427,7 @@ Response:
             },
             "index": 5,
             "name": "Dashed Long",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -390,6 +436,7 @@ Response:
             },
             "index": 6,
             "name": "Dot & Dashed",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -398,6 +445,7 @@ Response:
             },
             "index": 7,
             "name": "Dashed Double",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -406,6 +454,7 @@ Response:
             },
             "index": 8,
             "name": "Dashed Triple",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -414,6 +463,7 @@ Response:
             },
             "index": 9,
             "name": "Zigzag",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -422,6 +472,7 @@ Response:
             },
             "index": 10,
             "name": "Double",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -430,6 +481,7 @@ Response:
             },
             "index": 11,
             "name": "Break",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -438,6 +490,7 @@ Response:
             },
             "index": 12,
             "name": "Slash",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -446,6 +499,7 @@ Response:
             },
             "index": 13,
             "name": "Arrow",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -454,6 +508,7 @@ Response:
             },
             "index": 14,
             "name": "Wave",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -462,6 +517,7 @@ Response:
             },
             "index": 15,
             "name": "X",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -470,6 +526,7 @@ Response:
             },
             "index": 16,
             "name": "Slash Double",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -478,6 +535,7 @@ Response:
             },
             "index": 17,
             "name": "Circle",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -486,6 +544,7 @@ Response:
             },
             "index": 18,
             "name": "Square",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -494,6 +553,7 @@ Response:
             },
             "index": 19,
             "name": "Zigzag Big",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -502,6 +562,7 @@ Response:
             },
             "index": 20,
             "name": "Crossed",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -510,6 +571,7 @@ Response:
             },
             "index": 21,
             "name": "Hidden",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -518,6 +580,7 @@ Response:
             },
             "index": 22,
             "name": "Sketch",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -526,6 +589,7 @@ Response:
             },
             "index": 23,
             "name": "Insulation",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -534,6 +598,7 @@ Response:
             },
             "index": 24,
             "name": "Bubble",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -542,6 +607,7 @@ Response:
             },
             "index": 25,
             "name": "Dashed Small",
+            "folderPath": [],
             "modificationTime": <TIME>
         }
     ]
@@ -560,6 +626,7 @@ Response:
             },
             "index": 1,
             "name": "Common Brick",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -568,6 +635,7 @@ Response:
             },
             "index": 2,
             "name": "Face Brick",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -576,6 +644,7 @@ Response:
             },
             "index": 3,
             "name": "Fire Brick",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -584,6 +653,7 @@ Response:
             },
             "index": 4,
             "name": "Masonry Block",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -592,6 +662,7 @@ Response:
             },
             "index": 5,
             "name": "Concrete Block",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -600,6 +671,7 @@ Response:
             },
             "index": 6,
             "name": "Structural Concrete",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -608,6 +680,7 @@ Response:
             },
             "index": 7,
             "name": "Lightweight Concrete",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -616,6 +689,7 @@ Response:
             },
             "index": 8,
             "name": "Plaster",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -624,6 +698,7 @@ Response:
             },
             "index": 9,
             "name": "Gypsum",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -632,6 +707,7 @@ Response:
             },
             "index": 10,
             "name": "Facing Tile",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -640,6 +716,7 @@ Response:
             },
             "index": 11,
             "name": "Steel",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -648,6 +725,7 @@ Response:
             },
             "index": 12,
             "name": "Aluminium",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -656,6 +734,7 @@ Response:
             },
             "index": 13,
             "name": "Brass/Bronze",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -664,6 +743,7 @@ Response:
             },
             "index": 14,
             "name": "Cut Stone",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -672,6 +752,7 @@ Response:
             },
             "index": 15,
             "name": "Rubble",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -680,6 +761,7 @@ Response:
             },
             "index": 16,
             "name": "Air Space",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -688,6 +770,7 @@ Response:
             },
             "index": 17,
             "name": "Rigid Insulation",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -696,6 +779,7 @@ Response:
             },
             "index": 18,
             "name": "Batt Insulation",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -704,6 +788,7 @@ Response:
             },
             "index": 19,
             "name": "Wood",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -712,6 +797,7 @@ Response:
             },
             "index": 20,
             "name": "Plywood",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -720,6 +806,7 @@ Response:
             },
             "index": 21,
             "name": "Insulation 02",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -728,6 +815,7 @@ Response:
             },
             "index": 22,
             "name": "75 %",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -736,6 +824,7 @@ Response:
             },
             "index": 23,
             "name": "50 %",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -744,6 +833,7 @@ Response:
             },
             "index": 24,
             "name": "25 %",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -752,6 +842,7 @@ Response:
             },
             "index": 25,
             "name": "Solid + Dot & Dashed",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -760,6 +851,7 @@ Response:
             },
             "index": 26,
             "name": "Solid + Dashed",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -768,6 +860,7 @@ Response:
             },
             "index": 27,
             "name": "Dot & Dashed",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -776,6 +869,7 @@ Response:
             },
             "index": 28,
             "name": "Dashed",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -784,6 +878,7 @@ Response:
             },
             "index": 29,
             "name": "Double 1:4",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -792,6 +887,7 @@ Response:
             },
             "index": 30,
             "name": "Double 1:8",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -800,6 +896,7 @@ Response:
             },
             "index": 31,
             "name": "Triangular Grid",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -808,6 +905,7 @@ Response:
             },
             "index": 32,
             "name": "Triangles",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -816,6 +914,7 @@ Response:
             },
             "index": 33,
             "name": "Hexagonal",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -824,6 +923,7 @@ Response:
             },
             "index": 34,
             "name": "Grass",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -832,6 +932,7 @@ Response:
             },
             "index": 35,
             "name": "Facing Tile - Large Scale",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -840,6 +941,7 @@ Response:
             },
             "index": 36,
             "name": "Rubble - Large Scale",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -848,6 +950,7 @@ Response:
             },
             "index": 37,
             "name": "Plywood - Large Scale",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -856,6 +959,7 @@ Response:
             },
             "index": 38,
             "name": "Earth",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -864,6 +968,7 @@ Response:
             },
             "index": 39,
             "name": "Plank Floor",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -872,6 +977,7 @@ Response:
             },
             "index": 40,
             "name": "Strip Floor 1:3",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -880,6 +986,7 @@ Response:
             },
             "index": 41,
             "name": "Strip Floor 1:4",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -888,6 +995,7 @@ Response:
             },
             "index": 42,
             "name": "Block Floor 1:3",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -896,6 +1004,7 @@ Response:
             },
             "index": 43,
             "name": "Block Floor 1:4",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -904,6 +1013,7 @@ Response:
             },
             "index": 44,
             "name": "Grid 25x25",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -912,6 +1022,7 @@ Response:
             },
             "index": 45,
             "name": "Glazed Tile",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -920,6 +1031,7 @@ Response:
             },
             "index": 46,
             "name": "Brick Floor - Laid Flat",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -928,6 +1040,7 @@ Response:
             },
             "index": 47,
             "name": "Brick Floor - Laid on Edge",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -936,6 +1049,7 @@ Response:
             },
             "index": 48,
             "name": "Stone Mosaic Paving",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -944,6 +1058,7 @@ Response:
             },
             "index": 49,
             "name": "Carpet",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -952,6 +1067,7 @@ Response:
             },
             "index": 50,
             "name": "Brick - Running Bond",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -960,6 +1076,7 @@ Response:
             },
             "index": 51,
             "name": "Brick - Common Bond",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -968,6 +1085,7 @@ Response:
             },
             "index": 52,
             "name": "Brick - Flemish Bond",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -976,6 +1094,7 @@ Response:
             },
             "index": 53,
             "name": "Brick - English Bond",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -984,6 +1103,7 @@ Response:
             },
             "index": 54,
             "name": "Brick - Stack Bond",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -992,6 +1112,7 @@ Response:
             },
             "index": 55,
             "name": "Block - Running Bond",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1000,6 +1121,7 @@ Response:
             },
             "index": 56,
             "name": "Block - Stack Bond",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1008,6 +1130,7 @@ Response:
             },
             "index": 57,
             "name": "Long Brick - Running Bond",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1016,6 +1139,7 @@ Response:
             },
             "index": 58,
             "name": "Long Brick - Stack Bond",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1024,6 +1148,7 @@ Response:
             },
             "index": 59,
             "name": "2x4 Stud Wall 16 O.C.",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1032,6 +1157,7 @@ Response:
             },
             "index": 60,
             "name": "Roof Tiles",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1040,6 +1166,7 @@ Response:
             },
             "index": 61,
             "name": "Circles 1",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1048,6 +1175,7 @@ Response:
             },
             "index": 62,
             "name": "Circles 2",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1056,6 +1184,7 @@ Response:
             },
             "index": 63,
             "name": "Fire Proofing",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1064,6 +1193,7 @@ Response:
             },
             "index": 64,
             "name": "Foreground",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1072,6 +1202,7 @@ Response:
             },
             "index": 65,
             "name": "Background",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1080,6 +1211,7 @@ Response:
             },
             "index": 66,
             "name": "Insulation",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1088,6 +1220,7 @@ Response:
             },
             "index": 67,
             "name": "Stars",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1096,6 +1229,7 @@ Response:
             },
             "index": 68,
             "name": "Gravel",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1104,6 +1238,7 @@ Response:
             },
             "index": 69,
             "name": "Roof Tile",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1112,6 +1247,7 @@ Response:
             },
             "index": 70,
             "name": "Pavement 01",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1120,6 +1256,7 @@ Response:
             },
             "index": 71,
             "name": "Pavement 02",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1128,6 +1265,7 @@ Response:
             },
             "index": 72,
             "name": "Pavement 03",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1136,6 +1274,7 @@ Response:
             },
             "index": 73,
             "name": "Pavement 04",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1144,6 +1283,7 @@ Response:
             },
             "index": 74,
             "name": "Pavement 05",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1152,6 +1292,7 @@ Response:
             },
             "index": 75,
             "name": "Pavement 06",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1160,6 +1301,7 @@ Response:
             },
             "index": 76,
             "name": "Pavement 07",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1168,6 +1310,7 @@ Response:
             },
             "index": 77,
             "name": "Pavement 08",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1176,6 +1319,7 @@ Response:
             },
             "index": 78,
             "name": "Pavement 09",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1184,6 +1328,7 @@ Response:
             },
             "index": 79,
             "name": "Pavement 10",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1192,6 +1337,7 @@ Response:
             },
             "index": 80,
             "name": "Pavement 11",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1200,6 +1346,7 @@ Response:
             },
             "index": 81,
             "name": "Pavement 12",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1208,6 +1355,7 @@ Response:
             },
             "index": 82,
             "name": "Pavement 13",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1216,6 +1364,7 @@ Response:
             },
             "index": 83,
             "name": "Pavement 14",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1224,6 +1373,7 @@ Response:
             },
             "index": 84,
             "name": "Pavement 15",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1232,6 +1382,7 @@ Response:
             },
             "index": 85,
             "name": "Pavement 16",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1240,6 +1391,7 @@ Response:
             },
             "index": 86,
             "name": "Pavement 17",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1248,6 +1400,7 @@ Response:
             },
             "index": 87,
             "name": "Pavement 18",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1256,6 +1409,7 @@ Response:
             },
             "index": 88,
             "name": "Pavement 19",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1264,6 +1418,7 @@ Response:
             },
             "index": 89,
             "name": "Render",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1272,6 +1427,7 @@ Response:
             },
             "index": 90,
             "name": "Roof Tile 01",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1280,6 +1436,7 @@ Response:
             },
             "index": 91,
             "name": "Roof Tile 02",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1288,6 +1445,7 @@ Response:
             },
             "index": 92,
             "name": "Roof Tile 03",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1296,6 +1454,7 @@ Response:
             },
             "index": 93,
             "name": "Roof Tile 04",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1304,6 +1463,7 @@ Response:
             },
             "index": 94,
             "name": "Roof Tile 05",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1312,6 +1472,7 @@ Response:
             },
             "index": 95,
             "name": "Roof Tile 06",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1320,6 +1481,7 @@ Response:
             },
             "index": 96,
             "name": "Roof Tile 07",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1328,6 +1490,7 @@ Response:
             },
             "index": 97,
             "name": "Roof Tile 08",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1336,6 +1499,7 @@ Response:
             },
             "index": 98,
             "name": "Roof Tile 09",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1344,6 +1508,7 @@ Response:
             },
             "index": 99,
             "name": "Roof Tile Blank",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1352,6 +1517,7 @@ Response:
             },
             "index": 100,
             "name": "Roof Tile Stack",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1360,6 +1526,7 @@ Response:
             },
             "index": 101,
             "name": "Shakes",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1368,6 +1535,7 @@ Response:
             },
             "index": 102,
             "name": "Stacked Stone",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1376,6 +1544,7 @@ Response:
             },
             "index": 103,
             "name": "Stone 1 Course",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1384,6 +1553,7 @@ Response:
             },
             "index": 104,
             "name": "Stone 2 Course ",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1392,6 +1562,7 @@ Response:
             },
             "index": 105,
             "name": "Styrofoam SM Insulation",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1400,6 +1571,7 @@ Response:
             },
             "index": 106,
             "name": "Thermal Block",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1408,6 +1580,7 @@ Response:
             },
             "index": 107,
             "name": "Wood  00",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1416,6 +1589,7 @@ Response:
             },
             "index": 108,
             "name": "Wood  45",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1424,6 +1598,7 @@ Response:
             },
             "index": 109,
             "name": "Wood  90",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1432,6 +1607,7 @@ Response:
             },
             "index": 110,
             "name": "Wood 135",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1440,6 +1616,7 @@ Response:
             },
             "index": 111,
             "name": "Wood 180",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1448,6 +1625,7 @@ Response:
             },
             "index": 112,
             "name": "Fieldstone 01",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1456,6 +1634,7 @@ Response:
             },
             "index": 113,
             "name": "Fieldstone 02",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1464,6 +1643,7 @@ Response:
             },
             "index": 114,
             "name": "Brick - Common Bond + Mortar",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1472,6 +1652,7 @@ Response:
             },
             "index": 115,
             "name": "Brick - English Bond + Mortar",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1480,6 +1661,7 @@ Response:
             },
             "index": 116,
             "name": "Brick - Stack Bond + Mortar",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1488,6 +1670,7 @@ Response:
             },
             "index": 117,
             "name": "Brick Flemish Bond + Mortar ",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1496,6 +1679,7 @@ Response:
             },
             "index": 118,
             "name": "Brick Running Bond + Mortar",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1504,6 +1688,7 @@ Response:
             },
             "index": 119,
             "name": "Linear Gradient Fill",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1512,6 +1697,7 @@ Response:
             },
             "index": 120,
             "name": "Radial Gradient Fill",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1520,6 +1706,7 @@ Response:
             },
             "index": 121,
             "name": "Standing Seam",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1528,6 +1715,7 @@ Response:
             },
             "index": 122,
             "name": "Shingle",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1536,6 +1724,7 @@ Response:
             },
             "index": 123,
             "name": "Brick - Soldier Bond",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1544,6 +1733,7 @@ Response:
             },
             "index": 124,
             "name": "River Rock ",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1552,6 +1742,7 @@ Response:
             },
             "index": 125,
             "name": "Grid 30x30",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1560,6 +1751,7 @@ Response:
             },
             "index": 126,
             "name": "Grid 15x15",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1568,6 +1760,7 @@ Response:
             },
             "index": 127,
             "name": "Grid 60x60",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1576,6 +1769,7 @@ Response:
             },
             "index": 128,
             "name": "Grid 60x120",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1584,6 +1778,7 @@ Response:
             },
             "index": 129,
             "name": "Grid 90x90",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1592,6 +1787,7 @@ Response:
             },
             "index": 130,
             "name": "Grid 5x5 Diagonal",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1600,6 +1796,7 @@ Response:
             },
             "index": 131,
             "name": "Normal Tiles",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1608,6 +1805,7 @@ Response:
             },
             "index": 132,
             "name": "Gray Carpet",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1616,6 +1814,7 @@ Response:
             },
             "index": 133,
             "name": "Wood Parquet",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1624,6 +1823,7 @@ Response:
             },
             "index": 134,
             "name": "Insulation 01",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1632,6 +1832,7 @@ Response:
             },
             "index": 135,
             "name": "Waterproofing",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1640,6 +1841,7 @@ Response:
             },
             "index": 136,
             "name": "Brick - Running Bond - 20.3/6.8",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1648,6 +1850,7 @@ Response:
             },
             "index": 137,
             "name": "Grid 100x100",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1656,6 +1859,7 @@ Response:
             },
             "index": 138,
             "name": "Shingle - 30/12.5",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1664,6 +1868,7 @@ Response:
             },
             "index": 139,
             "name": "Brick - Common Bond - 20.3/6.76",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1672,6 +1877,7 @@ Response:
             },
             "index": 140,
             "name": "Roof Tile 15",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1680,6 +1886,7 @@ Response:
             },
             "index": 141,
             "name": "Grid 50x100",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1688,6 +1895,7 @@ Response:
             },
             "index": 142,
             "name": "Grid Checkered 25x25",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1696,6 +1904,7 @@ Response:
             },
             "index": 143,
             "name": "Brick - Herringbone",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1704,6 +1913,7 @@ Response:
             },
             "index": 144,
             "name": "Brick - Flemish Bond - 10.16/6.8",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1712,6 +1922,7 @@ Response:
             },
             "index": 145,
             "name": "Brick - Stack Bond - 20.3/6.76",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1720,6 +1931,7 @@ Response:
             },
             "index": 146,
             "name": "Brick - Running Bond - 19.9/6.78",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1728,6 +1940,7 @@ Response:
             },
             "index": 147,
             "name": "Parquet 01",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1736,6 +1949,7 @@ Response:
             },
             "index": 148,
             "name": "Roof Shingle 01",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1744,6 +1958,7 @@ Response:
             },
             "index": 149,
             "name": "Shingle - 20/30",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1752,6 +1967,7 @@ Response:
             },
             "index": 150,
             "name": "Roof Tile 11",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1760,6 +1976,7 @@ Response:
             },
             "index": 151,
             "name": "Wooden Plank Horizontal - 10",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1768,6 +1985,7 @@ Response:
             },
             "index": 152,
             "name": "Brick - Running Bond - 26/7.5",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1776,6 +1994,7 @@ Response:
             },
             "index": 153,
             "name": "Roof Tile 12",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1784,6 +2003,7 @@ Response:
             },
             "index": 154,
             "name": "Stonework 13",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1792,6 +2012,7 @@ Response:
             },
             "index": 155,
             "name": "Stonework 02",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1800,6 +2021,7 @@ Response:
             },
             "index": 156,
             "name": "Stonework 12",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1808,6 +2030,7 @@ Response:
             },
             "index": 157,
             "name": "Grid 2.5x2.5",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1816,6 +2039,7 @@ Response:
             },
             "index": 158,
             "name": "Wooden Plank Vertical - 10",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1824,6 +2048,7 @@ Response:
             },
             "index": 159,
             "name": "Wooden Plank Horizontal - 14.15",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1832,6 +2057,7 @@ Response:
             },
             "index": 160,
             "name": "Panel 100x50",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1840,6 +2066,7 @@ Response:
             },
             "index": 161,
             "name": "Concrete Pavement 01",
+            "folderPath": [],
             "modificationTime": <TIME>
         }
     ]
@@ -1858,6 +2085,7 @@ Response:
             },
             "index": 1,
             "name": "Concrete Floor Insulated with Parquet",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1866,6 +2094,7 @@ Response:
             },
             "index": 2,
             "name": "Concrete Floor Insulated with 10mm Tile",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1874,6 +2103,7 @@ Response:
             },
             "index": 3,
             "name": "Concrete Floor with 10mm Tile",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1882,6 +2112,7 @@ Response:
             },
             "index": 4,
             "name": "100 Block Insulated Cavity Plastered",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1890,6 +2121,7 @@ Response:
             },
             "index": 6,
             "name": "100 Block Double Plastered",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1898,6 +2130,7 @@ Response:
             },
             "index": 7,
             "name": "100 Block Insulated Cavity",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1906,6 +2139,7 @@ Response:
             },
             "index": 8,
             "name": "215 Block Insulated Cavity Plastered",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1914,6 +2148,7 @@ Response:
             },
             "index": 9,
             "name": "Double 50 Block Cavity Plastered",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1922,6 +2157,7 @@ Response:
             },
             "index": 10,
             "name": "Stud Partition",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1930,6 +2166,7 @@ Response:
             },
             "index": 11,
             "name": "Double 50 Block Cavity",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1938,6 +2175,7 @@ Response:
             },
             "index": 12,
             "name": "Brick Double Plastered",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1946,6 +2184,7 @@ Response:
             },
             "index": 13,
             "name": "Brick Single Plastered",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1954,6 +2193,7 @@ Response:
             },
             "index": 14,
             "name": "140 Block Insulated Cavity",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1962,6 +2202,7 @@ Response:
             },
             "index": 15,
             "name": "Concrete Floor with Parquet",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1970,6 +2211,7 @@ Response:
             },
             "index": 16,
             "name": "215 Block Insulated Cavity",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1978,6 +2220,7 @@ Response:
             },
             "index": 17,
             "name": "140 Block Insulated Cavity Plastered",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1986,6 +2229,7 @@ Response:
             },
             "index": 18,
             "name": "Roof Aluminium",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -1994,6 +2238,7 @@ Response:
             },
             "index": 19,
             "name": "Roof Tiled",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2002,6 +2247,7 @@ Response:
             },
             "index": 20,
             "name": "Basement Wall",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2010,6 +2256,7 @@ Response:
             },
             "index": 21,
             "name": "Roof Zinc",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2018,6 +2265,7 @@ Response:
             },
             "index": 22,
             "name": "Flat Roof",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2026,6 +2274,7 @@ Response:
             },
             "index": 23,
             "name": "Generic Wall/Shell",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2034,6 +2283,7 @@ Response:
             },
             "index": 24,
             "name": "Generic Slab/Roof",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2042,6 +2292,7 @@ Response:
             },
             "index": 25,
             "name": "Generic Roof/Shell",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2050,6 +2301,7 @@ Response:
             },
             "index": 5,
             "name": "New Composite",
+            "folderPath": [],
             "modificationTime": <TIME>
         }
     ]
@@ -2068,6 +2320,7 @@ Response:
             },
             "index": 1,
             "name": "Brick - Running Bond",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2076,6 +2329,7 @@ Response:
             },
             "index": 2,
             "name": "Stucco - White Rough",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2084,6 +2338,7 @@ Response:
             },
             "index": 3,
             "name": "Paint - Dark Gray",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2092,6 +2347,7 @@ Response:
             },
             "index": 4,
             "name": "Concrete - 02",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2100,6 +2356,7 @@ Response:
             },
             "index": 5,
             "name": "Stone - Limestone Fine",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2108,6 +2365,7 @@ Response:
             },
             "index": 6,
             "name": "Stone - Marble Carrara White",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2116,6 +2374,7 @@ Response:
             },
             "index": 7,
             "name": "Stone - Granite Gray",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2124,6 +2383,7 @@ Response:
             },
             "index": 8,
             "name": "Stone - Granite Red",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2132,6 +2392,7 @@ Response:
             },
             "index": 9,
             "name": "Roof - Asphalt Shingle Gray",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2140,6 +2401,7 @@ Response:
             },
             "index": 10,
             "name": "Paint - Anthracite",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2148,6 +2410,7 @@ Response:
             },
             "index": 11,
             "name": "Metal - Stainless Steel",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2156,6 +2419,7 @@ Response:
             },
             "index": 12,
             "name": "Metal - Copper New",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2164,6 +2428,7 @@ Response:
             },
             "index": 13,
             "name": "Metal - Chrome 01",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2172,6 +2437,7 @@ Response:
             },
             "index": 14,
             "name": "Wood - Pine Grained Vertical",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2180,6 +2446,7 @@ Response:
             },
             "index": 15,
             "name": "Wood - Pine Grained Horizontal",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2188,6 +2455,7 @@ Response:
             },
             "index": 16,
             "name": "Wood - Walnut Horizontal",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2196,6 +2464,7 @@ Response:
             },
             "index": 17,
             "name": "Wood - Walnut Vertical",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2204,6 +2473,7 @@ Response:
             },
             "index": 18,
             "name": "Paint - Titanium White",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2212,6 +2482,7 @@ Response:
             },
             "index": 19,
             "name": "Paint - Vermilion",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2220,6 +2491,7 @@ Response:
             },
             "index": 20,
             "name": "Paint - Ultramarine Violet",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2228,6 +2500,7 @@ Response:
             },
             "index": 21,
             "name": "Tiles - Tan 30x30",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2236,6 +2509,7 @@ Response:
             },
             "index": 22,
             "name": "Ceramic - Porcelain",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2244,6 +2518,7 @@ Response:
             },
             "index": 23,
             "name": "Plastic - Laminate",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2252,6 +2527,7 @@ Response:
             },
             "index": 24,
             "name": "Glass - Clear Fast",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2260,6 +2536,7 @@ Response:
             },
             "index": 25,
             "name": "Leather - Tabac",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2268,6 +2545,7 @@ Response:
             },
             "index": 26,
             "name": "Textile - 01",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2276,6 +2554,7 @@ Response:
             },
             "index": 27,
             "name": "Carpet - 03",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2284,6 +2563,7 @@ Response:
             },
             "index": 28,
             "name": "Water - Pond",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2292,6 +2572,7 @@ Response:
             },
             "index": 29,
             "name": "Glass - Blue",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2300,6 +2581,7 @@ Response:
             },
             "index": 30,
             "name": "Grass - Green",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2308,6 +2590,7 @@ Response:
             },
             "index": 31,
             "name": "Foliage - Leaves Tree Small",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2316,6 +2599,7 @@ Response:
             },
             "index": 32,
             "name": "Paint - Bordeaux",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2324,6 +2608,7 @@ Response:
             },
             "index": 33,
             "name": "Earth - Brown",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2332,6 +2617,7 @@ Response:
             },
             "index": 34,
             "name": "Glass - Lamp",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2340,6 +2626,7 @@ Response:
             },
             "index": 35,
             "name": "Brick - Common Bond",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2348,6 +2635,7 @@ Response:
             },
             "index": 36,
             "name": "Roof Tiles - French Red",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2356,6 +2644,7 @@ Response:
             },
             "index": 37,
             "name": "Stone - Sandstone 01",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2364,6 +2653,7 @@ Response:
             },
             "index": 38,
             "name": "Stone - Marble Black",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2372,6 +2662,7 @@ Response:
             },
             "index": 39,
             "name": "Stone - Marble Pink",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2380,6 +2671,7 @@ Response:
             },
             "index": 40,
             "name": "Metal - Iron",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2388,6 +2680,7 @@ Response:
             },
             "index": 41,
             "name": "Metal - Copper Aged",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2396,6 +2689,7 @@ Response:
             },
             "index": 42,
             "name": "Metal - Bronze",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2404,6 +2698,7 @@ Response:
             },
             "index": 43,
             "name": "Metal - Brass",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2412,6 +2707,7 @@ Response:
             },
             "index": 44,
             "name": "Metal - Nickel",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2420,6 +2716,7 @@ Response:
             },
             "index": 45,
             "name": "Metal - Aluminium",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2428,6 +2725,7 @@ Response:
             },
             "index": 46,
             "name": "Metal - Gold",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2436,6 +2734,7 @@ Response:
             },
             "index": 47,
             "name": "Metal - Zinc",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2444,6 +2743,7 @@ Response:
             },
             "index": 48,
             "name": "Paint - Cobalt Blue",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2452,6 +2752,7 @@ Response:
             },
             "index": 49,
             "name": "Paint - Ivory Black",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2460,6 +2761,7 @@ Response:
             },
             "index": 50,
             "name": "Roof - Asphalt Shingle Green",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2468,6 +2770,7 @@ Response:
             },
             "index": 51,
             "name": "Pavement - Brick Moss",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2476,6 +2779,7 @@ Response:
             },
             "index": 52,
             "name": "Wood - Oak Light",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2484,6 +2788,7 @@ Response:
             },
             "index": 53,
             "name": "Concrete - 04",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2492,6 +2797,7 @@ Response:
             },
             "index": 54,
             "name": "Siding - Dark",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2500,6 +2806,7 @@ Response:
             },
             "index": 55,
             "name": "Lino - Checkered",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2508,6 +2815,7 @@ Response:
             },
             "index": 56,
             "name": "Brick - Red",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2516,6 +2824,7 @@ Response:
             },
             "index": 57,
             "name": "Siding - Medium",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2524,6 +2833,7 @@ Response:
             },
             "index": 58,
             "name": "Siding - Light",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2532,6 +2842,7 @@ Response:
             },
             "index": 59,
             "name": "Wood - Mahogany Vertical",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2540,6 +2851,7 @@ Response:
             },
             "index": 60,
             "name": "Paint - Glossy White",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2548,6 +2860,7 @@ Response:
             },
             "index": 61,
             "name": "Brick - Red Herringbone",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2556,6 +2869,7 @@ Response:
             },
             "index": 62,
             "name": "Brick - Flemish Bond",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2564,6 +2878,7 @@ Response:
             },
             "index": 63,
             "name": "Brick - Soldier Bond",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2572,6 +2887,7 @@ Response:
             },
             "index": 64,
             "name": "Brick - Stack Bond",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2580,6 +2896,7 @@ Response:
             },
             "index": 65,
             "name": "Brick - Aged Natural",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2588,6 +2905,7 @@ Response:
             },
             "index": 66,
             "name": "Paint - Sand Beige",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2596,6 +2914,7 @@ Response:
             },
             "index": 67,
             "name": "Paint - Golden Beige",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2604,6 +2923,7 @@ Response:
             },
             "index": 68,
             "name": "Paint - Sienna Sand",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2612,6 +2932,7 @@ Response:
             },
             "index": 69,
             "name": "Paint - Celadon",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2620,6 +2941,7 @@ Response:
             },
             "index": 70,
             "name": "Paint - Pale Jade",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2628,6 +2950,7 @@ Response:
             },
             "index": 71,
             "name": "Paint - Peach",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2636,6 +2959,7 @@ Response:
             },
             "index": 72,
             "name": "Paint - Pink Blush",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2644,6 +2968,7 @@ Response:
             },
             "index": 73,
             "name": "Paint - Golden Ochre",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2652,6 +2977,7 @@ Response:
             },
             "index": 74,
             "name": "Paint - Yellow Ochre",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2660,6 +2986,7 @@ Response:
             },
             "index": 75,
             "name": "Paint - Royal Blue",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2668,6 +2995,7 @@ Response:
             },
             "index": 76,
             "name": "Paint - Forest Green",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2676,6 +3004,7 @@ Response:
             },
             "index": 77,
             "name": "Paint - Cadmium Orange",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2684,6 +3013,7 @@ Response:
             },
             "index": 78,
             "name": "Paint - Cadmium Yellow",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2692,6 +3022,7 @@ Response:
             },
             "index": 79,
             "name": "Paint - Alizarin Carmine",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2700,6 +3031,7 @@ Response:
             },
             "index": 80,
             "name": "Brick - Brown",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2708,6 +3040,7 @@ Response:
             },
             "index": 81,
             "name": "Stucco - White Fine",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2716,6 +3049,7 @@ Response:
             },
             "index": 82,
             "name": "Parquet - 01",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2724,6 +3058,7 @@ Response:
             },
             "index": 83,
             "name": "Brick - Surface Colour",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2732,6 +3067,7 @@ Response:
             },
             "index": 84,
             "name": "Pavement - Asphalt Dark",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2740,6 +3076,7 @@ Response:
             },
             "index": 85,
             "name": "Roof - Asphalt Shingle Drop",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2748,6 +3085,7 @@ Response:
             },
             "index": 86,
             "name": "Roof - Cedar Shingle Light",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2756,6 +3094,7 @@ Response:
             },
             "index": 87,
             "name": "Roof Tiles - Dutch",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2764,6 +3103,7 @@ Response:
             },
             "index": 88,
             "name": "Roof - Asphalt Shingle Brown",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2772,6 +3112,7 @@ Response:
             },
             "index": 89,
             "name": "Textile - 02",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2780,6 +3121,7 @@ Response:
             },
             "index": 90,
             "name": "Floorboards - 01",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2788,6 +3130,7 @@ Response:
             },
             "index": 91,
             "name": "Glass - Mirror",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2796,6 +3139,7 @@ Response:
             },
             "index": 92,
             "name": "Brick - White Natural",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2804,6 +3148,7 @@ Response:
             },
             "index": 93,
             "name": "Carpet - 01",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2812,6 +3157,7 @@ Response:
             },
             "index": 94,
             "name": "Carpet - 02",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2820,6 +3166,7 @@ Response:
             },
             "index": 95,
             "name": "Grass - Brown",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2828,6 +3175,7 @@ Response:
             },
             "index": 96,
             "name": "Bark - Deciduous",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2836,6 +3184,7 @@ Response:
             },
             "index": 97,
             "name": "Foliage - Wild grapes",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2844,6 +3193,7 @@ Response:
             },
             "index": 98,
             "name": "Water - Wavy",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2852,6 +3202,7 @@ Response:
             },
             "index": 99,
             "name": "Paint - Light Gray",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2860,6 +3211,7 @@ Response:
             },
             "index": 100,
             "name": "Paint - Pale Blue",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2868,6 +3220,7 @@ Response:
             },
             "index": 101,
             "name": "Paint - Lead Oxide Yellow",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2876,6 +3229,7 @@ Response:
             },
             "index": 102,
             "name": "Pavement - Asphalt Light",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2884,6 +3238,7 @@ Response:
             },
             "index": 103,
             "name": "Roof Tiles - Spanish 01",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2892,6 +3247,7 @@ Response:
             },
             "index": 104,
             "name": "Tiles - White Matte 15x15",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2900,6 +3256,7 @@ Response:
             },
             "index": 105,
             "name": "Metal - Perforated Small Dots",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2908,6 +3265,7 @@ Response:
             },
             "index": 106,
             "name": "Tiles - Tan 25x25",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2916,6 +3274,7 @@ Response:
             },
             "index": 107,
             "name": "Roof - Corrugated Sheet Matte",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2924,6 +3283,7 @@ Response:
             },
             "index": 108,
             "name": "Ceiling - Tile 60x60",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2932,6 +3292,7 @@ Response:
             },
             "index": 109,
             "name": "Ceiling - Tile 60x120",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2940,6 +3301,7 @@ Response:
             },
             "index": 110,
             "name": "Metal - Fence Chainlink",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2948,6 +3310,7 @@ Response:
             },
             "index": 111,
             "name": "Stonework - 13",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2956,6 +3319,7 @@ Response:
             },
             "index": 112,
             "name": "Stonework - 02",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2964,6 +3328,7 @@ Response:
             },
             "index": 113,
             "name": "Stonework - 12",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2972,6 +3337,7 @@ Response:
             },
             "index": 114,
             "name": "Tiles - Light Brown 15x15",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2980,6 +3346,7 @@ Response:
             },
             "index": 115,
             "name": "Tiles - Mosaic Blue",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2988,6 +3355,7 @@ Response:
             },
             "index": 116,
             "name": "Parquet - 02",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -2996,6 +3364,7 @@ Response:
             },
             "index": 117,
             "name": "Stucco - Yellow Rough",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3004,6 +3373,7 @@ Response:
             },
             "index": 118,
             "name": "Stucco - Red Rough",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3012,6 +3382,7 @@ Response:
             },
             "index": 119,
             "name": "Stucco - Beige Rough",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3020,6 +3391,7 @@ Response:
             },
             "index": 120,
             "name": "Lino - Blue",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3028,6 +3400,7 @@ Response:
             },
             "index": 121,
             "name": "Lino - Gray",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3036,6 +3409,7 @@ Response:
             },
             "index": 122,
             "name": "Roof Tiles - French Brown",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3044,6 +3418,7 @@ Response:
             },
             "index": 123,
             "name": "Floorboards - 03",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3052,6 +3427,7 @@ Response:
             },
             "index": 124,
             "name": "Wood - Mahogany Horizontal",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3060,6 +3436,7 @@ Response:
             },
             "index": 125,
             "name": "Glass - Satin",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3068,6 +3445,7 @@ Response:
             },
             "index": 126,
             "name": "Metal - Steel",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3076,6 +3454,7 @@ Response:
             },
             "index": 127,
             "name": "Insulation - Bubble Wrap",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3084,6 +3463,7 @@ Response:
             },
             "index": 128,
             "name": "Insulation - Cellulose",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3092,6 +3472,7 @@ Response:
             },
             "index": 129,
             "name": "Insulation - Fiberglass",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3100,6 +3481,7 @@ Response:
             },
             "index": 130,
             "name": "Insulation - Solid Brown",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3108,6 +3490,7 @@ Response:
             },
             "index": 131,
             "name": "Air",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3116,6 +3499,7 @@ Response:
             },
             "index": 132,
             "name": "Concrete - 10",
+            "folderPath": [],
             "modificationTime": <TIME>
         }
     ]
@@ -3134,6 +3518,7 @@ Response:
             },
             "index": 1,
             "name": "02 Drafting",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3142,6 +3527,7 @@ Response:
             },
             "index": 3,
             "name": "06 Plans - Mechanical",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3150,6 +3536,7 @@ Response:
             },
             "index": 4,
             "name": "07 Plans - Structural",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3158,6 +3545,7 @@ Response:
             },
             "index": 5,
             "name": "09 Layouting",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3166,6 +3554,7 @@ Response:
             },
             "index": 7,
             "name": "01 Site",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3174,6 +3563,7 @@ Response:
             },
             "index": 8,
             "name": "04 Plans - Approval",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3182,6 +3572,7 @@ Response:
             },
             "index": 10,
             "name": "08 Rendering",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3190,6 +3581,7 @@ Response:
             },
             "index": 11,
             "name": "05 Plans - Detailed",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3198,6 +3590,7 @@ Response:
             },
             "index": 14,
             "name": "03 Plans - Preliminary",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3206,6 +3599,7 @@ Response:
             },
             "index": 16,
             "name": "10 Show 3D Zones as Solid",
+            "folderPath": [],
             "modificationTime": <TIME>
         }
     ]
@@ -3224,6 +3618,7 @@ Response:
             },
             "index": 1,
             "name": "Medical Treatment",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3232,6 +3627,7 @@ Response:
             },
             "index": 2,
             "name": "Other Usage",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3240,6 +3636,7 @@ Response:
             },
             "index": 3,
             "name": "Education & Culture",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3248,6 +3645,7 @@ Response:
             },
             "index": 4,
             "name": "Office",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3256,6 +3654,7 @@ Response:
             },
             "index": 5,
             "name": "Residential and Recreation",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3264,6 +3663,7 @@ Response:
             },
             "index": 6,
             "name": "Communication & Access",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3272,6 +3672,7 @@ Response:
             },
             "index": 8,
             "name": "Storage & Sales",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3280,6 +3681,7 @@ Response:
             },
             "index": 9,
             "name": "Technical Equipment",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3288,6 +3690,7 @@ Response:
             },
             "index": 10,
             "name": "Production & Research",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3296,6 +3699,7 @@ Response:
             },
             "index": 11,
             "name": "GROSS AREA",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3304,6 +3708,7 @@ Response:
             },
             "index": 12,
             "name": "Generic",
+            "folderPath": [],
             "modificationTime": <TIME>
         }
     ]
@@ -3322,6 +3727,7 @@ Response:
             },
             "index": 1,
             "name": "Brick Wall w Concrete Lintel",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3330,6 +3736,7 @@ Response:
             },
             "index": 2,
             "name": "Brick Veneer Block Wall",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3338,6 +3745,7 @@ Response:
             },
             "index": 3,
             "name": "Precast Double Tee",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3346,6 +3754,7 @@ Response:
             },
             "index": 4,
             "name": "Precast Single Tee",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3354,6 +3763,7 @@ Response:
             },
             "index": 5,
             "name": "Precast Inverted Tee",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3362,6 +3772,7 @@ Response:
             },
             "index": 6,
             "name": "Precast Girder 02",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3370,6 +3781,7 @@ Response:
             },
             "index": 7,
             "name": "Precast Girder 01",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3378,6 +3790,7 @@ Response:
             },
             "index": 8,
             "name": "I Joist - Wood",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3386,6 +3799,7 @@ Response:
             },
             "index": 9,
             "name": "Joist - Timber",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3394,6 +3808,7 @@ Response:
             },
             "index": 10,
             "name": "Steel C Section",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3402,6 +3817,7 @@ Response:
             },
             "index": 11,
             "name": "Steel Z Section",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3410,6 +3826,7 @@ Response:
             },
             "index": 12,
             "name": "Steel L Section",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3418,6 +3835,7 @@ Response:
             },
             "index": 13,
             "name": "I Joist - Steel",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3426,6 +3844,7 @@ Response:
             },
             "index": 14,
             "name": "Steel Rectangular Hollow",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3434,6 +3853,7 @@ Response:
             },
             "index": 15,
             "name": "Steel T Section",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3442,6 +3862,7 @@ Response:
             },
             "index": 16,
             "name": "Steel Universal Section",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3450,6 +3871,7 @@ Response:
             },
             "index": 17,
             "name": "Concrete Column/Beam w Cover",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3458,6 +3880,7 @@ Response:
             },
             "index": 18,
             "name": "Plaster Cornice/Coving",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3466,6 +3889,7 @@ Response:
             },
             "index": 19,
             "name": "Brick Wall w Footing",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3474,6 +3898,7 @@ Response:
             },
             "index": 20,
             "name": "Concrete Slab Edge Footing",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3482,6 +3907,7 @@ Response:
             },
             "index": 21,
             "name": "Generic Beam",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3490,6 +3916,7 @@ Response:
             },
             "index": 22,
             "name": "Generic Column",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3498,6 +3925,7 @@ Response:
             },
             "index": 23,
             "name": "IPE 240",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3506,6 +3934,7 @@ Response:
             },
             "index": 24,
             "name": "Stair Nosing Classic",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3514,6 +3943,7 @@ Response:
             },
             "index": 25,
             "name": "Stair Riser Slanted 150 ",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3522,6 +3952,7 @@ Response:
             },
             "index": 26,
             "name": "Stair Interlacing Block 150/300",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3530,6 +3961,7 @@ Response:
             },
             "index": 27,
             "name": "Stair Tread 300 for Riser Slanted 150",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3538,6 +3970,7 @@ Response:
             },
             "index": 28,
             "name": "Stair Edge Protection with Non-Slip Band",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3546,6 +3979,7 @@ Response:
             },
             "index": 29,
             "name": "Rail Wood on Steel",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3554,6 +3988,7 @@ Response:
             },
             "index": 30,
             "name": "Rail Wood Simple",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3562,6 +3997,7 @@ Response:
             },
             "index": 31,
             "name": "Rail Wood Complex",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3570,6 +4006,7 @@ Response:
             },
             "index": 32,
             "name": "Railing Revolved Profile",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3578,6 +4015,7 @@ Response:
             },
             "index": 33,
             "name": "Rail Double Steel Bars",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3586,6 +4024,7 @@ Response:
             },
             "index": 34,
             "name": "Stair Stringer C Section",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3594,6 +4033,7 @@ Response:
             },
             "index": 35,
             "name": "CW Frame 80/160",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3602,6 +4042,7 @@ Response:
             },
             "index": 36,
             "name": "CW Frame Butt-glazed 80/160",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3610,6 +4051,7 @@ Response:
             },
             "index": 37,
             "name": "CW Cap 80/20",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3618,6 +4060,7 @@ Response:
             },
             "index": 38,
             "name": "CW Window Frame 48/48",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3626,6 +4069,7 @@ Response:
             },
             "index": 39,
             "name": "CW Corner Frame 80/160",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3634,6 +4078,7 @@ Response:
             },
             "index": 40,
             "name": "CW Corner Frame Butt-glazed 80/160",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3642,6 +4087,7 @@ Response:
             },
             "index": 41,
             "name": "CW Corner Cap 80/20",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3650,6 +4096,7 @@ Response:
             },
             "index": 42,
             "name": "Precast Single Tee 02",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3658,6 +4105,7 @@ Response:
             },
             "index": 43,
             "name": "IPE300",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3666,6 +4114,7 @@ Response:
             },
             "index": 44,
             "name": "HEA200",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3674,6 +4123,7 @@ Response:
             },
             "index": 45,
             "name": "UPE100",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3682,6 +4132,7 @@ Response:
             },
             "index": 46,
             "name": "L100X50X10",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3690,6 +4141,7 @@ Response:
             },
             "index": 47,
             "name": "RHS100X100X5",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3698,6 +4150,7 @@ Response:
             },
             "index": 48,
             "name": "CHS48.3X5.0",
+            "folderPath": [],
             "modificationTime": <TIME>
         }
     ]
@@ -3716,6 +4169,7 @@ Response:
             },
             "index": 1,
             "name": "09 Color",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3724,6 +4178,7 @@ Response:
             },
             "index": 2,
             "name": "10 Grayscale",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3732,6 +4187,7 @@ Response:
             },
             "index": 3,
             "name": "11 Archicad 9",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3740,6 +4196,7 @@ Response:
             },
             "index": 4,
             "name": "04 Building plans 50",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3748,6 +4205,7 @@ Response:
             },
             "index": 5,
             "name": "03 Architectural 100",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3756,6 +4214,7 @@ Response:
             },
             "index": 7,
             "name": "02 Site 500",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3764,6 +4223,7 @@ Response:
             },
             "index": 8,
             "name": "08 Electrical",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3772,6 +4232,7 @@ Response:
             },
             "index": 9,
             "name": "06 Structural",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3780,6 +4241,7 @@ Response:
             },
             "index": 10,
             "name": "05 Detailing",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3788,6 +4250,7 @@ Response:
             },
             "index": 11,
             "name": "07 Mechanical",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3796,6 +4259,7 @@ Response:
             },
             "index": 13,
             "name": "01 Color Conceptual",
+            "folderPath": [],
             "modificationTime": <TIME>
         }
     ]
@@ -3814,6 +4278,7 @@ Response:
             },
             "index": 1,
             "name": "Exhaust Air [Ductwork]",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3822,6 +4287,7 @@ Response:
             },
             "index": 2,
             "name": "Fresh Air [Ductwork]",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3830,6 +4296,7 @@ Response:
             },
             "index": 3,
             "name": "Heating [Pipework]",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3838,6 +4305,7 @@ Response:
             },
             "index": 4,
             "name": "Cooling [Pipework]",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3846,6 +4314,7 @@ Response:
             },
             "index": 5,
             "name": "Cabling [Cable Tray]",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3854,6 +4323,7 @@ Response:
             },
             "index": 6,
             "name": "Sprinkler [Pipework]",
+            "folderPath": [],
             "modificationTime": <TIME>
         }
     ]
@@ -3872,6 +4342,7 @@ Response:
             },
             "index": 1,
             "name": "Personal office",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3880,6 +4351,7 @@ Response:
             },
             "index": 2,
             "name": "Landscaped office",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3888,6 +4360,7 @@ Response:
             },
             "index": 3,
             "name": "Meeting, conference or seminar room",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3896,6 +4369,7 @@ Response:
             },
             "index": 4,
             "name": "Booking hall",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3904,6 +4378,7 @@ Response:
             },
             "index": 5,
             "name": "Retail shop/department store",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3912,6 +4387,7 @@ Response:
             },
             "index": 6,
             "name": "Classroom",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3920,6 +4396,7 @@ Response:
             },
             "index": 7,
             "name": "Lecture room, auditorium",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3928,6 +4405,7 @@ Response:
             },
             "index": 8,
             "name": "Hospital ward or dormitory",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3936,6 +4414,7 @@ Response:
             },
             "index": 9,
             "name": "Hotel room",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3944,6 +4423,7 @@ Response:
             },
             "index": 10,
             "name": "Canteen",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3952,6 +4432,7 @@ Response:
             },
             "index": 11,
             "name": "Restaurant",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3960,6 +4441,7 @@ Response:
             },
             "index": 12,
             "name": "Kitchen (non residential)",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3968,6 +4450,7 @@ Response:
             },
             "index": 13,
             "name": "Kitchen (preparation or store room)",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3976,6 +4459,7 @@ Response:
             },
             "index": 14,
             "name": "Toilets and sanitary facilities (non residential)",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3984,6 +4468,7 @@ Response:
             },
             "index": 15,
             "name": "Other habitable rooms (non residential)",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -3992,6 +4477,7 @@ Response:
             },
             "index": 16,
             "name": "Auxiliary spaces (non residential)",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4000,6 +4486,7 @@ Response:
             },
             "index": 17,
             "name": "Circulation and traffic areas",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4008,6 +4495,7 @@ Response:
             },
             "index": 18,
             "name": "Storeroom",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4016,6 +4504,7 @@ Response:
             },
             "index": 19,
             "name": "Server room, computer center",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4024,6 +4513,7 @@ Response:
             },
             "index": 20,
             "name": "Workshop",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4032,6 +4522,7 @@ Response:
             },
             "index": 21,
             "name": "Spectator and audience areas",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4040,6 +4531,7 @@ Response:
             },
             "index": 22,
             "name": "Theatre foyer",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4048,6 +4540,7 @@ Response:
             },
             "index": 23,
             "name": "Stage",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4056,6 +4549,7 @@ Response:
             },
             "index": 24,
             "name": "Fair/congress building",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4064,6 +4558,7 @@ Response:
             },
             "index": 25,
             "name": "Showroom and museums",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4072,6 +4567,7 @@ Response:
             },
             "index": 26,
             "name": "Library (reading room)",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4080,6 +4576,7 @@ Response:
             },
             "index": 27,
             "name": "Library (open stacks area)",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4088,6 +4585,7 @@ Response:
             },
             "index": 28,
             "name": "Library (magazine and stores)",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4096,6 +4594,7 @@ Response:
             },
             "index": 29,
             "name": "Sports hall",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4104,6 +4603,7 @@ Response:
             },
             "index": 30,
             "name": "Garage buildings (offices and private use)",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4112,6 +4612,7 @@ Response:
             },
             "index": 31,
             "name": "Garage buildings (public use)",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4120,6 +4621,7 @@ Response:
             },
             "index": 32,
             "name": "Residential",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4128,6 +4630,7 @@ Response:
             },
             "index": 33,
             "name": "Unconditioned",
+            "folderPath": [],
             "modificationTime": <TIME>
         }
     ]
@@ -4146,6 +4649,7 @@ Response:
             },
             "index": 1,
             "name": "Brick",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4154,6 +4658,7 @@ Response:
             },
             "index": 2,
             "name": "Brick - Structural",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4162,6 +4667,7 @@ Response:
             },
             "index": 3,
             "name": "Brick - Finish",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4170,6 +4676,7 @@ Response:
             },
             "index": 4,
             "name": "Masonry Block - Structural",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4178,6 +4685,7 @@ Response:
             },
             "index": 5,
             "name": "Masonry Block - Filler",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4186,6 +4694,7 @@ Response:
             },
             "index": 6,
             "name": "Concrete",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4194,6 +4703,7 @@ Response:
             },
             "index": 7,
             "name": "Concrete - Structural",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4202,6 +4712,7 @@ Response:
             },
             "index": 8,
             "name": "Concrete Block - Structural",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4210,6 +4721,7 @@ Response:
             },
             "index": 9,
             "name": "Concrete Block - Filler",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4218,6 +4730,7 @@ Response:
             },
             "index": 10,
             "name": "Reinforced Concrete - Structural",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4226,6 +4739,7 @@ Response:
             },
             "index": 11,
             "name": "Reinforced Concrete - Prefab",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4234,6 +4748,7 @@ Response:
             },
             "index": 12,
             "name": "Insulation - Fiber Hard",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4242,6 +4757,7 @@ Response:
             },
             "index": 13,
             "name": "Insulation - Fiber Soft",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4250,6 +4766,7 @@ Response:
             },
             "index": 14,
             "name": "Insulation - Mineral Hard",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4258,6 +4775,7 @@ Response:
             },
             "index": 15,
             "name": "Insulation - Mineral Soft",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4266,6 +4784,7 @@ Response:
             },
             "index": 16,
             "name": "Insulation - Plastic Hard",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4274,6 +4793,7 @@ Response:
             },
             "index": 17,
             "name": "Insulation - Plastic Soft",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4282,6 +4802,7 @@ Response:
             },
             "index": 18,
             "name": "Insulation - Thermal Break",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4290,6 +4811,7 @@ Response:
             },
             "index": 19,
             "name": "Fire Proofing",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4298,6 +4820,7 @@ Response:
             },
             "index": 20,
             "name": "Membrane - Vapor Barrier",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4306,6 +4829,7 @@ Response:
             },
             "index": 21,
             "name": "Membrane - Waterproof",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4314,6 +4838,7 @@ Response:
             },
             "index": 22,
             "name": "Membrane - Rainproof",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4322,6 +4847,7 @@ Response:
             },
             "index": 23,
             "name": "Timber - Roof",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4330,6 +4856,7 @@ Response:
             },
             "index": 24,
             "name": "Timber - Floor",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4338,6 +4865,7 @@ Response:
             },
             "index": 25,
             "name": "Plywood",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4346,6 +4874,7 @@ Response:
             },
             "index": 26,
             "name": "Fiberboard",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4354,6 +4883,7 @@ Response:
             },
             "index": 27,
             "name": "Tile - Roof",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4362,6 +4892,7 @@ Response:
             },
             "index": 28,
             "name": "Tile - Floor",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4370,6 +4901,7 @@ Response:
             },
             "index": 29,
             "name": "Plaster - Lime Sand",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4378,6 +4910,7 @@ Response:
             },
             "index": 30,
             "name": "Plaster - Gypsum",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4386,6 +4919,7 @@ Response:
             },
             "index": 31,
             "name": "Gypsum Plasterboard",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4394,6 +4928,7 @@ Response:
             },
             "index": 32,
             "name": "Gypsum Plasterboard - Waterproof",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4402,6 +4937,7 @@ Response:
             },
             "index": 33,
             "name": "Aluminium",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4410,6 +4946,7 @@ Response:
             },
             "index": 34,
             "name": "Iron",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4418,6 +4955,7 @@ Response:
             },
             "index": 35,
             "name": "Steel",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4426,6 +4964,7 @@ Response:
             },
             "index": 36,
             "name": "Steel - Structural",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4434,6 +4973,7 @@ Response:
             },
             "index": 37,
             "name": "Steel - Stainless",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4442,6 +4982,7 @@ Response:
             },
             "index": 38,
             "name": "Titanium Zinc",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4450,6 +4991,7 @@ Response:
             },
             "index": 39,
             "name": "Stone - Structural",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4458,6 +5000,7 @@ Response:
             },
             "index": 40,
             "name": "Stone - Finish",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4466,6 +5009,7 @@ Response:
             },
             "index": 41,
             "name": "Plastic - Solid",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4474,6 +5018,7 @@ Response:
             },
             "index": 42,
             "name": "Air Space",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4482,6 +5027,7 @@ Response:
             },
             "index": 43,
             "name": "Air Space - Frame",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4490,6 +5036,7 @@ Response:
             },
             "index": 44,
             "name": "Gravel",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4498,6 +5045,7 @@ Response:
             },
             "index": 45,
             "name": "Glass",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4506,6 +5054,7 @@ Response:
             },
             "index": 46,
             "name": "Soil",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4514,6 +5063,7 @@ Response:
             },
             "index": 47,
             "name": "Water",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4522,6 +5072,7 @@ Response:
             },
             "index": 48,
             "name": "Sand",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4530,6 +5081,7 @@ Response:
             },
             "index": 49,
             "name": "Timber - Structural",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4538,6 +5090,7 @@ Response:
             },
             "index": 50,
             "name": "Tile - Wall",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4546,6 +5099,7 @@ Response:
             },
             "index": 51,
             "name": "GENERIC - EXTERNAL CLADDING",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4554,6 +5108,7 @@ Response:
             },
             "index": 52,
             "name": "GENERIC - EXTERNAL FILLER",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4562,6 +5117,7 @@ Response:
             },
             "index": 53,
             "name": "GENERIC - EXTERNAL MEMBRANE",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4570,6 +5126,7 @@ Response:
             },
             "index": 54,
             "name": "GENERIC - PREFABRICATED",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4578,6 +5135,7 @@ Response:
             },
             "index": 56,
             "name": "GENERIC - ENVIRONMENT",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4586,6 +5144,7 @@ Response:
             },
             "index": 57,
             "name": "GENERIC - INTERNAL FILLER",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4594,6 +5153,7 @@ Response:
             },
             "index": 58,
             "name": "GENERIC - INSULATION",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4602,6 +5162,7 @@ Response:
             },
             "index": 59,
             "name": "GENERIC - STRUCTURAL",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4610,6 +5171,7 @@ Response:
             },
             "index": 60,
             "name": "GENERIC - INTERNAL CLADDING",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4618,6 +5180,7 @@ Response:
             },
             "index": 55,
             "name": "New Building Material 1",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4626,6 +5189,7 @@ Response:
             },
             "index": 61,
             "name": "New Building Material 2",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4634,6 +5198,7 @@ Response:
             },
             "index": 62,
             "name": "New Building Material 3",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4642,6 +5207,7 @@ Response:
             },
             "index": 63,
             "name": "New Building Material 4",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4650,6 +5216,7 @@ Response:
             },
             "index": 64,
             "name": "New Building Material 5",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4658,6 +5225,7 @@ Response:
             },
             "index": 65,
             "name": "New Building Material 6",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4666,6 +5234,7 @@ Response:
             },
             "index": 66,
             "name": "New Building Material 7",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4674,6 +5243,7 @@ Response:
             },
             "index": 67,
             "name": "New Building Material 8",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4682,6 +5252,7 @@ Response:
             },
             "index": 68,
             "name": "New Building Material 9",
+            "folderPath": [],
             "modificationTime": <TIME>
         },
         {
@@ -4690,9 +5261,11 @@ Response:
             },
             "index": 69,
             "name": "New Building Material 10",
+            "folderPath": [],
             "modificationTime": <TIME>
         }
     ]
 }
 all attributes have a modification time: True
+all attributes have a folder path: True
 all creation infos are complete: True

@@ -6,6 +6,11 @@
 #include "ACAPI_Navigator.h"
 #include "ACAPI/View.hpp"
 #include "ACAPI/DesignOptionManager.hpp"
+#include <variant>
+#endif
+
+#if defined (ServerMainVers_2700) && !defined (ServerMainVers_2900)
+#include "ACAPI/DesignOptionCombinationViewSettings.hpp"
 #endif
 
 #ifdef ServerMainVers_2900
@@ -16,13 +21,15 @@
 using namespace ACAPI::DesignOptions;
 #elif defined (ServerMainVers_2800)
 using DesignOptionManager = ACAPI::DesignOptions::v1::DesignOptionManager;
+using DesignOptionCombinationViewSettings = ACAPI::DesignOptions::v1::DesignOptionCombinationViewSettings;
 using namespace ACAPI::DesignOptions::v2;
 #elif defined (ServerMainVers_2700)
 using DesignOptionManager = ACAPI::v1::DesignOptionManager;
+using DesignOptionCombinationViewSettings = ACAPI::v1::DesignOptionCombinationViewSettings;
 using namespace ACAPI::v2;
 #endif
 
-#ifdef ServerMainVers_2900
+#ifdef ServerMainVers_2700
 // Finds the design option, set or combination with the given guid in the
 // list the manager returned; nullptr when there is none.
 template <typename ContainerT>
@@ -34,6 +41,31 @@ static auto FindDesignOptionItemByGuid (ContainerT& items, const GS::Guid& guid)
         }
     }
     return nullptr;
+}
+
+// The view of the View Map item with the given guid; an error when the item
+// is not a view.
+static auto FindViewByNavigatorItemGuid (const API_Guid& navigatorItemGuid)
+{
+#ifdef ServerMainVers_2800
+    return ACAPI::ModelViews::FindViewByGuid (navigatorItemGuid);
+#else
+    return ACAPI::FindViewByGuid (navigatorItemGuid);
+#endif
+}
+#endif
+
+#ifdef ServerMainVers_2900
+// Returns the error response with Archicad's own text when design options
+// cannot be changed now (no project is open, or the current window is one
+// where design options cannot be edited); no value when they can.
+static GS::Optional<GS::ObjectState> CheckDesignOptionProjectAndWindow ()
+{
+    const auto error = DesignOptionsManipulationRightsChecker::CheckProjectExistanceAndWindowType ();
+    if (error.has_value ()) {
+        return CreateErrorResponse (error->kind, GS::UniString (error->text.c_str ()));
+    }
+    return GS::NoValue;
 }
 
 // The error of a failed ACAPI::Result as an Error object (code and message);
@@ -65,7 +97,37 @@ static void AddIsEditable (GS::ObjectState& os, const ItemT& item)
 // without the right); no value when creating them is allowed.
 static GS::Optional<GS::ObjectState> CheckDesignOptionCreationRights ()
 {
-    const auto error =DesignOptionsManipulationRightsChecker::CheckCreationRights ();
+    const GS::Optional<GS::ObjectState> windowError = CheckDesignOptionProjectAndWindow ();
+    if (windowError.HasValue ()) {
+        return windowError;
+    }
+    const auto error = DesignOptionsManipulationRightsChecker::CheckCreationRights ();
+    if (error.has_value ()) {
+        return CreateErrorResponse (error->kind, GS::UniString (error->text.c_str ()));
+    }
+    return GS::NoValue;
+}
+
+// Returns the error response with Archicad's own text when the user may not
+// modify or delete design options, sets or combinations (e.g. a Teamwork
+// project where the design options are not reserved); no value when it is
+// allowed. The rights are checked by the Teamwork identifier of the
+// project's design options, so only in Teamwork projects.
+static GS::Optional<GS::ObjectState> CheckDesignOptionModificationRights (DesignOptionManager& manager)
+{
+    const GS::Optional<GS::ObjectState> windowError = CheckDesignOptionProjectAndWindow ();
+    if (windowError.HasValue ()) {
+        return windowError;
+    }
+    API_ProjectInfo projectInfo = {};
+    if (ACAPI_ProjectOperation_Project (&projectInfo) != NoError || !projectInfo.teamwork) {
+        return GS::NoValue;
+    }
+    const auto teamworkId = manager.GetTWID ();
+    if (teamworkId.IsErr () || teamworkId.Unwrap () == APINULLGuid) {
+        return GS::NoValue;
+    }
+    const auto error = DesignOptionsManipulationRightsChecker::CheckModificationAndDeletionRights (APIGuid2GSGuid (teamworkId.Unwrap ()));
     if (error.has_value ()) {
         return CreateErrorResponse (error->kind, GS::UniString (error->text.c_str ()));
     }
@@ -930,6 +992,11 @@ GS::ObjectState DeactivateDesignOptionsInCombinationsCommand::Execute (const GS:
         return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to modify design option combinations.");
     }
 
+    const GS::Optional<GS::ObjectState> rightsError = CheckDesignOptionModificationRights (*manager);
+    if (rightsError.HasValue ()) {
+        return *rightsError;
+    }
+
     GS::Array<GS::ObjectState> deactivatedDesignOptionsInCombinations;
     if (!parameters.Get ("deactivatedDesignOptionsInCombinations", deactivatedDesignOptionsInCombinations)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'deactivatedDesignOptionsInCombinations' parameter.");
@@ -1075,6 +1142,11 @@ GS::ObjectState SetActiveDesignOptionsInCombinationsCommand::Execute (const GS::
     ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
     if (manager.IsErr ()) {
         return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to list design option combinations.");
+    }
+
+    const GS::Optional<GS::ObjectState> rightsError = CheckDesignOptionModificationRights (*manager);
+    if (rightsError.HasValue ()) {
+        return *rightsError;
     }
 
     GS::Array<GS::ObjectState> activeDesignOptionsInCombinations;
@@ -1328,6 +1400,11 @@ GS::ObjectState DuplicateDesignOptionCombinationsCommand::Execute (const GS::Obj
         return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to duplicate design option combinations.");
     }
 
+    const GS::Optional<GS::ObjectState> rightsError = CheckDesignOptionCreationRights ();
+    if (rightsError.HasValue ()) {
+        return *rightsError;
+    }
+
     GS::Array<GS::ObjectState> designOptionCombinations;
     if (!parameters.Get ("designOptionCombinations", designOptionCombinations)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'designOptionCombinations' parameter.");
@@ -1431,6 +1508,11 @@ GS::ObjectState MoveElementsToDesignOptionsCommand::Execute (const GS::ObjectSta
     ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
     if (manager.IsErr ()) {
         return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to modify design options.");
+    }
+
+    const GS::Optional<GS::ObjectState> windowError = CheckDesignOptionProjectAndWindow ();
+    if (windowError.HasValue ()) {
+        return *windowError;
     }
 
     GS::Array<GS::ObjectState> elementDesignOptionPairs;
@@ -1545,6 +1627,11 @@ GS::ObjectState MoveDesignOptionsToAnotherSetCommand::Execute (const GS::ObjectS
     ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
     if (manager.IsErr ()) {
         return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to modify design options.");
+    }
+
+    const GS::Optional<GS::ObjectState> rightsError = CheckDesignOptionModificationRights (*manager);
+    if (rightsError.HasValue ()) {
+        return *rightsError;
     }
 
     GS::Array<GS::ObjectState> designOptionAndSetPairs;
@@ -1663,6 +1750,11 @@ GS::ObjectState RenameDesignOptionsCommand::Execute (const GS::ObjectState& para
         return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to modify design options.");
     }
 
+    const GS::Optional<GS::ObjectState> rightsError = CheckDesignOptionModificationRights (*manager);
+    if (rightsError.HasValue ()) {
+        return *rightsError;
+    }
+
     GS::Array<GS::ObjectState> designOptions;
     if (!parameters.Get ("designOptions", designOptions)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'designOptions' parameter.");
@@ -1776,6 +1868,11 @@ GS::ObjectState RenameDesignOptionSetsCommand::Execute (const GS::ObjectState& p
         return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to modify design option sets.");
     }
 
+    const GS::Optional<GS::ObjectState> rightsError = CheckDesignOptionModificationRights (*manager);
+    if (rightsError.HasValue ()) {
+        return *rightsError;
+    }
+
     GS::Array<GS::ObjectState> designOptionSets;
     if (!parameters.Get ("designOptionSets", designOptionSets)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'designOptionSets' parameter.");
@@ -1871,6 +1968,11 @@ GS::ObjectState RenameDesignOptionCombinationsCommand::Execute (const GS::Object
     ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
     if (manager.IsErr ()) {
         return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to modify design option combinations.");
+    }
+
+    const GS::Optional<GS::ObjectState> rightsError = CheckDesignOptionModificationRights (*manager);
+    if (rightsError.HasValue ()) {
+        return *rightsError;
     }
 
     GS::Array<GS::ObjectState> designOptionCombinations;
@@ -1970,6 +2072,11 @@ GS::ObjectState DeleteDesignOptionsCommand::Execute (const GS::ObjectState& para
         return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to delete design options.");
     }
 
+    const GS::Optional<GS::ObjectState> rightsError = CheckDesignOptionModificationRights (*manager);
+    if (rightsError.HasValue ()) {
+        return *rightsError;
+    }
+
     GS::Array<GS::ObjectState> designOptions;
     if (!parameters.Get ("designOptions", designOptions)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'designOptions' parameter.");
@@ -2060,6 +2167,11 @@ GS::ObjectState DeleteDesignOptionSetsCommand::Execute (const GS::ObjectState& p
     ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
     if (manager.IsErr ()) {
         return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to delete design option sets.");
+    }
+
+    const GS::Optional<GS::ObjectState> rightsError = CheckDesignOptionModificationRights (*manager);
+    if (rightsError.HasValue ()) {
+        return *rightsError;
     }
 
     GS::Array<GS::ObjectState> designOptionSets;
@@ -2154,6 +2266,11 @@ GS::ObjectState DeleteDesignOptionCombinationsCommand::Execute (const GS::Object
         return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to delete design option combinations.");
     }
 
+    const GS::Optional<GS::ObjectState> rightsError = CheckDesignOptionModificationRights (*manager);
+    if (rightsError.HasValue ()) {
+        return *rightsError;
+    }
+
     GS::Array<GS::ObjectState> designOptionCombinations;
     if (!parameters.Get ("designOptionCombinations", designOptionCombinations)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'designOptionCombinations' parameter.");
@@ -2181,6 +2298,849 @@ GS::ObjectState DeleteDesignOptionCombinationsCommand::Execute (const GS::Object
             }
             auto result = manager->DeleteDesignOptionCombination (*combinationPtr);
             executionResults (result.IsOk () ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to delete design option combination."));
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
+GetDesignOptionCombinationOfViewsCommand::GetDesignOptionCombinationOfViewsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetDesignOptionCombinationOfViewsCommand::GetName () const
+{
+    return "GetDesignOptionCombinationOfViews";
+}
+
+GS::Optional<GS::UniString> GetDesignOptionCombinationOfViewsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "navigatorItemIds": {
+                "$ref": "#/NavigatorItemIds",
+                "description": "The navigator items of the views (View Map items)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "navigatorItemIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetDesignOptionCombinationOfViewsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "designOptionCombinationOfViews": {
+                "type": "array",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "navigatorItemId": {
+                                    "$ref": "#/NavigatorItemId"
+                                },
+                                "status": {
+                                    "type": "string",
+                                    "enum": [
+                                        "MainModelOnly",
+                                        "Standard",
+                                        "Custom",
+                                        "Missing"
+                                    ],
+                                    "description": "MainModelOnly: the view shows only the main model, no design option. Standard: the view shows a design option combination. Custom: the view shows a set of design options modified by the user, without a name. Missing: the combination of the view was deleted."
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "description": "The name of the design option combination settings of the view, as Archicad reports it."
+                                },
+                                "designOptionCombinationId": {
+                                    "$ref": "#/DesignOptionCombinationId",
+                                    "description": "The design option combination the view shows. Given for the Standard status and, on Archicad 27 and 28, also for the Custom status (the combination the custom set was made from). On Archicad 29 and newer it is given only when exactly one combination has the name of the view's settings."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "navigatorItemId",
+                                "status",
+                                "name"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionCombinationOfViews"
+        ]
+    })";
+}
+
+GS::ObjectState GetDesignOptionCombinationOfViewsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
+    if (manager.IsErr ()) {
+        return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to retrieve design option combinations.");
+    }
+
+    GS::Array<GS::ObjectState> navigatorItemIds;
+    if (!parameters.Get ("navigatorItemIds", navigatorItemIds)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'navigatorItemIds' parameter.");
+    }
+
+#ifdef ServerMainVers_2900
+    // The Standard status of Archicad 29 and newer does not carry the combination, so it is matched by name.
+    auto allDesignOptionCombinations = manager->GetDesignOptionCombinations ();
+    if (allDesignOptionCombinations.IsErr ()) {
+        return CreateErrorResponse (allDesignOptionCombinations.UnwrapErr ().kind, "Unable to retrieve design option combinations.");
+    }
+#endif
+
+    GS::ObjectState response;
+    const auto& designOptionCombinationOfViews = response.AddList<GS::ObjectState> ("designOptionCombinationOfViews");
+
+    for (const GS::ObjectState& navigatorItemIdArrayItem : navigatorItemIds) {
+        const API_Guid navigatorItemGuid = GetGuidFromNavigatorItemIdArrayItem (navigatorItemIdArrayItem);
+        if (navigatorItemGuid == APINULLGuid) {
+            designOptionCombinationOfViews (CreateErrorResponse (APIERR_BADPARS, "Missing or invalid 'navigatorItemId' parameter"));
+            continue;
+        }
+
+        auto view = FindViewByNavigatorItemGuid (navigatorItemGuid);
+        if (view.IsErr ()) {
+            designOptionCombinationOfViews (CreateErrorResponse (view.UnwrapErr ().kind, "Not found view with the given 'navigatorItemId' parameter, probably it's not a view"));
+            continue;
+        }
+
+        auto settings = manager->GetDesignOptionCombinationSettingsOf (*view);
+        if (settings.IsErr ()) {
+            designOptionCombinationOfViews (CreateErrorResponse (settings.UnwrapErr ().kind, "Unable to retrieve the design option combination settings of the view."));
+            continue;
+        }
+
+        auto status = settings->GetStatus ();
+        if (status.IsErr ()) {
+            designOptionCombinationOfViews (CreateErrorResponse (status.UnwrapErr ().kind, "Unable to retrieve the design option combination status of the view."));
+            continue;
+        }
+
+        const GS::UniString name = settings->GetName ();
+        GS::ObjectState combinationOfView;
+        combinationOfView.Add ("navigatorItemId", CreateGuidObjectState (navigatorItemGuid));
+        if (std::holds_alternative<DesignOptionCombinationViewSettings::MainModelOnly> (*status)) {
+            combinationOfView.Add ("status", "MainModelOnly");
+        } else if (std::holds_alternative<DesignOptionCombinationViewSettings::Standard> (*status)) {
+            combinationOfView.Add ("status", "Standard");
+#ifdef ServerMainVers_2900
+            const DesignOptionCombination* combinationPtr = nullptr;
+            bool isAmbiguous = false;
+            for (const auto& combination : *allDesignOptionCombinations) {
+                if (combination.GetName () == name) {
+                    isAmbiguous = (combinationPtr != nullptr);
+                    combinationPtr = &combination;
+                    if (isAmbiguous) {
+                        break;
+                    }
+                }
+            }
+            if (combinationPtr != nullptr && !isAmbiguous) {
+                combinationOfView.Add ("designOptionCombinationId", CreateGuidObjectState (combinationPtr->GetGuid ()));
+            }
+#else
+            combinationOfView.Add ("designOptionCombinationId", CreateGuidObjectState (std::get<DesignOptionCombinationViewSettings::Standard> (*status).combination.GetGuid ()));
+#endif
+        } else if (std::holds_alternative<DesignOptionCombinationViewSettings::Custom> (*status)) {
+            combinationOfView.Add ("status", "Custom");
+#ifndef ServerMainVers_2900
+            combinationOfView.Add ("designOptionCombinationId", CreateGuidObjectState (std::get<DesignOptionCombinationViewSettings::Custom> (*status).combination.GetGuid ()));
+#endif
+        } else {
+            combinationOfView.Add ("status", "Missing");
+        }
+        combinationOfView.Add ("name", name);
+        designOptionCombinationOfViews (combinationOfView);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
+SetDesignOptionCombinationOfViewsCommand::SetDesignOptionCombinationOfViewsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetDesignOptionCombinationOfViewsCommand::GetName () const
+{
+    return "SetDesignOptionCombinationOfViews";
+}
+
+GS::Optional<GS::UniString> SetDesignOptionCombinationOfViewsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "navigatorItemIdsWithCombination": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "navigatorItemId": {
+                            "$ref": "#/NavigatorItemId"
+                        },
+                        "designOptionCombinationId": {
+                            "$ref": "#/DesignOptionCombinationId",
+                            "description": "The design option combination the view should show."
+                        },
+                        "mainModelOnly": {
+                            "type": "boolean",
+                            "description": "Set it to true to make the view show only the main model, without any design option."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "navigatorItemId"
+                    ]
+                },
+                "description": "The views (View Map navigator items), each with either a 'designOptionCombinationId' or 'mainModelOnly': true."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "navigatorItemIdsWithCombination"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetDesignOptionCombinationOfViewsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetDesignOptionCombinationOfViewsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
+    if (manager.IsErr ()) {
+        return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to modify the design option combination of views.");
+    }
+
+    GS::Array<GS::ObjectState> navigatorItemIdsWithCombination;
+    if (!parameters.Get ("navigatorItemIdsWithCombination", navigatorItemIdsWithCombination)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'navigatorItemIdsWithCombination' parameter.");
+    }
+
+#ifdef ServerMainVers_2900
+    auto allDesignOptionCombinations = manager->GetDesignOptionCombinations ();
+#else
+    auto allDesignOptionCombinations = manager->GetAvailableDesignOptionCombinations ();
+#endif
+    if (allDesignOptionCombinations.IsErr ()) {
+        return CreateErrorResponse (allDesignOptionCombinations.UnwrapErr ().kind, "Unable to modify the design option combination of views.");
+    }
+    // A copy, because on Archicad 27 the dereferenced result is not an lvalue.
+    auto designOptionCombinations = *allDesignOptionCombinations;
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("Set Design Option Combination of Views", [&]() -> GSErrCode {
+        for (auto&& navigatorItemIdWithCombination : navigatorItemIdsWithCombination) {
+            const API_Guid navigatorItemGuid = GetGuidFromNavigatorItemIdArrayItem (navigatorItemIdWithCombination);
+            if (navigatorItemGuid == APINULLGuid) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'navigatorItemId' parameter"));
+                continue;
+            }
+
+            bool mainModelOnly = false;
+            navigatorItemIdWithCombination.Get ("mainModelOnly", mainModelOnly);
+            const bool hasCombination = navigatorItemIdWithCombination.Contains ("designOptionCombinationId");
+            if (mainModelOnly == hasCombination) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Exactly one of 'designOptionCombinationId' and 'mainModelOnly': true is required"));
+                continue;
+            }
+
+            // Null (no combination has it) when the view should show only the main model.
+            GS::Guid combinationGuid;
+            if (hasCombination) {
+                combinationGuid = APIGuid2GSGuid (GetGuidFromArrayItem ("designOptionCombinationId", navigatorItemIdWithCombination));
+                if (combinationGuid.IsNull ()) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'designOptionCombinationId' parameter"));
+                    continue;
+                }
+            }
+            auto* combinationPtr = FindDesignOptionItemByGuid (designOptionCombinations, combinationGuid);
+            if (hasCombination && combinationPtr == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Not found design option combination with the given 'designOptionCombinationId' parameter"));
+                continue;
+            }
+
+            auto view = FindViewByNavigatorItemGuid (navigatorItemGuid);
+            if (view.IsErr ()) {
+                executionResults (CreateFailedExecutionResult (view.UnwrapErr ().kind, "Not found view with the given 'navigatorItemId' parameter, probably it's not a view"));
+                continue;
+            }
+
+            auto settings = manager->GetDesignOptionCombinationSettingsOf (*view);
+            if (settings.IsErr ()) {
+                executionResults (CreateFailedExecutionResult (settings.UnwrapErr ().kind, "Unable to retrieve the design option combination settings of the view."));
+                continue;
+            }
+
+#ifdef ServerMainVers_2900
+            auto result = (combinationPtr == nullptr) ? settings->SetMainModelOnly () : settings->SetStandardCombination (*combinationPtr);
+#else
+            auto result = settings->Modify ([&] (DesignOptionCombinationViewSettings::Modifier& modifier) {
+                if (combinationPtr == nullptr) {
+                    modifier.SetMainModelOnly ();
+                } else {
+                    modifier.SetStandardCombination (*combinationPtr);
+                }
+            });
+#endif
+            executionResults (result.IsOk () ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to set the design option combination of the view."));
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
+// A hotlink node, and each instance placed from it, carries a design option
+// table: which of the source file's sets, options and combinations it shows,
+// and whether it filters by them at all. Elements the filter hides are as
+// invisible to a script as elements of an inactive design option.
+
+#ifdef ServerMainVers_2900
+// The filter mode's numeric values are fixed by the DevKit (MainModelOnly = 0,
+// FilterByOptions = 1, FilterByCombination = 2); the enum's own type is taken
+// from the getter so this does not depend on where the enum is declared.
+static const char* const HotlinkFilterModeNames[] = { "MainModelOnly", "FilterByOptions", "FilterByCombination" };
+static const int HotlinkFilterModeCount = 3;
+
+template <typename TableT>
+static GS::UniString GetHotlinkFilterModeName (const TableT& table)
+{
+    const int filterMode = static_cast<int> (table.GetFilterMode ());
+    if (filterMode < 0 || filterMode >= HotlinkFilterModeCount) {
+        return "Unknown";
+    }
+    return GS::UniString (HotlinkFilterModeNames[filterMode]);
+}
+
+static GS::Optional<int> GetHotlinkFilterModeValue (const GS::UniString& name)
+{
+    for (int filterMode = 0; filterMode < HotlinkFilterModeCount; ++filterMode) {
+        if (name == GS::UniString (HotlinkFilterModeNames[filterMode])) {
+            return filterMode;
+        }
+    }
+    return GS::NoValue;
+}
+
+template <typename TableT>
+static GS::ObjectState CreateHotlinkDesignOptionTableObjectState (const TableT& table)
+{
+    GS::ObjectState tableOS;
+    tableOS.Add ("hotlinkNodeId", CreateGuidObjectState (table.GetNodeGuid ()));
+    tableOS.Add ("filterMode", GetHotlinkFilterModeName (table));
+
+    const auto& combinations = tableOS.AddList<GS::UniString> ("designOptionCombinations");
+    for (const GS::UniString& combinationName : table.GetCombinationsNames ()) {
+        combinations (combinationName);
+    }
+    const std::optional<GS::UniString> activeCombination = table.GetActiveCombination ();
+    if (activeCombination.has_value ()) {
+        tableOS.Add ("activeDesignOptionCombination", *activeCombination);
+    }
+
+    const auto& sets = tableOS.AddList<GS::ObjectState> ("designOptionSets");
+    for (const GS::UniString& setName : table.GetSetsNames ()) {
+        GS::ObjectState setOS;
+        setOS.Add ("name", setName);
+        const auto& options = setOS.AddList<GS::UniString> ("designOptions");
+        for (const GS::UniString& optionName : table.GetOptionsNamesOfSet (setName)) {
+            options (optionName);
+        }
+        const std::optional<GS::UniString> activeOption = table.GetActiveOptionInSet (setName);
+        if (activeOption.has_value ()) {
+            setOS.Add ("activeDesignOption", *activeOption);
+        }
+        sets (setOS);
+    }
+
+    return tableOS;
+}
+
+// Reads a placed hotlink instance; APIERR_BADELEMENTTYPE when the element is
+// something else.
+static GSErrCode GetHotlinkInstance (const GS::ObjectState& elementId, API_Element& element)
+{
+    element = {};
+    element.header.guid = GetGuidFromObjectState (elementId);
+    const GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+    return GetElemTypeId (element.header) == API_HotlinkID ? NoError : APIERR_BADELEMENTTYPE;
+}
+
+static GS::UniString GetHotlinkInstanceErrorMessage (GSErrCode err)
+{
+    return err == APIERR_BADELEMENTTYPE ? "The element is not a hotlink instance" : "Failed to get the element";
+}
+#endif
+
+GetHotlinkDesignOptionTablesCommand::GetHotlinkDesignOptionTablesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetHotlinkDesignOptionTablesCommand::GetName () const
+{
+    return "GetHotlinkDesignOptionTables";
+}
+
+GS::Optional<GS::UniString> GetHotlinkDesignOptionTablesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinks": {
+                "type": "array",
+                "description": "The hotlink nodes (hotlinkNodeId from GetHotlinks) and placed hotlink instances (elementId of a Hotlink element) to read the design option table of.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "properties": {
+                                "hotlinkNodeId": {
+                                    "$ref": "#/HotlinkNodeId"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "hotlinkNodeId"
+                            ]
+                        },
+                        {
+                            "properties": {
+                                "elementId": {
+                                    "$ref": "#/ElementId"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementId"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinks"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetHotlinkDesignOptionTablesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkDesignOptionTables": {
+                "type": "array",
+                "description": "The design option tables, in the order of the given hotlinks.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "hotlinkNodeId": {
+                                    "$ref": "#/HotlinkNodeId",
+                                    "description": "The hotlink node the table belongs to; for an instance, the node it is placed from."
+                                },
+                                "filterMode": {
+                                    "type": "string",
+                                    "enum": [
+                                        "MainModelOnly",
+                                        "FilterByOptions",
+                                        "FilterByCombination",
+                                        "Unknown"
+                                    ],
+                                    "description": "Which elements of the hotlinked module are shown: only its main model, the main model and the active option of each set, or the main model and the options of the active combination."
+                                },
+                                "designOptionCombinations": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "The names of the design option combinations of the hotlinked module."
+                                },
+                                "activeDesignOptionCombination": {
+                                    "type": "string",
+                                    "description": "The name of the active combination. Missing when no combination is active."
+                                },
+                                "designOptionSets": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "designOptions": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                },
+                                                "description": "The names of the design options in the set."
+                                            },
+                                            "activeDesignOption": {
+                                                "type": "string",
+                                                "description": "The name of the active design option of the set. Missing when no option of the set is active."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "name",
+                                            "designOptions"
+                                        ]
+                                    },
+                                    "description": "The design option sets of the hotlinked module."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "hotlinkNodeId",
+                                "filterMode",
+                                "designOptionCombinations",
+                                "designOptionSets"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkDesignOptionTables"
+        ]
+    })";
+}
+
+GS::ObjectState GetHotlinkDesignOptionTablesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
+    if (manager.IsErr ()) {
+        return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to retrieve design options.");
+    }
+
+    GS::Array<GS::ObjectState> hotlinks;
+    if (!parameters.Get ("hotlinks", hotlinks)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'hotlinks' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& tables = response.AddList<GS::ObjectState> ("hotlinkDesignOptionTables");
+
+    for (const GS::ObjectState& hotlink : hotlinks) {
+        const GS::ObjectState* hotlinkNodeId = hotlink.Get ("hotlinkNodeId");
+        const GS::ObjectState* elementId = hotlink.Get ("elementId");
+        if (hotlinkNodeId != nullptr) {
+            API_HotlinkNode node = {};
+            node.guid = GetGuidFromObjectState (*hotlinkNodeId);
+            bool enableUnplaced = true;     // the node may have been created and not placed yet
+            if (ACAPI_Hotlink_GetHotlinkNode (&node, &enableUnplaced) != NoError) {
+                tables (CreateErrorResponse (APIERR_BADID, "hotlinkNodeId is not a hotlink node"));
+                continue;
+            }
+            auto table = manager->GetHotlinkDesignOptionTable (node);
+            if (table.IsErr ()) {
+                tables (CreateErrorResponse (table.UnwrapErr ().kind, "Failed to get the design option table of the hotlink node."));
+                continue;
+            }
+            tables (CreateHotlinkDesignOptionTableObjectState (*table));
+        } else if (elementId != nullptr) {
+            API_Element element;
+            const GSErrCode err = GetHotlinkInstance (*elementId, element);
+            if (err != NoError) {
+                tables (CreateErrorResponse (err, GetHotlinkInstanceErrorMessage (err)));
+                continue;
+            }
+            auto table = manager->GetHotlinkInstanceDesignOptionTable (element.hotlink);
+            if (table.IsErr ()) {
+                tables (CreateErrorResponse (table.UnwrapErr ().kind, "Failed to get the design option table of the hotlink instance."));
+                continue;
+            }
+            tables (CreateHotlinkDesignOptionTableObjectState (*table));
+        } else {
+            tables (CreateErrorResponse (APIERR_BADPARS, "Either 'hotlinkNodeId' or 'elementId' is required"));
+        }
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
+SetHotlinkDesignOptionTablesCommand::SetHotlinkDesignOptionTablesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetHotlinkDesignOptionTablesCommand::GetName () const
+{
+    return "SetHotlinkDesignOptionTables";
+}
+
+GS::Optional<GS::UniString> SetHotlinkDesignOptionTablesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkInstances": {
+                "type": "array",
+                "description": "The placed hotlink instances to change the design option table of. Every field but elementId is optional; what is omitted keeps its current value. The changes are applied in the order filterMode, activeDesignOptionCombination, activeDesignOptions.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "filterMode": {
+                            "type": "string",
+                            "enum": [
+                                "MainModelOnly",
+                                "FilterByOptions",
+                                "FilterByCombination"
+                            ],
+                            "description": "Which elements of the hotlinked module are shown: only its main model, the main model and the active option of each set, or the main model and the options of the active combination."
+                        },
+                        "activeDesignOptionCombination": {
+                            "type": "string",
+                            "description": "The name of the combination to activate, one of designOptionCombinations from GetHotlinkDesignOptionTables. An empty string deactivates the active combination."
+                        },
+                        "activeDesignOptions": {
+                            "type": "array",
+                            "description": "The option to activate in each given set; the previously active option of the set is deactivated. Sets that are not listed keep their active option.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "setName": {
+                                        "type": "string"
+                                    },
+                                    "designOptionName": {
+                                        "type": "string",
+                                        "description": "The name of the option to activate in the set. An empty string deactivates every option of the set."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "setName",
+                                    "designOptionName"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkInstances"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetHotlinkDesignOptionTablesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetHotlinkDesignOptionTablesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
+    if (manager.IsErr ()) {
+        return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to modify design options.");
+    }
+
+    GS::Array<GS::ObjectState> hotlinkInstances;
+    if (!parameters.Get ("hotlinkInstances", hotlinkInstances)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'hotlinkInstances' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("Set Hotlink Design Option Tables", [&]() -> GSErrCode {
+        for (const GS::ObjectState& instanceData : hotlinkInstances) {
+            const GS::ObjectState* elementId = instanceData.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'elementId' parameter"));
+                continue;
+            }
+            API_Element element;
+            GSErrCode err = GetHotlinkInstance (*elementId, element);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, GetHotlinkInstanceErrorMessage (err)));
+                continue;
+            }
+            auto table = manager->GetHotlinkInstanceDesignOptionTable (element.hotlink);
+            if (table.IsErr ()) {
+                executionResults (CreateFailedExecutionResult (table.UnwrapErr ().kind, "Failed to get the design option table of the hotlink instance."));
+                continue;
+            }
+
+            GS::UniString filterModeName;
+            GS::Optional<int> filterMode;
+            if (instanceData.Get ("filterMode", filterModeName)) {
+                filterMode = GetHotlinkFilterModeValue (filterModeName);
+                if (!filterMode.HasValue ()) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Invalid 'filterMode' parameter: " + filterModeName));
+                    continue;
+                }
+                table->SetFilterMode (static_cast<decltype (table->GetFilterMode ())> (filterMode.Get ()));
+            }
+
+            GS::Optional<GS::UniString> failure;
+            GS::UniString combinationName;
+            const bool hasCombination = instanceData.Get ("activeDesignOptionCombination", combinationName);
+            if (hasCombination) {
+                if (combinationName.IsEmpty ()) {
+                    table->DeactivateCombination ();
+                } else {
+                    const auto result = table->ActivateCombination (combinationName);
+                    if (result.IsErr ()) {
+                        err = result.UnwrapErr ().kind;
+                        failure = "Failed to activate the design option combination " + combinationName;
+                    }
+                }
+            }
+
+            GS::Array<GS::ObjectState> activeDesignOptions;
+            GS::HashTable<GS::UniString, GS::UniString> requestedOptionOfSet;
+            if (!failure.HasValue () && instanceData.Get ("activeDesignOptions", activeDesignOptions)) {
+                for (const GS::ObjectState& activeDesignOption : activeDesignOptions) {
+                    GS::UniString setName;
+                    GS::UniString optionName;
+                    if (!activeDesignOption.Get ("setName", setName) || !activeDesignOption.Get ("designOptionName", optionName)) {
+                        err = APIERR_BADPARS;
+                        failure = GS::UniString ("Missing 'setName' or 'designOptionName' parameter");
+                        break;
+                    }
+                    const auto result = optionName.IsEmpty () ? table->DeactivateOptionsInSet (setName) : table->ActivateOptionInSet (setName, optionName);
+                    if (result.IsErr ()) {
+                        err = result.UnwrapErr ().kind;
+                        failure = "Failed to change the active design option of the set " + setName;
+                        break;
+                    }
+                    requestedOptionOfSet.Put (setName, optionName);
+                }
+            }
+            if (failure.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (err, failure.Get ()));
+                continue;
+            }
+
+            const auto result = manager->SetHotlinkDesignOptionTable (element.hotlink, *table);
+            if (result.IsErr ()) {
+                executionResults (CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to set the design option table of the hotlink instance."));
+                continue;
+            }
+
+            // Read the instance back, so a table that was not stored is
+            // reported instead of claimed as done.
+            API_Element storedElement;
+            err = GetHotlinkInstance (*elementId, storedElement);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to read back the hotlink instance."));
+                continue;
+            }
+            auto stored = manager->GetHotlinkInstanceDesignOptionTable (storedElement.hotlink);
+            if (stored.IsErr ()) {
+                executionResults (CreateFailedExecutionResult (stored.UnwrapErr ().kind, "Failed to read back the design option table of the hotlink instance."));
+                continue;
+            }
+            if (filterMode.HasValue () && static_cast<int> (stored->GetFilterMode ()) != filterMode.Get ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "The filter mode of the hotlink instance did not change."));
+                continue;
+            }
+            if (hasCombination && stored->GetActiveCombination ().value_or (GS::UniString ()) != combinationName) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "The active design option combination of the hotlink instance did not change."));
+                continue;
+            }
+            for (const GS::ObjectState& activeDesignOption : activeDesignOptions) {
+                GS::UniString setName;
+                activeDesignOption.Get ("setName", setName);
+                if (stored->GetActiveOptionInSet (setName).value_or (GS::UniString ()) != requestedOptionOfSet[setName]) {
+                    failure = "The active design option of the set " + setName + " did not change.";
+                    break;
+                }
+            }
+            if (failure.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, failure.Get ()));
+                continue;
+            }
+            executionResults (CreateSuccessfulExecutionResult ());
         }
         return NoError;
     });

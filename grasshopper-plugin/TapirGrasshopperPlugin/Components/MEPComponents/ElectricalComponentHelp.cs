@@ -297,6 +297,14 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             return Add<Point3d>(da, index, jsonKey, v => ElectricalComponentHelp.Coordinate(v));
         }
 
+        public bool AddVectors(
+            IGH_DataAccess da,
+            int index,
+            string jsonKey)
+        {
+            return Add<Vector3d>(da, index, jsonKey, v => ElectricalComponentHelp.Coordinate(v));
+        }
+
         // Element identifiers, written as {"guid": ...}.
         public bool AddElementIds(
             IGH_DataAccess da,

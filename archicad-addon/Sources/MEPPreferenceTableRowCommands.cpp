@@ -321,6 +321,24 @@ static double GetExactPreferenceTableRowAngle (const TableT& table, const Prefer
     }
     return key.angle;
 }
+
+// The index of the row of a branch table with the reference ids and the angle of the key. The …ByKey
+// setters of the branch tables ignore the angle and change the first row with the reference ids (#1740),
+// so the values of a branch row are set by its index.
+template <typename TableT>
+static std::optional<uint32_t> FindBranchPreferenceTableRowIndex (const TableT& table, const PreferenceTableRowKey& key)
+{
+    for (uint32_t i = 0; i < table.GetSize (); ++i) {
+        auto mainAxisReferenceId = table.GetMainAxisReferenceId (i);
+        auto branchAxisReferenceId = table.GetBranchAxisReferenceId (i);
+        auto angle = table.GetBranchAxisAngle (i);
+        if (mainAxisReferenceId.IsOk () && branchAxisReferenceId.IsOk () && angle.IsOk () &&
+            *mainAxisReferenceId == key.mainAxisReferenceId && *branchAxisReferenceId == key.branchAxisReferenceId && std::abs (*angle - key.angle) < 1e-9) {
+            return i;
+        }
+    }
+    return std::nullopt;
+}
 #endif
 
 // What the …ByKey functions and AddNewRow of the table take: its Key struct, or the reference id for the
@@ -470,9 +488,10 @@ static GS::ObjectState GetPreferenceTableRow (const TableT& table, const Prefere
 }
 
 // Sets the given values of a row inside the Modify of the table; gives the error message of the first
-// value that could not be set, the values before it are set.
+// value that could not be set, the values before it are set. From Archicad 29 the values of a branch row
+// are set by rowIndex, the index of the row with the key.
 template <typename TableT>
-static std::optional<std::pair<GSErrCode, GS::UniString>> SetPreferenceTableRowValues (typename TableT::Modifier& modifier, const PreferenceTableRowKey& key, const GS::ObjectState& values)
+static std::optional<std::pair<GSErrCode, GS::UniString>> SetPreferenceTableRowValues (typename TableT::Modifier& modifier, const PreferenceTableRowKey& key, std::optional<uint32_t> rowIndex, const GS::ObjectState& values)
 {
     std::optional<std::pair<GSErrCode, GS::UniString>> error;
     const auto call = [&] (const char* name, auto result) {
@@ -483,24 +502,32 @@ static std::optional<std::pair<GSErrCode, GS::UniString>> SetPreferenceTableRowV
 
 #ifdef ServerMainVers_2900
     const auto tableKey = MakePreferenceTableRowKey<TableT> (key);
+    if constexpr (IsBranchRowTable<TableT>) {
+        if (!rowIndex.has_value ()) {
+            return std::pair<GSErrCode, GS::UniString> (APIERR_BADPARS, "No row of the table has this key.");
+        }
+    }
+#else
+    UNUSED_PARAMETER (rowIndex);
 #endif
     double number = 0.0;
     if constexpr (IsBranchRowTable<TableT>) {
 #ifdef ServerMainVers_2900
+        const uint32_t index = *rowIndex;
         if (values.Get ("mainAxisDiameter", number)) {
-            call ("mainAxisDiameter", modifier.SetMainAxisDiameterByKey (tableKey, number));
+            call ("mainAxisDiameter", modifier.SetMainAxisDiameter (index, number));
         }
         if (values.Get ("branchAxisDiameter", number)) {
-            call ("branchAxisDiameter", modifier.SetBranchAxisDiameterByKey (tableKey, number));
+            call ("branchAxisDiameter", modifier.SetBranchAxisDiameter (index, number));
         }
         if (values.Get ("length", number)) {
-            call ("length", modifier.SetLengthByKey (tableKey, number));
+            call ("length", modifier.SetLength (index, number));
         }
         if (values.Get ("branchOffset", number)) {
-            call ("branchOffset", modifier.SetBranchOffsetByKey (tableKey, number));
+            call ("branchOffset", modifier.SetBranchOffset (index, number));
         }
         if (values.Get ("connectionLength", number)) {
-            call ("connectionLength", modifier.SetConnectionLengthByKey (tableKey, number));
+            call ("connectionLength", modifier.SetConnectionLength (index, number));
         }
 #else
         const uint32_t mainId = key.mainAxisReferenceId;
@@ -576,7 +603,11 @@ static std::optional<std::pair<GSErrCode, GS::UniString>> SetPreferenceTableRowV
     GS::UniString description;
     if (values.Get ("description", description)) {
 #ifdef ServerMainVers_2900
-        call ("description", modifier.SetDescriptionByKey (tableKey, description));
+        if constexpr (IsBranchRowTable<TableT>) {
+            call ("description", modifier.SetDescription (*rowIndex, description));
+        } else {
+            call ("description", modifier.SetDescriptionByKey (tableKey, description));
+        }
 #else
         if constexpr (IsBranchRowTable<TableT>) {
             call ("description", modifier.SetDescriptionByReferenceIds (key.mainAxisReferenceId, key.branchAxisReferenceId, description));
@@ -593,6 +624,8 @@ struct PreferenceTableRowInput {
     PreferenceTableRowKey key;
     GS::ObjectState values;
     std::optional<GS::ObjectState> result;
+    // From Archicad 29: the index of the branch row with the key, whose values are set by it.
+    std::optional<uint32_t> rowIndex;
 };
 
 template <typename TableT>
@@ -1263,8 +1296,22 @@ GS::ObjectState SetMEPPreferenceTableRowsCommand::Execute (const GS::ObjectState
             return CreateFailedPreferenceTableRowResults (rowsData.GetSize (), APIERR_NOTSUPPORTED, KeylessPreferenceTableRowsError);
         } else {
             std::vector<PreferenceTableRowInput> inputs = ParsePreferenceTableRowInputs (table, rowsData, true);
+#ifdef ServerMainVers_2900
+            // The index of each branch row is found before the Modify; setting values does not move rows.
+            if constexpr (IsBranchRowTable<TableT>) {
+                for (PreferenceTableRowInput& input : inputs) {
+                    if (input.result.has_value ()) {
+                        continue;
+                    }
+                    input.rowIndex = FindBranchPreferenceTableRowIndex (table, input.key);
+                    if (!input.rowIndex.has_value ()) {
+                        input.result = CreateFailedExecutionResult (APIERR_BADPARS, "No row of the table has this key.");
+                    }
+                }
+            }
+#endif
             return ModifyPreferenceTableRows (table, inputs, "Set MEP Preference Table Rows", [] (typename TableT::Modifier& modifier, const PreferenceTableRowInput& input) {
-                const auto error = SetPreferenceTableRowValues<TableT> (modifier, input.key, input.values);
+                const auto error = SetPreferenceTableRowValues<TableT> (modifier, input.key, input.rowIndex, input.values);
                 return error.has_value ()
                     ? CreateFailedExecutionResult (error->first, error->second + " The values before it were set.")
                     : CreateSuccessfulExecutionResult ();
@@ -1412,7 +1459,8 @@ GS::ObjectState AddMEPPreferenceTableRowsCommand::Execute (const GS::ObjectState
                 if (index.IsErr ()) {
                     return CreateFailedExecutionResult (index.UnwrapErr ().kind, PreferenceTableRowErrorText ("add the row", index.UnwrapErr ()));
                 }
-                const auto error = SetPreferenceTableRowValues<TableT> (modifier, input.key, input.values);
+                // The values of the new row are set by the index AddNewRow gives.
+                const auto error = SetPreferenceTableRowValues<TableT> (modifier, input.key, std::optional<uint32_t> (*index), input.values);
                 if (error.has_value ()) {
                     return CreateFailedExecutionResult (error->first, error->second + " The row was added.");
                 }
