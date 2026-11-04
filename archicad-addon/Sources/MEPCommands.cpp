@@ -1898,7 +1898,7 @@ GS::Optional<GS::UniString> GetMEPElementDetailsCommand::GetRawResponseSchema ()
                                 },
                                 "polyline": {
                                     "$ref": "#/MEPFlexibleSegmentPolyline",
-                                    "description": "The line and spline parts of the flexible segment, when Archicad gives them (a flexible segment placed as a polyline, see PlaceMEPFlexibleSegments). FlexibleSegment."
+                                    "description": "The line and spline parts of the flexible segment, when Archicad gives them (a flexible segment placed as a polyline, see CreateMEPFlexibleSegments). FlexibleSegment."
                                 },
                                 "factorRadius": {
                                     "type": "number",
@@ -8477,7 +8477,7 @@ static Orientation GetFlexibleSegmentEndOrientation (const GS::ObjectState* orie
     return Orientation { { direction.x, direction.y, direction.z }, { rotation.x, rotation.y, rotation.z } };
 }
 
-// Places one flexible segment of PlaceMEPFlexibleSegments given by its 'polyline'; gives its element id or the error.
+// Places one flexible segment of CreateMEPFlexibleSegments given by its 'polyline'; gives its element id or the error.
 static GS::ObjectState PlaceMEPFlexibleSegmentPolyline (const GS::ObjectState& flexibleSegmentData, Domain domain)
 {
     if (flexibleSegmentData.Contains ("controlPoints")) {
@@ -8510,17 +8510,17 @@ static GS::ObjectState PlaceMEPFlexibleSegmentPolyline (const GS::ObjectState& f
 
 #endif
 
-PlaceMEPFlexibleSegmentsCommand::PlaceMEPFlexibleSegmentsCommand () :
+CreateMEPFlexibleSegmentsCommand::CreateMEPFlexibleSegmentsCommand () :
     CommandBase (CommonSchema::Used)
 {
 }
 
-GS::String PlaceMEPFlexibleSegmentsCommand::GetName () const
+GS::String CreateMEPFlexibleSegmentsCommand::GetName () const
 {
-    return "PlaceMEPFlexibleSegments";
+    return "CreateMEPFlexibleSegments";
 }
 
-GS::Optional<GS::UniString> PlaceMEPFlexibleSegmentsCommand::GetInputParametersSchema () const
+GS::Optional<GS::UniString> CreateMEPFlexibleSegmentsCommand::GetInputParametersSchema () const
 {
     return R"({
         "type": "object",
@@ -8577,7 +8577,7 @@ GS::Optional<GS::UniString> PlaceMEPFlexibleSegmentsCommand::GetInputParametersS
     })";
 }
 
-GS::Optional<GS::UniString> PlaceMEPFlexibleSegmentsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateMEPFlexibleSegmentsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -8593,7 +8593,7 @@ GS::Optional<GS::UniString> PlaceMEPFlexibleSegmentsCommand::GetRawResponseSchem
     })";
 }
 
-GS::ObjectState PlaceMEPFlexibleSegmentsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState CreateMEPFlexibleSegmentsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
     GS::Array<GS::ObjectState> flexibleSegmentsData;
@@ -8604,7 +8604,7 @@ GS::ObjectState PlaceMEPFlexibleSegmentsCommand::Execute (const GS::ObjectState&
     GS::ObjectState response;
     const auto& elements = response.AddList<GS::ObjectState> ("elements");
 
-    ACAPI_CallUndoableCommand ("Place MEP Flexible Segments", [&]() -> GSErrCode {
+    ACAPI_CallUndoableCommand ("Create MEP Flexible Segments", [&]() -> GSErrCode {
         for (const GS::ObjectState& flexibleSegmentData : flexibleSegmentsData) {
             GS::UniString domainStr;
             flexibleSegmentData.Get ("domain", domainStr);
@@ -8655,51 +8655,63 @@ GS::ObjectState PlaceMEPFlexibleSegmentsCommand::Execute (const GS::ObjectState&
 #endif
 }
 
-PlaceMEPTakeOffsCommand::PlaceMEPTakeOffsCommand () :
+CreateMEPTakeOffsCommand::CreateMEPTakeOffsCommand () :
     CommandBase (CommonSchema::Used)
 {
 }
 
-GS::String PlaceMEPTakeOffsCommand::GetName () const
+GS::String CreateMEPTakeOffsCommand::GetName () const
 {
-    return "PlaceMEPTakeOffs";
+    return "CreateMEPTakeOffs";
 }
 
-GS::Optional<GS::UniString> PlaceMEPTakeOffsCommand::GetInputParametersSchema () const
+GS::Optional<GS::UniString> CreateMEPTakeOffsCommand::GetInputParametersSchema () const
 {
     return R"({
         "type": "object",
         "properties": {
             "takeOffsData": {
                 "type": "array",
-                "description": "Array of data to place MEP take-offs on routing segments with the current settings of the Take-Off tool of their domain.",
+                "description": "Array of data to create MEP take-offs on routing segments with the current settings of the Take-Off tool of their domain.",
                 "items": {
                     "type": "object",
                     "properties": {
                         "domain": {
-                            "$ref": "#/MEPDomain"
+                            "$ref": "#/MEPDomain",
+                            "description": "Optional domain of the Take-Off tool whose settings are used. Defaults to the domain of the segment's routing element. Archicad currently only has Ventilation take-offs."
                         },
                         "segmentId": {
                             "$ref": "#/ElementId",
-                            "description": "The routing segment to place the take-off on (one of the segments GetMEPRoutingElements returns)."
+                            "description": "The routing segment to place the take-off on (the elementId of an item of 'segments' returned by GetMEPRoutingElements)."
                         },
                         "distanceFromBeginning": {
                             "type": "number",
-                            "description": "The distance of the take-off from the beginning of the segment.",
+                            "description": "The distance of the take-off from the beginning of the segment, in meters. Must not be negative or more than the length of the segment.",
                             "minimum": 0
                         },
                         "rotationAroundMainAxis": {
                             "type": "number",
-                            "description": "Optional rotation of the take-off around the axis of the segment, in radians. Defaults to 0."
+                            "description": "Optional rotation of the take-off around the axis of the segment, in radians. Archicad places take-offs only at quarter turns, so it must be a multiple of pi/2 (negative values and full turns are allowed). Defaults to 0, which places the take-off facing left relative to the segment's direction; pi/2 faces up, pi faces right, 3*pi/2 (or -pi/2) faces down."
                         },
                         "length": {
                             "type": "number",
-                            "description": "Optional length of the take-off, set after placing it. The length of the Take-Off tool when not given."
+                            "description": "Optional length of the take-off in meters, set after placing it; must be positive. The length of the Take-Off tool when not given.",
+                            "exclusiveMinimum": 0
+                        },
+                        "defaults": {
+                            "type": "object",
+                            "description": "Optional changes to the settings of the Take-Off tool before the take-off is placed. Only what is placed changes, not the tool's settings. A value that cannot be set gives an error for the item, and nothing is placed. The insulation thickness of a take-off cannot be set (Archicad stops with a fatal error).",
+                            "properties": {
+                                "removeInsulation": {
+                                    "type": "boolean",
+                                    "description": "If true, the take-off is placed without insulation."
+                                }
+                            },
+                            "additionalProperties": false
                         }
                     },
                     "additionalProperties": false,
                     "required": [
-                        "domain",
                         "segmentId",
                         "distanceFromBeginning"
                     ]
@@ -8713,7 +8725,7 @@ GS::Optional<GS::UniString> PlaceMEPTakeOffsCommand::GetInputParametersSchema ()
     })";
 }
 
-GS::Optional<GS::UniString> PlaceMEPTakeOffsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateMEPTakeOffsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -8729,7 +8741,133 @@ GS::Optional<GS::UniString> PlaceMEPTakeOffsCommand::GetRawResponseSchema () con
     })";
 }
 
-GS::ObjectState PlaceMEPTakeOffsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+#ifdef ServerMainVers_2800
+
+// Creates one take-off of CreateMEPTakeOffs; gives its element id or the error of the item.
+static GS::ObjectState CreateMEPTakeOff (const GS::ObjectState& takeOffData)
+{
+    const GS::ObjectState* segmentIdOs = takeOffData.Get ("segmentId");
+    if (segmentIdOs == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing 'segmentId' parameter.");
+    }
+    double distanceFromBeginning = 0.0;
+    if (!takeOffData.Get ("distanceFromBeginning", distanceFromBeginning)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'distanceFromBeginning' parameter.");
+    }
+    if (distanceFromBeginning < 0.0) {
+        return CreateErrorResponse (APIERR_BADPARS, "The 'distanceFromBeginning' parameter must not be negative.");
+    }
+
+    // Archicad places take-offs only at quarter turns, so the rotation must be a multiple of pi/2;
+    // it is normalized into [0, 2*pi), so a negative rotation or a full turn works too.
+    double rotationAroundMainAxis = 0.0;
+    if (takeOffData.Get ("rotationAroundMainAxis", rotationAroundMainAxis)) {
+        constexpr double halfPi = 1.57079632679489661923;
+        const double quarterTurns = rotationAroundMainAxis / halfPi;
+        const double roundedQuarterTurns = std::round (quarterTurns);
+        if (!std::isfinite (quarterTurns) || std::fabs (quarterTurns - roundedQuarterTurns) > 1e-6) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf (
+                "The 'rotationAroundMainAxis' parameter (%.15g) must be a multiple of pi/2, because Archicad places take-offs only at quarter turns.",
+                rotationAroundMainAxis));
+        }
+        const double normalizedQuarterTurns = std::fmod (std::fmod (roundedQuarterTurns, 4.0) + 4.0, 4.0);
+        rotationAroundMainAxis = normalizedQuarterTurns * halfPi;
+    }
+
+    double length = 0.0;
+    const bool hasLength = takeOffData.Get ("length", length);
+    if (hasLength && length <= 0.0) {
+        return CreateErrorResponse (APIERR_BADPARS, "The 'length' parameter must be positive.");
+    }
+
+    // Setting the insulation thickness of a take-off default stops Archicad with a fatal error
+    // (TakeOffDefault::SetInsulationThickness, seen in Archicad 30), so it is refused before the call.
+    const GS::ObjectState* defaults = takeOffData.Get ("defaults");
+    if (defaults != nullptr && defaults->Contains ("insulationThickness")) {
+        return CreateErrorResponse (APIERR_BADPARS, "The insulation thickness of a Take-off cannot be set; only 'removeInsulation' is supported.");
+    }
+
+    const ACAPI::MEP::UniqueID segmentId = Adapter::UniqueID (GetGuidFromObjectState (*segmentIdOs));
+    ACAPI::Result<RoutingSegment> segment = RoutingSegment::Get (segmentId);
+    if (segment.IsErr ()) {
+        return CreateErrorResponse (segment.UnwrapErr ().kind, "The 'segmentId' parameter does not refer to an MEP routing segment.");
+    }
+
+    // Archicad places a take-off beyond the segment at its end, so a longer distance is an error.
+    ACAPI::Result<RoutingNode> beginNode = RoutingNode::Get (segment->GetBeginNodeId ());
+    ACAPI::Result<RoutingNode> endNode = RoutingNode::Get (segment->GetEndNodeId ());
+    if (beginNode.IsErr () || endNode.IsErr ()) {
+        return CreateErrorResponse (APIERR_GENERAL, "Failed to get the begin and end nodes of the segment.");
+    }
+    const API_Coord3D beginPosition = beginNode->GetPosition ();
+    const API_Coord3D endPosition = endNode->GetPosition ();
+    const double segmentLength = std::sqrt (
+        (endPosition.x - beginPosition.x) * (endPosition.x - beginPosition.x) +
+        (endPosition.y - beginPosition.y) * (endPosition.y - beginPosition.y) +
+        (endPosition.z - beginPosition.z) * (endPosition.z - beginPosition.z));
+    if (distanceFromBeginning > segmentLength + 1e-6) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf (
+            "The 'distanceFromBeginning' parameter (%.4f m) is more than the length of the segment (%.4f m).",
+            distanceFromBeginning, segmentLength));
+    }
+
+    std::optional<Domain> domain;
+    GS::UniString domainStr;
+    if (takeOffData.Get ("domain", domainStr)) {
+        domain = DomainFromString (domainStr);
+        if (!domain.has_value ()) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid 'domain' parameter.");
+        }
+    } else {
+        ACAPI::Result<RoutingElement> routingElement = RoutingElement::Get (segment->GetRoutingElementId ());
+        if (routingElement.IsErr ()) {
+            return CreateErrorResponse (routingElement.UnwrapErr ().kind, "Failed to get the routing element of the segment, give the 'domain' parameter.");
+        }
+        domain = routingElement->GetDomain ();
+    }
+
+    ACAPI::Result<TakeOffDefault> takeOffDefault = CreateTakeOffDefault (domain.value ());
+    if (takeOffDefault.IsErr ()) {
+        const GS::UniString message = "Failed to get the Take-Off tool settings of the domain " + DomainToString (domain.value ()) + ". Archicad only has Ventilation take-offs.";
+        return CreateErrorResponse (takeOffDefault.UnwrapErr ().kind, message);
+    }
+    if (defaults != nullptr) {
+        ACAPI::Result<void> defaultsResult = ApplyMEPElementDefaults (*takeOffDefault, *defaults);
+        if (defaultsResult.IsErr ()) {
+            return CreateErrorResponse (defaultsResult.UnwrapErr ().kind, "Failed to apply the 'defaults' parameter; nothing was placed.");
+        }
+    }
+
+    ACAPI::Result<ACAPI::MEP::UniqueID> newElementId = takeOffDefault->Place (segmentId, distanceFromBeginning, rotationAroundMainAxis);
+    if (newElementId.IsErr ()) {
+        const ACAPI::Error error = newElementId.UnwrapErr ();
+        GS::UniString message = GS::UniString::Printf ("Failed to place the take-off on the segment (%.4f m long) of the domain ", segmentLength) + DomainToString (domain.value ()) + ".";
+        if (!error.text.empty ()) {
+            message += GS::UniString (" Archicad: ") + error.text.c_str ();
+        }
+        return CreateErrorResponse (error.kind, message);
+    }
+    const ACAPI::MEP::UniqueID placedId = newElementId.Unwrap ();
+
+    if (hasLength) {
+        ACAPI::Result<TakeOff> takeOff = TakeOff::Get (placedId);
+        ACAPI::Result<void> modifyResult = takeOff.IsErr () ? ACAPI::Result<void> (takeOff.UnwrapErr (), takeOff.Token ()) : takeOff->Modify ([&](TakeOff::Modifier& modifier) {
+            modifier.SetLength (length);
+        }, "Set MEP Take-Off Length");
+        if (modifyResult.IsErr ()) {
+            // The take-off stays placed, so its guid is given in the message to let the caller find it.
+            return CreateErrorResponse (modifyResult.UnwrapErr ().kind, GS::UniString::Printf (
+                "The take-off with guid %T was placed, but its length could not be set.",
+                APIGuidToString (MEPUniqueIDToAPIGuid (placedId)).ToPrintf ()));
+        }
+    }
+
+    return CreateElementIdObjectState (MEPUniqueIDToAPIGuid (placedId));
+}
+
+#endif
+
+GS::ObjectState CreateMEPTakeOffsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
     GS::Array<GS::ObjectState> takeOffsData;
@@ -8740,58 +8878,9 @@ GS::ObjectState PlaceMEPTakeOffsCommand::Execute (const GS::ObjectState& paramet
     GS::ObjectState response;
     const auto& elements = response.AddList<GS::ObjectState> ("elements");
 
-    ACAPI_CallUndoableCommand ("Place MEP Take-Offs", [&]() -> GSErrCode {
+    ACAPI_CallUndoableCommand ("Create MEP Take-Offs", [&]() -> GSErrCode {
         for (const GS::ObjectState& takeOffData : takeOffsData) {
-            GS::UniString domainStr;
-            takeOffData.Get ("domain", domainStr);
-            const std::optional<Domain> domain = DomainFromString (domainStr);
-            if (!domain.has_value ()) {
-                elements (CreateErrorResponse (APIERR_BADPARS, "Invalid 'domain' parameter."));
-                continue;
-            }
-            const GS::ObjectState* segmentId = takeOffData.Get ("segmentId");
-            if (segmentId == nullptr) {
-                elements (CreateErrorResponse (APIERR_BADPARS, "Missing 'segmentId' parameter."));
-                continue;
-            }
-            double distanceFromBeginning = 0.0;
-            if (!takeOffData.Get ("distanceFromBeginning", distanceFromBeginning) || distanceFromBeginning < 0.0) {
-                elements (CreateErrorResponse (APIERR_BADPARS, "The 'distanceFromBeginning' parameter must be a number not less than 0."));
-                continue;
-            }
-            double rotationAroundMainAxis = 0.0;
-            takeOffData.Get ("rotationAroundMainAxis", rotationAroundMainAxis);
-            double length = 0.0;
-            const bool hasLength = takeOffData.Get ("length", length);
-
-            ACAPI::Result<TakeOffDefault> takeOffDefault = CreateTakeOffDefault (domain.value ());
-            if (takeOffDefault.IsErr ()) {
-                elements (CreateErrorResponse (takeOffDefault.UnwrapErr ().kind, "Failed to create the take-off default."));
-                continue;
-            }
-            ACAPI::Result<ACAPI::MEP::UniqueID> newElementId = takeOffDefault->Place (
-                Adapter::UniqueID (GetGuidFromObjectState (*segmentId)), distanceFromBeginning, rotationAroundMainAxis);
-            if (newElementId.IsErr ()) {
-                elements (CreateErrorResponse (newElementId.UnwrapErr ().kind, "Failed to place the take-off."));
-                continue;
-            }
-            const ACAPI::MEP::UniqueID placedId = newElementId.Unwrap ();
-
-            if (hasLength) {
-                ACAPI::Result<TakeOff> takeOff = TakeOff::Get (placedId);
-                ACAPI::Result<void> modifyResult = takeOff.IsErr () ? ACAPI::Result<void> (takeOff.UnwrapErr (), takeOff.Token ()) : takeOff->Modify ([&](TakeOff::Modifier& modifier) {
-                    modifier.SetLength (length);
-                }, "Set MEP Take-Off Length");
-                if (modifyResult.IsErr ()) {
-                    // The take-off stays placed, so its guid is given in the message to let the caller find it.
-                    elements (CreateErrorResponse (modifyResult.UnwrapErr ().kind, GS::UniString::Printf (
-                        "The take-off with guid %T was placed, but its length could not be set.",
-                        APIGuidToString (MEPUniqueIDToAPIGuid (placedId)).ToPrintf ())));
-                    continue;
-                }
-            }
-
-            elements (CreateElementIdObjectState (MEPUniqueIDToAPIGuid (placedId)));
+            elements (CreateMEPTakeOff (takeOffData));
         }
         return NoError;
     });

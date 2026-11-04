@@ -2944,13 +2944,13 @@ GSErrCode Initialize (void)
             mepCommands, "1.8.1",
             "Returns the physical systems each of the given MEP elements is part of. Available from Archicad 29."
         );
-        err |= RegisterCommand<PlaceMEPFlexibleSegmentsCommand> (
+        err |= RegisterCommand<CreateMEPFlexibleSegmentsCommand> (
             mepCommands, "1.8.1",
-            "Places MEP flexible segments through the given control points, or along a polyline of alternating line and spline parts (Piping), with the current settings of the Flexible Segment tool of their domain, optionally with the orientation (control points) or direction (polyline) at both ends. Available from Archicad 28."
+            "Creates MEP flexible segments through the given control points, or along a polyline of alternating line and spline parts (Piping), with the current settings of the Flexible Segment tool of their domain, optionally with the orientation (control points) or direction (polyline) at both ends. Available from Archicad 28."
         );
-        err |= RegisterCommand<PlaceMEPTakeOffsCommand> (
+        err |= RegisterCommand<CreateMEPTakeOffsCommand> (
             mepCommands, "1.8.1",
-            "Places MEP take-offs on the given routing segments, at a distance from the beginning of the segment and optionally rotated around its axis, with the current settings of the Take-Off tool of their domain, optionally with their length. Available from Archicad 28."
+            "Creates MEP take-offs on the given routing segments, at a distance from the beginning of the segment (not more than its length) and optionally rotated around its axis by a multiple of 90 degrees, with the current settings of the Take-Off tool of their domain (by default the domain of the segment's routing element), optionally with their length and without insulation, which apply only to what is created. Archicad only has Ventilation take-offs. Available from Archicad 28."
         );
         err |= RegisterCommand<ModifyMEPElementsCommand> (
             mepCommands, "1.8.1",
