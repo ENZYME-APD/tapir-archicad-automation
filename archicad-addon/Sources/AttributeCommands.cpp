@@ -2280,6 +2280,120 @@ GS::ObjectState GetPensCommand::Execute (const GS::ObjectState& parameters, GS::
 #endif
 }
 
+SetPensCommand::SetPensCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetPensCommand::GetName () const
+{
+    return "SetPens";
+}
+
+GS::Optional<GS::UniString> SetPensCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "pens": {
+                "type": "array",
+                "description": "The pens to change among the pens in effect in the current window, the ones GetPens returns. Only the given fields (color, width, description) of a listed pen are changed.",
+                "items": {
+                    "$ref": "#/PenData"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "pens"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetPensCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+// ACAPI_Attribute_ModifyPen changes one pen of the active pen table by its index, so each pen gets
+// its own result: the current pen is read with ACAPI_Attribute_GetPen, the given fields are patched
+// and the pen is written back. All pens are changed in one undo step.
+GS::ObjectState SetPensCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> pens;
+    parameters.Get ("pens", pens);
+
+    UInt32 penCount = 0;
+    GSErrCode err = ACAPI_Attribute_GetPenNum (penCount);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the number of pens.");
+    }
+
+    GS::Array<GS::ObjectState> results;
+    err = ACAPI_CallUndoableCommand ("Set Pens", [&] () -> GSErrCode {
+        for (const GS::ObjectState& penData : pens) {
+            Int32 index = 0;
+            if (!penData.Get ("index", index) || index < 1 || (UInt32) index > penCount) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADINDEX, GS::UniString::Printf ("index must be between 1 and %u.", penCount)));
+                continue;
+            }
+
+            double width = 0.0;
+            if (penData.Get ("width", width) && width < 0.0) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "width must not be negative."));
+                continue;
+            }
+
+            API_Pen pen = {};
+            pen.index = (short) index;
+            GSErrCode penErr = ACAPI_Attribute_GetPen (pen);
+            if (penErr != NoError) {
+                results.Push (CreateFailedExecutionResult (penErr, GS::UniString::Printf ("Failed to get the pen %d.", index)));
+                continue;
+            }
+
+            GetColor (penData, "color", pen.rgb);
+            penData.Get ("width", pen.width);
+            SetCharProperty (&penData, "description", pen.description);
+
+            penErr = ACAPI_Attribute_ModifyPen (pen);
+            if (penErr != NoError) {
+                results.Push (CreateFailedExecutionResult (penErr, GS::UniString::Printf ("Failed to change the pen %d. In a Teamwork project the PenTables lockable object set must be reserved first (see ReserveLockableObjectSet).", index)));
+                continue;
+            }
+            results.Push (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to change the pens.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    for (const GS::ObjectState& result : results) {
+        executionResults (result);
+    }
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
 GetProfilesCommand::GetProfilesCommand () :
     CommandBase (CommonSchema::Used)
 {

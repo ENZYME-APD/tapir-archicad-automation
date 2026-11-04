@@ -60,3 +60,17 @@ else:
                 }
             ]
         })
+
+        # The same slabs as level marks: appearance Elevation measures every point of the
+        # chain from elevationOrigin (here the project zero) instead of dimensioning lengths.
+        aclib.RunTapirCommand ('CreateAssociativeDimensionsOnSection', {
+            'dimensionsData': [
+                {
+                    'sectionElementIds': [s['sectionElementId'] for s in slabSectionElements],
+                    'referencePoint': { 'x': 1.0, 'y': 0.0 },
+                    'preset': 'SlabCompositeFaces',
+                    'appearance': 'Elevation',
+                    'elevationOrigin': 'ProjectZero'
+                }
+            ]
+        })

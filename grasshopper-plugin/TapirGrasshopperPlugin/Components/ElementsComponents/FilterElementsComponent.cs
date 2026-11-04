@@ -1,4 +1,5 @@
 ﻿using Grasshopper.Kernel;
+using Grasshopper.Kernel.Types;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
@@ -13,7 +14,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public FilterElementsComponent()
             : base(
                 "FilterElements",
-                "Filter elements by Archicad's flag filters, layer, home story and element type. An element is kept when it matches all the given criteria.",
+                "Filter elements by Archicad's flag filters, layer, home story, element type and hotlink. An element is kept when it matches all the given criteria.",
                 GroupNames.Elements)
         {
         }
@@ -41,13 +42,29 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "ElementTypes",
                 "Optional. Keep only the elements of one of these types (connect an ElementsType value list).");
 
+            // No default value: an unconnected input must not filter.
+            inManager.AddBooleanParameter(
+                "FromHotlink",
+                "FromHotlink",
+                ("Optional. True keeps only the elements that came in through a placed hotlink (they are " +
+                 "read-only), false only the project's own elements. Both are kept when not given.")
+                    .WithTypeName("booleanItem"),
+                GH_ParamAccess.item);
+
+            InGenerics(
+                "HotlinkGuids",
+                "Optional. Keep only the elements that came in through one of these placed hotlink instances " +
+                "(elements of type Hotlink; the hotlinkId field of GetDetailsOfElements).");
+
             SetOptionality(
                 new[]
                 {
                     1,
                     2,
                     3,
-                    4
+                    4,
+                    5,
+                    6
                 });
         }
 
@@ -102,13 +119,40 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 4,
                 out List<string> elementTypes);
 
+            bool? fromHotlink = null;
+            var fromHotlinkValue = false;
+            if (da.GetData(
+                    5,
+                    ref fromHotlinkValue))
+            {
+                fromHotlink = fromHotlinkValue;
+            }
+
+            da.TryGetList(
+                6,
+                out List<GH_ObjectWrapper> hotlinkWrappers);
+            List<ElementGuid> hotlinkIds = null;
+            if (hotlinkWrappers != null && hotlinkWrappers.Count > 0)
+            {
+                hotlinkIds = ElementInputHelp.ElementGuids(
+                    this,
+                    hotlinkWrappers,
+                    "HotlinkGuids");
+                if (hotlinkIds == null)
+                {
+                    return;
+                }
+            }
+
             var filterElements = new FilterElementsObject
             {
                 Elements = elements.Elements,
                 Filters = filters,
                 LayerIndices = NullIfEmpty(layerIndices),
                 FloorIndices = NullIfEmpty(floorIndices),
-                ElementTypes = NullIfEmpty(elementTypes)
+                ElementTypes = NullIfEmpty(elementTypes),
+                FromHotlink = fromHotlink,
+                HotlinkIds = hotlinkIds
             };
 
             if (!filterElements.HasCriteria)

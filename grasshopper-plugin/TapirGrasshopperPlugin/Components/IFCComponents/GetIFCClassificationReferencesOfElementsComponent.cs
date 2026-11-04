@@ -19,11 +19,11 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
             : base(
                 "GetIFCClassificationReferencesOfElements",
                 "Retrieve the IFC classification references of the given elements, subelements included: " +
-                "identification, name, location, description (from Archicad 29), the referenced classification " +
-                "(name, source, edition) and whether the reference comes from the preview translator or is stored " +
-                "locally. On Archicad 25, 26 and 27 the source is not given, the referenced classification also has " +
-                "its edition date, description and location, and StoredOnly returns only the references stored on " +
-                "the elements. Reference outputs have one branch per element.",
+                "identification, name, location, description and sort (from Archicad 29), the name of the " +
+                "IfcRelAssociatesClassification (from Archicad 28), the referenced classification (name, source, " +
+                "edition, edition date, description and location) and whether the reference comes from the preview " +
+                "translator or is stored locally. On Archicad 25, 26 and 27 the source is not given and StoredOnly " +
+                "returns only the references stored on the elements. Reference outputs have one branch per element.",
                 GroupNames.IFC)
         {
         }
@@ -78,15 +78,15 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
 
             OutTextTree(
                 "ClassificationEditionDates",
-                "Edition date of the classification (Archicad 25, 26 and 27 only).");
+                "Edition date of the classification each reference belongs to.");
 
             OutTextTree(
                 "ClassificationDescriptions",
-                "Description of the classification (Archicad 25, 26 and 27 only).");
+                "Description of the classification each reference belongs to.");
 
             OutTextTree(
                 "ClassificationLocations",
-                "Location of the classification (Archicad 25, 26 and 27 only).");
+                "Location of the classification each reference belongs to.");
 
             OutTextTree(
                 "Sources",
@@ -95,6 +95,16 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
 
             OutErrorMessages(
                 "Error message for each queried element (empty when successful).");
+
+            // Added after ErrorMessages, so the outputs of saved definitions keep their positions.
+            OutTextTree(
+                "Sorts",
+                "Sort key of each classification reference (from Archicad 29).");
+
+            OutTextTree(
+                "RelationNames",
+                "Name of the IfcRelAssociatesClassification that links each reference to its element " +
+                "(from Archicad 28).");
         }
 
         protected override void Solve(
@@ -140,7 +150,9 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                 (8, true, "editionDate"),
                 (9, true, "description"),
                 (10, true, "location"),
-                (11, false, "source")
+                (11, false, "source"),
+                (13, false, "sort"),
+                (14, false, "relAssociatesClassificationName")
             };
 
             var elementGuids = new List<object>();

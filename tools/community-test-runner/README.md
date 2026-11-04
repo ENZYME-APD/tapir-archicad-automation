@@ -50,6 +50,9 @@ For each pull request and each Archicad version:
 4. posts one comment whose first line can be read by a workflow:
    `tapir-test: AC28 GER PASS 12/12 build 1a2b3c4 tapir 1.7.1` (Archicad version and language),
    followed by a table.
+   From every tester, `.github/workflows/archicad_test_status.yml` turns that line into the commit status
+   `archicad-test/AC<version>` on the pull request's head (success or failure); a failure
+   holds back the issue bot's auto-merge, and the comment starts no Claude re-review.
 
 **How your Tapir is left alone.** Archicad keeps the list of add-ons from *Add-On Manager* in the
 registry (`HKCU\Software\GRAPHISOFT\Archicad\Archicad <version> …\Add-On Manager\Include` and

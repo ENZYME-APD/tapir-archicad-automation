@@ -68,9 +68,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 da);
         }
 
-        // Shares the icon of CreateElementSets.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.CreateElementSets;
+            Properties.Resources.DeleteElementSets;
 
         public override Guid ComponentGuid =>
             new Guid("02dfd8bf-776b-46fd-b88e-72ff230bee69");

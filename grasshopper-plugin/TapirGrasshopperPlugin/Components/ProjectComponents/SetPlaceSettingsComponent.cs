@@ -210,9 +210,8 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 result.Value<double?>("sunAngZ"));
         }
 
-        // Shares the icon of SetProjectLocation until it gets its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.SetProjectLocation;
+            Properties.Resources.SetPlaceSettings;
 
         public override Guid ComponentGuid =>
             new Guid("4250ecf8-788b-4486-8149-687b84eeaf93");
