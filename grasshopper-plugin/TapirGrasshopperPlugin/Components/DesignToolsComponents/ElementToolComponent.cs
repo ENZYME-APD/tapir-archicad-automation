@@ -52,12 +52,14 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         private bool _createRequested;
         private ToolAction _action;
 
-        // The elements Create made, one per geometry item (null where none
-        // was made), saved with the .gh file: the next Create updates them
-        // instead of making new ones (#521). _createdBy is the component they
-        // belong to, so a pasted copy starts without them and two components
-        // never drive the same elements.
-        private List<string> _createdGuids = new List<string>();
+        // The elements Create made: one list per solve iteration (a branch of
+        // the geometry tree), one guid per geometry item of that branch (null
+        // where none was made), saved with the .gh file: the next Create
+        // updates them instead of making new ones (#521). Keyed by the
+        // iteration as well as the item, so two branches never share an
+        // element. _createdBy is the component they belong to, so a pasted copy
+        // starts without them and two components never drive the same elements.
+        private List<List<string>> _createdGuids = new List<List<string>>();
         private Guid _createdBy = Guid.Empty;
         private bool _updateCreatedElements = true;
 
@@ -66,6 +68,8 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         private const string UpdateCreatedElementsKey = "UpdateCreatedElements";
         private const string CreatedElementCountKey = "CreatedElementCount";
         private const string CreatedElementGuidKey = "CreatedElementGuid";
+        private const string CreatedElementIterationKey = "CreatedElementIteration";
+        private const string CreatedElementItemKey = "CreatedElementItem";
 
         // True for a tool whose Modify command takes everything Create writes,
         // the geometry included, so Create can update its own elements.
@@ -263,28 +267,41 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 },
                 true,
                 _updateCreatedElements);
-            var createdCount = OwnCreatedGuids().Count(g => g != null);
+            var createdCount = OwnCreatedGuids().Sum(branch => branch.Count(g => g != null));
             Menu_AppendItem(
                 menu,
                 $"{ForgetCreatedElementsText} ({createdCount})",
                 (s, e) =>
                 {
                     RecordUndoEvent(ForgetCreatedElementsText);
-                    _createdGuids = new List<string>();
+                    _createdGuids = new List<List<string>>();
                 },
                 createdCount > 0);
         }
 
         // The elements this component created; none for a pasted copy,
         // whose instance id differs from the one that created them.
-        private List<string> OwnCreatedGuids()
+        private List<List<string>> OwnCreatedGuids()
         {
             if (_createdBy != InstanceGuid)
             {
-                _createdGuids = new List<string>();
+                _createdGuids = new List<List<string>>();
                 _createdBy = InstanceGuid;
             }
             return _createdGuids;
+        }
+
+        // The elements this component created from the geometry of one solve
+        // iteration (one branch of the geometry tree).
+        private List<string> OwnCreatedGuids(
+            int iteration)
+        {
+            var created = OwnCreatedGuids();
+            while (created.Count <= iteration)
+            {
+                created.Add(new List<string>());
+            }
+            return created[iteration];
         }
 
         public override bool Write(
@@ -292,13 +309,26 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         {
             if (CanUpdateCreatedElements)
             {
+                // One entry per remembered element: its iteration, its
+                // geometry item and its guid.
                 var created = OwnCreatedGuids();
                 writer.SetBoolean(UpdateCreatedElementsKey, _updateCreatedElements);
-                writer.SetInt32(CreatedElementCountKey, created.Count);
-                for (var i = 0; i < created.Count; i++)
+                var k = 0;
+                for (var iteration = 0; iteration < created.Count; iteration++)
                 {
-                    writer.SetString(CreatedElementGuidKey, i, created[i] ?? "");
+                    for (var item = 0; item < created[iteration].Count; item++)
+                    {
+                        if (created[iteration][item] == null)
+                        {
+                            continue;
+                        }
+                        writer.SetInt32(CreatedElementIterationKey, k, iteration);
+                        writer.SetInt32(CreatedElementItemKey, k, item);
+                        writer.SetString(CreatedElementGuidKey, k, created[iteration][item]);
+                        k++;
+                    }
                 }
+                writer.SetInt32(CreatedElementCountKey, k);
             }
             return base.Write(writer);
         }
@@ -307,7 +337,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             GH_IReader reader)
         {
             var result = base.Read(reader);
-            _createdGuids = new List<string>();
+            _createdGuids = new List<List<string>>();
             _createdBy = InstanceGuid;
             if (CanUpdateCreatedElements)
             {
@@ -318,12 +348,27 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 var count = reader.ItemExists(CreatedElementCountKey)
                     ? reader.GetInt32(CreatedElementCountKey)
                     : 0;
-                for (var i = 0; i < count; i++)
+                for (var k = 0; k < count; k++)
                 {
-                    var guid = reader.ItemExists(CreatedElementGuidKey, i)
-                        ? reader.GetString(CreatedElementGuidKey, i)
-                        : null;
-                    _createdGuids.Add(string.IsNullOrEmpty(guid) ? null : guid);
+                    if (!reader.ItemExists(CreatedElementGuidKey, k) ||
+                        !reader.ItemExists(CreatedElementIterationKey, k) ||
+                        !reader.ItemExists(CreatedElementItemKey, k))
+                    {
+                        continue;
+                    }
+                    var guid = reader.GetString(CreatedElementGuidKey, k);
+                    var iteration = reader.GetInt32(CreatedElementIterationKey, k);
+                    var item = reader.GetInt32(CreatedElementItemKey, k);
+                    if (string.IsNullOrEmpty(guid) || iteration < 0 || item < 0)
+                    {
+                        continue;
+                    }
+                    var branch = OwnCreatedGuids(iteration);
+                    while (branch.Count <= item)
+                    {
+                        branch.Add(null);
+                    }
+                    branch[item] = guid;
                 }
             }
             return result;
@@ -664,7 +709,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             // made from item i, when it still exists; a deleted one is an
             // error, never made again (#521).
             var update = CanUpdateCreatedElements && _updateCreatedElements;
-            var created = CanUpdateCreatedElements ? OwnCreatedGuids() : new List<string>();
+            var created = CanUpdateCreatedElements ? OwnCreatedGuids(da.Iteration) : new List<string>();
             var remembered = Enumerable.Range(0, count)
                 .Select(i => update && i < created.Count ? created[i] : null)
                 .ToList();
@@ -792,7 +837,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
 
             if (CanUpdateCreatedElements)
             {
-                RememberCreated(guids, createIndices, update);
+                RememberCreated(da.Iteration, guids, createIndices, update);
             }
 
             AddNotes(notes);
@@ -823,11 +868,17 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         // position. Without updating, this Create's elements replace the
         // earlier ones, so switching updating on later updates these.
         private void RememberCreated(
+            int iteration,
             List<string> guids,
             List<int> createIndices,
             bool update)
         {
-            var created = OwnCreatedGuids();
+            if (!update && iteration == 0)
+            {
+                // A new set of elements: forget every branch of the earlier one.
+                OwnCreatedGuids().Clear();
+            }
+            var created = OwnCreatedGuids(iteration);
             if (!update)
             {
                 created.Clear();
