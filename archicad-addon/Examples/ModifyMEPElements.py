@@ -1,5 +1,5 @@
 """Requires Archicad 27 or newer. On Archicad 27 this example reads the tool defaults and works on the selected
-MEP elements (select a flexible segment, an elbow and a terminal first), because Archicad 27 has no commands
+MEP elements (select a flexible segment and a terminal first), because Archicad 27 has no commands
 to place them. From Archicad 28 it places its own elements and deletes them at the end.
 """
 import sys
@@ -46,7 +46,6 @@ if terminal is None or 'error' in terminal:
             continue
         print (f"Ports: {[(port['domain'], port['shape'], port.get ('isConnected')) for port in elementPorts['ports']]}")
     # Each item fails on the elements its fields do not belong to.
-    ModifyAndReport ('Elbow radius factor 1.5', [dict (item, factorRadius = 1.5) for item in selectedIds])
     ModifyAndReport ('Flexible segment width 0.3', [dict (item, width = 0.3) for item in selectedIds])
     sys.exit ()
 

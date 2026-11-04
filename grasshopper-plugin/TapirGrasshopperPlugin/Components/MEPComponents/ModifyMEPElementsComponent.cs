@@ -23,7 +23,7 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 "ModifyMEPElements",
                 "Modify placed MEP elements: the anchor point, orientation and library part of terminals, accessories, " +
                 "equipment, fittings and flexible segments, the control points, polyline (Piping, from Archicad 28), " +
-                "width and height of flexible segments, and on Archicad 27 the radius factor of elbows. " +
+                "and width and height of flexible segments. " +
                 "Only the given fields are changed. Available from Archicad 27.",
                 GroupNames.MEP)
         {
@@ -75,12 +75,7 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 "Heights",
                 "New height of each flexible segment (input only 1 to use the same height for all). Optional.");
 
-            InNumbers(
-                "FactorRadii",
-                "New radius factor of each elbow, between 0.6 and 3 (input only 1 to use the same factor for all; " +
-                "Archicad 27 only). Optional.");
-
-            SetOptionality(new[] { 1, 2, 3, 4, ControlPointsIndex, PolylinesIndex, 7, 8, 9 });
+            SetOptionality(new[] { 1, 2, 3, 4, ControlPointsIndex, PolylinesIndex, 7, 8 });
         }
 
         protected override void AddOutputs()
@@ -111,8 +106,7 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 !fields.AddOrientations(da, 2, 3, "orientation") ||
                 !fields.AddLibraryPartIds(da, 4, "libraryPartId") ||
                 !fields.AddNumbers(da, 7, "width") ||
-                !fields.AddNumbers(da, 8, "height") ||
-                !fields.AddNumbers(da, 9, "factorRadius"))
+                !fields.AddNumbers(da, 8, "height"))
             {
                 return;
             }

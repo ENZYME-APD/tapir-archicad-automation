@@ -2882,7 +2882,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyMEPElementsCommand> (
             mepCommands, "1.8.1",
-            "Modifies placed MEP elements: the anchor point, orientation and library part of terminals, accessories, equipment, fittings and flexible segments, the control points, polyline (Piping, from Archicad 28), width and height of flexible segments, and on Archicad 27 the radius factor of elbows. Only the given fields are changed, in one undo step with one execution result per element; an item that does not fit its element changes nothing. Available from Archicad 27."
+            "Modifies placed MEP elements: the anchor point, orientation and library part of terminals, accessories, equipment, fittings and flexible segments, the control points, polyline (Piping, from Archicad 28), and width and height of flexible segments. Only the given fields are changed, in one undo step with one execution result per element; an item that does not fit its element changes nothing. Available from Archicad 27."
         );
         err |= RegisterCommand<GetMEPRoutingParametersCommand> (
             mepCommands, "1.8.0",

@@ -8814,7 +8814,6 @@ struct MEPElementChanges {
 #endif
     std::optional<double>       width;
     std::optional<double>       height;
-    std::optional<double>       factorRadius;
 
     bool ChangesPlacement () const          { return anchorPoint != nullptr || orientation != nullptr || libraryPartId != nullptr; }
     bool ChangesFlexibleSegment () const
@@ -8868,13 +8867,6 @@ static std::optional<GS::ObjectState> GetMEPElementChanges (const GS::ObjectStat
     }
     if (elementData.Get ("height", value)) {
         changes.height = value;
-    }
-    if (elementData.Get ("factorRadius", value)) {
-#ifdef ServerMainVers_2800
-        return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "Only Archicad 27 changes the radius factor of a placed elbow. From Archicad 29 set it on the elbow's routing node with SetMEPRoutingParameters.");
-#else
-        changes.factorRadius = value;
-#endif
     }
     return std::nullopt;
 }
@@ -8946,27 +8938,6 @@ static std::optional<GS::ObjectState> ModifyMEPElementPlacement (ModifiableEleme
     return std::nullopt;
 }
 
-#ifndef ServerMainVers_2800
-// Changes the radius factor of an elbow, which Archicad 27 calls a bend.
-static std::optional<GS::ObjectState> ModifyMEPBend (Bend& bend, double factorRadius)
-{
-    std::optional<ACAPI::Error> setterError;
-    ACAPI::Result<void> modifyResult = bend.Modify ([&](Bend::Modifier& modifier) {
-        ACAPI::Result<void> result = modifier.SetFactorRadius (factorRadius);
-        if (result.IsErr ()) {
-            setterError = result.UnwrapErr ();
-        }
-    }, "Modify MEP Elbow");
-    if (setterError.has_value ()) {
-        return CreateFailedExecutionResult (setterError->kind, MEPErrorText ("Failed to set the 'factorRadius' of the elbow; it must be between 0.6 and 3.", setterError.value ()));
-    }
-    if (modifyResult.IsErr ()) {
-        return CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, MEPErrorText ("Failed to modify the elbow.", modifyResult.UnwrapErr ()));
-    }
-    return std::nullopt;
-}
-#endif
-
 // Makes the changes of one item of ModifyMEPElements. Every element the changes need is looked up
 // before anything is changed, so an item that does not fit its element changes nothing.
 static GS::ObjectState ModifyMEPElement (const GS::ObjectState& elementData)
@@ -8995,27 +8966,14 @@ static GS::ObjectState ModifyMEPElement (const GS::ObjectState& elementData)
     if (changes.ChangesPlacement () && modifiableElement.IsErr ()) {
         return CreateFailedExecutionResult (APIERR_BADPARS, "'anchorPoint', 'orientation' and 'libraryPartId' belong to terminals, accessories, equipment, fittings and flexible segments, and the element is not one of them.");
     }
-#ifndef ServerMainVers_2800
-    ACAPI::Result<Bend> bend = Bend::Get (elemId);
-    if (changes.factorRadius.has_value () && bend.IsErr ()) {
-        return CreateFailedExecutionResult (APIERR_BADPARS, "'factorRadius' belongs to elbows, and the element is not one.");
-    }
-    if (changes.factorRadius.has_value ()) {
-        const std::optional<GS::ObjectState> failure = ModifyMEPBend (*bend, changes.factorRadius.value ());
-        if (failure.has_value ()) {
-            return failure.value ();
-        }
-    }
-#endif
-
     if (changes.ChangesFlexibleSegment ()) {
-        const std::optional<GS::ObjectState> failure = ModifyMEPFlexibleSegment (*flexibleSegment, changes);
+        const std::optional<GS::ObjectState> failure = ModifyMEPFlexibleSegment (*flexibleSegment.operator-> (), changes);
         if (failure.has_value ()) {
             return failure.value ();
         }
     }
     if (changes.ChangesPlacement ()) {
-        const std::optional<GS::ObjectState> failure = ModifyMEPElementPlacement (*modifiableElement, elemId, changes);
+        const std::optional<GS::ObjectState> failure = ModifyMEPElementPlacement (*modifiableElement.operator-> (), elemId, changes);
         if (failure.has_value ()) {
             return failure.value ();
         }
@@ -9080,10 +9038,6 @@ GS::Optional<GS::UniString> ModifyMEPElementsCommand::GetInputParametersSchema (
                         "height": {
                             "type": "number",
                             "description": "The new height of a flexible segment."
-                        },
-                        "factorRadius": {
-                            "type": "number",
-                            "description": "The new radius factor of an elbow, between 0.6 and 3. Archicad 27 only; from Archicad 29 set it on the elbow's routing node with SetMEPRoutingParameters."
                         }
                     },
                     "additionalProperties": false,
