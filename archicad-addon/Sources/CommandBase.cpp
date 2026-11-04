@@ -1459,6 +1459,20 @@ GSErrCode ExecuteActionForEachDatabase (
     return NoError;
 }
 
+void GetDetailMarkerNameAndId (const API_Element& element, GS::UniString& name, GS::UniString& id)
+{
+    name = GS::UniString (element.detail.detailName);
+    id = GS::UniString (element.detail.detailIdStr);
+
+    API_DatabaseInfo databaseInfo = {};
+    databaseInfo.typeID = GetElemTypeId (element.header) == API_WorksheetID ? APIWind_WorksheetID : APIWind_DetailID;
+    databaseInfo.databaseUnId = element.detail.databaseID;
+    if (ACAPI_Window_GetDatabaseInfo (&databaseInfo) == NoError) {
+        name = GS::UniString (databaseInfo.name);
+        id = GS::UniString (databaseInfo.ref);
+    }
+}
+
 GS::Optional<API_Guid> FindProjectMapItemOfWorksheetOrDetail (const API_DatabaseInfo& database)
 {
     API_NavigatorItem filterItem = {};
