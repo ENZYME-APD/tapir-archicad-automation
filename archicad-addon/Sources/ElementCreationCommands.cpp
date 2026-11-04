@@ -2630,6 +2630,7 @@ static bool ResolveAttributeIndex (const GS::ObjectState& attributeId, API_AttrT
     if (ACAPI_Attribute_Get (&attribute) != NoError) {
         return false;
     }
+    DisposeAttribute (attribute);
 
     attributeIndex = attribute.header.index;
     return true;

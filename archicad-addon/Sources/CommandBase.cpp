@@ -1241,6 +1241,7 @@ API_Guid GetAttributeGuidFromIndex (API_AttrTypeID typeID, API_AttributeIndex in
     if (ACAPI_Attribute_Get (&attr) != NoError) {
         return APINULLGuid;
     }
+    DisposeAttribute (attr);
 
     return attr.header.guid;
 }
@@ -1267,6 +1268,7 @@ API_AttributeIndex GetAttributeIndexFromGuid (API_AttrTypeID typeID, API_Guid gu
     if (ACAPI_Attribute_Get (&attr) != NoError) {
         return ACAPI_CreateAttributeIndex (-1);
     }
+    DisposeAttribute (attr);
 
     return attr.header.index;
 }
