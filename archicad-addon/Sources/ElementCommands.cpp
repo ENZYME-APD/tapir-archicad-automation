@@ -7744,6 +7744,16 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
             // the situations that leave it without a solid body are the very ones in which
             // CalcBounds crashes.
             err = CalculateSolidBodyBounds (elemHead, box3D);
+        } else if (typeID == API_WallID) {
+            // ACAPI_Element_CalcBounds measures a Wall along its reference line, so it leaves
+            // out what the wall connections add: at an L or T corner the 3D body reaches up to
+            // half the wall thickness beyond the end of the reference line. The solid bodies
+            // give the Wall as the 3D model shows it. A Wall without a solid body (e.g. filtered
+            // out of the 3D model) keeps the old answer.
+            err = CalculateSolidBodyBounds (elemHead, box3D);
+            if (err != NoError) {
+                err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
+            }
         } else if (typeID == API_StairID) {
             err = CalculateStairBounds (elemHead, box3D);
             if (err != NoError) {
