@@ -10397,7 +10397,9 @@ GS::ObjectState DeleteAndReplaceAttribute (const GS::Array<API_DatabaseInfo>& da
         return finish (CreateErrorResponse (err, GS::UniString::Printf ("The %T was not deleted: Archicad did not delete it.", typeName.ToPrintf ())));
     }
 
-    // 4. Every reference goes on to the replacement, and the temporary copy is deleted.
+    // 4. Every reference goes on to the replacement, and the temporary copy is deleted. What could not be moved
+    // there (an element, or a tool default, Favorite, attribute or rule named in a warning) still refers to the
+    // copy, so then the copy is kept and gets the name of the deleted attribute back instead.
     const ReferenceScan replaced = ScanReferences (databases, toReplacement, true);
     restoreLayerFlags ();
     for (const GS::UniString& warning : replaced.warnings) {
@@ -10405,18 +10407,23 @@ GS::ObjectState DeleteAndReplaceAttribute (const GS::Array<API_DatabaseInfo>& da
             scan.warnings.Push (warning);
         }
     }
-    if (!replaced.failedElements.IsEmpty ()) {
-        // These elements were changed a moment ago, so this is not expected. They keep the copy, which gets the name
-        // of the deleted attribute back.
+    const auto keepCopy = [&] () {
         API_Attribute renamed = oldAttribute;
         renamed.header.index = temporaryIndex;
         renamed.header.guid = temporaryGuid;
         GS::UniString finalName = name;
         renamed.header.uniStringNamePtr = &finalName;
         ACAPI_Attribute_ModifyExt (&renamed, &oldDefs);
+    };
+    if (!replaced.failedElements.IsEmpty ()) {
+        // These elements were changed a moment ago, so this is not expected.
+        keepCopy ();
         return finish (CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf ("The %T was deleted, but %u of the elements that used it could not be changed to the replacement: %T. They use a copy of the deleted %T, with its name and a new attribute id.", typeName.ToPrintf (), replaced.failedElements.GetSize (), ListElementGuids (replaced.failedElements).ToPrintf (), typeName.ToPrintf ())));
     }
-    if (DeleteAttribute (typeID, temporaryIndex) != NoError) {
+    if (!replaced.warnings.IsEmpty ()) {
+        keepCopy ();
+        scan.warnings.Push (GS::UniString::Printf ("What the warnings above name still refers to a copy of the deleted %T, which is kept with its name and the attribute id %T.", typeName.ToPrintf (), APIGuidToString (temporaryGuid).ToPrintf ()));
+    } else if (DeleteAttribute (typeID, temporaryIndex) != NoError) {
         scan.warnings.Push (GS::UniString::Printf ("The temporary copy of the deleted %T could not be deleted.", typeName.ToPrintf ()));
     }
 
@@ -10567,7 +10574,7 @@ GS::Optional<GS::UniString> DeleteAndReplaceAttributesCommand::GetRawResponseSch
                                 },
                                 "warnings": {
                                     "type": "array",
-                                    "description": "What still refers to the deleted attribute: elements from hotlinked modules, a tool default, Favorite, attribute or rule that could not be written.",
+                                    "description": "What still refers to the deleted attribute: elements from hotlinked modules, a tool default, Favorite, attribute or rule that could not be written. What could not be rewritten to the replacement keeps a copy of the deleted attribute, whose attribute id the last warning names.",
                                     "items": {
                                         "type": "string"
                                     }
