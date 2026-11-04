@@ -115,6 +115,31 @@ namespace TapirGrasshopperPlugin.Types.ToolSettings
             return key != null && _byKey.TryGetValue(key, out var field) ? field : null;
         }
 
+        private static readonly Dictionary<string, ToolSettingsTable> LoadedTables =
+            new Dictionary<string, ToolSettingsTable>();
+
+        // The label of a setting of a tool, by the key the Add-On takes, for
+        // the inputs and outputs of the per-command components; the given
+        // name when the table has no label for it.
+        public static string LabelOr(
+            string tool,
+            string key,
+            string nameWithoutLabel)
+        {
+            ToolSettingsTable table;
+            lock (LoadedTables)
+            {
+                if (!LoadedTables.TryGetValue(tool, out table))
+                {
+                    table = Load(tool);
+                    LoadedTables[tool] = table;
+                }
+            }
+
+            var label = table.Find(key)?.Label;
+            return string.IsNullOrEmpty(label) ? nameWithoutLabel : label;
+        }
+
         public IEnumerable<ToolSettingsField> FieldsOf(
             string group)
         {
