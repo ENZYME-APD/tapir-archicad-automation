@@ -141,7 +141,7 @@ GS::Optional<GS::UniString> CaptureElementStateCommand::GetInputParametersSchema
         "properties": {
             "type": {
                 "type": "string",
-                "description": "How GetElementChangesSince finds the changed elements between this state and another one. ModificationStamp (the default) compares the modification stamps of the elements, so any change to an element counts. 3DModel compares the 3D model of the elements, so only a change that alters the 3D model counts, and capturing it generates the 3D model of the project. Two states can only be compared when they were captured with the same type.",
+                "description": "How GetElementChangesSince finds the changed elements between this state and another one. ModificationStamp (the default) compares the modification stamps of the elements, so any change to a tracked element counts. 3DModel compares the 3D model of the elements, so only a change that alters the 3D model counts, and capturing it generates the 3D model of the project. Two states can only be compared when they were captured with the same type. With either type the changes come from Archicad's element difference generator, which tracks the model elements: 2D elements such as texts, labels and hatches can be missing from the result even when they were created, modified or deleted.",
                 "enum": [
                     "ModificationStamp",
                     "3DModel"
