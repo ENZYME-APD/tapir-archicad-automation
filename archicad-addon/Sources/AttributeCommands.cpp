@@ -8,6 +8,7 @@
 #include "FileSystem.hpp"
 #include "UserDataPairs.hpp"
 #include "OnExit.hpp"
+#include <set>
 #ifdef ServerMainVers_2700
 #include "ADBAttributeIndex.hpp"
 #endif
@@ -73,6 +74,8 @@ static GS::Optional<GS::ObjectState> GetAttributeIdFromIndex (API_AttrTypeID att
     if (ACAPI_Attribute_Get (&attribute) != NoError) {
         return GS::NoValue;
     }
+    // A surface comes with texture.fileLoc allocated (ACAPI_Attribute_Get remarks, Attribute_Test.cpp).
+    DisposeAttribute (attribute);
     return CreateAttributeIdObjectState (attribute.header.guid);
 }
 
@@ -84,6 +87,7 @@ static bool GetAttributeIndexFromAttributeId (const GS::ObjectState& attributeId
     if (ACAPI_Attribute_Get (&attribute) != NoError) {
         return false;
     }
+    DisposeAttribute (attribute);
 
     attributeIndex = attribute.header.index;
     return true;
@@ -483,6 +487,163 @@ GS::ObjectState GetAttributesFromProjectCommand::Execute (const GS::ObjectState&
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_GENERAL, "GetAttributesFromProject needs Archicad 27 or later.");
+#endif
+}
+
+GetAttributeIndexesCommand::GetAttributeIndexesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetAttributeIndexesCommand::GetName () const
+{
+    return "GetAttributeIndexes";
+}
+
+GS::Optional<GS::UniString> GetAttributeIndexesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeTypes": {
+                "type": "array",
+                "description": "The attribute types to report the indexes of.",
+                "items": {
+                    "$ref": "#/AttributeType"
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeTypes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetAttributeIndexesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "oneOf": [
+            {
+                "type": "object",
+                "properties": {
+                    "attributeIndexes": {
+                        "type": "array",
+                        "description": "One item per requested attribute type, in the order of attributeTypes.",
+                        "items": {
+                            "type": "object",
+                            "oneOf": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "attributeType": {
+                                            "$ref": "#/AttributeType"
+                                        },
+                                        "count": {
+                                            "type": "integer",
+                                            "description": "The number of attributes of the type."
+                                        },
+                                        "firstIndex": {
+                                            "type": "integer",
+                                            "description": "The index of the first valid attribute of the type, as Archicad reports it. Left out when the type has no attribute."
+                                        },
+                                        "lastIndex": {
+                                            "type": "integer",
+                                            "description": "The highest index in use. Left out when the type has no attribute."
+                                        },
+                                        "freeIndexes": {
+                                            "type": "array",
+                                            "description": "The indexes between firstIndex and lastIndex that no attribute uses, for example those of deleted attributes, in ascending order. Archicad 29 gives a new Layer the lowest free index.",
+                                            "items": {
+                                                "type": "integer"
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "attributeType",
+                                        "count",
+                                        "freeIndexes"
+                                    ]
+                                },
+                                {
+                                    "$ref": "#/ErrorItem"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "attributeIndexes"
+                ]
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    })";
+}
+
+GS::ObjectState GetAttributeIndexesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::UniString> attributeTypes;
+    parameters.Get ("attributeTypes", attributeTypes);
+
+    GS::ObjectState response;
+    const auto& attributeIndexes = response.AddList<GS::ObjectState> ("attributeIndexes");
+
+    for (const GS::UniString& typeStr : attributeTypes) {
+        const API_AttrTypeID typeID = ConvertAttributeTypeStringToID (typeStr);
+        if (typeID == API_ZombieAttrID) {
+            attributeIndexes (CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid attributeType '%T'.", typeStr.ToPrintf ())));
+            continue;
+        }
+
+        // Only the indexes are kept. The texture location of a Surface is the one member allocated
+        // for the caller (see DisposeAttribute); it is freed and cleared here, so it is released
+        // once whether or not the enumeration frees it after the processor.
+        std::set<Int32> usedIndexes;
+        const GSErrCode err = ACAPI_Attribute_EnumerateAttributesByType (typeID, [&usedIndexes] (API_Attribute& attr) {
+            usedIndexes.insert (GetAttributeIndex (attr.header.index));
+            if (attr.header.typeID == API_MaterialID) {
+                DisposeAttribute (attr);
+                attr.material.texture.fileLoc = nullptr;
+            }
+        });
+        if (err != NoError) {
+            attributeIndexes (CreateErrorResponse (err,
+                GS::UniString::Printf ("Failed to enumerate the %T attributes.", typeStr.ToPrintf ())));
+            continue;
+        }
+
+        GS::ObjectState typeResult;
+        typeResult.Add ("attributeType", typeStr);
+        typeResult.Add ("count", (Int32) usedIndexes.size ());
+        const auto& freeIndexes = typeResult.AddList<Int32> ("freeIndexes");
+        if (!usedIndexes.empty ()) {
+            const API_AttributeIndex firstValid = ACAPI_Attribute_GetFirstValidAttribute (typeID);
+            const Int32 firstIndex = firstValid != APIInvalidAttributeIndex ? GetAttributeIndex (firstValid) : *usedIndexes.begin ();
+            const Int32 lastIndex = *usedIndexes.rbegin ();
+            typeResult.Add ("firstIndex", firstIndex);
+            typeResult.Add ("lastIndex", lastIndex);
+            for (Int32 index = firstIndex; index < lastIndex; ++index) {
+                if (usedIndexes.find (index) == usedIndexes.end ()) {
+                    freeIndexes (index);
+                }
+            }
+        }
+        attributeIndexes (typeResult);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetAttributeIndexes needs Archicad 27 or later.");
 #endif
 }
 
@@ -2119,6 +2280,120 @@ GS::ObjectState GetPensCommand::Execute (const GS::ObjectState& parameters, GS::
 #endif
 }
 
+SetPensCommand::SetPensCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetPensCommand::GetName () const
+{
+    return "SetPens";
+}
+
+GS::Optional<GS::UniString> SetPensCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "pens": {
+                "type": "array",
+                "description": "The pens to change among the pens in effect in the current window, the ones GetPens returns. Only the given fields (color, width, description) of a listed pen are changed.",
+                "items": {
+                    "$ref": "#/PenData"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "pens"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetPensCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+// ACAPI_Attribute_ModifyPen changes one pen of the active pen table by its index, so each pen gets
+// its own result: the current pen is read with ACAPI_Attribute_GetPen, the given fields are patched
+// and the pen is written back. All pens are changed in one undo step.
+GS::ObjectState SetPensCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> pens;
+    parameters.Get ("pens", pens);
+
+    UInt32 penCount = 0;
+    GSErrCode err = ACAPI_Attribute_GetPenNum (penCount);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the number of pens.");
+    }
+
+    GS::Array<GS::ObjectState> results;
+    err = ACAPI_CallUndoableCommand ("Set Pens", [&] () -> GSErrCode {
+        for (const GS::ObjectState& penData : pens) {
+            Int32 index = 0;
+            if (!penData.Get ("index", index) || index < 1 || (UInt32) index > penCount) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADINDEX, GS::UniString::Printf ("index must be between 1 and %u.", penCount)));
+                continue;
+            }
+
+            double width = 0.0;
+            if (penData.Get ("width", width) && width < 0.0) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "width must not be negative."));
+                continue;
+            }
+
+            API_Pen pen = {};
+            pen.index = (short) index;
+            GSErrCode penErr = ACAPI_Attribute_GetPen (pen);
+            if (penErr != NoError) {
+                results.Push (CreateFailedExecutionResult (penErr, GS::UniString::Printf ("Failed to get the pen %d.", index)));
+                continue;
+            }
+
+            GetColor (penData, "color", pen.rgb);
+            penData.Get ("width", pen.width);
+            SetCharProperty (&penData, "description", pen.description);
+
+            penErr = ACAPI_Attribute_ModifyPen (pen);
+            if (penErr != NoError) {
+                results.Push (CreateFailedExecutionResult (penErr, GS::UniString::Printf ("Failed to change the pen %d. In a Teamwork project the PenTables lockable object set must be reserved first (see ReserveLockableObjectSet).", index)));
+                continue;
+            }
+            results.Push (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to change the pens.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    for (const GS::ObjectState& result : results) {
+        executionResults (result);
+    }
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
 GetProfilesCommand::GetProfilesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -3271,6 +3546,7 @@ GS::ObjectState GetSurfacesCommand::Execute (const GS::ObjectState& parameters, 
         }
 
         surfaces (surface);
+        DisposeAttribute (attr);
     }
 
     return response;
@@ -4294,6 +4570,8 @@ GS::ObjectState CreateAttributesCommandBase::Execute (const GS::ObjectState& par
         }
 
         bool doesExist = (ACAPI_Attribute_Get (&attr) == NoError);
+        // A surface read by ACAPI_Attribute_Get holds an allocated texture.fileLoc (see its remarks).
+        const GS::OnExit disposeAttr ([&attr] () { DisposeAttribute (attr); });
         if (doesExist && !overwriteExisting) {
             attributeIds (CreateErrorResponse (APIERR_ATTREXIST, "Already exists."));
             continue;
@@ -4924,6 +5202,8 @@ GS::Optional<GS::ObjectState> CreateLinesCommand::SetTypeSpecificParameters (con
             attribute.linetype.nItems = (Int32) nItems;
 
             if (nItems > 0) {
+                // The handle seeded from the attribute being overwritten is replaced, so it is freed first.
+                BMKillHandle ((GSHandle*) &attributeDef.ltype_dashItems);
                 attributeDef.ltype_dashItems = (API_DashItems**) BMAllocateHandle (nItems * sizeof (API_DashItems), ALLOCATE_CLEAR, 0);
                 for (UInt32 i = 0; i < nItems; ++i) {
                     API_DashItems& item = (*attributeDef.ltype_dashItems)[i];
@@ -4944,6 +5224,8 @@ GS::Optional<GS::ObjectState> CreateLinesCommand::SetTypeSpecificParameters (con
             attribute.linetype.nItems = (Int32) nItems;
 
             if (nItems > 0) {
+                // The handle seeded from the attribute being overwritten is replaced, so it is freed first.
+                BMKillHandle ((GSHandle*) &attributeDef.ltype_lineItems);
                 attributeDef.ltype_lineItems = (API_LineItems**) BMAllocateHandle (nItems * sizeof (API_LineItems), ALLOCATE_CLEAR, 0);
                 for (UInt32 i = 0; i < nItems; ++i) {
                     API_LineItems& item = (*attributeDef.ltype_lineItems)[i];
@@ -5350,6 +5632,8 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
             fill.filltype.linNumb = (Int32) nItems;
 
             if (nItems > 0) {
+                // The handle seeded from the attribute being overwritten is replaced, so it is freed first.
+                BMKillHandle ((GSHandle*) &fillDefs.fill_lineItems);
                 fillDefs.fill_lineItems = (API_FillLine**) BMAllocateHandle (nItems * sizeof (API_FillLine), ALLOCATE_CLEAR, 0);
 
                 UInt32 totalLengths = 0;
@@ -5359,6 +5643,7 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
                     totalLengths += lineLengths.GetSize ();
                 }
                 if (totalLengths > 0) {
+                    BMKillHandle ((GSHandle*) &fillDefs.fill_lineLength);
                     fillDefs.fill_lineLength = (double**) BMAllocateHandle (totalLengths * sizeof (double), ALLOCATE_CLEAR, 0);
                 }
 
@@ -5395,6 +5680,8 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
             fill.filltype.linNumb = (Int32) nItems;
 
             if (nItems > 0) {
+                // The handle seeded from the attribute being overwritten is replaced, so it is freed first.
+                BMKillHandle ((GSHandle*) &fillDefs.sfill_Items.sfill_Lines);
                 fillDefs.sfill_Items.sfill_Lines = (API_SFill_Line**) BMAllocateHandle (nItems * sizeof (API_SFill_Line), ALLOCATE_CLEAR, 0);
                 for (UInt32 i = 0; i < nItems; ++i) {
                     API_SFill_Line& item = (*fillDefs.sfill_Items.sfill_Lines)[i];
@@ -5414,6 +5701,8 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
             fill.filltype.arcNumb = (Int32) nItems;
 
             if (nItems > 0) {
+                // The handle seeded from the attribute being overwritten is replaced, so it is freed first.
+                BMKillHandle ((GSHandle*) &fillDefs.sfill_Items.sfill_Arcs);
                 fillDefs.sfill_Items.sfill_Arcs = (API_SFill_Arc**) BMAllocateHandle (nItems * sizeof (API_SFill_Arc), ALLOCATE_CLEAR, 0);
                 for (UInt32 i = 0; i < nItems; ++i) {
                     API_SFill_Arc& item = (*fillDefs.sfill_Items.sfill_Arcs)[i];
@@ -5434,6 +5723,8 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
             fill.filltype.hotNumb = (Int32) nItems;
 
             if (nItems > 0) {
+                // The handle seeded from the attribute being overwritten is replaced, so it is freed first.
+                BMKillHandle ((GSHandle*) &fillDefs.sfill_Items.sfill_HotSpots);
                 fillDefs.sfill_Items.sfill_HotSpots = (API_Coord**) BMAllocateHandle (nItems * sizeof (API_Coord), ALLOCATE_CLEAR, 0);
                 for (UInt32 i = 0; i < nItems; ++i) {
                     (*fillDefs.sfill_Items.sfill_HotSpots)[i] = Get2DCoordinateFromObjectState (symbolHotspots[i]);
@@ -10087,5 +10378,390 @@ GS::ObjectState ReindexAttributesCommand::Execute (const GS::ObjectState& parame
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "ReindexAttributes requires Archicad 27 or newer.");
+#endif
+}
+
+#ifdef ServerMainVers_2700
+
+namespace {
+
+// The references found by DeleteAndReplaceAttribute, in the shape of ReindexAttributes' result.
+void AddReplacementScanToResult (GS::ObjectState& result, const ReferenceScan& scan, bool dryRun, const GS::UniString& typeName)
+{
+    result.Add ("elements", GetElementIds (scan.elements));
+    result.Add ("hotlinkElements", GetElementIds (scan.hotlinkElements));
+    const auto& toolDefaults = result.AddList<GS::UniString> ("toolDefaults");
+    for (API_ElemTypeID typeID : scan.toolDefaults) {
+        toolDefaults (GetElementTypeNonLocalizedName (typeID));
+    }
+    result.Add ("favorites", scan.favorites);
+    result.Add ("attributes", scan.attributes);
+    result.Add ("overrideRules", scan.overrideRules);
+    GS::Array<GS::UniString> warnings = scan.warnings;
+    if (!scan.hotlinkElements.IsEmpty ()) {
+        warnings.Push (GS::UniString::Printf ("%u elements come from hotlinked modules and %s the deleted %T; replace it in the module files themselves.", scan.hotlinkElements.GetSize (), dryRun ? "would keep" : "keep", typeName.ToPrintf ()));
+    }
+    if (!warnings.IsEmpty ()) {
+        result.Add ("warnings", warnings);
+    }
+}
+
+// Deletes one attribute and replaces it by another one of the same type wherever it was used, as described in the
+// command's registration. The replacement may be in use already, so afterwards its own references could not be told
+// apart from the rewritten ones. That is why the references are first moved to a temporary copy of the deleted
+// attribute, which nothing else uses: until the deleted attribute is gone, a failure is undone exactly by moving them
+// back. Only then do they go on to the replacement.
+GS::ObjectState DeleteAndReplaceAttribute (const GS::Array<API_DatabaseInfo>& databases, API_AttrTypeID typeID, const API_Guid& attributeGuid, const API_Guid& replacementGuid, bool dryRun)
+{
+    const GS::UniString typeName = GetReindexableAttributeTypeName (typeID);
+    GS::UniString name;
+    API_Attribute oldAttribute = {};
+    API_AttributeDefExt oldDefs = {};
+    oldAttribute.header.typeID = typeID;
+    oldAttribute.header.guid = attributeGuid;
+    if (GetAttributeWithDefs (oldAttribute, name, oldDefs) != NoError) {
+        return CreateErrorResponse (APIERR_BADID, GS::UniString::Printf ("The %T to delete was not found.", typeName.ToPrintf ()));
+    }
+    const auto finish = [&] (const GS::ObjectState& response) {
+        ACAPI_DisposeAttrDefsHdlsExt (&oldDefs);
+        DisposeAttribute (oldAttribute);
+        return response;
+    };
+
+    API_Attribute replacement = {};
+    replacement.header.typeID = typeID;
+    replacement.header.guid = replacementGuid;
+    if (ACAPI_Attribute_Get (&replacement) != NoError) {
+        return finish (CreateErrorResponse (APIERR_BADID, GS::UniString::Printf ("The replacement %T was not found.", typeName.ToPrintf ())));
+    }
+    const API_AttributeIndex replacementIndex = replacement.header.index;
+    DisposeAttribute (replacement);
+
+    const API_AttributeIndex oldIndex = oldAttribute.header.index;
+    if (replacementIndex == oldIndex) {
+        return finish (CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("The replacement must be another %T than the one to delete.", typeName.ToPrintf ())));
+    }
+
+    GS::ObjectState result;
+    result.Add ("attributeId", CreateGuidObjectState (attributeGuid));
+    result.Add ("replacementAttributeId", CreateGuidObjectState (replacementGuid));
+    if (dryRun) {
+        const ReindexJob job = { typeID, oldIndex, replacementIndex };
+        AddReplacementScanToResult (result, ScanReferences (databases, job, false), true, typeName);
+        return finish (result);
+    }
+
+    // 1. A temporary copy of the attribute, which nothing refers to yet.
+    API_Attribute temporary = {};
+    GSErrCode err = CreateAttributeCopy (oldAttribute, &oldDefs, GetTemporaryLayerName (name), temporary);
+    if (err != NoError) {
+        return finish (CreateErrorResponse (err, GS::UniString::Printf ("The %T was not deleted: a temporary copy of it could not be created.", typeName.ToPrintf ())));
+    }
+    const API_AttributeIndex temporaryIndex = temporary.header.index;
+    const API_Guid temporaryGuid = temporary.header.guid;
+    const ReindexJob toTemporary = { typeID, oldIndex, temporaryIndex };
+    const ReindexJob back = { typeID, temporaryIndex, oldIndex };
+    const ReindexJob toReplacement = { typeID, temporaryIndex, replacementIndex };
+
+    // 2. Every reference goes to the temporary copy. Elements on a hidden or locked layer cannot be changed, so those
+    // layers are shown and unlocked for the change and put back afterwards, in the current window (as in
+    // ReindexAttribute). If an element cannot be changed, everything is put back.
+    GS::Array<GS::Pair<API_AttributeIndex, LayerFlags>> layerFlagsToRestore;
+    GS::Array<GS::ObjectState> layersShown;
+    const GS::Array<API_AttributeIndex> layersOfElements = ScanReferences (databases, toTemporary, false).layers;
+    API_DatabaseInfo floorPlan = databases[0];
+    ACAPI_Database_ChangeCurrentDatabase (&floorPlan);
+    for (const API_AttributeIndex& layerIndex : layersOfElements) {
+        GS::UniString layerName;
+        API_Attribute layer = {};
+        layer.header.index = layerIndex;
+        if (GetLayer (layer, layerName) != NoError || WithoutHiddenAndLocked (layer.header.flags) == layer.header.flags) {
+            continue;
+        }
+        if (SetLayerFlags (layerIndex, WithoutHiddenAndLocked (layer.header.flags)) == NoError) {
+            layerFlagsToRestore.Push ({ layerIndex, layer.header.flags });
+            layersShown.Push (CreateAttributeIdObjectState (layer.header.guid));
+        }
+    }
+    const auto restoreLayerFlags = [&] () {
+        ACAPI_Database_ChangeCurrentDatabase (&floorPlan);
+        for (const auto& layerAndFlags : layerFlagsToRestore) {
+            SetLayerFlags (layerAndFlags.first, layerAndFlags.second);
+        }
+        layerFlagsToRestore.Clear ();
+    };
+    ReferenceScan scan = ScanReferences (databases, toTemporary, true);
+    if (!scan.failedElements.IsEmpty ()) {
+        ScanReferences (databases, back, true);
+        restoreLayerFlags ();
+        DeleteAttribute (typeID, temporaryIndex);
+        GS::UniString details;
+        for (UIndex i = 0; i < scan.failureDetails.GetSize () && i < 5; ++i) {
+            details += (i == 0 ? " " : "; ") + scan.failureDetails[i];
+        }
+        return finish (CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf ("The %T was not deleted: %u of the elements that use it could not be changed (they may be locked, or not reserved in Teamwork): %T.%T", typeName.ToPrintf (), scan.failedElements.GetSize (), ListElementGuids (scan.failedElements).ToPrintf (), details.ToPrintf ())));
+    }
+
+    // 3. The attribute is deleted now that nothing refers to it.
+    err = DeleteAttribute (typeID, oldIndex);
+    if (err != NoError) {
+        ScanReferences (databases, back, true);
+        restoreLayerFlags ();
+        DeleteAttribute (typeID, temporaryIndex);
+        return finish (CreateErrorResponse (err, GS::UniString::Printf ("The %T was not deleted: Archicad did not delete it.", typeName.ToPrintf ())));
+    }
+
+    // 4. Every reference goes on to the replacement, and the temporary copy is deleted. What could not be moved
+    // there (an element, or a tool default, Favorite, attribute or rule named in a warning) still refers to the
+    // copy, so then the copy is kept and gets the name of the deleted attribute back instead.
+    const ReferenceScan replaced = ScanReferences (databases, toReplacement, true);
+    restoreLayerFlags ();
+    for (const GS::UniString& warning : replaced.warnings) {
+        if (!scan.warnings.Contains (warning)) {
+            scan.warnings.Push (warning);
+        }
+    }
+    const auto keepCopy = [&] () {
+        API_Attribute renamed = oldAttribute;
+        renamed.header.index = temporaryIndex;
+        renamed.header.guid = temporaryGuid;
+        GS::UniString finalName = name;
+        renamed.header.uniStringNamePtr = &finalName;
+        ACAPI_Attribute_ModifyExt (&renamed, &oldDefs);
+    };
+    if (!replaced.failedElements.IsEmpty ()) {
+        // These elements were changed a moment ago, so this is not expected.
+        keepCopy ();
+        return finish (CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf ("The %T was deleted, but %u of the elements that used it could not be changed to the replacement: %T. They use a copy of the deleted %T, with its name and a new attribute id.", typeName.ToPrintf (), replaced.failedElements.GetSize (), ListElementGuids (replaced.failedElements).ToPrintf (), typeName.ToPrintf ())));
+    }
+    if (!replaced.warnings.IsEmpty ()) {
+        keepCopy ();
+        scan.warnings.Push (GS::UniString::Printf ("What the warnings above name still refers to a copy of the deleted %T, which is kept with its name and the attribute id %T.", typeName.ToPrintf (), APIGuidToString (temporaryGuid).ToPrintf ()));
+    } else if (DeleteAttribute (typeID, temporaryIndex) != NoError) {
+        scan.warnings.Push (GS::UniString::Printf ("The temporary copy of the deleted %T could not be deleted.", typeName.ToPrintf ()));
+    }
+
+    AddReplacementScanToResult (result, scan, false, typeName);
+    result.Add ("layersShown", layersShown);
+    return finish (result);
+}
+
+}
+
+#endif
+
+DeleteAndReplaceAttributesCommand::DeleteAndReplaceAttributesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeleteAndReplaceAttributesCommand::GetName () const
+{
+    return "DeleteAndReplaceAttributes";
+}
+
+GS::Optional<GS::UniString> DeleteAndReplaceAttributesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeType": {
+                "type": "string",
+                "enum": ["Fill", "Line", "Surface", "BuildingMaterial"],
+                "description": "The type of the attributes to delete and of their replacements."
+            },
+            "attributes": {
+                "type": "array",
+                "description": "The attributes to delete, each with the attribute that takes its place, handled in the given order.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "attributeId": {
+                            "$ref": "#/AttributeId",
+                            "description": "The attribute to delete."
+                        },
+                        "replacementAttributeId": {
+                            "$ref": "#/AttributeId",
+                            "description": "The attribute of the same type that replaces it wherever it is used. It must be another attribute than the one to delete."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "attributeId",
+                        "replacementAttributeId"
+                    ]
+                }
+            },
+            "dryRun": {
+                "type": "boolean",
+                "description": "Only list every reference to each attribute to delete (elements, tool defaults, Favorites, other attributes, graphic override rules, elements from hotlinked modules) without changing anything. The default is false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeType",
+            "attributes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteAndReplaceAttributesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributes": {
+                "type": "array",
+                "description": "One item per requested attribute, in the same order.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "attributeId": {
+                                    "$ref": "#/AttributeId",
+                                    "description": "The deleted attribute (with dryRun, the attribute that would be deleted)."
+                                },
+                                "replacementAttributeId": {
+                                    "$ref": "#/AttributeId",
+                                    "description": "The attribute that took its place."
+                                },
+                                "elements": {
+                                    "$ref": "#/Elements",
+                                    "description": "The elements that referred to the deleted attribute, in the floor plan and in every section, elevation, interior elevation, detail, worksheet, 3D document, layout and master layout: in their own fields, their library part parameters or their memo data (side surfaces, roof levels, morph faces, cutting planes). They refer to the replacement now, unless dryRun is true."
+                                },
+                                "hotlinkElements": {
+                                    "$ref": "#/Elements",
+                                    "description": "Elements from hotlinked modules that refer to the deleted attribute. They cannot be changed; replace the attribute in their module file."
+                                },
+                                "toolDefaults": {
+                                    "type": "array",
+                                    "description": "The element types whose tool default referred to the deleted attribute. Rewritten unless dryRun is true.",
+                                    "items": {
+                                        "$ref": "#/ElementType"
+                                    }
+                                },
+                                "favorites": {
+                                    "type": "array",
+                                    "description": "The names of the Favorites that referred to the deleted attribute. Rewritten unless dryRun is true.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "attributes": {
+                                    "type": "array",
+                                    "description": "The other attributes that referred to the deleted attribute: composites (skins and separators), building materials (cut fill, cut surface), surfaces (hatching fill), MEP systems (fill) and profiles (skins and edges). Rewritten unless dryRun is true.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "attributeType": {
+                                                "type": "string"
+                                            },
+                                            "attributeId": {
+                                                "$ref": "#/AttributeId"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "attributeType",
+                                            "attributeId",
+                                            "name"
+                                        ]
+                                    }
+                                },
+                                "overrideRules": {
+                                    "type": "array",
+                                    "description": "The names of the graphic override rules that referred to the deleted attribute. Rewritten unless dryRun is true.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "layersShown": {
+                                    "type": "array",
+                                    "description": "The hidden or locked layers of the elements that were shown and unlocked for the change and put back afterwards. Not present with dryRun.",
+                                    "items": {
+                                        "$ref": "#/AttributeIdArrayItem"
+                                    }
+                                },
+                                "warnings": {
+                                    "type": "array",
+                                    "description": "What still refers to the deleted attribute: elements from hotlinked modules, a tool default, Favorite, attribute or rule that could not be written. What could not be rewritten to the replacement keeps a copy of the deleted attribute, whose attribute id the last warning names.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "attributeId",
+                                "replacementAttributeId",
+                                "elements",
+                                "hotlinkElements",
+                                "toolDefaults",
+                                "favorites",
+                                "attributes",
+                                "overrideRules"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributes"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteAndReplaceAttributesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::UniString typeStr;
+    parameters.Get ("attributeType", typeStr);
+    const API_AttrTypeID typeID = GetReindexableAttributeType (typeStr);
+    if (typeID == API_ZombieAttrID) {
+        return CreateErrorResponse (APIERR_BADPARS, "attributeType must be Fill, Line, Surface or BuildingMaterial.");
+    }
+    GS::Array<GS::ObjectState> attributes;
+    parameters.Get ("attributes", attributes);
+    bool dryRun = false;
+    parameters.Get ("dryRun", dryRun);
+
+    API_DatabaseInfo startingDatabase = {};
+    GSErrCode err = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the current database.");
+    }
+    GS::Array<API_DatabaseInfo> databases;
+    err = GetElementDatabases (databases);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to list the views and layouts.");
+    }
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("attributes");
+    const auto replaceAll = [&] () -> GSErrCode {
+        for (const GS::ObjectState& attribute : attributes) {
+            results (DeleteAndReplaceAttribute (databases, typeID, GetGuidFromAttributesArrayItem (attribute), GetGuidFromArrayItem ("replacementAttributeId", attribute), dryRun));
+        }
+        return NoError;
+    };
+    if (dryRun) {
+        replaceAll ();
+    } else {
+        ACAPI_CallUndoableCommand ("Delete and Replace Attributes", replaceAll);
+    }
+    ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "DeleteAndReplaceAttributes requires Archicad 27 or newer.");
 #endif
 }

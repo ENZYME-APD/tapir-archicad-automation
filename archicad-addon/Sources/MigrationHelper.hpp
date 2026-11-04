@@ -51,9 +51,12 @@
 #define ACAPI_Teamwork_GetTeamworkProjectDetails ACAPI_TeamworkControl_GetTeamworkProjectDetails
 #define ACAPI_Teamwork_GetHotlinkCacheManagementOwner ACAPI_TeamworkControl_GetHotlinkCacheManagementOwner
 #define ACAPI_Teamwork_HasConnection ACAPI_TeamworkControl_HasConnection
+#define ACAPI_Teamwork_IsOnline ACAPI_TeamworkControl_IsOnline
 #define ACAPI_Teamwork_HasCreateRight ACAPI_TeamworkControl_HasCreateRight
 #define ACAPI_Teamwork_HasDeleteModifyRight ACAPI_TeamworkControl_HasDeleteModifyRight
 #define ACAPI_Teamwork_ProjectSharing(par1) ACAPI_Environment (APIEnv_ProjectSharingID, par1)
+// The old call takes the right itself in par1 (as in the AC27 ACAPI_MigrationHeader.hpp), cast to a pointer.
+#define ACAPI_Teamwork_GetTWAccessRight(par1, par2) ACAPI_Environment (APIEnv_GetTWAccessRightID, reinterpret_cast<void*> (static_cast<GS::IntPtr> (par1)), par2)
 
 #ifdef ServerMainVers_2600
 #define ACAPI_UserInput_SetElementHighlight ACAPI_Interface_SetElementHighlight
@@ -198,6 +201,8 @@ inline GSErrCode ACAPI_ModelAccess_GetTextureCoord (API_TexCoordPars* texCoordPa
 #define ACAPI_View_ChangeDocumentFrom3DDefaults(par1) ACAPI_Environment (APIEnv_ChangeDocumentFrom3DDefaultsID, par1)
 #define ACAPI_View_Get3DWindowSets(par1) ACAPI_Environment (APIEnv_Get3DWindowSetsID, par1)
 #define ACAPI_View_Change3DWindowSets(par1) ACAPI_Environment (APIEnv_Change3DWindowSetsID, par1)
+#define ACAPI_View_GetDocumentFrom3DSettings(par1, par2) ACAPI_Environment (APIEnv_GetDocumentFrom3DSettingsID, par1, par2)
+#define ACAPI_View_ChangeDocumentFrom3DSettings(par1, par2) ACAPI_Environment (APIEnv_ChangeDocumentFrom3DSettingsID, par1, par2)
 #define ACAPI_Window_GetCurrentWindow(par1) ACAPI_Database (APIDb_GetCurrentWindowID, par1)
 // APIDo_ChangeWindowID brings the window to the front; APIDb_ChangeCurrentDatabaseID only
 // switches the database the API works on and leaves the front window as it is, which is
@@ -491,6 +496,16 @@ inline GSErrCode ACAPI_AutoText_GetPropertyAutoTextKeyTable (API_Guid* guid, GS:
     return ACAPI_Goodies (APIAny_GetPropertyAutoTextKeyTableID, (void*) guid, (void*) keyGuidTable);
 }
 
+inline GSErrCode ACAPI_AutoText_GetAutoTextKeys (char*** keys, char*** values)
+{
+    return ACAPI_Goodies (APIAny_GetAutoTextKeysID, (void*) keys, (void*) values);
+}
+
+inline GSErrCode ACAPI_AutoText_InterpretAutoText (const GS::UniString* autotext, const API_Guid* guid, GS::UniString* value)
+{
+    return ACAPI_Goodies (APIAny_InterpretAutoTextID, (void*) autotext, (void*) guid, (void*) value);
+}
+
 // The unplaced-node flag (APIdefs_Database.h): AC26 takes it as par2 of
 // APIDb_GetHotlinkNodeID and par3 of APIDb_GetHotlinkNodesID; AC25 has neither
 // (par2 is "---" and the node list respectively), so on 25 the flag is accepted
@@ -653,6 +668,16 @@ inline GSErrCode ACAPI_LibraryManagement_SetLibraries (const GS::Array<API_Libra
     return ACAPI_Environment (APIEnv_SetLibrariesID, (void*) activeLibs);
 }
 
+inline GSErrCode ACAPI_LibraryManagement_GetGDLDate (Int32* date)
+{
+    return ACAPI_Environment (APIEnv_GetGDLDateID, date);
+}
+
+inline GSErrCode ACAPI_LibraryManagement_ChangeGDLDate (Int32* date)
+{
+    return ACAPI_Environment (APIEnv_ChangeGDLDateID, date);
+}
+
 inline GSErrCode ACAPI_LibraryManagement_CheckLibraries ()
 {
     return ACAPI_Environment (APIEnv_CheckLibrariesID, nullptr);
@@ -786,6 +811,11 @@ inline GSErrCode ACAPI_LibraryPart_Search (API_LibPart* ancestor, bool createIfM
     return ACAPI_LibPart_Search (ancestor, createIfMissing, onlyPlaceable);
 }
 
+inline GSErrCode ACAPI_LibraryPart_PatternSearch (const API_LibPart* ancestor, const GS::UniString& pattern, API_LibPart result[50], Int32* numFound)
+{
+    return ACAPI_LibPart_PatternSearch (ancestor, pattern, result, numFound);
+}
+
 inline GSErrCode ACAPI_LibraryPart_OpenParameters (API_ParamOwnerType* paramOwner)
 {
     return ACAPI_Goodies (APIAny_OpenParametersID, paramOwner);
@@ -814,6 +844,31 @@ inline GSErrCode ACAPI_LibraryPart_CloseParameters ()
 inline GSErrCode ACAPI_LibraryPart_GetBuiltInLibpartUnId (short resId, char* unId)
 {
     return ACAPI_Goodies (APIAny_GetBuiltInLibpartUnIdID, (void*)(Int64)resId, unId);
+}
+
+inline GSErrCode ACAPI_LibraryPart_GetElemLibPartUnId (API_Elem_Head* elemHead, char* lpfUnId)
+{
+    return ACAPI_Goodies (APIAny_GetElemLibPartUnIdID, elemHead, lpfUnId);
+}
+
+inline GSErrCode ACAPI_Element_GetElemCreatorToolUnId (API_Elem_Head* elemHead, char* unIDStr)
+{
+    return ACAPI_Goodies (APIAny_GetElemCreatorToolUnIdID, elemHead, unIDStr);
+}
+
+inline GSErrCode ACAPI_Element_GetElementInfoString (const API_Guid* elementGuid, GS::UniString* infoString)
+{
+    return ACAPI_Database (APIDb_GetElementInfoStringID, (void*) elementGuid, infoString);
+}
+
+inline GSErrCode ACAPI_Element_GetCompoundInfoString (const API_Guid* elementGuid, GS::UniString* infoString)
+{
+    return ACAPI_Database (APIDb_GetCompoundInfoStringID, (void*) elementGuid, infoString);
+}
+
+inline GSErrCode ACAPI_LibraryPart_GetUnloadedLibpartName (const API_Guid* guid, GS::UniString* name)
+{
+    return ACAPI_Goodies (APIAny_GetUnloadedLibpartNameID, (void*) guid, name);
 }
 
 inline GSErrCode ACAPI_LibraryPart_GetLibPartUnIDStr (const IO::Location* location, char* libPartUnId)
@@ -925,6 +980,11 @@ inline GSErrCode ACAPI_Element_GetExtent (API_Box* extent, API_DatabaseUnId* dat
     return ACAPI_Database (APIDb_GetExtentID, extent, databaseUnId);
 }
 
+inline GSErrCode ACAPI_Element_GetExtent3D (API_Box3D* extent3D)
+{
+    return ACAPI_Database (APIDb_GetExtent3DID, extent3D);
+}
+
 inline GSErrCode ACAPI_Navigator_GetLayoutBook (API_LayoutBook* book)
 {
     return ACAPI_Database (APIDb_GetLayoutBookID, book);
@@ -989,6 +1049,12 @@ inline GSErrCode ACAPI_View_CreateGhostRecord (const API_GhostRecord* ghostRecor
     return ACAPI_Environment (APIEnv_CreateGhostRecordID, (void*) ghostRecord);
 }
 
+// APIAny_GetPropertyExprReferenceStringID: par1 is the definition, par2 the reference string.
+inline GSErrCode ACAPI_Property_GetPropertyExprReferenceString (const API_PropertyDefinition* propertyDefinition, GS::UniString* propertyReferenceString)
+{
+    return ACAPI_Goodies (APIAny_GetPropertyExprReferenceStringID, (void*) propertyDefinition, propertyReferenceString);
+}
+
 // APIAny_GetCWSubElemParamsID is the AC25/26 name of ACAPI_CurtainWall_GetCWSubElemParams:
 // par1 is the guid of the curtain wall sub-element, par2 receives the parameter handle.
 inline GSErrCode ACAPI_CurtainWall_GetCWSubElemParams (const API_Guid* guid, API_AddParType*** params)
@@ -1000,6 +1066,46 @@ inline GSErrCode ACAPI_CurtainWall_IsCWPanelDegenerate (const API_Guid* guid, bo
 {
     return ACAPI_Database (APIDb_IsCWPanelDegenerateID, const_cast<API_Guid*> (guid), isDegenerate);
 }
+
+// The AC25/26 forms of these calls, as the AC27 ACAPI_MigrationHeader.hpp maps them: the bools of
+// APIEnv_ChangeMarkerDrawingEnabledID and APIDb_StoreViewSettingsID are passed by value in par1.
+inline GSErrCode ACAPI_View_SetCurrent3DStyle (const GS::UniString* name)
+{
+    return ACAPI_Environment (APIEnv_SetCurrent3DStyleID, (void*) name);
+}
+
+inline GSErrCode ACAPI_Drawing_IsMarkerDrawingEnabled (bool* enabled)
+{
+    return ACAPI_Environment (APIEnv_IsMarkerDrawingEnabledID, enabled);
+}
+
+inline GSErrCode ACAPI_Drawing_ChangeMarkerDrawingEnabled (bool enabled)
+{
+    return ACAPI_Environment (APIEnv_ChangeMarkerDrawingEnabledID, reinterpret_cast<void*> (static_cast<GS::IntPtr> (enabled)));
+}
+
+inline GSErrCode ACAPI_View_StoreViewSettings (bool store)
+{
+    return ACAPI_Database (APIDb_StoreViewSettingsID, reinterpret_cast<void*> (static_cast<GS::IntPtr> (store)));
+}
+
+inline GSErrCode ACAPI_Conversion_ConvertPicture (API_PictureHandle* oldPict, API_PictureHandle* newPict)
+{
+    return ACAPI_Goodies (APIAny_ConvertPictureID, oldPict, newPict);
+}
+
+inline GSErrCode ACAPI_Conversion_ConvertMimePicture (API_MimePicture* mimePicture)
+{
+    return ACAPI_Goodies (APIAny_ConvertMimePictureID, mimePicture);
+}
+
+inline GSErrCode ACAPI_ProjectSetting_GetSplineMaxDist (API_TestSplineFit* splinePars, double* distance)
+{
+    return ACAPI_Goodies (APIAny_GetSplineMaxDistID, splinePars, distance);
+}
+
+#define ACAPI_DrawingPrimitive_ShapePrims ACAPI_Element_ShapePrims
+#define ACAPI_CuttingPlane_GetCutPolygonInfo ACAPI_3D_GetCutPolygonInfo
 
 #endif
 
@@ -1281,6 +1387,49 @@ inline GSErrCode TAPIR_Element_SetPropertiesOfDefaultElem (const API_Elem_Head& 
     return ACAPI_Element_SetPropertiesOfDefaultElem (elemHead.type, properties);
 #else
     return ACAPI_Element_SetPropertiesOfDefaultElem (elemHead.typeID, elemHead.variationID, properties);
+#endif
+}
+
+// The property functions of element components (API_ElemComponentID) are overloads of
+// ACAPI_Element_GetPropertyDefinitions / ACAPI_Element_GetPropertyValuesByGuid since AC27;
+// in AC25 and AC26 they are ACAPI_ElemComponent_GetPropertyDefinitions /
+// ACAPI_ElemComponent_GetPropertyValuesByGuid with the same parameters.
+inline GSErrCode TAPIR_ElemComponent_GetPropertyDefinitions (const API_ElemComponentID& elemComponent, API_PropertyDefinitionFilter filter, GS::Array<API_PropertyDefinition>& propertyDefinitions)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Element_GetPropertyDefinitions (elemComponent, filter, propertyDefinitions);
+#else
+    return ACAPI_ElemComponent_GetPropertyDefinitions (elemComponent, filter, propertyDefinitions);
+#endif
+}
+
+inline GSErrCode TAPIR_ElemComponent_GetPropertyValuesByGuid (const API_ElemComponentID& elemComponent, const GS::Array<API_Guid>& propertyDefinitions, GS::Array<API_Property>& properties)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Element_GetPropertyValuesByGuid (elemComponent, propertyDefinitions, properties);
+#else
+    return ACAPI_ElemComponent_GetPropertyValuesByGuid (elemComponent, propertyDefinitions, properties);
+#endif
+}
+
+// The tool defaults of a plain element type (generic variation): since AC26 the API takes
+// an API_ElemType, which an API_ElemTypeID converts to; before that the typeID and the
+// variationID are separate arguments.
+inline GSErrCode TAPIR_Element_GetPropertyValuesOfDefaultElem (API_ElemTypeID typeID, const GS::Array<API_PropertyDefinition>& propertyDefinitions, GS::Array<API_Property>& properties)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_GetPropertyValuesOfDefaultElem (typeID, propertyDefinitions, properties);
+#else
+    return ACAPI_Element_GetPropertyValuesOfDefaultElem (typeID, APIVarId_Generic, propertyDefinitions, properties);
+#endif
+}
+
+inline GSErrCode TAPIR_Element_SetPropertyOfDefaultElem (API_ElemTypeID typeID, const API_Property& property)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_SetPropertyOfDefaultElem (typeID, property);
+#else
+    return ACAPI_Element_SetPropertyOfDefaultElem (typeID, APIVarId_Generic, property);
 #endif
 }
 

@@ -151,7 +151,12 @@ GS::ObjectState GetProjectInfoFieldsCommand::Execute (const GS::ObjectState& /*p
         const GS::UniString& autoTextId = autoText[1];
         const GS::UniString& autoTextValue = autoText[2];
 
-        if (!IsProjectInfoAutoTextId (autoTextId)) {
+        // Custom fields always carry an "autotext-" prefixed id, but the part after the
+        // prefix is not always a known section name: fields added on the UI get ids like
+        // "autotext-CLIENT-1", while CreateProjectInfoFields mints "autotext-<GUID>" ids.
+        // The section prefixes are only needed to pick the built-in fields out of the
+        // full autotext list (which also contains e.g. LONGDATE or FILENAME).
+        if (!autoTextId.BeginsWith ("autotext-") && !IsProjectInfoAutoTextId (autoTextId)) {
             continue;
         }
 
@@ -457,6 +462,214 @@ GS::ObjectState GetAutoTextNameCommand::Execute (const GS::ObjectState& paramete
     return response;
 }
 
+GetAllAutoTextKeysCommand::GetAllAutoTextKeysCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetAllAutoTextKeysCommand::GetName () const
+{
+    return "GetAllAutoTextKeys";
+}
+
+GS::Optional<GS::UniString> GetAllAutoTextKeysCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "autoTexts": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "key": {
+                            "type": "string",
+                            "description": "The autotext's key. To embed it in the content of a Text or Label element, surround it with '<' and '>'."
+                        },
+                        "value": {
+                            "type": "string",
+                            "description": "The autotext's current value, as Archicad resolves it without an element context."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "key",
+                        "value"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "autoTexts"
+        ]
+    })";
+}
+
+GS::ObjectState GetAllAutoTextKeysCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    // Per the DevKit documentation both arrays are allocated by Archicad as BM pointers, one
+    // char* per autotext, and the caller disposes every string and then the arrays themselves.
+    char** keys = nullptr;
+    char** values = nullptr;
+    GSErrCode err = ACAPI_AutoText_GetAutoTextKeys (&keys, &values);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve the autotext keys.");
+    }
+
+    GS::ObjectState response;
+    const auto& listAdder = response.AddList<GS::ObjectState> ("autoTexts");
+
+    const GSSize nKeys = (keys != nullptr) ? BMGetPtrSize (reinterpret_cast<GSPtr> (keys)) / sizeof (char*) : 0;
+    const GSSize nValues = (values != nullptr) ? BMGetPtrSize (reinterpret_cast<GSPtr> (values)) / sizeof (char*) : 0;
+    for (GSSize i = 0; i < nKeys; ++i) {
+        if (keys[i] != nullptr) {
+            GS::ObjectState autoTextData;
+            autoTextData.Add ("key", GS::UniString (keys[i], CC_UTF8));
+            autoTextData.Add ("value", (i < nValues && values[i] != nullptr) ? GS::UniString (values[i], CC_UTF8) : GS::UniString ());
+            listAdder (autoTextData);
+        }
+        BMKillPtr (&keys[i]);
+    }
+    for (GSSize i = 0; i < nValues; ++i) {
+        BMKillPtr (&values[i]);
+    }
+    BMKillPtr (reinterpret_cast<GSPtr*> (&keys));
+    BMKillPtr (reinterpret_cast<GSPtr*> (&values));
+
+    return response;
+}
+
+InterpretAutoTextsCommand::InterpretAutoTextsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String InterpretAutoTextsCommand::GetName () const
+{
+    return "InterpretAutoTexts";
+}
+
+GS::Optional<GS::UniString> InterpretAutoTextsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "autoTexts": {
+                "type": "array",
+                "description": "The autotexts to resolve, either as they are written in the content of a Text or Label element, e.g. '<LAYOUTID>' or '<PROPERTY-69A58F6F-DD3B-478D-B5EF-09A16BD0C548>', or as bare keys without the surrounding '<' and '>', e.g. 'LAYOUTID'.",
+                "items": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "minItems": 1
+            },
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "Optional. The element in whose context the autotexts are resolved, e.g. a Text on a layout for layout autotexts. When omitted, they are resolved without an element context."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "autoTexts"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> InterpretAutoTextsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "values": {
+                "type": "array",
+                "description": "One result per input autotext, in the same order.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "value": {
+                                    "type": "string",
+                                    "description": "The resolved value of the autotext."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "value"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "values"
+        ]
+    })";
+}
+
+GS::ObjectState InterpretAutoTextsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> autoTexts;
+    if (!parameters.Get ("autoTexts", autoTexts) || autoTexts.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing 'autoTexts' parameter.");
+    }
+
+    const GS::ObjectState* elementIdOS = parameters.Get ("elementId");
+    const API_Guid guid = (elementIdOS != nullptr) ? GetGuidFromObjectState (*elementIdOS) : APINULLGuid;
+    if (elementIdOS != nullptr && guid == APINULLGuid) {
+        // A given but unparseable guid must not fall back to the context free resolution.
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid elementId.");
+    }
+
+    GS::ObjectState response;
+    const auto& listAdder = response.AddList<GS::ObjectState> ("values");
+    for (const GS::UniString& autoText : autoTexts) {
+        // Archicad takes the key without the surrounding '<' and '>' (ACAPI_AutoText_InterpretAutoText),
+        // so the form written in a Text is unwrapped; a bare key is passed on as it is.
+        GS::UniString key = autoText;
+        if (key.GetLength () >= 2 && key.BeginsWith (GS::UniChar ('<')) && key.EndsWith (GS::UniChar ('>'))) {
+            key = GS::UniString (key.GetSubstring (1, key.GetLength () - 2));
+        }
+        GS::UniString value;
+        const GSErrCode err = ACAPI_AutoText_InterpretAutoText (&key, &guid, &value);
+        if (err != NoError) {
+            listAdder (CreateErrorResponse (err, "Failed to interpret the autotext."));
+        } else {
+            listAdder (GS::ObjectState ("value", value));
+        }
+    }
+
+    return response;
+}
+
+// Some autotext functions may report NoError even when they have no effect: the report
+// in #667 suggests that ACAPI_AutoText_CreateAnAutoText can return NoError without
+// creating anything, and that ACAPI_AutoText_DeleteAnAutoText returns NoError for an id
+// that matches nothing (neither is verified against the DevKit). The create/delete
+// commands therefore verify their effect against the actual autotext list instead of
+// trusting the returned error code alone.
+#ifndef ServerMainVers_3000
+static GSErrCode GetAutoTextIds (GS::HashSet<GS::UniString>& autoTextIds)
+{
+    GS::Array<GS::ArrayFB<GS::UniString, 3>> autoTexts;
+    GSErrCode err = ACAPI_AutoText_GetAutoTexts (&autoTexts, APIAutoText_All);
+    if (err != NoError) {
+        return err;
+    }
+    autoTextIds.Clear ();
+    for (const auto& autoText : autoTexts) {
+        autoTextIds.Add (autoText[1]);
+    }
+    return NoError;
+}
+#endif
+
 #ifdef ServerMainVers_3000
 
 // Plain wording for the errors the ACAPI_ProjectInfo_* calls return (ACAPinc.h, "ProjectInfo
@@ -505,10 +718,13 @@ static GS::Optional<GS::UniString> FindProjectInfoAutoTextKey (const GS::Array<G
 }
 
 // The name a project info field shows on the UI, by its autotext key: the way back from the key
-// to the field of the Project Info API (see FindProjectInfoAutoTextKey). The caller checks the key
-// with IsProjectInfoOrCustomAutoTextId first, as another autotext may share a field's name.
+// to the field of the Project Info API (see FindProjectInfoAutoTextKey). Only project info keys
+// are taken: another kind of autotext may show the same name as a custom field.
 static GS::Optional<GS::UniString> FindProjectInfoAutoTextName (const GS::Array<GS::ArrayFB<GS::UniString, 3>>& autoTexts, const GS::UniString& autoTextKey)
 {
+    if (!IsProjectInfoOrCustomAutoTextId (autoTextKey)) {
+        return GS::NoValue;
+    }
     for (const auto& autoText : autoTexts) {
         if (autoText[1] == autoTextKey) {
             return autoText[0];
@@ -861,6 +1077,10 @@ GS::ObjectState CreateProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
     const auto& fieldsAdder = response.AddList<GS::ObjectState> ("fields");
 
     ACAPI_CallUndoableCommand ("CreateProjectInfoFields", [&]() -> GSErrCode {
+#ifndef ServerMainVers_3000
+        GS::HashSet<GS::UniString> knownIds;
+        const GSErrCode knownIdsErr = GetAutoTextIds (knownIds);
+#endif
         for (const GS::ObjectState& projectInfoField : projectInfoFields) {
             GS::UniString projectInfoName;
             if (!projectInfoField.Get ("projectInfoName", projectInfoName) || projectInfoName.IsEmpty ()) {
@@ -933,6 +1153,11 @@ GS::ObjectState CreateProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
                 continue;
             }
 
+            if (knownIdsErr != NoError) {
+                fieldsAdder (CreateErrorResponse (knownIdsErr, "Failed to retrieve the autotexts."));
+                continue;
+            }
+
             GS::Guid guid;
             guid.Generate ();
             API_Guid dbKey = GSGuid2APIGuid (guid);
@@ -943,13 +1168,52 @@ GS::ObjectState CreateProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
                 continue;
             }
 
-            GS::UniString projectInfoId ("autotext-");
-            projectInfoId.Append (guid.ToUniString ());
-
-            err = ACAPI_AutoText_SetAnAutoText (&projectInfoId, &projectInfoValue);
+            // ACAPI_AutoText_CreateAnAutoText may report NoError without creating anything
+            // (#667), and the id of the created field is not guaranteed to be "autotext-"
+            // followed by the guid passed in, so the re-fetched autotext list is the only
+            // reliable source for both the success of the call and the new field's id.
+            GS::Array<GS::ArrayFB<GS::UniString, 3>> autoTextsAfterCreate;
+            err = ACAPI_AutoText_GetAutoTexts (&autoTextsAfterCreate, APIAutoText_All);
             if (err != NoError) {
-                fieldsAdder (CreateErrorResponse (err, "Failed to set the initial value of the project information field."));
+                fieldsAdder (CreateErrorResponse (err, "Failed to retrieve the autotexts."));
                 continue;
+            }
+
+            // The new field is the one id that was not in the list before the call. The
+            // stored name is only used as a tie breaker, since Archicad is not guaranteed
+            // to keep it byte for byte (whitespace, case, length limits).
+            GS::UniString projectInfoId;
+            GS::UniString firstNewId;
+            for (const auto& autoText : autoTextsAfterCreate) {
+                if (knownIds.Contains (autoText[1])) {
+                    continue;
+                }
+                if (firstNewId.IsEmpty ()) {
+                    firstNewId = autoText[1];
+                }
+                if (autoText[0] == projectInfoName) {
+                    projectInfoId = autoText[1];
+                    break;
+                }
+            }
+            if (projectInfoId.IsEmpty ()) {
+                projectInfoId = firstNewId;
+            }
+            if (projectInfoId.IsEmpty ()) {
+                fieldsAdder (CreateErrorResponse (APIERR_GENERAL, "ACAPI_AutoText_CreateAnAutoText reported success, but the new field did not appear in the autotext list."));
+                continue;
+            }
+            knownIds.Add (projectInfoId);
+
+            // A freshly created field starts out empty, and setting an empty value would
+            // need a nullptr instead of an empty string (see SetProjectInfoField), so the
+            // call is simply skipped in that case.
+            if (!projectInfoValue.IsEmpty ()) {
+                err = ACAPI_AutoText_SetAnAutoText (&projectInfoId, &projectInfoValue);
+                if (err != NoError) {
+                    fieldsAdder (CreateErrorResponse (err, "Failed to set the initial value of the project information field."));
+                    continue;
+                }
             }
 
             GS::ObjectState createdField;
@@ -1035,6 +1299,9 @@ GS::ObjectState DeleteProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
         // FindProjectInfoAutoTextKey); the list is fetched once, before the first deletion.
         GS::Array<GS::ArrayFB<GS::UniString, 3>> autoTexts;
         const GSErrCode autoTextsErr = ACAPI_AutoText_GetAutoTexts (&autoTexts, APIAutoText_All);
+#else
+        GS::HashSet<GS::UniString> existingIds;
+        const GSErrCode existingIdsErr = GetAutoTextIds (existingIds);
 #endif
         for (const GS::UniString& projectInfoId : projectInfoIds) {
 #ifdef ServerMainVers_3000
@@ -1076,12 +1343,33 @@ GS::ObjectState DeleteProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
                 continue;
             }
 
+            if (existingIdsErr != NoError) {
+                executionResults (CreateFailedExecutionResult (existingIdsErr, "Failed to retrieve the autotexts."));
+                continue;
+            }
+
+            // ACAPI_AutoText_DeleteAnAutoText returns NoError for an id that matches
+            // nothing (#667), so a missing field must be caught before the call.
+            if (!existingIds.Contains (projectInfoId)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "No project info field found with this id."));
+                continue;
+            }
+
             GSErrCode err = ACAPI_AutoText_DeleteAnAutoText (projectInfoId.ToCStr ());
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to delete project info field."));
-            } else {
-                executionResults (CreateSuccessfulExecutionResult ());
+                continue;
             }
+
+            GS::HashSet<GS::UniString> idsAfterDelete;
+            if (GetAutoTextIds (idsAfterDelete) == NoError) {
+                if (idsAfterDelete.Contains (projectInfoId)) {
+                    executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "ACAPI_AutoText_DeleteAnAutoText reported success, but the field is still present in the autotext list."));
+                    continue;
+                }
+                existingIds = idsAfterDelete;
+            }
+            executionResults (CreateSuccessfulExecutionResult ());
 #endif
         }
 
@@ -3337,8 +3625,13 @@ GS::Optional<GS::UniString> SetGeoLocationCommand::GetRawResponseSchema () const
 
 GS::ObjectState SetGeoLocationCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    // The fields not given are written back as they are read here, so a failed read must not
+    // let zeros overwrite them.
     API_GeoLocation apiGeoLocation = {};
-    ACAPI_GeoLocation_GetGeoLocation (&apiGeoLocation);
+    const GSErrCode getErr = ACAPI_GeoLocation_GetGeoLocation (&apiGeoLocation);
+    if (getErr != NoError) {
+        return CreateFailedExecutionResult (getErr, "Failed to get the current geolocation.");
+    }
 
     bool hasGeoLocationInput = false;
     bool isVisible = false;
