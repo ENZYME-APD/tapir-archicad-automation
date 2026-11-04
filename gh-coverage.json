@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-04 12:04 UTC",
+ "generatedAt": "2026-11-04 12:27 UTC",
  "counts": {
   "done": 568,
   "merged": 147,
@@ -5495,7 +5495,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 11,
+   "parameterCount": 12,
    "coveredParameters": [
     "polylinesData",
     "polylinesData.arcs",
@@ -5507,6 +5507,7 @@
     "polylinesData.roomSeparator"
    ],
    "missingParameters": [
+    "databaseId",
     "polylinesData.floorInd",
     "polylinesData.id",
     "polylinesData.penWeightMm"
@@ -5528,7 +5529,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 10,
+   "parameterCount": 11,
    "coveredParameters": [
     "linesData",
     "linesData.begCoordinate",
@@ -5541,6 +5542,7 @@
     "linesData.roomSeparator"
    ],
    "missingParameters": [
+    "databaseId",
     "linesData.id"
    ],
    "pullRequests": [],
@@ -5560,7 +5562,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 12,
+   "parameterCount": 13,
    "coveredParameters": [
     "arcsData",
     "arcsData.begAngle",
@@ -5575,7 +5577,8 @@
     "arcsData.roomSeparator"
    ],
    "missingParameters": [
-    "arcsData.id"
+    "arcsData.id",
+    "databaseId"
    ],
    "pullRequests": [],
    "issues": []
@@ -5594,7 +5597,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 10,
+   "parameterCount": 11,
    "coveredParameters": [
     "circlesData",
     "circlesData.favoriteName",
@@ -5607,7 +5610,8 @@
     "circlesData.roomSeparator"
    ],
    "missingParameters": [
-    "circlesData.id"
+    "circlesData.id",
+    "databaseId"
    ],
    "pullRequests": [],
    "issues": []
@@ -5626,7 +5630,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 8,
+   "parameterCount": 9,
    "coveredParameters": [
     "hotspotsData",
     "hotspotsData.favoriteName",
@@ -5637,6 +5641,7 @@
     "hotspotsData.position"
    ],
    "missingParameters": [
+    "databaseId",
     "hotspotsData.id"
    ],
    "pullRequests": [],
@@ -5656,7 +5661,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 17,
+   "parameterCount": 18,
    "coveredParameters": [
     "hatchesData",
     "hatchesData.arcs",
@@ -5675,6 +5680,7 @@
     "hatchesData.showArea"
    ],
    "missingParameters": [
+    "databaseId",
     "hatchesData.id",
     "hatchesData.roomSpecial"
    ],
@@ -5695,7 +5701,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 10,
+   "parameterCount": 11,
    "coveredParameters": [
     "splinesData",
     "splinesData.closed",
@@ -5708,6 +5714,7 @@
     "splinesData.roomSeparator"
    ],
    "missingParameters": [
+    "databaseId",
     "splinesData.id"
    ],
    "pullRequests": [],
@@ -5939,7 +5946,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 14,
+   "parameterCount": 15,
    "coveredParameters": [
     "labelsData",
     "labelsData.begCoordinate",
@@ -5953,6 +5960,7 @@
     "labelsData.text"
    ],
    "missingParameters": [
+    "databaseId",
     "labelsData.id",
     "labelsData.leaderLine",
     "labelsData.runs",
@@ -5975,7 +5983,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 13,
+   "parameterCount": 14,
    "coveredParameters": [
     "textsData",
     "textsData.angle",
@@ -5989,6 +5997,7 @@
     "textsData.text"
    ],
    "missingParameters": [
+    "databaseId",
     "textsData.id",
     "textsData.layerIndex",
     "textsData.runs"

@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-04 12:04 UTC",
+ "generatedAt": "2026-11-04 12:27 UTC",
  "versions": [
   25,
   26,
@@ -4841,10 +4841,6 @@
      "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
     },
     {
-     "number": 1776,
-     "title": "2D creation commands: optional databaseId to create in a worksheet, detail or layout without opening it"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
@@ -4967,10 +4963,6 @@
     {
      "number": 1777,
      "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
-    },
-    {
-     "number": 1776,
-     "title": "2D creation commands: optional databaseId to create in a worksheet, detail or layout without opening it"
     }
    ],
    "issues": []
@@ -10825,7 +10817,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1836,
+     "title": "[3/4] Report element changes made by the per-element setters to notification clients"
+    }
+   ],
    "issues": []
   },
   {
@@ -17925,6 +17922,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1836,
+     "title": "[3/4] Report element changes made by the per-element setters to notification clients"
+    },
+    {
      "number": 1834,
      "title": "[3/3] Notification clients: attribute replacement events"
     },
@@ -20117,12 +20118,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1776,
-     "title": "2D creation commands: optional databaseId to create in a worksheet, detail or layout without opening it"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20553,10 +20549,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1776,
-     "title": "2D creation commands: optional databaseId to create in a worksheet, detail or layout without opening it"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
@@ -20665,10 +20657,6 @@
     {
      "number": 1831,
      "title": "[2/3] Notification clients: window, floor and project events"
-    },
-    {
-     "number": 1776,
-     "title": "2D creation commands: optional databaseId to create in a worksheet, detail or layout without opening it"
     }
    ],
    "issues": []
@@ -20694,10 +20682,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1776,
-     "title": "2D creation commands: optional databaseId to create in a worksheet, detail or layout without opening it"
-    },
     {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
@@ -26007,6 +25991,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1836,
+     "title": "[3/4] Report element changes made by the per-element setters to notification clients"
+    },
+    {
      "number": 1832,
      "title": "[2/4] Report element changes made by the Modify<Tool> commands to notification clients"
     },
@@ -26041,10 +26029,6 @@
     {
      "number": 1777,
      "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
-    },
-    {
-     "number": 1776,
-     "title": "2D creation commands: optional databaseId to create in a worksheet, detail or layout without opening it"
     },
     {
      "number": 1748,
@@ -32141,6 +32125,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1836,
+     "title": "[3/4] Report element changes made by the per-element setters to notification clients"
+    },
     {
      "number": 1832,
      "title": "[2/4] Report element changes made by the Modify<Tool> commands to notification clients"
@@ -38802,6 +38790,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1836,
+     "title": "[3/4] Report element changes made by the per-element setters to notification clients"
+    },
+    {
      "number": 1832,
      "title": "[2/4] Report element changes made by the Modify<Tool> commands to notification clients"
     },
@@ -38844,10 +38836,6 @@
     {
      "number": 1777,
      "title": "Add DeleteAndReplaceAttributes: delete attributes and replace them where they are used"
-    },
-    {
-     "number": 1776,
-     "title": "2D creation commands: optional databaseId to create in a worksheet, detail or layout without opening it"
     },
     {
      "number": 1750,
@@ -45676,6 +45664,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1836,
+     "title": "[3/4] Report element changes made by the per-element setters to notification clients"
+    },
+    {
      "number": 1832,
      "title": "[2/4] Report element changes made by the Modify<Tool> commands to notification clients"
     },
@@ -49199,6 +49191,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1836,
+     "title": "[3/4] Report element changes made by the per-element setters to notification clients"
+    },
     {
      "number": 1832,
      "title": "[2/4] Report element changes made by the Modify<Tool> commands to notification clients"

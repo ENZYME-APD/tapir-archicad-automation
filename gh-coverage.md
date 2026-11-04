@@ -34,7 +34,7 @@ Parameters of the 715 used commands: 🟢 666 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-04 12:04 UTC.
+Updated 2026-11-04 12:27 UTC.
 
 | | Status |
 |---|---|
@@ -279,21 +279,21 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `GetDimensionData` 🟢 2/2 parameters – `GetDimensionDataComponent`
 - ✅ `GetOpeningTransformations` 🟢 1/1 parameters – `GetOpeningTransformationsComponent`
 - ✅ `CreateZones` 🟡 9/19 parameters – `CreateZonesComponent`<br><sub>no input: `zonesData.allowOverlap`, `zonesData.contourLine`, `zonesData.coverFill`, `zonesData.fixedStampAngle`, `zonesData.floorIndex`, `zonesData.floorThickness`, `zonesData.id`, `zonesData.relativeTopStory`, `zonesData.stampAngle`, `zonesData.topOffset`</sub>
-- ✅ `CreatePolylines` 🟡 8/11 parameters – `CreatePolylinesComponent`<br><sub>no input: `polylinesData.floorInd`, `polylinesData.id`, `polylinesData.penWeightMm`</sub>
-- ✅ `CreateLineElements` 🟡 9/10 parameters – `CreateLineElementsComponent`<br><sub>no input: `linesData.id`</sub>
-- ✅ `CreateArcs` 🟡 11/12 parameters – `CreateArcsComponent`<br><sub>no input: `arcsData.id`</sub>
-- ✅ `CreateCircles` 🟡 9/10 parameters – `CreateCirclesComponent`<br><sub>no input: `circlesData.id`</sub>
-- ✅ `CreateHotspots` 🟡 7/8 parameters – `CreateHotspotsComponent`<br><sub>no input: `hotspotsData.id`</sub>
-- ✅ `CreateHatches` 🟡 15/17 parameters – `CreateHatchesComponent`<br><sub>no input: `hatchesData.id`, `hatchesData.roomSpecial`</sub>
-- ✅ `CreateSplines` 🟡 9/10 parameters – `CreateSplinesComponent`<br><sub>no input: `splinesData.id`</sub>
+- ✅ `CreatePolylines` 🟡 8/12 parameters – `CreatePolylinesComponent`<br><sub>no input: `databaseId`, `polylinesData.floorInd`, `polylinesData.id`, `polylinesData.penWeightMm`</sub>
+- ✅ `CreateLineElements` 🟡 9/11 parameters – `CreateLineElementsComponent`<br><sub>no input: `databaseId`, `linesData.id`</sub>
+- ✅ `CreateArcs` 🟡 11/13 parameters – `CreateArcsComponent`<br><sub>no input: `arcsData.id`, `databaseId`</sub>
+- ✅ `CreateCircles` 🟡 9/11 parameters – `CreateCirclesComponent`<br><sub>no input: `circlesData.id`, `databaseId`</sub>
+- ✅ `CreateHotspots` 🟡 7/9 parameters – `CreateHotspotsComponent`<br><sub>no input: `databaseId`, `hotspotsData.id`</sub>
+- ✅ `CreateHatches` 🟡 15/18 parameters – `CreateHatchesComponent`<br><sub>no input: `databaseId`, `hatchesData.id`, `hatchesData.roomSpecial`</sub>
+- ✅ `CreateSplines` 🟡 9/11 parameters – `CreateSplinesComponent`<br><sub>no input: `databaseId`, `splinesData.id`</sub>
 - ✅ `CreateObjects` 🟡 8/27 parameters – `CreateObjectsComponent`<br><sub>no input: `objectsData.dimensions`, `objectsData.fixPoint`, `objectsData.id`, `objectsData.isAutoOnStoryVisibility`, `objectsData.lineTypeId`, `objectsData.linkToSettings`, `objectsData.reflected`, `objectsData.sectionContourPen`, `objectsData.sectionFillBackgroundPen`, `objectsData.sectionFillId`, `objectsData.sectionFillPen`, `objectsData.surfaceId`, `objectsData.useFixSize`, `objectsData.useFixedAngle`, `objectsData.useObjectLineTypes`, `objectsData.useObjectMaterials`, `objectsData.useObjectPens`, `objectsData.useObjectSectionAttributes`, `objectsData.visibility`</sub>
 - ✅ `CreateLamps` 🟡 8/29 parameters – `CreateLampsComponent`<br><sub>no input: `lampsData.dimensions`, `lampsData.fixPoint`, `lampsData.id`, `lampsData.isAutoOnStoryVisibility`, `lampsData.lightColor`, `lampsData.lightIsOn`, `lampsData.lineTypeId`, `lampsData.linkToSettings`, `lampsData.reflected`, `lampsData.sectionContourPen`, `lampsData.sectionFillBackgroundPen`, `lampsData.sectionFillId`, `lampsData.sectionFillPen`, `lampsData.surfaceId`, `lampsData.useFixSize`, `lampsData.useFixedAngle`, `lampsData.useObjectLineTypes`, `lampsData.useObjectMaterials`, `lampsData.useObjectPens`, `lampsData.useObjectSectionAttributes`, `lampsData.visibility`</sub>
 - ✅ `GetGridElementDefaults` 🟢 0/0 parameters – `GetGridElementDefaultsComponent`
 - ✅ `GetGridElements` 🟢 1/1 parameters – `GetGridElementsComponent`
 - ✅ `CreateGridElements` 🟡 8/9 parameters – `CreateGridElementsComponent`<br><sub>no input: `gridElements.lengthMode`</sub>
 - ✅ `CreateMeshes` 🟡 11/17 parameters – `CreateMeshesComponent`<br><sub>no input: `meshesData.contourPen`, `meshesData.id`, `meshesData.levelPen`, `meshesData.lineTypeIndex`, `meshesData.showLines`, `meshesData.sublines`</sub>
-- ✅ `CreateLabels` 🟡 10/14 parameters – `LabelElementsComponent`<br><sub>no input: `labelsData.id`, `labelsData.leaderLine`, `labelsData.runs`, `labelsData.symbolStyle`</sub>
-- ✅ `CreateTexts` 🟡 10/13 parameters – `CreateTextsComponent`<br><sub>no input: `textsData.id`, `textsData.layerIndex`, `textsData.runs`</sub>
+- ✅ `CreateLabels` 🟡 10/15 parameters – `LabelElementsComponent`<br><sub>no input: `databaseId`, `labelsData.id`, `labelsData.leaderLine`, `labelsData.runs`, `labelsData.symbolStyle`</sub>
+- ✅ `CreateTexts` 🟡 10/14 parameters – `CreateTextsComponent`<br><sub>no input: `databaseId`, `textsData.id`, `textsData.layerIndex`, `textsData.runs`</sub>
 - ✅ `CreateLevelDimensions` 🟢 16/16 parameters – `LevelDimensionsComponent`
 - ✅ `ModifyWalls` 🟢 44/44 parameters – `ModifyWallsComponent`, `WallsApiComponent`, `WallsComponent`
 - ✅ `ModifyBeams` 🟡 16/24 parameters – `ModifyBeamsComponent`<br><sub>no input: `beamsWithDetails.beamShape`, `beamsWithDetails.coverFill`, `beamsWithDetails.cutFillBackgroundPen`, `beamsWithDetails.cutFillPen`, `beamsWithDetails.isFlipped`, `beamsWithDetails.isSlanted`, `beamsWithDetails.isWidthAndHeightLinked`, `beamsWithDetails.profileAngle`</sub>
