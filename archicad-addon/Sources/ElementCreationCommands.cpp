@@ -1100,7 +1100,8 @@ static GS::ObjectState CreateZoneOverlapErrorResponse (const ExistingZone& exist
 // SetDetailsOfElements. Same rule as for walls and columns: an explicit height unlinks
 // the top (relativeTopStory 0), and with a non-zero relativeTopStory Archicad computes
 // the height from the story levels and topOffset. When both are given, relativeTopStory
-// is applied last and wins.
+// is applied last and wins. A topOffset given together with a new top link is written
+// once more after the change, by ReapplyZoneTopOffset (#1869).
 static GS::Optional<GS::ObjectState> ApplyZoneLevels (const GS::ObjectState& details, API_ZoneType& zone, API_Element* mask)
 {
     double height = 0.0;
@@ -1152,6 +1153,35 @@ static GS::Optional<GS::ObjectState> ApplyZoneLevels (const GS::ObjectState& det
     }
 
     return {};
+}
+
+// Reported live (#1869): when one ACAPI_Element_Change links the top of a zone with an
+// explicit height to a story (relativeTopStory 0 -> non-zero) and also sets roomTopOffset,
+// Archicad keeps the zone's top where it was and computes roomTopOffset from it, so the
+// given topOffset is lost. The same topOffset in a change of its own is applied, so it is
+// written again once the link is in place.
+GSErrCode ReapplyZoneTopOffset (const GS::ObjectState& details, const API_Guid& zoneGuid)
+{
+    double topOffset = 0.0;
+    if (!details.Contains ("relativeTopStory") || !details.Get ("topOffset", topOffset)) {
+        return NoError;
+    }
+
+    API_Element element = {};
+    element.header.guid = zoneGuid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+    if (element.zone.relativeTopStory == 0 || std::fabs (element.zone.roomTopOffset - topOffset) < 1e-9) {
+        return NoError;
+    }
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    element.zone.roomTopOffset = topOffset;
+    ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, roomTopOffset);
+    return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
 }
 
 GS::Optional<GS::ObjectState> ApplyZoneSettings (const GS::ObjectState& details, API_Element& element, API_Element& mask)
@@ -1653,6 +1683,12 @@ GS::ObjectState ModifyZonesCommand::Execute (const GS::ObjectState& parameters, 
             err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to modify the zone."));
+                continue;
+            }
+
+            err = ReapplyZoneTopOffset (item, element.header.guid);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "The zone was modified, but Archicad did not apply topOffset."));
                 continue;
             }
 

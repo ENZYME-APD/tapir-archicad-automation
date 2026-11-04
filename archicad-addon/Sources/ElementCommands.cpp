@@ -3544,6 +3544,16 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     executionResults (CreateFailedExecutionResult (err, message));
                     continue;
                 }
+
+                // See ReapplyZoneTopOffset (#1869): a topOffset given with a new top link is
+                // written again in a change of its own.
+                if (typeSpecificDetails != nullptr && GetElemTypeId (elem.header) == API_ZoneID) {
+                    err = ReapplyZoneTopOffset (*typeSpecificDetails, elem.header.guid);
+                    if (err != NoError) {
+                        executionResults (CreateFailedExecutionResult (err, "The zone was changed, but Archicad did not apply topOffset."));
+                        continue;
+                    }
+                }
             }
 
             if (drwIndexTarget >= 0) {
