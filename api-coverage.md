@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 95 % | 63 | 53 | 7 | 1 |  | 2 | 6 | 70 |
 | C++ API (ACAPI::, IFCAPI::) | 99 % | 1423 | 1207 | 205 | 11 |  |  | 12 | 392 |
 
-Archicad 25–30 DevKits; updated 2026-11-04 15:46 UTC.
+Archicad 25–30 DevKits; updated 2026-11-04 16:32 UTC.
 
 | | Status |
 |---|---|
@@ -200,7 +200,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_IsClassificationItemVisibleDefault` – Tells whether a classification item is visible for an element default.
 - ✅ `ACAPI_Element_IsPropertyDefinitionAvailable` – Tells whether a property definition is available for an element.
 - ✅ `ACAPI_Element_IsPropertyDefinitionAvailableDefault` – Tells whether a property definition is available for an element default.
-- 🔀 `ACAPI_Element_IsPropertyDefinitionValueEditable` – Tells whether the value of the property can be modified for the specified element. If the elemGuid argument is APINULLGuid, it tells whether the property definition's default value is editable.
+- 🔀 `ACAPI_Element_IsPropertyDefinitionValueEditable` – Tells whether the value of the property can be modified for the specified element. If the elemGuid argument is APINULLGuid, it tells whether the property definition's default value is editable. — [#1850](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1850 "SetPropertyValuesOfElements: write each element's values with one ACAPI_Element_SetProperties call")
 - 🔀 `ACAPI_Element_IsPropertyDefinitionValueEditableDefault` – Tells whether the value of the property can be modified for the specified tool default.
 - 🔀 `ACAPI_Element_IsPropertyDefinitionVisible` – Tells whether a property definition is visible for an element.
 - ✅ `ACAPI_Element_IsPropertyDefinitionVisibleDefault` – Tells whether a property definition is visible for an element default.
@@ -216,9 +216,9 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_SearchElementByCoord` – Searches for an element by coordinate. <sub>(was `APIAny_SearchElementByCoordID`)</sub>
 - ✅ `ACAPI_Element_SetElementURLRef` – Assigns a URL reference to an element. <sub>(was `APIDb_SetElementURLRefID`)</sub>
 - ➖ `ACAPI_Element_SetEmptyHoleUnId` – Sets the unique ID of the empty hole. <sub>(was `APIAny_SetEmptyHoleUnIdID`)</sub> — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)") *(takes the signature of a library part subtype the add-on registers itself; Tapir registers none)*
-- ✅ `ACAPI_Element_SetProperties` – Sets the specified properties for the given values on an element. — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `ACAPI_Element_SetProperties` – Sets the specified properties for the given values on an element. — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#1850](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1850 "SetPropertyValuesOfElements: write each element's values with one ACAPI_Element_SetProperties call")
 - ✅ `ACAPI_Element_SetPropertiesOfDefaultElem` – Sets the specified properties for the given values on an element default.
-- ✅ `ACAPI_Element_SetProperty` – Sets the specified property for the given values on an element.
+- ✅ `ACAPI_Element_SetProperty` – Sets the specified property for the given values on an element. — [#1850](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1850 "SetPropertyValuesOfElements: write each element's values with one ACAPI_Element_SetProperties call")
 - 🔀 `ACAPI_Element_SetPropertyOfDefaultElem` – Sets the specified property to the given value on an element default.
 - ✅ `ACAPI_Element_SetUserData` – Attaches the user data to an element or an element default.
 - ✅ `ACAPI_Element_SolidLink_Create` – Defines a new Solid Operation Link.
@@ -715,7 +715,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Property_ModifyPropertyValue` <sub>AC27–30</sub> – Sets the value of a property for multiple elements. If the property is not available for at least one of the given element then returns with an error without changing any property value.
 - ➖ `ACAPI_Property_RegisterPropertyObjectHandler` <sub>AC27–30</sub> – Registers a property handler. *(event handlers, not commands)*
 - ➖ `ACAPI_Property_RegisterPropertyVisibilityHandler` <sub>AC27–30</sub> – Tells Archicad that your add-on wants to modify property visibility. *(event handlers, not commands)*
-- ✅ `ACAPI_Property_SetPropertyValueFromString` – Sets the value of a property value from a passed string.
+- ✅ `ACAPI_Property_SetPropertyValueFromString` – Sets the value of a property value from a passed string. — [#1850](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1850 "SetPropertyValuesOfElements: write each element's values with one ACAPI_Element_SetProperties call")
 - ✅ `ACAPI_Property_AddProperty` <sub>AC27</sub> – Makes a property definition available for all of given elements (it is created if it does not exist).
 - ✅ `ACAPI_Property_DeleteProperty` <sub>AC27</sub> – Makes a property definition unavailable for all of given elements.
 

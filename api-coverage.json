@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-04 15:46 UTC",
+ "generatedAt": "2026-11-04 16:32 UTC",
  "versions": [
   25,
   26,
@@ -8668,7 +8668,12 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1850,
+     "title": "SetPropertyValuesOfElements: write each element's values with one ACAPI_Element_SetProperties call"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_IsPropertyDefinitionValueEditableDefault",
@@ -9033,7 +9038,12 @@
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1850,
+     "title": "SetPropertyValuesOfElements: write each element's values with one ACAPI_Element_SetProperties call"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_SetPropertiesOfDefaultElem",
@@ -9075,7 +9085,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1850,
+     "title": "SetPropertyValuesOfElements: write each element's values with one ACAPI_Element_SetProperties call"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_SetPropertyOfDefaultElem",
@@ -17229,7 +17244,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1850,
+     "title": "SetPropertyValuesOfElements: write each element's values with one ACAPI_Element_SetProperties call"
+    }
+   ]
   },
   {
    "id": "ACAPI_RefreshTeamworkReserveInterface",
