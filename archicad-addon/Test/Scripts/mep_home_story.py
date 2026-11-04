@@ -6,7 +6,7 @@ import aclib
 # MEP routes and terminals on a chosen home story. Without floorIndex Archicad picks the home story,
 # which follows the active story. With floorIndex the element is placed at the given (absolute)
 # coordinates and then moved to that home story; its coordinates do not change.
-storiesInfo = aclib.RunTapirCommand ('GetStories', debug = False)
+storiesInfo = aclib.RunTapirCommand ('GetStories')
 stories = storiesInfo['stories']
 targetStory = stories[-1]
 targetIndex = targetStory['index']
