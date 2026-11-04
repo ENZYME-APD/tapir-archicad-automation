@@ -60,7 +60,7 @@ namespace TapirGrasshopperPlugin.Components.LibraryComponents
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.IsUsableGDLString;
+            Properties.Resources.SetGDLDate;
 
         public override Guid ComponentGuid =>
             new Guid("1fd1c6fb-d278-4a19-becd-29e25ea015e6");

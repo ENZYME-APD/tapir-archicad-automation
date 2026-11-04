@@ -79,7 +79,7 @@ namespace TapirGrasshopperPlugin.Components.AnalyticalComponents
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetAnalyticalMemberTypesOfElements;
+            Properties.Resources.GetCustomCurveMemberStretch;
 
         public override Guid ComponentGuid =>
             new Guid("6645bf55-9215-44d3-bcc6-f7f0f04a87d3");
