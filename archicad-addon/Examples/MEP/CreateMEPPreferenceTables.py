@@ -4,7 +4,7 @@ Every run adds a new table. Only for Archicad 27; from Archicad 28 use ModifyMEP
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateMEPPreferenceTables', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateMEPPreferenceTables', {
     'domain': 'Piping',
     'tables': [{'name': 'Tapir example'}]
-})
+}))

@@ -4,4 +4,4 @@ In Archicad 25-27 the 3D window may need to be open.
 """
 import aclib
 
-aclib.RunTapirCommand ('Get3DCutawayStatus')
+aclib.PrintJson (aclib.RunTapirCommand ('Get3DCutawayStatus'))

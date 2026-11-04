@@ -4,4 +4,4 @@ Requires Archicad 27 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('RebuildCurrentDatabase')
+aclib.PrintJson (aclib.RunTapirCommand ('RebuildCurrentDatabase'))

@@ -4,8 +4,8 @@ Needs a Wall Favorite.
 """
 import aclib
 
-wallFavorites = aclib.RunTapirCommand ('GetFavoritesByType', {'elementType': 'Wall'}, debug = False)['favorites']
+wallFavorites = aclib.RunTapirCommand ('GetFavoritesByType', {'elementType': 'Wall'})['favorites']
 if not wallFavorites:
     raise SystemExit ('The project has no Wall Favorite.')
 
-aclib.RunTapirCommand ('GetFavoriteDetails', {'favorites': wallFavorites[:3]})
+aclib.PrintJson (aclib.RunTapirCommand ('GetFavoriteDetails', {'favorites': wallFavorites[:3]}))

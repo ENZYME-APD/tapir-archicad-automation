@@ -14,7 +14,7 @@ marker = aclib.RunTapirCommand ('GetMarkerParametersOfElements', {'elements': op
 if 'libPart' not in marker:
     raise SystemExit ('The first opening has no marker.')
 
-aclib.RunTapirCommand ('SetMarkerLibraryPartOfElements', {'elementsWithMarkerLibraryPart': [{
+aclib.PrintJson (aclib.RunTapirCommand ('SetMarkerLibraryPartOfElements', {'elementsWithMarkerLibraryPart': [{
     'elementId': openings[0]['elementId'],
     'libraryPartName': marker['libPart']['name']
-}]})
+}]}))

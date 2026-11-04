@@ -4,9 +4,9 @@ Requires Archicad 29 or later.
 """
 import aclib
 
-favorites = aclib.RunTapirCommand ('GetAllFavorites', debug = False)['favorites']
+favorites = aclib.RunTapirCommand ('GetAllFavorites')['favorites']
 for favorite in favorites:
     print (favorite.get ('elementType'), favorite['name'])
 
 # Only the Favorites of one element type.
-aclib.RunTapirCommand ('GetAllFavorites', {'elementType': 'Door'})
+aclib.PrintJson (aclib.RunTapirCommand ('GetAllFavorites', {'elementType': 'Door'}))

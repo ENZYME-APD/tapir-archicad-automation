@@ -4,7 +4,7 @@ Uses the current settings of the Flexible Segment tool. Coordinates are in meter
 """
 import aclib
 
-aclib.RunTapirCommand ('PlaceMEPFlexibleSegments', {
+aclib.PrintJson (aclib.RunTapirCommand ('PlaceMEPFlexibleSegments', {
     'flexibleSegmentsData': [{
         'domain': 'Ventilation',
         'controlPoints': [
@@ -13,4 +13,4 @@ aclib.RunTapirCommand ('PlaceMEPFlexibleSegments', {
             {'x': 3.0, 'y': 0.0, 'z': 2.5}
         ]
     }]
-})
+}))

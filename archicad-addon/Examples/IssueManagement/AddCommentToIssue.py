@@ -6,11 +6,11 @@ import aclib
 
 issue = aclib.RunTapirCommand ('CreateIssue', {'name': 'Tapir Example Issue'})
 
-aclib.RunTapirCommand ('AddCommentToIssue', {
+aclib.PrintJson (aclib.RunTapirCommand ('AddCommentToIssue', {
     'issueId': issue['issueId'],
     'author': 'Tapir',
     'status': 'Info',
     'text': 'Comment added by the Tapir example.'
-})
+}))
 
 aclib.RunTapirCommand ('DeleteIssue', {'issueId': issue['issueId']})

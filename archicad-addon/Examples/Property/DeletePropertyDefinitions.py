@@ -3,7 +3,7 @@ import aclib
 
 groupId = aclib.RunTapirCommand ('CreatePropertyGroups', {
     'propertyGroups': [{'propertyGroup': {'name': 'Tapir Example Group'}}]
-}, debug = False)['propertyGroupIds'][0]
+})['propertyGroupIds'][0]
 if 'error' in groupId:
     raise SystemExit ('Could not create the property group: ' + groupId['error']['message'])
 propertyIds = aclib.RunTapirCommand ('CreatePropertyDefinitions', {
@@ -11,10 +11,10 @@ propertyIds = aclib.RunTapirCommand ('CreatePropertyDefinitions', {
         'name': 'Tapir Example Property To Delete', 'description': '', 'type': 'string', 'isEditable': True,
         'availability': [], 'group': {'propertyGroupId': groupId['propertyGroupId']}
     }}]
-}, debug = False)['propertyIds']
+})['propertyIds']
 
-aclib.RunTapirCommand ('DeletePropertyDefinitions', {
+aclib.PrintJson (aclib.RunTapirCommand ('DeletePropertyDefinitions', {
     'propertyIds': [p for p in propertyIds if 'propertyId' in p]
-})
+}))
 
-aclib.RunTapirCommand ('DeletePropertyGroups', {'propertyGroupIds': [groupId]}, debug = False)
+aclib.RunTapirCommand ('DeletePropertyGroups', {'propertyGroupIds': [groupId]})

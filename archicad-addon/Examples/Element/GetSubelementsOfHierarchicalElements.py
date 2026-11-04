@@ -6,8 +6,8 @@ import aclib
 
 elements = []
 for elementType in ['CurtainWall', 'Stair', 'Railing']:
-    elements += aclib.RunTapirCommand ('GetElementsByType', {'elementType': elementType}, debug = False)['elements']
+    elements += aclib.RunTapirCommand ('GetElementsByType', {'elementType': elementType})['elements']
 if not elements:
     raise SystemExit ('No curtain wall, stair or railing in the project.')
 
-aclib.RunTapirCommand ('GetSubelementsOfHierarchicalElements', {'elements': elements[:3]})
+aclib.PrintJson (aclib.RunTapirCommand ('GetSubelementsOfHierarchicalElements', {'elements': elements[:3]}))

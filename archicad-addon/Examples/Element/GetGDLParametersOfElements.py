@@ -4,10 +4,10 @@ Needs at least one Object.
 """
 import aclib
 
-objects = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Object'}, debug = False)['elements'][:1]
+objects = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Object'})['elements'][:1]
 if not objects:
     raise SystemExit ('No object in the project.')
 
-parameters = aclib.RunTapirCommand ('GetGDLParametersOfElements', {'elements': objects}, debug = False)['gdlParametersOfElements'][0]['parameters']
+parameters = aclib.RunTapirCommand ('GetGDLParametersOfElements', {'elements': objects})['gdlParametersOfElements'][0]['parameters']
 for parameter in parameters:
     print ('{} ({}): {}'.format (parameter['name'], parameter['type'], parameter['value']))

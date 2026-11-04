@@ -11,8 +11,8 @@ curtainWall = aclib.RunTapirCommand ('CreateCurtainWalls', {'curtainWallsData': 
     'primaryPattern': {'sizes': [1.5]}
 }]})['elements'][0]
 
-aclib.RunTapirCommand ('ModifyCurtainWalls', {'curtainWallsWithDetails': [{
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyCurtainWalls', {'curtainWallsWithDetails': [{
     'elementId': curtainWall['elementId'],
     'height': 4.0,
     'primaryPattern': {'sizes': [1.0], 'logic': 'FixedSizes'}
-}]})
+}]}))

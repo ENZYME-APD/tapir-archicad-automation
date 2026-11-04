@@ -4,11 +4,11 @@ Uses the first child of the first item of the first classification system, or th
 """
 import aclib
 
-systemId = aclib.RunTapirCommand ('GetAllClassificationSystems', debug = False)['classificationSystems'][0]['classificationSystemId']
+systemId = aclib.RunTapirCommand ('GetAllClassificationSystems')['classificationSystems'][0]['classificationSystemId']
 item = aclib.RunCommand ('API.GetAllClassificationsInSystem', {'classificationSystemId': systemId})['classificationItems'][0]['classificationItem']
 if item.get ('children'):
     item = item['children'][0]['classificationItem']
 
-aclib.RunTapirCommand ('GetClassificationItemParents', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetClassificationItemParents', {
     'classificationItemIds': [{'classificationItemId': item['classificationItemId']}]
-})
+}))

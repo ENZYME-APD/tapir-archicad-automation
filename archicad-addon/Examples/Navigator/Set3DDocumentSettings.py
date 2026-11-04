@@ -18,12 +18,12 @@ navigatorItemId = documents[0]['navigatorItemId']
 settings = aclib.RunTapirCommand ('Get3DDocumentSettings', {'navigatorItemId': navigatorItemId})['settings']
 
 # Only the given keys change; the response holds the settings read back.
-aclib.RunTapirCommand ('Set3DDocumentSettings', {
+aclib.PrintJson (aclib.RunTapirCommand ('Set3DDocumentSettings', {
     'navigatorItemId': navigatorItemId,
     'settings': {'transparency': not settings['transparency']}
-})
+}))
 
-aclib.RunTapirCommand ('Set3DDocumentSettings', {
+aclib.PrintJson (aclib.RunTapirCommand ('Set3DDocumentSettings', {
     'navigatorItemId': navigatorItemId,
     'settings': {'transparency': settings['transparency']}
-})
+}))

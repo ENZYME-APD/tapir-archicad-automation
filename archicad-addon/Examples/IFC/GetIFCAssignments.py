@@ -4,4 +4,4 @@ Requires Archicad 28 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('GetIFCAssignments')
+aclib.PrintJson (aclib.RunTapirCommand ('GetIFCAssignments'))

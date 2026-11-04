@@ -15,10 +15,10 @@ window = aclib.RunTapirCommand ('CreateWindows', {'windowsData': [{
     'centerOffset': 2.0
 }]})['elements'][0]
 
-aclib.RunTapirCommand ('ModifyWindows', {'windowsWithDetails': [{
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyWindows', {'windowsWithDetails': [{
     'elementId': window['elementId'],
     'centerOffset': 3.5,
     'width': 1.5,
     'sillHeight': 1.0
-}]})
+}]}))
 aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': [window], 'fields': ['details']})

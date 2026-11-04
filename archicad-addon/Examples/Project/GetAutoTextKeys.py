@@ -4,4 +4,4 @@ Pass an elementId to get the keys of that element's type as well.
 """
 import aclib
 
-aclib.RunTapirCommand ('GetAutoTextKeys', {})
+aclib.PrintJson (aclib.RunTapirCommand ('GetAutoTextKeys', {}))

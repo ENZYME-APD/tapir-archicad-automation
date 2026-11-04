@@ -16,7 +16,7 @@ fieldId = created['projectInfoFieldId']
 move = {'projectInfoFieldId': fieldId, 'projectInfoGroupId': firstGroup['projectInfoGroupId']}
 if firstGroup['fields']:
     move['beforeProjectInfoFieldId'] = firstGroup['fields'][0]['projectInfoFieldId']
-aclib.RunTapirCommand ('MoveProjectInfoFields', {'projectInfoFields': [move]})
+aclib.PrintJson (aclib.RunTapirCommand ('MoveProjectInfoFields', {'projectInfoFields': [move]}))
 aclib.RunTapirCommand ('GetProjectInfoGroups')
 
 aclib.RunTapirCommand ('DeleteProjectInfoFields', {'projectInfoFieldIds': [{'projectInfoFieldId': fieldId}]})

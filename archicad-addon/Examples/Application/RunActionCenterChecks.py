@@ -4,4 +4,4 @@ Archicad shows the Action Center tab when a check finds an issue; the result onl
 """
 import aclib
 
-aclib.RunTapirCommand ('RunActionCenterChecks', {'checks': ['Hotlinks', 'Libraries']})
+aclib.PrintJson (aclib.RunTapirCommand ('RunActionCenterChecks', {'checks': ['Hotlinks', 'Libraries']}))

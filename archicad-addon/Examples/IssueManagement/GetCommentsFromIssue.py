@@ -9,4 +9,4 @@ if not issues:
     raise SystemExit ('No issue in the project.')
 
 for issue in issues:
-    aclib.RunTapirCommand ('GetCommentsFromIssue', {'issueId': issue['issueId']})
+    aclib.PrintJson (aclib.RunTapirCommand ('GetCommentsFromIssue', {'issueId': issue['issueId']}))

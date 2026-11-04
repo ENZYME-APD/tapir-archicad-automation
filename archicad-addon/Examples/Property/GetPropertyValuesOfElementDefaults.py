@@ -5,7 +5,7 @@ elementIdPropertyId = aclib.RunCommand ('API.GetPropertyIds', {
     'properties': [{'type': 'BuiltIn', 'nonLocalizedName': 'General_ElementID'}]
 })['properties'][0]['propertyId']
 
-aclib.RunTapirCommand ('GetPropertyValuesOfElementDefaults', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetPropertyValuesOfElementDefaults', {
     'elementType': 'Wall',
     'properties': [{'propertyId': elementIdPropertyId}]
-})
+}))

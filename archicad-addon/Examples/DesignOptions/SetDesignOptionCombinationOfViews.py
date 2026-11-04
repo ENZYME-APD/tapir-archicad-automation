@@ -24,17 +24,17 @@ if not candidates:
     raise SystemExit ('No suitable view in the View Map.')
 original = candidates[0]
 
-aclib.RunTapirCommand ('SetDesignOptionCombinationOfViews', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetDesignOptionCombinationOfViews', {
     'navigatorItemIdsWithCombination': [{'navigatorItemId': original['navigatorItemId'], 'mainModelOnly': True}]
-})
+}))
 aclib.RunTapirCommand ('GetDesignOptionCombinationOfViews', {
     'navigatorItemIds': [{'navigatorItemId': original['navigatorItemId']}]
 })
 
 if original['status'] == 'Standard':
-    aclib.RunTapirCommand ('SetDesignOptionCombinationOfViews', {
+    aclib.PrintJson (aclib.RunTapirCommand ('SetDesignOptionCombinationOfViews', {
         'navigatorItemIdsWithCombination': [{
             'navigatorItemId': original['navigatorItemId'],
             'designOptionCombinationId': original['designOptionCombinationId']
         }]
-    })
+    }))

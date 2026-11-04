@@ -11,6 +11,6 @@ subsets = [item for item in AllItems (layoutBook) if item['type'] == 'SubSetItem
 if not subsets:
     raise SystemExit ('No subset in the Layout Book.')
 
-aclib.RunTapirCommand ('GetLayoutSubsetSettings', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetLayoutSubsetSettings', {
     'navigatorItemIds': [{'navigatorItemId': subset['navigatorItemId']} for subset in subsets]
-})
+}))

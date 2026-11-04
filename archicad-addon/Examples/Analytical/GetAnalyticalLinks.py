@@ -25,8 +25,8 @@ links = aclib.RunTapirCommand ('CreateAnalyticalLinks', {
     }]
 })['elements']
 
-aclib.RunTapirCommand ('GetAnalyticalLinks', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetAnalyticalLinks', {
     'elements': links
-})
+}))
 
 aclib.RunTapirCommand ('DeleteElements', {'elements': links})

@@ -6,11 +6,11 @@ import aclib
 
 style = aclib.RunTapirCommand ('Get3DStyleDetails')['styles'][0]
 
-aclib.RunTapirCommand ('Change3DStyles', {
+aclib.PrintJson (aclib.RunTapirCommand ('Change3DStyles', {
     'styles': [{'name': style['name'], 'contourThickness': style['contourThickness'] + 1}]
-})
+}))
 aclib.RunTapirCommand ('Get3DStyleDetails', {'names': [style['name']]})
 
-aclib.RunTapirCommand ('Change3DStyles', {
+aclib.PrintJson (aclib.RunTapirCommand ('Change3DStyles', {
     'styles': [{'name': style['name'], 'contourThickness': style['contourThickness']}]
-})
+}))

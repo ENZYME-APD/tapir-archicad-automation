@@ -7,6 +7,6 @@ import aclib
 
 originalDate = aclib.RunTapirCommand ('GetGDLDate')['date']
 
-aclib.RunTapirCommand ('SetGDLDate', {'date': originalDate})
+aclib.PrintJson (aclib.RunTapirCommand ('SetGDLDate', {'date': originalDate}))
 
 aclib.RunTapirCommand ('GetGDLDate')

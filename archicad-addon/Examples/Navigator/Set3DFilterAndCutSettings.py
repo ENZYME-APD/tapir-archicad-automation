@@ -7,9 +7,9 @@ import aclib
 original = aclib.RunTapirCommand ('Get3DFilterAndCutSettings')['settings']
 
 # Only the listed element types change.
-aclib.RunTapirCommand ('Set3DFilterAndCutSettings', {
+aclib.PrintJson (aclib.RunTapirCommand ('Set3DFilterAndCutSettings', {
     'settings': {'elemTypeFilter': [{'elementType': 'Wall', 'show': False}]},
     'rebuild': True
-})
+}))
 
-aclib.RunTapirCommand ('Set3DFilterAndCutSettings', {'settings': original, 'rebuild': True})
+aclib.PrintJson (aclib.RunTapirCommand ('Set3DFilterAndCutSettings', {'settings': original, 'rebuild': True}))

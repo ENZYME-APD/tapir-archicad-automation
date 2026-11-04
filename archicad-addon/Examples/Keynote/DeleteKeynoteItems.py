@@ -8,4 +8,4 @@ item = aclib.RunTapirCommand ('CreateKeynoteItems', {
     'itemsData': [{'key': 'TAPIR-01', 'title': 'Tapir Example Keynote'}]
 })['keynoteItemIdsOrErrors'][0]
 
-aclib.RunTapirCommand ('DeleteKeynoteItems', {'keynoteItemIds': [{'keynoteItemId': item['keynoteItemId']}]})
+aclib.PrintJson (aclib.RunTapirCommand ('DeleteKeynoteItems', {'keynoteItemIds': [{'keynoteItemId': item['keynoteItemId']}]}))

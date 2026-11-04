@@ -4,4 +4,4 @@ The response is empty when no combination is applied. Requires Archicad 30 or la
 """
 import aclib
 
-aclib.RunTapirCommand ('GetActiveGraphicalOverrideCombination')
+aclib.PrintJson (aclib.RunTapirCommand ('GetActiveGraphicalOverrideCombination'))

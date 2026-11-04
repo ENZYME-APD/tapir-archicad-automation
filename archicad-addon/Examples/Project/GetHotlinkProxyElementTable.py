@@ -8,4 +8,4 @@ instances = aclib.RunCommand ('API.GetElementsByType', {'elementType': 'Hotlink'
 if not instances:
     raise SystemExit ('No placed hotlink in the project.')
 
-aclib.RunTapirCommand ('GetHotlinkProxyElementTable', {'hotlinkInstances': instances})
+aclib.PrintJson (aclib.RunTapirCommand ('GetHotlinkProxyElementTable', {'hotlinkInstances': instances}))

@@ -4,4 +4,4 @@ Overwrites the project file with the current state. An untitled project needs pr
 """
 import aclib
 
-aclib.RunTapirCommand ('SaveProject', {})
+aclib.PrintJson (aclib.RunTapirCommand ('SaveProject', {}))

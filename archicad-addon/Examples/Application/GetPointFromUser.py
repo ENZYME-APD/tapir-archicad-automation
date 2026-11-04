@@ -4,4 +4,4 @@ Waits for a click in Archicad; Escape cancels the input and the command fails.
 """
 import aclib
 
-aclib.RunTapirCommand ('GetPointFromUser', {'prompt': 'Click a point'})
+aclib.PrintJson (aclib.RunTapirCommand ('GetPointFromUser', {'prompt': 'Click a point'}))

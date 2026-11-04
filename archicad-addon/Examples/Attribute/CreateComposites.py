@@ -5,12 +5,12 @@ the same name when the script is run again.
 """
 import aclib
 
-buildingMaterials = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'BuildingMaterial'}, debug = False)['attributes']
-lineTypeId = {'attributeId': aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'Line'}, debug = False)['attributes'][0]['attributeId']}
+buildingMaterials = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'BuildingMaterial'})['attributes']
+lineTypeId = {'attributeId': aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'Line'})['attributes'][0]['attributeId']}
 if len (buildingMaterials) < 2:
     raise SystemExit ('Needs at least two Building Materials in the project.')
 
-aclib.RunTapirCommand ('CreateComposites', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateComposites', {
     'compositeDataArray': [{
         'name': 'Tapir Example Composite',
         'useWith': ['Wall'],
@@ -21,4 +21,4 @@ aclib.RunTapirCommand ('CreateComposites', {
         'separators': [{'lineTypeId': lineTypeId, 'linePen': 1} for _ in range (3)]
     }],
     'overwriteExisting': True
-})
+}))

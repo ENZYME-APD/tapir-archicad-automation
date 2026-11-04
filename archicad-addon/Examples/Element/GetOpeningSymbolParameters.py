@@ -8,4 +8,4 @@ openings = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Opening'
 if not openings:
     raise SystemExit ('No opening in the project.')
 
-aclib.RunTapirCommand ('GetOpeningSymbolParameters', {'elements': openings})
+aclib.PrintJson (aclib.RunTapirCommand ('GetOpeningSymbolParameters', {'elements': openings}))

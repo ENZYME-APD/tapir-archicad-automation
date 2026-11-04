@@ -11,7 +11,7 @@ if not walls:
 issue = aclib.RunTapirCommand ('CreateIssue', {'name': 'Tapir Example Issue'})
 aclib.RunTapirCommand ('AttachElementsToIssue', {'issueId': issue['issueId'], 'elements': walls, 'type': 'Highlight'})
 
-aclib.RunTapirCommand ('DetachElementsFromIssue', {'issueId': issue['issueId'], 'elements': walls})
+aclib.PrintJson (aclib.RunTapirCommand ('DetachElementsFromIssue', {'issueId': issue['issueId'], 'elements': walls}))
 aclib.RunTapirCommand ('GetElementsAttachedToIssue', {'issueId': issue['issueId'], 'type': 'Highlight'})
 
 aclib.RunTapirCommand ('DeleteIssue', {'issueId': issue['issueId']})

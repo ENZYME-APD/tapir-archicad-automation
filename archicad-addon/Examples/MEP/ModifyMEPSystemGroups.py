@@ -9,11 +9,11 @@ if not systemGroups:
     raise SystemExit ('No editable MEP system group in the project.')
 systemGroup = systemGroups[0]
 
-aclib.RunTapirCommand ('ModifyMEPSystemGroups', {
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyMEPSystemGroups', {
     'systemGroupsData': [{'systemGroupId': systemGroup['systemGroupId'], 'name': systemGroup['name'] + ' (renamed)'}]
-})
+}))
 aclib.RunTapirCommand ('GetMEPSystemGroups', {})
 
-aclib.RunTapirCommand ('ModifyMEPSystemGroups', {
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyMEPSystemGroups', {
     'systemGroupsData': [{'systemGroupId': systemGroup['systemGroupId'], 'name': systemGroup['name']}]
-})
+}))

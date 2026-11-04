@@ -4,6 +4,6 @@ The missing parent folder is created too. Requires Archicad 26 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateAttributeFolders', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateAttributeFolders', {
     'attributeFolders': [{'attributeType': 'Layer', 'path': ['Tapir Example', 'Subfolder']}]
-})
+}))

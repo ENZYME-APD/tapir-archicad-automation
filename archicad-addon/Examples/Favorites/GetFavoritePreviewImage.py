@@ -8,7 +8,7 @@ import tempfile
 
 import aclib
 
-wallFavorites = aclib.RunTapirCommand ('GetFavoritesByType', {'elementType': 'Wall'}, debug = False)['favorites']
+wallFavorites = aclib.RunTapirCommand ('GetFavoritesByType', {'elementType': 'Wall'})['favorites']
 if not wallFavorites:
     raise SystemExit ('The project has no Wall Favorite.')
 
@@ -18,7 +18,7 @@ response = aclib.RunTapirCommand ('GetFavoritePreviewImage', {
     'format': 'png',
     'width': 256,
     'height': 256
-}, debug = False)
+})
 
 imagePath = os.path.join (tempfile.mkdtemp (), 'favorite_preview.png')
 with open (imagePath, 'wb') as imageFile:

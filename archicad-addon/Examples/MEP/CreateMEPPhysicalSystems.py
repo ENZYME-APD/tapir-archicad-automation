@@ -8,9 +8,9 @@ systemGroupId = aclib.RunTapirCommand ('CreateMEPSystemGroups', {
     'systemGroupsData': [{'name': 'Heating'}]
 })['systemGroups'][0]['systemGroupId']
 
-aclib.RunTapirCommand ('CreateMEPPhysicalSystems', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateMEPPhysicalSystems', {
     'physicalSystemsData': [
         {'systemGroupId': systemGroupId, 'name': 'Boiler Flow'},
         {'systemGroupId': systemGroupId, 'name': 'Boiler Return'}
     ]
-})
+}))

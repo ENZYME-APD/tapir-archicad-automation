@@ -21,6 +21,6 @@ with tempfile.TemporaryDirectory () as tempDir:
     })
 
 # The path is the same relative path AddFilesToEmbeddedLibrary took as outputPath.
-aclib.RunTapirCommand ('DeleteEmbeddedLibraryItems', {
+aclib.PrintJson (aclib.RunTapirCommand ('DeleteEmbeddedLibraryItems', {
     'embeddedLibraryItems': [{'path': outputPath}]
-})
+}))

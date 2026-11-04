@@ -4,9 +4,9 @@ The walls are kept. Only element sets created by Tapir can be deleted. Needs at 
 """
 import aclib
 
-walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'}, debug = False)['elements'][:2]
+walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:2]
 if len (walls) < 2:
     raise SystemExit ('Needs at least two walls.')
-elementSets = aclib.RunTapirCommand ('CreateElementSets', {'elementSets': [{'elements': walls}]}, debug = False)['elementSets']
+elementSets = aclib.RunTapirCommand ('CreateElementSets', {'elementSets': [{'elements': walls}]})['elementSets']
 
-aclib.RunTapirCommand ('DeleteElementSets', {'elementSets': [s for s in elementSets if 'elementSetId' in s]})
+aclib.PrintJson (aclib.RunTapirCommand ('DeleteElementSets', {'elementSets': [s for s in elementSets if 'elementSetId' in s]}))

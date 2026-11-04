@@ -12,7 +12,7 @@ original = [
 
 changed = [dict (s) for s in original]
 changed[-1]['name'] = 'Tapir Top Story'
-aclib.RunTapirCommand ('SetStories', {'stories': changed})
+aclib.PrintJson (aclib.RunTapirCommand ('SetStories', {'stories': changed}))
 aclib.RunTapirCommand ('GetStories')
 
-aclib.RunTapirCommand ('SetStories', {'stories': original})
+aclib.PrintJson (aclib.RunTapirCommand ('SetStories', {'stories': original}))

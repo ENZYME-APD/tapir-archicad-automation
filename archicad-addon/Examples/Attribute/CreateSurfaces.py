@@ -4,7 +4,7 @@ Overwrites the Surface of the same name when the script is run again.
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateSurfaces', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateSurfaces', {
     'surfaceDataArray': [{
         'name': 'Tapir Example Surface',
         'materialType': 'Matte',
@@ -15,4 +15,4 @@ aclib.RunTapirCommand ('CreateSurfaces', {
         'surfaceColor': {'red': 0.34, 'green': 0.66, 'blue': 0.18}
     }],
     'overwriteExisting': True
-})
+}))

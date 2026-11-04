@@ -3,7 +3,7 @@ import aclib
 
 walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements']
 if walls:
-    aclib.RunTapirCommand ('FitInWindow', {'elements': walls})
+    aclib.PrintJson (aclib.RunTapirCommand ('FitInWindow', {'elements': walls}))
 
 # Without elements, everything is fitted in the window.
-aclib.RunTapirCommand ('FitInWindow')
+aclib.PrintJson (aclib.RunTapirCommand ('FitInWindow'))

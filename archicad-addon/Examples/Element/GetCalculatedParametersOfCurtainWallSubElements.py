@@ -8,4 +8,4 @@ panels = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'CurtainWal
 if not panels:
     raise SystemExit ('No curtain wall panel in the project.')
 
-aclib.RunTapirCommand ('GetCalculatedParametersOfCurtainWallSubElements', {'elements': panels})
+aclib.PrintJson (aclib.RunTapirCommand ('GetCalculatedParametersOfCurtainWallSubElements', {'elements': panels}))

@@ -8,7 +8,7 @@ import tempfile
 
 import aclib
 
-translators = aclib.RunTapirCommand ('GetIFCExportTranslators', debug = False)['translators']
+translators = aclib.RunTapirCommand ('GetIFCExportTranslators')['translators']
 ifcFilePath = os.path.join (tempfile.mkdtemp (), 'Project.ifc')
 
 parameters = {
@@ -20,5 +20,5 @@ if translators:
     parameters['translatorName'] = translators[0]['name']
     parameters['elementsToExport'] = 'EntireProject'
 
-aclib.RunTapirCommand ('IFCFileOperation', parameters)
+aclib.PrintJson (aclib.RunTapirCommand ('IFCFileOperation', parameters))
 print ('IFC file saved to', ifcFilePath)

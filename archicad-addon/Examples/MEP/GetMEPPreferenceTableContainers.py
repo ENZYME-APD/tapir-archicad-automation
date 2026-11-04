@@ -4,6 +4,6 @@ Only for Archicad 27; from Archicad 28 use GetMEPPreferenceTables.
 """
 import aclib
 
-aclib.RunTapirCommand ('GetMEPPreferenceTableContainers', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetMEPPreferenceTableContainers', {
     'domains': ['Piping', 'Ventilation']
-})
+}))

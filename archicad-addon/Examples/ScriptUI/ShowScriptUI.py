@@ -12,10 +12,10 @@ html = """<!DOCTYPE html>
 </body>
 </html>"""
 
-aclib.RunTapirCommand ('ShowScriptUI', {
+aclib.PrintJson (aclib.RunTapirCommand ('ShowScriptUI', {
     'htmlContent': html,
     'title': 'Tapir',
     'width': 300,
     'height': 150,
     'resizable': False
-})
+}))

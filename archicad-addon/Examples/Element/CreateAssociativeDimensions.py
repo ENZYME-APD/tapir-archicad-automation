@@ -11,7 +11,7 @@ wall = aclib.RunTapirCommand ('CreateWalls', {'wallsData': [{
     'height': 3.0
 }]})['elements'][0]
 
-aclib.RunTapirCommand ('CreateAssociativeDimensions', {'dimensionsData': [{
+aclib.PrintJson (aclib.RunTapirCommand ('CreateAssociativeDimensions', {'dimensionsData': [{
     'referencePoint': {'x': 0.0, 'y': -1.0},
     'direction': {'x': 1.0, 'y': 0.0},
     'witnessPoints': [
@@ -19,4 +19,4 @@ aclib.RunTapirCommand ('CreateAssociativeDimensions', {'dimensionsData': [{
         {'elementId': wall['elementId'], 'inIndex': 2},
         {'coordinate': {'x': 8.0, 'y': 0.0}}
     ]
-}]})
+}]}))

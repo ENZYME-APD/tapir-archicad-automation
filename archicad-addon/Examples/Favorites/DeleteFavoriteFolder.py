@@ -5,9 +5,9 @@ and then its Favorites are deleted with it. Requires Archicad 29 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateFavoriteFolder', {'parentPath': [], 'name': 'Tapir Example Folder'}, debug = False)
+aclib.RunTapirCommand ('CreateFavoriteFolder', {'parentPath': [], 'name': 'Tapir Example Folder'})
 
-aclib.RunTapirCommand ('DeleteFavoriteFolder', {
+aclib.PrintJson (aclib.RunTapirCommand ('DeleteFavoriteFolder', {
     'path': ['Tapir Example Folder'],
     'recursive': False
-})
+}))

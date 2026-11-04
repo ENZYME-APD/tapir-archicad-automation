@@ -6,7 +6,7 @@ import aclib
 
 originalScale = aclib.RunTapirCommand ('GetCurrentWindowDrawingScale')['scale']
 
-aclib.RunTapirCommand ('SetCurrentWindowDrawingScale', {'scale': 50})
+aclib.PrintJson (aclib.RunTapirCommand ('SetCurrentWindowDrawingScale', {'scale': 50}))
 aclib.RunTapirCommand ('GetCurrentWindowDrawingScale')
 
-aclib.RunTapirCommand ('SetCurrentWindowDrawingScale', {'scale': originalScale, 'rebuild': True})
+aclib.PrintJson (aclib.RunTapirCommand ('SetCurrentWindowDrawingScale', {'scale': originalScale, 'rebuild': True}))

@@ -7,9 +7,9 @@ import aclib
 
 aclib.RunTapirCommand ('CreateGraphicOverrideRules', {
     'graphicOverrideRules': [{'name': 'Tapir Example Rule', 'ruleGroupName': 'Tapir Example Group To Delete', 'criterion': {'elementType': 'Wall'}, 'style': {'lineMarkerTextPen': 20}}]
-}, debug = False)
+})
 
-aclib.RunTapirCommand ('DeleteGraphicOverrideRuleGroups', {
+aclib.PrintJson (aclib.RunTapirCommand ('DeleteGraphicOverrideRuleGroups', {
     'ruleGroupNames': ['Tapir Example Group To Delete'],
     'deleteRules': True
-})
+}))

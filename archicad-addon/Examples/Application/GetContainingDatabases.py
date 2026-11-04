@@ -8,4 +8,4 @@ walls = aclib.RunCommand ('API.GetElementsByType', {'elementType': 'Wall'})['ele
 if not walls:
     raise SystemExit ('No wall in the project.')
 
-aclib.RunTapirCommand ('GetContainingDatabases', {'elements': walls})
+aclib.PrintJson (aclib.RunTapirCommand ('GetContainingDatabases', {'elements': walls}))

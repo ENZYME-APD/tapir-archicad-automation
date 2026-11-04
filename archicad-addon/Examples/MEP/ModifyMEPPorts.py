@@ -13,13 +13,13 @@ routeId = aclib.RunTapirCommand ('CreateMEPRoutingElements', {
 })['elements'][0]['elementId']
 port = aclib.RunTapirCommand ('GetMEPPorts', {'elements': [{'elementId': routeId}]})['elementPorts'][0]['ports'][0]
 
-aclib.RunTapirCommand ('ModifyMEPPorts', {
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyMEPPorts', {
     'portsData': [{
         'portId': port['portId'],
         'flowDirection': 'FlowIn',
         'outerDiameter': 0.05
     }]
-})
+}))
 
 aclib.RunTapirCommand ('GetMEPPorts', {'elements': [{'elementId': routeId}]})
 aclib.RunTapirCommand ('DeleteElements', {'elements': [{'elementId': routeId}]})

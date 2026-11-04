@@ -4,12 +4,12 @@ Locks the first editable Wall first, so it is unchanged at the end.
 """
 import aclib
 
-walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall', 'filters': ['IsEditable']}, debug = False)['elements'][:1]
+walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall', 'filters': ['IsEditable']})['elements'][:1]
 if not walls:
     raise SystemExit ('No editable wall in the project.')
 wallId = walls[0]['elementId']
 
-aclib.RunTapirCommand ('LockElements', {'elements': walls}, debug = False)
+aclib.RunTapirCommand ('LockElements', {'elements': walls})
 
-aclib.RunTapirCommand ('UnlockElements', {'elements': walls})
-print ('Editable after unlocking: {}'.format (len (aclib.RunTapirCommand ('FilterElements', {'elements': walls, 'filters': ['IsEditable']}, debug = False)['elements']) > 0))
+aclib.PrintJson (aclib.RunTapirCommand ('UnlockElements', {'elements': walls}))
+print ('Editable after unlocking: {}'.format (len (aclib.RunTapirCommand ('FilterElements', {'elements': walls, 'filters': ['IsEditable']})['elements']) > 0))

@@ -4,8 +4,8 @@ Requires Archicad 27 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('CreateGraphicOverrideRuleGroups', {'ruleGroupNames': ['Tapir Example Group']})
+aclib.PrintJson (aclib.RunTapirCommand ('CreateGraphicOverrideRuleGroups', {'ruleGroupNames': ['Tapir Example Group']}))
 
 aclib.RunTapirCommand ('GetGraphicOverrideRuleGroups')
 
-aclib.RunTapirCommand ('DeleteGraphicOverrideRuleGroups', {'ruleGroupNames': ['Tapir Example Group']}, debug = False)
+aclib.RunTapirCommand ('DeleteGraphicOverrideRuleGroups', {'ruleGroupNames': ['Tapir Example Group']})

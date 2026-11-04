@@ -17,9 +17,9 @@ if not freeAngles:
     raise SystemExit ('Every angle of the angle set has a row already.')
 key = {'referenceId': referenceId, 'angle': freeAngles[0]}
 
-aclib.RunTapirCommand ('AddMEPPreferenceTableRows', {
+aclib.PrintJson (aclib.RunTapirCommand ('AddMEPPreferenceTableRows', {
     'tableId': {'guid': table['guid']},
     'rows': [{'key': key, 'values': {'description': 'Added by Tapir'}}]
-})
+}))
 
 aclib.RunTapirCommand ('DeleteMEPPreferenceTableRows', {'tableId': {'guid': table['guid']}, 'keys': [key]})

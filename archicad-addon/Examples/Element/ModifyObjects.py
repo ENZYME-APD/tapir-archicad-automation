@@ -14,10 +14,10 @@ obj = aclib.RunTapirCommand ('CreateObjects', {'objectsData': [{
     'coordinates': {'x': 0.0, 'y': 0.0, 'z': 0.0}
 }]})['elements'][0]
 
-aclib.RunTapirCommand ('ModifyObjects', {'objectsWithDetails': [{
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyObjects', {'objectsWithDetails': [{
     'elementId': obj['elementId'],
     'coordinates': {'x': 2.0, 'y': 1.0, 'z': 0.0},
     'angle': math.pi / 2,
     'reflected': True
-}]})
+}]}))
 aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': [obj], 'fields': ['details']})

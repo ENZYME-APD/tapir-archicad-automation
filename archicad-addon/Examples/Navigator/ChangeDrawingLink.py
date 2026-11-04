@@ -32,5 +32,6 @@ relinked = aclib.RunTapirCommand ('ChangeDrawingLink', {
         'layoutDatabaseId': layoutDatabaseId
     }]
 })['elements']
+aclib.PrintJson (relinked)
 
 aclib.RunTapirCommand ('DeleteElements', {'elements': [d for d in relinked if 'elementId' in d]})

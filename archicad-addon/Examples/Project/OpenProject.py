@@ -8,4 +8,4 @@ projectInfo = aclib.RunTapirCommand ('GetProjectInfo')
 if projectInfo['isTeamwork'] or 'projectPath' not in projectInfo:
     raise SystemExit ('Needs a saved, non-Teamwork project.')
 
-aclib.RunTapirCommand ('OpenProject', {'projectFilePath': projectInfo['projectPath']})
+aclib.PrintJson (aclib.RunTapirCommand ('OpenProject', {'projectFilePath': projectInfo['projectPath']}))

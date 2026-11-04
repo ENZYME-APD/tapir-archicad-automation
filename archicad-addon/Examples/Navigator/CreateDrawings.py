@@ -23,5 +23,6 @@ drawings = aclib.RunTapirCommand ('CreateDrawings', {
         'name': 'Tapir Example Drawing'
     }]
 })['elements']
+aclib.PrintJson (drawings)
 
 aclib.RunTapirCommand ('DeleteElements', {'elements': [d for d in drawings if 'elementId' in d]})

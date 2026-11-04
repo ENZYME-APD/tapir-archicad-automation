@@ -11,8 +11,8 @@ wall = aclib.RunTapirCommand ('CreateWalls', {'wallsData': [{
     'thickness': 0.3
 }]})['elements'][0]
 
-aclib.RunTapirCommand ('CreateWallThicknessDimensions', {'dimensionsData': [{
+aclib.PrintJson (aclib.RunTapirCommand ('CreateWallThicknessDimensions', {'dimensionsData': [{
     'wallId': wall['elementId'],
     'referencePoint': {'x': 3.0, 'y': -1.0},
     'direction': {'x': 0.0, 'y': 1.0}
-}]})
+}]}))

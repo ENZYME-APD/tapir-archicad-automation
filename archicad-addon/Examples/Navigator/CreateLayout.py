@@ -15,13 +15,13 @@ if not masters:
     raise SystemExit ('No master layout in the Layout Book.')
 
 layoutName = 'Tapir Example Layout'
-aclib.RunTapirCommand ('CreateLayout', {
+aclib.PrintJson (aclib.RunTapirCommand ('CreateLayout', {
     'layoutsData': [{
         'layoutName': layoutName,
         'masterNavigatorItemId': masters[0]['navigatorItemId'],
         'position': 'last'
     }]
-})
+}))
 
 # Clean up: find the new layout in the Layout Book and delete it.
 layoutBook = aclib.RunTapirCommand ('GetNavigatorItemTree', {'navigatorMapId': 'LayoutBook'})['navigatorItemTree']

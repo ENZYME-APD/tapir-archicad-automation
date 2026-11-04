@@ -10,7 +10,7 @@ walls = aclib.RunCommand ('API.GetElementsByType', {'elementType': 'Wall'})['ele
 if not walls:
     raise SystemExit ('No wall in the project.')
 
-aclib.RunTapirCommand ('SaveAsModuleFile', {
+aclib.PrintJson (aclib.RunTapirCommand ('SaveAsModuleFile', {
     'moduleFilePath': os.path.join (tempfile.mkdtemp (), 'TapirWalls.mod'),
     'elements': walls
-})
+}))

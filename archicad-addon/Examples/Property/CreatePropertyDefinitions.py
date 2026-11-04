@@ -18,7 +18,8 @@ propertyIds = aclib.RunTapirCommand ('CreatePropertyDefinitions', {
         }
     }]
 })['propertyIds']
+aclib.PrintJson (propertyIds)
 
-aclib.RunTapirCommand ('DeletePropertyDefinitions', {'propertyIds': [p for p in propertyIds if 'propertyId' in p]}, debug = False)
-groups = aclib.RunTapirCommand ('GetAllProperties', {'propertyTypes': ['Custom'], 'includeAvailability': False}, debug = False)['propertyGroups']
-aclib.RunTapirCommand ('DeletePropertyGroups', {'propertyGroupIds': [{'propertyGroupId': g['propertyGroupId']} for g in groups if g['name'] == group]}, debug = False)
+aclib.RunTapirCommand ('DeletePropertyDefinitions', {'propertyIds': [p for p in propertyIds if 'propertyId' in p]})
+groups = aclib.RunTapirCommand ('GetAllProperties', {'propertyTypes': ['Custom'], 'includeAvailability': False})['propertyGroups']
+aclib.RunTapirCommand ('DeletePropertyGroups', {'propertyGroupIds': [{'propertyGroupId': g['propertyGroupId']} for g in groups if g['name'] == group]})

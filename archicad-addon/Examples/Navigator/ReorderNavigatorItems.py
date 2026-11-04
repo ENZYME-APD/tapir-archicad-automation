@@ -10,13 +10,13 @@ first, second = [
     for name in ('Tapir A', 'Tapir B')
 ]
 
-aclib.RunTapirCommand ('ReorderNavigatorItems', {
+aclib.PrintJson (aclib.RunTapirCommand ('ReorderNavigatorItems', {
     'parentNavigatorItemId': parent['navigatorItemId'],
     'orderedNavigatorItemIds': [
         {'navigatorItemId': second['navigatorItemId']},
         {'navigatorItemId': first['navigatorItemId']}
     ]
-})
+}))
 
 # A folder that is not empty cannot be deleted: delete the subfolders first.
 aclib.RunTapirCommand ('DeleteNavigatorItems', {

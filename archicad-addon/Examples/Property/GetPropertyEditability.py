@@ -4,15 +4,15 @@ Needs at least one Wall.
 """
 import aclib
 
-walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'}, debug = False)['elements'][:1]
+walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]
 if not walls:
     raise SystemExit ('No wall in the project.')
 elementIdPropertyId = aclib.RunCommand ('API.GetPropertyIds', {
     'properties': [{'type': 'BuiltIn', 'nonLocalizedName': 'General_ElementID'}]
 })['properties'][0]['propertyId']
 
-aclib.RunTapirCommand ('GetPropertyEditability', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetPropertyEditability', {
     'properties': [{'propertyId': elementIdPropertyId}],
     'elements': walls,
     'elementTypes': ['Wall']
-})
+}))

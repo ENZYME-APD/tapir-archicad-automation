@@ -4,6 +4,6 @@ Without accessRights every right of the Archicad version is returned.
 """
 import aclib
 
-aclib.RunTapirCommand ('GetTeamworkAccessRights', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetTeamworkAccessRights', {
     'accessRights': ['LayersCreate', 'LibraryPartDeleteModify', 'HotlinkAndXrefManage']
-})
+}))

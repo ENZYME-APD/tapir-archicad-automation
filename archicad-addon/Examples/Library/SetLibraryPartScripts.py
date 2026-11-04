@@ -13,12 +13,12 @@ createdPart = aclib.RunTapirCommand ('CreateLibraryParts', {
         'script3D': 'BLOCK A, B, 1'
     }],
     'overwriteExisting': True
-}, debug = False)['libraryParts'][0]
+})['libraryParts'][0]
 if 'error' in createdPart:
     raise SystemExit (createdPart['error']['message'])
 libraryPartName = 'Tapir Example Box.gsm'
 
-aclib.RunTapirCommand ('SetLibraryPartScripts', {
+aclib.PrintJson (aclib.RunTapirCommand ('SetLibraryPartScripts', {
     'libraryParts': [{
         'name': libraryPartName,
         'scripts': {
@@ -27,11 +27,11 @@ aclib.RunTapirCommand ('SetLibraryPartScripts', {
         },
         'deleteScripts': ['properties']
     }]
-})
+}))
 
 aclib.RunTapirCommand ('GetLibraryPartScripts', {
     'libraryParts': [{'libraryPartName': libraryPartName}],
     'scripts': ['2d', '3d', 'properties']
 })
 
-aclib.RunTapirCommand ('DeleteEmbeddedLibraryItems', {'embeddedLibraryItems': [{'path': createdPart['path']}]}, debug = False)
+aclib.RunTapirCommand ('DeleteEmbeddedLibraryItems', {'embeddedLibraryItems': [{'path': createdPart['path']}]})

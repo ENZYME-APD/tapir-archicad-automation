@@ -4,4 +4,4 @@ Requires Archicad 26 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('GetAnalyticalVisibilitySettings', {})
+aclib.PrintJson (aclib.RunTapirCommand ('GetAnalyticalVisibilitySettings', {}))

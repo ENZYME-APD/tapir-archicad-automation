@@ -8,6 +8,6 @@ mepElements = aclib.RunTapirCommand ('GetMEPElements', {})['elements']
 if not mepElements:
     raise SystemExit ('No MEP element in the project.')
 
-aclib.RunTapirCommand ('GetMEPPhysicalSystemsOfElements', {
+aclib.PrintJson (aclib.RunTapirCommand ('GetMEPPhysicalSystemsOfElements', {
     'elements': [{'elementId': element['elementId']} for element in mepElements[:5]]
-})
+}))

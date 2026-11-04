@@ -11,15 +11,15 @@ if not shells:
 old = aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': shells, 'fields': ['details']})['detailsOfElements'][0]['details']
 buildingMaterial = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'BuildingMaterial'})['attributes'][0]
 
-aclib.RunTapirCommand ('ModifyShells', {'shellsWithDetails': [{
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyShells', {'shellsWithDetails': [{
     'elementId': shells[0]['elementId'],
     'structureType': 'Basic',
     'buildingMaterialId': buildingMaterial['attributeId']
-}]})
+}]}))
 aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': shells, 'fields': ['details']})
 
 restore = {'elementId': shells[0]['elementId'], 'structureType': old['structureType']}
 for key in ['buildingMaterialId', 'compositeId']:
     if key in old:
         restore[key] = old[key]
-aclib.RunTapirCommand ('ModifyShells', {'shellsWithDetails': [restore]})
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyShells', {'shellsWithDetails': [restore]}))

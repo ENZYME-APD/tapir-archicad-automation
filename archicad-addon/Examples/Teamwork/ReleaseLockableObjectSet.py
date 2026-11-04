@@ -4,8 +4,8 @@ Needs an open Teamwork project.
 """
 import aclib
 
-aclib.RunTapirCommand ('ReserveLockableObjectSet', {'objectSetName': 'Composites'}, debug = False)
+aclib.RunTapirCommand ('ReserveLockableObjectSet', {'objectSetName': 'Composites'})
 
-aclib.RunTapirCommand ('ReleaseLockableObjectSet', {'objectSetName': 'Composites'})
+aclib.PrintJson (aclib.RunTapirCommand ('ReleaseLockableObjectSet', {'objectSetName': 'Composites'}))
 
 aclib.RunTapirCommand ('GetLockableObjectSetStatus', {'objectSetName': 'Composites'})

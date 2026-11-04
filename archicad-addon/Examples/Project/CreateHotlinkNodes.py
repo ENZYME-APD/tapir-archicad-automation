@@ -17,6 +17,7 @@ node = aclib.RunTapirCommand ('CreateHotlinkNodes', {
         {'sourceLocation': modulePath, 'name': 'Tapir Example', 'storyRangeType': 'AllStories'}
     ]
 })['hotlinkNodes'][0]
+aclib.PrintJson (node)
 
 if 'hotlinkNodeId' in node:
     aclib.RunTapirCommand ('DeleteHotlinkNodes', {'hotlinkNodes': [{'hotlinkNodeId': node['hotlinkNodeId']}]})

@@ -10,4 +10,4 @@ for elementType in ['Object', 'Lamp', 'Window', 'Door']:
 if not elements:
     raise SystemExit ('No Object, Lamp, Window or Door in the project.')
 
-aclib.RunTapirCommand ('GetMissingLibPartNames', {'elements': elements})
+aclib.PrintJson (aclib.RunTapirCommand ('GetMissingLibPartNames', {'elements': elements}))

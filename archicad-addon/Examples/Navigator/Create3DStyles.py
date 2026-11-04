@@ -4,12 +4,12 @@ The new style stays in the project. Requires Archicad 27 or later.
 """
 import aclib
 
-aclib.RunTapirCommand ('Create3DStyles', {
+aclib.PrintJson (aclib.RunTapirCommand ('Create3DStyles', {
     'styles': [{
         'name': 'Tapir White Model',
         'monochromeEnabled': True,
         'monochromeSurfaceColor': {'red': 1.0, 'green': 1.0, 'blue': 1.0},
         'monochromeContourColor': {'red': 0.0, 'green': 0.0, 'blue': 0.0}
     }]
-})
+}))
 aclib.RunTapirCommand ('Get3DStyleDetails', {'names': ['Tapir White Model']})

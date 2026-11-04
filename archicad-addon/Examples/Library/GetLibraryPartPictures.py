@@ -8,11 +8,11 @@ import tempfile
 
 import aclib
 
-doors = aclib.RunTapirCommand ('GetAvailableLibraryParts', {'filterByTypeId': 'Door'}, debug = False)['libraryParts']
+doors = aclib.RunTapirCommand ('GetAvailableLibraryParts', {'filterByTypeId': 'Door'})['libraryParts']
 if not doors:
     raise SystemExit ('No door library part is loaded.')
 
-response = aclib.RunTapirCommand ('GetLibraryPartPictures', {'name': doors[0]['fileName']}, debug = False)
+response = aclib.RunTapirCommand ('GetLibraryPartPictures', {'name': doors[0]['fileName']})
 print ('Number of GDL pictures:', len (response['gdlPictures']))
 if 'previewPicture' in response:
     previewPath = os.path.join (tempfile.mkdtemp (), 'preview.png')
