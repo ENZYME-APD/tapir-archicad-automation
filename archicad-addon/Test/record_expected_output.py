@@ -3,8 +3,8 @@ reopening the project: python record_expected_output.py <name>.py [...]
 
 test_examples.py runs every script of Test/Scripts/ and every example of Examples/ against a
 freshly opened TestProject.pla and writes their output through the same masks (guids, times,
-path-like fields): Test/Scripts/<name>.py to ExpectedOutputs/<name>.output,
-Examples/<GroupFolder>/<name>.py to ExpectedOutputs/Examples/<GroupFolder>/<name>.output. This
+path-like fields): Test/Scripts/<name>.py to ExpectedOutputs/<name>.py.output,
+Examples/<GroupFolder>/<name>.py to ExpectedOutputs/Examples/<GroupFolder>/<name>.py.output. This
 does the same for the named scripts against whatever project is open, for recording a new golden
 without a full suite run. A name is looked up in Test/Scripts/ first, then in the group folders
 of Examples/; a path to the script works too."""
