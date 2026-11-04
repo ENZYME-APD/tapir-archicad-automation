@@ -11740,3 +11740,405 @@ GS::ObjectState PlaceOpeningsCommand::Execute (const GS::ObjectState& parameters
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
 #endif
 }
+
+// Detail and Worksheet markers (#1377). A Detail and a Worksheet element is the marker that
+// cuts the detail or worksheet out of a floor plan, section or elevation: the clip polygon,
+// the base point (the origin of the detail/worksheet database) and the marker symbol. Created
+// with linkData.sourceMarker, Archicad makes the new Detail or Worksheet viewpoint with it, as
+// CreateSections does for sections. API_WorksheetType is API_DetailType, so element.detail
+// serves both.
+
+static void CopyToDetailString (GS::uchar_t (&target)[API_UniLongNameLen], const GS::UniString& source)
+{
+    GS::ucsncpy (target, source.ToUStr (), API_UniLongNameLen);
+    target[API_UniLongNameLen - 1] = 0;
+}
+
+static GS::ObjectState ExecuteCreateDetailMarkers (const GS::ObjectState& parameters, const char* arrayName, API_ElemTypeID typeId, const GS::String& undoName)
+{
+    GS::Array<GS::ObjectState> items;
+    auto error = GetElementArray (parameters, arrayName, items);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+
+    return ExecuteCreateWithElements (undoName, [&](GS::Array<GS::ObjectState>& elements) {
+        for (const GS::ObjectState& data : items) {
+            API_Element element = {};
+            API_ElementMemo memo = {};
+            API_SubElement marker = {};
+            const GS::OnExit cleanup ([&]() {
+                ACAPI_DisposeElemMemoHdls (&memo);
+                ACAPI_DisposeElemMemoHdls (&marker.memo);
+            });
+
+#ifdef ServerMainVers_2600
+            element.header.type = typeId;
+#else
+            element.header.typeID = typeId;
+#endif
+            marker.subType = APISubElement_MainMarker;
+            GSErrCode err = ACAPI_Element_GetDefaultsExt (&element, &memo, 1UL, &marker);
+            if (err != NoError) {
+                elements.Push (CreateErrorResponse (err, "Failed to read the marker defaults."));
+                continue;
+            }
+
+            GS::Array<GS::ObjectState> clipPolygon;
+            GS::Array<GS::ObjectState> clipPolygonArcs;
+            data.Get ("clipPolygon", clipPolygon);
+            data.Get ("polygonArcs", clipPolygonArcs);
+            if (clipPolygon.GetSize () < 3) {
+                elements.Push (CreateErrorResponse (APIERR_BADPARS, "'clipPolygon' needs at least 3 points."));
+                continue;
+            }
+
+            ACAPI_DisposeElemMemoHdls (&memo);
+            memo = {};
+            if (!BuildHatchPolygonMemo (clipPolygon, clipPolygonArcs, {}, element.detail.poly, memo)) {
+                elements.Push (CreateErrorResponse (APIERR_MEMFULL, "Failed to allocate the clip polygon."));
+                continue;
+            }
+
+            Box2DData bounds;
+            bounds.xMin = bounds.xMax = (*memo.coords)[1].x;
+            bounds.yMin = bounds.yMax = (*memo.coords)[1].y;
+            for (Int32 i = 2; i <= element.detail.poly.nCoords; ++i) {
+                bounds.xMin = GS::Min (bounds.xMin, (*memo.coords)[i].x);
+                bounds.xMax = GS::Max (bounds.xMax, (*memo.coords)[i].x);
+                bounds.yMin = GS::Min (bounds.yMin, (*memo.coords)[i].y);
+                bounds.yMax = GS::Max (bounds.yMax, (*memo.coords)[i].y);
+            }
+            // The base point, the origin of the new viewpoint, is the center of the clip polygon's
+            // bounding box: Archicad puts it there whatever pos is given (Archicad 29).
+            element.detail.pos = { (bounds.xMin + bounds.xMax) / 2.0, (bounds.yMin + bounds.yMax) / 2.0 };
+
+            marker.subElem.object.pos = (*memo.coords)[1];
+            if (const GS::ObjectState* markerCoordinate = data.Get ("markerCoordinate")) {
+                marker.subElem.object.pos = Get2DCoordinateFromObjectState (*markerCoordinate);
+            }
+
+            data.Get ("angle", element.detail.angle);
+            GS::UniString name;
+            if (data.Get ("name", name)) {
+                CopyToDetailString (element.detail.detailName, name);
+            }
+            GS::UniString id;
+            if (data.Get ("id", id)) {
+                CopyToDetailString (element.detail.detailIdStr, id);
+            }
+            short floorIndex = 0;
+            if (data.Get ("floorIndex", floorIndex)) {
+                element.header.floorInd = floorIndex;
+            }
+
+            element.detail.linkData.sourceMarker = true;
+            err = ACAPI_Element_CreateExt (&element, &memo, 1UL, &marker);
+            if (err != NoError) {
+                elements.Push (CreateErrorResponse (err, "Failed to create the marker."));
+                continue;
+            }
+            elements.Push (CreateElementIdObjectState (element.header.guid));
+        }
+    });
+}
+
+CreateDetailMarkersCommand::CreateDetailMarkersCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateDetailMarkersCommand::GetName () const
+{
+    return "CreateDetailMarkers";
+}
+
+GS::Optional<GS::UniString> CreateDetailMarkersCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "detailMarkersData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "clipPolygon": {
+                            "type": "array",
+                            "description": "The boundary of the cut out area, at least 3 points, without repeating the first one.",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 3
+                        },
+                        "polygonArcs": {
+                            "type": "array",
+                            "description": "Optional arcs of the boundary, with indices into clipPolygon.",
+                            "items": { "$ref": "#/PolyArc" }
+                        },
+                        "markerCoordinate": { "$ref": "#/Coordinate2D", "description": "Where the marker symbol is placed. Default is the first point of clipPolygon." },
+                        "angle": { "type": "number", "description": "Rotation of the marker symbol in radians. Default is that of the tool defaults." },
+                        "name": { "type": "string", "description": "Name of the new viewpoint. Default is that of the tool defaults." },
+                        "id": { "type": "string", "description": "Reference ID shown in the marker and in the Project Map. A '/' splits it between the two lines of the marker. Default is that of the tool defaults." },
+                        "floorIndex": { "type": "integer", "description": "Story of the marker when it is placed on a floor plan. Default is the current story." }
+                    },
+                    "additionalProperties": false,
+                    "required": ["clipPolygon"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["detailMarkersData"]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateDetailMarkersCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    })";
+}
+
+GS::ObjectState CreateDetailMarkersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    return ExecuteCreateDetailMarkers (parameters, "detailMarkersData", API_DetailID, "Create Detail Markers");
+}
+
+CreateWorksheetMarkersCommand::CreateWorksheetMarkersCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateWorksheetMarkersCommand::GetName () const
+{
+    return "CreateWorksheetMarkers";
+}
+
+GS::Optional<GS::UniString> CreateWorksheetMarkersCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "worksheetMarkersData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "clipPolygon": {
+                            "type": "array",
+                            "description": "The boundary of the cut out area, at least 3 points, without repeating the first one.",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 3
+                        },
+                        "polygonArcs": {
+                            "type": "array",
+                            "description": "Optional arcs of the boundary, with indices into clipPolygon.",
+                            "items": { "$ref": "#/PolyArc" }
+                        },
+                        "markerCoordinate": { "$ref": "#/Coordinate2D", "description": "Where the marker symbol is placed. Default is the first point of clipPolygon." },
+                        "angle": { "type": "number", "description": "Rotation of the marker symbol in radians. Default is that of the tool defaults." },
+                        "name": { "type": "string", "description": "Name of the new viewpoint. Default is that of the tool defaults." },
+                        "id": { "type": "string", "description": "Reference ID shown in the marker and in the Project Map. A '/' splits it between the two lines of the marker. Default is that of the tool defaults." },
+                        "floorIndex": { "type": "integer", "description": "Story of the marker when it is placed on a floor plan. Default is the current story." }
+                    },
+                    "additionalProperties": false,
+                    "required": ["clipPolygon"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["worksheetMarkersData"]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateWorksheetMarkersCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    })";
+}
+
+GS::ObjectState CreateWorksheetMarkersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    return ExecuteCreateDetailMarkers (parameters, "worksheetMarkersData", API_WorksheetID, "Create Worksheet Markers");
+}
+
+ModifyDetailMarkersCommand::ModifyDetailMarkersCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyDetailMarkersCommand::GetName () const
+{
+    return "ModifyDetailMarkers";
+}
+
+GS::Optional<GS::UniString> ModifyDetailMarkersCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "detailMarkersWithDetails": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId", "description": "A Detail or a Worksheet marker." },
+                        "name": { "type": "string", "description": "The new name of the viewpoint." },
+                        "id": { "type": "string", "description": "The new reference ID, shown in the marker and in the Project Map. A '/' splits it between the two lines of the marker." },
+                        "clipPolygon": {
+                            "type": "array",
+                            "description": "The new boundary of the cut out area, at least 3 points, without repeating the first one.",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 3
+                        },
+                        "polygonArcs": {
+                            "type": "array",
+                            "description": "Optional arcs of the new boundary, with indices into clipPolygon.",
+                            "items": { "$ref": "#/PolyArc" }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["detailMarkersWithDetails"]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyDetailMarkersCommand::GetRawResponseSchema () const
+{
+    return ModifyWallsCommand ().GetRawResponseSchema ();
+}
+
+GS::ObjectState ModifyDetailMarkersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> items;
+    auto error = GetElementArray (parameters, "detailMarkersWithDetails", items);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+
+    return ExecuteModifyWithResults ("Modify Detail Markers", [&](GS::Array<GS::ObjectState>& results) {
+        for (const GS::ObjectState& item : items) {
+            GS::UniString name;
+            GS::UniString id;
+            GS::Array<GS::ObjectState> clipPolygon;
+            GS::Array<GS::ObjectState> clipPolygonArcs;
+            const bool hasName = item.Get ("name", name);
+            const bool hasId = item.Get ("id", id);
+            const bool hasClipPolygon = item.Get ("clipPolygon", clipPolygon);
+            item.Get ("polygonArcs", clipPolygonArcs);
+            if (!hasName && !hasId && !hasClipPolygon) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Nothing to change: give 'name', 'id' or 'clipPolygon'."));
+                continue;
+            }
+            if (hasClipPolygon && clipPolygon.GetSize () < 3) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'clipPolygon' needs at least 3 points."));
+                continue;
+            }
+
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to load the element."));
+                continue;
+            }
+            const API_ElemTypeID typeId = GetElemTypeId (element.header);
+            if (typeId != API_DetailID && typeId != API_WorksheetID) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADID, "The element is not a Detail or a Worksheet marker."));
+                continue;
+            }
+
+            // Both change calls return NoError on a hidden or locked layer and change nothing,
+            // so the layer is checked first.
+            API_Attribute layerAttr = {};
+            layerAttr.header.typeID = API_LayerID;
+            layerAttr.header.index = element.header.layer;
+            if (ACAPI_Attribute_Get (&layerAttr) == NoError) {
+                if ((layerAttr.header.flags & APILay_Locked) != 0) {
+                    results.Push (CreateFailedExecutionResult (APIERR_LOCKEDLAY, "The marker was not changed, because its layer is locked."));
+                    continue;
+                }
+                if ((layerAttr.header.flags & APILay_Hidden) != 0) {
+                    results.Push (CreateFailedExecutionResult (APIERR_HIDDENLAY, "The marker was not changed, because its layer is hidden."));
+                    continue;
+                }
+            }
+
+            if (hasName || hasId) {
+                API_Element mask = {};
+                ACAPI_ELEMENT_MASK_CLEAR (mask);
+                if (hasName) {
+                    CopyToDetailString (element.detail.detailName, name);
+                    ACAPI_ELEMENT_MASK_SET (mask, API_DetailType, detailName);
+                }
+                if (hasId) {
+                    CopyToDetailString (element.detail.detailIdStr, id);
+                    ACAPI_ELEMENT_MASK_SET (mask, API_DetailType, detailIdStr);
+                }
+                // As for sections, ACAPI_Element_Change takes no name or ID; the DevKit's
+                // Element_Test changes the ID of Details and Worksheets with ChangeParameters.
+                err = ACAPI_Element_ChangeParameters ({element.header.guid}, &element, nullptr, &mask);
+                if (err != NoError) {
+                    results.Push (CreateFailedExecutionResult (err, "Failed to change the name or ID of the marker."));
+                    continue;
+                }
+            }
+
+            if (hasClipPolygon) {
+                API_ElementMemo memo = {};
+                const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+                if (!BuildHatchPolygonMemo (clipPolygon, clipPolygonArcs, {}, element.detail.poly, memo)) {
+                    results.Push (CreateFailedExecutionResult (APIERR_MEMFULL, "Failed to allocate the clip polygon."));
+                    continue;
+                }
+                API_Element mask = {};
+                ACAPI_ELEMENT_MASK_CLEAR (mask);
+                ACAPI_ELEMENT_MASK_SET (mask, API_DetailType, poly);
+                err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_Polygon, true);
+                if (err != NoError) {
+                    results.Push (CreateFailedExecutionResult (err, "Failed to change the clip polygon of the marker."));
+                    continue;
+                }
+            }
+
+            // Read back, so a value Archicad did not take is reported instead of a success.
+            API_Element changed = {};
+            changed.header.guid = element.header.guid;
+            err = ACAPI_Element_Get (&changed);
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to read the marker back after the change."));
+                continue;
+            }
+            GS::UniString changedName;
+            GS::UniString changedId;
+            GetDetailMarkerNameAndId (changed, changedName, changedId);
+            if ((hasName && changedName != GS::UniString (element.detail.detailName)) ||
+                (hasId && changedId != GS::UniString (element.detail.detailIdStr))) {
+                results.Push (CreateFailedExecutionResult (APIERR_REFUSEDPAR, "Archicad did not apply the new name or ID."));
+                continue;
+            }
+            if (hasClipPolygon && changed.detail.poly.nCoords != element.detail.poly.nCoords) {
+                results.Push (CreateFailedExecutionResult (APIERR_REFUSEDPAR, "Archicad did not apply the new clip polygon."));
+                continue;
+            }
+            results.Push (CreateSuccessfulExecutionResult ());
+        }
+    });
+}

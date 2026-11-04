@@ -175,6 +175,20 @@ API_Guid GetGuidFromObjectState (const GS::ObjectState& os)
     return APIGuidFromString (guid.ToCStr ());
 }
 
+OptionalGuidField GetOptionalGuidField (const GS::ObjectState& os, const GS::String& name, API_Guid& guid)
+{
+    guid = APINULLGuid;
+    if (!os.Contains (name)) {
+        return OptionalGuidField::NotGiven;
+    }
+    GS::String guidStr;
+    if (!os.Get (name, guidStr)) {
+        return OptionalGuidField::Invalid;
+    }
+    guid = APIGuidFromString (guidStr.ToCStr ());
+    return guid == APINULLGuid ? OptionalGuidField::Invalid : OptionalGuidField::Valid;
+}
+
 API_Guid GetGuidFromArrayItem (const GS::String& idFieldName, const GS::ObjectState& os)
 {
     GS::ObjectState idField;
@@ -1457,6 +1471,20 @@ GSErrCode ExecuteActionForEachDatabase (
         return err;
     }
     return NoError;
+}
+
+void GetDetailMarkerNameAndId (const API_Element& element, GS::UniString& name, GS::UniString& id)
+{
+    name = GS::UniString (element.detail.detailName);
+    id = GS::UniString (element.detail.detailIdStr);
+
+    API_DatabaseInfo databaseInfo = {};
+    databaseInfo.typeID = GetElemTypeId (element.header) == API_WorksheetID ? APIWind_WorksheetID : APIWind_DetailID;
+    databaseInfo.databaseUnId = element.detail.databaseID;
+    if (ACAPI_Window_GetDatabaseInfo (&databaseInfo) == NoError) {
+        name = GS::UniString (databaseInfo.name);
+        id = GS::UniString (databaseInfo.ref);
+    }
 }
 
 GS::Optional<API_Guid> FindProjectMapItemOfWorksheetOrDetail (const API_DatabaseInfo& database)

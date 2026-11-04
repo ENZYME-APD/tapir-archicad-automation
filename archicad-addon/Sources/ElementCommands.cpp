@@ -2174,8 +2174,11 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("basePoint", Create2DCoordinateObjectState (elem.detail.pos));
                 typeSpecificDetails.Add ("angle", elem.detail.angle);
                 typeSpecificDetails.Add ("markerId", CreateGuidObjectState (elem.detail.markId));
-                typeSpecificDetails.Add ("detailName", GS::UniString (elem.detail.detailName));
-                typeSpecificDetails.Add ("detailIdStr", GS::UniString (elem.detail.detailIdStr));
+                GS::UniString detailName;
+                GS::UniString detailIdStr;
+                GetDetailMarkerNameAndId (elem, detailName, detailIdStr);
+                typeSpecificDetails.Add ("detailName", detailName);
+                typeSpecificDetails.Add ("detailIdStr", detailIdStr);
                 typeSpecificDetails.Add ("isHorizontalMarker", elem.detail.horizontalMarker);
                 typeSpecificDetails.Add ("isWindowOpened", elem.detail.windOpened);
                 AddPolygonFromMemoCoords (elem.header.guid, typeSpecificDetails, "clipPolygon");
