@@ -318,9 +318,12 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   auto-update script.
 - `archicad_addon.yml`, `grasshopper_plugin.yml` — release/publish pipelines.
   `archicad_addon.yml` also builds the Tapir Installer executables
-  (`TapirInstaller_Win.exe`, `TapirInstaller_Mac.zip`); `weekly_release.yml`
-  expects two assets per version in `devkits.json` plus the two installers
-  (`EXPECTED_ASSETS`). The Mac installer is
+  (`TapirInstaller_Win.exe`, `TapirInstaller_Mac.zip`), and attaches them a second time
+  under versioned names (`TapirInstaller_Win_<version>.exe`, `TapirInstaller_Mac_<version>.zip`,
+  #1646); `weekly_release.yml` expects two assets per version in `devkits.json` plus these
+  four installer files (`EXPECTED_ASSETS`). The add-on carries its version as a resource
+  (Windows VERSIONINFO written by `Tools/CompileResources.py`, macOS
+  `CFBundleShortVersionString`), which the installer shows. The Mac installer is
   universal2 (Intel and Apple silicon): both workflows build it with the
   python.org Python pinned in their `env` (keep the two the same) and check it
   with `lipo`. The Windows installer is code signed by SignPath (certificate by
