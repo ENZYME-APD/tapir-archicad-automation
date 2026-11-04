@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import platform
 import subprocess
@@ -109,7 +110,48 @@ class WinResourceCompiler (ResourceCompiler):
 
         return existingNativeResourceFile
 
+    def WriteVersionResource (self, addOnName: str) -> None:
+        # The VERSIONINFO of the add-on, from ADDON_VERSION in AddOnVersion.hpp,
+        # included by RFIX.win/AddOnMain.rc2. The Tapir Installer shows the
+        # installed version from its ProductVersion.
+        versionHeaderText = (self.sourcesPath / 'AddOnVersion.hpp').read_text (encoding = 'utf-8')
+        match = re.search (r'#define\s+ADDON_VERSION\s+"(\d+)\.(\d+)\.(\d+)"', versionHeaderText)
+        assert match is not None, 'ADDON_VERSION "MAJOR.MINOR.PATCH" was not found in AddOnVersion.hpp'
+        numbers = ','.join (match.groups () + ('0',))
+        version = '.'.join (match.groups ())
+        lines = [
+            '1 VERSIONINFO',
+            f'FILEVERSION {numbers}',
+            f'PRODUCTVERSION {numbers}',
+            'FILEFLAGSMASK 0x3fL',
+            'FILEFLAGS 0x0L',
+            'FILEOS 0x40004L',
+            'FILETYPE 0x2L',
+            'FILESUBTYPE 0x0L',
+            'BEGIN',
+            '    BLOCK "StringFileInfo"',
+            '    BEGIN',
+            '        BLOCK "040904B0"',
+            '        BEGIN',
+            '            VALUE "CompanyName", "ENZYME-APD"',
+            '            VALUE "FileDescription", "Tapir Archicad Add-On"',
+            f'            VALUE "FileVersion", "{version}"',
+            f'            VALUE "InternalName", "{addOnName}"',
+            f'            VALUE "OriginalFilename", "{addOnName}.apx"',
+            '            VALUE "ProductName", "Tapir"',
+            f'            VALUE "ProductVersion", "{version}"',
+            '        END',
+            '    END',
+            '    BLOCK "VarFileInfo"',
+            '    BEGIN',
+            '        VALUE "Translation", 0x409, 1200',
+            '    END',
+            'END',
+        ]
+        (self.resourceObjectsPath / 'AddOnVersion.rc2').write_text ('\n'.join (lines) + '\n', encoding = 'ascii')
+
     def CompileNativeResource (self, resultResourcePath: Path) -> None:
+        self.WriteVersionResource (resultResourcePath.stem)
         nativeResourceFile = self.GetNativeResourceFile ()
         result = subprocess.call ([
             'rc',

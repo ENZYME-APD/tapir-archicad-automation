@@ -383,15 +383,17 @@ jobs:
           git push origin "refs/tags/$VERSION"
 
       # Win + Mac per Archicad version in archicad-addon/devkits.json (the list
-      # archicad_addon.yml builds), plus the Win and Mac installer executables -
-      # update the 2 when an installer job is added to archicad_addon.yml.
+      # archicad_addon.yml builds), plus the Win and Mac installer executables,
+      # each as TapirInstaller_<Win|Mac> and TapirInstaller_<Win|Mac>_<version>
+      # (#1646) - update the 4 when an installer job or asset is added to
+      # archicad_addon.yml.
       - name: Count the expected release assets
         if: steps.plan.outputs.release == 'true' && inputs.dry_run != true
         run: |
           set -eu
           versions=$(python3 tools/devkits.py pairs | wc -w)
-          echo "EXPECTED_ASSETS=$((versions * 2 + 2))" >> "$GITHUB_ENV"
-          echo "Expecting $((versions * 2 + 2)) release assets ($versions Archicad versions)."
+          echo "EXPECTED_ASSETS=$((versions * 2 + 4))" >> "$GITHUB_ENV"
+          echo "Expecting $((versions * 2 + 4)) release assets ($versions Archicad versions)."
 
       - name: Build the release artifacts
         if: steps.plan.outputs.release == 'true' && inputs.dry_run != true

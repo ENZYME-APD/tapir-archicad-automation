@@ -132,10 +132,22 @@ function (GenerateAddOnProject target acVersion devKitDir addOnName addOnSources
 
     get_filename_component (AddOnSourcesFolderAbsolute "${CMAKE_CURRENT_LIST_DIR}/${addOnSourcesFolder}" ABSOLUTE)
     get_filename_component (AddOnResourcesFolderAbsolute "${CMAKE_CURRENT_LIST_DIR}/${addOnResourcesFolder}" ABSOLUTE)
+
+    # The add-on's version (ADDON_VERSION), for the Windows VERSIONINFO that
+    # CompileResources.py writes and the macOS CFBundleShortVersionString. The
+    # Tapir Installer shows the installed version from them.
+    set (AddOnVersionFile "${AddOnSourcesFolderAbsolute}/AddOnVersion.hpp")
+    set_property (DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${AddOnVersionFile}")
+    file (STRINGS "${AddOnVersionFile}" addOnVersionLine REGEX "^#define ADDON_VERSION ")
+    string (REGEX REPLACE "^#define ADDON_VERSION \"([0-9]+\\.[0-9]+\\.[0-9]+)\".*$" "\\1" addOnVersion "${addOnVersionLine}")
+    if (NOT addOnVersion MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]+$")
+        message (FATAL_ERROR "ADDON_VERSION \"MAJOR.MINOR.PATCH\" was not found in ${AddOnVersionFile}")
+    endif ()
+
     if (WIN32)
         add_custom_command (
             OUTPUT ${ResourceStampFile}
-            DEPENDS ${AddOnResourceFiles} ${AddOnImageFiles} ${AddOnSchemaFiles}
+            DEPENDS ${AddOnResourceFiles} ${AddOnImageFiles} ${AddOnSchemaFiles} ${AddOnVersionFile}
             COMMENT "Compiling resources..."
             COMMAND ${CMAKE_COMMAND} -E make_directory "${ResourceObjectsDir}"
             COMMAND ${Python_EXECUTABLE} "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/CompileResources.py" "${addOnLanguage}" "${acVersion}" "${devKitDir}" "${AddOnSourcesFolderAbsolute}" "${AddOnResourcesFolderAbsolute}" "${ResourceObjectsDir}" "${ResourceObjectsDir}/${addOnName}.res"
@@ -202,7 +214,7 @@ function (GenerateAddOnProject target acVersion devKitDir addOnName addOnSources
         set(MACOSX_BUNDLE_GUI_IDENTIFIER com.enzyme.${addOnNameIdentifier})
         set(MACOSX_BUNDLE_LONG_VERSION_STRING ${copyright})
         set(MACOSX_BUNDLE_BUNDLE_NAME ${addOnName})
-        set(MACOSX_BUNDLE_SHORT_VERSION_STRING ${acVersion}.0.0.${gsBuildNum})
+        set(MACOSX_BUNDLE_SHORT_VERSION_STRING ${addOnVersion})
         set(MACOSX_BUNDLE_BUNDLE_VERSION ${acVersion}.0.0.${gsBuildNum})
         set(MACOSX_BUNDLE_COPYRIGHT ${copyright})
         set(MINIMUM_SYSTEM_VERSION "${lsMinimumSystemVersion}")
