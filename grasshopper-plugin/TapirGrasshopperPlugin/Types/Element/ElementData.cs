@@ -48,8 +48,15 @@ namespace TapirGrasshopperPlugin.Types.Element
         [JsonProperty("propertyId")]
         public PropertyGuidObject PropertyId;
 
-        [JsonProperty("propertyValue")]
+        [JsonProperty(
+            "propertyValue",
+            NullValueHandling = NullValueHandling.Ignore)]
         public PropertyValueObj PropertyValue;
+
+        [JsonProperty(
+            "valueStatus",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string ValueStatus;
     }
 
     public class ElementPropertyValuesObj
