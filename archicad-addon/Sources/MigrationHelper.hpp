@@ -496,6 +496,16 @@ inline GSErrCode ACAPI_AutoText_GetPropertyAutoTextKeyTable (API_Guid* guid, GS:
     return ACAPI_Goodies (APIAny_GetPropertyAutoTextKeyTableID, (void*) guid, (void*) keyGuidTable);
 }
 
+inline GSErrCode ACAPI_AutoText_GetAutoTextKeys (char*** keys, char*** values)
+{
+    return ACAPI_Goodies (APIAny_GetAutoTextKeysID, (void*) keys, (void*) values);
+}
+
+inline GSErrCode ACAPI_AutoText_InterpretAutoText (const GS::UniString* autotext, const API_Guid* guid, GS::UniString* value)
+{
+    return ACAPI_Goodies (APIAny_InterpretAutoTextID, (void*) autotext, (void*) guid, (void*) value);
+}
+
 // The unplaced-node flag (APIdefs_Database.h): AC26 takes it as par2 of
 // APIDb_GetHotlinkNodeID and par3 of APIDb_GetHotlinkNodesID; AC25 has neither
 // (par2 is "---" and the node list respectively), so on 25 the flag is accepted
@@ -801,6 +811,11 @@ inline GSErrCode ACAPI_LibraryPart_Search (API_LibPart* ancestor, bool createIfM
     return ACAPI_LibPart_Search (ancestor, createIfMissing, onlyPlaceable);
 }
 
+inline GSErrCode ACAPI_LibraryPart_PatternSearch (const API_LibPart* ancestor, const GS::UniString& pattern, API_LibPart result[50], Int32* numFound)
+{
+    return ACAPI_LibPart_PatternSearch (ancestor, pattern, result, numFound);
+}
+
 inline GSErrCode ACAPI_LibraryPart_OpenParameters (API_ParamOwnerType* paramOwner)
 {
     return ACAPI_Goodies (APIAny_OpenParametersID, paramOwner);
@@ -983,6 +998,11 @@ inline GSErrCode ACAPI_Database_DeleteDatabase (API_DatabaseInfo* databaseInfo)
 inline GSErrCode ACAPI_Element_GetExtent (API_Box* extent, API_DatabaseUnId* databaseUnId = nullptr)
 {
     return ACAPI_Database (APIDb_GetExtentID, extent, databaseUnId);
+}
+
+inline GSErrCode ACAPI_Element_GetExtent3D (API_Box3D* extent3D)
+{
+    return ACAPI_Database (APIDb_GetExtent3DID, extent3D);
 }
 
 inline GSErrCode ACAPI_Navigator_GetLayoutBook (API_LayoutBook* book)

@@ -9,6 +9,14 @@
 
 #include <string>
 
+#ifdef ServerMainVers_2900
+#include "ACAPI/Result.hpp"
+#include "ACAPI/Library/LibraryManager.hpp"
+#include "ACAPI/Library/LibPart.hpp"
+#include "ACAPI/Library/Library.hpp"
+#include "ACAPI/Library/LibraryTreePath.hpp"
+#endif
+
 // The library part type names of the LibraryPartType schema definition.
 static bool LibPartTypeIdFromString (const GS::UniString& typeStr, API_LibTypeID& typeID)
 {
@@ -2077,6 +2085,225 @@ GS::ObjectState GetAvailableLibraryPartsCommand::Execute (const GS::ObjectState&
     response.Add ("skippedCount", skippedCount);
 
     return response;
+}
+
+GetLibrariesOfLibPartsCommand::GetLibrariesOfLibPartsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetLibrariesOfLibPartsCommand::GetName () const
+{
+    return "GetLibrariesOfLibParts";
+}
+
+GS::Optional<GS::UniString> GetLibrariesOfLibPartsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "description": "Library parts to look up, each given by exactly one of name and guid.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "File name of the library part with extension (the fileName GetAvailableLibraryParts returns). Fails when it is ambiguous."
+                        },
+                        "guid": {
+                            "type": "string",
+                            "description": "The guid GetAvailableLibraryParts returns."
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["libraryParts"]
+    })";
+}
+
+GS::Optional<GS::UniString> GetLibrariesOfLibPartsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraries": {
+                "type": "array",
+                "description": "One entry per input library part, in the same order.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "library": {
+                            "type": "object",
+                            "properties": {
+                                "displayName": { "type": "string" },
+                                "path": { "type": "string" },
+                                "isEmbedded": { "type": "boolean" },
+                                "isBuiltIn": { "type": "boolean" },
+                                "isPackage": { "type": "boolean" },
+                                "isLocal": { "type": "boolean" },
+                                "isMissing": { "type": "boolean" }
+                            }
+                        },
+                        "libraryTreePath": {
+                            "type": "array",
+                            "description": "The path in the Library Manager tree, not a physical location.",
+                            "items": { "type": "string" }
+                        },
+                        "error": {
+                            "type": "object",
+                            "properties": {
+                                "code": { "type": "integer" },
+                                "message": { "type": "string" }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["libraries"]
+    })";
+}
+
+#ifdef ServerMainVers_2900
+// The index is only used internally: it can change when the libraries are reloaded.
+static GSErrCode FindLibPartIndexByGuid (const GS::Guid& guid, Int32& foundIndex)
+{
+    Int32 partCount = 0;
+    GSErrCode err = ACAPI_LibraryPart_GetNum (&partCount);
+    if (err != NoError) {
+        return err;
+    }
+
+    for (Int32 i = 1; i <= partCount; ++i) {
+        API_LibPart libPart = {};
+        libPart.index = i;
+        if (ACAPI_LibraryPart_Get (&libPart) != NoError) {
+            continue;
+        }
+        const bool matches = GS::UnID (libPart.ownUnID).GetMainGuid () == guid;
+        delete libPart.location;
+        libPart.location = nullptr;
+        if (matches) {
+            foundIndex = i;
+            return NoError;
+        }
+    }
+    return APIERR_BADID;
+}
+
+static GS::ObjectState CreateLibraryErrorEntry (GSErrCode code, const GS::UniString& message)
+{
+    GS::ObjectState error;
+    error.Add ("code", static_cast<Int32> (code));
+    error.Add ("message", message);
+    GS::ObjectState entry;
+    entry.Add ("error", error);
+    return entry;
+}
+#endif
+
+GS::ObjectState GetLibrariesOfLibPartsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::ObjectState> inputs;
+    parameters.Get ("libraryParts", inputs);
+
+    ACAPI::Result<ACAPI::Library::LibraryManager> manager = ACAPI::Library::GetLibraryManager ();
+    if (manager.IsErr ()) {
+        return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to get the library manager.");
+    }
+
+    GS::ObjectState response;
+    const auto& librariesAdder = response.AddList<GS::ObjectState> ("libraries");
+
+    for (const GS::ObjectState& input : inputs) {
+        GS::UniString name;
+        GS::UniString guidString;
+        const bool hasName = input.Get ("name", name);
+        const bool hasGuid = input.Get ("guid", guidString);
+        if (hasName == hasGuid) {
+            librariesAdder (CreateLibraryErrorEntry (APIERR_BADPARS, "Give exactly one of name and guid."));
+            continue;
+        }
+
+        Int32 libPartIndex = 0;
+        if (hasGuid) {
+            const GSErrCode findErr = FindLibPartIndexByGuid (GS::Guid (guidString), libPartIndex);
+            if (findErr != NoError) {
+                librariesAdder (CreateLibraryErrorEntry (findErr, "Library part not found."));
+                continue;
+            }
+        }
+
+        // Result and LibPart have no default constructor and no copy assignment.
+        const ACAPI::Result<ACAPI::Library::LibPart> libPart = hasName
+            ? manager->GetLibPartByName (name)
+            : manager->GetLibPartByLibInd (libPartIndex);
+        if (libPart.IsErr ()) {
+            librariesAdder (CreateLibraryErrorEntry (libPart.UnwrapErr ().kind, "Library part not found."));
+            continue;
+        }
+
+        const auto library = manager->GetLibraryOfLibPart (libPart.Unwrap ());
+        if (library.IsErr ()) {
+            librariesAdder (CreateLibraryErrorEntry (library.UnwrapErr ().kind, "Unable to get the library of the library part."));
+            continue;
+        }
+
+        GS::ObjectState libraryData;
+        const auto displayName = library->GetDisplayName ();
+        if (displayName.IsOk ()) {
+            libraryData.Add ("displayName", displayName.Unwrap ());
+        }
+        const auto location = library->GetLocation ();
+        if (location.IsOk ()) {
+            libraryData.Add ("path", location.Unwrap ().ToDisplayText ());
+        }
+        const auto isEmbedded = library->IsEmbedded ();
+        if (isEmbedded.IsOk ()) {
+            libraryData.Add ("isEmbedded", isEmbedded.Unwrap ());
+        }
+        const auto isBuiltIn = library->IsBuiltIn ();
+        if (isBuiltIn.IsOk ()) {
+            libraryData.Add ("isBuiltIn", isBuiltIn.Unwrap ());
+        }
+        const auto isPackage = library->IsPackage ();
+        if (isPackage.IsOk ()) {
+            libraryData.Add ("isPackage", isPackage.Unwrap ());
+        }
+        const auto isLocal = library->IsLocal ();
+        if (isLocal.IsOk ()) {
+            libraryData.Add ("isLocal", isLocal.Unwrap ());
+        }
+        const auto isMissing = library->IsMissing ();
+        if (isMissing.IsOk ()) {
+            libraryData.Add ("isMissing", isMissing.Unwrap ());
+        }
+
+        GS::ObjectState entry;
+        entry.Add ("library", libraryData);
+
+        const auto treePath = manager->GetLibraryTreePathOfLibPart (libPart.Unwrap ());
+        if (treePath.IsOk ()) {
+            const auto& partsAdder = entry.AddList<GS::UniString> ("libraryTreePath");
+            for (const GS::UniString& part : treePath->GetParts ()) {
+                partsAdder (part);
+            }
+        }
+        librariesAdder (entry);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
 }
 
 // Resolves a LibraryPartIdentifier to a loaded library part: its index, ownUnID and names
@@ -5219,6 +5446,140 @@ GS::ObjectState GetLastValidEmbeddedLibraryPartNameCommand::Execute (const GS::O
     GS::ObjectState response;
     response.Add ("name", name);
     response.Add ("path", location.ToDisplayText ());
+    return response;
+}
+
+SearchLibraryPartsCommand::SearchLibraryPartsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SearchLibraryPartsCommand::GetName () const
+{
+    return "SearchLibraryParts";
+}
+
+GS::Optional<GS::UniString> SearchLibraryPartsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "ancestorUnId": {
+                "type": "string",
+                "description": "The unique ID of the ancestor library part, '{main GUID}-{revision GUID}', as GetLibraryPartIdentities returns it. Only the library parts derived from it are found."
+            },
+            "pattern": {
+                "type": "string",
+                "description": "The name pattern to match, with * as wildcard, for example 'Chair*'. Use '*' to find every library part derived from the ancestor."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "ancestorUnId",
+            "pattern"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SearchLibraryPartsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "description": "The library parts found. Archicad returns at most 50.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "index": {
+                            "type": "integer",
+                            "description": "The index of the library part, as GetAvailableLibraryParts returns it."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the library part."
+                        },
+                        "fileName": {
+                            "type": "string",
+                            "description": "The file name of the library part."
+                        },
+                        "unId": {
+                            "type": "string",
+                            "description": "The unique ID of the library part, '{main GUID}-{revision GUID}'."
+                        },
+                        "parentUnId": {
+                            "type": "string",
+                            "description": "The unique ID of the parent of the library part."
+                        },
+                        "typeId": {
+                            "$ref": "#/LibraryPartType"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "index",
+                        "name",
+                        "unId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryParts"
+        ]
+    })";
+}
+
+GS::ObjectState SearchLibraryPartsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString ancestorUnId;
+    GS::UniString pattern;
+    parameters.Get ("ancestorUnId", ancestorUnId);
+    parameters.Get ("pattern", pattern);
+
+    std::string mainGuid;
+    std::string revisionGuid;
+    if (!SplitLibPartUnId (ancestorUnId.ToCStr ().Get (), mainGuid, revisionGuid)) {
+        return CreateErrorResponse (APIERR_BADPARS, "A library part unique ID has the form '{main GUID}-{revision GUID}'.");
+    }
+
+    API_LibPart ancestor = {};
+    CHTruncate (ancestorUnId.ToCStr ().Get (), ancestor.ownUnID, sizeof (ancestor.ownUnID));
+
+    // The API fills at most 50 results.
+    constexpr Int32 maxResults = 50;
+    API_LibPart results[maxResults] = {};
+    Int32 numFound = 0;
+    const GSErrCode err = ACAPI_LibraryPart_PatternSearch (&ancestor, pattern, results, &numFound);
+
+    GS::ObjectState response;
+    const auto& libraryParts = response.AddList<GS::ObjectState> ("libraryParts");
+    if (err == NoError) {
+        for (Int32 i = 0; i < numFound && i < maxResults; ++i) {
+            const API_LibPart& libPart = results[i];
+            GS::ObjectState libraryPart;
+            libraryPart.Add ("index", static_cast<Int32> (libPart.index));
+            libraryPart.Add ("name", GS::UniString (libPart.docu_UName));
+            libraryPart.Add ("fileName", GS::UniString (libPart.file_UName));
+            libraryPart.Add ("unId", GS::UniString (libPart.ownUnID));
+            libraryPart.Add ("parentUnId", GS::UniString (libPart.parentUnID));
+            libraryPart.Add ("typeId", LibPartTypeIdToString (libPart.typeID));
+            libraryParts (libraryPart);
+        }
+    }
+
+    // The results were zero-initialised, so a location the API did not allocate is nullptr.
+    for (API_LibPart& libPart : results) {
+        delete libPart.location;
+        libPart.location = nullptr;
+    }
+
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to search the library parts derived from " + ancestorUnId + ".");
+    }
+
     return response;
 }
 

@@ -2,8 +2,8 @@
 
 Scripts that combine several Tapir commands into a task or a tool, e.g. auditing the library
 parts or building materials of a project, syncing attributes between two Archicads
-(`sync_attributes_gui.py`), clipping drawings to the zones (`zone_clip.py`) or creating one of every
-element type (`create_elements.py`). For one command at a time, see the
+(`sync_attributes_gui.py`), clipping drawings to the zones (`zone_clip.py`), creating one of every
+element type (`create_elements.py`) or exporting the 3D model to an OBJ file (`export_obj.py`). For one command at a time, see the
 [examples](../Examples/).
 
 Run them like the examples, with Archicad and the Tapir Add-On running:
