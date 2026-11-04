@@ -1074,11 +1074,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateAssociativeDimensionsCommand> (
             elementCommands, "1.4.0",
-            "Creates associative linear dimensions from explicit witness point references. A witness point can also be static, given by its coordinate instead of an element."
+            "Creates associative dimensions from explicit witness point references: linear by default, or cumulative, baseline or elevation dimensions (appearance). A witness point can also be static, given by its coordinate instead of an element."
         );
         err |= RegisterCommand<CreateAssociativeDimensionsOnSectionCommand> (
             elementCommands, "1.4.0",
-            "Creates associative linear dimensions on section elements using common wall, slab, beam, column, door and window presets. The preset points of multiple section elements can be merged into one continuous dimension chain via sectionElementIds. For Opening tool elements, which Archicad does not associate with dimensions, the OpeningEdges preset places fixed points at their edges instead."
+            "Creates associative dimensions on section elements using common wall, slab, beam, column, door and window presets: linear by default, or cumulative, baseline or elevation dimensions (appearance), e.g. level marks. The preset points of multiple section elements can be merged into one continuous dimension chain via sectionElementIds. For Opening tool elements, which Archicad does not associate with dimensions, the OpeningEdges preset places fixed points at their edges instead."
         );
         err |= RegisterCommand<CreateWallThicknessDimensionsCommand> (
             elementCommands, "1.4.0",
