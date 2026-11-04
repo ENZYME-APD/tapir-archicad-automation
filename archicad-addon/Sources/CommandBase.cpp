@@ -37,11 +37,26 @@ bool CommandBase::IsProcessWindowVisible () const
 
 GS::Optional<GS::UniString> CommandBase::GetSchemaDefinitions () const
 {
-    if (mCommonSchema == CommonSchema::Used) {
-        return GetCommonSchemaDefinitions ();
-    } else {
+    if (mCommonSchema != CommonSchema::Used) {
         return {};
     }
+
+    // Archicad checks requests against the definitions it is given, so hand it only the ones this
+    // command's schemas reference instead of the whole file. The schemas never change, so this is
+    // worked out once; call_once because Archicad may ask from more than one thread.
+    std::call_once (mSchemaDefinitionsOnce, [this] () {
+        GS::Array<GS::UniString> schemas;
+        const GS::Optional<GS::UniString> inputParametersSchema = GetInputParametersSchema ();
+        if (inputParametersSchema.HasValue ()) {
+            schemas.Push (inputParametersSchema.Get ());
+        }
+        const GS::Optional<GS::UniString> responseSchema = GetResponseSchema ();
+        if (responseSchema.HasValue ()) {
+            schemas.Push (responseSchema.Get ());
+        }
+        mSchemaDefinitions = GetCommonSchemaDefinitionsFor (schemas);
+    });
+    return mSchemaDefinitions;
 }
 
 GS::Optional<GS::UniString> CommandBase::GetInputParametersSchema () const
