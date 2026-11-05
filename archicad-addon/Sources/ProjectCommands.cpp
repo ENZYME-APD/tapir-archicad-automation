@@ -4937,6 +4937,40 @@ static GS::ObjectState CreateZonesObjectState (const API_ZonePrefs& prefs)
     return GS::ObjectState ("lowCeilingAreaReduction", lowCeilingAreaReduction);
 }
 
+// The Reference Levels page (API_RefLevelsPrefs): two named levels, each with its
+// elevation from Project Zero. ACAPI_ProjectSetting_GetPreferences sets the name
+// pointers to strings Archicad keeps, so they are only read, never freed (as in the
+// DevKit's Environment_Control example).
+static GS::ObjectState CreateReferenceLevelObjectState (const GS::UniString* name, double elevation)
+{
+    return GS::ObjectState (
+        "name", name != nullptr ? *name : GS::UniString (),
+        "elevation", elevation);
+}
+
+static GS::ObjectState CreateReferenceLevelsObjectState (const API_RefLevelsPrefs& prefs)
+{
+    return GS::ObjectState (
+        "level1", CreateReferenceLevelObjectState (prefs.level1UStr, prefs.level1val),
+        "level2", CreateReferenceLevelObjectState (prefs.level2UStr, prefs.level2val));
+}
+
+// The Floor Plan Cut Plane Settings (API_FloorPlanCutDefinition): the cut plane height
+// from the current story, the top and bottom of the floor plan range (each a story
+// relative to the current story and an offset from it) and the absolute display limit.
+static GS::ObjectState CreateFloorPlanCutPlaneObjectState (const API_FloorPlanCutDefinition& prefs)
+{
+    return GS::ObjectState (
+        "cutPlaneHeight", prefs.currCutLevel,
+        "topLevel", GS::ObjectState (
+            "relativeStory", static_cast<Int32> (prefs.topCutBaseStoryRelInd),
+            "offset", prefs.topCutLevel),
+        "bottomLevel", GS::ObjectState (
+            "relativeStory", static_cast<Int32> (prefs.bottomCutBaseStoryRelInd),
+            "offset", prefs.bottomCutLevel),
+        "absoluteDisplayLimit", prefs.fixLevel2Absolute0);
+}
+
 #ifdef ServerMainVers_2700
 
 template <typename EnumType>
@@ -5307,6 +5341,64 @@ static GS::Optional<GS::UniString> ApplyZones (const GS::ObjectState& os, API_Zo
     return GS::NoValue;
 }
 
+// --- Reference Levels page
+
+// A changed name is kept in `nameStorage`, which has to live until the page is written;
+// an unchanged name keeps the pointer Archicad gave.
+static bool ApplyReferenceLevel (const GS::ObjectState& os, const char* key, GS::UniString*& name, double& elevation, GS::UniString& nameStorage)
+{
+    GS::ObjectState level;
+    if (!os.Get (key, level)) {
+        return false;
+    }
+
+    bool changed = false;
+    if (level.Get ("name", nameStorage)) {
+        name = &nameStorage;
+        changed = true;
+    }
+    changed |= level.Get ("elevation", elevation);
+    return changed;
+}
+
+// --- Floor Plan Cut Plane page
+
+static GS::Optional<GS::UniString> ApplyFloorPlanCutLevel (const GS::ObjectState& os, const char* key, short& relativeStory, double& offset, bool& changed)
+{
+    GS::ObjectState level;
+    if (!os.Get (key, level)) {
+        return GS::NoValue;
+    }
+
+    Int32 relativeStoryValue = 0;
+    if (level.Get ("relativeStory", relativeStoryValue)) {
+        if (relativeStoryValue < -32768 || relativeStoryValue > 32767) {
+            return GS::UniString (key) + ".relativeStory is out of range.";
+        }
+        relativeStory = static_cast<short> (relativeStoryValue);
+        changed = true;
+    }
+    changed |= level.Get ("offset", offset);
+    return GS::NoValue;
+}
+
+static GS::Optional<GS::UniString> ApplyFloorPlanCutPlane (const GS::ObjectState& os, API_FloorPlanCutDefinition& prefs, bool& changed)
+{
+    changed |= os.Get ("cutPlaneHeight", prefs.currCutLevel);
+
+    GS::Optional<GS::UniString> error = ApplyFloorPlanCutLevel (os, "topLevel", prefs.topCutBaseStoryRelInd, prefs.topCutLevel, changed);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = ApplyFloorPlanCutLevel (os, "bottomLevel", prefs.bottomCutBaseStoryRelInd, prefs.bottomCutLevel, changed);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    changed |= os.Get ("absoluteDisplayLimit", prefs.fixLevel2Absolute0);
+    return GS::NoValue;
+}
+
 // --- The commands
 
 // Reads the page `prefsType`, applies the fields of `pageFields` to it with `apply`
@@ -5334,6 +5426,34 @@ static GS::ObjectState SetProjectPreferencesPage (const char* pageName, API_Pref
     });
     if (err != NoError) {
         return CreateFailedExecutionResult (err, GS::UniString ("Failed to set the ") + pageName + " preferences. In Teamwork the PreferencesDialog lockable object set has to be reserved first.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+// The Reference Levels page has its own setter: a new name is pointed to from the
+// struct, so its string has to live until the page is written.
+static GS::ObjectState SetReferenceLevelsPage (const GS::ObjectState& pageFields)
+{
+    API_RefLevelsPrefs prefs = {};
+    GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_ReferenceLevelsID);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to read the reference levels preferences.");
+    }
+
+    GS::UniString level1Name;
+    GS::UniString level2Name;
+    bool changed = ApplyReferenceLevel (pageFields, "level1", prefs.level1UStr, prefs.level1val, level1Name);
+    changed |= ApplyReferenceLevel (pageFields, "level2", prefs.level2UStr, prefs.level2val, level2Name);
+    if (!changed) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "No field of the reference levels preferences given.");
+    }
+
+    err = ACAPI_CallUndoableCommand ("Set Project Preferences", [&] () -> GSErrCode {
+        return ACAPI_ProjectSetting_SetPreferences (&prefs, APIPrefs_ReferenceLevelsID);
+    });
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to set the reference levels preferences. In Teamwork the PreferencesDialog lockable object set has to be reserved first.");
     }
 
     return CreateSuccessfulExecutionResult ();
@@ -5735,6 +5855,106 @@ static GS::UniString GetZonesSchema (bool allFieldsRequired)
     return schema;
 }
 
+static GS::UniString GetReferenceLevelSchema (bool allFieldsRequired, const char* description)
+{
+    GS::UniString schema = R"({
+                "type": "object",
+                "description": ")";
+    schema += description;
+    schema += R"(",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the reference level, e.g. Sea Level."
+                    },
+                    "elevation": {
+                        "type": "number",
+                        "description": "The elevation of the reference level from Project Zero in meters."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("name", "elevation")");
+    schema += R"(
+            })";
+    return schema;
+}
+
+static GS::UniString GetReferenceLevelsSchema (bool allFieldsRequired)
+{
+    GS::UniString schema = R"({
+        "type": "object",
+        "description": "The Reference Levels page: two named levels that elevations can be measured from, besides Project Zero and the stories.",
+        "properties": {
+            "level1": )";
+    schema += GetReferenceLevelSchema (allFieldsRequired, "The first reference level.");
+    schema += R"(,
+            "level2": )";
+    schema += GetReferenceLevelSchema (allFieldsRequired, "The second reference level.");
+    schema += R"(
+        },
+        "additionalProperties": false,
+        )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("level1", "level2")");
+    schema += R"(
+    })";
+    return schema;
+}
+
+static GS::UniString GetFloorPlanCutLevelSchema (bool allFieldsRequired, const char* description)
+{
+    GS::UniString schema = R"({
+                "type": "object",
+                "description": ")";
+    schema += description;
+    schema += R"(",
+                "properties": {
+                    "relativeStory": {
+                        "type": "integer",
+                        "description": "The story the level is measured from, relative to the current story: 0 is the current story, 1 the story above it, -1 the story below it."
+                    },
+                    "offset": {
+                        "type": "number",
+                        "description": "The offset of the level from that story in meters."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("relativeStory", "offset")");
+    schema += R"(
+            })";
+    return schema;
+}
+
+static GS::UniString GetFloorPlanCutPlaneSchema (bool allFieldsRequired)
+{
+    GS::UniString schema = R"({
+        "type": "object",
+        "description": "The Floor Plan Cut Plane Settings (Document > Floor Plan Cut Plane): where the floor plan cuts the model and which range of it the floor plan shows.",
+        "properties": {
+            "cutPlaneHeight": {
+                "type": "number",
+                "description": "The height of the cut plane from the current story in meters."
+            },
+            "topLevel": )";
+    schema += GetFloorPlanCutLevelSchema (allFieldsRequired, "The top of the floor plan range: elements are shown up to this level.");
+    schema += R"(,
+            "bottomLevel": )";
+    schema += GetFloorPlanCutLevelSchema (allFieldsRequired, "The bottom of the floor plan range: elements are shown down to this level.");
+    schema += R"(,
+            "absoluteDisplayLimit": {
+                "type": "number",
+                "description": "The absolute display limit from Project Zero in meters: elements set to show on the floor plan down to the absolute display limit are shown down to this level."
+            }
+        },
+        "additionalProperties": false,
+        )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("cutPlaneHeight", "topLevel", "bottomLevel", "absoluteDisplayLimit")");
+    schema += R"(
+    })";
+    return schema;
+}
+
 GetProjectPreferencesCommand::GetProjectPreferencesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -5759,7 +5979,9 @@ GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetInputParametersSche
                         "WorkingUnits",
                         "Dimensions",
                         "CalculationUnits",
-                        "Zones"
+                        "Zones",
+                        "ReferenceLevels",
+                        "FloorPlanCutPlane"
                     ]
                 },
                 "minItems": 1
@@ -5788,6 +6010,12 @@ GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetRawResponseSchema (
     schema += R"(,
             "zones": )";
     schema += GetZonesSchema (true);
+    schema += R"(,
+            "referenceLevels": )";
+    schema += GetReferenceLevelsSchema (true);
+    schema += R"(,
+            "floorPlanCutPlane": )";
+    schema += GetFloorPlanCutPlaneSchema (true);
     schema += R"(
         },
         "additionalProperties": false,
@@ -5805,6 +6033,8 @@ GS::ObjectState GetProjectPreferencesCommand::Execute (const GS::ObjectState& pa
         preferenceTypes.Push ("Dimensions");
         preferenceTypes.Push ("CalculationUnits");
         preferenceTypes.Push ("Zones");
+        preferenceTypes.Push ("ReferenceLevels");
+        preferenceTypes.Push ("FloorPlanCutPlane");
     }
 
     GS::ObjectState response;
@@ -5837,6 +6067,20 @@ GS::ObjectState GetProjectPreferencesCommand::Execute (const GS::ObjectState& pa
                 return CreateErrorResponse (err, "Failed to read the zones preferences.");
             }
             response.Add ("zones", CreateZonesObjectState (prefs));
+        } else if (preferenceType == "ReferenceLevels") {
+            API_RefLevelsPrefs prefs = {};
+            const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_ReferenceLevelsID);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the reference levels preferences.");
+            }
+            response.Add ("referenceLevels", CreateReferenceLevelsObjectState (prefs));
+        } else if (preferenceType == "FloorPlanCutPlane") {
+            API_FloorPlanCutDefinition prefs = {};
+            const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_FloorPlanCutPlaneDef);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the floor plan cut plane settings.");
+            }
+            response.Add ("floorPlanCutPlane", CreateFloorPlanCutPlaneObjectState (prefs));
         } else {
             return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Unknown preference type: ") + preferenceType);
         }
@@ -5872,6 +6116,12 @@ GS::Optional<GS::UniString> SetProjectPreferencesCommand::GetInputParametersSche
     schema += R"(,
             "zones": )";
     schema += GetZonesSchema (false);
+    schema += R"(,
+            "referenceLevels": )";
+    schema += GetReferenceLevelsSchema (false);
+    schema += R"(,
+            "floorPlanCutPlane": )";
+    schema += GetFloorPlanCutPlaneSchema (false);
     schema += R"(
         },
         "additionalProperties": false,
@@ -5897,6 +6147,12 @@ GS::Optional<GS::UniString> SetProjectPreferencesCommand::GetRawResponseSchema (
                 "$ref": "#/ExecutionResult"
             },
             "zones": {
+                "$ref": "#/ExecutionResult"
+            },
+            "referenceLevels": {
+                "$ref": "#/ExecutionResult"
+            },
+            "floorPlanCutPlane": {
                 "$ref": "#/ExecutionResult"
             }
         },
@@ -5936,8 +6192,20 @@ GS::ObjectState SetProjectPreferencesCommand::Execute (const GS::ObjectState& pa
         response.Add ("zones", SetProjectPreferencesPage<API_ZonePrefs> ("zones", APIPrefs_ZonesID, zones, ApplyZones));
     }
 
+    GS::ObjectState referenceLevels;
+    if (parameters.Get ("referenceLevels", referenceLevels)) {
+        anyPage = true;
+        response.Add ("referenceLevels", SetReferenceLevelsPage (referenceLevels));
+    }
+
+    GS::ObjectState floorPlanCutPlane;
+    if (parameters.Get ("floorPlanCutPlane", floorPlanCutPlane)) {
+        anyPage = true;
+        response.Add ("floorPlanCutPlane", SetProjectPreferencesPage<API_FloorPlanCutDefinition> ("floor plan cut plane", APIPrefs_FloorPlanCutPlaneDef, floorPlanCutPlane, ApplyFloorPlanCutPlane));
+    }
+
     if (!anyPage) {
-        return CreateErrorResponse (APIERR_BADPARS, "No preference page given. Give workingUnits, dimensions, calculationUnits or zones.");
+        return CreateErrorResponse (APIERR_BADPARS, "No preference page given. Give workingUnits, dimensions, calculationUnits, zones, referenceLevels or floorPlanCutPlane.");
     }
 
     return response;
