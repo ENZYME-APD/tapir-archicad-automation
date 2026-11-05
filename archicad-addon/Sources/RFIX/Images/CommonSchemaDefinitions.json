@@ -8899,6 +8899,62 @@
                 "type": "boolean",
                 "description": "Whether the surface materials are chained."
             },
+            "displayOption": {
+                "$ref": "#/DisplayOption"
+            },
+            "viewDepthLimitation": {
+                "$ref": "#/ViewDepthLimitation"
+            },
+            "isAutoOnStoryVisibility": {
+                "type": "boolean",
+                "description": "When true, Archicad recomputes 'visibility' and 'fillVisibility' automatically from the roof's vertical extent."
+            },
+            "visibility": {
+                "$ref": "#/StoryVisibility",
+                "description": "The stories the roof's contour is shown on (API_ShellBaseType::visibilityCont)."
+            },
+            "fillVisibility": {
+                "$ref": "#/StoryVisibility",
+                "description": "The stories the roof's cover fill is shown on (API_ShellBaseType::visibilityFill)."
+            },
+            "cutBodyType": {
+                "type": "string",
+                "enum": [ "Editable", "ContoursDown", "PivotLinesDown", "UpwardsExtrusion", "DownwardsExtrusion" ],
+                "description": "How the roof's body is extended for connections with other elements (API_ShellBaseType::cutBodyType, on the Model panel of Roof Settings)."
+            },
+            "cutFillPen": {
+                "$ref": "#/OverriddenPen"
+            },
+            "cutFillBackgroundPen": {
+                "$ref": "#/OverriddenPen"
+            },
+            "sectionContourPen": {
+                "type": "integer",
+                "description": "Pen of the roof's contour where it is cut (API_ShellBaseType::sectContPen)."
+            },
+            "sectionContourLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the roof's contour where it is cut (API_ShellBaseType::sectContLtype) - pairs with sectionContourPen."
+            },
+            "contourPen": {
+                "type": "integer",
+                "description": "Pen of the roof's contour (API_ShellBaseType::pen)."
+            },
+            "contourLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the roof's contour (API_ShellBaseType::ltypeInd) - pairs with contourPen."
+            },
+            "aboveViewLinePen": {
+                "type": "integer",
+                "description": "Pen used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup."
+            },
+            "aboveViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup - pairs with aboveViewLinePen."
+            },
+            "floorFill": {
+                "$ref": "#/ShellBaseFloorFill"
+            },
             "angle": {
                 "type": "number",
                 "description": "Single-plane: the slope in radians."

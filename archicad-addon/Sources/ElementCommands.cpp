@@ -46,6 +46,8 @@ static void AddPivotPolygonFromMemo (const API_Guid& guid, GS::ObjectState& os)
 static GS::UniString StructureTypeToString (API_ModelElemStructureType structureType);
 static void AddShellBaseSurfaces (const API_ShellBaseType& base, GS::ObjectState& os);
 
+static void AddShellBaseFloorPlanAndSection (const API_ShellBaseType& base, GS::ObjectState& os);
+
 // The RoofDetails of a roof. The polygon is read from partMemo when given (a plane
 // of a decomposed multi-plane roof, which has no memo of its own), else from the
 // memo of the element with this guid.
@@ -63,6 +65,7 @@ static void AddRoofDetails (const API_RoofType& roof, const API_Guid& guid, shor
         os.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, base.buildingMaterial)));
     }
     AddShellBaseSurfaces (base, os);
+    AddShellBaseFloorPlanAndSection (base, os);
     if (roof.roofClass == API_PlaneRoofID) {
         os.Add ("angle", roof.u.planeRoof.angle);
         GS::ObjectState pivotLine;
