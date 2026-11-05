@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-05 08:00 UTC",
+ "generatedAt": "2026-11-05 09:44 UTC",
  "versions": [
   25,
   26,
@@ -6648,18 +6648,8 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1842,
-     "title": "SetElementNotificationClient: optional element types to observe, touch only changed observers"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1840,
-     "title": "SetElementNotificationClient with modification notifications blocks Archicad for a long time on large projects"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Element_CalcBounds",
@@ -7197,18 +7187,8 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1842,
-     "title": "SetElementNotificationClient: optional element types to observe, touch only changed observers"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1840,
-     "title": "SetElementNotificationClient with modification notifications blocks Archicad for a long time on large projects"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Element_DrawElement",
@@ -7706,19 +7686,11 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1842,
-     "title": "SetElementNotificationClient: optional element types to observe, touch only changed observers"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
    ],
    "issues": [
-    {
-     "number": 1840,
-     "title": "SetElementNotificationClient with modification notifications blocks Archicad for a long time on large projects"
-    },
     {
      "number": 1813,
      "title": "Notification clients: selection, window and project events"
@@ -43694,12 +43666,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1842,
-     "title": "SetElementNotificationClient: optional element types to observe, touch only changed observers"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {

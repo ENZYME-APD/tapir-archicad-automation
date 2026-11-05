@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 61 | 53 | 8 |  |  |  | 8 | 70 |
 | C++ API (ACAPI::, IFCAPI::) | 99 % | 1423 | 1207 | 214 | 2 |  |  | 12 | 392 |
 
-Archicad 25–30 DevKits; updated 2026-11-05 08:00 UTC.
+Archicad 25–30 DevKits; updated 2026-11-05 09:44 UTC.
 
 | | Status |
 |---|---|
@@ -121,7 +121,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 - ✅ `ACAPI_Element_AddClassificationItem` – Classifies an element. — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
 - ✅ `ACAPI_Element_AddClassificationItemDefault` – Classifies an element.
-- ✅ `ACAPI_Element_AttachObserver` – Attaches an observer to the given element. — [#1842](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1842 "SetElementNotificationClient: optional element types to observe, touch only changed observers"), [#1840](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1840 "SetElementNotificationClient with modification notifications blocks Archicad for a long time on large projects")
+- ✅ `ACAPI_Element_AttachObserver` – Attaches an observer to the given element.
 - ✅ `ACAPI_Element_CalcBounds` – Returns the model extent of an element in the current database. <sub>(was `APIDb_CalcBoundsID`)</sub>
 - ✅ `ACAPI_Element_CalcCoreOffsetToSideOffset` – Converts the reveal depth offset from core skin to wall side for wall openings. <sub>(was `APIAny_CalcCoreOffsetToSideOffsetID`)</sub>
 - ✅ `ACAPI_Element_CalcSideOffsetToCoreOffset` – Converts the reveal depth offset from wall side to core skin for wall openings. <sub>(was `APIAny_CalcSideOffsetToCoreOffsetID`)</sub>
@@ -142,7 +142,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🔀 `ACAPI_Element_Decompose` – Enumerates the planes of a Multi-plane Roof.
 - ✅ `ACAPI_Element_Delete` – Deletes a number of elements.
 - ✅ `ACAPI_Element_DeleteSelected` – Deletes the selected elements.
-- ✅ `ACAPI_Element_DetachObserver` – Detaches the observer from the given element. — [#1842](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1842 "SetElementNotificationClient: optional element types to observe, touch only changed observers"), [#1840](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1840 "SetElementNotificationClient with modification notifications blocks Archicad for a long time on large projects")
+- ✅ `ACAPI_Element_DetachObserver` – Detaches the observer from the given element.
 - ➖ `ACAPI_Element_DrawElement` – Shows/draws an existing element. <sub>(was `APIDb_DrawElementID`)</sub> *(draws into the add-on's drawing-data database or own window, only useful inside one add-on call)*
 - ✅ `ACAPI_Element_Edit` – Transforms a set of elements.
 - ✅ `ACAPI_Element_Elem2UIPriority` – Returns user interface priority for a building material connection priority. <sub>(was `APIAny_Elem2UIPriorityID`)</sub>
@@ -163,7 +163,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_GetDefaultsExt` – Retrieves the actual default settings for the Window, Door, Section, Elevation, Interior Elevation, ChangeMarker, Detail, Worksheet, or Stair element with its marker(s). You are also able to obtain the Curtain Wall and its sub-element default settings via this function. — [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#1377](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1377 "Place Detail and Worksheet markers, and change their settings")
 - ✅ `ACAPI_Element_GetDescriptors` – Returns the descriptors of an element.
 - 🔀 `ACAPI_Element_GetElemCreatorToolUnId` – Returns the unique ID of the creator tool of the specified object. <sub>(was `APIAny_GetElemCreatorToolUnIdID`)</sub>
-- ✅ `ACAPI_Element_GetElemList` – Returns an array of guids of the elements of the given type. — [#1842](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1842 "SetElementNotificationClient: optional element types to observe, touch only changed observers"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#1840](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1840 "SetElementNotificationClient with modification notifications blocks Archicad for a long time on large projects"), [#1813](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1813 "Notification clients: selection, window and project events")
+- ✅ `ACAPI_Element_GetElemList` – Returns an array of guids of the elements of the given type. — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#1813](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1813 "Notification clients: selection, window and project events")
 - ✅ `ACAPI_Element_GetElemTypeName` – Returns the localized name of the built-in element types. <sub>(was `ACAPI_Goodies_GetElemTypeName`, `APIAny_GetElemTypeNameID`)</sub>
 - ✅ `ACAPI_Element_GetElementFromAnywhere` – Returns the element referred by guid irrespectively of the current database. <sub>(was `APIDb_GetElementFromAnywhereID`)</sub> — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
 - 🔀 `ACAPI_Element_GetElementInfoString` – Returns the compound info string of the given element. <sub>(was `APIDb_GetElementInfoStringID`)</sub>
@@ -2082,7 +2082,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::PipingPortDefault::Modifier::SetFlowDirection` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::PipingPortDefault::Modifier::SetWallThickness` <sub>AC28–30</sub>
 - 🔀 `ACAPI::MEP::PipingPortDefault::Modify` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::Port::Get` <sub>AC27–30</sub> — [#1842](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1842 "SetElementNotificationClient: optional element types to observe, touch only changed observers")
+- ✅ `ACAPI::MEP::Port::Get` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PortBase::Exists` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
 - ✅ `ACAPI::MEP::PortBase::GetConnectedMEPElementId` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetConnectedPortId` <sub>AC27–30</sub>

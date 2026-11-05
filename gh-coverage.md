@@ -34,7 +34,7 @@ Parameters of the 716 used commands: 🟢 658 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-05 08:00 UTC.
+Updated 2026-11-05 09:44 UTC.
 
 | | Status |
 |---|---|
@@ -322,7 +322,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `GetElementPreviewImage` 🟢 5/5 parameters – `GetElementPreviewImageComponent`
 - ✅ `GetRoomImage` 🟢 7/7 parameters – `GetRoomImageComponent`
 - ⬜ `GetModelExtent`
-- ✅ `SetElementNotificationClient` 🟢 9/9 parameters – `SetElementNotificationClientComponent`
+- ✅ `SetElementNotificationClient` 🟢 10/10 parameters – `SetElementNotificationClientComponent`
 - ✅ `RemoveElementNotificationClient` 🟢 2/2 parameters – `RemoveElementNotificationClientComponent`
 - ✅ `RegularizePolygons` 🟢 2/2 parameters – `RegularizePolygonsComponent`
 - ✅ `RegularizePolylines` 🟢 2/2 parameters – `RegularizePolylinesComponent`
