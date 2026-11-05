@@ -1,13 +1,10 @@
-"""Leaves the hierarchical editing mode of a curtain wall with FinishHierarchicalEditing, discarding the changes (Cancel).
+"""Tries to leave a hierarchical editing mode with FinishHierarchicalEditing, discarding the changes (Cancel).
 
-Opens the first Curtain Wall in editing mode first. accept True would keep the changes (OK). Requires Archicad 27 or later.
+accept True would keep the changes (OK). Limitation: while an editing mode is open, Archicad refuses
+JSON commands with error 4001 (ongoing user input) before they run, so this call is refused then;
+leave the mode in Archicad, with the button of the edit mode palette. When no editing mode is open,
+it fails with "not in a hierarchical editing mode". Requires Archicad 27 or later.
 """
 import aclib
-
-curtainWalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'CurtainWall'})['elements']
-if not curtainWalls:
-    raise SystemExit ('No curtain wall in the project.')
-
-aclib.RunTapirCommand ('EditHierarchicalElement', {'elementId': curtainWalls[0]['elementId']})
 
 aclib.PrintJson (aclib.RunTapirCommand ('FinishHierarchicalEditing', {'accept': False}))
