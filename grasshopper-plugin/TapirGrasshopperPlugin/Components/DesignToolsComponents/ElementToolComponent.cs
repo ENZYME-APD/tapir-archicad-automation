@@ -125,6 +125,15 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         {
         }
 
+        // The Add-On key a field of the JSON inputs is written to; null for
+        // a read-only field. A tool overrides it where a command takes a
+        // value under another field's name (e.g. a roof's absolute level).
+        protected virtual string SetKeyOf(
+            ToolSettingsField field)
+        {
+            return field.Set;
+        }
+
         // Lets a tool adjust a Create item after the settings were added.
         protected virtual void PrepareCreateItem(
             JObject item)
@@ -636,7 +645,10 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             var details = new JObject();
             foreach (var setting in settings)
             {
-                if (setting.Key == "floorIndex")
+                // The home story goes with the Modify command when it takes
+                // it (it may need the elevation given with it), else it is
+                // written by SetDetailsOfElements.
+                if (setting.Key == "floorIndex" && !ModifyKeys.Contains("floorIndex"))
                 {
                     details["floorIndex"] = setting.Value;
                 }
@@ -1001,11 +1013,12 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                         AddMessage(errors, i, $"Unknown setting \"{property.Name}\" in {GroupParamName(Groups[g])}; it was ignored.");
                         continue;
                     }
-                    if (field.Set == null || property.Value.Type == JTokenType.Null)
+                    var setKey = SetKeyOf(field);
+                    if (setKey == null || property.Value.Type == JTokenType.Null)
                     {
                         continue;
                     }
-                    settings[field.Set] = property.Value.DeepClone();
+                    settings[setKey] = property.Value.DeepClone();
                 }
             }
             return true;

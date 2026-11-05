@@ -2542,6 +2542,17 @@ GS::Optional<GS::UniString> ApplyRoofDetails (
             ACAPI_ELEMENT_MASK_SET ((*mask), API_RoofType, shellBase.level);
         }
         changed = true;
+    } else {
+        // Only ModifyRoofs takes floorIndex without level (CreateRoofs requires level): the roof
+        // moves to that story and keeps its offset from the story, as SetDetailsOfElements does.
+        short floorIndex = 0;
+        if (details.Get ("floorIndex", floorIndex)) {
+            element.header.floorInd = floorIndex;
+            if (mask != nullptr) {
+                ACAPI_ELEMENT_MASK_SET ((*mask), API_Elem_Head, floorInd);
+            }
+            changed = true;
+        }
     }
 
     auto eavesOverhang = GetOptionalDouble (details, "eavesOverhang");
@@ -9993,7 +10004,14 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                     "type": "object",
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
-                        "level": { "type": "number" },
+                        "level": {
+                            "type": "number",
+                            "description": "Absolute elevation of the roof's pivot line (the zCoordinate GetDetailsOfElements returns). The roof is put on the story floorIndex when given, else on the story at this elevation."
+                        },
+                        "floorIndex": {
+                            "type": "integer",
+                            "description": "Home story of the roof. With level, the roof gets this home story at the absolute elevation level; without level, it moves to this story and keeps its offset from the story."
+                        },
                         "thickness": {
                             "type": "number",
                             "exclusiveMinimum": 0.0,
