@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-05 02:46 UTC",
+ "generatedAt": "2026-11-05 03:12 UTC",
  "versions": [
   25,
   26,
@@ -12,8 +12,8 @@
   "not applicable": 670,
   "done": 1860,
   "skipped": 30,
-  "merged": 306,
-  "in progress": 13
+  "merged": 313,
+  "in progress": 6
  },
  "items": [
   {
@@ -3553,18 +3553,8 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1828,
-     "title": "fontName: fall back to Archicad's font search as GetFontsByName does"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1824,
-     "title": "fontName in CreateTexts, MeasureTexts and the other text commands: find fonts the way GetFontsByName does"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Attribute_SetProperties",
@@ -3765,12 +3755,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1880,
-     "title": "Fix GetNoteAutotexts for linear dimensions (noteOwnerType Dimension)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4052,28 +4037,8 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
-     "number": 1903,
-     "title": "[6/6] Share the create steps of CreateKeynoteFolders and CreateKeynoteItems"
-    },
-    {
      "number": 1896,
      "title": "[3/6] Share one helper for MoveElements, ElevateElements, RotateElements and MirrorElements"
-    },
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    },
-    {
-     "number": 1893,
-     "title": "[2/6] Share one helper among the delete-by-id commands"
-    },
-    {
-     "number": 1891,
-     "title": "[1/6] Share the body of the Project Info group and field commands"
-    },
-    {
-     "number": 1815,
-     "title": "Project preferences: Reference Levels page and Floor Plan Cut Plane Settings"
     },
     {
      "number": 1543,
@@ -4082,10 +4047,6 @@
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    },
-    {
-     "number": 1531,
-     "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
     },
     {
      "number": 1470,
@@ -4355,12 +4316,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1893,
-     "title": "[2/6] Share one helper among the delete-by-id commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4381,12 +4337,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1893,
-     "title": "[2/6] Share one helper among the delete-by-id commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4844,10 +4795,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1809,
-     "title": "ReserveElements/ReleaseElements: report GUIDs that are not elements instead of success"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
@@ -4897,12 +4844,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1874,
-     "title": "DeleteElements, DeleteAttributes, DeleteNavigatorItems: optional dryRun"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4948,12 +4890,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1809,
-     "title": "ReserveElements/ReleaseElements: report GUIDs that are not elements instead of success"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4976,12 +4913,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1809,
-     "title": "ReserveElements/ReleaseElements: report GUIDs that are not elements instead of success"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5890,18 +5822,6 @@
      "title": "ModifyRoofs: change single-plane roofs (#1782)"
     },
     {
-     "number": 1879,
-     "title": "Get3DBoundingBoxes: include the subelements of a Railing"
-    },
-    {
-     "number": 1826,
-     "title": "CreateMorphs: favoriteName, layerIndex and id per item"
-    },
-    {
-     "number": 1802,
-     "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
-    },
-    {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
@@ -6164,12 +6084,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1901,
-     "title": "Drawing primitives: name the element a Ctrl_ElementRef item refers to"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6192,12 +6107,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1901,
-     "title": "Drawing primitives: name the element a Ctrl_ElementRef item refers to"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -6779,16 +6689,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1879,
-     "title": "Get3DBoundingBoxes: include the subelements of a Railing"
-    },
-    {
-     "number": 1835,
-     "title": "Get3DBoundingBoxes: measure Walls on their 3D model, with their connections"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6912,16 +6813,8 @@
      "title": "ModifyRoofs: change single-plane roofs (#1782)"
     },
     {
-     "number": 1884,
-     "title": "ModifyZones: keep topOffset when setting relativeTopStory in the same call"
-    },
-    {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
-    },
-    {
-     "number": 1802,
-     "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
     },
     {
      "number": 1748,
@@ -6992,10 +6885,6 @@
     {
      "number": 1899,
      "title": "CreateDoors/CreateWindows: set libraryPartName on the element, not the tool defaults"
-    },
-    {
-     "number": 1826,
-     "title": "CreateMorphs: favoriteName, layerIndex and id per item"
     }
    ],
    "issues": [
@@ -7077,10 +6966,6 @@
     {
      "number": 1377,
      "title": "Place Detail and Worksheet markers, and change their settings"
-    },
-    {
-     "number": 811,
-     "title": "Get/Set door & window marker settings, and Curtain Wall frame/panel class assignment"
     }
    ]
   },
@@ -7278,12 +7163,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1826,
-     "title": "CreateMorphs: favoriteName, layerIndex and id per item"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7496,20 +7376,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1884,
-     "title": "ModifyZones: keep topOffset when setting relativeTopStory in the same call"
-    },
-    {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
-    },
-    {
-     "number": 1841,
-     "title": "Check sub-element objects without reading every object in full"
-    },
-    {
-     "number": 1802,
-     "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
     },
     {
      "number": 1671,
@@ -7529,10 +7397,6 @@
     }
    ],
    "issues": [
-    {
-     "number": 1839,
-     "title": "GetAllElements and GetElementsByType Object take minutes on large projects (sub-element object check)"
-    },
     {
      "number": 1580,
      "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
@@ -7757,12 +7621,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1826,
-     "title": "CreateMorphs: favoriteName, layerIndex and id per item"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7862,14 +7721,6 @@
     {
      "number": 1842,
      "title": "SetElementNotificationClient: optional element types to observe, touch only changed observers"
-    },
-    {
-     "number": 1841,
-     "title": "Check sub-element objects without reading every object in full"
-    },
-    {
-     "number": 1834,
-     "title": "[3/3] Notification clients: attribute replacement events"
     },
     {
      "number": 1831,
@@ -8084,18 +7935,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1893,
-     "title": "[2/6] Share one helper among the delete-by-id commands"
-    },
-    {
-     "number": 1841,
-     "title": "Check sub-element objects without reading every object in full"
-    },
-    {
-     "number": 1809,
-     "title": "ReserveElements/ReleaseElements: report GUIDs that are not elements instead of success"
-    },
-    {
      "number": 1543,
      "title": "[5/6] Add UpdateLibraryPartSections and GetLibraryPart2DPrimitives"
     },
@@ -8104,16 +7943,7 @@
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
    ],
-   "issues": [
-    {
-     "number": 1839,
-     "title": "GetAllElements and GetElementsByType Object take minutes on large projects (sub-element object check)"
-    },
-    {
-     "number": 1808,
-     "title": "ReserveElements reports success for GUIDs that are not elements, and nothing is reserved"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetHotspots",
@@ -8160,14 +7990,6 @@
      "title": "ModifyRoofs: change single-plane roofs (#1782)"
     },
     {
-     "number": 1879,
-     "title": "Get3DBoundingBoxes: include the subelements of a Railing"
-    },
-    {
-     "number": 1802,
-     "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
-    },
-    {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
@@ -8180,10 +8002,6 @@
     {
      "number": 1580,
      "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 811,
-     "title": "Get/Set door & window marker settings, and Curtain Wall frame/panel class assignment"
     }
    ]
   },
@@ -8767,12 +8585,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1850,
-     "title": "SetPropertyValuesOfElements: write each element's values with one ACAPI_Element_SetProperties call"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_IsPropertyDefinitionValueEditableDefault",
@@ -8876,12 +8689,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1877,
-     "title": "MergeElements: report a failure when Archicad records no merge"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9138,20 +8946,11 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1851,
-     "title": "SetPropertyValuesOfElements: write each element's values with one ACAPI_Element_SetProperties call"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
    ],
-   "issues": [
-    {
-     "number": 1850,
-     "title": "SetPropertyValuesOfElements: write each element's values with one ACAPI_Element_SetProperties call"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_SetPropertiesOfDefaultElem",
@@ -9192,18 +8991,8 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1851,
-     "title": "SetPropertyValuesOfElements: write each element's values with one ACAPI_Element_SetProperties call"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1850,
-     "title": "SetPropertyValuesOfElements: write each element's values with one ACAPI_Element_SetProperties call"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Element_SetPropertyOfDefaultElem",
@@ -9843,18 +9632,8 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1828,
-     "title": "fontName: fall back to Archicad's font search as GetFontsByName does"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1824,
-     "title": "fontName in CreateTexts, MeasureTexts and the other text commands: find fonts the way GetFontsByName does"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_FreeCWContourPtr",
@@ -11025,18 +10804,8 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1841,
-     "title": "Check sub-element objects without reading every object in full"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1839,
-     "title": "GetAllElements and GetElementsByType Object take minutes on large projects (sub-element object check)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_HierarchicalEditing_IsInBeamEditMode",
@@ -12184,18 +11953,8 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1273,
-     "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1251,
-     "title": "Expose ACAPI_LibraryPart_GetDetails / CheckLibPartSubtypeOf (library part details and subtype check)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_CheckLibPartSubtypeOfbyMain",
@@ -12215,20 +11974,10 @@
    "olderNames": [
     "APIAny_CheckLibPartSubtypeOfbyMainID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1273,
-     "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1251,
-     "title": "Expose ACAPI_LibraryPart_GetDetails / CheckLibPartSubtypeOf (library part details and subtype check)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_CloseParameters",
@@ -12357,12 +12106,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1273,
-     "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12434,20 +12178,10 @@
    "olderNames": [
     "ACAPI_LibPart_GetDetails"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1273,
-     "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1251,
-     "title": "Expose ACAPI_LibraryPart_GetDetails / CheckLibPartSubtypeOf (library part details and subtype check)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_GetElemLibPartUnId",
@@ -12578,20 +12312,10 @@
    "olderNames": [
     "APIAny_GetLibPartToolVariationID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1273,
-     "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1251,
-     "title": "Expose ACAPI_LibraryPart_GetDetails / CheckLibPartSubtypeOf (library part details and subtype check)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_GetLibPartUnIDStr",
@@ -13123,10 +12847,6 @@
     {
      "number": 1543,
      "title": "[5/6] Add UpdateLibraryPartSections and GetLibraryPart2DPrimitives"
-    },
-    {
-     "number": 1273,
-     "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
     }
    ],
    "issues": [
@@ -14511,12 +14231,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1874,
-     "title": "DeleteElements, DeleteAttributes, DeleteNavigatorItems: optional dryRun"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14539,12 +14254,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1874,
-     "title": "DeleteElements, DeleteAttributes, DeleteNavigatorItems: optional dryRun"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -15186,12 +14896,7 @@
    ],
    "status": "not applicable",
    "reason": "event handlers, not commands",
-   "pullRequests": [
-    {
-     "number": 1834,
-     "title": "[3/3] Notification clients: attribute replacement events"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1813,
@@ -15266,10 +14971,6 @@
    "status": "not applicable",
    "reason": "event handlers, not commands",
    "pullRequests": [
-    {
-     "number": 1834,
-     "title": "[3/3] Notification clients: attribute replacement events"
-    },
     {
      "number": 1831,
      "title": "[2/3] Notification clients: window, floor and project events"
@@ -16348,10 +16049,6 @@
    "reason": "event handlers, not commands",
    "pullRequests": [
     {
-     "number": 1834,
-     "title": "[3/3] Notification clients: attribute replacement events"
-    },
-    {
      "number": 1831,
      "title": "[2/3] Notification clients: window, floor and project events"
     }
@@ -16813,12 +16510,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1815,
-     "title": "Project preferences: Reference Levels page and Floor Plan Cut Plane Settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16889,10 +16581,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1834,
-     "title": "[3/3] Notification clients: attribute replacement events"
-    },
-    {
      "number": 1831,
      "title": "[2/3] Notification clients: window, floor and project events"
     }
@@ -16939,12 +16627,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1815,
-     "title": "Project preferences: Reference Levels page and Floor Plan Cut Plane Settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17095,12 +16778,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1893,
-     "title": "[2/6] Share one helper among the delete-by-id commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17121,12 +16799,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1893,
-     "title": "[2/6] Share one helper among the delete-by-id commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17433,12 +17106,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1850,
-     "title": "SetPropertyValuesOfElements: write each element's values with one ACAPI_Element_SetProperties call"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_RefreshTeamworkReserveInterface",
@@ -18119,10 +17787,6 @@
      "title": "[3/4] Report element changes made by the per-element setters to notification clients"
     },
     {
-     "number": 1834,
-     "title": "[3/3] Notification clients: attribute replacement events"
-    },
-    {
      "number": 1832,
      "title": "[2/4] Report element changes made by the Modify<Tool> commands to notification clients"
     },
@@ -18184,12 +17848,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1843,
-     "title": "ChangeSelectionOfElements: select the whole list in one API call"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 314,
@@ -18642,12 +18301,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1808,
-     "title": "ReserveElements reports success for GUIDs that are not elements, and nothing is reserved"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Teamwork_GetTeamworkProjectDetails",
@@ -18904,12 +18558,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1809,
-     "title": "ReserveElements/ReleaseElements: report GUIDs that are not elements instead of success"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18995,12 +18644,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1809,
-     "title": "ReserveElements/ReleaseElements: report GUIDs that are not elements instead of success"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20849,10 +20493,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1834,
-     "title": "[3/3] Notification clients: attribute replacement events"
-    },
-    {
      "number": 1831,
      "title": "[2/3] Notification clients: window, floor and project events"
     }
@@ -20880,10 +20520,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1809,
-     "title": "ReserveElements/ReleaseElements: report GUIDs that are not elements instead of success"
-    },
     {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
@@ -21047,12 +20683,7 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "report window of the add-on",
-   "pullRequests": [
-    {
-     "number": 1849,
-     "title": "Run palette scripts in a configured uv project (uvProject in config.json)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -21910,12 +21541,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1273,
-     "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
@@ -23809,12 +23435,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24009,12 +23630,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24030,12 +23646,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24051,12 +23662,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24170,12 +23776,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24192,12 +23793,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24231,12 +23827,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24287,12 +23878,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24309,12 +23895,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24332,12 +23913,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24355,12 +23931,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24394,12 +23965,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24417,12 +23983,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24539,12 +24100,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24595,12 +24151,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24634,12 +24185,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24656,12 +24202,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24678,12 +24219,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24700,12 +24236,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24722,12 +24253,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24761,12 +24287,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24817,12 +24338,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24839,12 +24355,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24963,12 +24474,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24985,12 +24491,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25007,12 +24508,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25029,12 +24525,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25051,12 +24542,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25107,12 +24593,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25129,12 +24610,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25168,12 +24644,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -26352,20 +25823,8 @@
      "title": "ModifyRoofs: change single-plane roofs (#1782)"
     },
     {
-     "number": 1893,
-     "title": "[2/6] Share one helper among the delete-by-id commands"
-    },
-    {
      "number": 1875,
      "title": "File-writing commands: optional overwrite: false refuses an existing file"
-    },
-    {
-     "number": 1874,
-     "title": "DeleteElements, DeleteAttributes, DeleteNavigatorItems: optional dryRun"
-    },
-    {
-     "number": 1854,
-     "title": "Send each command only the schema definitions it uses"
     },
     {
      "number": 1836,
@@ -26376,28 +25835,8 @@
      "title": "[2/4] Report element changes made by the Modify<Tool> commands to notification clients"
     },
     {
-     "number": 1826,
-     "title": "CreateMorphs: favoriteName, layerIndex and id per item"
-    },
-    {
      "number": 1822,
      "title": "CreateProfiles: moveVertices edits geometry in place; edgeOverrides take isInnerLine/isCutEndLine"
-    },
-    {
-     "number": 1805,
-     "title": "[4/6] Grasshopper: Windows tool component (Design Tools)"
-    },
-    {
-     "number": 1804,
-     "title": "[3/6] Grasshopper: Doors tool component"
-    },
-    {
-     "number": 1803,
-     "title": "[2/6] Doors and windows: Create/Modify take the floor plan and section settings"
-    },
-    {
-     "number": 1802,
-     "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
     },
     {
      "number": 1748,
@@ -27676,12 +27115,7 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "add-on infrastructure (undo scopes, results)",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28646,12 +28080,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1903,
-     "title": "[6/6] Share the create steps of CreateKeynoteFolders and CreateKeynoteItems"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28669,12 +28098,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1903,
-     "title": "[6/6] Share the create steps of CreateKeynoteFolders and CreateKeynoteItems"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28692,12 +28116,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1903,
-     "title": "[6/6] Share the create steps of CreateKeynoteFolders and CreateKeynoteItems"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28751,12 +28170,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1903,
-     "title": "[6/6] Share the create steps of CreateKeynoteFolders and CreateKeynoteItems"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28972,12 +28386,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1903,
-     "title": "[6/6] Share the create steps of CreateKeynoteFolders and CreateKeynoteItems"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -29157,12 +28566,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1903,
-     "title": "[6/6] Share the create steps of CreateKeynoteFolders and CreateKeynoteItems"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -29602,12 +29006,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1506,
-     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -29625,12 +29024,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1506,
-     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -29902,10 +29296,6 @@
     {
      "number": 1543,
      "title": "[5/6] Add UpdateLibraryPartSections and GetLibraryPart2DPrimitives"
-    },
-    {
-     "number": 1531,
-     "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
     }
    ],
    "issues": []
@@ -30406,14 +29796,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1531,
-     "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30428,14 +29813,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1531,
-     "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30487,14 +29867,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1531,
-     "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30708,14 +30083,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1531,
-     "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30769,12 +30139,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1531,
-     "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30800,14 +30165,6 @@
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    },
-    {
-     "number": 1531,
-     "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
-    },
-    {
-     "number": 1506,
-     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     }
    ],
    "issues": []
@@ -30851,20 +30208,8 @@
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
     {
-     "number": 1531,
-     "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
-    },
-    {
-     "number": 1506,
-     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
-    },
-    {
-     "number": 1273,
-     "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
     }
    ],
    "issues": []
@@ -30964,20 +30309,8 @@
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
     {
-     "number": 1531,
-     "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
-    },
-    {
-     "number": 1506,
-     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
-    },
-    {
-     "number": 1273,
-     "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
     }
    ],
    "issues": []
@@ -31346,10 +30679,6 @@
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    },
-    {
-     "number": 1531,
-     "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
     }
    ],
    "issues": []
@@ -31431,10 +30760,6 @@
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    },
-    {
-     "number": 1531,
-     "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
     }
    ],
    "issues": []
@@ -31526,12 +30851,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1506,
-     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1265,
@@ -32088,12 +31408,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32329,10 +31644,6 @@
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
     },
     {
-     "number": 1841,
-     "title": "Check sub-element objects without reading every object in full"
-    },
-    {
      "number": 1836,
      "title": "[3/4] Report element changes made by the per-element setters to notification clients"
     },
@@ -32349,18 +31660,6 @@
      "title": "CreateProfiles: moveVertices edits geometry in place; edgeOverrides take isInnerLine/isCutEndLine"
     },
     {
-     "number": 1805,
-     "title": "[4/6] Grasshopper: Windows tool component (Design Tools)"
-    },
-    {
-     "number": 1804,
-     "title": "[3/6] Grasshopper: Doors tool component"
-    },
-    {
-     "number": 1803,
-     "title": "[2/6] Doors and windows: Create/Modify take the floor plan and section settings"
-    },
-    {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
@@ -32373,10 +31672,6 @@
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
     {
-     "number": 1506,
-     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
      "number": 1431,
      "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
     },
@@ -32387,10 +31682,6 @@
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    },
-    {
-     "number": 1273,
-     "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
     },
     {
      "number": 995,
@@ -32430,12 +31721,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32473,12 +31759,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -32698,12 +31979,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -33168,12 +32444,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35053,12 +34324,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35620,12 +34886,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36270,12 +35531,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36603,12 +35859,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37181,12 +36432,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37233,10 +36479,6 @@
     {
      "number": 1902,
      "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
-    },
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
    ],
    "issues": []
@@ -37342,12 +36584,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37452,12 +36689,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37498,12 +36730,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37524,12 +36751,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -37554,12 +36776,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -37589,10 +36806,6 @@
     {
      "number": 1902,
      "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
-    },
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
    ],
    "issues": []
@@ -38235,12 +37448,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38666,12 +37874,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39154,36 +38357,12 @@
      "title": "[3/6] Share one helper for MoveElements, ElevateElements, RotateElements and MirrorElements"
     },
     {
-     "number": 1892,
-     "title": "ChangeTextContent: pass the change in GS memory blocks with a separator"
-    },
-    {
-     "number": 1891,
-     "title": "[1/6] Share the body of the Project Info group and field commands"
-    },
-    {
-     "number": 1884,
-     "title": "ModifyZones: keep topOffset when setting relativeTopStory in the same call"
-    },
-    {
-     "number": 1880,
-     "title": "Fix GetNoteAutotexts for linear dimensions (noteOwnerType Dimension)"
-    },
-    {
      "number": 1875,
      "title": "File-writing commands: optional overwrite: false refuses an existing file"
     },
     {
-     "number": 1874,
-     "title": "DeleteElements, DeleteAttributes, DeleteNavigatorItems: optional dryRun"
-    },
-    {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
-    },
-    {
-     "number": 1843,
-     "title": "ChangeSelectionOfElements: select the whole list in one API call"
     },
     {
      "number": 1836,
@@ -39198,36 +38377,8 @@
      "title": "[1/4] Report element changes and deletions made by Tapir commands to notification clients"
     },
     {
-     "number": 1826,
-     "title": "CreateMorphs: favoriteName, layerIndex and id per item"
-    },
-    {
      "number": 1822,
      "title": "CreateProfiles: moveVertices edits geometry in place; edgeOverrides take isInnerLine/isCutEndLine"
-    },
-    {
-     "number": 1815,
-     "title": "Project preferences: Reference Levels page and Floor Plan Cut Plane Settings"
-    },
-    {
-     "number": 1805,
-     "title": "[4/6] Grasshopper: Windows tool component (Design Tools)"
-    },
-    {
-     "number": 1804,
-     "title": "[3/6] Grasshopper: Doors tool component"
-    },
-    {
-     "number": 1803,
-     "title": "[2/6] Doors and windows: Create/Modify take the floor plan and section settings"
-    },
-    {
-     "number": 1802,
-     "title": "Experimental ModifyCurtainWallFrames: contour, class and type of single frames (#811)"
-    },
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
     },
     {
      "number": 1748,
@@ -40065,12 +39216,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40230,12 +39376,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40480,12 +39621,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41927,12 +41063,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -42886,12 +42017,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43451,12 +42577,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44069,12 +43190,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44680,12 +43796,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45121,10 +44232,6 @@
     {
      "number": 1842,
      "title": "SetElementNotificationClient: optional element types to observe, touch only changed observers"
-    },
-    {
-     "number": 1834,
-     "title": "[3/3] Notification clients: attribute replacement events"
     },
     {
      "number": 1832,
@@ -45971,12 +45078,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46248,10 +45350,6 @@
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
     },
     {
-     "number": 1841,
-     "title": "Check sub-element objects without reading every object in full"
-    },
-    {
      "number": 1836,
      "title": "[3/4] Report element changes made by the per-element setters to notification clients"
     },
@@ -46268,18 +45366,6 @@
      "title": "CreateProfiles: moveVertices edits geometry in place; edgeOverrides take isInnerLine/isCutEndLine"
     },
     {
-     "number": 1805,
-     "title": "[4/6] Grasshopper: Windows tool component (Design Tools)"
-    },
-    {
-     "number": 1804,
-     "title": "[3/6] Grasshopper: Doors tool component"
-    },
-    {
-     "number": 1803,
-     "title": "[2/6] Doors and windows: Create/Modify take the floor plan and section settings"
-    },
-    {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
@@ -46292,10 +45378,6 @@
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
     {
-     "number": 1506,
-     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
      "number": 1431,
      "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
     },
@@ -46306,10 +45388,6 @@
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    },
-    {
-     "number": 1273,
-     "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
     },
     {
      "number": 995,
@@ -46351,12 +45429,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46678,10 +45751,6 @@
     {
      "number": 1902,
      "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
-    },
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
    ],
    "issues": [
@@ -46912,12 +45981,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46960,12 +46024,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47040,12 +46099,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47152,12 +46206,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -47181,12 +46230,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -47231,10 +46275,6 @@
     {
      "number": 1902,
      "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
-    },
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
    ],
    "issues": []
@@ -47255,12 +46295,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47529,12 +46564,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -47558,12 +46588,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47603,10 +46628,6 @@
     {
      "number": 1902,
      "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
-    },
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
    ],
    "issues": []
@@ -47686,10 +46707,6 @@
     {
      "number": 1902,
      "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
-    },
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
    ],
    "issues": [
@@ -47771,12 +46788,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -47917,12 +46929,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -47965,12 +46972,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48009,12 +47011,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -48076,12 +47073,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -48109,10 +47101,6 @@
     {
      "number": 1902,
      "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
-    },
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
    ],
    "issues": []
@@ -48133,12 +47121,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48196,12 +47179,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48239,12 +47217,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48283,12 +47256,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -48331,12 +47299,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -48364,10 +47327,6 @@
     {
      "number": 1902,
      "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
-    },
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
    ],
    "issues": []
@@ -48428,10 +47387,6 @@
     {
      "number": 1902,
      "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
-    },
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
    ],
    "issues": [
@@ -48643,12 +47598,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48788,12 +47738,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48848,12 +47793,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48871,12 +47811,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48895,12 +47830,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48919,12 +47849,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48961,12 +47886,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49067,10 +47987,6 @@
     {
      "number": 1902,
      "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
-    },
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
    ],
    "issues": []
@@ -49091,12 +48007,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49263,12 +48174,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49401,12 +48307,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49424,12 +48325,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49448,12 +48344,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49472,12 +48363,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49514,12 +48400,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49620,10 +48501,6 @@
     {
      "number": 1902,
      "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
-    },
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
    ],
    "issues": []
@@ -49816,10 +48693,6 @@
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
     },
     {
-     "number": 1841,
-     "title": "Check sub-element objects without reading every object in full"
-    },
-    {
      "number": 1836,
      "title": "[3/4] Report element changes made by the per-element setters to notification clients"
     },
@@ -49836,18 +48709,6 @@
      "title": "CreateProfiles: moveVertices edits geometry in place; edgeOverrides take isInnerLine/isCutEndLine"
     },
     {
-     "number": 1805,
-     "title": "[4/6] Grasshopper: Windows tool component (Design Tools)"
-    },
-    {
-     "number": 1804,
-     "title": "[3/6] Grasshopper: Doors tool component"
-    },
-    {
-     "number": 1803,
-     "title": "[2/6] Doors and windows: Create/Modify take the floor plan and section settings"
-    },
-    {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
@@ -49860,10 +48721,6 @@
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
     {
-     "number": 1506,
-     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
      "number": 1431,
      "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
     },
@@ -49874,10 +48731,6 @@
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    },
-    {
-     "number": 1273,
-     "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
     },
     {
      "number": 995,
@@ -49917,12 +48770,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50021,12 +48869,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50201,12 +49044,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50327,10 +49165,6 @@
     {
      "number": 1902,
      "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
-    },
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
    ],
    "issues": []
@@ -50482,12 +49316,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50578,10 +49407,6 @@
     {
      "number": 1902,
      "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
-    },
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
    ],
    "issues": []
@@ -50602,12 +49427,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50681,12 +49501,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50722,12 +49537,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -50755,10 +49565,6 @@
     {
      "number": 1902,
      "title": "[5/6] Share one helper between ModifyElectricalPanels and ModifyElectricalDevices"
-    },
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
     }
    ],
    "issues": []
@@ -51353,12 +50159,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -56081,12 +54882,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1750,
-     "title": "SetMEPRoutingParameters: make route preference table changes stick"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -56121,12 +54917,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1894,
-     "title": "DesignOptionCommands: share the start and per-item loop of the list commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -57533,24 +56324,12 @@
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
     {
-     "number": 1531,
-     "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
-    },
-    {
-     "number": 1506,
-     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
-    },
-    {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
     },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    },
-    {
-     "number": 1273,
-     "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
     }
    ],
    "issues": []

@@ -1,14 +1,15 @@
 {
- "generatedAt": "2026-11-05 02:46 UTC",
+ "generatedAt": "2026-11-05 03:12 UTC",
  "counts": {
   "done": 568,
+  "open": 23,
   "merged": 148,
-  "open": 17,
   "not applicable": 1
  },
  "parameters": {
-  "all": 667,
-  "json": 49
+  "all": 666,
+  "json": 47,
+  "partial": 3
  },
  "items": [
   {
@@ -25,6 +26,21 @@
     }
    ],
    "parameters": "all",
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetCommands",
+   "group": "Application Commands",
+   "version": "1.8.1",
+   "brief": "Retrieves every command of the Tapir Add-On with its command group, the Tapir version it was introduced in and its description, so a script can check that a command exists before calling it.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
@@ -1139,7 +1155,7 @@
    "id": "GetNoteAutotexts",
    "group": "Project Commands",
    "version": "1.8.0",
-   "brief": "Retrieves the autotexts available in the notes of an element type (e.g. a Dimension), each with the element types it is available for. The autotexts are identified by the numeric value of their API_NoteAutotextID. Needs Archicad 26 or later.",
+   "brief": "Retrieves the autotexts available in the notes of an element type (e.g. a Dimension), each with the element types it is available for. The autotexts are identified by the numeric value of their API_NoteAutotextID. For a Dimension, the optional dimensionAppearance (Linear by default) chooses the dimension type. Needs Archicad 26 or later.",
    "status": "merged",
    "reason": "",
    "components": [
@@ -1149,8 +1165,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 1,
+   "parameterCount": 2,
    "coveredParameters": [
+    "dimensionAppearance",
     "noteOwnerType"
    ],
    "missingParameters": [],
@@ -1728,7 +1745,7 @@
    "id": "GetExportTolerance",
    "group": "Project Commands",
    "version": "1.8.0",
-   "brief": "Gets the export tolerance: the largest distance allowed between an arc and the straight segments that replace it when curves are segmented for export.",
+   "brief": "Gets the export tolerance: the largest distance allowed between an arc and the straight segments that replace it when curves are segmented for export. Archicad only provides this value while an export is in progress, so outside an export the command returns an error saying so.",
    "status": "merged",
    "reason": "",
    "components": [
@@ -1793,7 +1810,7 @@
    "id": "GetProjectPreferences",
    "group": "Project Commands",
    "version": "1.7.3",
-   "brief": "Gets pages of the project preferences (Options > Project Preferences): the working units, the dimensions, the calculation units and the zones. Further pages may follow.",
+   "brief": "Gets pages of the project preferences (Options > Project Preferences): the working units, the dimensions, the calculation units, the zones and the reference levels, and the Floor Plan Cut Plane Settings. Further pages may follow.",
    "status": "done",
    "reason": "",
    "components": [
@@ -1815,7 +1832,7 @@
    "id": "SetProjectPreferences",
    "group": "Project Commands",
    "version": "1.7.3",
-   "brief": "Changes pages of the project preferences (Options > Project Preferences): the working units, the dimensions, the calculation units and the zones. Only the given fields change, the rest of each page keeps its value. In Teamwork the PreferencesDialog lockable object set has to be reserved first (ReserveLockableObjectSet). Available from Archicad 27.",
+   "brief": "Changes pages of the project preferences (Options > Project Preferences): the working units, the dimensions, the calculation units, the zones and the reference levels, and the Floor Plan Cut Plane Settings. Only the given fields change, the rest of each page keeps its value. In Teamwork the PreferencesDialog lockable object set has to be reserved first (ReserveLockableObjectSet). Available from Archicad 27.",
    "status": "done",
    "reason": "",
    "components": [
@@ -1825,7 +1842,7 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 28,
+   "parameterCount": 39,
    "coveredParameters": [
     "calculationUnits",
     "dimensions",
@@ -1839,6 +1856,17 @@
     "dimensions.linear.showZeroWhole",
     "dimensions.parapet",
     "dimensions.radial",
+    "floorPlanCutPlane",
+    "floorPlanCutPlane.absoluteDisplayLimit",
+    "floorPlanCutPlane.bottomLevel",
+    "floorPlanCutPlane.cutPlaneHeight",
+    "floorPlanCutPlane.topLevel",
+    "floorPlanCutPlane.topLevel.offset",
+    "floorPlanCutPlane.topLevel.relativeStory",
+    "referenceLevels",
+    "referenceLevels.level1",
+    "referenceLevels.level1.name",
+    "referenceLevels.level2",
     "workingUnits",
     "workingUnits.angle",
     "workingUnits.angle.accuracy",
@@ -2381,7 +2409,7 @@
    "id": "GetElementChangesSince",
    "group": "Element Commands",
    "version": "1.8.0",
-   "brief": "Returns the new, modified and deleted elements between a state captured by CaptureElementState and either another captured state (toStateId) or the current state of the project. Scripts that keep an external copy of the model use it to sync only what changed instead of re-reading every element. Fails for a stateId that is unknown - never captured, released, or lost because the project was closed or Archicad restarted.",
+   "brief": "Returns the new, modified and deleted elements between a state captured by CaptureElementState and either another captured state (toStateId) or the current state of the project. Scripts that keep an external copy of the model use it to sync only what changed instead of re-reading every element. The changes come from Archicad's element difference generator, which tracks the model elements: 2D elements such as texts, labels and hatches can be missing from the lists, so read those directly. Fails for a stateId that is unknown - never captured, released, or lost because the project was closed or Archicad restarted.",
    "status": "merged",
    "reason": "",
    "components": [
@@ -2593,6 +2621,10 @@
    "reason": "",
    "components": [
     {
+     "name": "DoorsComponent",
+     "path": "Components/DesignToolsComponents/DoorsComponent.cs"
+    },
+    {
      "name": "GetDetailsOfBeamsComponent",
      "path": "Components/ElementsComponents/GetDetailsOfElementsComponent.cs"
     },
@@ -2647,6 +2679,10 @@
     {
      "name": "WallsComponent",
      "path": "Components/DesignToolsComponents/WallsComponent.cs"
+    },
+    {
+     "name": "WindowsComponent",
+     "path": "Components/DesignToolsComponents/WindowsComponent.cs"
     }
    ],
    "parameters": "json",
@@ -2679,6 +2715,10 @@
    "reason": "",
    "components": [
     {
+     "name": "DoorsComponent",
+     "path": "Components/DesignToolsComponents/DoorsComponent.cs"
+    },
+    {
      "name": "LevelDimensionsComponent",
      "path": "Components/DocumentToolsComponents/LevelDimensionsComponent.cs"
     },
@@ -2701,6 +2741,10 @@
     {
      "name": "WallsComponent",
      "path": "Components/DesignToolsComponents/WallsComponent.cs"
+    },
+    {
+     "name": "WindowsComponent",
+     "path": "Components/DesignToolsComponents/WindowsComponent.cs"
     }
    ],
    "parameters": "all",
@@ -2823,12 +2867,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 4,
+   "parameterCount": 1,
    "coveredParameters": [
-    "elementCategoryValues",
-    "elementCategoryValues.categoryValueId",
-    "elementCategoryValues.elementId",
-    "elementCategoryValues.type"
+    "elementCategoryValues"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -2838,7 +2879,7 @@
    "id": "Get3DBoundingBoxes",
    "group": "Element Commands",
    "version": "1.1.2",
-   "brief": "Get the 3D bounding box of elements. The bounding box is calculated from the global origin in the 3D view. The output is the array of the bounding boxes respective to the input array of elements. An element without 3D geometry of its own gets an error item instead of a bounding box. The current window does not need to show the element: it works with a layout or a section open as well.",
+   "brief": "Get the 3D bounding box of elements. The bounding box is calculated from the global origin in the 3D view. The output is the array of the bounding boxes respective to the input array of elements. An element without 3D geometry of its own gets an error item instead of a bounding box. Walls, Slabs, Roofs, Zones and Stairs are measured on their 3D model, so the box of a Wall includes its connections to other walls. The current window does not need to show the element: it works with a layout or a section open as well.",
    "status": "done",
    "reason": "",
    "components": [
@@ -2936,12 +2977,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 4,
+   "parameterCount": 1,
    "coveredParameters": [
-    "openings",
-    "openings.coreOffset",
-    "openings.elementId",
-    "openings.sideOffset"
+    "openings"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -3359,7 +3397,7 @@
    "id": "EditHierarchicalElement",
    "group": "Element Commands",
    "version": "1.8.0",
-   "brief": "Opens the given hierarchical element (Curtain Wall, Stair, Railing, Beam or Column) in its hierarchical 3D editing mode, as the Edit button of the element does. Fails when Archicad is already in an editing mode. Leave the mode with FinishHierarchicalEditing. Requires Archicad 27 or later.",
+   "brief": "Opens the given hierarchical element (Curtain Wall, Stair, Railing, Beam or Column) in its hierarchical 3D editing mode, as the Edit button of the element does. Fails when Archicad is already in an editing mode. Limitation: while the editing mode is open, Archicad refuses every JSON command, this add-on's included, with error 4001 (ongoing user input), FinishHierarchicalEditing included, so the mode can only be left in Archicad, with the button of its edit mode palette (reported for Archicad 29). Requires Archicad 27 or later.",
    "status": "done",
    "reason": "",
    "components": [
@@ -3381,7 +3419,7 @@
    "id": "FinishHierarchicalEditing",
    "group": "Element Commands",
    "version": "1.8.0",
-   "brief": "Finishes the current hierarchical editing mode (Curtain Wall, Stair, Railing, Beam or Column): accept true keeps the changes (OK), accept false discards them (Cancel). The accept parameter is required, so changes are never discarded silently. Fails when Archicad is not in such an editing mode. Requires Archicad 27 or later.",
+   "brief": "Finishes the current hierarchical editing mode (Curtain Wall, Stair, Railing, Beam or Column): accept true keeps the changes (OK), accept false discards them (Cancel). The accept parameter is required, so changes are never discarded silently. Fails when Archicad is not in such an editing mode. Limitation: while an editing mode is open, Archicad refuses JSON commands with error 4001 (ongoing user input) before they run, so this command cannot leave a mode opened by EditHierarchicalElement or in Archicad (reported for Archicad 29); leave it in Archicad instead. Requires Archicad 27 or later.",
    "status": "done",
    "reason": "",
    "components": [
@@ -3450,7 +3488,7 @@
    "id": "GetDrawingPrimitivesOfElements",
    "group": "Element Commands",
    "version": "1.8.0",
-   "brief": "Returns the 2D drawing primitives (points, lines, arcs, texts, polylines, triangles, polygons, pictures) Archicad draws each given floor plan element from, in drawing order, as ACAPI_DrawingPrimitive_ShapePrimsExt decomposes it on every story and unclipped. Control items (type Ctrl_*) mark the beginning and the end of sub-parts such as hatches and texts. Texts are returned without their content and polylines without their vertices. The floor plan must be the current database. The output is aligned with the input array of elements.",
+   "brief": "Returns the 2D drawing primitives (points, lines, arcs, texts, polylines, triangles, polygons, pictures) Archicad draws each given floor plan element from, in drawing order, as ACAPI_DrawingPrimitive_ShapePrimsExt decomposes it on every story and unclipped. Control items (type Ctrl_*) mark the beginning and the end of sub-parts such as hatches and texts. Texts are returned without their content and polylines without their vertices. A Ctrl_ElementRef item names the element it refers to: the drawing of a Wall ends with one for each Window and Door in it, while Windows and Doors give no primitives of their own. The floor plan must be the current database. The output is aligned with the input array of elements.",
    "status": "done",
    "reason": "",
    "components": [
@@ -3494,7 +3532,7 @@
    "id": "GetShapePrimitivesOfElements",
    "group": "Element Commands",
    "version": "1.8.1",
-   "brief": "Returns the 2D drawing primitives of each given floor plan element in the same format as GetDrawingPrimitivesOfElements, but drawn as ACAPI_DrawingPrimitive_ShapePrims draws it by default (on the current story, clipped as Archicad clips it) instead of on every story and unclipped. With includeMarkers the objects attached to the elements (window and door markers, drawing titles, ...) are drawn with them or left out; Archicad's setting is changed back afterwards. The floor plan must be the current database. The output is aligned with the input array of elements.",
+   "brief": "Returns the 2D drawing primitives of each given floor plan element in the same format as GetDrawingPrimitivesOfElements, but drawn as ACAPI_DrawingPrimitive_ShapePrims draws it by default (on the current story, clipped as Archicad clips it) instead of on every story and unclipped. With includeMarkers the objects attached to the elements (window and door markers, drawing titles, ...) are drawn with them or left out; Archicad's setting is changed back afterwards. An element on another story gets an error item. The floor plan must be the current database. The output is aligned with the input array of elements.",
    "status": "merged",
    "reason": "",
    "components": [
@@ -4002,14 +4040,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 6,
+   "parameterCount": 1,
    "coveredParameters": [
-    "elementsWithMirrorAxes",
-    "elementsWithMirrorAxes.copy",
-    "elementsWithMirrorAxes.elementId",
-    "elementsWithMirrorAxes.mirrorAxis",
-    "elementsWithMirrorAxes.mirrorAxis.beginPoint",
-    "elementsWithMirrorAxes.mirrorAxis.endPoint"
+    "elementsWithMirrorAxes"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -4019,7 +4052,7 @@
    "id": "DeleteElements",
    "group": "Element Commands",
    "version": "1.2.1",
-   "brief": "Deletes elements. The zones of the call are deleted before all the other elements, so an automatic zone deleted together with its bounding walls is gone before its boundary is; deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found' dialog, which blocks the command until someone clicks it in Archicad. Returns an execution result for each input element: an element that could not be deleted (for example because its layer is locked) or a guid that is not in the project gets a failed execution result instead of being skipped silently, and does not stop the other elements from being deleted.",
+   "brief": "Deletes elements. The zones of the call are deleted before all the other elements, so an automatic zone deleted together with its bounding walls is gone before its boundary is; deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found' dialog, which blocks the command until someone clicks it in Archicad. Returns an execution result for each input element: an element that could not be deleted (for example because its layer is locked) or a guid that is not in the project gets a failed execution result instead of being skipped silently, and does not stop the other elements from being deleted. dryRun reports the result of these checks without deleting anything or creating an undo step.",
    "status": "done",
    "reason": "",
    "components": [
@@ -4032,12 +4065,14 @@
      "path": "Components/ElementMetadata.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 1,
+   "parameters": "partial",
+   "parameterCount": 2,
    "coveredParameters": [
     "elements"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "dryRun"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -4594,18 +4629,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 10,
+   "parameterCount": 1,
    "coveredParameters": [
-    "stairsData",
-    "stairsData.baseLinePoints",
-    "stairsData.finishVisible",
-    "stairsData.flightWidth",
-    "stairsData.floorIndex",
-    "stairsData.riserHeight",
-    "stairsData.stepNum",
-    "stairsData.totalHeight",
-    "stairsData.treadDepth",
-    "stairsData.zCoordinate"
+    "stairsData"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -4658,31 +4684,46 @@
     {
      "name": "CreateWindowsComponent",
      "path": "Components/ElementsComponents/CreateWindowsComponent.cs"
+    },
+    {
+     "name": "WindowsComponent",
+     "path": "Components/DesignToolsComponents/WindowsComponent.cs"
     }
    ],
-   "parameters": "json",
-   "parameterCount": 11,
+   "parameters": "all",
+   "parameterCount": 28,
    "coveredParameters": [
     "windowsData",
+    "windowsData.aboveViewLinePen",
+    "windowsData.aboveViewLineTypeId",
+    "windowsData.belowViewLinePen",
+    "windowsData.belowViewLineTypeId",
     "windowsData.centerOffset",
+    "windowsData.cutLineTypeId",
+    "windowsData.displayOption",
     "windowsData.favoriteName",
     "windowsData.height",
+    "windowsData.libraryPartName",
+    "windowsData.lineTypeId",
     "windowsData.oSide",
     "windowsData.ownerWallId",
+    "windowsData.pen",
     "windowsData.refSide",
     "windowsData.reflected",
+    "windowsData.reveal",
+    "windowsData.revealDepthOffset",
+    "windowsData.sectionContourPen",
+    "windowsData.sectionFillBackgroundPen",
+    "windowsData.sectionFillId",
+    "windowsData.sectionFillPen",
     "windowsData.sillHeight",
+    "windowsData.useObjectLineTypes",
+    "windowsData.useObjectPens",
+    "windowsData.useObjectSectionAttributes",
     "windowsData.width"
    ],
-   "missingParameters": [
-    "windowsData.libraryPartName"
-   ],
-   "pullRequests": [
-    {
-     "number": 1805,
-     "title": "[4/6] Grasshopper: Windows tool component (Design Tools)"
-    }
-   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1791,
@@ -4701,35 +4742,46 @@
     {
      "name": "CreateDoorsComponent",
      "path": "Components/ElementsComponents/CreateDoorsComponent.cs"
-    }
-   ],
-   "parameters": "json",
-   "parameterCount": 11,
-   "coveredParameters": [
-    "doorsData",
-    "doorsData.centerOffset",
-    "doorsData.favoriteName",
-    "doorsData.height",
-    "doorsData.oSide",
-    "doorsData.ownerWallId",
-    "doorsData.refSide",
-    "doorsData.reflected",
-    "doorsData.sillHeight",
-    "doorsData.width"
-   ],
-   "missingParameters": [
-    "doorsData.libraryPartName"
-   ],
-   "pullRequests": [
-    {
-     "number": 1805,
-     "title": "[4/6] Grasshopper: Windows tool component (Design Tools)"
     },
     {
-     "number": 1804,
-     "title": "[3/6] Grasshopper: Doors tool component"
+     "name": "DoorsComponent",
+     "path": "Components/DesignToolsComponents/DoorsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 28,
+   "coveredParameters": [
+    "doorsData",
+    "doorsData.aboveViewLinePen",
+    "doorsData.aboveViewLineTypeId",
+    "doorsData.belowViewLinePen",
+    "doorsData.belowViewLineTypeId",
+    "doorsData.centerOffset",
+    "doorsData.cutLineTypeId",
+    "doorsData.displayOption",
+    "doorsData.favoriteName",
+    "doorsData.height",
+    "doorsData.libraryPartName",
+    "doorsData.lineTypeId",
+    "doorsData.oSide",
+    "doorsData.ownerWallId",
+    "doorsData.pen",
+    "doorsData.refSide",
+    "doorsData.reflected",
+    "doorsData.reveal",
+    "doorsData.revealDepthOffset",
+    "doorsData.sectionContourPen",
+    "doorsData.sectionFillBackgroundPen",
+    "doorsData.sectionFillId",
+    "doorsData.sectionFillPen",
+    "doorsData.sillHeight",
+    "doorsData.useObjectLineTypes",
+    "doorsData.useObjectPens",
+    "doorsData.useObjectSectionAttributes",
+    "doorsData.width"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1791,
@@ -5107,7 +5159,7 @@
    "id": "CreateMorphs",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Creates Morph elements from simple box definitions.",
+   "brief": "Creates Morph elements from simple box definitions or arbitrary bodies. Each item may name a favorite (favoriteName) to start from, a layer (layerIndex) and an Element ID (id); the given geometry and floor are kept.",
    "status": "done",
    "reason": "",
    "components": [
@@ -5117,7 +5169,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 38,
+   "parameterCount": 41,
    "coveredParameters": [
     "morphsData",
     "morphsData.basePoint",
@@ -5140,7 +5192,10 @@
     "morphsData.cutLinePen",
     "morphsData.cutLineType",
     "morphsData.displayOption",
+    "morphsData.favoriteName",
+    "morphsData.id",
     "morphsData.isAutoOnStoryVisibility",
+    "morphsData.layerIndex",
     "morphsData.linkToSettings",
     "morphsData.outlineContourDisplay",
     "morphsData.overheadLinePen",
@@ -6270,30 +6325,44 @@
     {
      "name": "ModifyWindowsComponent",
      "path": "Components/ElementsComponents/ModifyWindowsComponent.cs"
+    },
+    {
+     "name": "WindowsComponent",
+     "path": "Components/DesignToolsComponents/WindowsComponent.cs"
     }
    ],
    "parameters": "all",
-   "parameterCount": 11,
+   "parameterCount": 26,
    "coveredParameters": [
     "windowsWithDetails",
+    "windowsWithDetails.aboveViewLinePen",
+    "windowsWithDetails.aboveViewLineTypeId",
+    "windowsWithDetails.belowViewLinePen",
+    "windowsWithDetails.belowViewLineTypeId",
     "windowsWithDetails.centerOffset",
+    "windowsWithDetails.cutLineTypeId",
+    "windowsWithDetails.displayOption",
     "windowsWithDetails.elementId",
     "windowsWithDetails.height",
+    "windowsWithDetails.lineTypeId",
     "windowsWithDetails.oSide",
+    "windowsWithDetails.pen",
     "windowsWithDetails.refSide",
     "windowsWithDetails.reflected",
     "windowsWithDetails.reveal",
     "windowsWithDetails.revealDepthOffset",
+    "windowsWithDetails.sectionContourPen",
+    "windowsWithDetails.sectionFillBackgroundPen",
+    "windowsWithDetails.sectionFillId",
+    "windowsWithDetails.sectionFillPen",
     "windowsWithDetails.sillHeight",
+    "windowsWithDetails.useObjectLineTypes",
+    "windowsWithDetails.useObjectPens",
+    "windowsWithDetails.useObjectSectionAttributes",
     "windowsWithDetails.width"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1805,
-     "title": "[4/6] Grasshopper: Windows tool component (Design Tools)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1791,
@@ -6310,36 +6379,46 @@
    "reason": "",
    "components": [
     {
+     "name": "DoorsComponent",
+     "path": "Components/DesignToolsComponents/DoorsComponent.cs"
+    },
+    {
      "name": "ModifyDoorsComponent",
      "path": "Components/ElementsComponents/ModifyDoorsComponent.cs"
     }
    ],
    "parameters": "all",
-   "parameterCount": 11,
+   "parameterCount": 26,
    "coveredParameters": [
     "doorsWithDetails",
+    "doorsWithDetails.aboveViewLinePen",
+    "doorsWithDetails.aboveViewLineTypeId",
+    "doorsWithDetails.belowViewLinePen",
+    "doorsWithDetails.belowViewLineTypeId",
     "doorsWithDetails.centerOffset",
+    "doorsWithDetails.cutLineTypeId",
+    "doorsWithDetails.displayOption",
     "doorsWithDetails.elementId",
     "doorsWithDetails.height",
+    "doorsWithDetails.lineTypeId",
     "doorsWithDetails.oSide",
+    "doorsWithDetails.pen",
     "doorsWithDetails.refSide",
     "doorsWithDetails.reflected",
     "doorsWithDetails.reveal",
     "doorsWithDetails.revealDepthOffset",
+    "doorsWithDetails.sectionContourPen",
+    "doorsWithDetails.sectionFillBackgroundPen",
+    "doorsWithDetails.sectionFillId",
+    "doorsWithDetails.sectionFillPen",
     "doorsWithDetails.sillHeight",
+    "doorsWithDetails.useObjectLineTypes",
+    "doorsWithDetails.useObjectPens",
+    "doorsWithDetails.useObjectSectionAttributes",
     "doorsWithDetails.width"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1805,
-     "title": "[4/6] Grasshopper: Windows tool component (Design Tools)"
-    },
-    {
-     "number": 1804,
-     "title": "[3/6] Grasshopper: Doors tool component"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1791,
@@ -6719,6 +6798,21 @@
    "issues": []
   },
   {
+   "id": "ModifyCurtainWallFrames",
+   "group": "Element Commands",
+   "version": "1.8.1",
+   "brief": "EXPERIMENTAL. Modifies single Curtain Wall Frames by their GUID: the frame contour (a1, a2, b1, b2), the frame class and the frame type. ACAPI_Element_Change does not take a frame on its own, so the change is written through the memo of the owner curtain wall, and read back to check that Archicad applied it.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 9,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "ModifyStairs",
    "group": "Element Commands",
    "version": "1.8.1",
@@ -6907,12 +7001,16 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 5,
+   "parameterCount": 9,
    "coveredParameters": [
     "host",
+    "notifyOnAttributeReplacement",
     "notifyOnModificationOfAnElement",
     "notifyOnNewElement",
+    "notifyOnProjectEvents",
     "notifyOnReservationChanges",
+    "notifyOnSelectionChange",
+    "notifyOnWindowChange",
     "port"
    ],
    "missingParameters": [],
@@ -6956,12 +7054,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 5,
+   "parameterCount": 2,
    "coveredParameters": [
     "polygons",
-    "polygons.holes",
-    "polygons.polygonArcs",
-    "polygons.polygonCoordinates",
     "withAncestry"
    ],
    "missingParameters": [],
@@ -6982,11 +7077,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 4,
+   "parameterCount": 2,
    "coveredParameters": [
     "polylines",
-    "polylines.arcs",
-    "polylines.coordinates",
     "withAncestry"
    ],
    "missingParameters": [],
@@ -7984,6 +8077,10 @@
    "reason": "",
    "components": [
     {
+     "name": "DoorsComponent",
+     "path": "Components/DesignToolsComponents/DoorsComponent.cs"
+    },
+    {
      "name": "ElementMetadata",
      "path": "Components/ElementMetadata.cs"
     },
@@ -8006,6 +8103,10 @@
     {
      "name": "WallsComponent",
      "path": "Components/DesignToolsComponents/WallsComponent.cs"
+    },
+    {
+     "name": "WindowsComponent",
+     "path": "Components/DesignToolsComponents/WindowsComponent.cs"
     }
    ],
    "parameters": "all",
@@ -8790,11 +8891,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 3,
+   "parameterCount": 1,
    "coveredParameters": [
-    "elementDefaultClassifications",
-    "elementDefaultClassifications.classificationId",
-    "elementDefaultClassifications.elementType"
+    "elementDefaultClassifications"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -9110,7 +9209,7 @@
    "id": "DeleteAttributes",
    "group": "Attribute Commands",
    "version": "1.5.4",
-   "brief": "Deletes the given attributes.",
+   "brief": "Deletes the given attributes. Returns an execution result for each input item. dryRun only checks the items (attribute type, attribute exists) and deletes nothing.",
    "status": "done",
    "reason": "",
    "components": [
@@ -9119,14 +9218,16 @@
      "path": "Components/AttributesComponents/DeleteAttributesComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 3,
+   "parameters": "partial",
+   "parameterCount": 4,
    "coveredParameters": [
     "attributesToDelete",
     "attributesToDelete.attributeId",
     "attributesToDelete.attributeType"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "dryRun"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -9274,12 +9375,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 4,
+   "parameterCount": 1,
    "coveredParameters": [
-    "attributeFolders",
-    "attributeFolders.attributeType",
-    "attributeFolders.newName",
-    "attributeFolders.path"
+    "attributeFolders"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -10244,11 +10342,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 3,
+   "parameterCount": 1,
    "coveredParameters": [
-    "graphicOverrideRules",
-    "graphicOverrideRules.name",
-    "graphicOverrideRules.ruleGroupName"
+    "graphicOverrideRules"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -10501,11 +10597,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 3,
+   "parameterCount": 1,
    "coveredParameters": [
-    "ruleGroups",
-    "ruleGroups.name",
-    "ruleGroups.newName"
+    "ruleGroups"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -10571,12 +10665,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 4,
+   "parameterCount": 1,
    "coveredParameters": [
-    "graphicOverrideRules",
-    "graphicOverrideRules.beforeGraphicOverrideRuleId",
-    "graphicOverrideRules.graphicOverrideRuleId",
-    "graphicOverrideRules.ruleGroupName"
+    "graphicOverrideRules"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -10822,12 +10913,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 4,
+   "parameterCount": 1,
    "coveredParameters": [
-    "elementIFCAttributeValues",
-    "elementIFCAttributeValues.elementId",
-    "elementIFCAttributeValues.name",
-    "elementIFCAttributeValues.value"
+    "elementIFCAttributeValues"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -10953,12 +11041,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 4,
+   "parameterCount": 1,
    "coveredParameters": [
-    "elementIFCProperties",
-    "elementIFCProperties.elementId",
-    "elementIFCProperties.propertyName",
-    "elementIFCProperties.propertySetName"
+    "elementIFCProperties"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -11168,10 +11253,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 4,
+   "parameterCount": 3,
    "coveredParameters": [
     "files",
-    "files.path",
     "overwriteIfExists",
     "targetFolder"
    ],
@@ -11250,6 +11334,36 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Gets the library of each given library part (by file name or guid): display name, location, embedded/built-in/package/local/missing flags and the Library Manager tree path. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetLibraryPartTypeDetails",
+   "group": "Library Commands",
+   "version": "1.8.1",
+   "brief": "Returns the type details of the given library parts (ACAPI_LibraryPart_GetDetails): full unique ID and its direct parent's, type, the detail flags of objects, lamps, labels and zones, the frame and orientation settings of doors and windows, and the element type and variation of the tool that places the library part. For their path, library, GUID, license and scripts see GetLibraryPartDetails.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "IsLibraryPartSubtypeOf",
+   "group": "Library Commands",
+   "version": "1.8.1",
+   "brief": "Checks for each of the given library parts whether the given ancestor is anywhere up its subtype hierarchy (e.g. whether a part is a kind of furniture), independent of its name. A library part is not a subtype of itself. With matchAncestorByMainId any revision of the ancestor matches.",
    "status": "open",
    "reason": "",
    "components": [],
@@ -11714,6 +11828,21 @@
    "issues": []
   },
   {
+   "id": "SetLibraryPartPictureImages",
+   "group": "Library Commands",
+   "version": "1.8.1",
+   "brief": "Sets the preview picture and the GDL pictures of a loaded library part from base64 encoded PNGs, and from Archicad 29 also their dark user interface variants. All pictures are set in one step; an invalid picture changes nothing. A library part that is not editable is refused and left unchanged. Available from Archicad 28.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 5,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "SetLibraryPartParameters",
    "group": "Library Commands",
    "version": "1.8.1",
@@ -11750,6 +11879,21 @@
     "password",
     "scripts"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetLibraryPartFileInfo",
+   "group": "Library Commands",
+   "version": "1.8.1",
+   "brief": "Reads library part files (.gsm) without loading them into the libraries of the project: the unique ID of the part, the unique ID of its subtype and its master, parameter, 2D, 3D and properties scripts. Password protected parts need their password. Available from Archicad 28.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -12016,7 +12160,7 @@
    "id": "ReserveElements",
    "group": "Teamwork Commands",
    "version": "1.1.4",
-   "brief": "Reserves elements in Teamwork mode.",
+   "brief": "Reserves elements in Teamwork mode. GUIDs that are not elements (navigator items, layouts, databases) cannot be reserved with it: they are returned in notElements and the execution result fails.",
    "status": "done",
    "reason": "",
    "components": [
@@ -12038,7 +12182,7 @@
    "id": "ReleaseElements",
    "group": "Teamwork Commands",
    "version": "1.1.4",
-   "brief": "Releases elements in Teamwork mode.",
+   "brief": "Releases elements in Teamwork mode. Fails, naming them, when any of the given GUIDs is not an element; the other elements are released.",
    "status": "done",
    "reason": "",
    "components": [
@@ -12792,7 +12936,7 @@
    "id": "SetLayoutSettings",
    "group": "Navigator Commands",
    "version": "1.1.7",
-   "brief": "Sets settings of layouts, including their master layout and Layout Info Panel custom data fields.",
+   "brief": "Sets settings of layouts, including their master layout and Layout Info Panel custom data fields. In Teamwork the layout settings must be reserved first in Archicad (Layout Book > Reserve Layout Settings); the Archicad API cannot reserve them, and ReserveElements does not. GetTeamworkOwnersOfDatabases shows who holds a layout.",
    "status": "done",
    "reason": "",
    "components": [
@@ -13338,13 +13482,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 5,
+   "parameterCount": 1,
    "coveredParameters": [
-    "cutPlanes",
-    "cutPlanes.pa",
-    "cutPlanes.pb",
-    "cutPlanes.pc",
-    "cutPlanes.pd"
+    "cutPlanes"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -13406,31 +13546,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 23,
+   "parameterCount": 1,
    "coveredParameters": [
-    "styles",
-    "styles.backgroundAsInRendering",
-    "styles.backgroundColor",
-    "styles.backgroundSkyColor",
-    "styles.castShadowPercent",
-    "styles.chainBackgroundColors",
-    "styles.contourThickness",
-    "styles.engineId",
-    "styles.model3D",
-    "styles.monochromeContourColor",
-    "styles.monochromeEnabled",
-    "styles.monochromeSurfaceColor",
-    "styles.name",
-    "styles.shadingContours",
-    "styles.shadingPercent",
-    "styles.shadowContourThickness",
-    "styles.shadowElevation",
-    "styles.show3DHotSpotsOnly",
-    "styles.silhouetteThickness",
-    "styles.transparency",
-    "styles.vectorialHatching",
-    "styles.vectorialHatchingThickness",
-    "styles.vectorialSunShadow"
+    "styles"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -13450,31 +13568,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 23,
+   "parameterCount": 1,
    "coveredParameters": [
-    "styles",
-    "styles.backgroundAsInRendering",
-    "styles.backgroundColor",
-    "styles.backgroundSkyColor",
-    "styles.castShadowPercent",
-    "styles.chainBackgroundColors",
-    "styles.contourThickness",
-    "styles.engineId",
-    "styles.model3D",
-    "styles.monochromeContourColor",
-    "styles.monochromeEnabled",
-    "styles.monochromeSurfaceColor",
-    "styles.name",
-    "styles.shadingContours",
-    "styles.shadingPercent",
-    "styles.shadowContourThickness",
-    "styles.shadowElevation",
-    "styles.show3DHotSpotsOnly",
-    "styles.silhouetteThickness",
-    "styles.transparency",
-    "styles.vectorialHatching",
-    "styles.vectorialHatchingThickness",
-    "styles.vectorialSunShadow"
+    "styles"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -14199,7 +14295,7 @@
    "id": "DeleteNavigatorItems",
    "group": "Navigator Commands",
    "version": "1.1.7",
-   "brief": "Deletes navigator items from the navigator tree: views and folders of the View Map, layouts and master layouts of the Layout Book, and independent worksheets and details of the Project Map. Layout subsets, View Map folders that are not empty, the other Project Map items and marker-linked worksheets and details cannot be deleted; the failed execution result says which case applies. An item that Archicad refuses to delete (in a Teamwork project: it is not reserved or the user has no right to delete it) is reported as a failed execution result.",
+   "brief": "Deletes navigator items from the navigator tree: views and folders of the View Map, layouts and master layouts of the Layout Book, and independent worksheets and details of the Project Map. Layout subsets, View Map folders that are not empty, the other Project Map items and marker-linked worksheets and details cannot be deleted; the failed execution result says which case applies. An item that Archicad refuses to delete (in a Teamwork project: it is not reserved or the user has no right to delete it) is reported as a failed execution result. dryRun reports the result of the checks made before deleting (item not found, layout subset, View Map folder that is not empty) without deleting anything.",
    "status": "done",
    "reason": "",
    "components": [
@@ -14208,12 +14304,14 @@
      "path": "Components/NavigatorComponents/DeleteNavigatorItemsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 1,
+   "parameters": "partial",
+   "parameterCount": 2,
    "coveredParameters": [
     "navigatorItemIds"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "dryRun"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -15170,11 +15268,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 3,
+   "parameterCount": 1,
    "coveredParameters": [
-    "deactivatedDesignOptionsInCombinations",
-    "deactivatedDesignOptionsInCombinations.designOptionCombinationId",
-    "deactivatedDesignOptionsInCombinations.designOptions"
+    "deactivatedDesignOptionsInCombinations"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -15875,13 +15971,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 5,
+   "parameterCount": 1,
    "coveredParameters": [
-    "values",
-    "values.clientOnly",
-    "values.content",
-    "values.name",
-    "values.unique"
+    "values"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -16732,7 +16824,7 @@
    "id": "SetMEPRoutingParameters",
    "group": "MEP Commands",
    "version": "1.8.0",
-   "brief": "Sets the routing parameters of placed MEP elements: the routing segment parameters (cross section and preference table) and, from Archicad 29, the routing node parameters (elbow radius factor and preference table, transition preference table) of routing elements, and the elbow and transition parameters of routing nodes (from Archicad 29). Only the given keys are changed, in one undo step with one execution result per element. Available from Archicad 28.",
+   "brief": "Sets the routing parameters of placed MEP elements: the routing segment parameters (cross section and preference table) and, from Archicad 29, the routing node parameters (elbow radius factor and preference table, transition preference table) of routing elements, and the elbow and transition parameters of routing nodes (from Archicad 29). Only the given keys are changed, with one execution result per element. A changed preference table is also set on each of the route's segments and nodes and injected into them, because Archicad 29 can otherwise keep the old one; the item fails if they still report the old table. Available from Archicad 28.",
    "status": "merged",
    "reason": "",
    "components": [
@@ -18310,7 +18402,7 @@
    "id": "MergeElements",
    "group": "Solid Element Operation Commands",
    "version": "1.8.0",
-   "brief": "Merges the given construction elements (the Merge command of Archicad, which cleans up the junctions of slabs, beams, walls and similar elements). Undoable. The element types are not filtered: Archicad reports the ones it cannot merge.",
+   "brief": "Merges the given construction elements (the Merge command of Archicad, which cleans up the junctions of slabs, beams, walls and similar elements). Undoable. The element types are not filtered: Archicad reports the ones it cannot merge. The merge is read back: when Archicad records no merge between the given elements (it decides which elements and type combinations it merges), the result is a failure, not a success.",
    "status": "done",
    "reason": "",
    "components": [
