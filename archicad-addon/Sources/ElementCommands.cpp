@@ -897,17 +897,59 @@ static GS::UniString StructureTypeToString (API_ModelElemStructureType structure
     }
 }
 
-// An object that belongs to another element, such as a zone stamp or a part of a stair or railing.
-// The listing commands leave these out unless the IncludeSubElemObjects filter asks for them.
-static bool IsSubElemObject (const API_Guid& elemGuid)
-{
-    API_Element elem = {};
-    elem.header.guid = elemGuid;
-    if (ACAPI_Element_GetHeader (&elem.header) != NoError || GetElemTypeId (elem.header) != API_ObjectID) {
-        return false;
+// Tells whether an object belongs to another element, such as a zone stamp or a part of a stair or
+// railing. The listing commands leave these out unless the IncludeSubElemObjects filter asks for them.
+// Reading a whole object (ACAPI_Element_Get) takes milliseconds, which on a large project blocked
+// Archicad for minutes (#1839), so two cheap checks come first: the zone stamps, read once per
+// listing from the zones of the current database (ReadZoneStamps, before the listing starts), and
+// the hierarchical element owner (the parts of stairs, railings and curtain walls). Only an object
+// neither of them recognizes is read in full, so the result is the same as reading every object.
+class SubElemObjectChecker {
+public:
+    void ReadZoneStamps ()
+    {
+        zoneStampGuids.Clear ();
+        GS::Array<API_Guid> zoneGuids;
+        if (ACAPI_Element_GetElemList (API_ZoneID, &zoneGuids) != NoError) {
+            return;
+        }
+        for (const API_Guid& zoneGuid : zoneGuids) {
+            API_Element zone = {};
+            zone.header.guid = zoneGuid;
+            if (ACAPI_Element_Get (&zone) == NoError && zone.zone.stampGuid != APINULLGuid) {
+                zoneStampGuids.Add (zone.zone.stampGuid);
+            }
+        }
     }
-    return ACAPI_Element_Get (&elem) != NoError || elem.object.owner != APINULLGuid;
-}
+
+    bool IsSubElemObject (const API_Guid& elemGuid) const
+    {
+        API_Elem_Head header = {};
+        header.guid = elemGuid;
+        if (ACAPI_Element_GetHeader (&header) != NoError || GetElemTypeId (header) != API_ObjectID) {
+            return false;
+        }
+
+        if (zoneStampGuids.Contains (elemGuid)) {
+            return true;
+        }
+
+        const API_HierarchicalOwnerType ownerType = API_ParentHierarchicalOwner;
+        API_HierarchicalElemType hierarchicalElemType = API_UnknownElemType;
+        API_Guid ownerGuid = APINULLGuid;
+        if (ACAPI_HierarchicalEditing_GetHierarchicalElementOwner (&elemGuid, &ownerType, &hierarchicalElemType, &ownerGuid) == NoError &&
+            hierarchicalElemType == API_ChildElemInMultipleElem) {
+            return true;
+        }
+
+        API_Element elem = {};
+        elem.header = header;
+        return ACAPI_Element_Get (&elem) != NoError || elem.object.owner != APINULLGuid;
+    }
+
+private:
+    GS::HashSet<API_Guid> zoneStampGuids;
+};
 
 template <typename ListProxyType>
 static GSErrCode GetElementsFromCurrentDatabase (const GS::ObjectState& parameters, ListProxyType& elementsListProxy)
@@ -939,9 +981,13 @@ static GSErrCode GetElementsFromCurrentDatabase (const GS::ObjectState& paramete
 
     // Only a listing of Objects or of every type (GetAllElements) can contain sub-element objects.
     const bool skipSubElemObjects = !includeSubElemObjects && (elemType == API_ObjectID || elemType == API_ZombieElemID);
+    SubElemObjectChecker subElemObjectChecker;
+    if (skipSubElemObjects) {
+        subElemObjectChecker.ReadZoneStamps ();
+    }
     for (const API_Guid& elemGuid : elemList) {
         const API_Guid parentGuid = GetParentElemOfSectElem (elemGuid);
-        if (skipSubElemObjects && IsSubElemObject (parentGuid)) {
+        if (skipSubElemObjects && subElemObjectChecker.IsSubElemObject (parentGuid)) {
             continue;
         }
         elementsListProxy (CreateElementIdObjectState (parentGuid));
@@ -1125,6 +1171,12 @@ static GSErrCode GetElementsInDrawOrderFromCurrentDatabase (const GS::ObjectStat
         }
     }
 
+    // Read before the draw order walk starts, so nothing but the walk itself lists the database.
+    SubElemObjectChecker subElemObjectChecker;
+    if (!includeSubElemObjects && (elemType == API_ObjectID || elemType == API_ZombieElemID)) {
+        subElemObjectChecker.ReadZoneStamps ();
+    }
+
     const DrawOrderWalk walk;
     if (walk.error != NoError) {
         return walk.error;
@@ -1149,7 +1201,7 @@ static GSErrCode GetElementsInDrawOrderFromCurrentDatabase (const GS::ObjectStat
         if (elemType != API_ZombieElemID && reportedType != elemType) {
             continue;
         }
-        if (!includeSubElemObjects && reportedType == API_ObjectID && IsSubElemObject (elemGuid)) {
+        if (!includeSubElemObjects && reportedType == API_ObjectID && subElemObjectChecker.IsSubElemObject (elemGuid)) {
             continue;
         }
         if (reportedGuids.Contains (elemGuid)) {
@@ -1402,21 +1454,7 @@ GS::Optional<GS::UniString> GetElementTypeNamesCommand::GetRawResponseSchema () 
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementType": {
-                                    "$ref": "#/ElementType"
-                                },
-                                "name": {
-                                    "type": "string",
-                                    "description": "The name of the element type in the language of the running Archicad (for example \"Wand\" for Wall in German Archicad)."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elementType",
-                                "name"
-                            ]
+                            "$ref": "#/ElementTypeName"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -1620,72 +1658,7 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetRawResponseSchema ()
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "description": "Details of an element. When the optional fields filter is given in the input, only the requested fields are present; the required list below applies to unfiltered requests.",
-                            "properties": {
-                                "type": {
-                                    "$ref": "#/ElementType"
-                                },
-                                "id": {
-                                    "type": "string"
-                                },
-                                "floorIndex": {
-                                    "type": "number"
-                                },
-                                "layerIndex": {
-                                    "type": "number"
-                                },
-                                "drawIndex": {
-                                    "type": "number"
-                                },
-                                "hotlinkId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The hotlink instance this element belongs to. Present only for elements that came in through a placed hotlink; such elements are read-only."
-                                },
-                                "details": {
-                                    "$ref": "#/TypeSpecificDetails"
-                                },
-                                "floorPlanPolygons": {
-                                    "type": "array",
-                                    "description": "Cut-fill polygons as drawn on the floor plan (wall joins resolved by ArchiCAD). Only collected for construction element types whose floor plan symbol comes from a real cut through the element - walls, columns, beams and their segments, slabs, roofs, shells, meshes, morphs, curtain walls and their segments/panels/frames, stairs and their risers/treads/structures. Absent for every other type, when the element has no cut fill, or when the floor plan database is not accessible.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "coordinates": {
-                                                "type": "array",
-                                                "items": {
-                                                    "$ref": "#/Coordinate2D"
-                                                }
-                                            }
-                                        }
-                                    }
-                                },
-                                "infoString": {
-                                    "type": "string",
-                                    "description": "The element ID (info string) as Archicad shows it. Present only when requested in additionalFields."
-                                },
-                                "compoundInfoString": {
-                                    "type": "string",
-                                    "description": "The compound info string of the element, e.g. the summary of its composite or profile, as Archicad shows it. Present only when requested in additionalFields and the element has a non-empty one."
-                                },
-                                "libraryPartUnId": {
-                                    "type": "string",
-                                    "description": "The unique ID of the library part the element was placed from. Present only when requested in additionalFields and the element is library part based (e.g. object, lamp, door, window)."
-                                },
-                                "creatorToolUnId": {
-                                    "type": "string",
-                                    "description": "The unique ID of the tool that created the element. Present only when requested in additionalFields and Archicad reports one for the element."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "type",
-                                "id",
-                                "floorIndex",
-                                "layerIndex",
-                                "drawIndex",
-                                "details"
-                            ]
+                            "$ref": "#/DetailsOfElement"
                         },
                         {
                             "type": "object",
@@ -3965,6 +3938,16 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     executionResults (CreateFailedExecutionResult (err, message));
                     continue;
                 }
+
+                // See ReapplyZoneTopOffset (#1869): a topOffset given with a new top link is
+                // written again in a change of its own.
+                if (typeSpecificDetails != nullptr && GetElemTypeId (elem.header) == API_ZoneID) {
+                    err = ReapplyZoneTopOffset (*typeSpecificDetails, elem.header.guid);
+                    if (err != NoError) {
+                        executionResults (CreateFailedExecutionResult (err, "The zone was changed, but Archicad did not apply topOffset."));
+                        continue;
+                    }
+                }
             }
 
             if (drwIndexTarget >= 0) {
@@ -4235,6 +4218,51 @@ GS::Optional<GS::UniString> ChangeSelectionOfElementsCommand::GetRawResponseSche
     })";
 }
 
+// Adds a list of elements to the selection, or removes it, and returns one execution
+// result per element of the list.
+//
+// ACAPI_Selection_Select takes an array, and one call per element costs a selection
+// transaction each: a list of some thousands then takes minutes, and a list of tens of
+// thousands does not finish inside any sensible timeout. So the whole list goes in one
+// call. That call reports a single error code, so when it fails the elements are tried
+// one by one, which says which of them Archicad refused and keeps the per-element
+// results of the response meaningful.
+static GS::Array<GS::ObjectState> ChangeSelectionOfElements (const GS::Array<GS::ObjectState>& elements, bool add)
+{
+    const char* const failure = add ? "Failed to add to selection" : "Failed to remove from selection";
+
+    GS::Array<API_Neig> neigs;
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId != nullptr) {
+            neigs.Push (API_Neig (GetGuidFromObjectState (*elementId)));
+        }
+    }
+
+    GS::Array<GS::ObjectState> results;
+    const GSErrCode err = neigs.IsEmpty () ? NoError : ACAPI_Selection_Select (neigs, add);
+    if (err == NoError) {
+        for (const GS::ObjectState& element : elements) {
+            results.Push (element.Get ("elementId") == nullptr
+                              ? CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing")
+                              : CreateSuccessfulExecutionResult ());
+        }
+        return results;
+    }
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+        const GSErrCode single = ACAPI_Selection_Select ({ API_Neig (GetGuidFromObjectState (*elementId)) }, add);
+        results.Push (single == NoError ? CreateSuccessfulExecutionResult ()
+                                        : CreateFailedExecutionResult (single, failure));
+    }
+    return results;
+}
+
 GS::ObjectState ChangeSelectionOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> addElementsToSelection;
@@ -4246,34 +4274,12 @@ GS::ObjectState ChangeSelectionOfElementsCommand::Execute (const GS::ObjectState
     const auto& executionResultsOfAddToSelection = response.AddList<GS::ObjectState> ("executionResultsOfAddToSelection");
     const auto& executionResultsOfRemoveFromSelection = response.AddList<GS::ObjectState> ("executionResultsOfRemoveFromSelection");
 
-    for (const GS::ObjectState& element : addElementsToSelection) {
-        const GS::ObjectState* elementId = element.Get ("elementId");
-        if (elementId == nullptr) {
-            executionResultsOfAddToSelection (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
-            continue;
-        }
-
-        const GSErrCode err = ACAPI_Selection_Select ({ API_Neig (GetGuidFromObjectState (*elementId)) }, true);
-        if (err != NoError) {
-            executionResultsOfAddToSelection (CreateFailedExecutionResult (err, "Failed to add to selection"));
-        } else {
-            executionResultsOfAddToSelection (CreateSuccessfulExecutionResult ());
-        }
+    for (const GS::ObjectState& result : ChangeSelectionOfElements (addElementsToSelection, true)) {
+        executionResultsOfAddToSelection (result);
     }
 
-    for (const GS::ObjectState& element : removeElementsFromSelection) {
-        const GS::ObjectState* elementId = element.Get ("elementId");
-        if (elementId == nullptr) {
-            executionResultsOfRemoveFromSelection (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
-            continue;
-        }
-
-        const GSErrCode err = ACAPI_Selection_Select ({ API_Neig (GetGuidFromObjectState (*elementId)) }, false);
-        if (err != NoError) {
-            executionResultsOfRemoveFromSelection (CreateFailedExecutionResult (err, "Failed to remove from selection"));
-        } else {
-            executionResultsOfRemoveFromSelection (CreateSuccessfulExecutionResult ());
-        }
+    for (const GS::ObjectState& result : ChangeSelectionOfElements (removeElementsFromSelection, false)) {
+        executionResultsOfRemoveFromSelection (result);
     }
 
     return response;
@@ -4878,7 +4884,7 @@ GS::ObjectState EditHierarchicalElementCommand::Execute (const GS::ObjectState& 
     // A complete operation: it must not run inside ACAPI_CallUndoableCommand, so it is called directly.
     const GSErrCode err = ACAPI_HierarchicalEditing_EditHierarchicalElem (&elemGuid);
     if (err == APIERR_REFUSEDCMD) {
-        return CreateFailedExecutionResult (err, "Archicad refused to enter the hierarchical editing mode; it may already be in an editing mode. Finish it first with FinishHierarchicalEditing.");
+        return CreateFailedExecutionResult (err, "Archicad refused to enter the hierarchical editing mode; it may already be in an editing mode. Leave that mode in Archicad first.");
     }
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to open the element in hierarchical editing mode; it must be a Curtain Wall, Stair, Railing, Beam or Column.");
@@ -4972,9 +4978,8 @@ GS::Optional<GS::UniString> GetHierarchicalElementOwnersCommand::GetInputParamet
                 "description": "The elements whose owners are looked up, e.g. Curtain Wall frames or panels, Stair treads or Railing posts."
             },
             "ownerMode": {
-                "type": "string",
-                "enum": ["root", "parent"],
-                "description": "root (default): the root of the hierarchical element tree, e.g. the Curtain Wall, Stair or Railing. parent: the immediate parent, which may itself be a subelement."
+                "$ref": "#/HierarchicalOwnerMode",
+                "description": "root by default."
             }
         },
         "additionalProperties": false,
@@ -4996,23 +5001,7 @@ GS::Optional<GS::UniString> GetHierarchicalElementOwnersCommand::GetRawResponseS
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "ownerElementId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The owner element. For a main element (e.g. a Curtain Wall) or an element that is not part of a hierarchical element, Archicad returns the input element itself."
-                                },
-                                "hierarchicalElementType": {
-                                    "type": "string",
-                                    "enum": ["MainElement", "ChildElement", "SingleElement"],
-                                    "description": "The classification of the input element (not of its owner): MainElement is the main element of a hierarchical element (e.g. a Curtain Wall, Stair or Railing), ChildElement is a subelement of one (e.g. a frame or a tread), SingleElement is not part of a hierarchical element."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "ownerElementId",
-                                "hierarchicalElementType"
-                            ]
+                            "$ref": "#/HierarchicalElementOwner"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -5962,67 +5951,7 @@ GS::Optional<GS::UniString> GetZoneReductionsCommand::GetRawResponseSchema () co
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "reductions": {
-                                    "type": "array",
-                                    "description": "The reduction polygons of the Zone, as its Zone Stamp's area calculation uses them: the parts of the Zone polygon covered by Walls, Columns and reducing Fills, and the parts under a low ceiling (for example under a sloping Roof), each with the percentage it is reduced by and its area. Empty when nothing reduces the Zone's area.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "type": {
-                                                "type": "string",
-                                                "description": "What reduces the area in the polygon, as the DevKit's APIRoomReduction type of the polygon: Wall, Column, Hatch (a Fill set to reduce the Zone area), Gable (a low ceiling, for example the part under a sloping Roof below the low ceiling height), or Rest (the remaining polygon of the Zone). Unknown for a value this version of Tapir does not name.",
-                                                "enum": [
-                                                    "Rest",
-                                                    "Wall",
-                                                    "Column",
-                                                    "Hatch",
-                                                    "Gable",
-                                                    "Unknown"
-                                                ]
-                                            },
-                                            "percent": {
-                                                "type": "number",
-                                                "description": "The percentage by which the area of the polygon reduces the Zone area, as the DevKit reports it."
-                                            },
-                                            "area": {
-                                                "type": "number",
-                                                "description": "The area of the polygon in square meters."
-                                            },
-                                            "polygonOutline": {
-                                                "type": "array",
-                                                "description": "The 2D coordinates of the outline of the polygon in meters; the last coordinate repeats the first.",
-                                                "items": {
-                                                    "$ref": "#/Coordinate2D"
-                                                }
-                                            },
-                                            "polygonArcs": {
-                                                "type": "array",
-                                                "description": "The arcs of the outline, indices into polygonOutline. Absent when the outline has no arc.",
-                                                "items": {
-                                                    "$ref": "#/PolyArc"
-                                                }
-                                            },
-                                            "holes": {
-                                                "$ref": "#/Holes2D"
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "type",
-                                            "percent",
-                                            "area",
-                                            "polygonOutline",
-                                            "holes"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "reductions"
-                            ]
+                            "$ref": "#/ZoneReductions"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -7368,34 +7297,7 @@ GS::Optional<GS::UniString> MirrorElementsCommand::GetInputParametersSchema () c
                 "type": "array",
                 "description": "The elements with mirror axes.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "mirrorAxis": {
-                            "type": "object",
-                            "description": "The mirror axis: the line through two points on the floor plan.",
-                            "properties": {
-                                "beginPoint": {
-                                    "$ref": "#/Coordinate2D",
-                                    "description": "First point of the mirror axis."
-                                },
-                                "endPoint": {
-                                    "$ref": "#/Coordinate2D",
-                                    "description": "Second point of the mirror axis. Must differ from beginPoint."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["beginPoint", "endPoint"]
-                        },
-                        "copy": {
-                            "type": "boolean",
-                            "description": "Optional parameter. If true, a mirrored copy of the element is created and the original is kept. By default it's false."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": ["elementId", "mirrorAxis"]
+                    "$ref": "#/ElementMirrorData"
                 }
             }
         },
@@ -8006,6 +7908,42 @@ static GSErrCode CalculateStairBounds (const API_Elem_Head& stairElemHead, API_B
     return NoError;
 }
 
+// A Railing, like a Stair, carries its 3D geometry in its subelements (posts, balusters, panels,
+// rails and their ends and connections), and ACAPI_Element_CalcBounds answers with
+// zMin == zMax == 0 for it (#1868). The bounds are the union of the solid bodies of the Railing
+// and of the same subelements Get3DGeometryOfElements collects for it.
+static GSErrCode CalculateRailingBounds (const API_Elem_Head& railingElemHead, API_Box3D& outBounds)
+{
+    InitializeEmptyBounds (outBounds);
+
+    bool foundSolidBody = false;
+    AccumulateSolidBodyBounds (railingElemHead, outBounds, foundSolidBody);
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (railingElemHead.guid, &memo, APIMemoMask_All) == NoError) {
+        AccumulateSubelementBounds (memo.railingPosts, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.railingInnerPosts, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.railingBalusters, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.railingPanels, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.railingRails, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.railingToprails, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.railingHandrails, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.railingRailEnds, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.railingToprailEnds, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.railingHandrailEnds, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.railingRailConnections, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.railingToprailConnections, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.railingHandrailConnections, outBounds, foundSolidBody);
+    }
+
+    if (!foundSolidBody) {
+        return APIERR_GENERAL;
+    }
+
+    return NoError;
+}
+
 // ACAPI_Element_CalcBounds only finds elements of the current database, and the 3D model of a
 // Slab, Zone or Roof can't be read while a layout or a section is the current database. So the
 // current database is switched to the one that contains the element (the floor plan for model
@@ -8126,11 +8064,27 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
             // the situations that leave it without a solid body are the very ones in which
             // CalcBounds crashes.
             err = CalculateSolidBodyBounds (elemHead, box3D);
+        } else if (typeID == API_WallID) {
+            // ACAPI_Element_CalcBounds measures a Wall along its reference line, so it leaves
+            // out what the wall connections add: at an L or T corner the 3D body reaches up to
+            // half the wall thickness beyond the end of the reference line. The solid bodies
+            // give the Wall as the 3D model shows it. A Wall without a solid body (e.g. filtered
+            // out of the 3D model) keeps the old answer.
+            err = CalculateSolidBodyBounds (elemHead, box3D);
+            if (err != NoError) {
+                err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
+            }
         } else if (typeID == API_StairID) {
             err = CalculateStairBounds (elemHead, box3D);
             if (err != NoError) {
                 // The Stair has no solid body at all - for example it is filtered out of the 3D
                 // model - so fall back to the old answer instead of failing the whole element.
+                err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
+            }
+        } else if (typeID == API_RailingID) {
+            err = CalculateRailingBounds (elemHead, box3D);
+            if (err != NoError) {
+                // No solid body at all (e.g. the Railing is filtered out of the 3D model): the old answer.
                 err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
             }
         } else if (typeID == API_RiserID || typeID == API_TreadID || typeID == API_StairStructureID) {
@@ -8568,25 +8522,7 @@ GS::Optional<GS::UniString> ConvertRevealOffsetsCommand::GetInputParametersSchem
                 "type": "array",
                 "description": "Windows and doors placed in walls, each with exactly one of coreOffset or sideOffset.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId",
-                            "description": "A window or door placed in a wall."
-                        },
-                        "coreOffset": {
-                            "type": "number",
-                            "description": "Reveal depth offset measured from the core skin of the owner wall, to convert to the wall side reference."
-                        },
-                        "sideOffset": {
-                            "type": "number",
-                            "description": "Reveal depth offset measured from the side of the owner wall, to convert to the core skin reference."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId"
-                    ]
+                    "$ref": "#/OpeningRevealOffsetData"
                 }
             }
         },
@@ -8608,22 +8544,7 @@ GS::Optional<GS::UniString> ConvertRevealOffsetsCommand::GetRawResponseSchema ()
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "coreOffset": {
-                                    "type": "number",
-                                    "description": "Reveal depth offset measured from the core skin of the owner wall."
-                                },
-                                "sideOffset": {
-                                    "type": "number",
-                                    "description": "Reveal depth offset measured from the side of the owner wall."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "coreOffset",
-                                "sideOffset"
-                            ]
+                            "$ref": "#/OpeningRevealOffsets"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -9616,6 +9537,10 @@ GS::Optional<GS::UniString> DeleteElementsCommand::GetInputParametersSchema () c
             "elements": {
                 "$ref": "#/Elements",
                 "description": "The elements to delete. The zones among them are deleted before all the others, so an automatic zone deleted together with its bounding elements is gone before its boundary is. Deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found around the clicked point' dialog, which blocks the command until someone clicks it in Archicad."
+            },
+            "dryRun": {
+                "type": "boolean",
+                "description": "If true, nothing is deleted and no undo step is created: each execution result says what the deletion would do for that element, from the checks made before deleting (the element does not exist, its layer is locked, it is not editable). Archicad can still refuse an element that passes them. Default is false."
             }
         },
         "additionalProperties": false,
@@ -9645,6 +9570,8 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
 {
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
+    bool dryRun = false;
+    parameters.Get ("dryRun", dryRun);
 
     const GS::Array<API_Guid> elemGuids = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
 
@@ -9680,7 +9607,7 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
     }
 
     GSErrCode deleteErr = NoError;
-    if (!zoneGuids.IsEmpty () || !otherGuids.IsEmpty ()) {
+    if (!dryRun && (!zoneGuids.IsEmpty () || !otherGuids.IsEmpty ())) {
         ACAPI_CallUndoableCommand ("DeleteElementsCommand", [&]() {
             if (!zoneGuids.IsEmpty ()) {
                 deleteErr = ACAPI_Element_Delete (zoneGuids);
@@ -9710,6 +9637,8 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
             continue;
         }
 
+        // With dryRun every existing element is still there, and the checks below say
+        // whether the deletion would skip it.
         const API_Guid& elemGuid = elemGuids[i];
         API_Elem_Head elemHead = {};
         if (!LoadElementHeaderByGuid (elemGuid, elemHead)) {
@@ -9724,6 +9653,8 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
             executionResults (CreateFailedExecutionResult (APIERR_LOCKEDLAY, "The element was not deleted, because its layer is locked."));
         } else if (!ACAPI_Element_Filter (elemGuid, APIFilt_IsEditable)) {
             executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "The element was not deleted, because it is not editable."));
+        } else if (dryRun) {
+            executionResults (CreateSuccessfulExecutionResult ());
         } else {
             executionResults (CreateFailedExecutionResult (deleteErr != NoError ? deleteErr : APIERR_GENERAL, "Failed to delete the element."));
         }
@@ -10330,35 +10261,7 @@ GS::Optional<GS::UniString> TriangulatePolygonsOfElementsCommand::GetRawResponse
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "triangles": {
-                                    "type": "array",
-                                    "description": "The triangles covering the polygon of the element, holes excluded, as Archicad triangulates it.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "vertices": {
-                                                "type": "array",
-                                                "description": "The 2D coordinates of the three vertices of the triangle.",
-                                                "items": {
-                                                    "$ref": "#/Coordinate2D"
-                                                },
-                                                "minItems": 3,
-                                                "maxItems": 3
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "vertices"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "triangles"
-                            ]
+                            "$ref": "#/ElementTriangulation"
                         },
                         {
                             "type": "object",
@@ -10681,41 +10584,22 @@ GS::Optional<GS::UniString> DeleteUserDataOfElementsCommand::GetRawResponseSchem
 
 GS::ObjectState DeleteUserDataOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::Array<GS::ObjectState> elements;
-    parameters.Get ("elements", elements);
-
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-
     // Archicad keeps the user data of an element per add-on, so this deletes only what this
     // add-on stored on the element.
-    ACAPI_CallUndoableCommand ("DeleteUserDataOfElements", [&] () -> GSErrCode {
-        for (const GS::ObjectState& element : elements) {
-            const GS::ObjectState* elementId = element.Get ("elementId");
-            if (elementId == nullptr) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
-                continue;
-            }
-
-            API_Elem_Head elemHead = {};
-            elemHead.guid = GetGuidFromObjectState (*elementId);
-            GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
-            if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (err, "Failed to find the element"));
-                continue;
-            }
-
-            err = TAPIR_UserData_DeleteUserData (&elemHead);
-            if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (err, "Failed to delete the user data of the element."));
-            } else {
-                executionResults (CreateSuccessfulExecutionResult ());
-            }
+    return ExecuteForEachIdInList (parameters, "elements", "elementId", "DeleteUserDataOfElements", [] (const API_Guid& elemGuid) {
+        API_Elem_Head elemHead = {};
+        elemHead.guid = elemGuid;
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to find the element");
         }
-        return NoError;
-    });
 
-    return response;
+        err = TAPIR_UserData_DeleteUserData (&elemHead);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to delete the user data of the element.");
+        }
+        return CreateSuccessfulExecutionResult ();
+    });
 }
 
 // GetTextureCoordinates
@@ -11497,39 +11381,7 @@ GS::Optional<GS::UniString> GetSurfaceQuantitiesOfElementsCommand::GetRawRespons
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "surfaces": {
-                                    "type": "array",
-                                    "description": "The surfaces of the element as Archicad reports them: one item per surface attribute and building material pair of the element, so an element has as many items as it has distinct pairs (a basic wall with three different surfaces reports three items). Empty when Archicad reports no surface for the element, for example for an element without a 3D model.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "surfaceId": {
-                                                "$ref": "#/AttributeIdArrayItem",
-                                                "description": "The surface (material) attribute of the surface. Left out when the surface is not a project attribute, for example one defined by a GDL script."
-                                            },
-                                            "buildingMaterialId": {
-                                                "$ref": "#/AttributeIdArrayItem",
-                                                "description": "The building material of the part of the element the surface belongs to."
-                                            },
-                                            "exposedArea": {
-                                                "type": "number",
-                                                "description": "The area of the surface that is not covered by any of the covering elements, in square meters."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "buildingMaterialId",
-                                            "exposedArea"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "surfaces"
-                            ]
+                            "$ref": "#/ElementSurfaceQuantities"
                         },
                         {
                             "$ref": "#/ErrorItem"

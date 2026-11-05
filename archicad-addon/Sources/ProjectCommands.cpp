@@ -800,6 +800,36 @@ static GS::ObjectState DeleteProjectInfoField (const API_Guid& fieldGuid)
     return CreateSuccessfulExecutionResult ();
 }
 
+// The shared body of the commands that change a list of Project Info groups or fields one by one,
+// in one undo step named after the command: reads the list, checks the id of each item and passes
+// the item with its guid to applyItem, which returns the execution result of the item.
+template <typename ApplyItemFunc>
+static GS::ObjectState ApplyToProjectInfoItems (const GS::ObjectState& parameters, const char* commandName, const char* listName, const char* idName, const ApplyItemFunc& applyItem)
+{
+    GS::Array<GS::ObjectState> items;
+    if (!parameters.Get (listName, items) || items.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString (listName) + " is missing or empty.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand (commandName, [&]() -> GSErrCode {
+        for (const GS::ObjectState& item : items) {
+            const API_Guid guid = GetGuidFromArrayItem (idName, item);
+            if (guid == APINULLGuid) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString ("Missing or invalid '") + idName + "' parameter."));
+                continue;
+            }
+
+            executionResults (applyItem (item, guid));
+        }
+        return NoError;
+    });
+
+    return response;
+}
+
 #endif
 
 GetNoteAutotextsCommand::GetNoteAutotextsCommand () :
@@ -820,6 +850,11 @@ GS::Optional<GS::UniString> GetNoteAutotextsCommand::GetInputParametersSchema ()
             "noteOwnerType": {
                 "$ref": "#/ElementType",
                 "description": "The type of the element that owns the note, e.g. 'Dimension', 'RadialDimension', 'LevelDimension' or 'AngleDimension'."
+            },
+            "dimensionAppearance": {
+                "type": "string",
+                "enum": ["Linear", "Cumulative", "Baseline", "Elevation"],
+                "description": "Optional dimension type, as in the Dimension Settings, whose note autotexts are listed when noteOwnerType is 'Dimension'. Defaults to Linear. Not allowed with other owner types."
             }
         },
         "additionalProperties": false,
@@ -877,9 +912,31 @@ GS::ObjectState GetNoteAutotextsCommand::Execute (const GS::ObjectState& paramet
         return CreateErrorResponse (APIERR_BADPARS, "Invalid noteOwnerType.");
     }
 
-    // dimAppear is left at its default (GS::NoValue).
+    // The API needs dimAppear for API_DimensionID (it returns APIERR_BADID without it, #1867)
+    // and does not use it for the other owner types, so it is only passed for dimensions.
+    GS::Optional<API_AppearID> dimAppear;
+    GS::UniString dimensionAppearance;
+    const bool hasDimensionAppearance = parameters.Get ("dimensionAppearance", dimensionAppearance);
+    if (noteOwnerTypeID == API_DimensionID) {
+        API_AppearID appearID = APIApp_Normal;
+        if (!hasDimensionAppearance || dimensionAppearance == "Linear") {
+            appearID = APIApp_Normal;
+        } else if (dimensionAppearance == "Cumulative") {
+            appearID = APIApp_Cumu;
+        } else if (dimensionAppearance == "Baseline") {
+            appearID = APIApp_CumuSv;
+        } else if (dimensionAppearance == "Elevation") {
+            appearID = APIApp_Elev;
+        } else {
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'dimensionAppearance' value: " + dimensionAppearance);
+        }
+        dimAppear = appearID;
+    } else if (hasDimensionAppearance) {
+        return CreateErrorResponse (APIERR_BADPARS, "dimensionAppearance is only allowed when noteOwnerType is 'Dimension'.");
+    }
+
     std::unordered_map<API_NoteAutotextID, std::unordered_set<API_ElemType>> elemTypesForAutotextIDs;
-    const GSErrCode err = ACAPI_AutoText_GetNoteAutotexts (API_ElemType (noteOwnerTypeID), elemTypesForAutotextIDs);
+    const GSErrCode err = ACAPI_AutoText_GetNoteAutotexts (API_ElemType (noteOwnerTypeID), elemTypesForAutotextIDs, dimAppear);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to retrieve the note autotexts.");
     }
@@ -960,17 +1017,7 @@ GS::Optional<GS::UniString> GetNoteAutoTextKeywordsCommand::GetRawResponseSchema
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "keyword": {
-                                    "type": "string",
-                                    "description": "The keyword of the note autotext."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "keyword"
-                            ]
+                            "$ref": "#/NoteAutoTextKeyword"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -1459,41 +1506,21 @@ GS::Optional<GS::UniString> RenameProjectInfoFieldsCommand::GetRawResponseSchema
 GS::ObjectState RenameProjectInfoFieldsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_3000
-    GS::Array<GS::ObjectState> projectInfoFields;
-    if (!parameters.Get ("projectInfoFields", projectInfoFields) || projectInfoFields.IsEmpty ()) {
-        return CreateErrorResponse (APIERR_BADPARS, "projectInfoFields is missing or empty.");
-    }
-
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-
-    ACAPI_CallUndoableCommand ("RenameProjectInfoFields", [&]() -> GSErrCode {
-        for (const GS::ObjectState& projectInfoField : projectInfoFields) {
-            const API_Guid fieldGuid = GetGuidFromArrayItem ("projectInfoFieldId", projectInfoField);
-            if (fieldGuid == APINULLGuid) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'projectInfoFieldId' parameter."));
-                continue;
-            }
-
+    return ApplyToProjectInfoItems (parameters, "RenameProjectInfoFields", "projectInfoFields", "projectInfoFieldId",
+        [] (const GS::ObjectState& projectInfoField, const API_Guid& fieldGuid) -> GS::ObjectState {
             GS::UniString name;
             if (!projectInfoField.Get ("name", name) || name.IsEmpty ()) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "name is missing or empty."));
-                continue;
+                return CreateFailedExecutionResult (APIERR_BADPARS, "name is missing or empty.");
             }
 
             const GSErrCode err = ACAPI_ProjectInfo_RenameField (fieldGuid, name);
             if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to rename the project info field",
-                    "the field is a fixed (built-in) field and cannot be renamed")));
-                continue;
+                return CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to rename the project info field",
+                    "the field is a fixed (built-in) field and cannot be renamed"));
             }
 
-            executionResults (CreateSuccessfulExecutionResult ());
-        }
-        return NoError;
-    });
-
-    return response;
+            return CreateSuccessfulExecutionResult ();
+        });
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 30 or newer.");
@@ -1873,40 +1900,20 @@ GS::Optional<GS::UniString> RenameProjectInfoGroupsCommand::GetRawResponseSchema
 GS::ObjectState RenameProjectInfoGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_3000
-    GS::Array<GS::ObjectState> projectInfoGroups;
-    if (!parameters.Get ("projectInfoGroups", projectInfoGroups) || projectInfoGroups.IsEmpty ()) {
-        return CreateErrorResponse (APIERR_BADPARS, "projectInfoGroups is missing or empty.");
-    }
-
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-
-    ACAPI_CallUndoableCommand ("RenameProjectInfoGroups", [&]() -> GSErrCode {
-        for (const GS::ObjectState& projectInfoGroup : projectInfoGroups) {
-            const API_Guid groupGuid = GetGuidFromArrayItem ("projectInfoGroupId", projectInfoGroup);
-            if (groupGuid == APINULLGuid) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'projectInfoGroupId' parameter."));
-                continue;
-            }
-
+    return ApplyToProjectInfoItems (parameters, "RenameProjectInfoGroups", "projectInfoGroups", "projectInfoGroupId",
+        [] (const GS::ObjectState& projectInfoGroup, const API_Guid& groupGuid) -> GS::ObjectState {
             GS::UniString name;
             if (!projectInfoGroup.Get ("name", name) || name.IsEmpty ()) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "name is missing or empty."));
-                continue;
+                return CreateFailedExecutionResult (APIERR_BADPARS, "name is missing or empty.");
             }
 
             const GSErrCode err = ACAPI_ProjectInfo_RenameGroup (groupGuid, name);
             if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to rename the Project Info group")));
-                continue;
+                return CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to rename the Project Info group"));
             }
 
-            executionResults (CreateSuccessfulExecutionResult ());
-        }
-        return NoError;
-    });
-
-    return response;
+            return CreateSuccessfulExecutionResult ();
+        });
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 30 or newer.");
@@ -1963,35 +1970,16 @@ GS::Optional<GS::UniString> DeleteProjectInfoGroupsCommand::GetRawResponseSchema
 GS::ObjectState DeleteProjectInfoGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_3000
-    GS::Array<GS::ObjectState> projectInfoGroups;
-    if (!parameters.Get ("projectInfoGroups", projectInfoGroups) || projectInfoGroups.IsEmpty ()) {
-        return CreateErrorResponse (APIERR_BADPARS, "projectInfoGroups is missing or empty.");
-    }
-
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-
-    ACAPI_CallUndoableCommand ("DeleteProjectInfoGroups", [&]() -> GSErrCode {
-        for (const GS::ObjectState& projectInfoGroup : projectInfoGroups) {
-            const API_Guid groupGuid = GetGuidFromArrayItem ("projectInfoGroupId", projectInfoGroup);
-            if (groupGuid == APINULLGuid) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'projectInfoGroupId' parameter."));
-                continue;
-            }
-
+    return ApplyToProjectInfoItems (parameters, "DeleteProjectInfoGroups", "projectInfoGroups", "projectInfoGroupId",
+        [] (const GS::ObjectState& /*projectInfoGroup*/, const API_Guid& groupGuid) -> GS::ObjectState {
             const GSErrCode err = ACAPI_ProjectInfo_DeleteGroup (groupGuid);
             if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to delete the Project Info group",
-                    "the group contains fixed (built-in) fields and cannot be deleted")));
-                continue;
+                return CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to delete the Project Info group",
+                    "the group contains fixed (built-in) fields and cannot be deleted"));
             }
 
-            executionResults (CreateSuccessfulExecutionResult ());
-        }
-        return NoError;
-    });
-
-    return response;
+            return CreateSuccessfulExecutionResult ();
+        });
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 30 or newer.");
@@ -2061,46 +2049,26 @@ GS::Optional<GS::UniString> MoveProjectInfoGroupsCommand::GetRawResponseSchema (
 GS::ObjectState MoveProjectInfoGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_3000
-    GS::Array<GS::ObjectState> projectInfoGroups;
-    if (!parameters.Get ("projectInfoGroups", projectInfoGroups) || projectInfoGroups.IsEmpty ()) {
-        return CreateErrorResponse (APIERR_BADPARS, "projectInfoGroups is missing or empty.");
-    }
-
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-
-    ACAPI_CallUndoableCommand ("MoveProjectInfoGroups", [&]() -> GSErrCode {
-        for (const GS::ObjectState& projectInfoGroup : projectInfoGroups) {
-            const API_Guid groupGuid = GetGuidFromArrayItem ("projectInfoGroupId", projectInfoGroup);
-            if (groupGuid == APINULLGuid) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'projectInfoGroupId' parameter."));
-                continue;
-            }
-
+    return ApplyToProjectInfoItems (parameters, "MoveProjectInfoGroups", "projectInfoGroups", "projectInfoGroupId",
+        [] (const GS::ObjectState& projectInfoGroup, const API_Guid& groupGuid) -> GS::ObjectState {
             // No 'beforeProjectInfoGroupId' is "to the end", which the API takes as std::nullopt;
             // a given but invalid one is an error, not a silent move to the end.
             std::optional<API_Guid> beforeGroupGuid;
             if (projectInfoGroup.Contains ("beforeProjectInfoGroupId")) {
                 const API_Guid beforeGuid = GetGuidFromArrayItem ("beforeProjectInfoGroupId", projectInfoGroup);
                 if (beforeGuid == APINULLGuid) {
-                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Invalid 'beforeProjectInfoGroupId' parameter."));
-                    continue;
+                    return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid 'beforeProjectInfoGroupId' parameter.");
                 }
                 beforeGroupGuid = beforeGuid;
             }
 
             const GSErrCode err = ACAPI_ProjectInfo_MoveGroup (groupGuid, beforeGroupGuid);
             if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to move the Project Info group")));
-                continue;
+                return CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to move the Project Info group"));
             }
 
-            executionResults (CreateSuccessfulExecutionResult ());
-        }
-        return NoError;
-    });
-
-    return response;
+            return CreateSuccessfulExecutionResult ();
+        });
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 30 or newer.");
@@ -3346,14 +3314,12 @@ GS::Optional<GS::UniString> GetCurrentViewImageCommand::GetInputParametersSchema
         "type": "object",
         "properties": {
             "source": {
-                "type": "string",
-                "description": "Optional, 3DWindow by default. The window whose image is returned: the 3D window, or the PhotoRendering window.",
-                "enum": ["3DWindow", "RenderingWindow"]
+                "$ref": "#/ViewImageSource",
+                "description": "Optional, 3DWindow by default."
             },
             "format": {
-                "type": "string",
-                "description": "Optional, png by default. The image format.",
-                "enum": ["png", "jpg"]
+                "$ref": "#/ViewImageFormat",
+                "description": "Optional, png by default."
             }
         },
         "additionalProperties": false,
@@ -4288,68 +4254,13 @@ GS::Optional<GS::UniString> GetCalculationUnitsCommand::GetRawResponseSchema () 
                 ]
             },
             "area": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/AreaType"
-                    },
-                    "accuracy": {
-                        "$ref": "#/AccuracyType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for area values."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "unit",
-                    "accuracy",
-                    "decimals"
-                ]
+                "$ref": "#/CalculationUnitAreaFormat"
             },
             "volume": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/VolumeType"
-                    },
-                    "accuracy": {
-                        "$ref": "#/AccuracyType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for volume values."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "unit",
-                    "accuracy",
-                    "decimals"
-                ]
+                "$ref": "#/CalculationUnitVolumeFormat"
             },
             "angle": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/AngleType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for angle values."
-                    },
-                    "accuracy": {
-                        "type": "integer",
-                        "description": "Accuracy for angle values."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "unit",
-                    "decimals",
-                    "accuracy"
-                ]
+                "$ref": "#/AngleUnitFormat"
             }
         },
         "additionalProperties": false,
@@ -4728,6 +4639,11 @@ GS::ObjectState GetExportToleranceCommand::Execute (const GS::ObjectState& /*par
 {
     double arcDiff = 0.0;
     const GSErrCode err = ACAPI_ProjectSetting_GetExportTolerance (&arcDiff);
+    if (err == APIERR_NOTSUPPORTED) {
+        // Archicad documents APIERR_NOTSUPPORTED for this function as "Not at export":
+        // the tolerance only exists while an export (a file format add-on's save) runs.
+        return CreateErrorResponse (err, "Archicad provides the export tolerance only while an export is in progress, and no export is in progress now.");
+    }
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to get the export tolerance.");
     }
@@ -5002,6 +4918,40 @@ static GS::ObjectState CreateZonesObjectState (const API_ZonePrefs& prefs)
     lowCeilingAreaReduction.Add ("reductionPercentAboveHeightLimits", prefs.roomRedPercents[ZoneHeightLimitCount]);
 
     return GS::ObjectState ("lowCeilingAreaReduction", lowCeilingAreaReduction);
+}
+
+// The Reference Levels page (API_RefLevelsPrefs): two named levels, each with its
+// elevation from Project Zero. ACAPI_ProjectSetting_GetPreferences sets the name
+// pointers to strings Archicad keeps, so they are only read, never freed (as in the
+// DevKit's Environment_Control example).
+static GS::ObjectState CreateReferenceLevelObjectState (const GS::UniString* name, double elevation)
+{
+    return GS::ObjectState (
+        "name", name != nullptr ? *name : GS::UniString (),
+        "elevation", elevation);
+}
+
+static GS::ObjectState CreateReferenceLevelsObjectState (const API_RefLevelsPrefs& prefs)
+{
+    return GS::ObjectState (
+        "level1", CreateReferenceLevelObjectState (prefs.level1UStr, prefs.level1val),
+        "level2", CreateReferenceLevelObjectState (prefs.level2UStr, prefs.level2val));
+}
+
+// The Floor Plan Cut Plane Settings (API_FloorPlanCutDefinition): the cut plane height
+// from the current story, the top and bottom of the floor plan range (each a story
+// relative to the current story and an offset from it) and the absolute display limit.
+static GS::ObjectState CreateFloorPlanCutPlaneObjectState (const API_FloorPlanCutDefinition& prefs)
+{
+    return GS::ObjectState (
+        "cutPlaneHeight", prefs.currCutLevel,
+        "topLevel", GS::ObjectState (
+            "relativeStory", static_cast<Int32> (prefs.topCutBaseStoryRelInd),
+            "offset", prefs.topCutLevel),
+        "bottomLevel", GS::ObjectState (
+            "relativeStory", static_cast<Int32> (prefs.bottomCutBaseStoryRelInd),
+            "offset", prefs.bottomCutLevel),
+        "absoluteDisplayLimit", prefs.fixLevel2Absolute0);
 }
 
 #ifdef ServerMainVers_2700
@@ -5374,6 +5324,64 @@ static GS::Optional<GS::UniString> ApplyZones (const GS::ObjectState& os, API_Zo
     return GS::NoValue;
 }
 
+// --- Reference Levels page
+
+// A changed name is kept in `nameStorage`, which has to live until the page is written;
+// an unchanged name keeps the pointer Archicad gave.
+static bool ApplyReferenceLevel (const GS::ObjectState& os, const char* key, GS::UniString*& name, double& elevation, GS::UniString& nameStorage)
+{
+    GS::ObjectState level;
+    if (!os.Get (key, level)) {
+        return false;
+    }
+
+    bool changed = false;
+    if (level.Get ("name", nameStorage)) {
+        name = &nameStorage;
+        changed = true;
+    }
+    changed |= level.Get ("elevation", elevation);
+    return changed;
+}
+
+// --- Floor Plan Cut Plane page
+
+static GS::Optional<GS::UniString> ApplyFloorPlanCutLevel (const GS::ObjectState& os, const char* key, short& relativeStory, double& offset, bool& changed)
+{
+    GS::ObjectState level;
+    if (!os.Get (key, level)) {
+        return GS::NoValue;
+    }
+
+    Int32 relativeStoryValue = 0;
+    if (level.Get ("relativeStory", relativeStoryValue)) {
+        if (relativeStoryValue < -32768 || relativeStoryValue > 32767) {
+            return GS::UniString (key) + ".relativeStory is out of range.";
+        }
+        relativeStory = static_cast<short> (relativeStoryValue);
+        changed = true;
+    }
+    changed |= level.Get ("offset", offset);
+    return GS::NoValue;
+}
+
+static GS::Optional<GS::UniString> ApplyFloorPlanCutPlane (const GS::ObjectState& os, API_FloorPlanCutDefinition& prefs, bool& changed)
+{
+    changed |= os.Get ("cutPlaneHeight", prefs.currCutLevel);
+
+    GS::Optional<GS::UniString> error = ApplyFloorPlanCutLevel (os, "topLevel", prefs.topCutBaseStoryRelInd, prefs.topCutLevel, changed);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = ApplyFloorPlanCutLevel (os, "bottomLevel", prefs.bottomCutBaseStoryRelInd, prefs.bottomCutLevel, changed);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    changed |= os.Get ("absoluteDisplayLimit", prefs.fixLevel2Absolute0);
+    return GS::NoValue;
+}
+
 // --- The commands
 
 // Reads the page `prefsType`, applies the fields of `pageFields` to it with `apply`
@@ -5401,6 +5409,34 @@ static GS::ObjectState SetProjectPreferencesPage (const char* pageName, API_Pref
     });
     if (err != NoError) {
         return CreateFailedExecutionResult (err, GS::UniString ("Failed to set the ") + pageName + " preferences. In Teamwork the PreferencesDialog lockable object set has to be reserved first.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+// The Reference Levels page has its own setter: a new name is pointed to from the
+// struct, so its string has to live until the page is written.
+static GS::ObjectState SetReferenceLevelsPage (const GS::ObjectState& pageFields)
+{
+    API_RefLevelsPrefs prefs = {};
+    GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_ReferenceLevelsID);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to read the reference levels preferences.");
+    }
+
+    GS::UniString level1Name;
+    GS::UniString level2Name;
+    bool changed = ApplyReferenceLevel (pageFields, "level1", prefs.level1UStr, prefs.level1val, level1Name);
+    changed |= ApplyReferenceLevel (pageFields, "level2", prefs.level2UStr, prefs.level2val, level2Name);
+    if (!changed) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "No field of the reference levels preferences given.");
+    }
+
+    err = ACAPI_CallUndoableCommand ("Set Project Preferences", [&] () -> GSErrCode {
+        return ACAPI_ProjectSetting_SetPreferences (&prefs, APIPrefs_ReferenceLevelsID);
+    });
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to set the reference levels preferences. In Teamwork the PreferencesDialog lockable object set has to be reserved first.");
     }
 
     return CreateSuccessfulExecutionResult ();
@@ -5802,6 +5838,106 @@ static GS::UniString GetZonesSchema (bool allFieldsRequired)
     return schema;
 }
 
+static GS::UniString GetReferenceLevelSchema (bool allFieldsRequired, const char* description)
+{
+    GS::UniString schema = R"({
+                "type": "object",
+                "description": ")";
+    schema += description;
+    schema += R"(",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the reference level, e.g. Sea Level."
+                    },
+                    "elevation": {
+                        "type": "number",
+                        "description": "The elevation of the reference level from Project Zero in meters."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("name", "elevation")");
+    schema += R"(
+            })";
+    return schema;
+}
+
+static GS::UniString GetReferenceLevelsSchema (bool allFieldsRequired)
+{
+    GS::UniString schema = R"({
+        "type": "object",
+        "description": "The Reference Levels page: two named levels that elevations can be measured from, besides Project Zero and the stories.",
+        "properties": {
+            "level1": )";
+    schema += GetReferenceLevelSchema (allFieldsRequired, "The first reference level.");
+    schema += R"(,
+            "level2": )";
+    schema += GetReferenceLevelSchema (allFieldsRequired, "The second reference level.");
+    schema += R"(
+        },
+        "additionalProperties": false,
+        )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("level1", "level2")");
+    schema += R"(
+    })";
+    return schema;
+}
+
+static GS::UniString GetFloorPlanCutLevelSchema (bool allFieldsRequired, const char* description)
+{
+    GS::UniString schema = R"({
+                "type": "object",
+                "description": ")";
+    schema += description;
+    schema += R"(",
+                "properties": {
+                    "relativeStory": {
+                        "type": "integer",
+                        "description": "The story the level is measured from, relative to the current story: 0 is the current story, 1 the story above it, -1 the story below it."
+                    },
+                    "offset": {
+                        "type": "number",
+                        "description": "The offset of the level from that story in meters."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("relativeStory", "offset")");
+    schema += R"(
+            })";
+    return schema;
+}
+
+static GS::UniString GetFloorPlanCutPlaneSchema (bool allFieldsRequired)
+{
+    GS::UniString schema = R"({
+        "type": "object",
+        "description": "The Floor Plan Cut Plane Settings (Document > Floor Plan Cut Plane): where the floor plan cuts the model and which range of it the floor plan shows.",
+        "properties": {
+            "cutPlaneHeight": {
+                "type": "number",
+                "description": "The height of the cut plane from the current story in meters."
+            },
+            "topLevel": )";
+    schema += GetFloorPlanCutLevelSchema (allFieldsRequired, "The top of the floor plan range: elements are shown up to this level.");
+    schema += R"(,
+            "bottomLevel": )";
+    schema += GetFloorPlanCutLevelSchema (allFieldsRequired, "The bottom of the floor plan range: elements are shown down to this level.");
+    schema += R"(,
+            "absoluteDisplayLimit": {
+                "type": "number",
+                "description": "The absolute display limit from Project Zero in meters: elements set to show on the floor plan down to the absolute display limit are shown down to this level."
+            }
+        },
+        "additionalProperties": false,
+        )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("cutPlaneHeight", "topLevel", "bottomLevel", "absoluteDisplayLimit")");
+    schema += R"(
+    })";
+    return schema;
+}
+
 GetProjectPreferencesCommand::GetProjectPreferencesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -5826,7 +5962,9 @@ GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetInputParametersSche
                         "WorkingUnits",
                         "Dimensions",
                         "CalculationUnits",
-                        "Zones"
+                        "Zones",
+                        "ReferenceLevels",
+                        "FloorPlanCutPlane"
                     ]
                 },
                 "minItems": 1
@@ -5855,6 +5993,12 @@ GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetRawResponseSchema (
     schema += R"(,
             "zones": )";
     schema += GetZonesSchema (true);
+    schema += R"(,
+            "referenceLevels": )";
+    schema += GetReferenceLevelsSchema (true);
+    schema += R"(,
+            "floorPlanCutPlane": )";
+    schema += GetFloorPlanCutPlaneSchema (true);
     schema += R"(
         },
         "additionalProperties": false,
@@ -5872,6 +6016,8 @@ GS::ObjectState GetProjectPreferencesCommand::Execute (const GS::ObjectState& pa
         preferenceTypes.Push ("Dimensions");
         preferenceTypes.Push ("CalculationUnits");
         preferenceTypes.Push ("Zones");
+        preferenceTypes.Push ("ReferenceLevels");
+        preferenceTypes.Push ("FloorPlanCutPlane");
     }
 
     GS::ObjectState response;
@@ -5904,6 +6050,20 @@ GS::ObjectState GetProjectPreferencesCommand::Execute (const GS::ObjectState& pa
                 return CreateErrorResponse (err, "Failed to read the zones preferences.");
             }
             response.Add ("zones", CreateZonesObjectState (prefs));
+        } else if (preferenceType == "ReferenceLevels") {
+            API_RefLevelsPrefs prefs = {};
+            const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_ReferenceLevelsID);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the reference levels preferences.");
+            }
+            response.Add ("referenceLevels", CreateReferenceLevelsObjectState (prefs));
+        } else if (preferenceType == "FloorPlanCutPlane") {
+            API_FloorPlanCutDefinition prefs = {};
+            const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_FloorPlanCutPlaneDef);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the floor plan cut plane settings.");
+            }
+            response.Add ("floorPlanCutPlane", CreateFloorPlanCutPlaneObjectState (prefs));
         } else {
             return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Unknown preference type: ") + preferenceType);
         }
@@ -5939,6 +6099,12 @@ GS::Optional<GS::UniString> SetProjectPreferencesCommand::GetInputParametersSche
     schema += R"(,
             "zones": )";
     schema += GetZonesSchema (false);
+    schema += R"(,
+            "referenceLevels": )";
+    schema += GetReferenceLevelsSchema (false);
+    schema += R"(,
+            "floorPlanCutPlane": )";
+    schema += GetFloorPlanCutPlaneSchema (false);
     schema += R"(
         },
         "additionalProperties": false,
@@ -5964,6 +6130,12 @@ GS::Optional<GS::UniString> SetProjectPreferencesCommand::GetRawResponseSchema (
                 "$ref": "#/ExecutionResult"
             },
             "zones": {
+                "$ref": "#/ExecutionResult"
+            },
+            "referenceLevels": {
+                "$ref": "#/ExecutionResult"
+            },
+            "floorPlanCutPlane": {
                 "$ref": "#/ExecutionResult"
             }
         },
@@ -6003,8 +6175,20 @@ GS::ObjectState SetProjectPreferencesCommand::Execute (const GS::ObjectState& pa
         response.Add ("zones", SetProjectPreferencesPage<API_ZonePrefs> ("zones", APIPrefs_ZonesID, zones, ApplyZones));
     }
 
+    GS::ObjectState referenceLevels;
+    if (parameters.Get ("referenceLevels", referenceLevels)) {
+        anyPage = true;
+        response.Add ("referenceLevels", SetReferenceLevelsPage (referenceLevels));
+    }
+
+    GS::ObjectState floorPlanCutPlane;
+    if (parameters.Get ("floorPlanCutPlane", floorPlanCutPlane)) {
+        anyPage = true;
+        response.Add ("floorPlanCutPlane", SetProjectPreferencesPage<API_FloorPlanCutDefinition> ("floor plan cut plane", APIPrefs_FloorPlanCutPlaneDef, floorPlanCutPlane, ApplyFloorPlanCutPlane));
+    }
+
     if (!anyPage) {
-        return CreateErrorResponse (APIERR_BADPARS, "No preference page given. Give workingUnits, dimensions, calculationUnits or zones.");
+        return CreateErrorResponse (APIERR_BADPARS, "No preference page given. Give workingUnits, dimensions, calculationUnits, zones, referenceLevels or floorPlanCutPlane.");
     }
 
     return response;
@@ -7550,35 +7734,7 @@ GS::Optional<GS::UniString> GetHotlinkProxyElementTableCommand::GetRawResponseSc
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "proxyElements": {
-                                    "type": "array",
-                                    "description": "The proxy elements of the instance, in no particular order.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "proxyElementId": {
-                                                "$ref": "#/ElementId",
-                                                "description": "The proxy element in the current project."
-                                            },
-                                            "sourceElementId": {
-                                                "$ref": "#/ElementId",
-                                                "description": "The element in the hotlink's source file the proxy was made from."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "proxyElementId",
-                                            "sourceElementId"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "proxyElements"
-                            ]
+                            "$ref": "#/HotlinkProxyElementTable"
                         },
                         {
                             "$ref": "#/ErrorItem"

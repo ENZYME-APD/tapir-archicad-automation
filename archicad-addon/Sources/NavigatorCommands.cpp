@@ -310,17 +310,7 @@ GS::Optional<GS::UniString> GetDrawingContentBoxesCommand::GetRawResponseSchema 
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "contentBox": {
-                                    "$ref": "#/BoundingBox2D",
-                                    "description": "The full boundary box of the Drawing's content, independent of its frame, as returned by Archicad."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "contentBox"
-                            ]
+                            "$ref": "#/DrawingContentBox"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -510,17 +500,7 @@ GS::Optional<GS::UniString> GetDatabasesCommand::GetInputParametersSchema () con
             "type": "array",
             "description": "The types of the databases to list. Optional, by default the databases of every type are listed.",
             "items": {
-                "type": "string",
-                "enum": [
-                    "Section",
-                    "Elevation",
-                    "InteriorElevation",
-                    "Detail",
-                    "Worksheet",
-                    "DocumentFrom3D",
-                    "Layout",
-                    "MasterLayout"
-                ]
+                "$ref": "#/DatabaseType"
             }
         }
     },
@@ -537,29 +517,7 @@ GS::Optional<GS::UniString> GetDatabasesCommand::GetRawResponseSchema () const
         "databases": {
             "type": "array",
             "items": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "description": "The type of the database."
-                    },
-                    "databaseId": {
-                        "$ref": "#/DatabaseId"
-                    },
-                    "name": {
-                        "type": "string",
-                        "description": "The name of the database. Missing when the database info cannot be read."
-                    },
-                    "referenceId": {
-                        "type": "string",
-                        "description": "The reference id of the database. Missing when the database info cannot be read."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "databaseId"
-                ]
+                "$ref": "#/DatabaseDetails"
             }
         }
     },
@@ -2565,7 +2523,7 @@ static bool StringToStructureDisplay (const GS::UniString& str, API_StructureDis
 #endif
 
 GetStructureDisplayCommand::GetStructureDisplayCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {}
 
 GS::String GetStructureDisplayCommand::GetName () const
@@ -2580,9 +2538,7 @@ GS::Optional<GS::UniString> GetStructureDisplayCommand::GetRawResponseSchema () 
         "description": "The Partial Structure Display of the current window.",
         "properties": {
             "structureDisplay": {
-                "type": "string",
-                "description": "The Partial Structure Display mode of the current window.",
-                "enum": ["EntireStructure", "CoreOnly", "WithoutFinishes", "StructureOnly"]
+                "$ref": "#/PartialStructureDisplay"
             },
             "is3D": {
                 "type": "boolean",
@@ -2629,9 +2585,7 @@ GS::Optional<GS::UniString> SetStructureDisplayCommand::GetInputParametersSchema
         "type": "object",
         "properties": {
             "structureDisplay": {
-                "type": "string",
-                "description": "The Partial Structure Display mode to apply to the current window.",
-                "enum": ["EntireStructure", "CoreOnly", "WithoutFinishes", "StructureOnly"]
+                "$ref": "#/PartialStructureDisplay"
             }
         },
         "additionalProperties": false,
@@ -4445,7 +4399,11 @@ GS::Optional<GS::UniString> DeleteNavigatorItemsCommand::GetInputParametersSchem
     return R"({
         "type": "object",
         "properties": {
-            "navigatorItemIds": { "$ref": "#/NavigatorItemIds" }
+            "navigatorItemIds": { "$ref": "#/NavigatorItemIds" },
+            "dryRun": {
+                "type": "boolean",
+                "description": "If true, nothing is deleted: each execution result says what the deletion would do for that item, from the checks made before deleting (corrupt id, item not found, layout subset, View Map folder that is not empty). Archicad can still refuse an item that passes them: a Project Map item other than an independent worksheet, detail or viewpoint created by the Tapir Add-On, a marker-linked worksheet or detail, or in a Teamwork project an item that is not reserved. Default is false."
+            }
         },
         "additionalProperties": false,
         "required": ["navigatorItemIds"]
@@ -4487,6 +4445,7 @@ static bool IsProjectMapWorksheetOrDetail (const API_Guid& guid, const API_Navig
 }
 
 static GS::UniString NavigatorItemTypeToString (API_NavigatorItemTypeID t);
+static bool GetNavigatorChildren (const API_Guid& parentGuid, GS::Array<API_NavigatorItem>& children);
 
 GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
@@ -4501,6 +4460,8 @@ GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& par
 
     GS::Array<GS::ObjectState> navigatorItemIds;
     parameters.Get ("navigatorItemIds", navigatorItemIds);
+    bool dryRun = false;
+    parameters.Get ("dryRun", dryRun);
 
     API_ProjectInfo projectInfo = {};
     const bool isTeamwork = ACAPI_ProjectOperation_Project (&projectInfo) == NoError && projectInfo.teamwork;
@@ -4524,15 +4485,21 @@ GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& par
 
         GSErrCode err = NoError;
         GS::UniString failureMessage = "Failed to delete navigator item.";
+        // With dryRun only the checks made before the delete calls are run; the
+        // calls themselves are skipped.
         if (navItem.itemType == API_LayoutNavItem || navItem.itemType == API_MasterLayoutNavItem) {
-            API_DatabaseInfo dbInfo = navItem.db;
-            err = ACAPI_Database_DeleteDatabase (&dbInfo);
+            if (!dryRun) {
+                API_DatabaseInfo dbInfo = navItem.db;
+                err = ACAPI_Database_DeleteDatabase (&dbInfo);
+            }
         } else if (IsProjectMapWorksheetOrDetail (guid, navItem)) {
             // Only independent worksheets and details are databases of their
             // own; one placed by a marker belongs to its marker and cannot be
             // deleted this way.
-            API_DatabaseInfo dbInfo = navItem.db;
-            err = ACAPI_Database_DeleteDatabase (&dbInfo);
+            if (!dryRun) {
+                API_DatabaseInfo dbInfo = navItem.db;
+                err = ACAPI_Database_DeleteDatabase (&dbInfo);
+            }
             failureMessage = "Failed to delete the worksheet or detail. Only independent worksheets and details can be deleted; delete a marker-linked one by deleting its marker.";
         } else if (navItem.itemType == API_SubSetNavItem) {
             err = APIERR_NOTSUPPORTED;
@@ -4540,8 +4507,17 @@ GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& par
             // ACAPI_Navigator_DeleteNavigatorVPItem deletes only the viewpoints of this
             // add-on (CreateAddOnViewpoints) and answers APIERR_BADID for any other one;
             // the API cannot delete Archicad's own Project Map viewpoints.
-            err = ACAPI_Navigator_DeleteNavigatorVPItem (&guid);
+            if (!dryRun) {
+                err = ACAPI_Navigator_DeleteNavigatorVPItem (&guid);
+            }
             failureMessage = "Failed to delete the Project Map viewpoint. Only the viewpoints the Tapir Add-On created (CreateAddOnViewpoints) can be deleted; Archicad's own Project Map items, such as schedules, cannot be deleted through the API.";
+        } else if (dryRun) {
+            // ACAPI_Navigator_DeleteNavigatorView refuses a View Map folder that
+            // still holds items with APIERR_NOTSUPPORTED (see below).
+            GS::Array<API_NavigatorItem> children;
+            if (navItem.itemType == API_FolderNavItem && GetNavigatorChildren (guid, children) && !children.IsEmpty ()) {
+                err = APIERR_NOTSUPPORTED;
+            }
         } else {
             bool silentMode = true;
             err = ACAPI_Navigator_DeleteNavigatorView (&guid, &silentMode);
@@ -4569,6 +4545,10 @@ GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& par
         }
         if (err != NoError) {
             executionResults (CreateFailedExecutionResult (err, failureMessage));
+            continue;
+        }
+        if (dryRun) {
+            executionResults (CreateSuccessfulExecutionResult ());
             continue;
         }
 
@@ -5055,14 +5035,7 @@ GS::Optional<GS::UniString> GetNavigatorParentItemsCommand::GetRawResponseSchema
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "navigatorItemId": { "$ref": "#/NavigatorItemId" },
-                                "type":            { "$ref": "#/NavigatorItemType" },
-                                "name":            { "type": "string", "description": "The name of the parent navigator item." }
-                            },
-                            "additionalProperties": false,
-                            "required": ["navigatorItemId", "type", "name"]
+                            "$ref": "#/NavigatorParentItem"
                         },
                         {
                             "$ref": "#/ErrorItem"
