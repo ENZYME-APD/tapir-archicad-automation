@@ -1,6 +1,6 @@
 {
   "title": "CreateRailingsFromPolyline: per-node elevations, arcs and the home story",
-  "minTapir": "1.7.4",
+  "minTapir": "1.8.1",
   "steps": [
     {
       "id": "railings on story 0, story 1, and with an arc",

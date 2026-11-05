@@ -365,41 +365,7 @@ GS::Optional<GS::UniString> GetAttributesFromProjectCommand::GetRawResponseSchem
         "type": "object",
         "oneOf": [
             {
-                "type": "object",
-                "properties": {
-                    "attributesByType": {
-                        "type": "array",
-                        "description": "One item per requested attribute type, in the order of attributeTypes.",
-                        "items": {
-                            "type": "object",
-                            "oneOf": [
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "attributeType": {
-                                            "$ref": "#/AttributeType"
-                                        },
-                                        "attributes": {
-                                            "$ref": "#/AttributeHeaders"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "attributeType",
-                                        "attributes"
-                                    ]
-                                },
-                                {
-                                    "$ref": "#/ErrorItem"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "attributesByType"
-                ]
+                "$ref": "#/ProjectAttributes"
             },
             {
                 "$ref": "#/ErrorItem"
@@ -2700,6 +2666,14 @@ static void ApplyProfileSkinOverrides (ProfileVectorImage& pvi, const GS::Object
                 if (edgeOverride.Get ("isVisibleLine", isVisibleLine)) {
                     edgeData->SetVisibleLine (isVisibleLine);
                 }
+                bool isInnerLine;
+                if (edgeOverride.Get ("isInnerLine", isInnerLine)) {
+                    edgeData->SetInnerLine (isInnerLine);
+                }
+                bool isCutEndLine;
+                if (edgeOverride.Get ("isCutEndLine", isCutEndLine)) {
+                    edgeData->SetCutEndLine (isCutEndLine);
+                }
                 GS::ObjectState lineTypeId;
                 if (edgeOverride.Get ("lineTypeId", lineTypeId)) {
                     API_AttributeIndex idx;
@@ -2719,6 +2693,157 @@ static void ApplyProfileSkinOverrides (ProfileVectorImage& pvi, const GS::Object
         }
 
         return;
+    }
+}
+
+// The region of a CreateProfiles moveVertices item: each of xMin/xMax/yMin/yMax that is omitted leaves that
+// side unbounded, so e.g. only yMin selects every vertex at or above that height. Bounds are inclusive with a
+// small tolerance, so a vertex lying exactly on a bound (as read back by GetProfiles) is selected.
+struct ProfileVertexRegion {
+    GS::Optional<double> xMin;
+    GS::Optional<double> xMax;
+    GS::Optional<double> yMin;
+    GS::Optional<double> yMax;
+
+    static constexpr double Tolerance = 1e-6;
+
+    bool ContainsX (double x) const
+    {
+        return (!xMin.HasValue () || x >= *xMin - Tolerance) && (!xMax.HasValue () || x <= *xMax + Tolerance);
+    }
+    bool ContainsY (double y) const
+    {
+        return (!yMin.HasValue () || y >= *yMin - Tolerance) && (!yMax.HasValue () || y <= *yMax + Tolerance);
+    }
+    bool Contains (const Coord& c) const
+    {
+        return ContainsX (c.x) && ContainsY (c.y);
+    }
+};
+
+static ProfileVertexRegion GetProfileVertexRegion (const GS::ObjectState& moveVertices)
+{
+    ProfileVertexRegion region;
+    GS::ObjectState regionOs;
+    if (moveVertices.Get ("region", regionOs)) {
+        double value;
+        if (regionOs.Get ("xMin", value)) {
+            region.xMin = value;
+        }
+        if (regionOs.Get ("xMax", value)) {
+            region.xMax = value;
+        }
+        if (regionOs.Get ("yMin", value)) {
+            region.yMin = value;
+        }
+        if (regionOs.Get ("yMax", value)) {
+            region.yMax = value;
+        }
+    }
+    return region;
+}
+
+// Moves, in place, every skin vertex inside the given region by the given vector (CreateProfiles' moveVertices).
+// The skins themselves are kept: their unique ids, vertex and edge counts, arcs and edge data are unchanged,
+// so the profile modifiers (whose anchors refer to skin vertices and edges by skin id and index) and the
+// per-edge settings stay attached to the moved geometry. The parts of the profile that are stored as
+// coordinates rather than as skin references follow the move too: the hotspots and the fixed modifier anchors
+// inside the region, and the stretch zone limits - a vertical stretch zone limit (a height) inside the region's
+// y range when the region has no x bounds, a horizontal one (a width position) inside its x range when it has
+// no y bounds, so the profile stays stretchable. The reserved first coordinate of each skin (the (0,0) anchor,
+// see BuildHatchPolygonGeometry) is never moved.
+static void ApplyProfileVertexMove (ProfileVectorImage& pvi, const GS::ObjectState& moveVertices)
+{
+    GS::ObjectState vectorOs;
+    if (!moveVertices.Get ("vector", vectorOs)) {
+        return;
+    }
+    const API_Coord vector = Get2DCoordinateFromObjectState (vectorOs);
+    const ProfileVertexRegion region = GetProfileVertexRegion (moveVertices);
+
+    GS::HashSet<GS::Guid> skinIds;
+    GS::Array<GS::UniString> skinIdStrings;
+    if (moveVertices.Get ("skinIds", skinIdStrings)) {
+        for (const GS::UniString& skinIdString : skinIdStrings) {
+            skinIds.Add (GS::Guid (skinIdString));
+        }
+    }
+    const bool allSkins = skinIds.IsEmpty ();
+
+    auto moveCoord = [&] (const Coord& c) {
+        if (!region.Contains (c)) {
+            return c;
+        }
+        Coord moved = c;
+        moved.x += vector.x;
+        moved.y += vector.y;
+        return moved;
+    };
+
+    {
+        VectorImageAccessGuard guard (&pvi);
+        VectorImage& vi = guard;
+        for (VectorImageIterator it (vi); !it.IsEOI (); ++it) {
+            if (it->item_Typ == SyHatch) {
+                Sy_HatchType* hatchRec = it;
+                HatchObject& hatch = pvi.GetHatchObject (*hatchRec);
+                if (!allSkins && !skinIds.Contains (hatch.GetUniqueId ())) {
+                    continue;
+                }
+#ifdef ServerMainVers_2700
+                hatch.TransformCoords (moveCoord);  // skips the reserved first coordinate itself
+#else
+                GS::Array<Coord>& coords = hatch.GetCoords ();
+                for (UIndex i = 1; i < coords.GetSize (); ++i) {
+                    coords[i] = moveCoord (coords[i]);
+                }
+#endif
+            } else if (it->item_Typ == SyHots) {
+                Sy_HotType* hotspot = it;
+                hotspot->c = moveCoord (hotspot->c);
+            }
+        }
+    }
+
+    GS::HashTable<PVI::ProfileAnchorId, PVI::Anchor> anchors;
+    pvi.GetAnchors (anchors);
+    anchors.Enumerate ([&] (const PVI::ProfileAnchorId& anchorId, const PVI::Anchor& anchor) {
+        if (anchor.GetAnchorType () != PVI::Anchor::AnchorType::FixedToStretchCanvas) {
+            return;
+        }
+        const Coord& position = anchor.GetFixAnchorPosition ();
+        if (!region.Contains (position)) {
+            return;
+        }
+        PVI::Anchor movedAnchor;
+        movedAnchor.SetFixed (moveCoord (position));
+        pvi.ReplaceAnchor (anchorId, movedAnchor);
+    });
+
+    PVI::StretchData stretch = pvi.GetStretchData ();
+    bool stretchChanged = false;
+    if (stretch.HasVerticalZone () && !region.xMin.HasValue () && !region.xMax.HasValue () && vector.y != 0.0) {
+        double zoneMin, zoneMax;
+        stretch.GetVerticalZone (zoneMin, zoneMax);
+        double newMin = region.ContainsY (zoneMin) ? zoneMin + vector.y : zoneMin;
+        double newMax = region.ContainsY (zoneMax) ? zoneMax + vector.y : zoneMax;
+        if (newMin != zoneMin || newMax != zoneMax) {
+            stretch.SetVerticalZoneCanBeZero (std::min (newMin, newMax), std::max (newMin, newMax));
+            stretchChanged = true;
+        }
+    }
+    if (stretch.HasHorizontalZone () && !region.yMin.HasValue () && !region.yMax.HasValue () && vector.x != 0.0) {
+        double zoneMin, zoneMax;
+        stretch.GetHorizontalZone (zoneMin, zoneMax);
+        double newMin = region.ContainsX (zoneMin) ? zoneMin + vector.x : zoneMin;
+        double newMax = region.ContainsX (zoneMax) ? zoneMax + vector.x : zoneMax;
+        if (newMin != zoneMin || newMax != zoneMax) {
+            stretch.SetHorizontalZoneCanBeZero (std::min (newMin, newMax), std::max (newMin, newMax));
+            stretchChanged = true;
+        }
+    }
+    if (stretchChanged) {
+        pvi.SetStretchData (stretch);
     }
 }
 
@@ -2920,6 +3045,14 @@ static bool BuildHatchFromSkinDefinition (const GS::ObjectState& skinDef, HatchO
             bool isVisibleLine;
             if (edgeOverride.Get ("isVisibleLine", isVisibleLine)) {
                 edgeData->SetVisibleLine (isVisibleLine);
+            }
+            bool isInnerLine;
+            if (edgeOverride.Get ("isInnerLine", isInnerLine)) {
+                edgeData->SetInnerLine (isInnerLine);
+            }
+            bool isCutEndLine;
+            if (edgeOverride.Get ("isCutEndLine", isCutEndLine)) {
+                edgeData->SetCutEndLine (isCutEndLine);
             }
             GS::ObjectState lineTypeId;
             if (edgeOverride.Get ("lineTypeId", lineTypeId)) {
@@ -3841,6 +3974,10 @@ GS::Optional<GS::UniString> DeleteAttributesCommand::GetInputParametersSchema ()
                     "additionalProperties": false,
                     "required": ["attributeType", "attributeId"]
                 }
+            },
+            "dryRun": {
+                "type": "boolean",
+                "description": "If true, nothing is deleted: each execution result says what the deletion would do for that attribute, from the checks made before deleting (invalid attributeType, attribute not found). Archicad can still refuse to delete an attribute that passes them. Default is false."
             }
         },
         "additionalProperties": false,
@@ -3914,6 +4051,17 @@ GS::ObjectState DeleteAttributesCommand::Execute (const GS::ObjectState& paramet
             }
         }
         resolved.Push (attribute);
+    }
+
+    bool dryRun = false;
+    parameters.Get ("dryRun", dryRun);
+    if (dryRun) {
+        GS::ObjectState response;
+        const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+        for (const GS::ObjectState& result : results) {
+            executionResults (result);
+        }
+        return response;
     }
 
     // One ACAPI_Attribute_DeleteMore call per attribute type instead of one ACAPI_Attribute_Delete call per attribute.
@@ -4230,25 +4378,7 @@ GS::Optional<GS::UniString> RenameAttributeFoldersCommand::GetInputParametersSch
                 "type": "array",
                 "description": "The folders to rename, each given by attribute type and path together with its new name.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "attributeType": {
-                            "$ref": "#/AttributeType"
-                        },
-                        "path": {
-                            "type": "array",
-                            "description": "The names of the folders from the root folder down to the folder to rename, the root folder itself not included.",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "newName": {
-                            "type": "string",
-                            "description": "The new name of the folder."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": ["attributeType", "path", "newName"]
+                    "$ref": "#/AttributeFolderRename"
                 }
             }
         },
@@ -7010,6 +7140,47 @@ GS::Optional<GS::UniString> CreateProfilesCommand::GetInputParametersSchema () c
                                 "required": ["skinId"]
                             }
                         },
+                        "moveVertices": {
+                            "type": "array",
+                            "description": "Moves vertices of the copied (or, when overwriting, the preserved existing) geometry in place, e.g. to change the height of a wall profile by moving its top band, without rebuilding its skins: the skins keep their skinIds, edges and edge settings, so the profileModifiers, the stretch zones and every edge flag are kept. Applied in order, after skinOverrides and before newSkins. Hotspots and fixed modifier anchors inside the region are moved too, and so is a stretch zone limit inside it: a vertical stretch zone limit (a height) when the region has no xMin/xMax, a horizontal one when it has no yMin/yMax.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "region": {
+                                        "type": "object",
+                                        "description": "Selects the vertices to move: those with xMin <= x <= xMax and yMin <= y <= yMax, in the coordinates GetProfiles reports in skins[].outlineCoords. Each omitted bound leaves that side open, so { \"yMin\": 2.5 } selects every vertex at or above 2.5. Omit region to move every vertex.",
+                                        "properties": {
+                                            "xMin": {
+                                                "type": "number"
+                                            },
+                                            "xMax": {
+                                                "type": "number"
+                                            },
+                                            "yMin": {
+                                                "type": "number"
+                                            },
+                                            "yMax": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "vector": {
+                                        "$ref": "#/Coordinate2D",
+                                        "description": "The displacement of the selected vertices."
+                                    },
+                                    "skinIds": {
+                                        "type": "array",
+                                        "description": "Moves only the vertices of these skins (GetProfiles' skins[].skinId). Omit to move the vertices of every skin.",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": ["vector"]
+                            }
+                        },
                         "newSkins": {
                             "type": "array",
                             "description": "AC27+ only. Adds brand-new skins built from caller-supplied polygon geometry, instead of (or in addition to) whatever was copied from sourceAttributeId. Combine with sourceAttributeId to add skins to a copied Profile, or omit sourceAttributeId to build a Profile's geometry entirely from newSkins.",
@@ -7202,6 +7373,15 @@ GS::ObjectState CreateProfilesCommand::Execute (const GS::ObjectState& parameter
         if (profileData.Get ("skinOverrides", skinOverrides) && profileDefs.profile_vectorImageItems != nullptr) {
             for (const GS::ObjectState& skinOverride : skinOverrides) {
                 ApplyProfileSkinOverrides (*profileDefs.profile_vectorImageItems, skinOverride);
+            }
+        }
+
+        // Applied before newSkins, so only the existing (copied or preserved) geometry is moved; newSkins are
+        // given in their final coordinates.
+        GS::Array<GS::ObjectState> moveVerticesArray;
+        if (profileData.Get ("moveVertices", moveVerticesArray) && profileDefs.profile_vectorImageItems != nullptr) {
+            for (const GS::ObjectState& moveVertices : moveVerticesArray) {
+                ApplyProfileVertexMove (*profileDefs.profile_vectorImageItems, moveVertices);
             }
         }
 
@@ -7728,22 +7908,7 @@ GS::Optional<GS::UniString> GetFontsByNameCommand::GetRawResponseSchema () const
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "fontIndex": {
-                                    "type": "integer",
-                                    "description": "Index of the font (from 1), as Text and Label fields reference it in fontIndex."
-                                },
-                                "fontName": {
-                                    "type": "string",
-                                    "description": "Name of the font as Archicad carries it."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "fontIndex",
-                                "fontName"
-                            ]
+                            "$ref": "#/FontDetails"
                         },
                         {
                             "$ref": "#/ErrorItem"

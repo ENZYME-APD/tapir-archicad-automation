@@ -1,6 +1,7 @@
 {
   "title": "DeleteEmbeddedLibraryItems fails for a path that is not in the embedded library",
-  "minTapir": "1.7.4",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
   "requiresEmpty": [],
   "steps": [
     {

@@ -13,7 +13,8 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             : base(
                 "GetExportTolerance",
                 "Gets the export tolerance: the largest distance allowed between an arc and the " +
-                "straight segments that replace it when curves are segmented for export.",
+                "straight segments that replace it when curves are segmented for export. " +
+                "Archicad provides it only while an export is in progress, otherwise this reports an error.",
                 GroupNames.Project)
         {
         }

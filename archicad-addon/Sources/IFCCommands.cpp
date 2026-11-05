@@ -1,5 +1,6 @@
 #include "IFCCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "NotificationCommands.hpp"
 #include "StringConversion.hpp"
 
 #ifdef ServerMainVers_2800
@@ -932,26 +933,7 @@ GS::Optional<GS::UniString> SetIFCAttributesOfElementsCommand::GetInputParameter
                 "type": "array",
                 "description": "The IFC attribute values to set.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the IFC attribute, for example Name, Description, ObjectType or Tag. It must be one of the attributes GetIFCAttributesOfElements returns for the element."
-                        },
-                        "value": {
-                            "type": "string",
-                            "description": "The new value of the IFC attribute."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "name",
-                        "value"
-                    ]
+                    "$ref": "#/ElementIFCAttributeValue"
                 }
             }
         },
@@ -1053,15 +1035,27 @@ GS::ObjectState SetIFCAttributesOfElementsCommand::Execute (const GS::ObjectStat
         results.PushNew ();
     }
 
+    // An IFC attribute change may leave the element's modification stamp as it was, so the
+    // elements changed are marked for the notification clients.
+    ElementChangeReporter changeReporter;
+    for (const SettableIFCAttribute& attributeToSet : attributesToSet) {
+        changeReporter.Add (attributeToSet.elemGuid);
+    }
+
     ACAPI_CallUndoableCommand ("SetIFCAttributesOfElementsCommand", [&]() -> GSErrCode {
         for (const SettableIFCAttribute& attributeToSet : attributesToSet) {
             const GSErrCode err = ACAPI_Element_SetIFCAttribute (attributeToSet.elemGuid, attributeToSet.attribute);
+            if (err == NoError) {
+                changeReporter.MarkChanged (attributeToSet.elemGuid);
+            }
             results[attributeToSet.resultIndex] = err == NoError
                 ? CreateSuccessfulExecutionResult ()
                 : CreateFailedExecutionResult (err, "Failed to set the IFC attribute for the element");
         }
         return NoError;
     });
+
+    changeReporter.Report ();
 
     for (const GS::ObjectState& result : results) {
         executionResults (result);
@@ -1283,15 +1277,27 @@ GS::ObjectState SetIFCPropertiesOfElementsCommand::Execute (const GS::ObjectStat
         results.PushNew ();
     }
 
+    // An IFC property change may leave the element's modification stamp as it was, so the
+    // elements changed are marked for the notification clients.
+    ElementChangeReporter changeReporter;
+    for (const SettableIFCProperty& propertyToSet : propertiesToSet) {
+        changeReporter.Add (propertyToSet.elemGuid);
+    }
+
     ACAPI_CallUndoableCommand ("SetIFCPropertiesOfElementsCommand", [&]() -> GSErrCode {
         for (const SettableIFCProperty& propertyToSet : propertiesToSet) {
             const GSErrCode err = ACAPI_Element_SetIFCProperty (propertyToSet.elemGuid, propertyToSet.property);
+            if (err == NoError) {
+                changeReporter.MarkChanged (propertyToSet.elemGuid);
+            }
             results[propertyToSet.resultIndex] = err == NoError
                 ? CreateSuccessfulExecutionResult ()
                 : CreateFailedExecutionResult (err, "Failed to set the IFC property for the element");
         }
         return NoError;
     });
+
+    changeReporter.Report ();
 
     for (const GS::ObjectState& result : results) {
         executionResults (result);
@@ -1320,26 +1326,7 @@ GS::Optional<GS::UniString> RemoveIFCPropertiesOfElementsCommand::GetInputParame
                 "type": "array",
                 "description": "The local IFC properties to remove.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "propertySetName": {
-                            "type": "string",
-                            "description": "The name of the property set, for example Pset_DoorCommon."
-                        },
-                        "propertyName": {
-                            "type": "string",
-                            "description": "The name of the property, for example FireRating."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "propertySetName",
-                        "propertyName"
-                    ]
+                    "$ref": "#/ElementIFCPropertyRemoval"
                 }
             }
         },
@@ -1438,15 +1425,25 @@ GS::ObjectState RemoveIFCPropertiesOfElementsCommand::Execute (const GS::ObjectS
         results.PushNew ();
     }
 
+    ElementChangeReporter changeReporter;
+    for (const RemovableIFCProperty& propertyToRemove : propertiesToRemove) {
+        changeReporter.Add (propertyToRemove.elemGuid);
+    }
+
     ACAPI_CallUndoableCommand ("RemoveIFCPropertiesOfElementsCommand", [&]() -> GSErrCode {
         for (const RemovableIFCProperty& propertyToRemove : propertiesToRemove) {
             const GSErrCode err = ACAPI_Element_RemoveIFCProperty (propertyToRemove.elemGuid, propertyToRemove.property);
+            if (err == NoError) {
+                changeReporter.MarkChanged (propertyToRemove.elemGuid);
+            }
             results[propertyToRemove.resultIndex] = err == NoError
                 ? CreateSuccessfulExecutionResult ()
                 : CreateFailedExecutionResult (err, "Failed to remove the IFC property from the element");
         }
         return NoError;
     });
+
+    changeReporter.Report ();
 
     for (const GS::ObjectState& result : results) {
         executionResults (result);
@@ -1860,15 +1857,25 @@ GS::ObjectState SetIFCClassificationReferencesOfElementsCommand::Execute (const 
         results.PushNew ();
     }
 
+    ElementChangeReporter changeReporter;
+    for (const SettableIFCClassificationReference& referenceToSet : referencesToSet) {
+        changeReporter.Add (referenceToSet.elemGuid);
+    }
+
     ACAPI_CallUndoableCommand ("SetIFCClassificationReferencesOfElementsCommand", [&]() -> GSErrCode {
         for (const SettableIFCClassificationReference& referenceToSet : referencesToSet) {
             const GSErrCode err = ACAPI_Element_SetIFCClassificationReference (referenceToSet.elemGuid, referenceToSet.classificationReference);
+            if (err == NoError) {
+                changeReporter.MarkChanged (referenceToSet.elemGuid);
+            }
             results[referenceToSet.resultIndex] = err == NoError
                 ? CreateSuccessfulExecutionResult ()
                 : CreateFailedExecutionResult (err, "Failed to set the IFC classification reference for the element");
         }
         return NoError;
     });
+
+    changeReporter.Report ();
 
     for (const GS::ObjectState& result : results) {
         executionResults (result);
@@ -2022,14 +2029,24 @@ GS::ObjectState RemoveIFCClassificationReferencesOfElementsCommand::Execute (con
         results.PushNew ();
     }
 
+    ElementChangeReporter changeReporter;
+    for (const RemovableIFCClassificationReferences& referenceToRemove : referencesToRemove) {
+        changeReporter.Add (referenceToRemove.elemGuid);
+    }
+
     ACAPI_CallUndoableCommand ("RemoveIFCClassificationReferencesOfElementsCommand", [&]() -> GSErrCode {
         for (const RemovableIFCClassificationReferences& referenceToRemove : referencesToRemove) {
             GSErrCode err = NoError;
+            bool removedAny = false;
             for (const API_IFCClassificationReference& classificationReference : referenceToRemove.classificationReferences) {
                 err = ACAPI_Element_RemoveIFCClassificationReference (referenceToRemove.elemGuid, classificationReference);
                 if (err != NoError) {
                     break;
                 }
+                removedAny = true;
+            }
+            if (removedAny) {
+                changeReporter.MarkChanged (referenceToRemove.elemGuid);
             }
             results[referenceToRemove.resultIndex] = err == NoError
                 ? CreateSuccessfulExecutionResult ()
@@ -2037,6 +2054,8 @@ GS::ObjectState RemoveIFCClassificationReferencesOfElementsCommand::Execute (con
         }
         return NoError;
     });
+
+    changeReporter.Report ();
 
     for (const GS::ObjectState& result : results) {
         executionResults (result);
