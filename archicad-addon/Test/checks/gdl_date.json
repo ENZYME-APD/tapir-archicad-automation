@@ -1,0 +1,109 @@
+{
+  "title": "SetGDLDate changes the date GetGDLDate reads, and the date read can be set back (#1950)",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "date before",
+      "command": "GetGDLDate",
+      "creates": false,
+      "params": {},
+      "save": { "originalDate": "date" },
+      "expect": [
+        { "path": "date", "exists": true },
+        { "path": "error", "exists": false }
+      ]
+    },
+    {
+      "id": "set a date",
+      "command": "SetGDLDate",
+      "creates": false,
+      "params": {
+        "date": 2030
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the date",
+      "command": "GetGDLDate",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "date", "eq": 2030, "name": "the date set is read back" }
+      ]
+    },
+    {
+      "id": "set another date",
+      "command": "SetGDLDate",
+      "creates": false,
+      "params": {
+        "date": 2031
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the other date",
+      "command": "GetGDLDate",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "date", "eq": 2031, "name": "the date changed" }
+      ]
+    },
+    {
+      "id": "set the date read first back",
+      "command": "SetGDLDate",
+      "creates": false,
+      "params": {
+        "date": "${originalDate}"
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "the first date is back",
+      "command": "GetGDLDate",
+      "creates": false,
+      "params": {},
+      "save": { "restoredDate": "date" },
+      "expect": [
+        { "expr": "${restoredDate} - ${originalDate}", "eq": 0, "name": "restored" }
+      ]
+    },
+    {
+      "id": "date that is not an integer",
+      "command": "SetGDLDate",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "date": "tomorrow"
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the input schema" }
+      ]
+    },
+    {
+      "id": "the refused date changed nothing",
+      "command": "GetGDLDate",
+      "creates": false,
+      "params": {},
+      "save": { "dateAfterRefused": "date" },
+      "expect": [
+        { "expr": "${dateAfterRefused} - ${originalDate}", "eq": 0, "name": "unchanged" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "SetGDLDate",
+      "params": {
+        "date": "${originalDate}"
+      }
+    }
+  ]
+}
