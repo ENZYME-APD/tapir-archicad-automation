@@ -10133,7 +10133,8 @@ GS::ObjectState Get3DModelCountsCommand::Execute (const GS::ObjectState& /*param
 #ifdef ServerMainVers_2700
     // ACAPI_ModelAccess_GetNum counts only the bodies, materials and lights; it refuses the
     // body dependent components (APIERR_REFUSEDPAR), whose numbers are summed from the
-    // nPgon, nPedg, nEdge, nVert and nVect fields of every API_BodyType instead.
+    // nPgon, nPedg, nEdge, nVert and nVect fields of every API_BodyType instead, skipping
+    // the bodies removed from the model (APIERR_DELETED).
     Int32 bodyCount = 0;
     const GSErrCode bodyErr = ACAPI_ModelAccess_GetNum (API_BodyID, &bodyCount);
 
@@ -10148,6 +10149,11 @@ GS::ObjectState Get3DModelCountsCommand::Execute (const GS::ObjectState& /*param
         component.header.typeID = API_BodyID;
         component.header.index = iBody;
         bodyComponentErr = ACAPI_ModelAccess_GetComponent (&component);
+        if (bodyComponentErr == APIERR_DELETED) {
+            // A body of a deleted element, a shadow body or one eliminated while the model was built.
+            bodyComponentErr = NoError;
+            continue;
+        }
         if (bodyComponentErr != NoError) {
             break;
         }
