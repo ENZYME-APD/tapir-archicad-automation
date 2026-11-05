@@ -1739,7 +1739,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetUsedAttributesCommand> (
             attributeCommands, "1.8.0",
-            "Gets the attributes in use, as Archicad reports them for the usedAttributes JSON query: parsed into usedAttributes when the report is a JSON object, otherwise as text in raw. Helps to find the attributes DeleteAttributes can remove before a handover. Available from Archicad 27."
+            "Gets how many attributes of each type are in use (layers, lines, fills, composites, surfaces, ...), as Archicad reports them for the usedAttributes JSON query: the counts in usedAttributes, the report as text in raw. Available from Archicad 27."
         );
         err |= RegisterCommand<ConsolidateLinesCommand> (
             attributeCommands, "1.8.0",

@@ -8,6 +8,7 @@
 #include "FileSystem.hpp"
 #include "UserDataPairs.hpp"
 #include "OnExit.hpp"
+#include <string>
 #include <set>
 #ifdef ServerMainVers_2700
 #include "ADBAttributeIndex.hpp"
@@ -7742,14 +7743,69 @@ GS::ObjectState CreateCompositesCommand::Execute (const GS::ObjectState& paramet
     return response;
 }
 
-// ACAPI_Database_JsonQuery answers a query string with a string. The queries used here: "lineConsolidation"
+// ACAPI_Database_JsonQuery answers a query with a string. The queries used here: "lineConsolidation"
 // and "fillNormalization" run the Line Consolidation and Fill Consolidation menu commands, "usedAttributes"
 // reports the attributes in use. AC25 and AC26 declare APIDb_JsonQueryID with other parameter types, so
 // these commands are Archicad 27+ only.
+//
+// The DevKit lists only the names of the queries, but Archicad reads the query as a JSON object and runs
+// the one named by its "name" key (#1864). A bare name such as "usedAttributes" is not JSON and is always
+// answered with -7003 (GS::Error), which is why these commands never ran. A JSON object without a known
+// name makes Archicad throw an exception it does not catch, and Archicad terminates (Archicad 29), so
+// only the fixed names of these commands are ever sent.
 #ifdef ServerMainVers_2700
-static GSErrCode RunJsonQuery (const GS::UniString& query, GS::UniString& result)
+static GSErrCode RunJsonQuery (const GS::UniString& name, GS::UniString& result)
 {
+    const GS::UniString query = "{\"name\":\"" + name + "\"}";
     return ACAPI_Database_JsonQuery (&query, &result);
+}
+
+// The usedAttributes report is plain text, a "<type>: <count>" pair for each attribute type in use,
+// separated by commas, e.g. "Layer: 16, LineType: 9, Fill: 17". The types carry Archicad's internal
+// names; those that Tapir's AttributeType has are given its names.
+static GS::String GetUsedAttributeTypeName (const std::string& archicadName)
+{
+    if (archicadName == "LineType")  return "Line";
+    if (archicadName == "CompWall")  return "Composite";
+    if (archicadName == "Material")  return "Surface";
+    if (archicadName == "LayerComb") return "LayerCombination";
+    return GS::String (archicadName.c_str ());
+}
+
+static bool ParseUsedAttributesReport (const GS::UniString& report, GS::ObjectState& counts)
+{
+    const auto trim = [] (const std::string& text) {
+        const size_t begin = text.find_first_not_of (" \t\r\n");
+        if (begin == std::string::npos) {
+            return std::string ();
+        }
+        const size_t end = text.find_last_not_of (" \t\r\n");
+        return text.substr (begin, end - begin + 1);
+    };
+    const std::string text (report.ToCStr (CC_UTF8).Get ());
+    size_t start = 0;
+    while (start <= text.size ()) {
+        size_t comma = text.find (',', start);
+        if (comma == std::string::npos) {
+            comma = text.size ();
+        }
+        const std::string pair = trim (text.substr (start, comma - start));
+        start = comma + 1;
+        if (pair.empty ()) {
+            continue;
+        }
+        const size_t colon = pair.find (':');
+        if (colon == std::string::npos) {
+            return false;
+        }
+        const std::string type = trim (pair.substr (0, colon));
+        const std::string count = trim (pair.substr (colon + 1));
+        if (type.empty () || count.empty () || count.find_first_not_of ("0123456789") != std::string::npos || count.size () > 9) {
+            return false;
+        }
+        counts.Add (GetUsedAttributeTypeName (type), (Int32) std::stol (count));
+    }
+    return true;
 }
 #endif
 
@@ -7829,18 +7885,20 @@ GS::Optional<GS::UniString> GetUsedAttributesCommand::GetRawResponseSchema () co
 {
     return R"({
         "type": "object",
-        "description": "The attributes in use, as Archicad reports them for the usedAttributes JSON query. The Archicad API does not document the layout of the report, so it is passed on as it comes: parsed into usedAttributes when it is a JSON object, otherwise as text in raw.",
+        "description": "How many attributes of each type are in use, as Archicad reports them for the usedAttributes JSON query.",
         "properties": {
             "usedAttributes": {
                 "type": "object",
-                "description": "The report parsed as a JSON object."
+                "description": "The number of attributes in use per attribute type. The keys are the attribute types of Tapir (Layer, Line, Fill, Composite, Surface, LayerCombination, ZoneCategory, Profile, MEPSystem, OperationProfile, BuildingMaterial) where they exist, otherwise Archicad's own names (e.g. City, DimStand, MarkupStyle, GraphicOverride). Archicad lists only the types it found in use. Missing when the report could not be read.",
+                "additionalProperties": { "type": "integer" }
             },
             "raw": {
                 "type": "string",
-                "description": "The report as text, when it is not a JSON object."
+                "description": "The report as Archicad wrote it, e.g. 'Layer: 16, LineType: 9, Fill: 17'."
             }
         },
-        "additionalProperties": false
+        "additionalProperties": false,
+        "required": ["raw"]
     })";
 }
 
@@ -7853,13 +7911,14 @@ GS::ObjectState GetUsedAttributesCommand::Execute (const GS::ObjectState& /*para
         return CreateErrorResponse (err, "Failed to get the used attributes.");
     }
 
-    // The layout of the report is undocumented; an ObjectState only holds a JSON object, so anything
-    // else (an array, plain text) goes back as it came.
+    // The layout of the report is undocumented, so the text always goes back too, and the counts only
+    // when every part of it reads as "<type>: <count>".
+    GS::ObjectState response ("raw", result);
     GS::ObjectState usedAttributes;
-    if (JSON::ConvertToObjectState (result, usedAttributes) == NoError) {
-        return GS::ObjectState ("usedAttributes", usedAttributes);
+    if (ParseUsedAttributesReport (result, usedAttributes)) {
+        response.Add ("usedAttributes", usedAttributes);
     }
-    return GS::ObjectState ("raw", result);
+    return response;
 #else
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
 #endif
