@@ -32,25 +32,39 @@ public:
     struct Client {
         Client(
             const IO::URI::URI& url,
-            bool onNew, bool onMod, bool onResChanges, bool onSelChange, bool onWindowChange, bool onProjectEvents, bool onAttrReplacement)
+            bool onNew, bool onMod, bool onResChanges, bool onSelChange, bool onWindowChange, bool onProjectEvents, bool onAttrReplacement,
+            const std::set<API_ElemTypeID>& typesToObserve)
             : url(url), notifyOnNew(onNew), notifyOnModification(onMod), notifyOnReservationChanges(onResChanges), notifyOnSelectionChange(onSelChange),
-              notifyOnWindowChange(onWindowChange), notifyOnProjectEvents(onProjectEvents), notifyOnAttributeReplacement(onAttrReplacement) {}
+              notifyOnWindowChange(onWindowChange), notifyOnProjectEvents(onProjectEvents), notifyOnAttributeReplacement(onAttrReplacement),
+              elementTypesToObserve(typesToObserve) {}
 
-        IO::URI::URI url;
-        bool         notifyOnNew;
-        bool         notifyOnModification;
-        bool         notifyOnReservationChanges;
-        bool         notifyOnSelectionChange;
-        bool         notifyOnWindowChange;
-        bool         notifyOnProjectEvents;
-        bool         notifyOnAttributeReplacement;
+        IO::URI::URI             url;
+        bool                     notifyOnNew;
+        bool                     notifyOnModification;
+        bool                     notifyOnReservationChanges;
+        bool                     notifyOnSelectionChange;
+        bool                     notifyOnWindowChange;
+        bool                     notifyOnProjectEvents;
+        bool                     notifyOnAttributeReplacement;
+        // The element types whose modifications this client is notified of; empty means every type.
+        std::set<API_ElemTypeID> elementTypesToObserve;
 
-        bool acceptsNotificationsForEventType (ElementEventType eventType) const
+        bool acceptsNotificationsForEventType (ElementEventType eventType, const GS::ObjectState& event) const
         {
             if (eventType == ElementEventType::New) {
                 return notifyOnNew;
             } else if (eventType == ElementEventType::Changed || eventType == ElementEventType::Deleted) {
-                return notifyOnModification;
+                if (!notifyOnModification) {
+                    return false;
+                }
+                if (elementTypesToObserve.empty ()) {
+                    return true;
+                }
+                // Another client may observe more types; the event of an element of a
+                // type this client did not ask for is not sent to it.
+                GS::UniString elementTypeName;
+                event.Get ("elementType", elementTypeName);
+                return elementTypesToObserve.count (GetElementTypeFromNonLocalizedName (elementTypeName)) > 0;
             } else if (eventType == ElementEventType::Reserved || eventType == ElementEventType::Released) {
                 return notifyOnReservationChanges;
             }
@@ -67,7 +81,8 @@ public:
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 
-    static void DetachElementObserversIfNotNeeded ();
+    static void UpdateElementObservers ();
+    static bool IsObservedElementType (API_ElemTypeID typeID);
     static void UninstallSelectionChangeHandlerIfNotNeeded ();
     static void SendEventToNotificationClient (ElementEventType eventType, const GS::ObjectState& os);
     static void SendQueuedEventsToNotificationClient ();
@@ -95,6 +110,9 @@ private:
     static std::map<GS::UniString, Client> clients;
     static bool hasClientToNotifyOnNew;
     static bool hasClientToNotifyOnModification;
+    // The element types whose elements have an observer attached while
+    // hasClientToNotifyOnModification is set; empty means every element.
+    static std::set<API_ElemTypeID> observedElementTypes;
     static bool hasClientToNotifyOnReservationChanges;
     static bool hasClientToNotifyOnSelectionChange;
     static bool hasClientToNotifyOnAttributeReplacement;
