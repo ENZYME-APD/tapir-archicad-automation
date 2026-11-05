@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-05 16:58 UTC",
+ "generatedAt": "2026-11-05 18:28 UTC",
  "counts": {
   "done": 568,
   "open": 27,
@@ -2707,6 +2707,86 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1980,
+     "title": "Grasshopper: Drawings tool component"
+    },
+    {
+     "number": 1979,
+     "title": "Grasshopper: Hotspots tool component"
+    },
+    {
+     "number": 1978,
+     "title": "Grasshopper: Fills tool component"
+    },
+    {
+     "number": 1977,
+     "title": "Grasshopper: Splines tool component"
+    },
+    {
+     "number": 1976,
+     "title": "Grasshopper: Polylines tool component"
+    },
+    {
+     "number": 1975,
+     "title": "Grasshopper: Circles tool component"
+    },
+    {
+     "number": 1974,
+     "title": "Grasshopper: Arcs tool component"
+    },
+    {
+     "number": 1973,
+     "title": "Grasshopper: Lines tool component"
+    },
+    {
+     "number": 1972,
+     "title": "Grasshopper: Labels tool component"
+    },
+    {
+     "number": 1971,
+     "title": "Grasshopper: Texts tool component"
+    },
+    {
+     "number": 1970,
+     "title": "Grasshopper: CurtainWalls tool component"
+    },
+    {
+     "number": 1969,
+     "title": "Grasshopper: Lamps tool component"
+    },
+    {
+     "number": 1968,
+     "title": "Grasshopper: Objects tool component"
+    },
+    {
+     "number": 1967,
+     "title": "Grasshopper: Zones tool component"
+    },
+    {
+     "number": 1966,
+     "title": "Grasshopper: Morphs tool component"
+    },
+    {
+     "number": 1965,
+     "title": "Grasshopper: Meshes tool component"
+    },
+    {
+     "number": 1964,
+     "title": "Grasshopper: Roofs tool component"
+    },
+    {
+     "number": 1963,
+     "title": "Grasshopper: Beams tool component"
+    },
+    {
+     "number": 1962,
+     "title": "Grasshopper: Columns tool component"
+    },
+    {
+     "number": 1961,
+     "title": "Grasshopper: Slabs tool component"
+    },
+    {
      "number": 1791,
      "title": "Grasshopper: Doors and Windows tool components, with their floor plan parameters"
     }
@@ -4471,8 +4551,18 @@
     "columnsData.slantDirectionAngle",
     "columnsData.veneer"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2027,
+     "title": "Grasshopper: Columns tool component"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1962,
+     "title": "Grasshopper: Columns tool component"
+    }
+   ]
   },
   {
    "id": "CreateWalls",
@@ -4576,8 +4666,18 @@
     "beamsData.layerIndex",
     "beamsData.profileAngle"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2024,
+     "title": "Grasshopper: Beams tool component"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1963,
+     "title": "Grasshopper: Beams tool component"
+    }
+   ]
   },
   {
    "id": "CreateStairs",
@@ -4676,8 +4776,18 @@
     "slabsData.id",
     "slabsData.layerIndex"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2028,
+     "title": "Grasshopper: Slabs tool component"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1961,
+     "title": "Grasshopper: Slabs tool component"
+    }
+   ]
   },
   {
    "id": "CreateWindows",
@@ -5221,8 +5331,18 @@
     "morphsData.yAxis",
     "morphsData.zAxis"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2030,
+     "title": "Grasshopper: Morphs tool component, built from ToolSettings/Morph.json"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1966,
+     "title": "Grasshopper: Morphs tool component"
+    }
+   ]
   },
   {
    "id": "CreateRoofs",
@@ -5256,8 +5376,18 @@
     "roofsData.thickness"
    ],
    "missingParameters": [],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2029,
+     "title": "Grasshopper: Roofs tool component (Design Tools)"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1964,
+     "title": "Grasshopper: Roofs tool component"
+    }
+   ]
   },
   {
    "id": "CreateShells",
@@ -5360,8 +5490,18 @@
    "missingParameters": [
     "curtainWallsData.id"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2038,
+     "title": "Grasshopper: CurtainWalls tool component"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1970,
+     "title": "Grasshopper: CurtainWalls tool component"
+    }
+   ]
   },
   {
    "id": "CreateAssociativeDimensions",
@@ -5549,8 +5689,18 @@
     "zonesData.stampAngle",
     "zonesData.topOffset"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2033,
+     "title": "Grasshopper: Zones tool component"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1967,
+     "title": "Grasshopper: Zones tool component"
+    }
+   ]
   },
   {
    "id": "CreatePolylines",
@@ -5583,8 +5733,18 @@
     "polylinesData.id",
     "polylinesData.penWeightMm"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2041,
+     "title": "Grasshopper: Polylines tool component"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1976,
+     "title": "Grasshopper: Polylines tool component"
+    }
+   ]
   },
   {
    "id": "CreateLineElements",
@@ -5616,8 +5776,18 @@
     "databaseId",
     "linesData.id"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2036,
+     "title": "Grasshopper: Lines tool component"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1973,
+     "title": "Grasshopper: Lines tool component"
+    }
+   ]
   },
   {
    "id": "CreateArcs",
@@ -5651,8 +5821,18 @@
     "arcsData.id",
     "databaseId"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2037,
+     "title": "Grasshopper: Arcs tool component"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1974,
+     "title": "Grasshopper: Arcs tool component"
+    }
+   ]
   },
   {
    "id": "CreateCircles",
@@ -5684,8 +5864,18 @@
     "circlesData.id",
     "databaseId"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2039,
+     "title": "Grasshopper: Circles tool component"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1975,
+     "title": "Grasshopper: Circles tool component"
+    }
+   ]
   },
   {
    "id": "CreateHotspots",
@@ -5715,8 +5905,18 @@
     "databaseId",
     "hotspotsData.id"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2042,
+     "title": "Grasshopper: Hotspots tool component"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1979,
+     "title": "Grasshopper: Hotspots tool component"
+    }
+   ]
   },
   {
    "id": "CreateHatches",
@@ -5756,7 +5956,12 @@
     "hatchesData.roomSpecial"
    ],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1978,
+     "title": "Grasshopper: Fills tool component"
+    }
+   ]
   },
   {
    "id": "CreateSplines",
@@ -5788,8 +5993,18 @@
     "databaseId",
     "splinesData.id"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2040,
+     "title": "Grasshopper: Splines tool component"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1977,
+     "title": "Grasshopper: Splines tool component"
+    }
+   ]
   },
   {
    "id": "CreateObjects",
@@ -5837,8 +6052,18 @@
     "objectsData.useObjectSectionAttributes",
     "objectsData.visibility"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2031,
+     "title": "Grasshopper: Objects tool component"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1968,
+     "title": "Grasshopper: Objects tool component"
+    }
+   ]
   },
   {
    "id": "CreateLamps",
@@ -5888,8 +6113,18 @@
     "lampsData.useObjectSectionAttributes",
     "lampsData.visibility"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2032,
+     "title": "Grasshopper: Lamps tool component (Design Tools)"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1969,
+     "title": "Grasshopper: Lamps tool component"
+    }
+   ]
   },
   {
    "id": "GetGridElementDefaults",
@@ -6000,8 +6235,18 @@
     "meshesData.showLines",
     "meshesData.sublines"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2026,
+     "title": "Grasshopper: Meshes tool component"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1965,
+     "title": "Grasshopper: Meshes tool component"
+    }
+   ]
   },
   {
    "id": "CreateLabels",
@@ -6037,8 +6282,18 @@
     "labelsData.runs",
     "labelsData.symbolStyle"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2034,
+     "title": "Grasshopper: Labels tool component"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1972,
+     "title": "Grasshopper: Labels tool component"
+    }
+   ]
   },
   {
    "id": "CreateTexts",
@@ -6073,8 +6328,18 @@
     "textsData.layerIndex",
     "textsData.runs"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2035,
+     "title": "Grasshopper: Texts tool component"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1971,
+     "title": "Grasshopper: Texts tool component"
+    }
+   ]
   },
   {
    "id": "CreateLevelDimensions",
@@ -6229,8 +6494,18 @@
     "beamsWithDetails.isWidthAndHeightLinked",
     "beamsWithDetails.profileAngle"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2024,
+     "title": "Grasshopper: Beams tool component"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1963,
+     "title": "Grasshopper: Beams tool component"
+    }
+   ]
   },
   {
    "id": "ModifySlabs",
@@ -6269,8 +6544,18 @@
     "slabsWithDetails.sideMaterial",
     "slabsWithDetails.topMaterial"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2028,
+     "title": "Grasshopper: Slabs tool component"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1961,
+     "title": "Grasshopper: Slabs tool component"
+    }
+   ]
   },
   {
    "id": "ModifyColumns",
@@ -6317,8 +6602,18 @@
     "columnsWithDetails.veneer",
     "columnsWithDetails.wrapping"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2027,
+     "title": "Grasshopper: Columns tool component"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1962,
+     "title": "Grasshopper: Columns tool component"
+    }
+   ]
   },
   {
    "id": "ModifyWindows",
@@ -6514,8 +6809,18 @@
     "morphsWithDetails.yAxis",
     "morphsWithDetails.zAxis"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2030,
+     "title": "Grasshopper: Morphs tool component, built from ToolSettings/Morph.json"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1966,
+     "title": "Grasshopper: Morphs tool component"
+    }
+   ]
   },
   {
    "id": "ModifyRoofs",
@@ -6556,8 +6861,18 @@
     "roofsWithDetails.pivotEdges",
     "roofsWithDetails.pivotEdges.levels.angleType"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2029,
+     "title": "Grasshopper: Roofs tool component (Design Tools)"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1964,
+     "title": "Grasshopper: Roofs tool component"
+    }
+   ]
   },
   {
    "id": "ModifyShells",
@@ -6606,8 +6921,18 @@
     "meshesData.meshData"
    ],
    "missingParameters": [],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2026,
+     "title": "Grasshopper: Meshes tool component"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1965,
+     "title": "Grasshopper: Meshes tool component"
+    }
+   ]
   },
   {
    "id": "ModifyRailings",
@@ -6667,8 +6992,18 @@
     "objectsWithDetails.useObjectSectionAttributes",
     "objectsWithDetails.visibility"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2031,
+     "title": "Grasshopper: Objects tool component"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1968,
+     "title": "Grasshopper: Objects tool component"
+    }
+   ]
   },
   {
    "id": "ModifyLamps",
@@ -6715,8 +7050,18 @@
     "lampsWithDetails.useObjectSectionAttributes",
     "lampsWithDetails.visibility"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2032,
+     "title": "Grasshopper: Lamps tool component (Design Tools)"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1969,
+     "title": "Grasshopper: Lamps tool component"
+    }
+   ]
   },
   {
    "id": "ModifyTexts",
@@ -6744,8 +7089,18 @@
    "missingParameters": [
     "textsWithDetails.runs"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2035,
+     "title": "Grasshopper: Texts tool component"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1971,
+     "title": "Grasshopper: Texts tool component"
+    }
+   ]
   },
   {
    "id": "ModifyLabels",
@@ -6773,8 +7128,18 @@
     "labelsWithDetails.runs",
     "labelsWithDetails.symbolStyle"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2034,
+     "title": "Grasshopper: Labels tool component"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1972,
+     "title": "Grasshopper: Labels tool component"
+    }
+   ]
   },
   {
    "id": "ModifyCurtainWalls",
@@ -6804,8 +7169,18 @@
     "curtainWallsWithDetails.primaryPattern",
     "curtainWallsWithDetails.secondaryPattern"
    ],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2038,
+     "title": "Grasshopper: CurtainWalls tool component"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1970,
+     "title": "Grasshopper: CurtainWalls tool component"
+    }
+   ]
   },
   {
    "id": "ModifyCurtainWallFrames",
@@ -6894,8 +7269,18 @@
     "zonesWithDetails.topOffset"
    ],
    "missingParameters": [],
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2033,
+     "title": "Grasshopper: Zones tool component"
+    }
+   ],
+   "issues": [
+    {
+     "number": 1967,
+     "title": "Grasshopper: Zones tool component"
+    }
+   ]
   },
   {
    "id": "MeasureTexts",
@@ -9177,7 +9562,12 @@
     "attributeType"
    ],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2041,
+     "title": "Grasshopper: Polylines tool component"
+    }
+   ],
    "issues": []
   },
   {
@@ -12964,7 +13354,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1980,
+     "title": "Grasshopper: Drawings tool component"
+    }
+   ]
   },
   {
    "id": "ChangeDrawingLink",

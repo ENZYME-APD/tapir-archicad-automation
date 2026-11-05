@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-05 16:58 UTC",
+ "generatedAt": "2026-11-05 18:28 UTC",
  "versions": [
   25,
   26,
@@ -5810,6 +5810,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 2038,
+     "title": "Grasshopper: CurtainWalls tool component"
+    },
+    {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
     },
@@ -7910,6 +7914,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2038,
+     "title": "Grasshopper: CurtainWalls tool component"
+    },
     {
      "number": 463,
      "title": "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters"
@@ -25608,6 +25616,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2029,
+     "title": "Grasshopper: Roofs tool component (Design Tools)"
+    },
+    {
      "number": 1703,
      "title": "Add CreateSkylights: place skylights in roofs and shells"
     },
@@ -31357,6 +31369,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2038,
+     "title": "Grasshopper: CurtainWalls tool component"
+    },
+    {
+     "number": 2026,
+     "title": "Grasshopper: Meshes tool component"
+    },
     {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
@@ -37894,6 +37914,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2029,
+     "title": "Grasshopper: Roofs tool component (Design Tools)"
+    },
     {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
@@ -44681,6 +44705,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2038,
+     "title": "Grasshopper: CurtainWalls tool component"
+    },
+    {
+     "number": 2026,
+     "title": "Grasshopper: Meshes tool component"
+    },
+    {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
     },
@@ -47931,6 +47963,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2038,
+     "title": "Grasshopper: CurtainWalls tool component"
+    },
+    {
+     "number": 2026,
+     "title": "Grasshopper: Meshes tool component"
+    },
     {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
