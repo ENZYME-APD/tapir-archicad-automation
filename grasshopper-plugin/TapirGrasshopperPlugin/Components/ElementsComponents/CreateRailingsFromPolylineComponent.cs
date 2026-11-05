@@ -39,9 +39,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;
 
-        // Shares the icon of CreateRailings until it gets one of its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.CreateRailings;
+            Properties.Resources.CreateRailingsFromPolyline;
 
         public override Guid ComponentGuid =>
             new Guid("c55a85c2-23d3-4314-b8e6-f62deb53234c");

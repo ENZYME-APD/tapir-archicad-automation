@@ -92,9 +92,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 da);
         }
 
-        // Shares the icon of ChangeLibraryPartOfElements until it gets one of its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.ChangeLibraryPartOfElements;
+            Properties.Resources.SetMarkerLibraryPartOfElements;
 
         public override Guid ComponentGuid =>
             new Guid("e1a9bb94-7937-41ca-ac10-5319ea7ee880");

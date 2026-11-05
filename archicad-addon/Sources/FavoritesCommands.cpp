@@ -110,21 +110,7 @@ GS::Optional<GS::UniString> GetAllFavoritesCommand::GetRawResponseSchema () cons
             "favorites": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the Favorite."
-                        },
-                        "elementType": {
-                            "$ref": "#/ElementType",
-                            "description": "The element type of the Favorite. Missing when Archicad cannot read the Favorite's element settings."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name"
-                    ]
+                    "$ref": "#/FavoriteSummary"
                 }
             }
         },
@@ -1286,23 +1272,33 @@ GS::ObjectState ImportFavoritesCommand::Execute (const GS::ObjectState& paramete
             }
         }
 
-        const ACAPI::Result<void> importResult = [&] () -> ACAPI::Result<void> {
-            if (format == "legacyPRF") {
-                return manager.ImportFavoritesFromLegacyPRF (location, managerPolicy, targetOrKeep);
+        // The import changes the project's Favorites, so it runs in an undoable command like every
+        // other Favorites change: outside one, a Teamwork project drops it without an error (#1756).
+        GS::UniString importErrorText;
+        const GSErrCode importErr = ACAPI_CallUndoableCommand ("ImportFavorites", [&] () -> GSErrCode {
+            const ACAPI::Result<void> importResult = [&] () -> ACAPI::Result<void> {
+                if (format == "legacyPRF") {
+                    return manager.ImportFavoritesFromLegacyPRF (location, managerPolicy, targetOrKeep);
+                }
+                if (!hasFileNames) {
+                    return manager.ImportAllFavorites (location, managerPolicy, targetOrKeep);
+                }
+                std::vector<IO::Location> favoriteXMLs;
+                for (const GS::UniString& fileName : fileNames) {
+                    IO::Location fileLocation = location;
+                    fileLocation.AppendToLocal (IO::Name (fileName));
+                    favoriteXMLs.push_back (fileLocation);
+                }
+                return manager.ImportFavorites (favoriteXMLs, managerPolicy, targetOrKeep);
+            } ();
+            if (importResult.IsErr ()) {
+                importErrorText = GS::UniString (importResult.UnwrapErr ().text.c_str ());
+                return importResult.UnwrapErr ().kind;
             }
-            if (!hasFileNames) {
-                return manager.ImportAllFavorites (location, managerPolicy, targetOrKeep);
-            }
-            std::vector<IO::Location> favoriteXMLs;
-            for (const GS::UniString& fileName : fileNames) {
-                IO::Location fileLocation = location;
-                fileLocation.AppendToLocal (IO::Name (fileName));
-                favoriteXMLs.push_back (fileLocation);
-            }
-            return manager.ImportFavorites (favoriteXMLs, managerPolicy, targetOrKeep);
-        } ();
-        if (importResult.IsErr ()) {
-            return CreateErrorResponse (importResult.UnwrapErr ().kind, GS::UniString::Printf ("Failed to import favorites: %s", importResult.UnwrapErr ().text.c_str ()));
+            return NoError;
+        });
+        if (importErr != NoError) {
+            return CreateErrorResponse (importErr, GS::UniString::Printf ("Failed to import favorites: %T", importErrorText.ToPrintf ()));
         }
         return GS::ObjectState ();
 #else
@@ -1318,8 +1314,11 @@ GS::ObjectState ImportFavoritesCommand::Execute (const GS::ObjectState& paramete
     parameters.Get ("conflictPolicy", policyStr);
     const auto policy = ParseConflictPolicy (policyStr, API_FavoriteOverwrite);
     GS::UniString firstConflictName;
-    const GSErrCode err = ACAPI_Favorite_Import (
-        location, targetFolder, importFolders, policy, &firstConflictName);
+    // In an undoable command like every other Favorites change: outside one, a Teamwork project
+    // drops the import without an error (#1756).
+    const GSErrCode err = ACAPI_CallUndoableCommand ("ImportFavorites", [&] () -> GSErrCode {
+        return ACAPI_Favorite_Import (location, targetFolder, importFolders, policy, &firstConflictName);
+    });
 
     // On conflictPolicy=Error + name collision, ACAPI returns
     // APIERR_NAMEALREADYUSED AND fills firstConflictName. We must NOT
@@ -1331,6 +1330,9 @@ GS::ObjectState ImportFavoritesCommand::Execute (const GS::ObjectState& paramete
         GS::ObjectState response;
         response.Add ("firstConflictName", firstConflictName);
         return response;
+    }
+    if (err == APIERR_NOACCESSRIGHT) {
+        return CreateErrorResponse (err, "The Favorites are not editable. In a Teamwork project the Favorites lockable object set must be reserved first (see ReserveLockableObjectSet).");
     }
     if (err != NoError) {
         return CreateErrorResponse (err, "ACAPI_Favorite_Import failed.");
@@ -1367,9 +1369,12 @@ GS::Optional<GS::UniString> ExportFavoritesCommand::GetInputParametersSchema () 
                 "description": "Optional subset of Favorites to export. Default: export all."
             },
             "format": {
-                "type": "string",
-                "enum": ["prefs", "xml", "legacyPRF"],
-                "description": "The format to export to. prefs (the default) works in every Archicad version. xml exports each Favorite to its own file in the folder, and legacyPRF exports to a Favorites file of earlier Archicad versions; these two require Archicad 29 or newer."
+                "$ref": "#/FavoriteExportFormat",
+                "description": "prefs (the default) works in every Archicad version. xml exports each Favorite to its own file in the folder, and legacyPRF exports to a Favorites file of earlier Archicad versions; these two require Archicad 29 or newer."
+            },
+            "overwrite": {
+                "type": "boolean",
+                "description": "Optional, true by default: an existing file is overwritten. false refuses to export when a file already exists at path, and writes nothing. It needs an export to a single file (prefs format with a .prefs path, or legacyPRF format); with an export to a folder it is an error, as the names of the files written there are Archicad's."
             }
         },
         "required": ["path"],
@@ -1399,6 +1404,21 @@ GS::ObjectState ExportFavoritesCommand::Execute (const GS::ObjectState& paramete
     }
 
     const IO::Location location = LocationFromPath (path);
+
+    bool overwrite = true;
+    if (parameters.Get ("overwrite", overwrite) && !overwrite) {
+        // A folder export writes files Archicad names, which cannot be checked beforehand.
+        GS::UniString lowerPath = path;
+        lowerPath.SetToLowerCase ();
+        const bool singleFile = format == "legacyPRF" || (format == "prefs" && lowerPath.EndsWith (".prefs"));
+        if (!singleFile) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "overwrite false needs an export to a single file (prefs format with a .prefs path, or legacyPRF format), nothing was written.");
+        }
+        const GS::UniString overwriteRefusal = GetOverwriteRefusal (parameters, location);
+        if (!overwriteRefusal.IsEmpty ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, overwriteRefusal);
+        }
+    }
 
     GSErrCode err = NoError;
     GS::Array<GS::UniString> names;
@@ -1777,17 +1797,7 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
                 "type": "array",
                 "description": "Fields of the target element to keep: after the Favorite has been applied, they are copied back from the target as it was before, so only the Favorite's other settings (e.g. its library part or wall type) take effect. 'id' and 'layerIndex' apply to every element type; 'width', 'height' and 'sillHeight' to a Window or Door ('width' and 'height' also to a Skylight); 'height', 'topOffset' and 'relativeTopStory' to a Wall or Column; 'referenceLineLocation' to a Wall. A field the target's type does not have is ignored. To keep a Wall's or Column's top exactly as it was, keep 'height', 'relativeTopStory' and 'topOffset' together - a kept 'height' alone is recomputed by Archicad while the Favorite's relativeTopStory links the top to a story. Default: nothing is kept.",
                 "items": {
-                    "type": "string",
-                    "enum": [
-                        "id",
-                        "layerIndex",
-                        "width",
-                        "height",
-                        "sillHeight",
-                        "referenceLineLocation",
-                        "topOffset",
-                        "relativeTopStory"
-                    ]
+                    "$ref": "#/FavoriteKeepField"
                 }
             }
         },
@@ -2830,99 +2840,7 @@ GS::Optional<GS::UniString> GetFavoriteSettingsCommand::GetRawResponseSchema () 
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "favorite": {
-                                    "type": "string",
-                                    "description": "The name of the Favorite."
-                                },
-                                "elementType": {
-                                    "$ref": "#/ElementType"
-                                },
-                                "folder": {
-                                    "type": "array",
-                                    "description": "The folder hierarchy of the Favorite in the Favorites palette. Empty for the root.",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                },
-                                "libPart": {
-                                    "$ref": "#/LibPartDetails",
-                                    "description": "The library part of the Favorite, for the library part based types (Object, Lamp, Window, Door, Skylight, Zone). Absent otherwise or when it could not be read."
-                                },
-                                "parameters": {
-                                    "type": "array",
-                                    "description": "The GDL parameters stored with the Favorite. Empty for the types without GDL parameters.",
-                                    "items": {
-                                        "$ref": "#/StoredGDLParameter"
-                                    }
-                                },
-                                "marker": {
-                                    "type": "object",
-                                    "description": "The marker stored with a Window or Door Favorite. Absent when the Favorite has no marker - that is not an error.",
-                                    "properties": {
-                                        "libPart": {
-                                            "$ref": "#/LibPartDetails",
-                                            "description": "The library part of the marker. Absent when it could not be read."
-                                        },
-                                        "parameters": {
-                                            "type": "array",
-                                            "description": "The GDL parameters of the marker.",
-                                            "items": {
-                                                "$ref": "#/StoredGDLParameter"
-                                            }
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "parameters"
-                                    ]
-                                },
-                                "subElements": {
-                                    "type": "array",
-                                    "description": "The sub-elements stored with the Favorite.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "subType": {
-                                                "type": "string",
-                                                "enum": [
-                                                    "MainMarker",
-                                                    "Other"
-                                                ],
-                                                "description": "MainMarker for the main marker of the element; Other for any other kind of sub-element."
-                                            },
-                                            "elementType": {
-                                                "$ref": "#/ElementType"
-                                            },
-                                            "libPart": {
-                                                "$ref": "#/LibPartDetails",
-                                                "description": "The library part of the sub-element. Absent when it has none or it could not be read."
-                                            },
-                                            "parameters": {
-                                                "type": "array",
-                                                "description": "The GDL parameters of the sub-element.",
-                                                "items": {
-                                                    "$ref": "#/StoredGDLParameter"
-                                                }
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "subType",
-                                            "elementType",
-                                            "parameters"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "favorite",
-                                "elementType",
-                                "parameters",
-                                "subElements"
-                            ]
+                            "$ref": "#/FavoriteSettings"
                         },
                         {
                             "$ref": "#/ErrorItem"

@@ -41,9 +41,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 response["autoGroup"]?.Value<bool>());
         }
 
-        // Shares the icon of GetSuspendGroupsMode.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetSuspendGroupsMode;
+            Properties.Resources.GetAutoGroupMode;
 
         public override Guid ComponentGuid =>
             new Guid("76586d79-b019-482e-8977-f3f888b5cd49");

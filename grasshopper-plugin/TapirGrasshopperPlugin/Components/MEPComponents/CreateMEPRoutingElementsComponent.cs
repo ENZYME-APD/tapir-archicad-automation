@@ -91,7 +91,13 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 "only for this route (input only 1 to use the same table for all). Optional; " +
                 "available from Archicad 29.");
 
-            SetOptionality(new[] { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 });
+            InIntegers(
+                "FloorIndices",
+                "Home story index of each route, also set on its segments, nodes, elbows and transitions. " +
+                "The polyline coordinates stay absolute; a story that does not exist gives an error for the route " +
+                "(input only 1 to use the same story for all). Optional.");
+
+            SetOptionality(new[] { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 });
         }
 
         protected override void AddOutputs()
@@ -159,6 +165,8 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             {
                 return;
             }
+            da.TryGetList(12, out List<int> floorIndices);
+            floorIndices = floorIndices ?? new List<int>();
 
             foreach (var pair in new (string Name, int Count)[]
                      {
@@ -171,7 +179,8 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                          ("LayerIndices", layerIndices.Count),
                          ("ElbowPreferenceTableGuids", elbowTableGuids.Count),
                          ("ElbowRadiusFactors", elbowRadiusFactors.Count),
-                         ("TransitionPreferenceTableGuids", transitionTableGuids.Count)
+                         ("TransitionPreferenceTableGuids", transitionTableGuids.Count),
+                         ("FloorIndices", floorIndices.Count)
                      })
             {
                 if (pair.Count > 1 &&
@@ -263,6 +272,10 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 if (layerIndices.Count > 0)
                 {
                     item["layerIndex"] = layerIndices[layerIndices.Count == 1 ? 0 : i];
+                }
+                if (floorIndices.Count > 0)
+                {
+                    item["floorIndex"] = floorIndices[floorIndices.Count == 1 ? 0 : i];
                 }
 
                 // The routing node default (elbows and transitions) of the

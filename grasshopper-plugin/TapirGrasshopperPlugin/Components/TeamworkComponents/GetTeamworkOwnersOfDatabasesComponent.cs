@@ -96,9 +96,8 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
                 errorMessages);
         }
 
-        // Shares the icon of GetTeamworkStatus until it gets its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetTeamworkStatus;
+            Properties.Resources.GetTeamworkOwnersOfDatabases;
 
         public override Guid ComponentGuid =>
             new Guid("95e99860-a09b-4f72-a523-7f290b91f048");

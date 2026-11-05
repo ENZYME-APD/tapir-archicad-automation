@@ -729,7 +729,11 @@ GS::Optional<GS::UniString> ExportIssuesToBCFCommand::GetInputParametersSchema (
             },
             "exportPath": {
                 "type": "string",
-                "description": "The os path to the bcf file, including it's name."
+                "description": "The os path to the bcf file, including it's name. An existing file is overwritten, unless overwrite is false."
+            },
+            "overwrite": {
+                "type": "boolean",
+                "description": "Optional, true by default. false refuses to export when a file already exists at exportPath, and writes nothing."
             },
             "useExternalId": {
                 "type": "boolean",
@@ -782,6 +786,10 @@ GS::ObjectState ExportIssuesToBCFCommand::Execute (const GS::ObjectState& parame
     }
 
     IO::Location bcfFilePath (exportPath);
+    const GS::UniString overwriteRefusal = GetOverwriteRefusal (parameters, bcfFilePath);
+    if (!overwriteRefusal.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, overwriteRefusal);
+    }
     GSErrCode err = ACAPI_Markup_ExportToBCF (bcfFilePath, issueIds, useExternalId, alignBySurveyPoint);
 
     if (err != NoError) {

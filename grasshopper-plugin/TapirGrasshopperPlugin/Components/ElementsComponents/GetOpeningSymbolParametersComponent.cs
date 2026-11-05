@@ -82,9 +82,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 : null;
         }
 
-        // Shares the icon of GetOpeningFloorPlanParameters until it gets one of its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetOpeningFloorPlanParameters;
+            Properties.Resources.GetOpeningSymbolParameters;
 
         public override Guid ComponentGuid =>
             new Guid("82baa930-1cc7-45fb-a1d3-bf40532f363c");

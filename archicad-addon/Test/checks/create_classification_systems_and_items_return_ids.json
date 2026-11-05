@@ -1,6 +1,6 @@
 {
   "title": "CreateClassificationSystems and CreateClassificationItems answer one result and one id per input",
-  "minTapir": "1.7.4",
+  "minTapir": "1.8.1",
   "requiresEmpty": [],
   "steps": [
     {

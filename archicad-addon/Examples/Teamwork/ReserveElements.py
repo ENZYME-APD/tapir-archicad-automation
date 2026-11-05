@@ -13,6 +13,8 @@ wasFree = aclib.RunTapirCommand ('GetReservationStatusOfElements', {'elements': 
 response = aclib.RunTapirCommand ('ReserveElements', {'elements': walls})
 for conflict in response.get ('conflicts', []):
     print ('Reserved by', conflict['user']['userName'])
+for notElement in response.get ('notElements', []):
+    print ('Not an element, not reserved:', notElement['elementId']['guid'])
 
 if wasFree:
     aclib.RunTapirCommand ('ReleaseElements', {'elements': walls})

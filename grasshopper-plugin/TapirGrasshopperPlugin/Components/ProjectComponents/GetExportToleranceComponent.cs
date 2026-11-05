@@ -13,7 +13,8 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             : base(
                 "GetExportTolerance",
                 "Gets the export tolerance: the largest distance allowed between an arc and the " +
-                "straight segments that replace it when curves are segmented for export.",
+                "straight segments that replace it when curves are segmented for export. " +
+                "Archicad provides it only while an export is in progress, otherwise this reports an error.",
                 GroupNames.Project)
         {
         }
@@ -46,9 +47,8 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 response.Value<double?>("arcTolerance"));
         }
 
-        // Shares the icon of GetProjectPreferences until it gets its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetProjectPreferences;
+            Properties.Resources.GetExportTolerance;
 
         public override Guid ComponentGuid =>
             new Guid("5efbb878-8902-4456-bcff-0c4f87a24b84");

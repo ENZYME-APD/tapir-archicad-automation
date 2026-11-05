@@ -142,3 +142,78 @@ GS::ObjectState GenerateDocumentationCommand::Execute (const GS::ObjectState& pa
     }
     return CreateSuccessfulExecutionResult ();
 }
+
+GetCommandsCommand::GetCommandsCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetCommandsCommand::GetName () const
+{
+    return "GetCommands";
+}
+
+GS::Optional<GS::UniString> GetCommandsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "commands": {
+                "type": "array",
+                "description": "Every command of the Tapir Add-On, in the order of the command reference.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the command.",
+                            "minLength": 1
+                        },
+                        "group": {
+                            "type": "string",
+                            "description": "The name of the command group, e.g. \"Application Commands\".",
+                            "minLength": 1
+                        },
+                        "version": {
+                            "type": "string",
+                            "description": "The Tapir version the command was introduced in, in the form of \"1.1.1\".",
+                            "minLength": 1
+                        },
+                        "description": {
+                            "type": "string",
+                            "description": "The description of the command, as in the command reference."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "group",
+                        "version",
+                        "description"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "commands"
+        ]
+    })";
+}
+
+GS::ObjectState GetCommandsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GS::ObjectState response;
+    const auto& commands = response.AddList<GS::ObjectState> ("commands");
+    for (const CommandGroup& group : gCommandGroups) {
+        for (const CommandInfo& command : group.commands) {
+            GS::ObjectState commandInfo;
+            commandInfo.Add ("name", command.name);
+            commandInfo.Add ("group", group.name);
+            commandInfo.Add ("version", command.version);
+            commandInfo.Add ("description", command.description);
+            commands (commandInfo);
+        }
+    }
+    return response;
+}
