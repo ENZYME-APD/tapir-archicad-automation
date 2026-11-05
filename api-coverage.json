@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-04 22:11 UTC",
+ "generatedAt": "2026-11-05 02:46 UTC",
  "versions": [
   25,
   26,
@@ -12329,12 +12329,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1887,
-     "title": "CreateLibraryParts: write the parameter section as the DevKit does, don't keep incomplete parts"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
@@ -12916,12 +12911,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1887,
-     "title": "CreateLibraryParts: write the parameter section as the DevKit does, don't keep incomplete parts"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
@@ -13166,7 +13156,12 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1887,
+     "title": "CreateLibraryParts: write the parameter section as the DevKit does, don't keep incomplete parts"
+    }
+   ],
    "issues": [
     {
      "number": 1580,
@@ -13292,12 +13287,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1887,
-     "title": "CreateLibraryParts: write the parameter section as the DevKit does, don't keep incomplete parts"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
