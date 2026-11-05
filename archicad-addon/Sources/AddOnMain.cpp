@@ -1063,7 +1063,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateMorphsCommand> (
             elementCommands, "1.4.0",
-            "Creates Morph elements from simple box definitions."
+            "Creates Morph elements from simple box definitions or arbitrary bodies. Each item may name a favorite (favoriteName) to start from, a layer (layerIndex) and an Element ID (id); the given geometry and floor are kept."
         );
         err |= RegisterCommand<CreateRoofsCommand> (
             elementCommands, "1.4.0",

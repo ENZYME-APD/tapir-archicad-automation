@@ -7444,6 +7444,19 @@ GS::Optional<GS::UniString> CreateMorphsCommand::GetInputParametersSchema () con
                 "items": {
                     "type": "object",
                     "properties": {
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "Optional name of a Morph favorite to base the new morph on. Its settings are applied first, then the explicitly given fields override them. The geometry (basePoint, size or body, axes) and the floor always come from this item, not from the favorite."
+                        },
+                        "id": {
+                            "type": "string",
+                            "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                        },
+                        "layerIndex": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults."
+                        },
                         "basePoint": { "$ref": "#/Coordinate3D" },
                         "size": {
                             "$ref": "#/Dimensions3D",
@@ -7538,7 +7551,75 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
     const Stories stories = GetStories ();
 
     return ExecuteCreateWithElements ("Create Morphs", [&](GS::Array<GS::ObjectState>& elements) {
+        // Per-item "favoriteName" support, as in CreateElementsCommandBase::Execute: favorites
+        // can only be applied through the tool defaults, which are global and outlive the
+        // command, so the Morph defaults are snapshotted here and restored at the end - and
+        // also before any item that does NOT name a favorite, otherwise it would silently
+        // inherit the favorite of the item before it. Untouched when no item names a favorite.
+        const bool anyFavoriteName = [&] () {
+            for (const GS::ObjectState& data : morphsData) {
+                GS::UniString name;
+                if (data.Get ("favoriteName", name) && !name.IsEmpty ()) {
+                    return true;
+                }
+            }
+            return false;
+        } ();
+
+        API_Element defaultsSnapshot = {};
+#ifdef ServerMainVers_2600
+        defaultsSnapshot.header.type = API_MorphID;
+#else
+        defaultsSnapshot.header.typeID = API_MorphID;
+#endif
+        API_ElementMemo defaultsSnapshotMemo = {};
+        bool favoriteApplied = false;
+        const GS::OnExit restoreDefaults ([&] () {
+            // Leave the tool defaults as they were found, so the user's next manual placement
+            // (or a later command) does not start from the favorite.
+            if (favoriteApplied) {
+                API_Element restoreMask;
+                ACAPI_ELEMENT_MASK_SETFULL (restoreMask);
+                ACAPI_Element_ChangeDefaults (&defaultsSnapshot, &defaultsSnapshotMemo, &restoreMask);
+            }
+            ACAPI_DisposeElemMemoHdls (&defaultsSnapshotMemo);
+        });
+        if (anyFavoriteName) {
+            const GSErrCode snapshotErr = ACAPI_Element_GetDefaults (&defaultsSnapshot, &defaultsSnapshotMemo);
+            if (snapshotErr != NoError) {
+                // Without a snapshot the favorite could not be undone from the tool defaults.
+                for (UIndex i = 0; i < morphsData.GetSize (); ++i) {
+                    elements.Push (CreateErrorResponse (snapshotErr, "Failed to read the Morph defaults."));
+                }
+                return;
+            }
+        }
+
         for (const auto& data : morphsData) {
+            if (anyFavoriteName) {
+                GS::UniString favoriteName;
+                const bool hasFavoriteName = data.Get ("favoriteName", favoriteName) && !favoriteName.IsEmpty ();
+                if (hasFavoriteName) {
+                    const GSErrCode favoriteErr = ApplyFavoriteToElementDefaults (favoriteName, API_MorphID);
+                    if (favoriteErr != NoError) {
+                        // Same two usual causes as in CreateElementsCommandBase: APIERR_REFUSEDPAR
+                        // for a favorite of another element type, else no favorite has this name.
+                        const GS::UniString reason = favoriteErr == APIERR_REFUSEDPAR
+                            ? GS::UniString ("it is not a Morph favorite")
+                            : GS::UniString ("no favorite with this exact name was found");
+                        elements.Push (CreateErrorResponse (favoriteErr,
+                            "Failed to apply favoriteName '" + favoriteName + "' to the Morph defaults: " + reason + "."));
+                        continue;
+                    }
+                    favoriteApplied = true;
+                } else if (favoriteApplied) {
+                    API_Element restoreMask;
+                    ACAPI_ELEMENT_MASK_SETFULL (restoreMask);
+                    ACAPI_Element_ChangeDefaults (&defaultsSnapshot, &defaultsSnapshotMemo, &restoreMask);
+                    favoriteApplied = false;
+                }
+            }
+
             API_Element element = {};
             #ifdef ServerMainVers_2600
             element.header.type = API_MorphID;
@@ -7570,6 +7651,12 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
             // derived here; tmx[11] intentionally stays basePoint.z (absolute), matching how the
             // rest of this command already places the morph in world space.
             element.header.floorInd = ResolveFloorIndexAndOffset (data, "floorIndex", basePoint.z, stories).first;
+
+            const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (data, element);
+            if (layerError.HasValue ()) {
+                elements.Push (*layerError);
+                continue;
+            }
 
             auto buildingMaterialId = GetOptionalObjectState (data, "buildingMaterialId");
 
@@ -7692,6 +7779,18 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                 ACAPI_ELEMENT_MASK_CLEAR (materialMask);
                 ACAPI_ELEMENT_MASK_SET (materialMask, API_MorphType, material);
                 ACAPI_Element_Change (&element, &materialMask, nullptr, 0, true);
+            }
+
+            // Per-item "id", as in CreateElementsCommandBase::Execute: an id that cannot be
+            // written leaves no half-done morph behind, the new morph is deleted again.
+            GS::UniString id;
+            if (data.Get ("id", id)) {
+                err = ChangeElementId (element.header.guid, id);
+                if (err != NoError) {
+                    ACAPI_Element_Delete ({ element.header.guid });
+                    elements.Push (CreateErrorResponse (err, "Failed to set the id of the new morph, so it was not created."));
+                    continue;
+                }
             }
 
             elements.Push (CreateElementIdObjectState (element.header.guid));
