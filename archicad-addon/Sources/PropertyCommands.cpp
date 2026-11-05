@@ -1,5 +1,6 @@
 #include "PropertyCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "NotificationCommands.hpp"
 #include "HashTable.hpp"
 #include <tuple>
 #include <cmath>
@@ -1241,6 +1242,17 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
         results.PushNew ();
     }
 
+    // A property value change may leave the element's modification stamp as it was, so the
+    // elements with a value set are marked changed for the notification clients.
+    ElementChangeReporter changeReporter;
+    for (const auto& kv : propertiesForElements) {
+#ifdef ServerMainVers_2800
+        changeReporter.Add (kv.key);
+#else
+        changeReporter.Add (*kv.key);
+#endif
+    }
+
     ACAPI_CallUndoableCommand ("SetPropertyValuesOfElementsCommand", [&]() -> GSErrCode {
         for (const auto& kv : propertiesForElements) {
 #ifdef ServerMainVers_2800
@@ -1313,11 +1325,15 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
                 for (const GSIndex resultIndex : propertiesToSetResultIndices) {
                     results[resultIndex] = CreateSuccessfulExecutionResult ();
                 }
+                changeReporter.MarkChanged (elemGuid);
                 continue;
             }
 
             for (UIndex i = 0; i < propertiesToSet.GetSize (); ++i) {
                 const GSErrCode err = ACAPI_Element_SetProperty (elemGuid, propertiesToSet[i]);
+                if (err == NoError) {
+                    changeReporter.MarkChanged (elemGuid);
+                }
                 results[propertiesToSetResultIndices[i]] = err == NoError
                     ? CreateSuccessfulExecutionResult ()
                     : CreateFailedExecutionResult (err, "Failed to set property value for element");
@@ -1326,6 +1342,8 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
 
         return NoError;
     });
+
+    changeReporter.Report ();
 
     for (const GS::ObjectState& result : results) {
         executionResults (result);

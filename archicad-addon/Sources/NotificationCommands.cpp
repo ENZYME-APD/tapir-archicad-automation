@@ -127,7 +127,7 @@ GS::Optional<GS::UniString> AddElementNotificationClientCommand::GetInputParamet
             },
             "notifyOnModificationOfAnElement": {
                 "type": "boolean",
-                "description": "Notify on modification/deletion of an element. The observed elements are the ones ACAPI_Element_GetElemList returns, for API_ZombieElemID or, with elementTypesToObserve, for each of those types, when the first client asking for these notifications of them is registered, and every element of the observed types created after that. Optional parameter, by default true. Archicad attaches an observer to each element to observe (see elementTypesToObserve) when the first client asks for this, and detaches them when the last one stops, and it is blocked meanwhile: the time grows faster than the number of elements, from seconds for a few hundred elements to many minutes for a few thousand. Count the elements first (GetAllElements with IncludeSubElemObjects, or GetElementsByType) and limit the types on large projects."
+                "description": "Notify on modification/deletion of an element. The observed elements are the ones ACAPI_Element_GetElemList returns, for API_ZombieElemID or, with elementTypesToObserve, for each of those types, when the first client asking for these notifications of them is registered, and every element of the observed types created after that. Archicad does not report the changes made by Tapir's own commands, so Tapir reports them itself for SetDetailsOfElements, SetPropertyValuesOfElements, MoveElements, RotateElements, MirrorElements (not for the copies they make, which are new elements), DeleteElements, DeleteSelectedElements, the Modify<Tool> commands (ModifyWalls, ModifyBeams, ModifySlabs, ModifyColumns, ModifyWindows, ModifyDoors, ModifyOpenings, ModifyMorphs, ModifyRoofs, ModifyShells, ModifyMeshes, ModifyObjects, ModifyLamps, ModifyTexts, ModifyLabels, ModifyCurtainWalls, ModifyCurtainWallFrames, ModifyZones, ModifySections, ModifyDetailMarkers, ModifyRailings, ModifyStairs) and ChangeTextContent. Of the elements these commands change, only the given ones are reported: an element deleted together with its owner (a door or window of a deleted wall) is not. Optional parameter, by default true. Archicad attaches an observer to each element to observe (see elementTypesToObserve) when the first client asks for this, and detaches them when the last one stops, and it is blocked meanwhile: the time grows faster than the number of elements, from seconds for a few hundred elements to many minutes for a few thousand. Count the elements first (GetAllElements with IncludeSubElemObjects, or GetElementsByType) and limit the types on large projects."
             },
             "elementTypesToObserve": {
                 "type": "array",
@@ -667,10 +667,7 @@ AddElementNotificationClientCommand::ElementEventHandlerProc (const API_NotifyEl
         // that requests a property (REQUEST "Properties_Of_Parent" or
         // "Property_Value_Of_Parent") hits an ODB assertion at that point and takes
         // Archicad down (see issue #762).
-        const API_ElemTypeID typeID = GetElemTypeId (elemType->elemHead);
-        GS::ObjectState message (
-            "elementId", CreateGuidObjectState (elemType->elemHead.guid),
-            "elementType", GetElementTypeNonLocalizedName (typeID));
+        const GS::ObjectState message = CreateElementEvent (elemType->elemHead);
 
         switch (elemType->notifID) {
             case APINotifyElement_New:
@@ -705,6 +702,131 @@ AddElementNotificationClientCommand::ElementEventHandlerProc (const API_NotifyEl
     }
 
     return NoError;
+}
+
+bool
+AddElementNotificationClientCommand::HasClientToNotifyOnModification ()
+{
+    for (const auto& kv : clients) {
+        if (kv.second.notifyOnModification) {
+            return true;
+        }
+    }
+    return false;
+}
+
+GS::ObjectState
+AddElementNotificationClientCommand::CreateElementEvent (const API_Elem_Head& elemHead)
+{
+    return GS::ObjectState (
+        "elementId", CreateGuidObjectState (elemHead.guid),
+        "elementType", GetElementTypeNonLocalizedName (GetElemTypeId (elemHead)));
+}
+
+void
+AddElementNotificationClientCommand::ReportElementEvents (const std::vector<GS::ObjectState>& changedEvents, const std::vector<GS::ObjectState>& deletedEvents)
+{
+    if (changedEvents.empty () && deletedEvents.empty ()) {
+        return;
+    }
+
+    // Inside a batch opened by APINotifyElement_BeginEvents the events join it; otherwise
+    // they form a batch of their own, sent in one message per client by the sender thread,
+    // so the command does not wait for the clients one event at a time.
+    const bool ownBatch = (queuedEvents == nullptr);
+    if (ownBatch) {
+        queuedEvents.reset (new EventQueue ());
+    }
+
+    if (!changedEvents.empty ()) {
+        auto& queue = (*queuedEvents)[ElementEventType::Changed];
+        queue.insert (queue.end (), changedEvents.begin (), changedEvents.end ());
+    }
+    if (!deletedEvents.empty ()) {
+        auto& queue = (*queuedEvents)[ElementEventType::Deleted];
+        queue.insert (queue.end (), deletedEvents.begin (), deletedEvents.end ());
+    }
+
+    if (ownBatch) {
+        SendQueuedEventsToNotificationClient ();
+    }
+}
+
+ElementChangeReporter::ElementChangeReporter () :
+    enabled (AddElementNotificationClientCommand::HasClientToNotifyOnModification ())
+{
+}
+
+ElementChangeReporter::ElementChangeReporter (const GS::Array<API_Guid>& elementsToWatch) :
+    ElementChangeReporter ()
+{
+    for (const API_Guid& element : elementsToWatch) {
+        Add (element);
+    }
+}
+
+void
+ElementChangeReporter::Add (const API_Guid& element)
+{
+    if (!enabled || headersBefore.ContainsKey (element)) {
+        return;
+    }
+
+    API_Elem_Head header = {};
+    if (!LoadElementHeaderByGuid (element, header)) {
+        return;
+    }
+
+    elements.Push (element);
+    headersBefore.Add (element, header);
+}
+
+void
+ElementChangeReporter::AddElementIdsOf (const GS::Array<GS::ObjectState>& items)
+{
+    if (!enabled) {
+        return;
+    }
+
+    for (const GS::ObjectState& item : items) {
+        const GS::ObjectState* elementId = item.Get ("elementId");
+        if (elementId != nullptr) {
+            Add (GetGuidFromObjectState (*elementId));
+        }
+    }
+}
+
+void
+ElementChangeReporter::MarkChanged (const API_Guid& element)
+{
+    if (!enabled) {
+        return;
+    }
+
+    markedChanged.Add (element);
+}
+
+void
+ElementChangeReporter::Report () const
+{
+    if (!enabled) {
+        return;
+    }
+
+    std::vector<GS::ObjectState> changedEvents;
+    std::vector<GS::ObjectState> deletedEvents;
+    for (const API_Guid& element : elements) {
+        const API_Elem_Head& headerBefore = headersBefore[element];
+        API_Elem_Head headerNow = {};
+        if (!LoadElementHeaderByGuid (element, headerNow)) {
+            // The element is gone, so its type is taken from the header read before.
+            deletedEvents.push_back (AddElementNotificationClientCommand::CreateElementEvent (headerBefore));
+        } else if (headerNow.modiStamp != headerBefore.modiStamp || markedChanged.Contains (element)) {
+            changedEvents.push_back (AddElementNotificationClientCommand::CreateElementEvent (headerNow));
+        }
+    }
+
+    AddElementNotificationClientCommand::ReportElementEvents (changedEvents, deletedEvents);
 }
 
 static API_ElemTypeID

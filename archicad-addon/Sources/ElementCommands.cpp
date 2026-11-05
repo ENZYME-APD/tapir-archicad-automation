@@ -3,6 +3,7 @@
 #include "ElementCreationCommands.hpp"
 #include "ExtendedElementCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "NotificationCommands.hpp"
 #include "GSUnID.hpp"
 #include "Plane.hpp"
 #include "Polygon2D.hpp"
@@ -46,6 +47,8 @@ static void AddPivotPolygonFromMemo (const API_Guid& guid, GS::ObjectState& os)
 static GS::UniString StructureTypeToString (API_ModelElemStructureType structureType);
 static void AddShellBaseSurfaces (const API_ShellBaseType& base, GS::ObjectState& os);
 
+static void AddShellBaseFloorPlanAndSection (const API_ShellBaseType& base, GS::ObjectState& os);
+
 // The RoofDetails of a roof. The polygon is read from partMemo when given (a plane
 // of a decomposed multi-plane roof, which has no memo of its own), else from the
 // memo of the element with this guid.
@@ -63,6 +66,7 @@ static void AddRoofDetails (const API_RoofType& roof, const API_Guid& guid, shor
         os.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, base.buildingMaterial)));
     }
     AddShellBaseSurfaces (base, os);
+    AddShellBaseFloorPlanAndSection (base, os);
     if (roof.roofClass == API_PlaneRoofID) {
         os.Add ("angle", roof.u.planeRoof.angle);
         GS::ObjectState pivotLine;
@@ -3366,6 +3370,14 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             sortedElements.Push (ewd);
     }
 
+    ElementChangeReporter changeReporter;
+    for (const GS::ObjectState& ewd : elementsWithDetails) {
+        const GS::ObjectState* eid = ewd.Get ("elementId");
+        if (eid != nullptr) {
+            changeReporter.Add (GetGuidFromObjectState (*eid));
+        }
+    }
+
     ACAPI_CallUndoableCommand ("SetDetailsOfElementsCommand", [&]() {
         for (const GS::ObjectState& elementWithDetails : sortedElements) {
             const GS::ObjectState* elementId = elementWithDetails.Get ("elementId");
@@ -4007,11 +4019,14 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
             }
 
+            changeReporter.MarkChanged (elem.header.guid);
             executionResults (CreateSuccessfulExecutionResult ());
         }
 
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }
@@ -6730,6 +6745,9 @@ GS::ObjectState	MoveElementsCommand::Execute (const GS::ObjectState& parameters,
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    // Only a moved original is reported; a moved copy is a new element.
+    ElementChangeReporter changeReporter;
+
     ACAPI_CallUndoableCommand ("Move Elements", [&]() -> GSErrCode {
         for (const GS::ObjectState& elementWithMoveVector : elementsWithMoveVectors) {
             const GS::ObjectState* elementId = elementWithMoveVector.Get ("elementId");
@@ -6755,6 +6773,10 @@ GS::ObjectState	MoveElementsCommand::Execute (const GS::ObjectState& parameters,
                 continue;
             }
 
+            if (!copy) {
+                changeReporter.Add (elemGuid);
+            }
+
             const GSErrCode err = MoveElement (elemGuid,
                                                Get3DCoordinateFromObjectState (*moveVector),
                                                copy);
@@ -6762,12 +6784,17 @@ GS::ObjectState	MoveElementsCommand::Execute (const GS::ObjectState& parameters,
                 const GS::UniString errorMsg = GS::UniString::Printf ("Failed to move element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
                 executionResults (CreateFailedExecutionResult (err, errorMsg));
             } else {
+                if (!copy) {
+                    changeReporter.MarkChanged (elemGuid);
+                }
                 executionResults (CreateSuccessfulExecutionResult ());
             }
         }
 
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }
@@ -7211,6 +7238,9 @@ GS::ObjectState RotateElementsCommand::Execute (const GS::ObjectState& parameter
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    // Only a rotated original is reported; a rotated copy is a new element.
+    ElementChangeReporter changeReporter;
+
     ACAPI_CallUndoableCommand ("Rotate Elements", [&]() -> GSErrCode {
         for (const GS::ObjectState& elementWithRotation : elementsWithRotations) {
             const GS::ObjectState* elementId = elementWithRotation.Get ("elementId");
@@ -7244,6 +7274,10 @@ GS::ObjectState RotateElementsCommand::Execute (const GS::ObjectState& parameter
                 continue;
             }
 
+            if (!copy) {
+                changeReporter.Add (elemGuid);
+            }
+
             const GSErrCode err = RotateElement (elemGuid,
                                                 Get2DCoordinateFromObjectState (*beginPoint),
                                                 Get2DCoordinateFromObjectState (*endPoint),
@@ -7253,12 +7287,17 @@ GS::ObjectState RotateElementsCommand::Execute (const GS::ObjectState& parameter
                 const GS::UniString errorMsg = GS::UniString::Printf ("Failed to rotate element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
                 executionResults (CreateFailedExecutionResult (err, errorMsg));
             } else {
+                if (!copy) {
+                    changeReporter.MarkChanged (elemGuid);
+                }
                 executionResults (CreateSuccessfulExecutionResult ());
             }
         }
 
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }
@@ -7330,6 +7369,9 @@ GS::ObjectState MirrorElementsCommand::Execute (const GS::ObjectState& parameter
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    // Only a mirrored original is reported; a mirrored copy is a new element.
+    ElementChangeReporter changeReporter;
+
     ACAPI_CallUndoableCommand ("Mirror Elements", [&]() -> GSErrCode {
         for (const GS::ObjectState& elementWithMirrorAxis : elementsWithMirrorAxes) {
             const GS::ObjectState* elementId = elementWithMirrorAxis.Get ("elementId");
@@ -7369,17 +7411,26 @@ GS::ObjectState MirrorElementsCommand::Execute (const GS::ObjectState& parameter
                 continue;
             }
 
+            if (!copy) {
+                changeReporter.Add (elemGuid);
+            }
+
             const GSErrCode err = MirrorElement (elemGuid, axisBegin, axisEnd, copy);
             if (err != NoError) {
                 const GS::UniString errorMsg = GS::UniString::Printf ("Failed to mirror element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
                 executionResults (CreateFailedExecutionResult (err, errorMsg));
             } else {
+                if (!copy) {
+                    changeReporter.MarkChanged (elemGuid);
+                }
                 executionResults (CreateSuccessfulExecutionResult ());
             }
         }
 
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }
@@ -9606,6 +9657,11 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
         }
     }
 
+    ElementChangeReporter changeReporter (zoneGuids);
+    for (const API_Guid& elemGuid : otherGuids) {
+        changeReporter.Add (elemGuid);
+    }
+
     GSErrCode deleteErr = NoError;
     if (!dryRun && (!zoneGuids.IsEmpty () || !otherGuids.IsEmpty ())) {
         ACAPI_CallUndoableCommand ("DeleteElementsCommand", [&]() {
@@ -9622,6 +9678,8 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
             return deleteErr;
         });
     }
+
+    changeReporter.Report ();
 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
@@ -9682,9 +9740,25 @@ GS::Optional<GS::UniString> DeleteSelectedElementsCommand::GetRawResponseSchema 
 
 GS::ObjectState DeleteSelectedElementsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
+    // The selected elements are read before they are deleted, so the deleted ones can be
+    // reported to the notification clients. Only needed when a client wants them.
+    ElementChangeReporter changeReporter;
+    if (AddElementNotificationClientCommand::HasClientToNotifyOnModification ()) {
+        API_SelectionInfo selectionInfo = {};
+        GS::Array<API_Neig> selectedNeigs;
+        ACAPI_Selection_Get (&selectionInfo, &selectedNeigs, false);
+        // The marquee polygon handle is owned by the caller (same as the Selection_Manager DevKit example).
+        BMKillHandle (reinterpret_cast<GSHandle*> (&selectionInfo.marquee.coords));
+        for (const API_Neig& neig : selectedNeigs) {
+            changeReporter.Add (neig.guid);
+        }
+    }
+
     GSErrCode err = ACAPI_CallUndoableCommand ("DeleteSelectedElementsCommand", [&]() {
         return ACAPI_Element_DeleteSelected ();
     });
+
+    changeReporter.Report ();
 
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to delete the selected elements.");
