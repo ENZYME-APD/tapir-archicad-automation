@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-05 12:22 UTC",
+ "generatedAt": "2026-11-05 13:00 UTC",
  "versions": [
   25,
   26,
@@ -5806,14 +5806,6 @@
    "reason": "memory management",
    "pullRequests": [
     {
-     "number": 1904,
-     "title": "ModifyRoofs: change single-plane roofs (#1782)"
-    },
-    {
-     "number": 1748,
-     "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
-    },
-    {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
     },
@@ -6787,16 +6779,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1904,
-     "title": "ModifyRoofs: change single-plane roofs (#1782)"
-    },
-    {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
-    },
-    {
-     "number": 1748,
-     "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
     {
      "number": 1671,
@@ -6955,12 +6939,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1904,
-     "title": "ModifyRoofs: change single-plane roofs (#1782)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7914,14 +7893,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1904,
-     "title": "ModifyRoofs: change single-plane roofs (#1782)"
-    },
-    {
-     "number": 1748,
-     "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
-    },
     {
      "number": 463,
      "title": "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters"
@@ -25601,14 +25572,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1904,
-     "title": "ModifyRoofs: change single-plane roofs (#1782)"
-    },
-    {
-     "number": 1748,
-     "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
-    },
-    {
      "number": 1703,
      "title": "Add CreateSkylights: place skylights in roofs and shells"
     },
@@ -31359,16 +31322,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1904,
-     "title": "ModifyRoofs: change single-plane roofs (#1782)"
-    },
-    {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
-    },
-    {
-     "number": 1748,
-     "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
     {
      "number": 1671,
@@ -37904,8 +37859,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1904,
-     "title": "ModifyRoofs: change single-plane roofs (#1782)"
+     "number": 1906,
+     "title": "Set3DProjectionSettings / Get3DProjectionSettings: set and read the projection's sun position"
     },
     {
      "number": 1900,
@@ -37914,10 +37869,6 @@
     {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
-    },
-    {
-     "number": 1748,
-     "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
     {
      "number": 1703,
@@ -44702,16 +44653,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1904,
-     "title": "ModifyRoofs: change single-plane roofs (#1782)"
-    },
-    {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
-    },
-    {
-     "number": 1748,
-     "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
     {
      "number": 1671,
@@ -47961,16 +47904,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1904,
-     "title": "ModifyRoofs: change single-plane roofs (#1782)"
-    },
-    {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
-    },
-    {
-     "number": 1748,
-     "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
     {
      "number": 1671,

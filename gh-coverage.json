@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-05 12:22 UTC",
+ "generatedAt": "2026-11-05 13:00 UTC",
  "counts": {
   "done": 568,
   "open": 27,
@@ -7,9 +7,9 @@
   "not applicable": 1
  },
  "parameters": {
-  "all": 658,
+  "all": 657,
   "partial": 11,
-  "json": 47
+  "json": 48
  },
  "items": [
   {
@@ -6521,7 +6521,7 @@
    "id": "ModifyRoofs",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies multi-plane Roof elements based on the given parameters.",
+   "brief": "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, level, thickness and structure apply to both; angle and pivotLine only to single-plane roofs; levels, eavesOverhang and pivotEdges only to multi-plane roofs.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6530,10 +6530,11 @@
      "path": "Components/ElementsComponents/ModifyRoofsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 12,
+   "parameters": "json",
+   "parameterCount": 20,
    "coveredParameters": [
     "roofsWithDetails",
+    "roofsWithDetails.angle",
     "roofsWithDetails.buildingMaterialId",
     "roofsWithDetails.compositeId",
     "roofsWithDetails.eavesOverhang",
@@ -6541,12 +6542,20 @@
     "roofsWithDetails.holes",
     "roofsWithDetails.level",
     "roofsWithDetails.levels",
+    "roofsWithDetails.pivotLine",
+    "roofsWithDetails.pivotLine.begCoordinate",
+    "roofsWithDetails.pivotLine.begin",
+    "roofsWithDetails.pivotLine.end",
+    "roofsWithDetails.pivotLine.endCoordinate",
     "roofsWithDetails.polygonArcs",
     "roofsWithDetails.polygonOutline",
     "roofsWithDetails.structureType",
     "roofsWithDetails.thickness"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "roofsWithDetails.pivotEdges",
+    "roofsWithDetails.pivotEdges.levels.angleType"
+   ],
    "pullRequests": [],
    "issues": []
   },
