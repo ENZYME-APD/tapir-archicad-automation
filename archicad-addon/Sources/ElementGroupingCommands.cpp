@@ -1334,7 +1334,10 @@ GS::ObjectState CreateElementSetsCommand::Execute(const GS::ObjectState& paramet
 
             // No user data is stored with the set; an empty handle is passed
             // rather than a null one, as the API copies the handle's content.
+            // The platform sign must be valid even then, otherwise the API
+            // refuses the set with APIERR_BADPLATFORMSIGN (#1862).
             API_UserData userData = {};
+            userData.platformSign = GS::Act_Platform_Sign;
             userData.dataHdl = BMAllocateHandle(0, ALLOCATE_CLEAR, 0);
 
             API_Guid setGuid = APINULLGuid;
@@ -1514,39 +1517,7 @@ GS::Optional<GS::UniString> GetElementSetsOfElementsCommand::GetRawResponseSchem
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementSets": {
-                                    "type": "array",
-                                    "description": "The element sets that contain the element. Empty if the element is not part of any element set.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "elementSetId": {
-                                                "type": "object",
-                                                "description": "The identifier of an element set.",
-                                                "properties": {
-                                                    "guid": {
-                                                        "$ref": "#/Guid"
-                                                    }
-                                                },
-                                                "additionalProperties": false,
-                                                "required": [
-                                                    "guid"
-                                                ]
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "elementSetId"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elementSets"
-                            ]
+                            "$ref": "#/ElementSetsOfElement"
                         },
                         {
                             "$ref": "#/ErrorItem"

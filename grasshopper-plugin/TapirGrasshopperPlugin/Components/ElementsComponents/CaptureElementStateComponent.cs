@@ -35,10 +35,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             InTextWithDefault(
                 "Type",
                 "How the changes are found between this state and another one. ModificationStamp (the default) " +
-                "compares the modification stamps of the elements, so any change counts. 3DModel compares the 3D " +
-                "model of the elements, so only a change that alters the 3D model counts, and capturing it " +
-                "generates the 3D model of the project. Two states can only be compared when they were captured " +
-                "with the same type.",
+                "compares the modification stamps of the elements, so any change to a tracked element counts. 3DModel " +
+                "compares the 3D model of the elements, so only a change that alters the 3D model counts, and " +
+                "capturing it generates the 3D model of the project. Two states can only be compared when they " +
+                "were captured with the same type. Archicad tracks the model elements: 2D elements such as " +
+                "texts, labels and hatches can be missing from the changes.",
                 ElementStateTypes.ModificationStamp);
 
             SetOptionality(0);
