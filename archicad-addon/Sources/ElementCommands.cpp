@@ -897,17 +897,59 @@ static GS::UniString StructureTypeToString (API_ModelElemStructureType structure
     }
 }
 
-// An object that belongs to another element, such as a zone stamp or a part of a stair or railing.
-// The listing commands leave these out unless the IncludeSubElemObjects filter asks for them.
-static bool IsSubElemObject (const API_Guid& elemGuid)
-{
-    API_Element elem = {};
-    elem.header.guid = elemGuid;
-    if (ACAPI_Element_GetHeader (&elem.header) != NoError || GetElemTypeId (elem.header) != API_ObjectID) {
-        return false;
+// Tells whether an object belongs to another element, such as a zone stamp or a part of a stair or
+// railing. The listing commands leave these out unless the IncludeSubElemObjects filter asks for them.
+// Reading a whole object (ACAPI_Element_Get) takes milliseconds, which on a large project blocked
+// Archicad for minutes (#1839), so two cheap checks come first: the zone stamps, read once per
+// listing from the zones of the current database (ReadZoneStamps, before the listing starts), and
+// the hierarchical element owner (the parts of stairs, railings and curtain walls). Only an object
+// neither of them recognizes is read in full, so the result is the same as reading every object.
+class SubElemObjectChecker {
+public:
+    void ReadZoneStamps ()
+    {
+        zoneStampGuids.Clear ();
+        GS::Array<API_Guid> zoneGuids;
+        if (ACAPI_Element_GetElemList (API_ZoneID, &zoneGuids) != NoError) {
+            return;
+        }
+        for (const API_Guid& zoneGuid : zoneGuids) {
+            API_Element zone = {};
+            zone.header.guid = zoneGuid;
+            if (ACAPI_Element_Get (&zone) == NoError && zone.zone.stampGuid != APINULLGuid) {
+                zoneStampGuids.Add (zone.zone.stampGuid);
+            }
+        }
     }
-    return ACAPI_Element_Get (&elem) != NoError || elem.object.owner != APINULLGuid;
-}
+
+    bool IsSubElemObject (const API_Guid& elemGuid) const
+    {
+        API_Elem_Head header = {};
+        header.guid = elemGuid;
+        if (ACAPI_Element_GetHeader (&header) != NoError || GetElemTypeId (header) != API_ObjectID) {
+            return false;
+        }
+
+        if (zoneStampGuids.Contains (elemGuid)) {
+            return true;
+        }
+
+        const API_HierarchicalOwnerType ownerType = API_ParentHierarchicalOwner;
+        API_HierarchicalElemType hierarchicalElemType = API_UnknownElemType;
+        API_Guid ownerGuid = APINULLGuid;
+        if (ACAPI_HierarchicalEditing_GetHierarchicalElementOwner (&elemGuid, &ownerType, &hierarchicalElemType, &ownerGuid) == NoError &&
+            hierarchicalElemType == API_ChildElemInMultipleElem) {
+            return true;
+        }
+
+        API_Element elem = {};
+        elem.header = header;
+        return ACAPI_Element_Get (&elem) != NoError || elem.object.owner != APINULLGuid;
+    }
+
+private:
+    GS::HashSet<API_Guid> zoneStampGuids;
+};
 
 template <typename ListProxyType>
 static GSErrCode GetElementsFromCurrentDatabase (const GS::ObjectState& parameters, ListProxyType& elementsListProxy)
@@ -939,9 +981,13 @@ static GSErrCode GetElementsFromCurrentDatabase (const GS::ObjectState& paramete
 
     // Only a listing of Objects or of every type (GetAllElements) can contain sub-element objects.
     const bool skipSubElemObjects = !includeSubElemObjects && (elemType == API_ObjectID || elemType == API_ZombieElemID);
+    SubElemObjectChecker subElemObjectChecker;
+    if (skipSubElemObjects) {
+        subElemObjectChecker.ReadZoneStamps ();
+    }
     for (const API_Guid& elemGuid : elemList) {
         const API_Guid parentGuid = GetParentElemOfSectElem (elemGuid);
-        if (skipSubElemObjects && IsSubElemObject (parentGuid)) {
+        if (skipSubElemObjects && subElemObjectChecker.IsSubElemObject (parentGuid)) {
             continue;
         }
         elementsListProxy (CreateElementIdObjectState (parentGuid));
@@ -1125,6 +1171,12 @@ static GSErrCode GetElementsInDrawOrderFromCurrentDatabase (const GS::ObjectStat
         }
     }
 
+    // Read before the draw order walk starts, so nothing but the walk itself lists the database.
+    SubElemObjectChecker subElemObjectChecker;
+    if (!includeSubElemObjects && (elemType == API_ObjectID || elemType == API_ZombieElemID)) {
+        subElemObjectChecker.ReadZoneStamps ();
+    }
+
     const DrawOrderWalk walk;
     if (walk.error != NoError) {
         return walk.error;
@@ -1149,7 +1201,7 @@ static GSErrCode GetElementsInDrawOrderFromCurrentDatabase (const GS::ObjectStat
         if (elemType != API_ZombieElemID && reportedType != elemType) {
             continue;
         }
-        if (!includeSubElemObjects && reportedType == API_ObjectID && IsSubElemObject (elemGuid)) {
+        if (!includeSubElemObjects && reportedType == API_ObjectID && subElemObjectChecker.IsSubElemObject (elemGuid)) {
             continue;
         }
         if (reportedGuids.Contains (elemGuid)) {
