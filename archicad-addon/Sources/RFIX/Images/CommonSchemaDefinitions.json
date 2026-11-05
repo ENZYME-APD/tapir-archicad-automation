@@ -3318,6 +3318,10 @@
             "isTwoPointPersp": {
                 "type": "boolean",
                 "description": "True for a two-point perspective (vertical edges stay vertical)."
+            },
+            "sun": {
+                "$ref": "#/ProjectionSunSettings",
+                "description": "The sun position of the perspective. Get3DProjectionSettings always returns it; Set3DProjectionSettings changes only the values given and keeps the current sun when it is missing."
             }
         },
         "additionalProperties": false,
@@ -3330,6 +3334,63 @@
             "rollAngle",
             "isTwoPointPersp"
         ]
+    },
+    "ProjectionSunSettings": {
+        "type": "object",
+        "description": "The sun position of a 3D projection, the Sun Position of the 3D Projection Settings dialog (API_SunAngleSettings). Each perspective and axonometry has its own, independent of the project's date and time (SetSunSettings). The 3D shading and shadows of the projection come from it.",
+        "properties": {
+            "sunPositionOption": {
+                "type": "string",
+                "description": "Angles: the sun is at sunAzimuth and sunAltitude. DateAndTime: Archicad calculates the sun from the project location and the date and time given here.",
+                "enum": [
+                    "Angles",
+                    "DateAndTime"
+                ]
+            },
+            "sunAzimuth": {
+                "type": "number",
+                "description": "The azimuth of the sun, used when sunPositionOption is Angles. In the same units Get3DProjectionSettings returns it."
+            },
+            "sunAltitude": {
+                "type": "number",
+                "description": "The altitude of the sun, used when sunPositionOption is Angles. In the same units Get3DProjectionSettings returns it."
+            },
+            "year": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9999
+            },
+            "month": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 12
+            },
+            "day": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 31
+            },
+            "hour": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 23
+            },
+            "minute": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 59
+            },
+            "second": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 59
+            },
+            "summerTime": {
+                "type": "boolean",
+                "description": "True when the time is daylight saving time."
+            }
+        },
+        "additionalProperties": false
     },
     "Dimensions3D": {
         "type": "object",
