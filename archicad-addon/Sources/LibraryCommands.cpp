@@ -1,4 +1,5 @@
 #include "LibraryCommands.hpp"
+#include "LibraryPartCreationCommands.hpp"
 #include "ElementGDLParameterCommands.hpp"
 #include "ObjectState.hpp"
 #include "MigrationHelper.hpp"
@@ -790,21 +791,12 @@ struct ScriptSection {
 static GSErrCode WriteEmptyLibPartSection (const API_LibPartSection& section)
 {
     const char emptyText[] = "";
-#ifdef ServerMainVers_2700
-    GSErrCode err = ACAPI_LibraryPart_NewSection (&section);
+    GSErrCode err = NewLibPartSection (&section);
     if (err != NoError) {
         return err;
     }
-    err = ACAPI_LibraryPart_WriteSection (0, emptyText);
-    const GSErrCode endErr = ACAPI_LibraryPart_EndSection ();
-#else
-    GSErrCode err = ACAPI_LibPart_NewSection (&section);
-    if (err != NoError) {
-        return err;
-    }
-    err = ACAPI_LibPart_WriteSection (0, emptyText);
-    const GSErrCode endErr = ACAPI_LibPart_EndSection ();
-#endif
+    err = WriteLibPartSection (0, emptyText);
+    const GSErrCode endErr = EndLibPartSection ();
     return err != NoError ? err : endErr;
 }
 
@@ -943,11 +935,20 @@ static GS::Optional<GS::ObjectState> CreateLibraryPart (const GS::ObjectState& l
             err = APIERR_GENERAL;
             failedStep = "Failed to prepare the parameter section of the library part: the API returned no section.";
         } else {
-            API_LibPartSection section = {};
-            section.sectType = API_SectParamDef;
-            err = ACAPI_LibraryPart_AddSection (&section, parameterSection, nullptr);
+            // The details are set on the parameter section before it is added, as the
+            // DevKit's LibPart_Test example and CreateLibraryPartFromElements do.
+            API_LibPartDetails details = {};
+            details.object.autoHotspot = false;
+            err = SetLibPartDetails (&libPart, parameterSection, &details);
             if (err != NoError) {
-                failedStep = "Failed to write the parameter section of the library part (ACAPI_LibraryPart_AddSection).";
+                failedStep = "Failed to set the details of the parameter section of the library part (ACAPI_LibraryPart_SetDetails_ParamDef).";
+            } else {
+                API_LibPartSection section = {};
+                section.sectType = API_SectParamDef;
+                err = ACAPI_LibraryPart_AddSection (&section, parameterSection, nullptr);
+                if (err != NoError) {
+                    failedStep = "Failed to write the parameter section of the library part (ACAPI_LibraryPart_AddSection).";
+                }
             }
         }
         if (parameterSection != nullptr) {
