@@ -4098,6 +4098,14 @@ GS::ObjectState SetElementInfoStringsCommand::Execute (const GS::ObjectState& pa
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    ElementChangeReporter changeReporter;
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId != nullptr) {
+            changeReporter.Add (GetGuidFromObjectState (*elementId));
+        }
+    }
+
     ACAPI_CallUndoableCommand ("SetElementInfoStrings", [&]() -> GSErrCode {
         for (const GS::ObjectState& element : elements) {
             const GS::ObjectState* elementId = element.Get ("elementId");
@@ -4125,11 +4133,14 @@ GS::ObjectState SetElementInfoStringsCommand::Execute (const GS::ObjectState& pa
                 continue;
             }
 
+            changeReporter.MarkChanged (elemGuid);
             executionResults (CreateSuccessfulExecutionResult ());
         }
 
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }
@@ -9807,10 +9818,20 @@ GS::ObjectState LockElementsCommand::Execute (const GS::ObjectState& parameters,
 
     GSErrCode err = NoError;
 
+    const GS::Array<API_Guid> elemGuids = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
+    ElementChangeReporter changeReporter (elemGuids);
+
     ACAPI_CallUndoableCommand ("LockElementsCommand", [&]() {
-        err = ACAPI_Grouping_Tool (elements.Transform<API_Guid> (GetGuidFromElementsArrayItem), APITool_Lock, nullptr);
+        err = ACAPI_Grouping_Tool (elemGuids, APITool_Lock, nullptr);
         return err;
     });
+
+    if (err == NoError) {
+        for (const API_Guid& elemGuid : elemGuids) {
+            changeReporter.MarkChanged (elemGuid);
+        }
+    }
+    changeReporter.Report ();
 
     return err == NoError
         ? CreateSuccessfulExecutionResult ()
@@ -9857,10 +9878,20 @@ GS::ObjectState UnlockElementsCommand::Execute (const GS::ObjectState& parameter
 
     GSErrCode err = NoError;
 
+    const GS::Array<API_Guid> elemGuids = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
+    ElementChangeReporter changeReporter (elemGuids);
+
     ACAPI_CallUndoableCommand ("UnlockElementsCommand", [&]() {
-        err = ACAPI_Grouping_Tool (elements.Transform<API_Guid> (GetGuidFromElementsArrayItem), APITool_Unlock, nullptr);
+        err = ACAPI_Grouping_Tool (elemGuids, APITool_Unlock, nullptr);
         return err;
     });
+
+    if (err == NoError) {
+        for (const API_Guid& elemGuid : elemGuids) {
+            changeReporter.MarkChanged (elemGuid);
+        }
+    }
+    changeReporter.Report ();
 
     return err == NoError
         ? CreateSuccessfulExecutionResult ()
