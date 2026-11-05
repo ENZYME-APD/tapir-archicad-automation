@@ -1,0 +1,303 @@
+/* The shared look of Tapir's documentation site, matching https://www.archicad-api.com/:
+   Plus Jakarta Sans and JetBrains Mono, a dark navy background with lighter bordered cards and
+   a blue accent. A light palette under prefers-color-scheme: light keeps the same accent and
+   passes WCAG AA. Every page links it as <root>/assets/site.css and repeats the same header. */
+
+:root {
+    --bg: #0a0f1a;
+    --bg-raised: #111827;
+    --card: #131b2c;
+    --card-hover: #18233a;
+    --border: #1f2a40;
+    --border-strong: #2d3b57;
+    --text: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --accent: #3b82f6;
+    --accent-2: #60a5fa;
+    --accent-3: #93c5fd;
+    --link: #60a5fa;
+    --link-hover: #93c5fd;
+    --eyebrow: #60a5fa;
+    --button-bg: #2563eb;
+    --button-bg-hover: #1d4ed8;
+    --button-text: #ffffff;
+    --code-bg: #0d1424;
+    --header-bg: rgba(10, 15, 26, 0.92);
+    --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --radius: 14px;
+    --radius-small: 8px;
+    --content-width: 1100px;
+    color-scheme: dark;
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --bg: #f8fafc;
+        --bg-raised: #ffffff;
+        --card: #ffffff;
+        --card-hover: #f1f5f9;
+        --border: #e2e8f0;
+        --border-strong: #cbd5e1;
+        --text: #0f172a;
+        --text-secondary: #334155;
+        --text-muted: #475569;
+        --link: #1d4ed8;
+        --link-hover: #1e40af;
+        --eyebrow: #1d4ed8;
+        --code-bg: #f1f5f9;
+        --header-bg: rgba(255, 255, 255, 0.94);
+        color-scheme: light;
+    }
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 400 16px/1.65 var(--font-sans);
+}
+
+h1, h2, h3, h4 {
+    font-family: var(--font-sans);
+    color: var(--text);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+}
+h1 { font-size: clamp(30px, 5vw, 44px); font-weight: 800; margin: 0 0 12px; }
+h2 { font-size: clamp(22px, 3.2vw, 28px); font-weight: 700; margin: 0 0 12px; }
+h3 { font-size: 18px; font-weight: 700; margin: 0 0 6px; }
+p { margin: 0 0 14px; color: var(--text-secondary); }
+
+a { color: var(--link); text-underline-offset: 2px; }
+a:hover { color: var(--link-hover); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+code, pre, kbd { font-family: var(--font-mono); }
+code { font-size: 0.88em; background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.1em 0.35em; }
+pre {
+    margin: 0 0 16px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-small);
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--text);
+}
+pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+
+.muted { color: var(--text-muted); }
+
+/* Header: the logo, the site's pages and the Discord button. Wraps on narrow screens. */
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+.site-header-inner {
+    max-width: var(--content-width);
+    margin: 0 auto;
+    padding: 10px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px));
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 20px;
+}
+.site-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 800;
+    font-size: 17px;
+    white-space: nowrap;
+}
+.site-brand:hover { color: var(--text); }
+.site-brand img { width: 30px; height: 30px; display: block; }
+.site-brand .brand-sub { color: var(--text-muted); font-weight: 600; }
+.site-nav { flex: 1 1 auto; min-width: 0; }
+.site-nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 4px;
+}
+.site-nav a {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14.5px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.site-nav a:hover { color: var(--text); background: var(--card-hover); }
+.site-nav a[aria-current="page"] { color: var(--text); background: var(--card); box-shadow: inset 0 0 0 1px var(--border-strong); }
+.site-nav .external::after { content: " \2197"; color: var(--text-muted); font-size: 0.85em; }
+
+/* Buttons */
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background: var(--button-bg);
+    color: var(--button-text);
+    font: 700 14.5px/1.2 var(--font-sans);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.button:hover { background: var(--button-bg-hover); color: var(--button-text); }
+.button-secondary { background: var(--card); color: var(--text); border-color: var(--border-strong); }
+.button-secondary:hover { background: var(--card-hover); color: var(--text); border-color: var(--accent); }
+
+/* Page content */
+main {
+    display: block;
+    max-width: var(--content-width);
+    margin: 0 auto;
+    padding: 40px max(16px, env(safe-area-inset-right, 0px)) 64px max(16px, env(safe-area-inset-left, 0px));
+}
+.narrow { max-width: 820px; }
+section { margin: 0 0 48px; }
+.eyebrow {
+    display: block;
+    margin: 0 0 8px;
+    color: var(--eyebrow);
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+.lead { font-size: 18px; color: var(--text-secondary); max-width: 720px; }
+.gradient-text {
+    background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 50%, var(--accent-3) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+@media (prefers-color-scheme: light) {
+    /* The light gradient's lighter stops would fail AA on white. */
+    .gradient-text { background: none; color: var(--link); }
+}
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 0; }
+
+/* Cards */
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+.card {
+    display: block;
+    padding: 18px 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    text-decoration: none;
+    transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
+}
+a.card:hover { border-color: var(--accent); background: var(--card-hover); color: var(--text); transform: translateY(-2px); }
+.card h3 { color: var(--text); }
+.card p { margin: 0; color: var(--text-muted); font-size: 15px; }
+.card .card-link { display: inline-block; margin-top: 10px; color: var(--link); font-weight: 700; font-size: 14.5px; }
+
+/* Live numbers: each one is in the HTML hidden and only shown once it was read. */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-top: 28px; }
+.stat { padding: 16px 20px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); }
+.stat-number { display: block; font-size: 34px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--text); }
+.stat-label { display: block; margin-top: 4px; color: var(--text-muted); font-size: 14px; }
+.stat-label a { color: inherit; }
+[hidden] { display: none !important; }
+
+/* Numbered steps */
+.steps { list-style: none; counter-reset: step; margin: 0; padding: 0; }
+.steps > li {
+    counter-increment: step;
+    position: relative;
+    margin: 0 0 20px;
+    padding: 22px 22px 8px 74px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+.steps > li::before {
+    content: counter(step);
+    position: absolute;
+    left: 22px;
+    top: 22px;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--button-bg);
+    color: var(--button-text);
+    font-weight: 800;
+}
+.steps > li h2 { font-size: 21px; scroll-margin-top: 90px; }
+.steps ul, .steps ol { color: var(--text-secondary); padding-left: 22px; margin: 0 0 14px; }
+.steps li li { margin: 0 0 6px; }
+.callout {
+    margin: 0 0 16px;
+    padding: 12px 16px;
+    border: 1px solid var(--border-strong);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-small);
+    background: var(--bg-raised);
+    color: var(--text-secondary);
+}
+.callout p:last-child { margin-bottom: 0; }
+
+/* Footer */
+.site-footer { border-top: 1px solid var(--border); }
+.site-footer-inner {
+    max-width: var(--content-width);
+    margin: 0 auto;
+    padding: 20px max(16px, env(safe-area-inset-right, 0px)) 28px max(16px, env(safe-area-inset-left, 0px));
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+.site-footer a { color: var(--text-muted); }
+.site-footer a:hover { color: var(--text); }
+
+@media (max-width: 640px) {
+    main { padding-top: 28px; }
+    /* The logo and the Discord button share the first line, the pages wrap below them. */
+    .site-nav { flex-basis: 100%; order: 2; }
+    .site-nav a { padding: 4px 8px; font-size: 14px; }
+    .site-header .button { margin-left: auto; padding: 7px 12px; }
+    .site-header { position: static; }
+    .steps > li { padding: 64px 16px 4px 16px; }
+    .steps > li::before { left: 16px; top: 18px; }
+    .lead { font-size: 17px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        transition: none !important;
+        animation: none !important;
+        scroll-behavior: auto !important;
+    }
+    a.card:hover { transform: none; }
+}

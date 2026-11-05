@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Get started - Tapir documentation</title>
+<meta name="description" content="Install Tapir, run a script from the Tapir palette in Archicad, use scripts from the marketplace, write a first Python script and install the Grasshopper plugin.">
+<link rel="icon" href="../assets/tapir_logo_black.svg" type="image/svg+xml" media="(prefers-color-scheme: light)">
+<link rel="icon" href="../assets/tapir_logo_white.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<header class="site-header">
+    <div class="site-header-inner">
+        <a class="site-brand" href="../">
+            <picture>
+                <source srcset="../assets/tapir_logo_black.svg" media="(prefers-color-scheme: light)">
+                <img src="../assets/tapir_logo_white.svg" alt="" width="30" height="30">
+            </picture>
+            <span>Tapir <span class="brand-sub">docs</span></span>
+        </a>
+        <nav class="site-nav" aria-label="Site">
+            <ul>
+                <li><a href="../">Docs home</a></li>
+                <li><a href="./" aria-current="page">Get started</a></li>
+                <li><a href="../archicad-addon/">Commands</a></li>
+                <li><a href="../api-coverage/">API coverage</a></li>
+                <li><a href="../gh-coverage/">Grasshopper coverage</a></li>
+                <li><a class="external" href="https://tapir-marketplace.vercel.app/">Marketplace</a></li>
+                <li><a class="external" href="https://www.archicad-api.com/">Website</a></li>
+            </ul>
+        </nav>
+        <a class="button" href="https://discord.gg/NAnSennmpY">Join Discord</a>
+    </div>
+</header>
+
+<main class="narrow">
+    <section>
+        <span class="eyebrow">Get started</span>
+        <h1>Get started with Tapir</h1>
+        <p class="lead">
+            Five steps from installing Tapir to your first script, in Archicad, in Python and in Grasshopper.
+        </p>
+        <div class="callout">
+            <p>
+                Prefer watching? The <a href="https://youtube.com/playlist?list=PLGc943dgyfjjqzeFglpYLIPrcn_HFicDn">Tapir video tutorials</a>
+                walk through installing Tapir and using it.
+            </p>
+        </div>
+    </section>
+
+    <ol class="steps">
+        <li>
+            <h2 id="install">Install Tapir</h2>
+            <p>
+                <strong>With the installer (recommended).</strong> Download the Tapir Installer and run it. It finds the
+                Archicad versions on your computer and installs the matching add-on into each, so Archicad loads it on its next start.
+            </p>
+            <div class="actions" style="margin: 0 0 16px;">
+                <a class="button" href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirInstaller_Win.exe">Installer for Windows</a>
+                <a class="button" href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirInstaller_Mac.zip">Installer for macOS</a>
+            </div>
+            <ul>
+                <li><strong>Windows:</strong> the installer asks for administrator rights, because it copies the add-on into the Archicad folder under Program Files.</li>
+                <li><strong>macOS:</strong> unzip the download and open the app.</li>
+            </ul>
+            <p>
+                <strong>Manually.</strong> Download the <code>TapirAddOn_AC&lt;version&gt;_Win.apx</code> or
+                <code>TapirAddOn_AC&lt;version&gt;_Mac.zip</code> file for your Archicad version from the
+                <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest">latest release</a>, then in Archicad:
+            </p>
+            <ol>
+                <li>Choose <em>Options &gt; Add-On Manager</em>.</li>
+                <li>Open <em>Edit List of Available Add-Ons</em> and click <em>Add</em>.</li>
+                <li>Browse to the downloaded file and click <em>OK</em>.</li>
+            </ol>
+            <p>Tapir keeps itself up to date: it tells you when a new version is out and installs it for you.</p>
+        </li>
+
+        <li>
+            <h2 id="palette">Run a script from the Tapir palette</h2>
+            <p>
+                Tapir adds a <em>Tapir</em> menu to Archicad. Choose <em>Tapir Palette</em> from it to open the palette.
+            </p>
+            <ol>
+                <li>Pick a script in the palette's list. The built-in scripts, such as <em>ProjectHealthCheck</em> or <em>PropertyHighlighter</em>, are there from the start.</li>
+                <li>Click <em>Run Script</em>.</li>
+            </ol>
+            <p>
+                Tapir runs the scripts with <a href="https://docs.astral.sh/uv/">uv</a>, which brings the Python and the
+                packages each script needs. If uv is not installed yet, Tapir offers to install it the first time you run a script.
+            </p>
+            <p>
+                <em>Manage Shortcuts</em> on the palette puts up to six scripts in the Tapir menu, as
+                <em>Run Script Shortcut 1</em> to <em>6</em>.
+            </p>
+        </li>
+
+        <li>
+            <h2 id="marketplace">Find more scripts on the marketplace</h2>
+            <p>
+                The <a href="https://tapir-marketplace.vercel.app/">Tapir marketplace</a> collects scripts shared by the community.
+                Download the ones you want into a folder, then tell Tapir about that folder in its configuration file,
+                <code>Documents/Tapir/config.json</code> in your user folder (Tapir writes it the first time it runs).
+                Add the folder to its <code>localFolders</code> list, keeping the rest of the file as it is:
+            </p>
+<pre><code>{
+    "repositories": [ ... ],
+    "localFolders": [
+        {
+            "displayName": "My scripts",
+            "path": "C:\\Users\\me\\Documents\\Tapir scripts"
+        }
+    ],
+    ...
+}</code></pre>
+            <ul>
+                <li><code>path</code> is the folder (on macOS for example <code>/Users/me/Documents/Tapir scripts</code>). In JSON, a Windows path's backslashes are doubled.</li>
+                <li><code>displayName</code> is the name the palette shows for the folder's scripts; without it, the folder's name is used.</li>
+                <li>Optionally, <code>includePattern</code> and <code>excludePattern</code> are regular expressions that choose which files of the folder the palette lists.</li>
+            </ul>
+            <p>The palette lists the folder's scripts next to the built-in ones the next time it loads its scripts.</p>
+        </li>
+
+        <li>
+            <h2 id="python">Write your first Python script</h2>
+            <p>
+                Archicad answers JSON commands on <code>http://127.0.0.1:19723</code> while a project is open (with several
+                Archicads open, the next ones use 19724, 19725 and so on). Tapir's commands are called through Archicad's
+                <code>API.ExecuteAddOnCommand</code> command, in the <code>TapirCommand</code> namespace. This script uses
+                only Python's standard library:
+            </p>
+<pre><code class="language-python">import json
+import urllib.request
+
+def run_tapir_command(command, parameters=None):
+    request = urllib.request.Request('http://127.0.0.1:19723')
+    request.add_header('Content-Type', 'application/json')
+    body = json.dumps({
+        'command': 'API.ExecuteAddOnCommand',
+        'parameters': {
+            'addOnCommandId': {'commandNamespace': 'TapirCommand', 'commandName': command},
+            'addOnCommandParameters': parameters or {}
+        }
+    }).encode('utf-8')
+    with urllib.request.urlopen(request, body) as response:
+        result = json.loads(response.read())
+    if not result['succeeded']:
+        raise RuntimeError(result['error'])
+    return result['result']['addOnCommandResponse']
+
+print(run_tapir_command('GetAddOnVersion'))</code></pre>
+            <p>It prints the version of the Tapir add-on Archicad has loaded, for example:</p>
+<pre><code>{'version': '1.8.1'}</code></pre>
+            <p>
+                The same with Graphisoft's <a href="https://pypi.org/project/archicad/"><code>archicad</code> package</a>
+                (<code>pip install archicad</code>), which finds the port by itself:
+            </p>
+<pre><code class="language-python">from archicad import ACConnection
+
+conn = ACConnection.connect()
+acc = conn.commands
+act = conn.types
+
+response = acc.ExecuteAddOnCommand(act.AddOnCommandId('TapirCommand', 'GetAddOnVersion'))
+print(response)</code></pre>
+            <p>
+                Every command, with its parameters, its response and an example, is in the
+                <a href="../archicad-addon/">command reference</a>. Put your script in a <a href="#marketplace">local folder</a>
+                to run it from the Tapir palette.
+            </p>
+        </li>
+
+        <li>
+            <h2 id="grasshopper">Use Tapir in Grasshopper</h2>
+            <p>
+                In Rhino, open the Package Manager (the <code>PackageManager</code> command, or <em>Tools &gt; Package Manager</em>),
+                search for <strong>tapir</strong>, install it and restart Rhino. Its components are on the <em>Tapir</em> tab
+                in Grasshopper and work with the Archicad that runs Tapir.
+            </p>
+            <p>
+                The <a href="../gh-coverage/">Grasshopper coverage</a> shows which Tapir commands the components call.
+            </p>
+        </li>
+    </ol>
+
+    <section>
+        <span class="eyebrow">Help</span>
+        <h2>Stuck?</h2>
+        <p>
+            Ask on <a href="https://discord.gg/NAnSennmpY">Discord</a>, or
+            <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues">open an issue</a> on GitHub.
+        </p>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <span>Tapir is open source, by <a href="https://github.com/ENZYME-APD">ENZYME-APD</a>.</span>
+        <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">GitHub repository</a>
+        <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues">Report an issue</a>
+        <a href="https://www.archicad-api.com/">archicad-api.com</a>
+    </div>
+</footer>
+</body>
+</html>
