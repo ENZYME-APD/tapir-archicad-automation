@@ -214,7 +214,7 @@ GS::ObjectState GetArchicadReleaseInfoCommand::Execute (const GS::ObjectState& /
 }
 
 GetPrinterInfoCommand::GetPrinterInfoCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -229,9 +229,7 @@ GS::Optional<GS::UniString> GetPrinterInfoCommand::GetRawResponseSchema () const
         "type": "object",
         "properties": {
             "printArea": {
-                "type": "string",
-                "description": "The area Archicad prints, as set in the print settings. 'unknown' for a value this add-on does not name.",
-                "enum": ["currentView", "entireDrawing", "marquee", "unknown"]
+                "$ref": "#/PrinterPrintArea"
             },
             "grid": {
                 "type": "boolean",
@@ -915,25 +913,7 @@ GS::Optional<GS::UniString> GetContainingDatabasesCommand::GetRawResponseSchema 
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "databaseId": {
-                                    "$ref": "#/DatabaseId"
-                                },
-                                "windowType": {
-                                    "$ref": "#/WindowType"
-                                },
-                                "name": {
-                                    "type": "string",
-                                    "description": "The name of the database (for example the name of the layout). Empty for databases without a name, like the floor plan."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "databaseId",
-                                "windowType",
-                                "name"
-                            ]
+                            "$ref": "#/ContainingDatabase"
                         },
                         {
                             "$ref": "#/ErrorItem"

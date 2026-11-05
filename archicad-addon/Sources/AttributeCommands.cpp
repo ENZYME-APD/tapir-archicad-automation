@@ -365,41 +365,7 @@ GS::Optional<GS::UniString> GetAttributesFromProjectCommand::GetRawResponseSchem
         "type": "object",
         "oneOf": [
             {
-                "type": "object",
-                "properties": {
-                    "attributesByType": {
-                        "type": "array",
-                        "description": "One item per requested attribute type, in the order of attributeTypes.",
-                        "items": {
-                            "type": "object",
-                            "oneOf": [
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "attributeType": {
-                                            "$ref": "#/AttributeType"
-                                        },
-                                        "attributes": {
-                                            "$ref": "#/AttributeHeaders"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "attributeType",
-                                        "attributes"
-                                    ]
-                                },
-                                {
-                                    "$ref": "#/ErrorItem"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "attributesByType"
-                ]
+                "$ref": "#/ProjectAttributes"
             },
             {
                 "$ref": "#/ErrorItem"
@@ -4230,25 +4196,7 @@ GS::Optional<GS::UniString> RenameAttributeFoldersCommand::GetInputParametersSch
                 "type": "array",
                 "description": "The folders to rename, each given by attribute type and path together with its new name.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "attributeType": {
-                            "$ref": "#/AttributeType"
-                        },
-                        "path": {
-                            "type": "array",
-                            "description": "The names of the folders from the root folder down to the folder to rename, the root folder itself not included.",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "newName": {
-                            "type": "string",
-                            "description": "The new name of the folder."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": ["attributeType", "path", "newName"]
+                    "$ref": "#/AttributeFolderRename"
                 }
             }
         },
@@ -7728,22 +7676,7 @@ GS::Optional<GS::UniString> GetFontsByNameCommand::GetRawResponseSchema () const
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "fontIndex": {
-                                    "type": "integer",
-                                    "description": "Index of the font (from 1), as Text and Label fields reference it in fontIndex."
-                                },
-                                "fontName": {
-                                    "type": "string",
-                                    "description": "Name of the font as Archicad carries it."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "fontIndex",
-                                "fontName"
-                            ]
+                            "$ref": "#/FontDetails"
                         },
                         {
                             "$ref": "#/ErrorItem"

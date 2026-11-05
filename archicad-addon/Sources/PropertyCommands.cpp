@@ -2237,13 +2237,8 @@ GS::Optional<GS::UniString> GetPropertyDefinitionsOfAttributesCommand::GetInputP
                 "$ref": "#/AttributeIds"
             },
             "filter": {
-                "type": "string",
-                "description": "Which property definitions to return: the user defined (custom) ones, the fundamental built-in ones, or all of them. The default is UserDefined.",
-                "enum": [
-                    "UserDefined",
-                    "FundamentalBuiltIn",
-                    "All"
-                ]
+                "$ref": "#/AttributePropertyDefinitionFilter",
+                "description": "The default is UserDefined."
             }
         },
         "additionalProperties": false,
@@ -2264,16 +2259,7 @@ GS::Optional<GS::UniString> GetPropertyDefinitionsOfAttributesCommand::GetRawRes
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "propertyIds": {
-                                    "$ref": "#/PropertyIds"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "propertyIds"
-                            ]
+                            "$ref": "#/AttributePropertyIds"
                         },
                         {
                             "$ref": "#/ErrorItem"

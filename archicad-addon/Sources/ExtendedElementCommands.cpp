@@ -5263,55 +5263,7 @@ GS::Optional<GS::UniString> SolveStairBaselineCommand::GetInputParametersSchema 
                 "type": "array",
                 "description": "Array of Stair data to check, with the same fields as the items of CreateStairs (without favoriteName). Nothing is created.",
                 "items": {
-                    "type": "object",
-                    "description": "The parameters of the Stair to check. Fields that are not given come from the current Stair tool defaults, as in CreateStairs.",
-                    "properties": {
-                        "baseLinePoints": {
-                            "type": "array",
-                            "description": "2D coordinates of the stair baseline polyline. Whether the baseline runs along the left edge, the right edge or the center of the flight is the Stair tool's baseline position, taken from the Stair tool defaults: with the baseline on the left edge, the flight lies to the right of it, looking from the first point to the last. The first point is kept; the length of the flight comes from the riser count and going, so the flight does not necessarily end at the last point given. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.",
-                            "items": { "$ref": "#/Coordinate2D" },
-                            "minItems": 2
-                        },
-                        "zCoordinate": {
-                            "type": "number",
-                            "description": "The Z coordinate (absolute elevation) of the stair base."
-                        },
-                        "floorIndex": {
-                            "type": "integer",
-                            "description": "Optional floor index. If omitted, derived from zCoordinate."
-                        },
-                        "totalHeight": {
-                            "type": "number",
-                            "description": "Total height of the stair.",
-                            "exclusiveMinimum": 0.0
-                        },
-                        "flightWidth": {
-                            "type": "number",
-                            "description": "Width of the stair flight.",
-                            "exclusiveMinimum": 0.0
-                        },
-                        "stepNum": {
-                            "type": "integer",
-                            "description": "Number of risers (steps).",
-                            "minimum": 1
-                        },
-                        "riserHeight": {
-                            "type": "number",
-                            "description": "Height of each riser.",
-                            "exclusiveMinimum": 0.0
-                        },
-                        "treadDepth": {
-                            "type": "number",
-                            "description": "Depth (going) of each tread.",
-                            "exclusiveMinimum": 0.0
-                        },
-                        "finishVisible": {
-                            "type": "boolean",
-                            "description": "Optional. If false, the tread/riser finishes are hidden and only the stair structure (e.g. a monolith) is modeled."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": ["baseLinePoints", "zCoordinate"]
+                    "$ref": "#/StairBaselineData"
                 }
             }
         },
@@ -5332,46 +5284,7 @@ GS::Optional<GS::UniString> SolveStairBaselineCommand::GetRawResponseSchema () c
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "solution": {
-                                    "type": "string",
-                                    "enum": ["Correct", "Solved", "NotSolved"],
-                                    "description": "Correct: the baseline was already valid, nothing changed. Solved: the solver turned it into a valid baseline, returned in baseLinePoints. NotSolved: no valid baseline was found; CreateStairs is likely to fail or create an invalid stair with this input."
-                                },
-                                "baseLinePoints": {
-                                    "type": "array",
-                                    "description": "The baseline polyline after the solver ran.",
-                                    "items": { "$ref": "#/Coordinate2D" }
-                                },
-                                "baseLineArcs": {
-                                    "type": "array",
-                                    "description": "The arcs of the baseline after the solver ran, indexing baseLinePoints. Present only when the baseline has arcs.",
-                                    "items": { "$ref": "#/PolyArc" }
-                                },
-                                "totalHeight": {
-                                    "type": "number",
-                                    "description": "Total height of the stair after the solver ran."
-                                },
-                                "flightWidth": {
-                                    "type": "number",
-                                    "description": "Width of the stair flight after the solver ran."
-                                },
-                                "stepNum": {
-                                    "type": "integer",
-                                    "description": "Number of risers after the solver ran."
-                                },
-                                "riserHeight": {
-                                    "type": "number",
-                                    "description": "Height of each riser after the solver ran."
-                                },
-                                "treadDepth": {
-                                    "type": "number",
-                                    "description": "Depth (going) of each tread after the solver ran."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["solution", "baseLinePoints", "totalHeight", "flightWidth", "stepNum", "riserHeight", "treadDepth"]
+                            "$ref": "#/StairBaselineSolution"
                         },
                         {
                             "$ref": "#/ErrorItem"

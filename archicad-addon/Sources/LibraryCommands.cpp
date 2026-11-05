@@ -1431,17 +1431,7 @@ GS::Optional<GS::UniString> CopyFilesIntoEmbeddedLibraryCommand::GetInputParamet
                 "type": "array",
                 "description": "The files to copy. Each keeps its file name inside the target folder.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "path": {
-                            "type": "string",
-                            "description": "The absolute path of the file to copy."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "path"
-                    ]
+                    "$ref": "#/EmbeddedLibraryFile"
                 },
                 "minItems": 1
             },

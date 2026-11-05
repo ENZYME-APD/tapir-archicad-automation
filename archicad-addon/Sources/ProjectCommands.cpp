@@ -960,17 +960,7 @@ GS::Optional<GS::UniString> GetNoteAutoTextKeywordsCommand::GetRawResponseSchema
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "keyword": {
-                                    "type": "string",
-                                    "description": "The keyword of the note autotext."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "keyword"
-                            ]
+                            "$ref": "#/NoteAutoTextKeyword"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -3346,14 +3336,12 @@ GS::Optional<GS::UniString> GetCurrentViewImageCommand::GetInputParametersSchema
         "type": "object",
         "properties": {
             "source": {
-                "type": "string",
-                "description": "Optional, 3DWindow by default. The window whose image is returned: the 3D window, or the PhotoRendering window.",
-                "enum": ["3DWindow", "RenderingWindow"]
+                "$ref": "#/ViewImageSource",
+                "description": "Optional, 3DWindow by default."
             },
             "format": {
-                "type": "string",
-                "description": "Optional, png by default. The image format.",
-                "enum": ["png", "jpg"]
+                "$ref": "#/ViewImageFormat",
+                "description": "Optional, png by default."
             }
         },
         "additionalProperties": false,
@@ -4288,68 +4276,13 @@ GS::Optional<GS::UniString> GetCalculationUnitsCommand::GetRawResponseSchema () 
                 ]
             },
             "area": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/AreaType"
-                    },
-                    "accuracy": {
-                        "$ref": "#/AccuracyType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for area values."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "unit",
-                    "accuracy",
-                    "decimals"
-                ]
+                "$ref": "#/CalculationUnitAreaFormat"
             },
             "volume": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/VolumeType"
-                    },
-                    "accuracy": {
-                        "$ref": "#/AccuracyType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for volume values."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "unit",
-                    "accuracy",
-                    "decimals"
-                ]
+                "$ref": "#/CalculationUnitVolumeFormat"
             },
             "angle": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/AngleType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for angle values."
-                    },
-                    "accuracy": {
-                        "type": "integer",
-                        "description": "Accuracy for angle values."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "unit",
-                    "decimals",
-                    "accuracy"
-                ]
+                "$ref": "#/AngleUnitFormat"
             }
         },
         "additionalProperties": false,
@@ -7550,35 +7483,7 @@ GS::Optional<GS::UniString> GetHotlinkProxyElementTableCommand::GetRawResponseSc
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "proxyElements": {
-                                    "type": "array",
-                                    "description": "The proxy elements of the instance, in no particular order.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "proxyElementId": {
-                                                "$ref": "#/ElementId",
-                                                "description": "The proxy element in the current project."
-                                            },
-                                            "sourceElementId": {
-                                                "$ref": "#/ElementId",
-                                                "description": "The element in the hotlink's source file the proxy was made from."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "proxyElementId",
-                                            "sourceElementId"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "proxyElements"
-                            ]
+                            "$ref": "#/HotlinkProxyElementTable"
                         },
                         {
                             "$ref": "#/ErrorItem"

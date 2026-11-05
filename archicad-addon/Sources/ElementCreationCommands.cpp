@@ -6270,19 +6270,7 @@ GS::Optional<GS::UniString> MeasureTextsCommand::GetRawResponseSchema () const
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "length": { "type": "number", "description": "The length of the longest line." },
-                                "longestLineIndex": { "type": "integer", "description": "The zero-based index of the longest line (the first of them on a tie)." },
-                                "lineLengths": {
-                                    "type": "array",
-                                    "description": "The length of every line, in order. An empty line is 0.",
-                                    "items": { "type": "number" }
-                                },
-                                "capitalSizeFactor": { "type": "number", "description": "The ratio of the font's capital size to its typographic size. Absent when Archicad does not return it for the font." }
-                            },
-                            "additionalProperties": false,
-                            "required": ["length", "longestLineIndex", "lineLengths"]
+                            "$ref": "#/TextMeasurement"
                         },
                         {
                             "$ref": "#/ErrorItem"
