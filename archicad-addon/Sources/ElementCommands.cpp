@@ -47,6 +47,7 @@ static void AddPivotPolygonFromMemo (const API_Guid& guid, GS::ObjectState& os)
 
 static GS::UniString StructureTypeToString (API_ModelElemStructureType structureType);
 static void AddShellBaseSurfaces (const API_ShellBaseType& base, GS::ObjectState& os);
+static void AddPivotEdgesFromMemo (const API_Guid& guid, GS::ObjectState& os);
 
 static void AddShellBaseFloorPlanAndSection (const API_ShellBaseType& base, GS::ObjectState& os);
 
@@ -85,6 +86,7 @@ static void AddRoofDetails (const API_RoofType& roof, const API_Guid& guid, shor
         }
         if (partMemo == nullptr) {
             AddPivotPolygonFromMemo (guid, os);
+            AddPivotEdgesFromMemo (guid, os);
         }
     }
     // the roof's own polygon: the plane roof's outline, the multi-plane roof's contour
@@ -223,6 +225,34 @@ static void AddEdgeSideMaterialsFromMemo (const API_Guid& guid, GS::ObjectState&
             continue;
         }
         edgeSideMaterials (CreateOverriddenMaterialObjectState (memo.sideMaterials[i]));
+    }
+}
+
+// The roof planes of each edge of a Multi-plane Roof's pivot polygon (APIMemoMask_AdditionalPolygon,
+// which the DevKit calls APIMemoMask_PivotPolygon but does not define): per level the angle,
+// the eaves overhang and whether the plane is a gable (#569). The items follow
+// pivotPolygonOutline (see GetPivotEdgeIndices).
+static void AddPivotEdgesFromMemo (const API_Guid& guid, GS::ObjectState& os)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_AdditionalPolygon) != NoError || memo.pivotPolyEdges == nullptr) {
+        return;
+    }
+    const auto& pivotEdges = os.AddList<GS::ObjectState> ("pivotEdges");
+    for (const GSIndex i : GetPivotEdgeIndices (memo)) {
+        const API_PivotPolyEdgeData& edge = memo.pivotPolyEdges[i];
+        GS::ObjectState edgeOs;
+        const auto& levels = edgeOs.AddList<GS::ObjectState> ("levels");
+        for (Int32 j = 0; j < edge.nLevelEdgeData && edge.levelEdgeData != nullptr; ++j) {
+            const API_RoofSegmentData& segment = edge.levelEdgeData[j];
+            GS::ObjectState level;
+            level.Add ("angle", segment.angle);
+            level.Add ("eavesOverhang", segment.eavesOverhang);
+            level.Add ("angleType", segment.angleType == APIPolyRoof_SegmentAngleTypeGable ? "Gable" : "Sloped");
+            levels (level);
+        }
+        pivotEdges (edgeOs);
     }
 }
 

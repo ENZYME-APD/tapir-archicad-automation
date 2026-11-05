@@ -2,9 +2,10 @@ import math
 import aclib
 
 # A multi-plane roof and a single-plane roof, built here so the example runs on any project,
-# read back through GetDetailsOfElements: class, level, slope and pivot line for the plane
-# roof; levels, eaves overhang and pivot polygon for the multi-plane one; the roof polygon
-# for both. The roofs are deleted again at the end.
+# read back through GetDetailsOfElements. Only what the script itself sets is printed (the
+# class of both roofs, the slope and pivot line of the plane roof, the planes of the
+# multi-plane roof's pivot edges), so the output does not depend on the project's roof
+# defaults or on new fields in the response. The roofs are deleted again at the end.
 
 roofs = aclib.RunTapirCommand ('CreateRoofs', {'roofsData': [
     {
@@ -19,6 +20,17 @@ roofs = aclib.RunTapirCommand ('CreateRoofs', {'roofsData': [
     }
 ]}, debug = False)['elements']
 
-aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': roofs})
+details = aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': roofs}, debug = False)['detailsOfElements']
+multiPlane = details[0]['details']
+plane = details[1]['details']
+
+print (multiPlane['roofClass'], plane['roofClass'])
+print (round (math.degrees (plane['angle']), 6))
+print (plane['pivotLine'])
+
+# The roof planes of each edge of the multi-plane roof's pivot polygon, each with its angle and eaves
+# overhang; printed here: whether each plane is sloped or a gable.
+for edge in multiPlane['pivotEdges']:
+    print ([level['angleType'] for level in edge['levels']])
 
 aclib.RunTapirCommand ('DeleteElements', {'elements': roofs}, debug = False)

@@ -1274,6 +1274,26 @@ API_Guid GetParentElemOfSectElem (const API_Guid& elemGuid)
     return element.sectElem.parentGuid;
 }
 
+GS::Array<GSIndex> GetPivotEdgeIndices (const API_ElementMemo& memo)
+{
+    GS::Array<GSIndex> indices;
+    if (memo.pivotPolyEdges == nullptr || memo.additionalPolyCoords == nullptr) {
+        return indices;
+    }
+    const GSSize nCoords = BMhGetSize (reinterpret_cast<GSHandle> (memo.additionalPolyCoords)) / sizeof (API_Coord);
+    const GSSize nEdges = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.pivotPolyEdges)) / sizeof (API_PivotPolyEdgeData);
+    const GSSize nPends = memo.additionalPolyPends == nullptr ? 0 : BMhGetSize (reinterpret_cast<GSHandle> (memo.additionalPolyPends)) / sizeof (Int32);
+    GSIndex iPend = 1;
+    for (GSIndex i = 1; i < nCoords - 1 && i < nEdges; ++i) {
+        if (iPend < nPends && (*memo.additionalPolyPends)[iPend] == i) {
+            ++iPend;
+            continue;
+        }
+        indices.Push (i);
+    }
+    return indices;
+}
+
 short ParseAnchorPointString (const GS::UniString& anchorPoint)
 {
     return static_cast<short> (AnchorIdFromString (anchorPoint));

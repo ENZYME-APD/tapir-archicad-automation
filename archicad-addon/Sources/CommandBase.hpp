@@ -230,6 +230,12 @@ API_ElemTypeID GetElementTypeFromNonLocalizedName (const GS::UniString& typeStr)
 API_Guid GetParentElemOfSectElem (const API_Guid& elemGuid);
 short ParseAnchorPointString (const GS::UniString& anchorPoint);
 
+// The indices into memo.pivotPolyEdges of the edges of a Multi-plane Roof's pivot polygon, in
+// the order of the polygon (#569). pivotPolyEdges is indexed like the pivot polygon's coords
+// (the DevKit's Plan_Dump reads it that way), so index 0 and the closing vertex of each
+// contour carry no edge. memo is read with APIMemoMask_AdditionalPolygon.
+GS::Array<GSIndex> GetPivotEdgeIndices (const API_ElementMemo& memo);
+
 API_Guid GetAttributeGuidFromIndex (API_AttrTypeID typeID, API_AttributeIndex index);
 API_Attr_Head GetAttributeHeadFromGuid (API_Guid guid);
 API_AttributeIndex GetAttributeIndexFromGuid (API_AttrTypeID typeID, API_Guid guid);

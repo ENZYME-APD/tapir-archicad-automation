@@ -9735,6 +9735,65 @@ GS::ObjectState ModifyCurtainWallFramesCommand::Execute (const GS::ObjectState& 
     });
 }
 
+// Writes the given "pivotEdges" (see ModifyRoofs) into memo.pivotPolyEdges; edgeIndices maps
+// each item to its pivotPolyEdges index (GetPivotEdgeIndices). Changes nothing on an error.
+static GS::Optional<GS::UniString> ApplyRoofPivotEdges (API_ElementMemo& memo, const GS::Array<GSIndex>& edgeIndices, const GS::Array<GS::ObjectState>& pivotEdges)
+{
+    if (pivotEdges.GetSize () != edgeIndices.GetSize ()) {
+        return GS::UniString::Printf ("'pivotEdges' must have one item per edge of the pivot polygon (%u).", (unsigned) edgeIndices.GetSize ());
+    }
+    for (int pass = 0; pass < 2; ++pass) {
+        // The first pass only checks, so an invalid item leaves every edge as it was.
+        const bool write = pass == 1;
+        for (UIndex k = 0; k < pivotEdges.GetSize (); ++k) {
+            GS::Array<GS::ObjectState> levels;
+            if (!pivotEdges[k].Get ("levels", levels)) {
+                continue;
+            }
+            API_PivotPolyEdgeData& edge = memo.pivotPolyEdges[edgeIndices[k]];
+            if (edge.levelEdgeData == nullptr || (Int32) levels.GetSize () > edge.nLevelEdgeData) {
+                return GS::UniString::Printf ("'pivotEdges' item %u has more levels than the roof (%d).", k, (int) edge.nLevelEdgeData);
+            }
+            for (UIndex j = 0; j < levels.GetSize (); ++j) {
+                API_RoofSegmentData& segment = edge.levelEdgeData[j];
+                GS::UniString angleType;
+                if (levels[j].Get ("angleType", angleType) && angleType != "Sloped" && angleType != "Gable") {
+                    return "Unknown angleType '" + angleType + "': use Sloped or Gable.";
+                }
+                if (!write) {
+                    continue;
+                }
+                levels[j].Get ("angle", segment.angle);
+                levels[j].Get ("eavesOverhang", segment.eavesOverhang);
+                if (!angleType.IsEmpty ()) {
+                    segment.angleType = angleType == "Gable" ? APIPolyRoof_SegmentAngleTypeGable : APIPolyRoof_SegmentAngleTypeSloped;
+                }
+            }
+        }
+    }
+
+    // The closing vertex of each contour carries a copy of the contour's first edge, and
+    // Archicad takes that copy: a gable written only to the first edge was not applied
+    // (Archicad 29). So the first edge of each contour is mirrored to its closing vertex.
+    const GSSize nEdges = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.pivotPolyEdges)) / sizeof (API_PivotPolyEdgeData);
+    const GSSize nPends = memo.additionalPolyPends == nullptr ? 0 : BMhGetSize (reinterpret_cast<GSHandle> (memo.additionalPolyPends)) / sizeof (Int32);
+    for (GSIndex iPend = 1; iPend < nPends; ++iPend) {
+        const GSIndex first = (*memo.additionalPolyPends)[iPend - 1] + 1;
+        const GSIndex closing = (*memo.additionalPolyPends)[iPend];
+        if (closing >= nEdges || first >= closing) {
+            continue;
+        }
+        const API_PivotPolyEdgeData& source = memo.pivotPolyEdges[first];
+        API_PivotPolyEdgeData& target = memo.pivotPolyEdges[closing];
+        for (Int32 j = 0; j < source.nLevelEdgeData && j < target.nLevelEdgeData && source.levelEdgeData != nullptr && target.levelEdgeData != nullptr; ++j) {
+            target.levelEdgeData[j].angle = source.levelEdgeData[j].angle;
+            target.levelEdgeData[j].eavesOverhang = source.levelEdgeData[j].eavesOverhang;
+            target.levelEdgeData[j].angleType = source.levelEdgeData[j].angleType;
+        }
+    }
+    return {};
+}
+
 ModifyRoofsCommand::ModifyRoofsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -9785,7 +9844,30 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                             "type": "array",
                             "items": { "$ref": "#/PolyArc" }
                         },
-                        "holes": { "$ref": "#/Holes2D" }
+                        "holes": { "$ref": "#/Holes2D" },
+                        "pivotEdges": {
+                            "type": "array",
+                            "description": "The roof planes of each edge of the pivot polygon, one item per edge in the order GetDetailsOfElements reports them (the outline, then each hole). Only the given fields change; an item without levels keeps its edge. Cannot be combined with polygonOutline.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "levels": {
+                                        "type": "array",
+                                        "description": "The roof plane of the edge on each level, from the pivot polygon upwards; at most as many as the roof has levels.",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "angle": { "type": "number", "description": "Angle of the plane to the XY plane." },
+                                                "eavesOverhang": { "type": "number", "description": "Extension of the eaves outside the pivot polygon." },
+                                                "angleType": { "type": "string", "enum": [ "Sloped", "Gable" ], "description": "Gable for a vertical gable plane, Sloped otherwise." }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -9845,7 +9927,33 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                 continue;
             }
-\
+
+            GS::Array<GS::ObjectState> pivotEdges;
+            if (item.Get ("pivotEdges", pivotEdges)) {
+                if (item.Contains ("polygonOutline")) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'pivotEdges' cannot be combined with 'polygonOutline', which makes new edges."));
+                    continue;
+                }
+                API_ElementMemo memo = {};
+                const GS::OnExit cleanup ([&]() {
+                    ACAPI_DisposeElemMemoHdls (&memo);
+                });
+                err = ACAPI_Element_GetMemo (element.header.guid, &memo, APIMemoMask_AdditionalPolygon);
+                const GS::Array<GSIndex> edgeIndices = GetPivotEdgeIndices (memo);
+                if (err != NoError || edgeIndices.IsEmpty ()) {
+                    results.Push (CreateFailedExecutionResult (err != NoError ? err : APIERR_GENERAL, "Failed to read the edges of the roof's pivot polygon."));
+                    continue;
+                }
+                auto edgeError = ApplyRoofPivotEdges (memo, edgeIndices, pivotEdges);
+                if (edgeError.HasValue ()) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, edgeError.Get ()));
+                    continue;
+                }
+                err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AdditionalPolygon, true);
+                results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the roof planes of the edges."));
+                continue;
+            }
+
             GS::Array<GS::ObjectState> polygonOutline;
             if (item.Get ("polygonOutline", polygonOutline)) {
                 if (polygonOutline.GetSize () < 3) {

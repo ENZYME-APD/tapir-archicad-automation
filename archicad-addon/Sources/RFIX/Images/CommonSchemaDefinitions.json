@@ -9011,6 +9011,31 @@
                 "items": {
                     "$ref": "#/OverriddenMaterial"
                 }
+            },
+            "pivotEdges": {
+                "type": "array",
+                "description": "Multi-plane roofs only: the roof planes of each edge of the pivot polygon. Item i belongs to the edge from vertex i to vertex i + 1 of pivotPolygonOutline; for a pivot polygon with holes, the edges of each hole follow, contour by contour.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "levels": {
+                            "type": "array",
+                            "description": "The roof plane of the edge on each level, from the pivot polygon upwards.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "angle": { "type": "number", "description": "Angle of the plane to the XY plane." },
+                                    "eavesOverhang": { "type": "number", "description": "Extension of the eaves outside the pivot polygon." },
+                                    "angleType": { "type": "string", "enum": [ "Sloped", "Gable" ], "description": "Gable for a vertical gable plane, Sloped otherwise." }
+                                },
+                                "additionalProperties": false,
+                                "required": [ "angle", "eavesOverhang", "angleType" ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "levels" ]
+                }
             }
         },
         "additionalProperties": false,
