@@ -47,6 +47,9 @@ EXAMPLES_NOT_SMOKE_TESTED = {
     'UploadLibrariesToBIMcloud', 'RemoveLibrariesFromBIMcloud',
     # Opens the GDL editor, a window of its own.
     'OpenLibraryPartInEditor',
+    # Opens a hierarchical editing mode, in which Archicad refuses every JSON command (#1872);
+    # only a person can leave it, and the next script could not even reopen the project.
+    'EditHierarchicalElement',
     # Runs a local HTTP server and waits for the element events Archicad sends to it.
     'SetElementNotificationClient',
 }
