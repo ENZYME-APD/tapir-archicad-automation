@@ -675,7 +675,7 @@ AddElementNotificationClientCommand::ElementEventHandlerProc (const API_NotifyEl
             case APINotifyElement_Undo_Deleted:
             case APINotifyElement_Redo_Created:
                 SendEventToNotificationClient (ElementEventType::New, message);
-                if (IsObservedElementType (typeID)) {
+                if (IsObservedElementType (GetElemTypeId (elemType->elemHead))) {
                     ACAPI_Element_AttachObserver (elemType->elemHead.guid);
                 }
                 break;
