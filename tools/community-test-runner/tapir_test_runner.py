@@ -41,7 +41,11 @@ from pathlib import Path
 from typing import Any, Callable
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import runner_windows as rw  # noqa: E402
+import runner_macos  # noqa: E402
+import runner_windows  # noqa: E402
+
+MACOS = sys.platform == "darwin"
+host = runner_macos if MACOS else runner_windows  # this computer's side: Archicads, add-on list, token store
 
 RESULT_MARKER = "tapir-test:"
 DEFAULT_TIMEOUT = 60.0
@@ -332,9 +336,9 @@ def brief(rows: list[dict], ac_version: str, tapir_version: str, sha: str, max_f
 
 def find_port(version: str | None = None, ports=PORTS, exe: str | None = None) -> int | None:
     """The port of the Archicad of this version (any Archicad with Tapir when None). Ports follow the
-    start order, so the version is always asked, never assumed. With exe (Windows), only the ports
-    that this Archicad's own process listens on are asked: another Archicad is never sent anything,
-    not even while it is busy quitting."""
+    start order, so the version is always asked, never assumed. With exe, only the ports that this
+    Archicad's own process listens on are asked: another Archicad is never sent anything, not even
+    while it is busy quitting."""
     if exe is not None:
         ports = [p for p in ports if p in ports_of(exe)]
     for port in ports:
@@ -351,7 +355,7 @@ def find_port(version: str | None = None, ports=PORTS, exe: str | None = None) -
 # --- configuration ---------------------------------------------------------------------------
 
 def default_config_path() -> Path:
-    return rw.state_dir() / "runner.json"
+    return host.state_dir() / "runner.json"
 
 
 def load_config(path: str | Path | None) -> dict:
@@ -364,8 +368,8 @@ def load_config(path: str | Path | None) -> dict:
 
 
 def get_token(cfg: dict) -> str:
-    """The GitHub token: the environment variable, else the one 'setup' stored in Credential Manager."""
-    return os.environ.get(cfg.get("tokenEnv", "TAPIR_RUNNER_TOKEN"), "") or rw.load_token()
+    """The GitHub token: the environment variable, else the one 'setup' stored (Credential Manager, keychain)."""
+    return os.environ.get(cfg.get("tokenEnv", "TAPIR_RUNNER_TOKEN"), "") or host.load_token()
 
 
 def pick_archicads(cfg: dict, versions: list[str] | None) -> list[dict]:
@@ -378,9 +382,9 @@ def pick_archicads(cfg: dict, versions: list[str] | None) -> list[dict]:
 # --- Archicad lifecycle ----------------------------------------------------------------------
 
 def processes() -> dict[int, str]:
-    """pid -> executable path of the running processes (Windows)."""
-    if os.name != "nt":
-        raise NotImplementedError("macOS support is not written yet")
+    """pid -> executable path of the running processes."""
+    if MACOS:
+        return host.processes()
     out = subprocess.run(["powershell", "-NoProfile", "-Command",
                           "Get-Process -ErrorAction SilentlyContinue | ForEach-Object { \"$($_.Id)|$($_.Path)\" }"],
                          capture_output=True, text=True, timeout=60).stdout
@@ -399,18 +403,22 @@ def archicad_pids(exe: str) -> set[int]:
 
 
 def archicad_running(exe: str) -> bool:
-    """True while this Archicad runs (Windows); the add-on may only change while it does not."""
+    """True while this Archicad runs; the add-on may only change while it does not."""
     return bool(archicad_pids(exe))
 
 
 def crash_reporter_running(exe: str) -> bool:
+    """GSReport.exe next to Archicad.exe; on macOS GSReport.app inside the Archicad .app's MacOS folder."""
     folder = str(Path(exe).parent).lower()
-    return any(Path(path).name.lower() == "gsreport.exe" and path.lower().startswith(folder) for path in processes().values())
+    return any(Path(path).name.lower() in ("gsreport.exe", "gsreport") and path.lower().startswith(folder)
+               for path in processes().values())
 
 
 def ports_of(exe: str) -> set[int]:
-    """The TCP ports this Archicad's own process listens on (Windows, from netstat)."""
+    """The TCP ports this Archicad's own process listens on (from netstat; lsof on macOS)."""
     pids = archicad_pids(exe)
+    if MACOS:
+        return host.listening_ports(pids)
     out = subprocess.run(["netstat", "-ano", "-p", "TCP"], capture_output=True, text=True, timeout=60).stdout
     return listening_ports(out, pids)
 
@@ -446,25 +454,26 @@ class Installation:
     exactly as it was afterwards, so no file of the tester's own installation is touched and no
     administrator rights are needed. With 'addonFile' it swaps that file, as the first version did."""
 
-    def __init__(self, ac: dict, addon_list: rw.AddOnList | None = None):
+    def __init__(self, ac: dict, addon_list: runner_windows.AddOnList | runner_macos.AddOnList | None = None):
         self.ac = ac
         self.addon = Path(ac["addonFile"]) if ac.get("addonFile") else None
-        self.keep = self.addon.with_name(self.addon.name + ".runner-original") if self.addon else None
-        self.addon_list = addon_list if addon_list or self.addon else rw.AddOnList(str(ac["version"]))
+        self.keep = host.kept_original(self.addon, str(ac["version"])) if self.addon else None
+        self.addon_list = addon_list if addon_list or self.addon else host.addon_list(ac)
 
     def install(self, build: Path) -> None:
         if archicad_running(self.ac["archicadExe"]):
             raise RuntimeError(f"Archicad {self.ac['version']} is running; not touching the add-on")
         if self.addon is None:
-            self.addon_list.install(rw.stage_build(build, str(self.ac["version"])))
+            self.addon_list.install(host.stage_build(build, str(self.ac["version"])))
             return
         try:
             if not self.keep.exists():
-                shutil.copy2(self.addon, self.keep)
-            shutil.copy2(build, self.addon)
+                copy_addon(self.addon, self.keep)
+            copy_addon(build, self.addon)
         except PermissionError as exc:
             raise RuntimeError(f"cannot replace {self.addon} ({exc.strerror}): the Add-Ons folder of Archicad "
-                               f"{self.ac['version']} needs administrator rights; run the runner as administrator") from exc
+                               f"{self.ac['version']} " + ("is not writable for your user" if MACOS else
+                                                           "needs administrator rights; run the runner as administrator")) from exc
 
     def pending(self) -> bool:
         """A test build is still in place (a test did not finish)."""
@@ -478,23 +487,29 @@ class Installation:
         if self.addon is None:
             self.addon_list.restore()
         else:
-            shutil.copy2(self.keep, self.addon)
-            self.keep.unlink()
+            copy_addon(self.keep, self.addon)
+            remove_addon(self.keep)
 
     def start(self) -> Tapir:
-        subprocess.Popen([self.ac["archicadExe"], self.ac["blankTemplate"]])
+        exe = self.ac["archicadExe"]
+        if MACOS:
+            host.launch(exe, self.ac["blankTemplate"])
+        else:
+            subprocess.Popen([exe, self.ac["blankTemplate"]])
         found: dict = {}
 
         def ready() -> bool:
-            port = find_port(str(self.ac["version"]), [self.ac["port"]] if self.ac.get("port") else PORTS,
-                             self.ac["archicadExe"] if os.name == "nt" else None)
+            port = find_port(str(self.ac["version"]), [self.ac["port"]] if self.ac.get("port") else PORTS, exe)
             if port and Tapir(port).alive():
                 found["port"] = port
                 return True
+            pids = archicad_pids(exe)
+            if MACOS:
+                host.activate(pids)
             # A modal dialog seen in three polls in a row (10 s and more, not a window that comes and goes
             # during the start) is waiting for a human. A normal start shows none: its splash and palettes
             # are other window classes.
-            shown = rw.dialogs(archicad_pids(self.ac["archicadExe"])) if os.name == "nt" else []
+            shown = host.dialogs(pids)
             found["dialog"] = found.get("dialog", 0) + 1 if shown else 0
             found["title"] = shown[0] if shown else ""
             return found["dialog"] >= 3
@@ -521,6 +536,24 @@ class Installation:
             pass
         if not wait_for(lambda: not archicad_running(self.ac["archicadExe"]), self.ac.get("quitTimeout", 180), 5):
             raise RuntimeError(f"Archicad {self.ac['version']} did not quit; close it by hand, then run 'restore'")
+
+
+def copy_addon(source: Path, target: Path) -> None:
+    """Replaces target with a copy of the add-on: an .apx file, or a .bundle folder (macOS)."""
+    if source.is_dir():
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if not os.access(target.parent, os.W_OK):
+            raise PermissionError(13, "Permission denied", str(target.parent))
+        host.copy_bundle(source, target)
+    else:
+        shutil.copy2(source, target)
+
+
+def remove_addon(path: Path) -> None:
+    if path.is_dir():
+        shutil.rmtree(path)
+    else:
+        path.unlink()
 
 
 def restore_all(cfg: dict, log: Callable[[str], None] = print) -> int:
@@ -631,12 +664,12 @@ class GitHub:
                      and r["repository"]["full_name"] == self.repo), None)
 
     def built_versions(self, sha: str) -> list[str]:
-        """The Archicad versions the build check built for this commit (Windows)."""
+        """The Archicad versions the build check built for this commit, for this computer's system."""
         run = self.build_run(sha)
         if run is None:
             return []
         names = [a["name"] for a in self._request(f"actions/runs/{run['id']}/artifacts")["artifacts"] if not a["expired"]]
-        return sorted({m.group(1) for n in names if (m := re.fullmatch(r"Tapir Add-On AC(\d+) Win", n))}, key=int)
+        return sorted({m.group(1) for n in names if (m := re.fullmatch(rf"Tapir Add-On AC(\d+) {host.PLATFORM}", n))}, key=int)
 
     def build_artifact(self, sha: str, ac_version: str, dest: Path) -> Path | None:
         """The add-on that the repository's own build check made for exactly this commit."""
@@ -644,14 +677,12 @@ class GitHub:
         if run is None:
             return None
         artifacts = self._request(f"actions/runs/{run['id']}/artifacts")["artifacts"]
-        wanted = next((a for a in artifacts if a["name"] == f"Tapir Add-On AC{ac_version} Win" and not a["expired"]), None)
+        wanted = next((a for a in artifacts if a["name"] == f"Tapir Add-On AC{ac_version} {host.PLATFORM}"
+                       and not a["expired"]), None)
         if wanted is None:
             return None
         with zipfile.ZipFile(io.BytesIO(self._request(wanted["archive_download_url"], raw=True))) as zf:
-            member = next(n for n in zf.namelist() if n.endswith(".apx"))
-            target = dest / Path(member).name
-            target.write_bytes(zf.read(member))
-            return target
+            return host.unpack_build(zf, dest)
 
     def check_paths(self, number: int, folder: str, every: bool = False, sha: str = "") -> list[str]:
         """The check files this pull request adds or changes; with every, also the rest of the folder."""
@@ -831,11 +862,11 @@ def uninstall(config_path: Path) -> int:
         if any(Installation(ac).pending() and archicad_running(ac["archicadExe"]) for ac in cfg["archicads"]):
             raise RuntimeError("a test build is still loaded in an open Archicad; close Archicad, then uninstall again")
         restore_all(cfg)
-    print("GitHub token removed from Credential Manager" if rw.delete_token() else "no stored GitHub token")
+    print(f"GitHub token removed from {host.TOKEN_STORE}" if host.delete_token() else "no stored GitHub token")
     if os.name == "nt":
         task = subprocess.run(["schtasks", "/delete", "/f", "/tn", "TapirTestRunner"], capture_output=True, text=True)
         print("logon task removed" if task.returncode == 0 else "no logon task")
-    folder = rw.state_dir()
+    folder = host.state_dir()
     shutil.rmtree(folder, ignore_errors=True)
     print(f"removed {folder}")
     if config_path.exists() and folder not in config_path.parents:
@@ -908,7 +939,7 @@ def main(argv: list[str] | None = None) -> int:
         o.add_argument("--brief", action="store_true")
     tr = with_config(sub.add_parser("trial", help="install a local build, run checks, quit Archicad and restore - no GitHub"))
     tr.add_argument("--ac", required=True, help="Archicad version from the config, e.g. 26")
-    tr.add_argument("--build", required=True, help="the .apx to test")
+    tr.add_argument("--build", required=True, help="the .apx (Windows) or .bundle (macOS) to test")
     tr.add_argument("--brief", action="store_true")
     tr.add_argument("files", nargs="*", help="default: this checkout's archicad-addon/Test/checks")
     args = parser.parse_args(argv)
