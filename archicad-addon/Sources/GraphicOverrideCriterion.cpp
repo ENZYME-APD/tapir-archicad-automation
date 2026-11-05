@@ -2124,7 +2124,7 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
     if (node.Get ("fontIs", fontIs)) {
         const GS::Optional<short> idx = GetFontIndexFromName (fontIs);
         if (!idx.HasValue ()) {
-            outError = "Unknown font '" + fontIs + "'. Give the name GetDetailsOfElements reports in fontName, with its script (e.g. 'Arial Western').";
+            outError = "Unknown font '" + fontIs + "'. Give the name GetDetailsOfElements reports in fontName (e.g. 'Arial Western'), or a name GetFontsByName finds.";
             return false;
         }
         outXML = WrapAsTrivialGroup (IntListCriterionXML (kFontPropertyGuid, *idx, 0, kPlanSectionPropertyGroupGuid));
@@ -2133,7 +2133,7 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
     if (node.Get ("fontContains", fontContains)) {
         const GS::Optional<short> idx = GetFontIndexFromName (fontContains);
         if (!idx.HasValue ()) {
-            outError = "Unknown font '" + fontContains + "'. Give the name GetDetailsOfElements reports in fontName, with its script (e.g. 'Arial Western').";
+            outError = "Unknown font '" + fontContains + "'. Give the name GetDetailsOfElements reports in fontName (e.g. 'Arial Western'), or a name GetFontsByName finds.";
             return false;
         }
         outXML = WrapAsTrivialGroup (IntListCriterionXML (kFontPropertyGuid, *idx, 6, kPlanSectionPropertyGroupGuid));
@@ -2142,7 +2142,7 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
     if (node.Get ("fontNotContains", fontNotContains)) {
         const GS::Optional<short> idx = GetFontIndexFromName (fontNotContains);
         if (!idx.HasValue ()) {
-            outError = "Unknown font '" + fontNotContains + "'. Give the name GetDetailsOfElements reports in fontName, with its script (e.g. 'Arial Western').";
+            outError = "Unknown font '" + fontNotContains + "'. Give the name GetDetailsOfElements reports in fontName (e.g. 'Arial Western'), or a name GetFontsByName finds.";
             return false;
         }
         outXML = WrapAsTrivialGroup (IntListCriterionXML (kFontPropertyGuid, *idx, 7, kPlanSectionPropertyGroupGuid));

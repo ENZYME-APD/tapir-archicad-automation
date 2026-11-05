@@ -263,7 +263,10 @@ twin); new work on an element tool follows these rules:
   values the commands cannot write, so a JSON read by Refresh can always be fed back.
 - **Three buttons, one set of JSON objects:** *Refresh* reads (`GetDetailsOfElements`), *Execute*
   writes, *Create* makes new elements (the tool's `Create<Type>` command, starting from the tool
-  defaults or the `FavoriteName` input). Writing and creating only happen on a button press; the
+  defaults or the `FavoriteName` input). A tool component may remember the elements its *Create*
+  made (saved with the .gh file; Walls does, `CanUpdateCreatedElements`): the next *Create* then
+  modifies them instead of making new ones, and reports one that was deleted as an error rather
+  than recreating it (#521). Writing and creating only happen on a button press; the
   component ignores `AutoExecute`, only *Refresh* may run automatically. Clear the request flags
   inside `SolveInstance`, where they are used, not after `ExpireSolution (true)`.
 - **One JSON input and output per dialog panel:** the Group name without spaces + `_JSON`
@@ -318,9 +321,12 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   auto-update script.
 - `archicad_addon.yml`, `grasshopper_plugin.yml` — release/publish pipelines.
   `archicad_addon.yml` also builds the Tapir Installer executables
-  (`TapirInstaller_Win.exe`, `TapirInstaller_Mac.zip`); `weekly_release.yml`
-  expects two assets per version in `devkits.json` plus the two installers
-  (`EXPECTED_ASSETS`). The Mac installer is
+  (`TapirInstaller_Win.exe`, `TapirInstaller_Mac.zip`), and attaches them a second time
+  under versioned names (`TapirInstaller_Win_<version>.exe`, `TapirInstaller_Mac_<version>.zip`,
+  #1646); `weekly_release.yml` expects two assets per version in `devkits.json` plus these
+  four installer files (`EXPECTED_ASSETS`). The add-on carries its version as a resource
+  (Windows VERSIONINFO written by `Tools/CompileResources.py`, macOS
+  `CFBundleShortVersionString`), which the installer shows. The Mac installer is
   universal2 (Intel and Apple silicon): both workflows build it with the
   python.org Python pinned in their `env` (keep the two the same) and check it
   with `lipo`. The Windows installer is code signed by SignPath (certificate by
@@ -430,6 +436,11 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   (default 72), with no open thread by a person, no changes requested and no
   `do-not-merge`/`needs-maintainer` label; `BOT_AUTO_MERGE=false` turns that off.
   This is a deliberate maintainer decision to minimize human maintenance.
+- `delete_merged_branches.yml` — deletes the head branch of every merged pull
+  request of this repository, however it was merged, when its tip is still the
+  merged head and no open pull request uses it; run by hand (dry run by default)
+  it sweeps the leftovers. `KEEP` in it lists the branches without a pull
+  request that must stay (`api-coverage`, image branches).
 - `discord_issue_bot.yml` — files GitHub issues from bug reports and feature
   requests in the project's Discord channels, then dispatches
   `claude_issue_triage.yml` for each (issues created with `GITHUB_TOKEN` trigger

@@ -83,9 +83,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 errors);
         }
 
-        // Shares the icon of SnapPoints until it gets one of its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.SnapPt;
+            Properties.Resources.GetHotspotsOfElements;
 
         public override Guid ComponentGuid =>
             new Guid("7a934f89-729b-4c7f-83da-7d5950a3216a");

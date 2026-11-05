@@ -53,9 +53,8 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
                 da);
         }
 
-        // Shares the icon of GetDatabases until it gets its own.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetDatabases;
+            Properties.Resources.DeleteGhostRecords;
 
         public override Guid ComponentGuid =>
             new Guid("738c50b9-5186-4cdb-aa96-d157941a6d67");

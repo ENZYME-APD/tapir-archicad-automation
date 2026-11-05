@@ -120,9 +120,8 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             da.SetData(0, response.Message());
         }
 
-        // Shares the icon of SetPropertyValuesOfAttributes.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.SetPropertyValuesOfAttributes;
+            Properties.Resources.SetPropertyValueOfAttributes;
 
         public override Guid ComponentGuid =>
             new Guid("75d28987-7453-410c-91a7-33dbef2cac21");

@@ -143,7 +143,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         // Shares the icon of RegularizePolygons, the other geometry helper.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.RegularizePolygons;
+            Properties.Resources.GetSplineMaxDistances;
 
         public override Guid ComponentGuid =>
             new Guid("c03e7ff9-8e04-43bc-ae76-d9b07a85775d");

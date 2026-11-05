@@ -106,9 +106,8 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             da.SetDataList(4, errors);
         }
 
-        // Shares the icon of GetPenTables.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetPenTables;
+            Properties.Resources.GetPens;
 
         public override Guid ComponentGuid =>
             new Guid("30a4f4d8-acf0-41cd-ac56-0ec0b4630d6a");
