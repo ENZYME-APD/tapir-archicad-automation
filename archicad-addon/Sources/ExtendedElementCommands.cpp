@@ -51,7 +51,8 @@ struct AssociativeDimensionPoint {
     API_Guid elementGuid = APINULLGuid;
     API_ElemTypeID elementType = API_ZombieElemID;
     bool isStatic = false;              // not associated with any element
-    API_Coord coordinate = {0.0, 0.0};  // position of a static point
+    bool hasCoordinate = false;         // coordinate given (always for a static point)
+    API_Coord coordinate = {0.0, 0.0};  // position of a static point, or the location of an associative one
     bool line = false;
     Int32 inIndex = 0;
     char special = 0;
@@ -745,9 +746,6 @@ GS::Optional<GS::UniString> ParseAssociativeDimensionPoint (const GS::ObjectStat
 {
     const GS::ObjectState* elementId = pointData.Get ("elementId");
     const GS::ObjectState* coordinate = pointData.Get ("coordinate");
-    if (elementId != nullptr && coordinate != nullptr) {
-        return "A witness point takes either 'elementId' or 'coordinate', not both.";
-    }
     if (elementId == nullptr) {
         if (coordinate == nullptr) {
             return "Each witness point needs either 'elementId' or 'coordinate'.";
@@ -757,8 +755,18 @@ GS::Optional<GS::UniString> ParseAssociativeDimensionPoint (const GS::ObjectStat
         point.isStatic = true;
         point.elementGuid = APINULLGuid;
         point.elementType = API_ZombieElemID;
+        point.hasCoordinate = true;
         point.coordinate = Get2DCoordinateFromObjectState (*coordinate);
         return {};
+    }
+
+    // Associative witness point with a coordinate: the location of the point on the referenced
+    // element, e.g. where the dimension line crosses a wall face, written to base.loc as the
+    // DevKit's Element_Test does for associative points. Without it Archicad picks the point
+    // itself, e.g. the middle of a wall edge (#1814).
+    if (coordinate != nullptr) {
+        point.hasCoordinate = true;
+        point.coordinate = Get2DCoordinateFromObjectState (*coordinate);
     }
 
     point.elementGuid = GetGuidFromObjectState (*elementId);
@@ -828,7 +836,7 @@ GS::Optional<GS::UniString> PopulateAssociativeDimensionMemo (
         dimElem.base.base.node_typ = point.nodeType;
         dimElem.base.base.node_status = point.nodeStatus;
         dimElem.base.base.node_id = point.nodeId;
-        if (point.isStatic) {
+        if (point.hasCoordinate) {
             dimElem.base.loc = point.coordinate;
         }
         dimElem.note = element.dimension.defNote;
@@ -939,6 +947,7 @@ void AddSectionStaticPoint (GS::Array<AssociativeDimensionPoint>& points, double
 {
     AssociativeDimensionPoint point;
     point.isStatic = true;
+    point.hasCoordinate = true;
     point.coordinate = {x, y};
     points.Push (point);
 }
@@ -1221,15 +1230,33 @@ GS::ObjectState ExecuteCreateWithElements (const GS::String& commandName, Func&&
     return CreateElementListResponse (results);
 }
 
+// Runs the Modify<Tool> commands' loop over items (each with an "elementId") in one undoable
+// command, and reports the modified elements to the notification clients (#1825): modifyFunc
+// pushes one result per item, in order, and the items with a successful result are reported
+// as changed, the others only when their modification stamp changed anyway.
 template<typename Func>
-GS::ObjectState ExecuteModifyWithResults (const GS::String& commandName, Func&& modifyFunc)
+GS::ObjectState ExecuteModifyWithResults (const GS::String& commandName, const GS::Array<GS::ObjectState>& items, Func&& modifyFunc)
 {
     GS::Array<GS::ObjectState> results;
+
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (items);
 
     ACAPI_CallUndoableCommand (commandName, [&]() -> GSErrCode {
         modifyFunc (results);
         return NoError;
     });
+
+    if (results.GetSize () == items.GetSize ()) {
+        for (UIndex i = 0; i < items.GetSize (); ++i) {
+            const GS::ObjectState* elementId = items[i].Get ("elementId");
+            bool success = false;
+            if (elementId != nullptr && results[i].Get ("success", success) && success) {
+                changeReporter.MarkChanged (GetGuidFromObjectState (*elementId));
+            }
+        }
+    }
+    changeReporter.Report ();
 
     return CreateExecutionResultResponse (results);
 }
@@ -2870,10 +2897,16 @@ static bool ApplyColumnSectionToMemo (API_Guid elemGuid, const GS::ObjectState& 
         }
         if (profileIdOs != nullptr) {
             segment.modelElemStructureType = API_ProfileStructure;
+            segment.profileType = APISect_Poly;
             segment.profileAttr = GetAttributeIndexFromGuid (API_ProfileID, GetGuidFromObjectState (*profileIdOs));
             segment.circleBased = false;
         } else if (buildingMaterialIdOs != nullptr) {
             segment.modelElemStructureType = API_BasicStructure;
+            // A profiled segment keeps APISect_Poly, and with it its profile, unless the cross
+            // section is reset too (#1810, same as walls in #531).
+            if (segment.profileType == APISect_Poly) {
+                segment.profileType = APISect_Normal;
+            }
             segment.buildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialIdOs));
         }
     }
@@ -2918,10 +2951,15 @@ static bool ApplyBeamSectionToMemo (API_Guid elemGuid, const GS::ObjectState& de
         }
         if (profileIdOs != nullptr) {
             segment.modelElemStructureType = API_ProfileStructure;
+            segment.profileType = APISect_Poly;
             segment.profileAttr = GetAttributeIndexFromGuid (API_ProfileID, GetGuidFromObjectState (*profileIdOs));
             segment.circleBased = false;
         } else if (buildingMaterialIdOs != nullptr) {
             segment.modelElemStructureType = API_BasicStructure;
+            // See ApplyColumnSectionToMemo (#1810).
+            if (segment.profileType == APISect_Poly) {
+                segment.profileType = APISect_Normal;
+            }
             segment.buildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialIdOs));
         }
     }
@@ -3630,9 +3668,46 @@ bool ApplyMorphCosmeticDetails (const GS::ObjectState& details, API_Element& ele
 // zero actual effect. Reading back whatever Archicad itself currently reports (AddMorphBodyFromMemo
 // in ElementCommands.cpp) remains fully correct and unaffected - only writing is impossible.
 
-bool ApplyWindowOrDoorDetails (API_Element& element, API_Element& mask, const GS::ObjectState& details)
+// The keys CreateWindows/CreateDoors and ModifyWindows/ModifyDoors take on top of their own
+// (ownerWallId and libraryPartName/favoriteName, or elementId), one string for all four schemas,
+// so they accept the same keys - the ones ApplyWindowOrDoorDetails writes and GetDetailsOfElements
+// returns for windows and doors.
+GS::UniString WindowOrDoorDetailSchemaFields ()
 {
-    bool changed = false;
+    return R"(
+        "width": { "type": "number", "exclusiveMinimum": 0.0 },
+        "height": { "type": "number", "exclusiveMinimum": 0.0 },
+        "sillHeight": { "type": "number" },
+        "centerOffset": { "type": "number", "minimum": 0.0 },
+        "reflected": { "type": "boolean" },
+        "refSide": { "type": "boolean" },
+        "oSide": { "type": "boolean" },
+        "reveal": { "type": "boolean", "description": "Turn the reveal on or off." },
+        "revealDepthOffset": { "type": "number", "description": "Distance the frame plane is moved across the wall thickness, along the wall normal." },
+        "displayOption": { "$ref": "#/DisplayOption" },
+        "pen": { "type": "integer", "minimum": 0, "maximum": 255, "description": "Pen of the opening's floor plan symbol; used unless useObjectPens is true." },
+        "lineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the opening's floor plan symbol; used unless useObjectLineTypes is true." },
+        "cutLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the cut lines of the opening." },
+        "sectionFillId": { "$ref": "#/AttributeId", "description": "Fill of the section of the opening; used unless useObjectSectionAttributes is true." },
+        "sectionFillPen": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "sectionFillBackgroundPen": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "sectionContourPen": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "aboveViewLinePen": { "type": "integer", "minimum": 0, "maximum": 255, "description": "Pen of the overhead lines (\"Overhead Line Pens\")." },
+        "aboveViewLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the overhead lines (\"Overhead Lines\")." },
+        "belowViewLinePen": { "type": "integer", "minimum": 0, "maximum": 255, "description": "Pen of the uncut lines of the opening." },
+        "belowViewLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the uncut lines (\"Uncut Lines\")." },
+        "useObjectPens": { "type": "boolean", "description": "Use the pens defined in the library part instead of 'pen'." },
+        "useObjectLineTypes": { "type": "boolean", "description": "Use the line types defined in the library part instead of 'lineTypeId'." },
+        "useObjectSectionAttributes": { "type": "boolean", "description": "Use the section attributes defined in the library part instead of 'sectionFillId' and the section pens." })";
+}
+
+// Writes the given keys of a window or door to `element` and sets them in `mask`; shared by
+// CreateWindows/CreateDoors (whose mask is not used) and ModifyWindows/ModifyDoors. `changed`
+// tells whether any key was given. An invalid displayOption or attribute reference returns the
+// error and nothing is to be written.
+GS::Optional<GS::UniString> ApplyWindowOrDoorDetails (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed)
+{
+    changed = false;
     auto width = GetOptionalDouble (details, "width");
     if (width.HasValue ()) {
         element.window.openingBase.width = width.Get ();
@@ -3687,7 +3762,117 @@ bool ApplyWindowOrDoorDetails (API_Element& element, API_Element& mask, const GS
         ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, revealDepthOffset);
         changed = true;
     }
-    return changed;
+
+    // Floor plan and section settings (API_OpeningBaseType), the keys GetDetailsOfElements
+    // returns for windows and doors (#1791).
+    API_OpeningBaseType& opening = element.window.openingBase;
+    GS::UniString displayOptionStr;
+    if (details.Get ("displayOption", displayOptionStr)) {
+        API_ElemDisplayOptionsID displayOption = API_Standard;
+        if (!ElemDisplayOptionFromString (displayOptionStr, displayOption)) {
+            return GS::UniString ("Invalid 'displayOption'.");
+        }
+        opening.displayOption = displayOption;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.displayOption);
+        changed = true;
+    }
+
+    const auto applyAttribute = [&] (const char* fieldName, API_AttrTypeID attributeType, API_AttributeIndex& target) -> GS::Optional<GS::UniString> {
+        bool hasValue = false;
+        API_AttributeIndex index = APIInvalidAttributeIndex;
+        GS::Optional<GS::UniString> attributeError = TryResolveAttributeField (details, fieldName, attributeType, hasValue, index);
+        if (attributeError.HasValue () || !hasValue) {
+            return attributeError;
+        }
+        target = index;
+        changed = true;
+        return {};
+    };
+    GS::Optional<GS::UniString> attributeError = applyAttribute ("lineTypeId", API_LinetypeID, opening.ltypeInd);
+    if (attributeError.HasValue ()) {
+        return attributeError;
+    }
+    if (details.Get ("lineTypeId") != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.ltypeInd);
+    }
+    attributeError = applyAttribute ("cutLineTypeId", API_LinetypeID, opening.cutLineType);
+    if (attributeError.HasValue ()) {
+        return attributeError;
+    }
+    if (details.Get ("cutLineTypeId") != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.cutLineType);
+    }
+    attributeError = applyAttribute ("sectionFillId", API_FilltypeID, opening.sectFill);
+    if (attributeError.HasValue ()) {
+        return attributeError;
+    }
+    if (details.Get ("sectionFillId") != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.sectFill);
+    }
+    attributeError = applyAttribute ("aboveViewLineTypeId", API_LinetypeID, opening.aboveViewLineType);
+    if (attributeError.HasValue ()) {
+        return attributeError;
+    }
+    if (details.Get ("aboveViewLineTypeId") != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.aboveViewLineType);
+    }
+    attributeError = applyAttribute ("belowViewLineTypeId", API_LinetypeID, opening.belowViewLineType);
+    if (attributeError.HasValue ()) {
+        return attributeError;
+    }
+    if (details.Get ("belowViewLineTypeId") != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.belowViewLineType);
+    }
+
+    Int32 penValue = 0;
+    if (details.Get ("pen", penValue)) {
+        opening.pen = (short) penValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.pen);
+        changed = true;
+    }
+    if (details.Get ("sectionFillPen", penValue)) {
+        opening.sectFillPen = (short) penValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.sectFillPen);
+        changed = true;
+    }
+    if (details.Get ("sectionFillBackgroundPen", penValue)) {
+        opening.sectBGPen = (short) penValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.sectBGPen);
+        changed = true;
+    }
+    if (details.Get ("sectionContourPen", penValue)) {
+        opening.sectContPen = (short) penValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.sectContPen);
+        changed = true;
+    }
+    if (details.Get ("aboveViewLinePen", penValue)) {
+        opening.aboveViewLinePen = (short) penValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.aboveViewLinePen);
+        changed = true;
+    }
+    if (details.Get ("belowViewLinePen", penValue)) {
+        opening.belowViewLinePen = (short) penValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.belowViewLinePen);
+        changed = true;
+    }
+
+    bool boolValue = false;
+    if (details.Get ("useObjectPens", boolValue)) {
+        opening.useObjPens = boolValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.useObjPens);
+        changed = true;
+    }
+    if (details.Get ("useObjectLineTypes", boolValue)) {
+        opening.useObjLtypes = boolValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.useObjLtypes);
+        changed = true;
+    }
+    if (details.Get ("useObjectSectionAttributes", boolValue)) {
+        opening.useObjSectAttrs = boolValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.useObjSectAttrs);
+        changed = true;
+    }
+    return {};
 }
 
 }
@@ -5263,55 +5448,7 @@ GS::Optional<GS::UniString> SolveStairBaselineCommand::GetInputParametersSchema 
                 "type": "array",
                 "description": "Array of Stair data to check, with the same fields as the items of CreateStairs (without favoriteName). Nothing is created.",
                 "items": {
-                    "type": "object",
-                    "description": "The parameters of the Stair to check. Fields that are not given come from the current Stair tool defaults, as in CreateStairs.",
-                    "properties": {
-                        "baseLinePoints": {
-                            "type": "array",
-                            "description": "2D coordinates of the stair baseline polyline. Whether the baseline runs along the left edge, the right edge or the center of the flight is the Stair tool's baseline position, taken from the Stair tool defaults: with the baseline on the left edge, the flight lies to the right of it, looking from the first point to the last. The first point is kept; the length of the flight comes from the riser count and going, so the flight does not necessarily end at the last point given. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.",
-                            "items": { "$ref": "#/Coordinate2D" },
-                            "minItems": 2
-                        },
-                        "zCoordinate": {
-                            "type": "number",
-                            "description": "The Z coordinate (absolute elevation) of the stair base."
-                        },
-                        "floorIndex": {
-                            "type": "integer",
-                            "description": "Optional floor index. If omitted, derived from zCoordinate."
-                        },
-                        "totalHeight": {
-                            "type": "number",
-                            "description": "Total height of the stair.",
-                            "exclusiveMinimum": 0.0
-                        },
-                        "flightWidth": {
-                            "type": "number",
-                            "description": "Width of the stair flight.",
-                            "exclusiveMinimum": 0.0
-                        },
-                        "stepNum": {
-                            "type": "integer",
-                            "description": "Number of risers (steps).",
-                            "minimum": 1
-                        },
-                        "riserHeight": {
-                            "type": "number",
-                            "description": "Height of each riser.",
-                            "exclusiveMinimum": 0.0
-                        },
-                        "treadDepth": {
-                            "type": "number",
-                            "description": "Depth (going) of each tread.",
-                            "exclusiveMinimum": 0.0
-                        },
-                        "finishVisible": {
-                            "type": "boolean",
-                            "description": "Optional. If false, the tread/riser finishes are hidden and only the stair structure (e.g. a monolith) is modeled."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": ["baseLinePoints", "zCoordinate"]
+                    "$ref": "#/StairBaselineData"
                 }
             }
         },
@@ -5332,46 +5469,7 @@ GS::Optional<GS::UniString> SolveStairBaselineCommand::GetRawResponseSchema () c
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "solution": {
-                                    "type": "string",
-                                    "enum": ["Correct", "Solved", "NotSolved"],
-                                    "description": "Correct: the baseline was already valid, nothing changed. Solved: the solver turned it into a valid baseline, returned in baseLinePoints. NotSolved: no valid baseline was found; CreateStairs is likely to fail or create an invalid stair with this input."
-                                },
-                                "baseLinePoints": {
-                                    "type": "array",
-                                    "description": "The baseline polyline after the solver ran.",
-                                    "items": { "$ref": "#/Coordinate2D" }
-                                },
-                                "baseLineArcs": {
-                                    "type": "array",
-                                    "description": "The arcs of the baseline after the solver ran, indexing baseLinePoints. Present only when the baseline has arcs.",
-                                    "items": { "$ref": "#/PolyArc" }
-                                },
-                                "totalHeight": {
-                                    "type": "number",
-                                    "description": "Total height of the stair after the solver ran."
-                                },
-                                "flightWidth": {
-                                    "type": "number",
-                                    "description": "Width of the stair flight after the solver ran."
-                                },
-                                "stepNum": {
-                                    "type": "integer",
-                                    "description": "Number of risers after the solver ran."
-                                },
-                                "riserHeight": {
-                                    "type": "number",
-                                    "description": "Height of each riser after the solver ran."
-                                },
-                                "treadDepth": {
-                                    "type": "number",
-                                    "description": "Depth (going) of each tread after the solver ran."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["solution", "baseLinePoints", "totalHeight", "flightWidth", "stepNum", "riserHeight", "treadDepth"]
+                            "$ref": "#/StairBaselineSolution"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -5815,6 +5913,9 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (stairsWithDetails);
+
     ACAPI_CallUndoableCommand ("ModifyStairs", [&] () -> GSErrCode {
         for (const GS::ObjectState& item : stairsWithDetails) {
             const GS::ObjectState* elementId = item.Get ("elementId");
@@ -5850,10 +5951,13 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
                 continue;
             }
 
+            changeReporter.MarkChanged (element.header.guid);
             executionResults (CreateSuccessfulExecutionResult ());
         }
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }
@@ -5870,7 +5974,7 @@ GS::String CreateWindowsCommand::GetName () const
 
 GS::Optional<GS::UniString> CreateWindowsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
             "windowsData": {
@@ -5878,14 +5982,7 @@ GS::Optional<GS::UniString> CreateWindowsCommand::GetInputParametersSchema () co
                 "items": {
                     "type": "object",
                     "properties": {
-                        "ownerWallId": { "$ref": "#/ElementId" },
-                        "centerOffset": { "type": "number", "minimum": 0.0 },
-                        "sillHeight": { "type": "number" },
-                        "width": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "reflected": { "type": "boolean" },
-                        "refSide": { "type": "boolean" },
-                        "oSide": { "type": "boolean" },
+                        "ownerWallId": { "$ref": "#/ElementId" },)") + WindowOrDoorDetailSchemaFields () + R"(,
                         "libraryPartName": {
                             "type": "string",
                             "description": "Optional. Localized library part name (docu_UName) to place instead of the tool default/favorite, e.g. a shutter part that has no favorite. It has to be a window library part. Applied to the tool defaults before cloning."
@@ -6055,29 +6152,13 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
             data.Get ("centerOffset", centerOffset);
             element.window.owner = wallGuid;
             element.window.objLoc = centerOffset;
-            auto sillHeight = GetOptionalDouble (data, "sillHeight");
-            if (sillHeight.HasValue ()) {
-                element.window.lower = sillHeight.Get ();
-            }
-            auto width = GetOptionalDouble (data, "width");
-            if (width.HasValue ()) {
-                element.window.openingBase.width = width.Get ();
-            }
-            auto height = GetOptionalDouble (data, "height");
-            if (height.HasValue ()) {
-                element.window.openingBase.height = height.Get ();
-            }
-            bool reflected = false;
-            if (data.Get ("reflected", reflected)) {
-                element.window.openingBase.reflected = reflected;
-            }
-            bool refSide = false;
-            if (data.Get ("refSide", refSide)) {
-                element.window.openingBase.refSide = refSide;
-            }
-            bool oSide = false;
-            if (data.Get ("oSide", oSide)) {
-                element.window.openingBase.oSide = oSide;
+            // The same keys ModifyWindows writes; the mask is not used by the create.
+            API_Element unusedMask = {};
+            bool detailsGiven = false;
+            const GS::Optional<GS::UniString> detailsError = ApplyWindowOrDoorDetails (element, unusedMask, data, detailsGiven);
+            if (detailsError.HasValue ()) {
+                elements.Push (CreateErrorResponse (APIERR_BADPARS, detailsError.Get ()));
+                continue;
             }
 
             err = withMarker
@@ -6111,7 +6192,7 @@ GS::String CreateDoorsCommand::GetName () const
 
 GS::Optional<GS::UniString> CreateDoorsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
             "doorsData": {
@@ -6119,14 +6200,7 @@ GS::Optional<GS::UniString> CreateDoorsCommand::GetInputParametersSchema () cons
                 "items": {
                     "type": "object",
                     "properties": {
-                        "ownerWallId": { "$ref": "#/ElementId" },
-                        "centerOffset": { "type": "number", "minimum": 0.0 },
-                        "sillHeight": { "type": "number" },
-                        "width": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "reflected": { "type": "boolean" },
-                        "refSide": { "type": "boolean" },
-                        "oSide": { "type": "boolean" },
+                        "ownerWallId": { "$ref": "#/ElementId" },)") + WindowOrDoorDetailSchemaFields () + R"(,
                         "libraryPartName": {
                             "type": "string",
                             "description": "Optional. Localized library part name (docu_UName) to place instead of the tool default/favorite, e.g. a shutter part that has no favorite. It has to be a door library part. Applied to the tool defaults before cloning."
@@ -6239,29 +6313,13 @@ GS::ObjectState CreateDoorsCommand::Execute (const GS::ObjectState& parameters, 
             data.Get ("centerOffset", centerOffset);
             element.window.owner = wallGuid;
             element.window.objLoc = centerOffset;
-            auto sillHeight = GetOptionalDouble (data, "sillHeight");
-            if (sillHeight.HasValue ()) {
-                element.window.lower = sillHeight.Get ();
-            }
-            auto width = GetOptionalDouble (data, "width");
-            if (width.HasValue ()) {
-                element.window.openingBase.width = width.Get ();
-            }
-            auto height = GetOptionalDouble (data, "height");
-            if (height.HasValue ()) {
-                element.window.openingBase.height = height.Get ();
-            }
-            bool reflected = false;
-            if (data.Get ("reflected", reflected)) {
-                element.window.openingBase.reflected = reflected;
-            }
-            bool refSide = false;
-            if (data.Get ("refSide", refSide)) {
-                element.window.openingBase.refSide = refSide;
-            }
-            bool oSide = false;
-            if (data.Get ("oSide", oSide)) {
-                element.window.openingBase.oSide = oSide;
+            // The same keys ModifyDoors writes; the mask is not used by the create.
+            API_Element unusedMask = {};
+            bool detailsGiven = false;
+            const GS::Optional<GS::UniString> detailsError = ApplyWindowOrDoorDetails (element, unusedMask, data, detailsGiven);
+            if (detailsError.HasValue ()) {
+                elements.Push (CreateErrorResponse (APIERR_BADPARS, detailsError.Get ()));
+                continue;
             }
 
             err = withMarker
@@ -7419,6 +7477,19 @@ GS::Optional<GS::UniString> CreateMorphsCommand::GetInputParametersSchema () con
                 "items": {
                     "type": "object",
                     "properties": {
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "Optional name of a Morph favorite to base the new morph on. Its settings are applied first, then the explicitly given fields override them. The geometry (basePoint, size or body, axes) and the floor always come from this item, not from the favorite."
+                        },
+                        "id": {
+                            "type": "string",
+                            "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                        },
+                        "layerIndex": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults."
+                        },
                         "basePoint": { "$ref": "#/Coordinate3D" },
                         "size": {
                             "$ref": "#/Dimensions3D",
@@ -7513,7 +7584,75 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
     const Stories stories = GetStories ();
 
     return ExecuteCreateWithElements ("Create Morphs", [&](GS::Array<GS::ObjectState>& elements) {
+        // Per-item "favoriteName" support, as in CreateElementsCommandBase::Execute: favorites
+        // can only be applied through the tool defaults, which are global and outlive the
+        // command, so the Morph defaults are snapshotted here and restored at the end - and
+        // also before any item that does NOT name a favorite, otherwise it would silently
+        // inherit the favorite of the item before it. Untouched when no item names a favorite.
+        const bool anyFavoriteName = [&] () {
+            for (const GS::ObjectState& data : morphsData) {
+                GS::UniString name;
+                if (data.Get ("favoriteName", name) && !name.IsEmpty ()) {
+                    return true;
+                }
+            }
+            return false;
+        } ();
+
+        API_Element defaultsSnapshot = {};
+#ifdef ServerMainVers_2600
+        defaultsSnapshot.header.type = API_MorphID;
+#else
+        defaultsSnapshot.header.typeID = API_MorphID;
+#endif
+        API_ElementMemo defaultsSnapshotMemo = {};
+        bool favoriteApplied = false;
+        const GS::OnExit restoreDefaults ([&] () {
+            // Leave the tool defaults as they were found, so the user's next manual placement
+            // (or a later command) does not start from the favorite.
+            if (favoriteApplied) {
+                API_Element restoreMask;
+                ACAPI_ELEMENT_MASK_SETFULL (restoreMask);
+                ACAPI_Element_ChangeDefaults (&defaultsSnapshot, &defaultsSnapshotMemo, &restoreMask);
+            }
+            ACAPI_DisposeElemMemoHdls (&defaultsSnapshotMemo);
+        });
+        if (anyFavoriteName) {
+            const GSErrCode snapshotErr = ACAPI_Element_GetDefaults (&defaultsSnapshot, &defaultsSnapshotMemo);
+            if (snapshotErr != NoError) {
+                // Without a snapshot the favorite could not be undone from the tool defaults.
+                for (UIndex i = 0; i < morphsData.GetSize (); ++i) {
+                    elements.Push (CreateErrorResponse (snapshotErr, "Failed to read the Morph defaults."));
+                }
+                return;
+            }
+        }
+
         for (const auto& data : morphsData) {
+            if (anyFavoriteName) {
+                GS::UniString favoriteName;
+                const bool hasFavoriteName = data.Get ("favoriteName", favoriteName) && !favoriteName.IsEmpty ();
+                if (hasFavoriteName) {
+                    const GSErrCode favoriteErr = ApplyFavoriteToElementDefaults (favoriteName, API_MorphID);
+                    if (favoriteErr != NoError) {
+                        // Same two usual causes as in CreateElementsCommandBase: APIERR_REFUSEDPAR
+                        // for a favorite of another element type, else no favorite has this name.
+                        const GS::UniString reason = favoriteErr == APIERR_REFUSEDPAR
+                            ? GS::UniString ("it is not a Morph favorite")
+                            : GS::UniString ("no favorite with this exact name was found");
+                        elements.Push (CreateErrorResponse (favoriteErr,
+                            "Failed to apply favoriteName '" + favoriteName + "' to the Morph defaults: " + reason + "."));
+                        continue;
+                    }
+                    favoriteApplied = true;
+                } else if (favoriteApplied) {
+                    API_Element restoreMask;
+                    ACAPI_ELEMENT_MASK_SETFULL (restoreMask);
+                    ACAPI_Element_ChangeDefaults (&defaultsSnapshot, &defaultsSnapshotMemo, &restoreMask);
+                    favoriteApplied = false;
+                }
+            }
+
             API_Element element = {};
             #ifdef ServerMainVers_2600
             element.header.type = API_MorphID;
@@ -7545,6 +7684,12 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
             // derived here; tmx[11] intentionally stays basePoint.z (absolute), matching how the
             // rest of this command already places the morph in world space.
             element.header.floorInd = ResolveFloorIndexAndOffset (data, "floorIndex", basePoint.z, stories).first;
+
+            const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (data, element);
+            if (layerError.HasValue ()) {
+                elements.Push (*layerError);
+                continue;
+            }
 
             auto buildingMaterialId = GetOptionalObjectState (data, "buildingMaterialId");
 
@@ -7667,6 +7812,18 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                 ACAPI_ELEMENT_MASK_CLEAR (materialMask);
                 ACAPI_ELEMENT_MASK_SET (materialMask, API_MorphType, material);
                 ACAPI_Element_Change (&element, &materialMask, nullptr, 0, true);
+            }
+
+            // Per-item "id", as in CreateElementsCommandBase::Execute: an id that cannot be
+            // written leaves no half-done morph behind, the new morph is deleted again.
+            GS::UniString id;
+            if (data.Get ("id", id)) {
+                err = ChangeElementId (element.header.guid, id);
+                if (err != NoError) {
+                    ACAPI_Element_Delete ({ element.header.guid });
+                    elements.Push (CreateErrorResponse (err, "Failed to set the id of the new morph, so it was not created."));
+                    continue;
+                }
             }
 
             elements.Push (CreateElementIdObjectState (element.header.guid));
@@ -8544,7 +8701,7 @@ GS::ObjectState ModifyWallsCommand::Execute (const GS::ObjectState& parameters, 
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
-    return ExecuteModifyWithResults ("Modify Walls", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Walls", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
@@ -8650,7 +8807,7 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
-    return ExecuteModifyWithResults ("Modify Beams", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Beams", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
@@ -8864,7 +9021,7 @@ GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, 
 
     const Stories stories = GetStories ();
 
-    return ExecuteModifyWithResults ("Modify Slabs", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Slabs", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
@@ -9273,9 +9430,224 @@ GS::ObjectState ModifyCurtainWallsCommand::Execute (const GS::ObjectState& param
 
     const Stories stories = GetStories ();
 
-    return ExecuteModifyWithResults ("Modify Curtain Walls", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Curtain Walls", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             results.Push (ModifyCurtainWall (item, stories));
+        }
+    });
+}
+
+ModifyCurtainWallFramesCommand::ModifyCurtainWallFramesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyCurtainWallFramesCommand::GetName () const
+{
+    return "ModifyCurtainWallFrames";
+}
+
+GS::Optional<GS::UniString> ModifyCurtainWallFramesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "framesWithDetails": {
+                "type": "array",
+                "description": "Curtain Wall Frames to modify (the GUIDs from GetSubelementsOfHierarchicalElements), with the fields to change. Only the given fields are changed. EXPERIMENTAL.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "frameId": { "$ref": "#/ElementId" },
+                        "frameContour": {
+                            "type": "object",
+                            "description": "The contour of the frame, as GetDetailsOfElements returns it. Only the given keys are changed.",
+                            "properties": {
+                                "a1": { "type": "number", "minimum": 0.0, "description": "Contour width inside." },
+                                "a2": { "type": "number", "minimum": 0.0, "description": "Contour width outside." },
+                                "b1": { "type": "number", "minimum": 0.0, "description": "Contour length inside." },
+                                "b2": { "type": "number", "minimum": 0.0, "description": "Contour length outside." }
+                            },
+                            "additionalProperties": false
+                        },
+                        "classIndex": {
+                            "type": "integer",
+                            "description": "The frame class (classID) of the frame: 0 to 3 for the built-in classes, 4 and up for the frame classes of the owner curtain wall."
+                        },
+                        "type": {
+                            "type": "string",
+                            "enum": ["Invisible", "GDL", "InvisibleConnectedTurning", "InvisibleConnectedStill"],
+                            "description": "The type of the frame (API_CWFrameObjectTypeID)."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["frameId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["framesWithDetails"]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyCurtainWallFramesCommand::GetRawResponseSchema () const
+{
+    return ModifyWallsCommand ().GetRawResponseSchema ();
+}
+
+namespace {
+
+// Experimental: ACAPI_Element_Change does not take a curtain wall frame on its own, so the frame is
+// changed in the memo of its owner curtain wall (cWallFrames), found there by its GUID.
+GS::ObjectState ModifyCurtainWallFrame (const GS::ObjectState& item)
+{
+    if (item.Get ("frameId") == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'frameId' field.");
+    }
+    const API_Guid frameGuid = GetGuidFromObjectState (*item.Get ("frameId"));
+
+    API_Element frameElement = {};
+    frameElement.header.guid = frameGuid;
+    GSErrCode err = ACAPI_Element_Get (&frameElement);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to load the frame.");
+    }
+    if (GetElemTypeId (frameElement.header) != API_CurtainWallFrameID) {
+        return CreateFailedExecutionResult (APIERR_BADID, "Element is not a Curtain Wall Frame.");
+    }
+
+    API_Element curtainWall = {};
+    curtainWall.header.guid = frameElement.cwFrame.owner;
+    err = ACAPI_Element_Get (&curtainWall);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to load the owner curtain wall of the frame.");
+    }
+
+    constexpr UInt64 memoMask = APIMemoMask_CWallFrames | APIMemoMask_CWallFrameClasses;
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    err = ACAPI_Element_GetMemo (curtainWall.header.guid, &memo, memoMask);
+    if (err != NoError || memo.cWallFrames == nullptr) {
+        return CreateFailedExecutionResult (err != NoError ? err : APIERR_GENERAL, "Failed to read the frames of the owner curtain wall.");
+    }
+
+    API_CWFrameType* frame = nullptr;
+    for (UInt32 i = 0; i < curtainWall.curtainWall.nFrames; ++i) {
+        if (memo.cWallFrames[i].head.guid == frameGuid) {
+            frame = &memo.cWallFrames[i];
+            break;
+        }
+    }
+    if (frame == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADID, "The frame was not found in the owner curtain wall.");
+    }
+
+    // Everything is validated before anything is written.
+    API_CWFrameType changedFrame = *frame;
+    bool hasChange = false;
+
+    GS::ObjectState contour;
+    if (item.Get ("frameContour", contour)) {
+        const auto setValue = [&] (const char* key, double& target) {
+            double value = 0.0;
+            if (contour.Get (key, value)) {
+                target = value;
+                hasChange = true;
+            }
+        };
+        setValue ("a1", changedFrame.a1);
+        setValue ("a2", changedFrame.a2);
+        setValue ("b1", changedFrame.b1);
+        setValue ("b2", changedFrame.b2);
+        if (changedFrame.a1 < 0.0 || changedFrame.a2 < 0.0 || changedFrame.b1 < 0.0 || changedFrame.b2 < 0.0) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "The frameContour values must not be negative.");
+        }
+    }
+
+    Int32 classIndex = 0;
+    if (item.Get ("classIndex", classIndex)) {
+        const UInt32 nFrameClasses = memo.cWallFrameDefaults != nullptr
+            ? static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSPtr> (memo.cWallFrameDefaults)) / sizeof (API_CWFrameType))
+            : curtainWall.curtainWall.nFrameDefaults;
+        const bool builtIn = classIndex == APICWFrameClass_Merged || classIndex == APICWFrameClass_Division ||
+                             classIndex == APICWFrameClass_Corner || classIndex == APICWFrameClass_Boundary;
+        const bool custom = classIndex >= APICWFrameClass_FirstCustomClass &&
+                            static_cast<UInt32> (classIndex - APICWFrameClass_FirstCustomClass) < nFrameClasses;
+        if (!builtIn && !custom) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf ("classIndex %d is not a frame class of the curtain wall (0 to 3, or 4 to %u).", classIndex, APICWFrameClass_FirstCustomClass + nFrameClasses - 1));
+        }
+        changedFrame.classID = static_cast<UInt32> (classIndex);
+        if (custom && memo.cWallFrameDefaults != nullptr) {
+            GS::ucscpy (changedFrame.className, memo.cWallFrameDefaults[classIndex - APICWFrameClass_FirstCustomClass].className);
+        }
+        hasChange = true;
+    }
+
+    GS::UniString typeName;
+    if (item.Get ("type", typeName)) {
+        if (typeName == "Invisible")                      changedFrame.objectType = APICWFrObjectType_Invisible;
+        else if (typeName == "GDL")                       changedFrame.objectType = APICWFrObjectType_GDL;
+        else if (typeName == "InvisibleConnectedTurning") changedFrame.objectType = APICWFrObjectType_InvisibleConnectedTurning;
+        else if (typeName == "InvisibleConnectedStill")   changedFrame.objectType = APICWFrObjectType_InvisibleConnectedStill;
+        else return CreateFailedExecutionResult (APIERR_BADPARS, "Unknown frame type.");
+        hasChange = true;
+    }
+
+    if (!hasChange) {
+        return CreateSuccessfulExecutionResult ();
+    }
+
+    *frame = changedFrame;
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    err = ACAPI_Element_Change (&curtainWall, &mask, &memo, APIMemoMask_CWallFrames, true);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to change the frame through the memo of the owner curtain wall.");
+    }
+
+    // Read it back: the experiment is only worth keeping when Archicad really applies the change.
+    API_ElementMemo checkMemo = {};
+    const GS::OnExit checkGuard ([&checkMemo] () { ACAPI_DisposeElemMemoHdls (&checkMemo); });
+    API_Element checkWall = {};
+    checkWall.header.guid = curtainWall.header.guid;
+    if (ACAPI_Element_Get (&checkWall) != NoError || ACAPI_Element_GetMemo (checkWall.header.guid, &checkMemo, APIMemoMask_CWallFrames) != NoError || checkMemo.cWallFrames == nullptr) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, "The change was written, but the frame could not be read back.");
+    }
+    for (UInt32 i = 0; i < checkWall.curtainWall.nFrames; ++i) {
+        const API_CWFrameType& actual = checkMemo.cWallFrames[i];
+        if (actual.head.guid != frameGuid) {
+            continue;
+        }
+        const auto differs = [] (double a, double b) { return std::fabs (a - b) > 1e-6; };
+        if (differs (actual.a1, changedFrame.a1) || differs (actual.a2, changedFrame.a2) || differs (actual.b1, changedFrame.b1) || differs (actual.b2, changedFrame.b2) ||
+            actual.classID != changedFrame.classID || actual.objectType != changedFrame.objectType) {
+            return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad accepted the change but did not apply it (or rebuilt the frame).");
+        }
+        return CreateSuccessfulExecutionResult ();
+    }
+    return CreateFailedExecutionResult (APIERR_GENERAL, "The frame is no longer in the curtain wall after the change (its GUID may have changed).");
+}
+
+}
+
+GS::ObjectState ModifyCurtainWallFramesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> items;
+    auto error = GetElementArray (parameters, "framesWithDetails", items);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+
+    // The frames are reported to the notification clients (#1825); their items name them by frameId.
+    GS::Array<GS::ObjectState> frameItems;
+    for (const auto& item : items) {
+        const GS::ObjectState* frameId = item.Get ("frameId");
+        frameItems.Push (frameId != nullptr ? GS::ObjectState ("elementId", *frameId) : GS::ObjectState ());
+    }
+
+    return ExecuteModifyWithResults ("Modify Curtain Wall Frames", frameItems, [&](GS::Array<GS::ObjectState>& results) {
+        for (const auto& item : items) {
+            results.Push (ModifyCurtainWallFrame (item));
         }
     });
 }
@@ -9357,7 +9729,7 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
 
     const Stories stories = GetStories ();
 
-    return ExecuteModifyWithResults ("Modify Roofs", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Roofs", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
@@ -9480,7 +9852,7 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
-    return ExecuteModifyWithResults ("Modify Shells", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Shells", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
@@ -9975,7 +10347,7 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
 
     const Stories stories = GetStories ();
 
-    return ExecuteModifyWithResults ("Modify Columns", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Columns", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
@@ -10043,7 +10415,7 @@ GS::String ModifyWindowsCommand::GetName () const
 
 GS::Optional<GS::UniString> ModifyWindowsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
             "windowsWithDetails": {
@@ -10051,16 +10423,7 @@ GS::Optional<GS::UniString> ModifyWindowsCommand::GetInputParametersSchema () co
                 "items": {
                     "type": "object",
                     "properties": {
-                        "elementId": { "$ref": "#/ElementId" },
-                        "width": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "sillHeight": { "type": "number" },
-                        "centerOffset": { "type": "number", "minimum": 0.0 },
-                        "reflected": { "type": "boolean" },
-                        "refSide": { "type": "boolean" },
-                        "oSide": { "type": "boolean" },
-                        "reveal": { "type": "boolean", "description": "Turn the reveal on or off." },
-                        "revealDepthOffset": { "type": "number", "description": "Distance the frame plane is moved across the wall thickness, along the wall normal." }
+                        "elementId": { "$ref": "#/ElementId" },)") + WindowOrDoorDetailSchemaFields () + R"(
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -10085,7 +10448,7 @@ GS::ObjectState ModifyWindowsCommand::Execute (const GS::ObjectState& parameters
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
-    return ExecuteModifyWithResults ("Modify Windows", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Windows", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
@@ -10101,7 +10464,12 @@ GS::ObjectState ModifyWindowsCommand::Execute (const GS::ObjectState& parameters
 
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
-            const bool changed = ApplyWindowOrDoorDetails (element, mask, item);
+            bool changed = false;
+            const GS::Optional<GS::UniString> detailsError = ApplyWindowOrDoorDetails (element, mask, item, changed);
+            if (detailsError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, detailsError.Get ()));
+                continue;
+            }
             if (!changed) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No window fields to modify."));
                 continue;
@@ -10125,7 +10493,7 @@ GS::String ModifyDoorsCommand::GetName () const
 
 GS::Optional<GS::UniString> ModifyDoorsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
             "doorsWithDetails": {
@@ -10133,16 +10501,7 @@ GS::Optional<GS::UniString> ModifyDoorsCommand::GetInputParametersSchema () cons
                 "items": {
                     "type": "object",
                     "properties": {
-                        "elementId": { "$ref": "#/ElementId" },
-                        "width": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "sillHeight": { "type": "number" },
-                        "centerOffset": { "type": "number", "minimum": 0.0 },
-                        "reflected": { "type": "boolean" },
-                        "refSide": { "type": "boolean" },
-                        "oSide": { "type": "boolean" },
-                        "reveal": { "type": "boolean", "description": "Turn the reveal on or off." },
-                        "revealDepthOffset": { "type": "number", "description": "Distance the frame plane is moved across the wall thickness, along the wall normal." }
+                        "elementId": { "$ref": "#/ElementId" },)") + WindowOrDoorDetailSchemaFields () + R"(
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -10167,7 +10526,7 @@ GS::ObjectState ModifyDoorsCommand::Execute (const GS::ObjectState& parameters, 
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
-    return ExecuteModifyWithResults ("Modify Doors", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Doors", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
@@ -10183,7 +10542,12 @@ GS::ObjectState ModifyDoorsCommand::Execute (const GS::ObjectState& parameters, 
 
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
-            const bool changed = ApplyWindowOrDoorDetails (element, mask, item);
+            bool changed = false;
+            const GS::Optional<GS::UniString> detailsError = ApplyWindowOrDoorDetails (element, mask, item, changed);
+            if (detailsError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, detailsError.Get ()));
+                continue;
+            }
             if (!changed) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No door fields to modify."));
                 continue;
@@ -10247,7 +10611,7 @@ GS::ObjectState ModifyOpeningsCommand::Execute (const GS::ObjectState& parameter
     const Stories stories = GetStories ();
 #endif
 
-    return ExecuteModifyWithResults ("Modify Openings", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Openings", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
@@ -10426,7 +10790,7 @@ GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters,
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
-    return ExecuteModifyWithResults ("Modify Morphs", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Morphs", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
@@ -10857,7 +11221,7 @@ GS::ObjectState ModifySectionsCommand::Execute (const GS::ObjectState& parameter
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
-    return ExecuteModifyWithResults ("Modify Sections", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Sections", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
@@ -11334,6 +11698,9 @@ GS::ObjectState ModifyMeshesCommand::Execute (const GS::ObjectState& parameters,
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (meshesData);
+
     ACAPI_CallUndoableCommand ("ModifyMeshes", [&] () -> GSErrCode {
         for (const GS::ObjectState& meshEntry : meshesData) {
             const GS::ObjectState* elementId = meshEntry.Get ("elementId");
@@ -11530,11 +11897,14 @@ GS::ObjectState ModifyMeshesCommand::Execute (const GS::ObjectState& parameters,
                 continue;
             }
 
+            changeReporter.MarkChanged (elem.header.guid);
             executionResults (CreateSuccessfulExecutionResult ());
         }
 
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }
@@ -13089,7 +13459,7 @@ GS::ObjectState ModifyDetailMarkersCommand::Execute (const GS::ObjectState& para
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
-    return ExecuteModifyWithResults ("Modify Detail Markers", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Detail Markers", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const GS::ObjectState& item : items) {
             GS::UniString name;
             GS::UniString id;
@@ -13271,7 +13641,7 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
     const Stories stories = GetStories ();
     const double tolerance = 1e-6;
 
-    return ExecuteModifyWithResults ("Modify Railings", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Railings", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));

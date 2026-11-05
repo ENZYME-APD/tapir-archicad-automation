@@ -15,7 +15,8 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             : base(
                 "GetProjectPreferences",
                 "Gets pages of the project preferences (Options > Project Preferences): the working units, " +
-                "the dimensions, the calculation units and the zones. Each page is a JSON text that " +
+                "the dimensions, the calculation units, the zones and the reference levels, and the Floor Plan " +
+                "Cut Plane Settings. Each page is a JSON text that " +
                 "SetProjectPreferences takes back.",
                 GroupNames.Project)
         {
