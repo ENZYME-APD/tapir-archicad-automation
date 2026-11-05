@@ -3630,9 +3630,46 @@ bool ApplyMorphCosmeticDetails (const GS::ObjectState& details, API_Element& ele
 // zero actual effect. Reading back whatever Archicad itself currently reports (AddMorphBodyFromMemo
 // in ElementCommands.cpp) remains fully correct and unaffected - only writing is impossible.
 
-bool ApplyWindowOrDoorDetails (API_Element& element, API_Element& mask, const GS::ObjectState& details)
+// The keys CreateWindows/CreateDoors and ModifyWindows/ModifyDoors take on top of their own
+// (ownerWallId and libraryPartName/favoriteName, or elementId), one string for all four schemas,
+// so they accept the same keys - the ones ApplyWindowOrDoorDetails writes and GetDetailsOfElements
+// returns for windows and doors.
+GS::UniString WindowOrDoorDetailSchemaFields ()
 {
-    bool changed = false;
+    return R"(
+        "width": { "type": "number", "exclusiveMinimum": 0.0 },
+        "height": { "type": "number", "exclusiveMinimum": 0.0 },
+        "sillHeight": { "type": "number" },
+        "centerOffset": { "type": "number", "minimum": 0.0 },
+        "reflected": { "type": "boolean" },
+        "refSide": { "type": "boolean" },
+        "oSide": { "type": "boolean" },
+        "reveal": { "type": "boolean", "description": "Turn the reveal on or off." },
+        "revealDepthOffset": { "type": "number", "description": "Distance the frame plane is moved across the wall thickness, along the wall normal." },
+        "displayOption": { "$ref": "#/DisplayOption" },
+        "pen": { "type": "integer", "minimum": 0, "maximum": 255, "description": "Pen of the opening's floor plan symbol; used unless useObjectPens is true." },
+        "lineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the opening's floor plan symbol; used unless useObjectLineTypes is true." },
+        "cutLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the cut lines of the opening." },
+        "sectionFillId": { "$ref": "#/AttributeId", "description": "Fill of the section of the opening; used unless useObjectSectionAttributes is true." },
+        "sectionFillPen": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "sectionFillBackgroundPen": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "sectionContourPen": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "aboveViewLinePen": { "type": "integer", "minimum": 0, "maximum": 255, "description": "Pen of the overhead lines (\"Overhead Line Pens\")." },
+        "aboveViewLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the overhead lines (\"Overhead Lines\")." },
+        "belowViewLinePen": { "type": "integer", "minimum": 0, "maximum": 255, "description": "Pen of the uncut lines of the opening." },
+        "belowViewLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the uncut lines (\"Uncut Lines\")." },
+        "useObjectPens": { "type": "boolean", "description": "Use the pens defined in the library part instead of 'pen'." },
+        "useObjectLineTypes": { "type": "boolean", "description": "Use the line types defined in the library part instead of 'lineTypeId'." },
+        "useObjectSectionAttributes": { "type": "boolean", "description": "Use the section attributes defined in the library part instead of 'sectionFillId' and the section pens." })";
+}
+
+// Writes the given keys of a window or door to `element` and sets them in `mask`; shared by
+// CreateWindows/CreateDoors (whose mask is not used) and ModifyWindows/ModifyDoors. `changed`
+// tells whether any key was given. An invalid displayOption or attribute reference returns the
+// error and nothing is to be written.
+GS::Optional<GS::UniString> ApplyWindowOrDoorDetails (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed)
+{
+    changed = false;
     auto width = GetOptionalDouble (details, "width");
     if (width.HasValue ()) {
         element.window.openingBase.width = width.Get ();
@@ -3687,7 +3724,117 @@ bool ApplyWindowOrDoorDetails (API_Element& element, API_Element& mask, const GS
         ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, revealDepthOffset);
         changed = true;
     }
-    return changed;
+
+    // Floor plan and section settings (API_OpeningBaseType), the keys GetDetailsOfElements
+    // returns for windows and doors (#1791).
+    API_OpeningBaseType& opening = element.window.openingBase;
+    GS::UniString displayOptionStr;
+    if (details.Get ("displayOption", displayOptionStr)) {
+        API_ElemDisplayOptionsID displayOption = API_Standard;
+        if (!ElemDisplayOptionFromString (displayOptionStr, displayOption)) {
+            return GS::UniString ("Invalid 'displayOption'.");
+        }
+        opening.displayOption = displayOption;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.displayOption);
+        changed = true;
+    }
+
+    const auto applyAttribute = [&] (const char* fieldName, API_AttrTypeID attributeType, API_AttributeIndex& target) -> GS::Optional<GS::UniString> {
+        bool hasValue = false;
+        API_AttributeIndex index = APIInvalidAttributeIndex;
+        GS::Optional<GS::UniString> attributeError = TryResolveAttributeField (details, fieldName, attributeType, hasValue, index);
+        if (attributeError.HasValue () || !hasValue) {
+            return attributeError;
+        }
+        target = index;
+        changed = true;
+        return {};
+    };
+    GS::Optional<GS::UniString> attributeError = applyAttribute ("lineTypeId", API_LinetypeID, opening.ltypeInd);
+    if (attributeError.HasValue ()) {
+        return attributeError;
+    }
+    if (details.Get ("lineTypeId") != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.ltypeInd);
+    }
+    attributeError = applyAttribute ("cutLineTypeId", API_LinetypeID, opening.cutLineType);
+    if (attributeError.HasValue ()) {
+        return attributeError;
+    }
+    if (details.Get ("cutLineTypeId") != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.cutLineType);
+    }
+    attributeError = applyAttribute ("sectionFillId", API_FilltypeID, opening.sectFill);
+    if (attributeError.HasValue ()) {
+        return attributeError;
+    }
+    if (details.Get ("sectionFillId") != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.sectFill);
+    }
+    attributeError = applyAttribute ("aboveViewLineTypeId", API_LinetypeID, opening.aboveViewLineType);
+    if (attributeError.HasValue ()) {
+        return attributeError;
+    }
+    if (details.Get ("aboveViewLineTypeId") != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.aboveViewLineType);
+    }
+    attributeError = applyAttribute ("belowViewLineTypeId", API_LinetypeID, opening.belowViewLineType);
+    if (attributeError.HasValue ()) {
+        return attributeError;
+    }
+    if (details.Get ("belowViewLineTypeId") != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.belowViewLineType);
+    }
+
+    Int32 penValue = 0;
+    if (details.Get ("pen", penValue)) {
+        opening.pen = (short) penValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.pen);
+        changed = true;
+    }
+    if (details.Get ("sectionFillPen", penValue)) {
+        opening.sectFillPen = (short) penValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.sectFillPen);
+        changed = true;
+    }
+    if (details.Get ("sectionFillBackgroundPen", penValue)) {
+        opening.sectBGPen = (short) penValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.sectBGPen);
+        changed = true;
+    }
+    if (details.Get ("sectionContourPen", penValue)) {
+        opening.sectContPen = (short) penValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.sectContPen);
+        changed = true;
+    }
+    if (details.Get ("aboveViewLinePen", penValue)) {
+        opening.aboveViewLinePen = (short) penValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.aboveViewLinePen);
+        changed = true;
+    }
+    if (details.Get ("belowViewLinePen", penValue)) {
+        opening.belowViewLinePen = (short) penValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.belowViewLinePen);
+        changed = true;
+    }
+
+    bool boolValue = false;
+    if (details.Get ("useObjectPens", boolValue)) {
+        opening.useObjPens = boolValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.useObjPens);
+        changed = true;
+    }
+    if (details.Get ("useObjectLineTypes", boolValue)) {
+        opening.useObjLtypes = boolValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.useObjLtypes);
+        changed = true;
+    }
+    if (details.Get ("useObjectSectionAttributes", boolValue)) {
+        opening.useObjSectAttrs = boolValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.useObjSectAttrs);
+        changed = true;
+    }
+    return {};
 }
 
 }
@@ -5783,7 +5930,7 @@ GS::String CreateWindowsCommand::GetName () const
 
 GS::Optional<GS::UniString> CreateWindowsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
             "windowsData": {
@@ -5791,14 +5938,7 @@ GS::Optional<GS::UniString> CreateWindowsCommand::GetInputParametersSchema () co
                 "items": {
                     "type": "object",
                     "properties": {
-                        "ownerWallId": { "$ref": "#/ElementId" },
-                        "centerOffset": { "type": "number", "minimum": 0.0 },
-                        "sillHeight": { "type": "number" },
-                        "width": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "reflected": { "type": "boolean" },
-                        "refSide": { "type": "boolean" },
-                        "oSide": { "type": "boolean" },
+                        "ownerWallId": { "$ref": "#/ElementId" },)") + WindowOrDoorDetailSchemaFields () + R"(,
                         "libraryPartName": {
                             "type": "string",
                             "description": "Optional. Localized library part name (docu_UName) to place instead of the tool default/favorite, e.g. a shutter part that has no favorite. It has to be a window library part. Applied to the tool defaults before cloning."
@@ -5968,29 +6108,13 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
             data.Get ("centerOffset", centerOffset);
             element.window.owner = wallGuid;
             element.window.objLoc = centerOffset;
-            auto sillHeight = GetOptionalDouble (data, "sillHeight");
-            if (sillHeight.HasValue ()) {
-                element.window.lower = sillHeight.Get ();
-            }
-            auto width = GetOptionalDouble (data, "width");
-            if (width.HasValue ()) {
-                element.window.openingBase.width = width.Get ();
-            }
-            auto height = GetOptionalDouble (data, "height");
-            if (height.HasValue ()) {
-                element.window.openingBase.height = height.Get ();
-            }
-            bool reflected = false;
-            if (data.Get ("reflected", reflected)) {
-                element.window.openingBase.reflected = reflected;
-            }
-            bool refSide = false;
-            if (data.Get ("refSide", refSide)) {
-                element.window.openingBase.refSide = refSide;
-            }
-            bool oSide = false;
-            if (data.Get ("oSide", oSide)) {
-                element.window.openingBase.oSide = oSide;
+            // The same keys ModifyWindows writes; the mask is not used by the create.
+            API_Element unusedMask = {};
+            bool detailsGiven = false;
+            const GS::Optional<GS::UniString> detailsError = ApplyWindowOrDoorDetails (element, unusedMask, data, detailsGiven);
+            if (detailsError.HasValue ()) {
+                elements.Push (CreateErrorResponse (APIERR_BADPARS, detailsError.Get ()));
+                continue;
             }
 
             err = withMarker
@@ -6024,7 +6148,7 @@ GS::String CreateDoorsCommand::GetName () const
 
 GS::Optional<GS::UniString> CreateDoorsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
             "doorsData": {
@@ -6032,14 +6156,7 @@ GS::Optional<GS::UniString> CreateDoorsCommand::GetInputParametersSchema () cons
                 "items": {
                     "type": "object",
                     "properties": {
-                        "ownerWallId": { "$ref": "#/ElementId" },
-                        "centerOffset": { "type": "number", "minimum": 0.0 },
-                        "sillHeight": { "type": "number" },
-                        "width": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "reflected": { "type": "boolean" },
-                        "refSide": { "type": "boolean" },
-                        "oSide": { "type": "boolean" },
+                        "ownerWallId": { "$ref": "#/ElementId" },)") + WindowOrDoorDetailSchemaFields () + R"(,
                         "libraryPartName": {
                             "type": "string",
                             "description": "Optional. Localized library part name (docu_UName) to place instead of the tool default/favorite, e.g. a shutter part that has no favorite. It has to be a door library part. Applied to the tool defaults before cloning."
@@ -6152,29 +6269,13 @@ GS::ObjectState CreateDoorsCommand::Execute (const GS::ObjectState& parameters, 
             data.Get ("centerOffset", centerOffset);
             element.window.owner = wallGuid;
             element.window.objLoc = centerOffset;
-            auto sillHeight = GetOptionalDouble (data, "sillHeight");
-            if (sillHeight.HasValue ()) {
-                element.window.lower = sillHeight.Get ();
-            }
-            auto width = GetOptionalDouble (data, "width");
-            if (width.HasValue ()) {
-                element.window.openingBase.width = width.Get ();
-            }
-            auto height = GetOptionalDouble (data, "height");
-            if (height.HasValue ()) {
-                element.window.openingBase.height = height.Get ();
-            }
-            bool reflected = false;
-            if (data.Get ("reflected", reflected)) {
-                element.window.openingBase.reflected = reflected;
-            }
-            bool refSide = false;
-            if (data.Get ("refSide", refSide)) {
-                element.window.openingBase.refSide = refSide;
-            }
-            bool oSide = false;
-            if (data.Get ("oSide", oSide)) {
-                element.window.openingBase.oSide = oSide;
+            // The same keys ModifyDoors writes; the mask is not used by the create.
+            API_Element unusedMask = {};
+            bool detailsGiven = false;
+            const GS::Optional<GS::UniString> detailsError = ApplyWindowOrDoorDetails (element, unusedMask, data, detailsGiven);
+            if (detailsError.HasValue ()) {
+                elements.Push (CreateErrorResponse (APIERR_BADPARS, detailsError.Get ()));
+                continue;
             }
 
             err = withMarker
@@ -10164,7 +10265,7 @@ GS::String ModifyWindowsCommand::GetName () const
 
 GS::Optional<GS::UniString> ModifyWindowsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
             "windowsWithDetails": {
@@ -10172,16 +10273,7 @@ GS::Optional<GS::UniString> ModifyWindowsCommand::GetInputParametersSchema () co
                 "items": {
                     "type": "object",
                     "properties": {
-                        "elementId": { "$ref": "#/ElementId" },
-                        "width": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "sillHeight": { "type": "number" },
-                        "centerOffset": { "type": "number", "minimum": 0.0 },
-                        "reflected": { "type": "boolean" },
-                        "refSide": { "type": "boolean" },
-                        "oSide": { "type": "boolean" },
-                        "reveal": { "type": "boolean", "description": "Turn the reveal on or off." },
-                        "revealDepthOffset": { "type": "number", "description": "Distance the frame plane is moved across the wall thickness, along the wall normal." }
+                        "elementId": { "$ref": "#/ElementId" },)") + WindowOrDoorDetailSchemaFields () + R"(
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -10222,7 +10314,12 @@ GS::ObjectState ModifyWindowsCommand::Execute (const GS::ObjectState& parameters
 
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
-            const bool changed = ApplyWindowOrDoorDetails (element, mask, item);
+            bool changed = false;
+            const GS::Optional<GS::UniString> detailsError = ApplyWindowOrDoorDetails (element, mask, item, changed);
+            if (detailsError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, detailsError.Get ()));
+                continue;
+            }
             if (!changed) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No window fields to modify."));
                 continue;
@@ -10246,7 +10343,7 @@ GS::String ModifyDoorsCommand::GetName () const
 
 GS::Optional<GS::UniString> ModifyDoorsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
             "doorsWithDetails": {
@@ -10254,16 +10351,7 @@ GS::Optional<GS::UniString> ModifyDoorsCommand::GetInputParametersSchema () cons
                 "items": {
                     "type": "object",
                     "properties": {
-                        "elementId": { "$ref": "#/ElementId" },
-                        "width": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "sillHeight": { "type": "number" },
-                        "centerOffset": { "type": "number", "minimum": 0.0 },
-                        "reflected": { "type": "boolean" },
-                        "refSide": { "type": "boolean" },
-                        "oSide": { "type": "boolean" },
-                        "reveal": { "type": "boolean", "description": "Turn the reveal on or off." },
-                        "revealDepthOffset": { "type": "number", "description": "Distance the frame plane is moved across the wall thickness, along the wall normal." }
+                        "elementId": { "$ref": "#/ElementId" },)") + WindowOrDoorDetailSchemaFields () + R"(
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -10304,7 +10392,12 @@ GS::ObjectState ModifyDoorsCommand::Execute (const GS::ObjectState& parameters, 
 
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
-            const bool changed = ApplyWindowOrDoorDetails (element, mask, item);
+            bool changed = false;
+            const GS::Optional<GS::UniString> detailsError = ApplyWindowOrDoorDetails (element, mask, item, changed);
+            if (detailsError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, detailsError.Get ()));
+                continue;
+            }
             if (!changed) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No door fields to modify."));
                 continue;
