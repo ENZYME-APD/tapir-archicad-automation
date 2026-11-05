@@ -1261,9 +1261,15 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
                 continue;
             }
 
+            // The values that passed the checks and the conversion, written together below,
+            // and the index of each one's execution result.
+            GS::Array<API_Property> propertiesToSet;
+            GS::Array<GSIndex> propertiesToSetResultIndices;
+
             for (API_Property& propertyValue : propertyValues) {
                 const auto guidPair = GS::NewPair (elemGuid, propertyValue.definition.guid);
-                auto& result = results[resultIndices[guidPair]];
+                const GSIndex resultIndex = resultIndices[guidPair];
+                auto& result = results[resultIndex];
 
                 const API_PropertyDefinition& definition = propertyValue.definition;
                 if (!ACAPI_Element_IsPropertyDefinitionValueEditable (elemGuid, definition.guid)) {
@@ -1293,14 +1299,28 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
                     continue;
                 }
 
-                err = ACAPI_Element_SetProperty (elemGuid, propertyValue);
+                propertiesToSet.Push (propertyValue);
+                propertiesToSetResultIndices.Push (resultIndex);
+            }
 
-                if (err != NoError) {
-                    result = CreateFailedExecutionResult (err, "Failed to set property value for element");
-                    continue;
+            if (propertiesToSet.IsEmpty ()) {
+                continue;
+            }
+
+            // One call writes all values of the element; if it fails, the values are written
+            // one by one, so each value gets its own error.
+            if (propertiesToSet.GetSize () > 1 && ACAPI_Element_SetProperties (elemGuid, propertiesToSet) == NoError) {
+                for (const GSIndex resultIndex : propertiesToSetResultIndices) {
+                    results[resultIndex] = CreateSuccessfulExecutionResult ();
                 }
+                continue;
+            }
 
-                result = CreateSuccessfulExecutionResult ();
+            for (UIndex i = 0; i < propertiesToSet.GetSize (); ++i) {
+                const GSErrCode err = ACAPI_Element_SetProperty (elemGuid, propertiesToSet[i]);
+                results[propertiesToSetResultIndices[i]] = err == NoError
+                    ? CreateSuccessfulExecutionResult ()
+                    : CreateFailedExecutionResult (err, "Failed to set property value for element");
             }
         }
 
@@ -2237,13 +2257,8 @@ GS::Optional<GS::UniString> GetPropertyDefinitionsOfAttributesCommand::GetInputP
                 "$ref": "#/AttributeIds"
             },
             "filter": {
-                "type": "string",
-                "description": "Which property definitions to return: the user defined (custom) ones, the fundamental built-in ones, or all of them. The default is UserDefined.",
-                "enum": [
-                    "UserDefined",
-                    "FundamentalBuiltIn",
-                    "All"
-                ]
+                "$ref": "#/AttributePropertyDefinitionFilter",
+                "description": "The default is UserDefined."
             }
         },
         "additionalProperties": false,
@@ -2264,16 +2279,7 @@ GS::Optional<GS::UniString> GetPropertyDefinitionsOfAttributesCommand::GetRawRes
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "propertyIds": {
-                                    "$ref": "#/PropertyIds"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "propertyIds"
-                            ]
+                            "$ref": "#/AttributePropertyIds"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -2847,33 +2853,13 @@ GS::Optional<GS::UniString> DeletePropertyGroupsCommand::GetRawResponseSchema ()
 
 GS::ObjectState DeletePropertyGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::Array<GS::ObjectState> propertyGroupIds;
-    parameters.Get ("propertyGroupIds", propertyGroupIds);
-
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-
-    ACAPI_CallUndoableCommand ("DeletePropertyGroups", [&]() -> GSErrCode {
-        for (const GS::ObjectState& p : propertyGroupIds) {
-            const GS::ObjectState* propertyGroupId = p.Get ("propertyGroupId");
-            if (propertyGroupId == nullptr) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "propertyGroupId is missing"));
-                continue;
-            }
-
-            GSErrCode err = ACAPI_Property_DeletePropertyGroup (GetGuidFromObjectState (*propertyGroupId));
-            if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (err, "failed to delete property group"));
-                continue;
-            }
-
-            executionResults (CreateSuccessfulExecutionResult ());
+    return ExecuteForEachIdInList (parameters, "propertyGroupIds", "propertyGroupId", "DeletePropertyGroups", [] (const API_Guid& propertyGroupGuid) {
+        const GSErrCode err = ACAPI_Property_DeletePropertyGroup (propertyGroupGuid);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "failed to delete property group");
         }
-
-        return NoError;
+        return CreateSuccessfulExecutionResult ();
     });
-
-    return response;
 }
 
 // Fills definition.defaultValue from a PropertyDefaultValue object: {expressions: [...]}
@@ -3280,33 +3266,13 @@ GS::Optional<GS::UniString> DeletePropertyDefinitionsCommand::GetRawResponseSche
 
 GS::ObjectState DeletePropertyDefinitionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::Array<GS::ObjectState> propertyIds;
-    parameters.Get ("propertyIds", propertyIds);
-
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-
-    ACAPI_CallUndoableCommand ("DeletePropertyDefinitions", [&]() -> GSErrCode {
-        for (const GS::ObjectState& p : propertyIds) {
-            const GS::ObjectState* propertyId = p.Get ("propertyId");
-            if (propertyId == nullptr) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "propertyId is missing"));
-                continue;
-            }
-
-            GSErrCode err = ACAPI_Property_DeletePropertyDefinition (GetGuidFromObjectState (*propertyId));
-            if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (err, "failed to delete property"));
-                continue;
-            }
-
-            executionResults (CreateSuccessfulExecutionResult ());
+    return ExecuteForEachIdInList (parameters, "propertyIds", "propertyId", "DeletePropertyDefinitions", [] (const API_Guid& propertyGuid) {
+        const GSErrCode err = ACAPI_Property_DeletePropertyDefinition (propertyGuid);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "failed to delete property");
         }
-
-        return NoError;
+        return CreateSuccessfulExecutionResult ();
     });
-
-    return response;
 }
 
 static bool ApplyEnumEdits (const GS::ObjectState& item, API_PropertyDefinition& definition, GS::UniString& error)

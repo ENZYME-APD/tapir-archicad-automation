@@ -96,7 +96,7 @@
       "subgroup": null
     },
     {
-      "get": null,
+      "get": "reveal",
       "set": "reveal",
       "apiMember": "API_WindowType::reveal",
       "apiDescription": "True if the opening has reveal.",
@@ -106,7 +106,7 @@
       "subgroup": null
     },
     {
-      "get": null,
+      "get": "revealDepthOffset",
       "set": "revealDepthOffset",
       "apiMember": "API_WindowType::revealDepthOffset",
       "apiDescription": "Inset from the clicked side of wall or core (according to revealDepthLocation).",
@@ -143,6 +143,156 @@
       "label": null,
       "labelSource": null,
       "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "displayOption",
+      "set": "displayOption",
+      "apiMember": "API_OpeningBaseType::displayOption",
+      "apiDescription": "Display options of the element on the floor plan (see API_ElemDisplayOptionsID).",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "pen",
+      "set": "pen",
+      "apiMember": "API_OpeningBaseType::pen",
+      "apiDescription": "Pen index.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "lineTypeId",
+      "set": "lineTypeId",
+      "apiMember": "API_OpeningBaseType::ltypeInd",
+      "apiDescription": "Line type index.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "cutLineTypeId",
+      "set": "cutLineTypeId",
+      "apiMember": "API_OpeningBaseType::cutLineType",
+      "apiDescription": "Line type index for cut lines of the opening.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "sectionFillId",
+      "set": "sectionFillId",
+      "apiMember": "API_OpeningBaseType::sectFill",
+      "apiDescription": "Fill index of section of the opening.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "sectionFillPen",
+      "set": "sectionFillPen",
+      "apiMember": "API_OpeningBaseType::sectFillPen",
+      "apiDescription": "Pen index of the fill of the section of the opening.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "sectionFillBackgroundPen",
+      "set": "sectionFillBackgroundPen",
+      "apiMember": "API_OpeningBaseType::sectBGPen",
+      "apiDescription": "Background pen index of the fill of the section of the opening.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "sectionContourPen",
+      "set": "sectionContourPen",
+      "apiMember": "API_OpeningBaseType::sectContPen",
+      "apiDescription": "Contour pen index of the fill of the section of the opening.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "aboveViewLinePen",
+      "set": "aboveViewLinePen",
+      "apiMember": "API_OpeningBaseType::aboveViewLinePen",
+      "apiDescription": "Pen used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup. Corresponds to the \"Overhead Line Pens\" value in the Door/Window Settings dialog.",
+      "label": "Overhead Line Pens",
+      "labelSource": "devkit:APIdefs_Elements.h API_OpeningBaseType::aboveViewLinePen (Corresponds to the \"Overhead Line Pens\" value in the Door/Window Settings dialog)",
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "aboveViewLineTypeId",
+      "set": "aboveViewLineTypeId",
+      "apiMember": "API_OpeningBaseType::aboveViewLineType",
+      "apiDescription": "Line type used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup. Corresponds to the \"Overhead Lines\" value in the Door/Window Settings dialog.",
+      "label": "Overhead Lines",
+      "labelSource": "devkit:APIdefs_Elements.h API_OpeningBaseType::aboveViewLineType (Corresponds to the \"Overhead Lines\" value in the Door/Window Settings dialog)",
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "belowViewLinePen",
+      "set": "belowViewLinePen",
+      "apiMember": "API_OpeningBaseType::belowViewLinePen",
+      "apiDescription": "Pen index of the uncut lines of the opening.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "belowViewLineTypeId",
+      "set": "belowViewLineTypeId",
+      "apiMember": "API_OpeningBaseType::belowViewLineType",
+      "apiDescription": "Line type used when \"OutLines Only\" is selected from the \"Floor Plan Display\" popup. Corresponds to the \"Uncut Lines\" value in the Door/Window Settings dialog.",
+      "label": "Uncut Lines",
+      "labelSource": "devkit:APIdefs_Elements.h API_OpeningBaseType::belowViewLineType (Corresponds to the \"Uncut Lines\" value in the Door/Window Settings dialog)",
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "useObjectPens",
+      "set": "useObjectPens",
+      "apiMember": "API_OpeningBaseType::useObjPens",
+      "apiDescription": "Use the pens defined in the library part.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "useObjectLineTypes",
+      "set": "useObjectLineTypes",
+      "apiMember": "API_OpeningBaseType::useObjLtypes",
+      "apiDescription": "Use the line types defined in the library part.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "useObjectSectionAttributes",
+      "set": "useObjectSectionAttributes",
+      "apiMember": "API_OpeningBaseType::useObjSectAttrs",
+      "apiDescription": "Use the section attributes defined in the library part.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
       "subgroup": null
     }
   ]

@@ -170,6 +170,9 @@ inline GSErrCode ACAPI_HierarchicalEditing_GetHierarchicalElementOwner (const AP
 #define ACAPI_Element_CatchNewElement ACAPI_Notify_CatchNewElement
 #define ACAPI_Notification_GetParentElement ACAPI_Notify_GetParentElement
 #define ACAPI_Notification_CatchElementReservationChange ACAPI_Notify_CatchElementReservationChange
+#define ACAPI_Notification_CatchSelectionChange ACAPI_Notify_CatchSelectionChange
+// Archicad 26 only, Archicad 25 has no attribute replacement notification.
+#define ACAPI_Notification_CatchAttributeReplacement ACAPI_Notify_CatchAttributeReplacement
 
 #define ACAPI_ModelAccess_Get3DInfo ACAPI_Element_Get3DInfo
 #define ACAPI_ModelAccess_GetComponent ACAPI_3D_GetComponent
@@ -846,6 +849,26 @@ inline GSErrCode ACAPI_LibraryPart_GetBuiltInLibpartUnId (short resId, char* unI
     return ACAPI_Goodies (APIAny_GetBuiltInLibpartUnIdID, (void*)(Int64)resId, unId);
 }
 
+inline GSErrCode ACAPI_LibraryPart_GetDetails (Int32 libInd, API_LibPartDetails* details)
+{
+    return ACAPI_LibPart_GetDetails (libInd, details);
+}
+
+inline GSErrCode ACAPI_LibraryPart_CheckLibPartSubtypeOf (const char* successorUnIDStr, const char* predecessorUnIDStr)
+{
+    return ACAPI_Goodies (APIAny_CheckLibPartSubtypeOfID, const_cast<char*> (successorUnIDStr), const_cast<char*> (predecessorUnIDStr));
+}
+
+inline GSErrCode ACAPI_LibraryPart_CheckLibPartSubtypeOfbyMain (const char* successorUnIDStr, const char* predecessorUnIDStr)
+{
+    return ACAPI_Goodies (APIAny_CheckLibPartSubtypeOfbyMainID, const_cast<char*> (successorUnIDStr), const_cast<char*> (predecessorUnIDStr));
+}
+
+inline GSErrCode ACAPI_LibraryPart_GetLibPartToolVariation (API_LibPart* libPart, API_ToolBoxItem* toolboxItem)
+{
+    return ACAPI_Goodies (APIAny_GetLibPartToolVariationID, libPart, toolboxItem);
+}
+
 inline GSErrCode ACAPI_LibraryPart_GetElemLibPartUnId (API_Elem_Head* elemHead, char* lpfUnId)
 {
     return ACAPI_Goodies (APIAny_GetElemLibPartUnIdID, elemHead, lpfUnId);
@@ -978,6 +1001,11 @@ inline GSErrCode ACAPI_Database_DeleteDatabase (API_DatabaseInfo* databaseInfo)
 inline GSErrCode ACAPI_Element_GetExtent (API_Box* extent, API_DatabaseUnId* databaseUnId = nullptr)
 {
     return ACAPI_Database (APIDb_GetExtentID, extent, databaseUnId);
+}
+
+inline GSErrCode ACAPI_Element_GetExtent3D (API_Box3D* extent3D)
+{
+    return ACAPI_Database (APIDb_GetExtent3DID, extent3D);
 }
 
 inline GSErrCode ACAPI_Navigator_GetLayoutBook (API_LayoutBook* book)

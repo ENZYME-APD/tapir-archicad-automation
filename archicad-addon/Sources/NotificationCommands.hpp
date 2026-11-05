@@ -32,14 +32,20 @@ public:
     struct Client {
         Client(
             const IO::URI::URI& url,
-            bool onNew, bool onMod, bool onResChanges,
+            bool onNew, bool onMod, bool onResChanges, bool onSelChange, bool onWindowChange, bool onProjectEvents, bool onAttrReplacement,
             const std::set<API_ElemTypeID>& typesToObserve)
-            : url(url), notifyOnNew(onNew), notifyOnModification(onMod), notifyOnReservationChanges(onResChanges), elementTypesToObserve(typesToObserve) {}
+            : url(url), notifyOnNew(onNew), notifyOnModification(onMod), notifyOnReservationChanges(onResChanges), notifyOnSelectionChange(onSelChange),
+              notifyOnWindowChange(onWindowChange), notifyOnProjectEvents(onProjectEvents), notifyOnAttributeReplacement(onAttrReplacement),
+              elementTypesToObserve(typesToObserve) {}
 
         IO::URI::URI             url;
         bool                     notifyOnNew;
         bool                     notifyOnModification;
         bool                     notifyOnReservationChanges;
+        bool                     notifyOnSelectionChange;
+        bool                     notifyOnWindowChange;
+        bool                     notifyOnProjectEvents;
+        bool                     notifyOnAttributeReplacement;
         // The element types whose modifications this client is notified of; empty means every type.
         std::set<API_ElemTypeID> elementTypesToObserve;
 
@@ -77,6 +83,7 @@ public:
 
     static void UpdateElementObservers ();
     static bool IsObservedElementType (API_ElemTypeID typeID);
+    static void UninstallSelectionChangeHandlerIfNotNeeded ();
     static void SendEventToNotificationClient (ElementEventType eventType, const GS::ObjectState& os);
     static void SendQueuedEventsToNotificationClient ();
     static void SendMessageToNotificationClient (Client& client, const GS::ObjectState& os);
@@ -84,6 +91,15 @@ public:
     static GSErrCode ElementReservationChangeHandler (const GS::HashTable<API_Guid, short>& reserved,
                                                       const GS::HashSet<API_Guid>&          released,
                                                       const GS::HashSet<API_Guid>&          deleted);
+    static GSErrCode SelectionChangeHandler (const API_Neig* selElemNeig);
+    static void UninstallAttributeReplacementHandlerIfNotNeeded ();
+#ifdef ServerMainVers_2600
+    // Archicad 25 has no attribute replacement notification.
+    static GSErrCode AttributeReplacementHandler (const API_AttributeReplaceIndexTable& table);
+#endif
+    // Called by the add-on's one project event handler (ProjectEventHandler.cpp) on every project
+    // event it catches; sends the window, floor and project events to the clients that asked for them.
+    static void ProjectEventHandler (API_NotifyEventID notifID, Int32 param);
 
 private:
     friend class MessageSenderTask;
@@ -95,6 +111,8 @@ private:
     // hasClientToNotifyOnModification is set; empty means every element.
     static std::set<API_ElemTypeID> observedElementTypes;
     static bool hasClientToNotifyOnReservationChanges;
+    static bool hasClientToNotifyOnSelectionChange;
+    static bool hasClientToNotifyOnAttributeReplacement;
 
     using EventQueue = std::map<ElementEventType, std::vector<GS::ObjectState>>;
     static std::unique_ptr<EventQueue> queuedEvents;
