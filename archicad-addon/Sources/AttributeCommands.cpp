@@ -635,7 +635,7 @@ GS::Optional<GS::UniString> ImportAttributesFromProjectCommand::GetInputParamete
             },
             "attributeTypes": {
                 "type": "array",
-                "description": "The attribute types to import. Line, Fill, ZoneCategory, PenTable and OperationProfile can be imported. The other types fail with an error item: Archicad does not read Layer, Surface, BuildingMaterial and MEPSystem from a closed file, and a Composite, Profile or LayerCombination refers to such attributes by their index in the source file.",
+                "description": "The attribute types to import, in this order. Line, Fill, ZoneCategory, PenTable, OperationProfile, Composite, Profile and LayerCombination can be imported. Layer, Surface, BuildingMaterial and MEPSystem fail with an error item: Archicad does not read them from a closed file. A Composite, Profile or LayerCombination refers to other attributes, see referencesByIndex; list Line and Fill before them to import the lines and fills they use.",
                 "items": {
                     "$ref": "#/AttributeType"
                 },
@@ -655,6 +655,10 @@ GS::Optional<GS::UniString> ImportAttributesFromProjectCommand::GetInputParamete
             "dryRun": {
                 "type": "boolean",
                 "description": "If true, nothing is changed: the response reports what an import would do."
+            },
+            "referencesByIndex": {
+                "type": "boolean",
+                "description": "How the BuildingMaterial, Surface and Layer references of an imported Composite, Profile or LayerCombination are mapped. Archicad does not read these attributes from a closed file, so their names are unknown and they cannot be matched by name. false (default): an attribute with such a reference is not imported (result failed). true: the reference keeps its index and refers to the attribute with that index in the open project, which is right only when both files share these attributes at the same indexes, for example because they come from the same template. Line and Fill references are always matched by name."
             }
         },
         "additionalProperties": false,
@@ -707,11 +711,58 @@ GS::Optional<GS::UniString> ImportAttributesFromProjectCommand::GetRawResponseSc
                                                             "skipped",
                                                             "failed"
                                                         ],
-                                                        "description": "created: new in the open project. overwritten: an attribute of the same name was overwritten. skipped: an attribute of the same name exists and overwriteExisting is false. failed: see error. With dryRun the result is what an import would do."
+                                                        "description": "created: new in the open project. overwritten: an attribute of the same name was overwritten. skipped: an attribute of the same name exists and overwriteExisting is false. failed: see error, for example a reference that cannot be mapped. With dryRun the result is what an import would do."
                                                     },
                                                     "attributeId": {
                                                         "$ref": "#/AttributeId",
                                                         "description": "The attribute in the open project. Missing when it was not created (failed, or created with dryRun)."
+                                                    },
+                                                    "references": {
+                                                        "type": "array",
+                                                        "description": "For a Composite, Profile or LayerCombination that is created or overwritten (or would be, with dryRun): the attributes it refers to, each once, and how they were mapped to the open project.",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "attributeType": {
+                                                                    "type": "string",
+                                                                    "enum": [
+                                                                        "Line",
+                                                                        "Fill",
+                                                                        "BuildingMaterial",
+                                                                        "Surface",
+                                                                        "Layer"
+                                                                    ],
+                                                                    "description": "The type of the attribute referred to."
+                                                                },
+                                                                "sourceIndex": {
+                                                                    "type": "integer",
+                                                                    "description": "Its index in the source file."
+                                                                },
+                                                                "sourceName": {
+                                                                    "type": "string",
+                                                                    "description": "Its name in the source file. Only for Line and Fill: Archicad does not read the other types from a closed file."
+                                                                },
+                                                                "mappedBy": {
+                                                                    "type": "string",
+                                                                    "enum": [
+                                                                        "name",
+                                                                        "index",
+                                                                        "none"
+                                                                    ],
+                                                                    "description": "name: an attribute of the open project with the same name. index: the attribute of the open project with the same index (referencesByIndex). none: not mapped, so the attribute was not imported."
+                                                                },
+                                                                "attributeId": {
+                                                                    "$ref": "#/AttributeId",
+                                                                    "description": "The attribute of the open project referred to after the import. Missing when not mapped, or when it is created by the same dry run."
+                                                                }
+                                                            },
+                                                            "additionalProperties": false,
+                                                            "required": [
+                                                                "attributeType",
+                                                                "sourceIndex",
+                                                                "mappedBy"
+                                                            ]
+                                                        }
                                                     },
                                                     "error": {
                                                         "$ref": "#/Error"
@@ -752,10 +803,9 @@ GS::Optional<GS::UniString> ImportAttributesFromProjectCommand::GetRawResponseSc
 }
 
 #ifdef ServerMainVers_2700
-// The types an import brings over complete. ACAPI_Attribute_GetAttributesFromProject returns nothing
-// for Layer, Surface, BuildingMaterial and MEPSystem (#1582). A Composite, Profile or LayerCombination
-// refers to building materials, fills or layers by their index in the source file, and those indexes
-// would point at unrelated attributes of the open project.
+// The types an import can bring over. ACAPI_Attribute_GetAttributesFromProject returns nothing for
+// Layer, Surface, BuildingMaterial and MEPSystem (#1582). A Composite, Profile or LayerCombination
+// refers to other attributes by their index in the source file; ImportReferenceMapper maps those.
 static bool IsImportableAttributeType (API_AttrTypeID typeID)
 {
     switch (typeID) {
@@ -764,6 +814,9 @@ static bool IsImportableAttributeType (API_AttrTypeID typeID)
         case API_ZoneCatID:
         case API_PenTableID:
         case API_OperationProfileID:
+        case API_CompWallID:
+        case API_ProfileID:
+        case API_LayerCombID:
             return true;
         default:
             return false;
@@ -784,6 +837,305 @@ static bool FindAttributeByName (API_AttrTypeID typeID, const GS::UniString& nam
     }
     DisposeAttribute (attr);
     return exists;
+}
+
+// Defined further down, with the profile commands.
+static Int32 ToPlainAttrIndex (const ADB::AttributeIndex& idx);
+static ADB::AttributeIndex FromPlainAttrIndex (Int32 idx);
+
+static GS::UniString GetImportAttributeTypeName (API_AttrTypeID typeID)
+{
+    switch (typeID) {
+        case API_LinetypeID:         return "Line";
+        case API_FilltypeID:         return "Fill";
+        case API_BuildingMaterialID: return "BuildingMaterial";
+        case API_MaterialID:         return "Surface";
+        case API_LayerID:            return "Layer";
+        default:                     return GS::UniString ();
+    }
+}
+
+// Maps the references of an attribute read from another file to attributes of the open project.
+// The references are indexes into the source file. Line and Fill attributes can be read from the
+// source file, so their names are known and they are matched by name. Building materials, surfaces
+// and layers cannot be read from a file that is not open (#1582): their names are unknown, so they
+// can only keep their index, when the caller allows it (referencesByIndex).
+class ImportReferenceMapper {
+public:
+    ImportReferenceMapper (const IO::Location& source, bool referencesByIndex, bool dryRun) :
+        source (source),
+        referencesByIndex (referencesByIndex),
+        dryRun (dryRun)
+    {
+    }
+
+    // Called for each attribute: starts a new list of references.
+    void Reset ()
+    {
+        references.Clear ();
+        referenceByKey.Clear ();
+        unmappedByName = 0;
+        unmappedByIndex = 0;
+    }
+
+    // In a dry run nothing is created, so the attributes a dry run would create are counted as present.
+    void AddDryRunCreated (API_AttrTypeID typeID, const GS::UniString& name)
+    {
+        dryRunCreated.Add (GetImportAttributeTypeName (typeID) + "\n" + name);
+    }
+
+    // Returns the index of the attribute in the open project, or 0 when the reference cannot be mapped.
+    // An index of 0 or less is no reference and is returned unchanged.
+    Int32 Map (API_AttrTypeID typeID, Int32 sourceIndex)
+    {
+        if (sourceIndex <= 0) {
+            return sourceIndex;
+        }
+        const GS::UniString key = GS::UniString::Printf ("%d\n%d", (int) typeID, (int) sourceIndex);
+        UIndex known = 0;
+        if (referenceByKey.Get (key, &known)) {
+            return references[known].targetIndex;
+        }
+
+        Reference ref;
+        ref.typeID = typeID;
+        ref.sourceIndex = sourceIndex;
+        if (typeID == API_LinetypeID || typeID == API_FilltypeID) {
+            const GS::UniString* sourceName = GetSourceName (typeID, sourceIndex);
+            if (sourceName != nullptr) {
+                ref.sourceName = *sourceName;
+                ref.hasSourceName = true;
+                API_Attr_Head found = {};
+                if (FindAttributeByName (typeID, *sourceName, found)) {
+                    ref.targetIndex = GetAttributeIndex (found.index);
+                    ref.targetGuid = found.guid;
+                    ref.mappedBy = "name";
+                } else if (dryRun && dryRunCreated.Contains (GetImportAttributeTypeName (typeID) + "\n" + *sourceName)) {
+                    ref.targetIndex = sourceIndex;
+                    ref.mappedBy = "name";
+                }
+            }
+            if (ref.mappedBy.IsEmpty ()) {
+                ++unmappedByName;
+            }
+        } else if (referencesByIndex) {
+            API_Attribute target = {};
+            target.header.typeID = typeID;
+            target.header.index = ACAPI_CreateAttributeIndex (sourceIndex);
+            if (ACAPI_Attribute_Get (&target) == NoError) {
+                ref.targetIndex = sourceIndex;
+                ref.targetGuid = target.header.guid;
+                ref.mappedBy = "index";
+            } else {
+                ++unmappedByIndex;
+            }
+            DisposeAttribute (target);
+        } else {
+            ++unmappedByIndex;
+        }
+        if (ref.mappedBy.IsEmpty ()) {
+            ref.mappedBy = "none";
+        }
+        referenceByKey.Add (key, references.GetSize ());
+        references.Push (ref);
+        return ref.targetIndex;
+    }
+
+    bool HasUnmapped () const
+    {
+        return unmappedByName > 0 || unmappedByIndex > 0;
+    }
+
+    GS::UniString GetUnmappedMessage () const
+    {
+        GS::UniString message = "References that cannot be mapped to attributes of the open project (see references), so the attribute was not imported.";
+        if (unmappedByName > 0) {
+            message += " Line and Fill references are matched by name: import those attributes first, in the same call or before.";
+        }
+        if (unmappedByIndex > 0) {
+            message += referencesByIndex
+                ? " A BuildingMaterial, Surface or Layer reference keeps its index, and the open project has no attribute with that index."
+                : " BuildingMaterial, Surface and Layer references cannot be matched by name, because Archicad does not read these attributes from a closed file. Set referencesByIndex to keep their index.";
+        }
+        return message;
+    }
+
+    void AddReferences (GS::ObjectState& attributeResult) const
+    {
+        if (references.IsEmpty ()) {
+            return;
+        }
+        const auto& list = attributeResult.AddList<GS::ObjectState> ("references");
+        for (const Reference& ref : references) {
+            GS::ObjectState item;
+            item.Add ("attributeType", GetImportAttributeTypeName (ref.typeID));
+            item.Add ("sourceIndex", ref.sourceIndex);
+            if (ref.hasSourceName) {
+                item.Add ("sourceName", ref.sourceName);
+            }
+            item.Add ("mappedBy", ref.mappedBy);
+            if (ref.targetGuid != APINULLGuid) {
+                item.Add ("attributeId", CreateGuidObjectState (ref.targetGuid));
+            }
+            list (item);
+        }
+    }
+
+private:
+    struct Reference {
+        API_AttrTypeID typeID = API_ZombieAttrID;
+        Int32 sourceIndex = 0;
+        GS::UniString sourceName;
+        bool hasSourceName = false;
+        Int32 targetIndex = 0;
+        API_Guid targetGuid = APINULLGuid;
+        GS::UniString mappedBy;
+    };
+
+    const GS::UniString* GetSourceName (API_AttrTypeID typeID, Int32 sourceIndex)
+    {
+        GS::HashTable<Int32, GS::UniString>& names = (typeID == API_LinetypeID) ? sourceLineNames : sourceFillNames;
+        bool& loaded = (typeID == API_LinetypeID) ? sourceLinesLoaded : sourceFillsLoaded;
+        if (!loaded) {
+            loaded = true;
+            GS::Array<GS::Pair<API_Attribute, API_AttributeDefExt>> items;
+            ACAPI_Attribute_GetAttributesFromProject (source, typeID, &items);
+            for (GS::Pair<API_Attribute, API_AttributeDefExt>& item : items) {
+                // Only the legacy 8-bit name comes with an attribute of another file (see GetAttributesFromProject).
+                names.Put (GetAttributeIndex (item.first.header.index), GS::UniString (item.first.header.name));
+                ACAPI_DisposeAttrDefsHdlsExt (&item.second);
+                DisposeAttribute (item.first);
+            }
+        }
+        const GS::UniString* name = nullptr;
+        return names.Get (sourceIndex, &name) ? name : nullptr;
+    }
+
+    const IO::Location& source;
+    const bool referencesByIndex;
+    const bool dryRun;
+    GS::Array<Reference> references;
+    GS::HashTable<GS::UniString, UIndex> referenceByKey;
+    Int32 unmappedByName = 0;
+    Int32 unmappedByIndex = 0;
+    GS::HashSet<GS::UniString> dryRunCreated;
+    GS::HashTable<Int32, GS::UniString> sourceLineNames;
+    GS::HashTable<Int32, GS::UniString> sourceFillNames;
+    bool sourceLinesLoaded = false;
+    bool sourceFillsLoaded = false;
+};
+
+static ADB::AttributeIndex MapImportReference (ImportReferenceMapper& mapper, API_AttrTypeID typeID, const ADB::AttributeIndex& index)
+{
+    return FromPlainAttrIndex (mapper.Map (typeID, ToPlainAttrIndex (index)));
+}
+
+// Maps the references of an attribute read from the source file in place. The attribute is changed
+// only in memory; it is written to the open project afterwards, when every reference was mapped.
+static void MapImportedAttributeReferences (ImportReferenceMapper& mapper, API_Attribute& attr, API_AttributeDefExt& defs)
+{
+    switch (attr.header.typeID) {
+        case API_CompWallID: {
+            if (defs.cwall_compItems != nullptr) {
+                Int32 count = (Int32) (BMGetHandleSize ((GSHandle) defs.cwall_compItems) / sizeof (API_CWallComponent));
+                count = GS::Min (count, (Int32) attr.compWall.nComps);
+                for (Int32 i = 0; i < count; ++i) {
+                    API_CWallComponent& skin = (*defs.cwall_compItems)[i];
+                    skin.buildingMaterial = ACAPI_CreateAttributeIndex (mapper.Map (API_BuildingMaterialID, GetAttributeIndex (skin.buildingMaterial)));
+                }
+            }
+            if (defs.cwall_compLItems != nullptr) {
+                Int32 count = (Int32) (BMGetHandleSize ((GSHandle) defs.cwall_compLItems) / sizeof (API_CWallLineComponent));
+                count = GS::Min (count, (Int32) attr.compWall.nComps + 1);
+                for (Int32 i = 0; i < count; ++i) {
+                    API_CWallLineComponent& separator = (*defs.cwall_compLItems)[i];
+                    separator.ltypeInd = ACAPI_CreateAttributeIndex (mapper.Map (API_LinetypeID, GetAttributeIndex (separator.ltypeInd)));
+                }
+            }
+            break;
+        }
+        case API_ProfileID: {
+            if (defs.profile_vectorImageItems == nullptr) {
+                break;
+            }
+            ProfileVectorImage& pvi = *defs.profile_vectorImageItems;
+            VectorImageAccessGuard guard (&pvi);
+            VectorImage& vi = guard;
+            for (VectorImageIterator it (vi); !it.IsEOI (); ++it) {
+                switch (it->item_Typ) {
+                    case SyHatch: {
+                        Sy_HatchType* hatchRec = it;
+                        HatchObject& hatch = pvi.GetHatchObject (*hatchRec);
+                        // Only the index the hatch draws with is a reference: buildMatFlags selects the
+                        // building material, or the fill and the surface.
+                        if ((hatch.buildMatFlags & SyHatchFlag_BuildingMaterialHatch) != 0) {
+                            hatch.SetBuildMatIdx (MapImportReference (mapper, API_BuildingMaterialID, hatch.GetBuildMatIdx ()));
+                        } else {
+                            if ((hatch.buildMatFlags & SyHatchFlag_FillHatch) != 0) {
+                                hatch.SetFillIdx (MapImportReference (mapper, API_FilltypeID, hatch.GetFillIdx ()));
+                            }
+                            if ((hatch.buildMatFlags & SyHatchFlag_SurfaceHatch) != 0) {
+                                hatch.SetSurfaceIdx (MapImportReference (mapper, API_MaterialID, hatch.GetSurfaceIdx ()));
+                            }
+                        }
+                        hatch.SetContLType (MapImportReference (mapper, API_LinetypeID, hatch.GetContLType ()));
+                        if (hatch.HasProfileInfo ()) {
+                            ProfileItem& profileItem = hatch.GetProfileItemNonConst ();
+                            profileItem.SetCutEndLineType (MapImportReference (mapper, API_LinetypeID, profileItem.GetCutEndLineType ()));
+                            for (ProfileEdgeData& edge : hatch.ProfileEdgeDataSkipFirst ()) {
+                                if (!edge.IsSurfaceFromBuildMat ()) {
+                                    edge.SetMaterial (MapImportReference (mapper, API_MaterialID, edge.GetMaterial ()));
+                                }
+                                edge.SetLineType (MapImportReference (mapper, API_LinetypeID, edge.GetLineType ()));
+                            }
+                        }
+                        break;
+                    }
+                    case SyLine: {
+                        Sy_LinType* line = it;
+                        line->SetPattern (MapImportReference (mapper, API_LinetypeID, line->GetPattern ()));
+                        break;
+                    }
+                    case SyArc: {
+                        Sy_ArcType* arc = it;
+                        arc->SetPattern (MapImportReference (mapper, API_LinetypeID, arc->GetPattern ()));
+                        break;
+                    }
+                    case SyPolyLine: {
+                        Sy_PolyLinType* polyLine = it;
+                        polyLine->SetPattern (MapImportReference (mapper, API_LinetypeID, polyLine->GetPattern ()));
+                        break;
+                    }
+                    case SySpline: {
+                        Sy_SplineType* spline = it;
+                        spline->SetPattern (MapImportReference (mapper, API_LinetypeID, spline->GetPattern ()));
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+            break;
+        }
+        case API_LayerCombID: {
+            // The layers are the keys of layer_statItems. They keep their index (referencesByIndex),
+            // so the table stays as it is; Map only checks that the open project has these layers.
+            if (defs.layer_statItems == nullptr) {
+                break;
+            }
+            for (const auto& kv : *defs.layer_statItems) {
+#ifdef ServerMainVers_2800
+                const API_AttributeIndex& layerIndex = kv.key;
+#else
+                const API_AttributeIndex& layerIndex = *kv.key;
+#endif
+                mapper.Map (API_LayerID, GetAttributeIndex (layerIndex));
+            }
+            break;
+        }
+        default:
+            break;
+    }
 }
 
 #endif
@@ -810,6 +1162,9 @@ GS::ObjectState ImportAttributesFromProjectCommand::Execute (const GS::ObjectSta
     parameters.Get ("overwriteExisting", overwriteExisting);
     bool dryRun = false;
     parameters.Get ("dryRun", dryRun);
+    bool referencesByIndex = false;
+    parameters.Get ("referencesByIndex", referencesByIndex);
+    ImportReferenceMapper mapper (location, referencesByIndex, dryRun);
 
     GS::ObjectState response;
     const auto& attributesByType = response.AddList<GS::ObjectState> ("attributesByType");
@@ -823,7 +1178,7 @@ GS::ObjectState ImportAttributesFromProjectCommand::Execute (const GS::ObjectSta
         }
         if (!IsImportableAttributeType (typeID)) {
             attributesByType (CreateErrorResponse (APIERR_NOTSUPPORTED,
-                GS::UniString::Printf ("%T attributes cannot be imported: Archicad does not read Layer, Surface, BuildingMaterial and MEPSystem attributes from a closed file, and Composite, Profile and LayerCombination attributes refer to such attributes by their index in the source file.", typeStr.ToPrintf ())));
+                GS::UniString::Printf ("%T attributes cannot be imported: Archicad does not read Layer, Surface, BuildingMaterial and MEPSystem attributes from a closed file.", typeStr.ToPrintf ())));
             continue;
         }
 
@@ -858,13 +1213,34 @@ GS::ObjectState ImportAttributesFromProjectCommand::Execute (const GS::ObjectSta
 
             API_Attr_Head existing = {};
             const bool nameExists = FindAttributeByName (typeID, name, existing);
+
+            // Composite, Profile and LayerCombination refer to other attributes by their index in the
+            // source file. They are mapped first; an attribute with a reference that cannot be mapped
+            // is not imported, since its index would point at an unrelated attribute.
+            mapper.Reset ();
+            if (!(nameExists && !overwriteExisting)) {
+                MapImportedAttributeReferences (mapper, attr, item.second);
+                mapper.AddReferences (attributeResult);
+            }
+
             if (nameExists && !overwriteExisting) {
                 attributeResult.Add ("result", "skipped");
                 attributeResult.Add ("attributeId", CreateGuidObjectState (existing.guid));
+            } else if (mapper.HasUnmapped ()) {
+                attributeResult.Add ("result", "failed");
+                if (nameExists) {
+                    attributeResult.Add ("attributeId", CreateGuidObjectState (existing.guid));
+                }
+                GS::ObjectState error;
+                error.Add ("code", APIERR_BADINDEX);
+                error.Add ("message", mapper.GetUnmappedMessage ());
+                attributeResult.Add ("error", error);
             } else if (dryRun) {
                 attributeResult.Add ("result", nameExists ? "overwritten" : "created");
                 if (nameExists) {
                     attributeResult.Add ("attributeId", CreateGuidObjectState (existing.guid));
+                } else {
+                    mapper.AddDryRunCreated (typeID, name);
                 }
             } else {
                 attr.header.uniStringNamePtr = &name;
