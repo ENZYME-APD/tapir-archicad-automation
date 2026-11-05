@@ -51,7 +51,8 @@ struct AssociativeDimensionPoint {
     API_Guid elementGuid = APINULLGuid;
     API_ElemTypeID elementType = API_ZombieElemID;
     bool isStatic = false;              // not associated with any element
-    API_Coord coordinate = {0.0, 0.0};  // position of a static point
+    bool hasCoordinate = false;         // coordinate given (always for a static point)
+    API_Coord coordinate = {0.0, 0.0};  // position of a static point, or the location of an associative one
     bool line = false;
     Int32 inIndex = 0;
     char special = 0;
@@ -745,9 +746,6 @@ GS::Optional<GS::UniString> ParseAssociativeDimensionPoint (const GS::ObjectStat
 {
     const GS::ObjectState* elementId = pointData.Get ("elementId");
     const GS::ObjectState* coordinate = pointData.Get ("coordinate");
-    if (elementId != nullptr && coordinate != nullptr) {
-        return "A witness point takes either 'elementId' or 'coordinate', not both.";
-    }
     if (elementId == nullptr) {
         if (coordinate == nullptr) {
             return "Each witness point needs either 'elementId' or 'coordinate'.";
@@ -757,8 +755,18 @@ GS::Optional<GS::UniString> ParseAssociativeDimensionPoint (const GS::ObjectStat
         point.isStatic = true;
         point.elementGuid = APINULLGuid;
         point.elementType = API_ZombieElemID;
+        point.hasCoordinate = true;
         point.coordinate = Get2DCoordinateFromObjectState (*coordinate);
         return {};
+    }
+
+    // Associative witness point with a coordinate: the location of the point on the referenced
+    // element, e.g. where the dimension line crosses a wall face, written to base.loc as the
+    // DevKit's Element_Test does for associative points. Without it Archicad picks the point
+    // itself, e.g. the middle of a wall edge (#1814).
+    if (coordinate != nullptr) {
+        point.hasCoordinate = true;
+        point.coordinate = Get2DCoordinateFromObjectState (*coordinate);
     }
 
     point.elementGuid = GetGuidFromObjectState (*elementId);
@@ -828,7 +836,7 @@ GS::Optional<GS::UniString> PopulateAssociativeDimensionMemo (
         dimElem.base.base.node_typ = point.nodeType;
         dimElem.base.base.node_status = point.nodeStatus;
         dimElem.base.base.node_id = point.nodeId;
-        if (point.isStatic) {
+        if (point.hasCoordinate) {
             dimElem.base.loc = point.coordinate;
         }
         dimElem.note = element.dimension.defNote;
@@ -939,6 +947,7 @@ void AddSectionStaticPoint (GS::Array<AssociativeDimensionPoint>& points, double
 {
     AssociativeDimensionPoint point;
     point.isStatic = true;
+    point.hasCoordinate = true;
     point.coordinate = {x, y};
     points.Push (point);
 }
@@ -7307,6 +7316,38 @@ static GS::Optional<GS::UniString> ApplyOpeningExtrusionParametersChange (ACAPI:
     return failure;
 }
 
+// Runs setOne on each item, returns their execution results, and reports the openings it
+// changed to the notification clients: those it succeeded on, and those whose modification
+// stamp changed (a change that stopped halfway keeps what it made). Used by the Opening
+// setters, which take an elementId per item.
+static GS::ObjectState SetEachOpening (const GS::Array<GS::ObjectState>& items, GS::ObjectState (*setOne) (const GS::ObjectState&))
+{
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ElementChangeReporter changeReporter;
+    for (const GS::ObjectState& item : items) {
+        const GS::ObjectState* elementId = item.Get ("elementId");
+        if (elementId != nullptr) {
+            changeReporter.Add (GetGuidFromObjectState (*elementId));
+        }
+    }
+
+    for (const GS::ObjectState& item : items) {
+        const GS::ObjectState result = setOne (item);
+        bool success = false;
+        const GS::ObjectState* elementId = item.Get ("elementId");
+        if (elementId != nullptr && result.Get ("success", success) && success) {
+            changeReporter.MarkChanged (GetGuidFromObjectState (*elementId));
+        }
+        executionResults (result);
+    }
+
+    changeReporter.Report ();
+
+    return response;
+}
+
 static GS::ObjectState SetOpeningDetails (const GS::ObjectState& data)
 {
     using ACAPI::Element::Opening;
@@ -7436,12 +7477,7 @@ GS::ObjectState SetOpeningDetailsCommand::Execute (const GS::ObjectState& parame
     GS::Array<GS::ObjectState> openingsWithDetails;
     parameters.Get ("openingsWithDetails", openingsWithDetails);
 
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-    for (const GS::ObjectState& data : openingsWithDetails) {
-        executionResults (SetOpeningDetails (data));
-    }
-    return response;
+    return SetEachOpening (openingsWithDetails, SetOpeningDetails);
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
@@ -12513,12 +12549,7 @@ GS::ObjectState SetOpeningFloorPlanParametersCommand::Execute (const GS::ObjectS
     GS::Array<GS::ObjectState> openingsWithFloorPlanParameters;
     parameters.Get ("openingsWithFloorPlanParameters", openingsWithFloorPlanParameters);
 
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-    for (const GS::ObjectState& data : openingsWithFloorPlanParameters) {
-        executionResults (SetOpeningFloorPlanParameters (data));
-    }
-    return response;
+    return SetEachOpening (openingsWithFloorPlanParameters, SetOpeningFloorPlanParameters);
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
@@ -12812,12 +12843,7 @@ GS::ObjectState SetOpeningSymbolParametersCommand::Execute (const GS::ObjectStat
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
 
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-    for (const GS::ObjectState& data : elements) {
-        executionResults (SetOpeningSymbolParameters (data));
-    }
-    return response;
+    return SetEachOpening (elements, SetOpeningSymbolParameters);
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");

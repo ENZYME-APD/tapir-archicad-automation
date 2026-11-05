@@ -35,6 +35,9 @@ GSErrCode CloseSymbolDrawing (GSHandle* drawHdl)
 #endif
 }
 
+}
+
+// The shared section wrappers declared in LibraryPartCreationCommands.hpp, used by LibraryCommands.cpp too.
 GSErrCode NewLibPartSection (const API_LibPartSection* section)
 {
 #ifdef ServerMainVers_2700
@@ -70,6 +73,8 @@ GSErrCode SetLibPartDetails (const API_LibPart* libPart, GSHandle paramHdl, cons
     return ACAPI_LibPart_SetDetails_ParamDef (libPart, paramHdl, details);
 #endif
 }
+
+namespace {
 
 GSErrCode SetLibPartOverwriteMode (bool overwriteOn)
 {

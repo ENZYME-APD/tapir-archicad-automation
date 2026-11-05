@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <functional>
 #include <limits>
 
 // The pivot polygon of a multi-plane roof lives in the memo's additional polygon
@@ -4098,6 +4099,14 @@ GS::ObjectState SetElementInfoStringsCommand::Execute (const GS::ObjectState& pa
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    ElementChangeReporter changeReporter;
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId != nullptr) {
+            changeReporter.Add (GetGuidFromObjectState (*elementId));
+        }
+    }
+
     ACAPI_CallUndoableCommand ("SetElementInfoStrings", [&]() -> GSErrCode {
         for (const GS::ObjectState& element : elements) {
             const GS::ObjectState* elementId = element.Get ("elementId");
@@ -4125,11 +4134,14 @@ GS::ObjectState SetElementInfoStringsCommand::Execute (const GS::ObjectState& pa
                 continue;
             }
 
+            changeReporter.MarkChanged (elemGuid);
             executionResults (CreateSuccessfulExecutionResult ());
         }
 
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }
@@ -6737,54 +6749,71 @@ static GSErrCode MoveElement (const API_Guid& elemGuid, const API_Vector3D& move
     return ACAPI_Element_Edit (&elementsToEdit, editPars);
 }
 
-GS::ObjectState	MoveElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+// Reads the edit of one item of the list into editPars (all but withDelete), or
+// returns the failed execution result of an item whose edit is missing or invalid.
+using ReadEditParsOfItem = std::function<GS::Optional<GS::ObjectState> (const GS::ObjectState& item, API_EditPars& editPars)>;
+
+// The shared body of MoveElements, ElevateElements, RotateElements and MirrorElements:
+// edits the element of each item of the list with ACAPI_Element_Edit, all in one undo
+// step, and reports one execution result per item. operation is the past participle
+// ("moved") and verb the infinitive ("move") of the edit, used in the error messages.
+// With reportChanges the edited originals are reported to the notification clients
+// (ElementChangeReporter); an edited copy is a new element and is not reported.
+static GS::ObjectState EditElementsOneByOne (const GS::ObjectState& parameters,
+                                             const char* listName,
+                                             const char* undoStepName,
+                                             const char* operation,
+                                             const char* verb,
+                                             bool reportChanges,
+                                             const ReadEditParsOfItem& readEditPars)
 {
-    GS::Array<GS::ObjectState> elementsWithMoveVectors;
-    parameters.Get ("elementsWithMoveVectors", elementsWithMoveVectors);
+    GS::Array<GS::ObjectState> items;
+    parameters.Get (listName, items);
 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
-    // Only a moved original is reported; a moved copy is a new element.
     ElementChangeReporter changeReporter;
 
-    ACAPI_CallUndoableCommand ("Move Elements", [&]() -> GSErrCode {
-        for (const GS::ObjectState& elementWithMoveVector : elementsWithMoveVectors) {
-            const GS::ObjectState* elementId = elementWithMoveVector.Get ("elementId");
+    ACAPI_CallUndoableCommand (undoStepName, [&]() -> GSErrCode {
+        for (const GS::ObjectState& item : items) {
+            const GS::ObjectState* elementId = item.Get ("elementId");
             if (elementId == nullptr) {
                 executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
                 continue;
             }
 
-            const GS::ObjectState* moveVector = elementWithMoveVector.Get ("moveVector");
-            if (moveVector == nullptr) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "moveVector is missing"));
+            API_EditPars editPars = {};
+            const GS::Optional<GS::ObjectState> invalidItemResult = readEditPars (item, editPars);
+            if (invalidItemResult.HasValue ()) {
+                executionResults (*invalidItemResult);
                 continue;
             }
 
             const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
 
             bool copy = false;
-            elementWithMoveVector.Get ("copy", copy);
+            item.Get ("copy", copy);
 
-            const GS::Optional<GS::ObjectState> notEditableResult = GetFailedExecutionResultIfNotEditable (elemGuid, "moved");
+            const GS::Optional<GS::ObjectState> notEditableResult = GetFailedExecutionResultIfNotEditable (elemGuid, operation);
             if (notEditableResult.HasValue ()) {
                 executionResults (*notEditableResult);
                 continue;
             }
 
-            if (!copy) {
+            if (reportChanges && !copy) {
                 changeReporter.Add (elemGuid);
             }
 
-            const GSErrCode err = MoveElement (elemGuid,
-                                               Get3DCoordinateFromObjectState (*moveVector),
-                                               copy);
+            GS::Array<API_Neig> elementsToEdit = { API_Neig (elemGuid) };
+            editPars.withDelete = !copy;
+
+            const GSErrCode err = ACAPI_Element_Edit (&elementsToEdit, editPars);
             if (err != NoError) {
-                const GS::UniString errorMsg = GS::UniString::Printf ("Failed to move element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
+                const GS::UniString errorMsg = GS::UniString::Printf ("Failed to %s element with guid %T!", verb, APIGuidToString (elemGuid).ToPrintf ());
                 executionResults (CreateFailedExecutionResult (err, errorMsg));
             } else {
-                if (!copy) {
+                if (reportChanges && !copy) {
                     changeReporter.MarkChanged (elemGuid);
                 }
                 executionResults (CreateSuccessfulExecutionResult ());
@@ -6797,6 +6826,21 @@ GS::ObjectState	MoveElementsCommand::Execute (const GS::ObjectState& parameters,
     changeReporter.Report ();
 
     return response;
+}
+
+GS::ObjectState	MoveElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    return EditElementsOneByOne (parameters, "elementsWithMoveVectors", "Move Elements", "moved", "move", true,
+        [] (const GS::ObjectState& item, API_EditPars& editPars) -> GS::Optional<GS::ObjectState> {
+            const GS::ObjectState* moveVector = item.Get ("moveVector");
+            if (moveVector == nullptr) {
+                return CreateFailedExecutionResult (APIERR_BADPARS, "moveVector is missing");
+            }
+
+            editPars.typeID = APIEdit_Drag;
+            editPars.endC = Get3DCoordinateFromObjectState (*moveVector);
+            return GS::NoValue;
+        });
 }
 
 CopyElementsToDatabaseCommand::CopyElementsToDatabaseCommand () :
@@ -7081,78 +7125,19 @@ GS::Optional<GS::UniString> ElevateElementsCommand::GetRawResponseSchema () cons
     })";
 }
 
-static GSErrCode ElevateElement (const API_Guid& elemGuid, double elevation, bool withCopy)
-{
-    GS::Array<API_Neig> elementsToEdit = { API_Neig (elemGuid) };
-
-    API_EditPars editPars = {};
-    editPars.typeID = APIEdit_Elevate;
-    editPars.endC.z = elevation;
-    editPars.withDelete = !withCopy;
-
-    return ACAPI_Element_Edit (&elementsToEdit, editPars);
-}
-
 GS::ObjectState	ElevateElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::Array<GS::ObjectState> elementsWithElevations;
-    parameters.Get ("elementsWithElevations", elementsWithElevations);
-
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-
-    ACAPI_CallUndoableCommand ("Elevate Elements", [&]() -> GSErrCode {
-        for (const GS::ObjectState& elementWithElevation : elementsWithElevations) {
-            const GS::ObjectState* elementId = elementWithElevation.Get ("elementId");
-            if (elementId == nullptr) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
-                continue;
-            }
-
+    return EditElementsOneByOne (parameters, "elementsWithElevations", "Elevate Elements", "elevated", "elevate", false,
+        [] (const GS::ObjectState& item, API_EditPars& editPars) -> GS::Optional<GS::ObjectState> {
             double elevation = 0.0;
-            if (!elementWithElevation.Get ("elevation", elevation)) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elevation is missing"));
-                continue;
+            if (!item.Get ("elevation", elevation)) {
+                return CreateFailedExecutionResult (APIERR_BADPARS, "elevation is missing");
             }
 
-            const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
-
-            bool copy = false;
-            elementWithElevation.Get ("copy", copy);
-
-            const GS::Optional<GS::ObjectState> notEditableResult = GetFailedExecutionResultIfNotEditable (elemGuid, "elevated");
-            if (notEditableResult.HasValue ()) {
-                executionResults (*notEditableResult);
-                continue;
-            }
-
-            const GSErrCode err = ElevateElement (elemGuid, elevation, copy);
-            if (err != NoError) {
-                const GS::UniString errorMsg = GS::UniString::Printf ("Failed to elevate element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
-                executionResults (CreateFailedExecutionResult (err, errorMsg));
-            } else {
-                executionResults (CreateSuccessfulExecutionResult ());
-            }
-        }
-
-        return NoError;
-    });
-
-    return response;
-}
-
-static GSErrCode RotateElement (const API_Guid& elemGuid, const API_Coord& beginPoint, const API_Coord& endPoint, const API_Coord& origin, bool withCopy)
-{
-    GS::Array<API_Neig> elementsToEdit = { API_Neig (elemGuid) };
-
-    API_EditPars editPars = {};
-    editPars.typeID = APIEdit_Rotate;
-    editPars.begC = API_Coord3D { beginPoint.x, beginPoint.y, 0.0 };
-    editPars.endC = API_Coord3D { endPoint.x, endPoint.y, 0.0 };
-    editPars.origC = origin;
-    editPars.withDelete = !withCopy;
-
-    return ACAPI_Element_Edit (&elementsToEdit, editPars);
+            editPars.typeID = APIEdit_Elevate;
+            editPars.endC.z = elevation;
+            return GS::NoValue;
+        });
 }
 
 RotateElementsCommand::RotateElementsCommand () :
@@ -7232,89 +7217,28 @@ GS::Optional<GS::UniString> RotateElementsCommand::GetRawResponseSchema () const
 
 GS::ObjectState RotateElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::Array<GS::ObjectState> elementsWithRotations;
-    parameters.Get ("elementsWithRotations", elementsWithRotations);
-
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-
-    // Only a rotated original is reported; a rotated copy is a new element.
-    ElementChangeReporter changeReporter;
-
-    ACAPI_CallUndoableCommand ("Rotate Elements", [&]() -> GSErrCode {
-        for (const GS::ObjectState& elementWithRotation : elementsWithRotations) {
-            const GS::ObjectState* elementId = elementWithRotation.Get ("elementId");
-            if (elementId == nullptr) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
-                continue;
-            }
-
-            const GS::ObjectState* rotation = elementWithRotation.Get ("rotation");
+    return EditElementsOneByOne (parameters, "elementsWithRotations", "Rotate Elements", "rotated", "rotate", true,
+        [] (const GS::ObjectState& item, API_EditPars& editPars) -> GS::Optional<GS::ObjectState> {
+            const GS::ObjectState* rotation = item.Get ("rotation");
             if (rotation == nullptr) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "rotation is missing"));
-                continue;
+                return CreateFailedExecutionResult (APIERR_BADPARS, "rotation is missing");
             }
 
             const GS::ObjectState* beginPoint = rotation->Get ("beginPoint");
             const GS::ObjectState* endPoint = rotation->Get ("endPoint");
             const GS::ObjectState* origin = rotation->Get ("origin");
             if (beginPoint == nullptr || endPoint == nullptr || origin == nullptr) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "rotation beginPoint, endPoint, or origin is missing"));
-                continue;
+                return CreateFailedExecutionResult (APIERR_BADPARS, "rotation beginPoint, endPoint, or origin is missing");
             }
 
-            const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
-
-            bool copy = false;
-            elementWithRotation.Get ("copy", copy);
-
-            const GS::Optional<GS::ObjectState> notEditableResult = GetFailedExecutionResultIfNotEditable (elemGuid, "rotated");
-            if (notEditableResult.HasValue ()) {
-                executionResults (*notEditableResult);
-                continue;
-            }
-
-            if (!copy) {
-                changeReporter.Add (elemGuid);
-            }
-
-            const GSErrCode err = RotateElement (elemGuid,
-                                                Get2DCoordinateFromObjectState (*beginPoint),
-                                                Get2DCoordinateFromObjectState (*endPoint),
-                                                Get2DCoordinateFromObjectState (*origin),
-                                                copy);
-            if (err != NoError) {
-                const GS::UniString errorMsg = GS::UniString::Printf ("Failed to rotate element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
-                executionResults (CreateFailedExecutionResult (err, errorMsg));
-            } else {
-                if (!copy) {
-                    changeReporter.MarkChanged (elemGuid);
-                }
-                executionResults (CreateSuccessfulExecutionResult ());
-            }
-        }
-
-        return NoError;
-    });
-
-    changeReporter.Report ();
-
-    return response;
-}
-
-// The mirror axis is the line through beginPoint and endPoint, given in begC
-// and endC like the two points of the rotation arc in RotateElement.
-static GSErrCode MirrorElement (const API_Guid& elemGuid, const API_Coord& beginPoint, const API_Coord& endPoint, bool withCopy)
-{
-    GS::Array<API_Neig> elementsToEdit = { API_Neig (elemGuid) };
-
-    API_EditPars editPars = {};
-    editPars.typeID = APIEdit_Mirror;
-    editPars.begC = API_Coord3D { beginPoint.x, beginPoint.y, 0.0 };
-    editPars.endC = API_Coord3D { endPoint.x, endPoint.y, 0.0 };
-    editPars.withDelete = !withCopy;
-
-    return ACAPI_Element_Edit (&elementsToEdit, editPars);
+            const API_Coord arcBegin = Get2DCoordinateFromObjectState (*beginPoint);
+            const API_Coord arcEnd = Get2DCoordinateFromObjectState (*endPoint);
+            editPars.typeID = APIEdit_Rotate;
+            editPars.begC = API_Coord3D { arcBegin.x, arcBegin.y, 0.0 };
+            editPars.endC = API_Coord3D { arcEnd.x, arcEnd.y, 0.0 };
+            editPars.origC = Get2DCoordinateFromObjectState (*origin);
+            return GS::NoValue;
+        });
 }
 
 MirrorElementsCommand::MirrorElementsCommand () :
@@ -7363,76 +7287,32 @@ GS::Optional<GS::UniString> MirrorElementsCommand::GetRawResponseSchema () const
 
 GS::ObjectState MirrorElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::Array<GS::ObjectState> elementsWithMirrorAxes;
-    parameters.Get ("elementsWithMirrorAxes", elementsWithMirrorAxes);
-
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-
-    // Only a mirrored original is reported; a mirrored copy is a new element.
-    ElementChangeReporter changeReporter;
-
-    ACAPI_CallUndoableCommand ("Mirror Elements", [&]() -> GSErrCode {
-        for (const GS::ObjectState& elementWithMirrorAxis : elementsWithMirrorAxes) {
-            const GS::ObjectState* elementId = elementWithMirrorAxis.Get ("elementId");
-            if (elementId == nullptr) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
-                continue;
-            }
-
-            const GS::ObjectState* mirrorAxis = elementWithMirrorAxis.Get ("mirrorAxis");
+    return EditElementsOneByOne (parameters, "elementsWithMirrorAxes", "Mirror Elements", "mirrored", "mirror", true,
+        [] (const GS::ObjectState& item, API_EditPars& editPars) -> GS::Optional<GS::ObjectState> {
+            const GS::ObjectState* mirrorAxis = item.Get ("mirrorAxis");
             if (mirrorAxis == nullptr) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "mirrorAxis is missing"));
-                continue;
+                return CreateFailedExecutionResult (APIERR_BADPARS, "mirrorAxis is missing");
             }
 
             const GS::ObjectState* beginPoint = mirrorAxis->Get ("beginPoint");
             const GS::ObjectState* endPoint = mirrorAxis->Get ("endPoint");
             if (beginPoint == nullptr || endPoint == nullptr) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "mirrorAxis beginPoint or endPoint is missing"));
-                continue;
+                return CreateFailedExecutionResult (APIERR_BADPARS, "mirrorAxis beginPoint or endPoint is missing");
             }
 
             const API_Coord axisBegin = Get2DCoordinateFromObjectState (*beginPoint);
             const API_Coord axisEnd = Get2DCoordinateFromObjectState (*endPoint);
             if (IsSame2DCoordinate (axisBegin, axisEnd)) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "mirrorAxis beginPoint and endPoint are the same point, so they do not define an axis"));
-                continue;
+                return CreateFailedExecutionResult (APIERR_BADPARS, "mirrorAxis beginPoint and endPoint are the same point, so they do not define an axis");
             }
 
-            const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
-
-            bool copy = false;
-            elementWithMirrorAxis.Get ("copy", copy);
-
-            const GS::Optional<GS::ObjectState> notEditableResult = GetFailedExecutionResultIfNotEditable (elemGuid, "mirrored");
-            if (notEditableResult.HasValue ()) {
-                executionResults (*notEditableResult);
-                continue;
-            }
-
-            if (!copy) {
-                changeReporter.Add (elemGuid);
-            }
-
-            const GSErrCode err = MirrorElement (elemGuid, axisBegin, axisEnd, copy);
-            if (err != NoError) {
-                const GS::UniString errorMsg = GS::UniString::Printf ("Failed to mirror element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
-                executionResults (CreateFailedExecutionResult (err, errorMsg));
-            } else {
-                if (!copy) {
-                    changeReporter.MarkChanged (elemGuid);
-                }
-                executionResults (CreateSuccessfulExecutionResult ());
-            }
-        }
-
-        return NoError;
-    });
-
-    changeReporter.Report ();
-
-    return response;
+            // The mirror axis is the line through beginPoint and endPoint, given in begC
+            // and endC like the two points of the rotation arc in RotateElements.
+            editPars.typeID = APIEdit_Mirror;
+            editPars.begC = API_Coord3D { axisBegin.x, axisBegin.y, 0.0 };
+            editPars.endC = API_Coord3D { axisEnd.x, axisEnd.y, 0.0 };
+            return GS::NoValue;
+        });
 }
 
 FilterElementsCommand::FilterElementsCommand () :
@@ -9807,10 +9687,20 @@ GS::ObjectState LockElementsCommand::Execute (const GS::ObjectState& parameters,
 
     GSErrCode err = NoError;
 
+    const GS::Array<API_Guid> elemGuids = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
+    ElementChangeReporter changeReporter (elemGuids);
+
     ACAPI_CallUndoableCommand ("LockElementsCommand", [&]() {
-        err = ACAPI_Grouping_Tool (elements.Transform<API_Guid> (GetGuidFromElementsArrayItem), APITool_Lock, nullptr);
+        err = ACAPI_Grouping_Tool (elemGuids, APITool_Lock, nullptr);
         return err;
     });
+
+    if (err == NoError) {
+        for (const API_Guid& elemGuid : elemGuids) {
+            changeReporter.MarkChanged (elemGuid);
+        }
+    }
+    changeReporter.Report ();
 
     return err == NoError
         ? CreateSuccessfulExecutionResult ()
@@ -9857,10 +9747,20 @@ GS::ObjectState UnlockElementsCommand::Execute (const GS::ObjectState& parameter
 
     GSErrCode err = NoError;
 
+    const GS::Array<API_Guid> elemGuids = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
+    ElementChangeReporter changeReporter (elemGuids);
+
     ACAPI_CallUndoableCommand ("UnlockElementsCommand", [&]() {
-        err = ACAPI_Grouping_Tool (elements.Transform<API_Guid> (GetGuidFromElementsArrayItem), APITool_Unlock, nullptr);
+        err = ACAPI_Grouping_Tool (elemGuids, APITool_Unlock, nullptr);
         return err;
     });
+
+    if (err == NoError) {
+        for (const API_Guid& elemGuid : elemGuids) {
+            changeReporter.MarkChanged (elemGuid);
+        }
+    }
+    changeReporter.Report ();
 
     return err == NoError
         ? CreateSuccessfulExecutionResult ()
@@ -10529,34 +10429,68 @@ GS::Optional<GS::UniString> Get3DModelCountsCommand::GetRawResponseSchema () con
 GS::ObjectState Get3DModelCountsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2700
-    // Every API_3DTypeID except API_Zombie3DID, in the order of the enum.
-    static const std::pair<API_3DTypeID, const char*> componentTypes[] = {
-        { API_BodyID, "Body" },
-        { API_PgonID, "Pgon" },
-        { API_PedgID, "Pedg" },
-        { API_EdgeID, "Edge" },
-        { API_VertID, "Vert" },
-        { API_VectID, "Vect" },
-        { API_UmatID, "Umat" },
-        { API_LghtID, "Lght" }
-    };
+    // ACAPI_ModelAccess_GetNum counts only the bodies, materials and lights; it refuses the
+    // body dependent components (APIERR_REFUSEDPAR), whose numbers are summed from the
+    // nPgon, nPedg, nEdge, nVert and nVect fields of every API_BodyType instead, skipping
+    // the bodies removed from the model (APIERR_DELETED).
+    Int32 bodyCount = 0;
+    const GSErrCode bodyErr = ACAPI_ModelAccess_GetNum (API_BodyID, &bodyCount);
+
+    Int64 pgonCount = 0;
+    Int64 pedgCount = 0;
+    Int64 edgeCount = 0;
+    Int64 vertCount = 0;
+    Int64 vectCount = 0;
+    GSErrCode bodyComponentErr = bodyErr;
+    for (Int32 iBody = 1; bodyComponentErr == NoError && iBody <= bodyCount; ++iBody) {
+        API_Component3D component = {};
+        component.header.typeID = API_BodyID;
+        component.header.index = iBody;
+        bodyComponentErr = ACAPI_ModelAccess_GetComponent (&component);
+        if (bodyComponentErr == APIERR_DELETED) {
+            // A body of a deleted element, a shadow body or one eliminated while the model was built.
+            bodyComponentErr = NoError;
+            continue;
+        }
+        if (bodyComponentErr != NoError) {
+            break;
+        }
+        pgonCount += component.body.nPgon;
+        pedgCount += component.body.nPedg;
+        edgeCount += component.body.nEdge;
+        vertCount += component.body.nVert;
+        vectCount += component.body.nVect;
+    }
 
     GS::ObjectState response;
     const auto& counts = response.AddList<GS::ObjectState> ("counts");
 
-    for (const auto& componentType : componentTypes) {
-        Int32 count = 0;
-        const GSErrCode err = ACAPI_ModelAccess_GetNum (componentType.first, &count);
+    const auto AddCount = [&counts] (const char* componentType, GSErrCode err, Int64 count) {
         if (err != NoError) {
-            counts (CreateErrorResponse (err, GS::UniString::Printf ("Failed to count the %s components of the 3D model", componentType.second)));
-            continue;
+            counts (CreateErrorResponse (err, GS::UniString::Printf ("Failed to count the %s components of the 3D model", componentType)));
+            return;
         }
-
         GS::ObjectState countOS;
-        countOS.Add ("componentType", GS::UniString (componentType.second));
+        countOS.Add ("componentType", GS::UniString (componentType));
         countOS.Add ("count", count);
         counts (countOS);
-    }
+    };
+
+    // Every API_3DTypeID except API_Zombie3DID, in the order of the enum.
+    AddCount ("Body", bodyErr, bodyCount);
+    AddCount ("Pgon", bodyComponentErr, pgonCount);
+    AddCount ("Pedg", bodyComponentErr, pedgCount);
+    AddCount ("Edge", bodyComponentErr, edgeCount);
+    AddCount ("Vert", bodyComponentErr, vertCount);
+    AddCount ("Vect", bodyComponentErr, vectCount);
+
+    Int32 umatCount = 0;
+    const GSErrCode umatErr = ACAPI_ModelAccess_GetNum (API_UmatID, &umatCount);
+    AddCount ("Umat", umatErr, umatCount);
+
+    Int32 lghtCount = 0;
+    const GSErrCode lghtErr = ACAPI_ModelAccess_GetNum (API_LghtID, &lghtCount);
+    AddCount ("Lght", lghtErr, lghtCount);
 
     return response;
 #else
