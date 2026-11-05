@@ -6605,8 +6605,10 @@ GS::ObjectState GetCollisionsCommand::Execute (const GS::ObjectState& parameters
             "elementId1", CreateGuidObjectState (collisionElement.first.collidedElemGuid),
             "elementId2", CreateGuidObjectState (collisionElement.second.collidedElemGuid),
             "hasBodyCollision", collisionElement.first.hasBodyCollision,
+            // The published key stays "hasClearenceCollision" on every version;
+            // only the API struct member was renamed in Archicad 30.
 #ifdef ServerMainVers_3000
-            "hasClearanceCollision", collisionElement.second.hasClearanceCollision));
+            "hasClearenceCollision", collisionElement.second.hasClearanceCollision));
 #else
             "hasClearenceCollision", collisionElement.second.hasClearenceCollision));
 #endif
