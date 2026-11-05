@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-05 14:04 UTC",
+ "generatedAt": "2026-11-05 14:45 UTC",
  "versions": [
   25,
   26,
@@ -6563,12 +6563,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1900,
-     "title": "[4/6] Share one helper among the grouping commands that list ids per item"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10442,12 +10437,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1900,
-     "title": "[4/6] Share one helper among the grouping commands that list ids per item"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10516,12 +10506,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1900,
-     "title": "[4/6] Share one helper among the grouping commands that list ids per item"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37858,14 +37843,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1906,
-     "title": "Set3DProjectionSettings / Get3DProjectionSettings: set and read the projection's sun position"
-    },
-    {
-     "number": 1900,
-     "title": "[4/6] Share one helper among the grouping commands that list ids per item"
-    },
     {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"

@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 61 | 53 | 8 |  |  |  | 8 | 70 |
 | C++ API (ACAPI::, IFCAPI::) | 99 % | 1423 | 1207 | 214 | 2 |  |  | 12 | 392 |
 
-Archicad 25–30 DevKits; updated 2026-11-05 14:04 UTC.
+Archicad 25–30 DevKits; updated 2026-11-05 14:45 UTC.
 
 | | Status |
 |---|---|
@@ -988,10 +988,10 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 - ✅ `ACAPI_Grouping_ChangeSuspendGroup` <sub>AC27–30</sub> – Set 'Suspend Groups' in Archicad. <sub>(was `APIEnv_ChangeSuspendGroupID`)</sub>
 - ✅ `ACAPI_Grouping_CreateGroup` <sub>AC27–30</sub> – Create an element group.
-- ✅ `ACAPI_Grouping_GetAllGroupedElems` – Returns all elements of the given group. <sub>(was `ACAPI_ElementGroup_GetAllGroupedElems`)</sub> — [#1900](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1900 "[4/6] Share one helper among the grouping commands that list ids per item")
+- ✅ `ACAPI_Grouping_GetAllGroupedElems` – Returns all elements of the given group. <sub>(was `ACAPI_ElementGroup_GetAllGroupedElems`)</sub>
 - ✅ `ACAPI_Grouping_GetConnectedElements` – Returns a list of elements connected to the given element. <sub>(was `ACAPI_Element_GetConnectedElements`)</sub>
 - ✅ `ACAPI_Grouping_GetGroup` – Returns the group unique ID of the given element. <sub>(was `ACAPI_ElementGroup_GetGroup`)</sub>
-- ✅ `ACAPI_Grouping_GetGroupedElems` – Returns the immediate elements of the given group. <sub>(was `ACAPI_ElementGroup_GetGroupedElems`)</sub> — [#1900](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1900 "[4/6] Share one helper among the grouping commands that list ids per item")
+- ✅ `ACAPI_Grouping_GetGroupedElems` – Returns the immediate elements of the given group. <sub>(was `ACAPI_ElementGroup_GetGroupedElems`)</sub>
 - ✅ `ACAPI_Grouping_GetMainGroupGuid` – Returns the top level group of a nested group element. <sub>(was `APIAny_GetMainGroupGuidID`)</sub>
 - ✅ `ACAPI_Grouping_GetRootGroup` – Returns the top level group unique ID of a nested group element. <sub>(was `ACAPI_ElementGroup_GetRootGroup`)</sub>
 - ✅ `ACAPI_Grouping_GetUserData` <sub>AC27–30</sub> – Obtains the user data attached to an element group.
@@ -1266,7 +1266,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_ElementSet_Create` – Groups elements into an element set.
 - ✅ `ACAPI_ElementSet_Delete` – Deletes an existing element set.
 - ✅ `ACAPI_ElementSet_GetData` – Retrieves the data of an existing element set.
-- ✅ `ACAPI_ElementSet_Identify` – Retrieves the element sets that contain a given element. — [#1900](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1900 "[4/6] Share one helper among the grouping commands that list ids per item")
+- ✅ `ACAPI_ElementSet_Identify` – Retrieves the element sets that contain a given element.
 
 ## AnalyticalModel
 
@@ -1764,7 +1764,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::RemoveWiringType` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::SetVoltage` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modify` <sub>AC30</sub>
-- ✅ `ACAPI::MEP::Element::Get` <sub>AC27–30</sub> — [#1906](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1906 "Set3DProjectionSettings / Get3DProjectionSettings: set and read the projection's sun position"), [#1900](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1900 "[4/6] Share one helper among the grouping commands that list ids per item"), [#1855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1855 "CreateTexts / ModifyTexts: optional width turns word wrap on"), [#1703](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1703 "Add CreateSkylights: place skylights in roofs and shells"), [#1671](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1671 "Drawing anchor placement, offset, and pen table control"), [#1537](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1537 "[5/5] Favorites through the Favorite manager, and library part parameter values"), [#1431](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1431 "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"), [#1395](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1395 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#463](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/463 "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters")
+- ✅ `ACAPI::MEP::Element::Get` <sub>AC27–30</sub> — [#1855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1855 "CreateTexts / ModifyTexts: optional width turns word wrap on"), [#1703](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1703 "Add CreateSkylights: place skylights in roofs and shells"), [#1671](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1671 "Drawing anchor placement, offset, and pen table control"), [#1537](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1537 "[5/5] Favorites through the Favorite manager, and library part parameter values"), [#1431](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1431 "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"), [#1395](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1395 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#463](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/463 "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters")
 - ✅ `ACAPI::MEP::ElementBase::Exists` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
 - ✅ `ACAPI::MEP::ElementBase::GetAnchorPoint` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetBaseRotation` <sub>AC30</sub>
