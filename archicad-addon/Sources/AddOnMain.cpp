@@ -544,7 +544,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetExportToleranceCommand> (
             projectCommands, "1.8.0",
-            "Gets the export tolerance: the largest distance allowed between an arc and the straight segments that replace it when curves are segmented for export."
+            "Gets the export tolerance: the largest distance allowed between an arc and the straight segments that replace it when curves are segmented for export. Archicad only provides this value while an export is in progress, so outside an export the command returns an error saying so."
         );
         err |= RegisterCommand<GetLast3DDefaultLevelsCommand> (
             projectCommands, "1.8.0",
