@@ -183,47 +183,7 @@ GS::Optional<GS::UniString> SetElementUserDataCommand::GetInputParametersSchema 
                 "type": "array",
                 "description": "The elements with the key-value pairs to store on them. Each item needs userData, keysToDelete or both.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "userData": {
-                            "type": "array",
-                            "description": "The key-value pairs to store on the element. A key that already exists on the element gets the new value; other keys are left as they are.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "key": {
-                                        "type": "string",
-                                        "description": "The key of the value. Scripts should prefix their keys (for example 'myscript.databaseId') so that different scripts do not overwrite each other's data.",
-                                        "minLength": 1
-                                    },
-                                    "value": {
-                                        "type": "string",
-                                        "description": "The value to store. Any text, for example an id, a timestamp or a JSON document the script encodes itself."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "key",
-                                    "value"
-                                ]
-                            }
-                        },
-                        "keysToDelete": {
-                            "type": "array",
-                            "description": "The keys to remove from the element. A key the element does not hold is ignored.",
-                            "items": {
-                                "type": "string",
-                                "minLength": 1
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId"
-                    ]
+                    "$ref": "#/ElementUserDataUpdate"
                 },
                 "minItems": 1
             }
@@ -373,8 +333,7 @@ GS::Optional<GS::UniString> GetElementUserDataCommand::GetInputParametersSchema 
                 "type": "array",
                 "description": "Optional. Only the pairs with these keys are returned; a key an element does not hold is left out of its pairs. When omitted, every pair stored on each element is returned.",
                 "items": {
-                    "type": "string",
-                    "minLength": 1
+                    "$ref": "#/UserDataKey"
                 }
             }
         },
@@ -397,35 +356,7 @@ GS::Optional<GS::UniString> GetElementUserDataCommand::GetRawResponseSchema () c
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "userData": {
-                                    "type": "array",
-                                    "description": "The key-value pairs stored on the element.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "key": {
-                                                "type": "string",
-                                                "description": "The key of the value."
-                                            },
-                                            "value": {
-                                                "type": "string",
-                                                "description": "The stored value."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "key",
-                                            "value"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "userData"
-                            ]
+                            "$ref": "#/ElementUserData"
                         },
                         {
                             "$ref": "#/ErrorItem"

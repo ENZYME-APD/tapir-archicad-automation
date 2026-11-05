@@ -838,25 +838,7 @@ GS::Optional<GS::UniString> GetNoteAutotextsCommand::GetRawResponseSchema () con
                 "type": "array",
                 "description": "The autotexts available in the notes of the given owner type, in ascending order of autotextId.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "autotextId": {
-                            "type": "integer",
-                            "description": "The numeric value of the autotext's API_NoteAutotextID in the Archicad API."
-                        },
-                        "elementTypes": {
-                            "type": "array",
-                            "description": "The element types the autotext is available for.",
-                            "items": {
-                                "$ref": "#/ElementType"
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "autotextId",
-                        "elementTypes"
-                    ]
+                    "$ref": "#/NoteAutotextDetails"
                 }
             }
         },
@@ -1817,22 +1799,7 @@ GS::Optional<GS::UniString> RenameProjectInfoGroupsCommand::GetInputParametersSc
                 "type": "array",
                 "description": "The Project Info groups to rename, each with its new name.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "projectInfoGroupId": {
-                            "$ref": "#/ProjectInfoGroupId"
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The new name of the group. It must not be used by another group.",
-                            "minLength": 1
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "projectInfoGroupId",
-                        "name"
-                    ]
+                    "$ref": "#/ProjectInfoGroupRename"
                 },
                 "minItems": 1
             }
@@ -2007,20 +1974,7 @@ GS::Optional<GS::UniString> MoveProjectInfoGroupsCommand::GetInputParametersSche
                 "type": "array",
                 "description": "The Project Info groups to move, in the order the moves are made.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "projectInfoGroupId": {
-                            "$ref": "#/ProjectInfoGroupId"
-                        },
-                        "beforeProjectInfoGroupId": {
-                            "$ref": "#/ProjectInfoGroupId",
-                            "description": "The group to move the group before. When omitted, the group is moved to the end of the group list."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "projectInfoGroupId"
-                    ]
+                    "$ref": "#/ProjectInfoGroupMove"
                 },
                 "minItems": 1
             }
@@ -4098,31 +4052,8 @@ GS::Optional<GS::UniString> GetSunSettingsCommand::GetRawResponseSchema () const
                 "description": "The sun position for the project's date, time and location."
             },
             "sunLight": {
-                "type": "object",
-                "description": "The sun and ambient light settings of the project. Missing when Archicad cannot report them.",
-                "properties": {
-                    "sunColor": {
-                        "$ref": "#/ColorRGB"
-                    },
-                    "sunIntensity": {
-                        "type": "integer",
-                        "description": "The intensity of the sun light in percent."
-                    },
-                    "ambientColor": {
-                        "$ref": "#/ColorRGB"
-                    },
-                    "ambientIntensity": {
-                        "type": "integer",
-                        "description": "The intensity of the ambient light in percent."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "sunColor",
-                    "sunIntensity",
-                    "ambientColor",
-                    "ambientIntensity"
-                ]
+                "$ref": "#/SunLightSettings",
+                "description": "Missing when Archicad cannot report them."
             }
         },
         "additionalProperties": false,
@@ -4411,144 +4342,13 @@ GS::Optional<GS::UniString> GetDimensionStandardsCommand::GetInputParametersSche
 
 GS::Optional<GS::UniString> GetDimensionStandardsCommand::GetRawResponseSchema () const
 {
-    const GS::UniString lengthDimFormatSchema = R"({
-        "type": "object",
-        "properties": {
-            "unit": {
-                "$ref": "#/LengthType"
-            },
-            "decimals": {
-                "type": "integer",
-                "description": "Number of decimals displayed."
-            },
-            "showSmall5": {
-                "type": "integer",
-                "description": "The extra accuracy (small 5) setting of the displayed values, 0 when off, as Archicad stores it."
-            },
-            "roundInch": {
-                "type": "integer",
-                "description": "Rounding of fractional inches."
-            },
-            "showZeroWhole": {
-                "type": "boolean",
-                "description": "Whether a zero whole part is displayed."
-            },
-            "showZeroInch": {
-                "type": "integer",
-                "description": "Whether zero inches are displayed, as Archicad stores it."
-            },
-            "hideZeroDecimals": {
-                "type": "boolean",
-                "description": "Whether trailing zero decimals are hidden."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "unit",
-            "decimals",
-            "showSmall5",
-            "roundInch",
-            "showZeroWhole",
-            "showZeroInch",
-            "hideZeroDecimals"
-        ]
-    })";
-
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "dimensionStandards": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "description": "A dimension standard of the project, as listed in Options > Project Preferences > Dimensions.",
-                    "properties": {
-                        "index": {
-                            "type": "integer",
-                            "description": "The 1-based index of the dimension standard."
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the dimension standard, as the dimensionStyle of GetViewSettings and SetViewSettings."
-                        },
-                        "settings": {
-                            "type": "object",
-                            "properties": {
-                                "linear": )") + lengthDimFormatSchema + R"(,
-                                "angle": {
-                                    "type": "object",
-                                    "properties": {
-                                        "unit": {
-                                            "$ref": "#/AngleType"
-                                        },
-                                        "decimals": {
-                                            "type": "integer",
-                                            "description": "Number of decimals displayed."
-                                        },
-                                        "accuracy": {
-                                            "type": "integer",
-                                            "description": "Accuracy of the angle values."
-                                        },
-                                        "hideZeroDecimals": {
-                                            "type": "boolean",
-                                            "description": "Whether trailing zero decimals are hidden."
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "unit",
-                                        "decimals",
-                                        "accuracy",
-                                        "hideZeroDecimals"
-                                    ]
-                                },
-                                "radial": )" + lengthDimFormatSchema + R"(,
-                                "level": )" + lengthDimFormatSchema + R"(,
-                                "elevation": )" + lengthDimFormatSchema + R"(,
-                                "doorWindow": )" + lengthDimFormatSchema + R"(,
-                                "parapet": )" + lengthDimFormatSchema + R"(,
-                                "area": {
-                                    "type": "object",
-                                    "properties": {
-                                        "unit": {
-                                            "$ref": "#/AreaType"
-                                        },
-                                        "decimals": {
-                                            "type": "integer",
-                                            "description": "Number of decimals displayed."
-                                        },
-                                        "hideZeroDecimals": {
-                                            "type": "boolean",
-                                            "description": "Whether trailing zero decimals are hidden."
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "unit",
-                                        "decimals",
-                                        "hideZeroDecimals"
-                                    ]
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "linear",
-                                "angle",
-                                "radial",
-                                "level",
-                                "elevation",
-                                "doorWindow",
-                                "parapet",
-                                "area"
-                            ]
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "index",
-                        "name",
-                        "settings"
-                    ]
+                    "$ref": "#/DimensionStandard"
                 }
             }
         },
@@ -5667,74 +5467,6 @@ static GS::UniString GetCalculationUnitsPageSchema (bool allFieldsRequired)
     return schema;
 }
 
-// The item count of the height limits list: all three in the response of
-// GetProjectPreferences, one to three in the input of SetProjectPreferences,
-// where the given items change the limits of the same index.
-static GS::UniString GetProjectPreferencesHeightLimitsItemCount (bool allFieldsRequired)
-{
-    if (allFieldsRequired) {
-        return "\"minItems\": 3, \"maxItems\": 3";
-    }
-    return "\"minItems\": 1, \"maxItems\": 3";
-}
-
-static GS::UniString GetZonesSchema (bool allFieldsRequired)
-{
-    GS::UniString schema = R"({
-        "type": "object",
-        "description": "The Zones page: the reduction of the calculated zone area under a low ceiling. The wall inset (niche) sizes of the page are not available through the API.",
-        "properties": {
-            "lowCeilingAreaReduction": {
-                "type": "object",
-                "description": "Up to three ceiling height limits split a zone into height ranges; the area of each range is reduced by its own percent in the calculated area of the zone.",
-                "properties": {
-                    "activeHeightLimits": {
-                        "type": "integer",
-                        "description": "How many of the three height limits are in use: 0 (no reduction) to 3."
-                    },
-                    "heightLimits": {
-                        "type": "array",
-                        "description": "The three height limits, each with the reduction of the area under it (and above the previous limit); the first activeHeightLimits of them are in use. In SetProjectPreferences the given items change the limits of the same index.",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "height": {
-                                    "type": "number",
-                                    "description": "The ceiling height limit in meters."
-                                },
-                                "reductionPercent": {
-                                    "type": "number",
-                                    "description": "The reduction of the area under this limit, in percent."
-                                }
-                            },
-                            "additionalProperties": false,
-                            )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("height", "reductionPercent")");
-    schema += R"(
-                        },
-                        )";
-    schema += GetProjectPreferencesHeightLimitsItemCount (allFieldsRequired);
-    schema += R"(
-                    },
-                    "reductionPercentAboveHeightLimits": {
-                        "type": "number",
-                        "description": "The reduction of the area above the highest height limit, in percent."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("activeHeightLimits", "heightLimits", "reductionPercentAboveHeightLimits")");
-    schema += R"(
-            }
-        },
-        "additionalProperties": false,
-        )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("lowCeilingAreaReduction")");
-    schema += R"(
-    })";
-    return schema;
-}
-
 GetProjectPreferencesCommand::GetProjectPreferencesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -5787,7 +5519,7 @@ GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetRawResponseSchema (
     schema += GetCalculationUnitsPageSchema (true);
     schema += R"(,
             "zones": )";
-    schema += GetZonesSchema (true);
+    schema += R"({ "$ref": "#/ZonePreferences" })";
     schema += R"(
         },
         "additionalProperties": false,
@@ -5871,7 +5603,7 @@ GS::Optional<GS::UniString> SetProjectPreferencesCommand::GetInputParametersSche
     schema += GetCalculationUnitsPageSchema (false);
     schema += R"(,
             "zones": )";
-    schema += GetZonesSchema (false);
+    schema += R"({ "$ref": "#/ZonePreferencesUpdate" })";
     schema += R"(
         },
         "additionalProperties": false,
@@ -7573,17 +7305,7 @@ GS::Optional<GS::UniString> GetHotlinkSourceStatusCommand::GetInputParametersSch
                 "type": "array",
                 "description": "The source files of hotlinks of the project, for example the location of each node GetHotlinks returns.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "location": {
-                            "type": "string",
-                            "description": "Absolute path of the hotlink's source file."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "location"
-                    ]
+                    "$ref": "#/HotlinkSourceReference"
                 }
             }
         },
@@ -7606,25 +7328,7 @@ GS::Optional<GS::UniString> GetHotlinkSourceStatusCommand::GetRawResponseSchema 
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "status": {
-                                    "type": "string",
-                                    "enum": [
-                                        "AuthCanceld",
-                                        "SourceMissing",
-                                        "SourceAvailable",
-                                        "SourceNotAccessible",
-                                        "SourceIncompatible",
-                                        "SourceOffline"
-                                    ],
-                                    "description": "The API_HotlinkSourceStatus value without its prefix (AuthCanceld is spelled as in the API)."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "status"
-                            ]
+                            "$ref": "#/HotlinkSourceStatusResult"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -7752,39 +7456,7 @@ GS::Optional<GS::UniString> ConvertUnitValuesCommand::GetInputParametersSchema (
                 "type": "array",
                 "description": "The values to convert.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "value": {
-                            "type": "number",
-                            "description": "The value to convert, in meters, square meters, cubic meters or radians, matching the kind of the preference."
-                        },
-                        "preference": {
-                            "type": "string",
-                            "description": "The Project Preference whose unit and rounding are applied: WorkModel, WorkLayout and WorkAngle are the Working Units; the Dim ones are the Dimensions (DimDoorWindow the door, window and skylight dimensions, DimParapet the sill height, DimArea the area calculations); the Calc ones are the Calculation Units & Rules.",
-                            "enum": [
-                                "WorkModel",
-                                "WorkLayout",
-                                "WorkAngle",
-                                "DimLinear",
-                                "DimAngle",
-                                "DimRadial",
-                                "DimLevel",
-                                "DimElevation",
-                                "DimDoorWindow",
-                                "DimParapet",
-                                "DimArea",
-                                "CalcLength",
-                                "CalcArea",
-                                "CalcVolume",
-                                "CalcAngle"
-                            ]
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "value",
-                        "preference"
-                    ]
+                    "$ref": "#/UnitValueConversionData"
                 }
             }
         },
@@ -7807,27 +7479,7 @@ GS::Optional<GS::UniString> ConvertUnitValuesCommand::GetRawResponseSchema () co
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "convertedValue": {
-                                    "type": "string",
-                                    "description": "The value as Archicad shows it in the unit of the preference, without the extra accuracy decimals. It may contain the unit."
-                                },
-                                "extraAccuracy": {
-                                    "type": "string",
-                                    "description": "The extra accuracy decimals, if any (at most two). Empty when there are none."
-                                },
-                                "unit": {
-                                    "type": "string",
-                                    "description": "The unit of the preference. It may be empty."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "convertedValue",
-                                "extraAccuracy",
-                                "unit"
-                            ]
+                            "$ref": "#/ConvertedUnitValue"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -7907,27 +7559,7 @@ GS::Optional<GS::UniString> GetRenovationStatusNamesCommand::GetRawResponseSchem
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "status": {
-                                    "type": "string",
-                                    "description": "The renovation status.",
-                                    "enum": [
-                                        "Existing",
-                                        "New",
-                                        "Demolished"
-                                    ]
-                                },
-                                "name": {
-                                    "type": "string",
-                                    "description": "The name of the status as the running Archicad shows it (localized)."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "status",
-                                "name"
-                            ]
+                            "$ref": "#/RenovationStatusName"
                         },
                         {
                             "$ref": "#/ErrorItem"

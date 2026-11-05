@@ -26,20 +26,7 @@ GS::Optional<GS::UniString> GetRevisionIssuesCommand::GetRawResponseSchema () co
                 "type": "array",
                 "description": "The custom scheme fields of the revision issues (key and name). Present only when the project defines any.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "customSchemeKey": {
-                            "$ref": "#/Guid"
-                        },
-                        "customSchemeName": {
-                            "type": "string"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "customSchemeKey",
-                        "customSchemeName"
-                    ]
+                    "$ref": "#/RevisionIssueCustomSchemeItem"
                 }
             }
         },
@@ -160,22 +147,7 @@ GS::Optional<GS::UniString> ModifyRevisionIssuesCommand::GetInputParametersSchem
                             "type": "array",
                             "description": "The custom scheme fields to set. A field is addressed by its key (as GetRevisionIssues returns it) or by its name; the fields not listed keep their values.",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "customSchemeKey": {
-                                        "$ref": "#/Guid"
-                                    },
-                                    "customSchemeName": {
-                                        "type": "string"
-                                    },
-                                    "customSchemeValue": {
-                                        "type": "string"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "customSchemeValue"
-                                ]
+                                "$ref": "#/RevisionIssueCustomSchemeValue"
                             }
                         }
                     },

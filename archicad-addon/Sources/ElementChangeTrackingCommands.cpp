@@ -140,12 +140,8 @@ GS::Optional<GS::UniString> CaptureElementStateCommand::GetInputParametersSchema
         "type": "object",
         "properties": {
             "type": {
-                "type": "string",
-                "description": "How GetElementChangesSince finds the changed elements between this state and another one. ModificationStamp (the default) compares the modification stamps of the elements, so any change to an element counts. 3DModel compares the 3D model of the elements, so only a change that alters the 3D model counts, and capturing it generates the 3D model of the project. Two states can only be compared when they were captured with the same type.",
-                "enum": [
-                    "ModificationStamp",
-                    "3DModel"
-                ]
+                "$ref": "#/ElementStateType",
+                "description": "ModificationStamp by default."
             }
         },
         "additionalProperties": false,
@@ -159,25 +155,10 @@ GS::Optional<GS::UniString> CaptureElementStateCommand::GetRawResponseSchema () 
         "type": "object",
         "properties": {
             "stateId": {
-                "type": "object",
-                "description": "The identifier of the captured state, accepted by GetElementChangesSince and ReleaseElementState. It is only valid in the Archicad session and project it was captured in.",
-                "properties": {
-                    "guid": {
-                        "$ref": "#/Guid"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "guid"
-                ]
+                "$ref": "#/ElementStateId"
             },
             "type": {
-                "type": "string",
-                "description": "The type the state was captured with.",
-                "enum": [
-                    "ModificationStamp",
-                    "3DModel"
-                ]
+                "$ref": "#/ElementStateType"
             }
         },
         "additionalProperties": false,
@@ -240,30 +221,12 @@ GS::Optional<GS::UniString> GetElementChangesSinceCommand::GetInputParametersSch
         "type": "object",
         "properties": {
             "stateId": {
-                "type": "object",
-                "description": "The state to compare from, as returned by CaptureElementState.",
-                "properties": {
-                    "guid": {
-                        "$ref": "#/Guid"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "guid"
-                ]
+                "$ref": "#/ElementStateId",
+                "description": "The state to compare from, as returned by CaptureElementState."
             },
             "toStateId": {
-                "type": "object",
-                "description": "The state to compare to, as returned by CaptureElementState with the same type as stateId. If omitted, the current state of the project is used, so the response lists what changed since stateId was captured.",
-                "properties": {
-                    "guid": {
-                        "$ref": "#/Guid"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "guid"
-                ]
+                "$ref": "#/ElementStateId",
+                "description": "The state to compare to, as returned by CaptureElementState with the same type as stateId. If omitted, the current state of the project is used, so the response lists what changed since stateId was captured."
             }
         },
         "additionalProperties": false,
@@ -365,17 +328,8 @@ GS::Optional<GS::UniString> ReleaseElementStateCommand::GetInputParametersSchema
         "type": "object",
         "properties": {
             "stateId": {
-                "type": "object",
-                "description": "The state to free, as returned by CaptureElementState.",
-                "properties": {
-                    "guid": {
-                        "$ref": "#/Guid"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "guid"
-                ]
+                "$ref": "#/ElementStateId",
+                "description": "The state to free, as returned by CaptureElementState."
             }
         },
         "additionalProperties": false,

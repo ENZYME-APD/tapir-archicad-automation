@@ -12405,7 +12405,7 @@ GS::Optional<GS::UniString> GetOpeningSymbolParametersCommand::GetInputParameter
 
 GS::Optional<GS::UniString> GetOpeningSymbolParametersCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "openings": {
@@ -12415,14 +12415,7 @@ GS::Optional<GS::UniString> GetOpeningSymbolParametersCommand::GetRawResponseSch
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementId": { "$ref": "#/ElementId" },
-                                "cutSymbolParameters": )") + GDLParameterValuesSchema + R"(,
-                                "unCutSymbolParameters": )" + GDLParameterValuesSchema + R"(
-                            },
-                            "additionalProperties": false,
-                            "required": ["elementId"]
+                            "$ref": "#/OpeningSymbolParameters"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -12432,7 +12425,9 @@ GS::Optional<GS::UniString> GetOpeningSymbolParametersCommand::GetRawResponseSch
             }
         },
         "additionalProperties": false,
-        "required": ["openings"]
+        "required": [
+            "openings"
+        ]
     })";
 }
 
@@ -12537,25 +12532,20 @@ GS::String SetOpeningSymbolParametersCommand::GetName () const
 
 GS::Optional<GS::UniString> SetOpeningSymbolParametersCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "elements": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": { "$ref": "#/ElementId" },
-                        "cutSymbolParameters": )") + SetGDLParameterValuesSchema + R"(,
-                        "unCutSymbolParameters": )" + SetGDLParameterValuesSchema + R"(
-                    },
-                    "additionalProperties": false,
-                    "required": ["elementId"]
+                    "$ref": "#/OpeningSymbolParametersUpdate"
                 }
             }
         },
         "additionalProperties": false,
-        "required": ["elements"]
+        "required": [
+            "elements"
+        ]
     })";
 }
 

@@ -6705,12 +6705,8 @@ GS::Optional<GS::UniString> ModifyPensCommand::GetInputParametersSchema () const
                 }
             },
             "target": {
-                "type": "string",
-                "description": "Which active Pen Table to change: the one in effect for the model views (the default) or the one in effect for the layouts. The two can be the same Pen Table.",
-                "enum": [
-                    "model",
-                    "layout"
-                ]
+                "$ref": "#/PenTarget",
+                "description": "The model views Pen Table by default."
             }
         },
         "additionalProperties": false,
@@ -7820,16 +7816,7 @@ GS::Optional<GS::UniString> GetUserDataOfAttributesCommand::GetRawResponseSchema
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "pairs": {
-                                    "$ref": "#/UserDataPairs"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "pairs"
-                            ]
+                            "$ref": "#/AttributeUserData"
                         },
                         {
                             "$ref": "#/ErrorItem"

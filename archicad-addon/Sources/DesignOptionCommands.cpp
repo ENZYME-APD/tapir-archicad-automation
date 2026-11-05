@@ -1226,20 +1226,7 @@ GS::Optional<GS::UniString> ActivateDesignOptionsInCombinationsCommand::GetInput
             "designOptionsToActivate": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "designOptionCombinationId": {
-                            "$ref": "#/DesignOptionCombinationId"
-                        },
-                        "designOptionId": {
-                            "$ref": "#/DesignOptionId"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "designOptionCombinationId",
-                        "designOptionId"
-                    ]
+                    "$ref": "#/DesignOptionActivation"
                 },
                 "description": "The design options to activate, each in the given combination."
             }
@@ -3234,69 +3221,7 @@ GS::Optional<GS::UniString> GetHotlinkDesignOptionTableDetailsCommand::GetRawRes
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "nodeGuid": {
-                                    "$ref": "#/GuidId",
-                                    "description": "The node guid the design option table belongs to."
-                                },
-                                "filterMode": {
-                                    "type": "string",
-                                    "enum": [
-                                        "MainModelOnly",
-                                        "FilterByOptions",
-                                        "FilterByCombination"
-                                    ],
-                                    "description": "What the node shows: only the main model of the source, the active option of each set, or the active combination."
-                                },
-                                "sets": {
-                                    "type": "array",
-                                    "description": "The design option sets of the source file.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "name": {
-                                                "type": "string",
-                                                "description": "The name of the set."
-                                            },
-                                            "options": {
-                                                "type": "array",
-                                                "description": "The names of the design options in the set.",
-                                                "items": {
-                                                    "type": "string"
-                                                }
-                                            },
-                                            "activeOption": {
-                                                "type": "string",
-                                                "description": "The name of the option the node shows from this set. Left out when none is active."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "name",
-                                            "options"
-                                        ]
-                                    }
-                                },
-                                "combinations": {
-                                    "type": "array",
-                                    "description": "The names of the design option combinations of the source file.",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                },
-                                "activeCombination": {
-                                    "type": "string",
-                                    "description": "The name of the combination the node shows. Left out when none is active."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "nodeGuid",
-                                "filterMode",
-                                "sets",
-                                "combinations"
-                            ]
+                            "$ref": "#/HotlinkDesignOptionTableDetails"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -3489,21 +3414,7 @@ GS::Optional<GS::UniString> ReorderDesignOptionSetsCommand::GetInputParametersSc
             "designOptionSets": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "designOptionSetId": {
-                            "$ref": "#/DesignOptionSetId",
-                            "description": "The design option set to move."
-                        },
-                        "beforeDesignOptionSetId": {
-                            "$ref": "#/DesignOptionSetId",
-                            "description": "The design option set to move it before. When it is not given, the set is moved to the end."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "designOptionSetId"
-                    ]
+                    "$ref": "#/DesignOptionSetMove"
                 },
                 "description": "The design option sets to move, in the order the moves are done."
             }
@@ -3610,21 +3521,7 @@ GS::Optional<GS::UniString> ReorderDesignOptionsInSetCommand::GetInputParameters
             "designOptions": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "designOptionId": {
-                            "$ref": "#/DesignOptionId",
-                            "description": "The design option to move within its set."
-                        },
-                        "beforeDesignOptionId": {
-                            "$ref": "#/DesignOptionId",
-                            "description": "The design option of the same set to move it before. When it is not given, the design option is moved to the end of its set."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "designOptionId"
-                    ]
+                    "$ref": "#/DesignOptionMove"
                 },
                 "description": "The design options to move, in the order the moves are done."
             }
@@ -3747,25 +3644,7 @@ GS::Optional<GS::UniString> CanMoveElementsToDesignOptionsCommand::GetRawRespons
             "canMoveElements": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "canMove": {
-                            "type": "boolean",
-                            "description": "Whether the element can be moved to another design option or to the main model."
-                        },
-                        "error": {
-                            "$ref": "#/Error",
-                            "description": "The reason why the element cannot be moved. Only present when canMove is false."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "canMove"
-                    ]
+                    "$ref": "#/DesignOptionMoveCapability"
                 },
                 "description": "The result for each given element, in the order of the input."
             }

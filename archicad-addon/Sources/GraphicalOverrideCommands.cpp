@@ -485,30 +485,7 @@ GS::Optional<GS::UniString> GetGraphicalOverrideStyleOfElementsCommand::GetRawRe
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "lineType": { "$ref": "#/OverriddenValue" },
-                                "lineMarkerTextPen": { "$ref": "#/OverriddenValue" },
-                                "overrideLinePenThickness": { "type": "boolean" },
-                                "cutFillType": { "$ref": "#/OverriddenValue" },
-                                "cutFillForegroundPen": { "$ref": "#/OverriddenValue" },
-                                "cutFillBackgroundPen": { "$ref": "#/OverriddenValue" },
-                                "overrideCutFillForegroundThickness": { "type": "boolean" },
-                                "coverFillType": { "$ref": "#/OverriddenValue" },
-                                "coverFillForegroundPen": { "$ref": "#/OverriddenValue" },
-                                "coverFillBackgroundPen": { "$ref": "#/OverriddenValue" },
-                                "overrideCoverFillForegroundThickness": { "type": "boolean" },
-                                "draftFillType": { "$ref": "#/OverriddenValue" },
-                                "draftFillForegroundPen": { "$ref": "#/OverriddenValue" },
-                                "draftFillBackgroundPen": { "$ref": "#/OverriddenValue" },
-                                "overrideDraftFillForegroundThickness": { "type": "boolean" },
-                                "cutSurface": { "$ref": "#/OverriddenValue" },
-                                "uncutSurface": { "$ref": "#/OverriddenValue" },
-                                "showSkinSeparators": { "type": "boolean" },
-                                "hideCutContours": { "type": "boolean" },
-                                "hideUncutContours": { "type": "boolean" }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/GraphicalOverrideStyle"
                         },
                         {
                             "$ref": "#/ErrorItem"

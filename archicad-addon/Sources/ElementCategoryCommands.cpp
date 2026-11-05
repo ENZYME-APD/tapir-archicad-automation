@@ -328,40 +328,7 @@ GS::Optional<GS::UniString> GetCategoryValuesOfDefaultsCommand::GetRawResponseSc
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "categoryValues": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "type": {
-                                                "$ref": "#/ElementCategoryType"
-                                            },
-                                            "categoryId": {
-                                                "$ref": "#/ElementCategoryId"
-                                            },
-                                            "categoryValueId": {
-                                                "$ref": "#/ElementCategoryValueId",
-                                                "description": "Left out when the default has no value in this category."
-                                            },
-                                            "name": {
-                                                "type": "string",
-                                                "description": "The localized name of the value, for display only. Left out when the default has no value in this category."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "type",
-                                            "categoryId"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "categoryValues"
-                            ]
+                            "$ref": "#/DefaultCategoryValues"
                         },
                         {
                             "$ref": "#/ErrorItem"

@@ -3544,29 +3544,7 @@ GS::Optional<GS::UniString> ChangeTextContentCommand::GetInputParametersSchema (
                 "type": "array",
                 "description": "The content changes, applied in order (several changes of one element see the content as the previous one left it). Unlike ModifyTexts/ModifyLabels, the rest of the content is not rebuilt: the other runs, their styles and any autotext in them stay as they are, and the inserted piece takes the style of the character at 'from'.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId",
-                            "description": "A Text element or a Label of the Text class."
-                        },
-                        "from": {
-                            "type": "integer",
-                            "minimum": 0,
-                            "description": "The position in the content where the replaced range starts."
-                        },
-                        "range": {
-                            "type": "integer",
-                            "minimum": 0,
-                            "description": "The number of characters to replace; 0 inserts the content at 'from'. The range may not reach over a line end into another paragraph."
-                        },
-                        "content": {
-                            "type": "string",
-                            "description": "The new content of the range; an empty string deletes the range. It must not contain line ends."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": ["elementId", "from", "range", "content"]
+                    "$ref": "#/TextContentChange"
                 }
             }
         },

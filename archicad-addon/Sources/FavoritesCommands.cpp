@@ -331,101 +331,7 @@ GS::Optional<GS::UniString> GetFavoriteDetailsCommand::GetRawResponseSchema () c
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "favorite": {
-                                    "type": "string",
-                                    "description": "The name of the favorite."
-                                },
-                                "elementType": {
-                                    "type": "string",
-                                    "description": "The element type of the favorite, as in GetFavoritesByType."
-                                },
-                                "classifications": {
-                                    "type": "array",
-                                    "description": "The classifications the favorite applies, one per classification system.",
-                                    "items": {
-                                        "$ref": "#/ClassificationIdArrayItem"
-                                    }
-                                },
-                                "properties": {
-                                    "type": "array",
-                                    "description": "The property values stored in the favorite.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "propertyId": {
-                                                "$ref": "#/PropertyId"
-                                            },
-                                            "propertyName": {
-                                                "type": "string"
-                                            },
-                                            "status": {
-                                                "type": "string",
-                                                "enum": [
-                                                    "HasValue",
-                                                    "NotEvaluated",
-                                                    "NotAvailable"
-                                                ],
-                                                "description": "The evaluation status of the value. propertyValue is only present for HasValue."
-                                            },
-                                            "isDefault": {
-                                                "type": "boolean",
-                                                "description": "True if the value is the default value of the property."
-                                            },
-                                            "propertyValue": {
-                                                "$ref": "#/PropertyValue"
-                                            },
-                                            "error": {
-                                                "$ref": "#/Error"
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "propertyId",
-                                            "propertyName",
-                                            "status",
-                                            "isDefault"
-                                        ]
-                                    }
-                                },
-                                "categoryValues": {
-                                    "type": "array",
-                                    "description": "The element category values (e.g. Structural Function, Position, Renovation Status) stored in the favorite.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "categoryId": {
-                                                "$ref": "#/GuidId"
-                                            },
-                                            "categoryName": {
-                                                "type": "string"
-                                            },
-                                            "categoryValueId": {
-                                                "$ref": "#/GuidId"
-                                            },
-                                            "categoryValueName": {
-                                                "type": "string"
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "categoryId",
-                                            "categoryName",
-                                            "categoryValueId",
-                                            "categoryValueName"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "favorite",
-                                "elementType",
-                                "classifications",
-                                "properties",
-                                "categoryValues"
-                            ]
+                            "$ref": "#/FavoriteDetails"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -1179,9 +1085,8 @@ GS::Optional<GS::UniString> ImportFavoritesCommand::GetInputParametersSchema () 
                 "description": "Absolute path on the AC host. With the prefs format: a Favorites file (.prefs) or folder. With the xml format: the folder of Favorite files, as ExportFavorites writes it. With the legacyPRF format: the .prf file."
             },
             "format": {
-                "type": "string",
-                "enum": ["prefs", "xml", "legacyPRF"],
-                "description": "The format to import from, the counterpart of the format of ExportFavorites. prefs (the default) works in every Archicad version. xml imports Favorite files from a folder, and legacyPRF a Favorites file of earlier Archicad versions; these two require Archicad 29 or newer."
+                "$ref": "#/FavoriteImportFormat",
+                "description": "Optional, prefs by default."
             },
             "fileNames": {
                 "type": "array",
@@ -2959,25 +2864,11 @@ GS::Optional<GS::UniString> CreateFavoriteCommand::GetInputParametersSchema () c
                 "description": "The folder of the Favorites palette to create the Favorite in, as the folder names from the root down. The folder must exist. Empty or omitted = root."
             },
             "source": {
-                "type": "object",
-                "description": "Where the settings of the new Favorite come from: exactly one of favoriteName and toolDefault.",
-                "properties": {
-                    "favoriteName": {
-                        "type": "string",
-                        "description": "Take the settings of this Favorite."
-                    },
-                    "toolDefault": {
-                        "type": "string",
-                        "enum": ["Opening"],
-                        "description": "Take the current settings of this tool."
-                    }
-                },
-                "additionalProperties": false
+                "$ref": "#/FavoriteSource"
             },
             "conflictPolicy": {
-                "type": "string",
-                "enum": ["Error", "Skip", "OverwriteExisting", "RenameNew"],
-                "description": "What to do when a Favorite with this name already exists: Error fails, Skip leaves the existing Favorite unchanged, OverwriteExisting gives the existing Favorite the new settings (its folder does not change), RenameNew creates the Favorite with ' (2)', ' (3)', ... appended to the name. Default Error."
+                "$ref": "#/FavoriteConflictPolicy",
+                "description": "Default Error."
             }
         },
         "additionalProperties": false,
@@ -3003,9 +2894,7 @@ GS::Optional<GS::UniString> CreateFavoriteCommand::GetRawResponseSchema () const
                 "description": "The folder of the Favorite, as the folder names from the root down. Empty for the root. Missing when Archicad cannot read it."
             },
             "outcome": {
-                "type": "string",
-                "enum": ["Created", "Skipped", "Overwritten"],
-                "description": "Created for a new Favorite (also with RenameNew), Skipped or Overwritten when a Favorite with the name already existed."
+                "$ref": "#/FavoriteCreationOutcome"
             }
         },
         "additionalProperties": false,
@@ -3145,20 +3034,7 @@ GS::Optional<GS::UniString> ChangeFavoriteCommand::GetInputParametersSchema () c
                 "description": "The name of the Favorite to change."
             },
             "source": {
-                "type": "object",
-                "description": "Where the new settings of the Favorite come from: exactly one of favoriteName and toolDefault.",
-                "properties": {
-                    "favoriteName": {
-                        "type": "string",
-                        "description": "Take the settings of this Favorite."
-                    },
-                    "toolDefault": {
-                        "type": "string",
-                        "enum": ["Opening"],
-                        "description": "Take the current settings of this tool."
-                    }
-                },
-                "additionalProperties": false
+                "$ref": "#/FavoriteSource"
             }
         },
         "additionalProperties": false,

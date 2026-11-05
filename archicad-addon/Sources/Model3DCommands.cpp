@@ -218,40 +218,7 @@ GS::Optional<GS::UniString> GetElementConnectionsCommand::GetRawResponseSchema (
                 "type": "array",
                 "description": "The connected pairs of the given elements. Each pair appears once.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId1": {
-                            "$ref": "#/ElementId"
-                        },
-                        "elementId2": {
-                            "$ref": "#/ElementId"
-                        },
-                        "polygons": {
-                            "type": "array",
-                            "description": "The polygons of the surface where the two elements touch, in world coordinates. The last point of a polygon repeats its first.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "coordinates": {
-                                        "type": "array",
-                                        "items": {
-                                            "$ref": "#/Coordinate3D"
-                                        }
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "coordinates"
-                                ]
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId1",
-                        "elementId2",
-                        "polygons"
-                    ]
+                    "$ref": "#/ElementConnection"
                 }
             },
             "executionResults": {
@@ -399,38 +366,7 @@ GS::Optional<GS::UniString> GetBodyMaterialsOfElementsCommand::GetRawResponseSch
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "bodies": {
-                                    "type": "array",
-                                    "description": "The bodies of the element's 3D model generated with separate components: a composite structure has one body per skin. Empty when the element has no 3D model.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "bodyIndex": {
-                                                "type": "integer",
-                                                "description": "The index of the body in the element, starting from 0."
-                                            },
-                                            "buildingMaterialId": {
-                                                "$ref": "#/AttributeId",
-                                                "description": "The building material of the body. Left out when it cannot be found among the attributes of the project."
-                                            },
-                                            "buildingMaterialName": {
-                                                "type": "string",
-                                                "description": "The name of the building material. Left out together with buildingMaterialId."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "bodyIndex"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "bodies"
-                            ]
+                            "$ref": "#/ElementBodyMaterials"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -574,33 +510,7 @@ GS::Optional<GS::UniString> GetCutPolygonsOfElementsCommand::GetInputParametersS
                 "$ref": "#/Elements"
             },
             "cutPlane": {
-                "type": "object",
-                "description": "The cutting plane. axisX, axisY and axisZ should be unit vectors perpendicular to each other; axisZ is the normal of the plane.",
-                "properties": {
-                    "basePoint": {
-                        "$ref": "#/Coordinate3D",
-                        "description": "A point of the plane, the origin of the returned 2D coordinates."
-                    },
-                    "axisX": {
-                        "$ref": "#/Coordinate3D",
-                        "description": "The direction of the x axis of the returned 2D coordinates."
-                    },
-                    "axisY": {
-                        "$ref": "#/Coordinate3D",
-                        "description": "The direction of the y axis of the returned 2D coordinates."
-                    },
-                    "axisZ": {
-                        "$ref": "#/Coordinate3D",
-                        "description": "The normal of the plane."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "basePoint",
-                    "axisX",
-                    "axisY",
-                    "axisZ"
-                ]
+                "$ref": "#/ElementCutPlane"
             }
         },
         "additionalProperties": false,
@@ -622,67 +532,7 @@ GS::Optional<GS::UniString> GetCutPolygonsOfElementsCommand::GetRawResponseSchem
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "bodies": {
-                                    "type": "array",
-                                    "description": "The bodies of the element's 3D model generated with separate components: a composite structure has one body per skin. Empty when the element has no 3D model.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "bodyIndex": {
-                                                "type": "integer",
-                                                "description": "The index of the body in the element, starting from 0."
-                                            },
-                                            "buildingMaterialId": {
-                                                "$ref": "#/AttributeId",
-                                                "description": "The building material of the body. Left out when it cannot be found among the attributes of the project."
-                                            },
-                                            "buildingMaterialName": {
-                                                "type": "string",
-                                                "description": "The name of the building material. Left out together with buildingMaterialId."
-                                            },
-                                            "area": {
-                                                "type": "number",
-                                                "description": "The area of the cut surface of the body. 0 when the plane does not cut the body."
-                                            },
-                                            "polygons": {
-                                                "type": "array",
-                                                "description": "The polygons of the cut surface of the body, in 2D coordinates of the plane (basePoint, axisX, axisY). Curved edges are given by their end points. Empty when the plane does not cut the body.",
-                                                "items": {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "polygonOutline": {
-                                                            "type": "array",
-                                                            "items": {
-                                                                "$ref": "#/Coordinate2D"
-                                                            }
-                                                        },
-                                                        "holes": {
-                                                            "$ref": "#/Holes2D"
-                                                        }
-                                                    },
-                                                    "additionalProperties": false,
-                                                    "required": [
-                                                        "polygonOutline",
-                                                        "holes"
-                                                    ]
-                                                }
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "bodyIndex",
-                                            "area",
-                                            "polygons"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "bodies"
-                            ]
+                            "$ref": "#/ElementCutPolygons"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -996,45 +846,7 @@ GS::Optional<GS::UniString> GetSurfaceTypesOfElementsCommand::GetRawResponseSche
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "polygons": {
-                                    "type": "array",
-                                    "description": "Every polygon of every body of the element's 3D model, generated with separate components. Empty when the element has no 3D model.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "bodyIndex": {
-                                                "type": "integer",
-                                                "description": "The index of the body in the element, starting from 0."
-                                            },
-                                            "polygonIndex": {
-                                                "type": "integer",
-                                                "description": "The index of the polygon in the body, starting from 0."
-                                            },
-                                            "polygonId": {
-                                                "type": "integer",
-                                                "description": "The identifier of the polygon in the 3D model (ModelerAPI::Polygon::GetPolygonId)."
-                                            },
-                                            "surfaceType": {
-                                                "type": "integer",
-                                                "description": "The surface type of the polygon: the numeric value of API_SurfaceTypeID as ACAPI_Polygon_PolygonId2SurfaceType returns it."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "bodyIndex",
-                                            "polygonIndex",
-                                            "polygonId",
-                                            "surfaceType"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "polygons"
-                            ]
+                            "$ref": "#/ElementSurfaceTypes"
                         },
                         {
                             "$ref": "#/ErrorItem"

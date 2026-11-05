@@ -323,17 +323,7 @@ GS::Optional<GS::UniString> CreateSolidOperationsCommand::GetRawResponseSchema (
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elements": {
-                                    "$ref": "#/Elements",
-                                    "description": "The morphs created by the operation."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elements"
-                            ]
+                            "$ref": "#/SolidOperationResult"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -895,20 +885,7 @@ GS::Optional<GS::UniString> UnmergeElementsCommand::GetInputParametersSchema () 
                 "type": "array",
                 "description": "The pairs of merged elements to separate. The order within a pair does not matter.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId1": {
-                            "$ref": "#/ElementId"
-                        },
-                        "elementId2": {
-                            "$ref": "#/ElementId"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId1",
-                        "elementId2"
-                    ]
+                    "$ref": "#/ElementUnmergePair"
                 }
             }
         },

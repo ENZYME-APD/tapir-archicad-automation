@@ -1327,25 +1327,7 @@ GS::Optional<GS::UniString> SetGraphicOverrideRuleOrderCommand::GetInputParamete
                 "type": "array",
                 "description": "The rule groups to reorder, in the shape GetGraphicOverrideRuleGroups returns them.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the rule group."
-                        },
-                        "graphicOverrideRuleIds": {
-                            "type": "array",
-                            "description": "The rules of the group in their new order. Each must be a rule of this group, listed once. The listed rules come first, in this order; the rules of the group that are not listed keep their order after them.",
-                            "items": {
-                                "$ref": "#/GraphicOverrideRuleIdArrayItem"
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "graphicOverrideRuleIds"
-                    ]
+                    "$ref": "#/GraphicOverrideRuleOrder"
                 }
             }
         },

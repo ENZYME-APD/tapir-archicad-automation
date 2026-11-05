@@ -679,38 +679,12 @@ GS::String FindModelViewOptionCommand::GetName () const
 GS::Optional<GS::UniString> FindModelViewOptionCommand::GetInputParametersSchema () const
 {
     return R"({
-        "type": "object",
-        "description": "The model view option combination to find, given by id or by name.",
-        "properties": {
-            "modelViewOptionId": {
-                "type": "object",
-                "description": "The identifier of the model view option combination.",
-                "properties": {
-                    "guid": {
-                        "$ref": "#/Guid"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "guid"
-                ]
-            },
-            "name": {
-                "type": "string",
-                "description": "The name of the model view option combination, as shown in Document > Model View > Model View Options."
-            }
-        },
-        "additionalProperties": false,
         "oneOf": [
             {
-                "required": [
-                    "modelViewOptionId"
-                ]
+                "$ref": "#/ModelViewOptionById"
             },
             {
-                "required": [
-                    "name"
-                ]
+                "$ref": "#/ModelViewOptionByName"
             }
         ]
     })";
@@ -727,17 +701,7 @@ GS::Optional<GS::UniString> FindModelViewOptionCommand::GetRawResponseSchema () 
                 "description": "The index of the model view option combination."
             },
             "modelViewOptionId": {
-                "type": "object",
-                "description": "The identifier of the model view option combination.",
-                "properties": {
-                    "guid": {
-                        "$ref": "#/Guid"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "guid"
-                ]
+                "$ref": "#/ModelViewOptionId"
             },
             "name": {
                 "type": "string",
@@ -1336,25 +1300,7 @@ GS::Optional<GS::UniString> GetViewOptionsCommand::GetRawResponseSchema () const
             "description": "The index of the model view option combination the window applies. Matches the order of GetModelViewOptions, starting from 1."
         },
         "viewOptions": {
-            "type": "object",
-            "description": "The model view options and the on-screen view options, every field by its API_ViewOptions name. Values are the numeric API constants; attribute indices are plain integers.",
-            "properties": {
-                "modelViewOptions": {
-                    "type": "object",
-                    "description": "Fields of API_ModelViewOptions, with the curtainWall, stair and railing parts as nested objects.",
-                    "additionalProperties": true
-                },
-                "onScreenViewOptions": {
-                    "type": "object",
-                    "description": "Fields of API_OnScreenViewOptions.",
-                    "additionalProperties": true
-                }
-            },
-            "additionalProperties": false,
-            "required": [
-                "modelViewOptions",
-                "onScreenViewOptions"
-            ]
+            "$ref": "#/ViewOptions"
         }
     },
     "additionalProperties": false,
@@ -1406,19 +1352,7 @@ GS::Optional<GS::UniString> SetViewOptionsCommand::GetInputParametersSchema () c
             "minimum": 1
         },
         "viewOptions": {
-            "type": "object",
-            "description": "The fields to change, named as in the response of GetViewOptions. Fields not given keep their current value.",
-            "properties": {
-                "modelViewOptions": {
-                    "type": "object",
-                    "additionalProperties": true
-                },
-                "onScreenViewOptions": {
-                    "type": "object",
-                    "additionalProperties": true
-                }
-            },
-            "additionalProperties": false
+            "$ref": "#/ViewOptionsUpdate"
         }
     },
     "additionalProperties": false
@@ -2022,22 +1956,7 @@ GS::Optional<GS::UniString> GetRenovationFiltersCommand::GetRawResponseSchema ()
             "type": "array",
             "description": "Every renovation filter of the project.",
             "items": {
-                "type": "object",
-                "properties": {
-                    "renovationFilterId": {
-                        "$ref": "#/GuidId",
-                        "description": "Identifier of the renovation filter. The same identifier is the renovationFilterGuid of GetViewSettings and SetViewSettings."
-                    },
-                    "name": {
-                        "type": "string",
-                        "description": "Name of the renovation filter."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "renovationFilterId",
-                    "name"
-                ]
+                "$ref": "#/RenovationFilterDetails"
             }
         },
         "activeRenovationFilterId": {
@@ -2088,22 +2007,13 @@ GS::String SetActiveRenovationFilterCommand::GetName () const
 GS::Optional<GS::UniString> SetActiveRenovationFilterCommand::GetInputParametersSchema () const
 {
     return R"({
-        "type": "object",
-        "properties": {
-            "renovationFilterId": {
-                "$ref": "#/GuidId",
-                "description": "Identifier of the renovation filter, as listed by GetRenovationFilters. Takes precedence over name when both are given."
-            },
-            "name": {
-                "type": "string",
-                "description": "Name of the renovation filter. An exact match wins over a case-insensitive one.",
-                "minLength": 1
-            }
-        },
-        "additionalProperties": false,
         "anyOf": [
-            { "required": ["renovationFilterId"] },
-            { "required": ["name"] }
+            {
+                "$ref": "#/ActiveRenovationFilterById"
+            },
+            {
+                "$ref": "#/ActiveRenovationFilterByName"
+            }
         ]
     })";
 }
@@ -5142,26 +5052,6 @@ GS::ObjectState SetMasterLayoutContextCommand::Execute (const GS::ObjectState& p
 // leaf nodes), read with ACAPI_Navigator_GetNavigatorVP*. They are identified
 // by their guid, given as {"viewpointId": {"guid": ...}}.
 
-static const char* AddOnViewpointIdsSchema = R"({
-    "type": "array",
-    "items": {
-        "type": "object",
-        "properties": {
-            "viewpointId": {
-                "type": "object",
-                "description": "The identifier of an add-on viewpoint item.",
-                "properties": {
-                    "guid": { "$ref": "#/Guid" }
-                },
-                "additionalProperties": false,
-                "required": ["guid"]
-            }
-        },
-        "additionalProperties": false,
-        "required": ["viewpointId"]
-    }
-})";
-
 #ifdef ServerMainVers_2700
 static GS::ObjectState CreateViewpointIdArrayItem (const API_Guid& guid)
 {
@@ -5190,13 +5080,20 @@ GS::String GetAddOnViewpointRootsCommand::GetName () const
 
 GS::Optional<GS::UniString> GetAddOnViewpointRootsCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
-            "viewpointIds": )") + AddOnViewpointIdsSchema + R"(
+            "viewpointIds": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/AddOnViewpointIdArrayItem"
+                }
+            }
         },
         "additionalProperties": false,
-        "required": ["viewpointIds"]
+        "required": [
+            "viewpointIds"
+        ]
     })";
 }
 
@@ -5235,13 +5132,8 @@ GS::Optional<GS::UniString> GetAddOnViewpointChildrenCommand::GetInputParameters
         "type": "object",
         "properties": {
             "viewpointId": {
-                "type": "object",
-                "description": "The add-on viewpoint root or group to list the children of.",
-                "properties": {
-                    "guid": { "$ref": "#/Guid" }
-                },
-                "additionalProperties": false,
-                "required": ["guid"]
+                "$ref": "#/AddOnViewpointId",
+                "description": "The add-on viewpoint root or group to list the children of."
             }
         },
         "additionalProperties": false,
@@ -5251,13 +5143,20 @@ GS::Optional<GS::UniString> GetAddOnViewpointChildrenCommand::GetInputParameters
 
 GS::Optional<GS::UniString> GetAddOnViewpointChildrenCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
-            "viewpointIds": )") + AddOnViewpointIdsSchema + R"(
+            "viewpointIds": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/AddOnViewpointIdArrayItem"
+                }
+            }
         },
         "additionalProperties": false,
-        "required": ["viewpointIds"]
+        "required": [
+            "viewpointIds"
+        ]
     })";
 }
 
@@ -5298,13 +5197,20 @@ GS::String GetAddOnViewpointsCommand::GetName () const
 
 GS::Optional<GS::UniString> GetAddOnViewpointsCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
-            "viewpointIds": )") + AddOnViewpointIdsSchema + R"(
+            "viewpointIds": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/AddOnViewpointIdArrayItem"
+                }
+            }
         },
         "additionalProperties": false,
-        "required": ["viewpointIds"]
+        "required": [
+            "viewpointIds"
+        ]
     })";
 }
 
@@ -5320,50 +5226,7 @@ GS::Optional<GS::UniString> GetAddOnViewpointsCommand::GetRawResponseSchema () c
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "viewpointId": {
-                                    "type": "object",
-                                    "description": "The identifier of the add-on viewpoint item.",
-                                    "properties": {
-                                        "guid": { "$ref": "#/Guid" }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": ["guid"]
-                                },
-                                "parentViewpointId": {
-                                    "type": "object",
-                                    "description": "The identifier of the root or group the item is in. Missing when Archicad reports no parent, as for a root.",
-                                    "properties": {
-                                        "guid": { "$ref": "#/Guid" }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": ["guid"]
-                                },
-                                "itemType": {
-                                    "type": "string",
-                                    "description": "Whether the item is a root, a group or a leaf node.",
-                                    "enum": ["Root", "Group", "Leaf", "Undefined"]
-                                },
-                                "displayId": {
-                                    "type": "string",
-                                    "description": "The ID shown for the item in the Project Map."
-                                },
-                                "displayName": {
-                                    "type": "string",
-                                    "description": "The name shown for the item in the Project Map."
-                                },
-                                "viewSettingsFlags": {
-                                    "type": "integer",
-                                    "description": "The view settings flags of the item, as Archicad stores them (a bit field)."
-                                },
-                                "data": {
-                                    "type": "string",
-                                    "description": "The data the add-on attached to the item, base64 encoded. Empty when there is none."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["viewpointId", "itemType", "displayId", "displayName", "viewSettingsFlags", "data"]
+                            "$ref": "#/AddOnViewpointDetails"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -5571,18 +5434,11 @@ GS::Optional<GS::UniString> CreateAddOnViewpointsCommand::GetInputParametersSche
                     "type": "object",
                     "properties": {
                         "itemType": {
-                            "type": "string",
-                            "description": "Whether to create a root, a group or a leaf node. Roots and groups can't be created in a Teamwork project.",
-                            "enum": ["Root", "Group", "Leaf"]
+                            "$ref": "#/AddOnViewpointType"
                         },
                         "parentViewpointId": {
-                            "type": "object",
-                            "description": "The root or group to create the item in. Required for a group or a leaf node, ignored for a root.",
-                            "properties": {
-                                "guid": { "$ref": "#/Guid" }
-                            },
-                            "additionalProperties": false,
-                            "required": ["guid"]
+                            "$ref": "#/AddOnViewpointId",
+                            "description": "The root or group to create the item in. Required for a group or a leaf node, ignored for a root."
                         },
                         "displayId": {
                             "type": "string",
@@ -5625,20 +5481,7 @@ GS::Optional<GS::UniString> CreateAddOnViewpointsCommand::GetRawResponseSchema (
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "viewpointId": {
-                                    "type": "object",
-                                    "description": "The identifier of the created add-on viewpoint item.",
-                                    "properties": {
-                                        "guid": { "$ref": "#/Guid" }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": ["guid"]
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["viewpointId"]
+                            "$ref": "#/AddOnViewpointIdArrayItem"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -5725,38 +5568,7 @@ GS::Optional<GS::UniString> ChangeAddOnViewpointsCommand::GetInputParametersSche
                 "type": "array",
                 "description": "The add-on viewpoint items to change. Only the given fields are changed.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "viewpointId": {
-                            "type": "object",
-                            "description": "The identifier of the add-on viewpoint item to change.",
-                            "properties": {
-                                "guid": { "$ref": "#/Guid" }
-                            },
-                            "additionalProperties": false,
-                            "required": ["guid"]
-                        },
-                        "displayId": {
-                            "type": "string",
-                            "description": "The ID shown for the item in the Project Map."
-                        },
-                        "displayName": {
-                            "type": "string",
-                            "description": "The name shown for the item in the Project Map."
-                        },
-                        "viewSettingsFlags": {
-                            "type": "integer",
-                            "description": "The view settings flags of the item, as Archicad stores them (a bit field).",
-                            "minimum": 0,
-                            "maximum": 4294967295
-                        },
-                        "data": {
-                            "type": "string",
-                            "description": "Data to attach to the item, base64 encoded. It replaces the attached data; an empty string removes it."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": ["viewpointId"]
+                    "$ref": "#/AddOnViewpointModificationData"
                 }
             }
         },

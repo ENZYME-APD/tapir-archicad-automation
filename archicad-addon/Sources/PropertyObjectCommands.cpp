@@ -164,43 +164,7 @@ GS::Optional<GS::UniString> GetPropertyObjectsOfElementsCommand::GetRawResponseS
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "propertyObjects": {
-                                    "type": "array",
-                                    "description": "The property objects (library parts of the old listing system) of the element, linked to it by criteria or individually. Empty when the element has none.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "libraryPartIndex": {
-                                                "type": "integer",
-                                                "description": "The index of the property object's library part, the same as the index returned by GetAvailableLibraryParts."
-                                            },
-                                            "name": {
-                                                "type": "string",
-                                                "description": "The name of the library part. Absent when the library part cannot be read."
-                                            },
-                                            "guid": {
-                                                "type": "string",
-                                                "description": "The guid of the library part, the same as the guid returned by GetAvailableLibraryParts. Absent when the library part cannot be read."
-                                            },
-                                            "isIndividuallyAssigned": {
-                                                "type": "boolean",
-                                                "description": "True when the property object is assigned to the element individually, false when it is linked by criteria."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "libraryPartIndex",
-                                            "isIndividuallyAssigned"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "propertyObjects"
-                            ]
+                            "$ref": "#/ElementPropertyObjects"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -290,59 +254,7 @@ GS::Optional<GS::UniString> GetDescriptorsOfElementsCommand::GetRawResponseSchem
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "descriptors": {
-                                    "type": "array",
-                                    "description": "The descriptors in the property objects of the element. Empty when the element has none.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "libraryPartIndex": {
-                                                "type": "integer",
-                                                "description": "The index of the library part that declares the descriptor, the same as the index returned by GetAvailableLibraryParts."
-                                            },
-                                            "name": {
-                                                "type": "string",
-                                                "description": "The name of the library part. Absent when the library part cannot be read."
-                                            },
-                                            "guid": {
-                                                "type": "string",
-                                                "description": "The guid of the library part, the same as the guid returned by GetAvailableLibraryParts. Absent when the library part cannot be read."
-                                            },
-                                            "setIndex": {
-                                                "type": "integer",
-                                                "description": "The index of the listing database set of the descriptor. Meaningful only when status is Normal."
-                                            },
-                                            "index": {
-                                                "type": "integer",
-                                                "description": "The index of the descriptor in the listing database set when status is Normal, in the library part when status is Local."
-                                            },
-                                            "status": {
-                                                "type": "string",
-                                                "description": "Normal: the descriptor exists in the listing database. Deleted: it is referenced, but deleted from the database. Local: it is defined in the library part. Unknown for a value this version of Tapir does not name.",
-                                                "enum": [
-                                                    "Normal",
-                                                    "Deleted",
-                                                    "Local",
-                                                    "Unknown"
-                                                ]
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "libraryPartIndex",
-                                            "setIndex",
-                                            "index",
-                                            "status"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "descriptors"
-                            ]
+                            "$ref": "#/ElementDescriptors"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -430,17 +342,7 @@ GS::Optional<GS::UniString> GetLinkedPropertyObjectsOfElementsCommand::GetInputP
                             "$ref": "#/ElementIdArrayItem"
                         },
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementType": {
-                                    "$ref": "#/ElementType",
-                                    "description": "Read the links of the element defaults of this type instead of an element."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elementType"
-                            ]
+                            "$ref": "#/PropertyObjectToolDefault"
                         }
                     ]
                 }
@@ -464,56 +366,7 @@ GS::Optional<GS::UniString> GetLinkedPropertyObjectsOfElementsCommand::GetRawRes
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "linkByCriteria": {
-                                    "type": "boolean",
-                                    "description": "True when the property objects matching their criteria are linked to the element."
-                                },
-                                "individualLibraryPartIndex": {
-                                    "type": "integer",
-                                    "description": "The index of the library part of the individually assigned property object, the same as the index returned by GetAvailableLibraryParts. 0 when no property object is assigned individually."
-                                },
-                                "individualLibraryPartName": {
-                                    "type": "string",
-                                    "description": "The name of the individually assigned library part. Absent when there is none or it cannot be read."
-                                },
-                                "individualLibraryPartGuid": {
-                                    "type": "string",
-                                    "description": "The guid of the individually assigned library part, the same as the guid returned by GetAvailableLibraryParts. Absent when there is none or it cannot be read."
-                                },
-                                "criteriaPropertyObjects": {
-                                    "type": "array",
-                                    "description": "The linked property objects whose criteria match the element.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "libraryPartIndex": {
-                                                "type": "integer",
-                                                "description": "The index of the property object's library part, the same as the index returned by GetAvailableLibraryParts."
-                                            },
-                                            "name": {
-                                                "type": "string",
-                                                "description": "The name of the library part. Absent when the library part cannot be read."
-                                            },
-                                            "guid": {
-                                                "type": "string",
-                                                "description": "The guid of the library part, the same as the guid returned by GetAvailableLibraryParts. Absent when the library part cannot be read."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "libraryPartIndex"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "linkByCriteria",
-                                "individualLibraryPartIndex",
-                                "criteriaPropertyObjects"
-                            ]
+                            "$ref": "#/ElementLinkedPropertyObjects"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -591,47 +444,10 @@ GS::Optional<GS::UniString> SetLinkedPropertyObjectsOfElementsCommand::GetInputP
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementId": {
-                                    "$ref": "#/ElementId"
-                                },
-                                "linkByCriteria": {
-                                    "type": "boolean",
-                                    "description": "Link the property objects matching their criteria to the element."
-                                },
-                                "individualLibraryPartIndex": {
-                                    "type": "integer",
-                                    "minimum": 0,
-                                    "description": "The index of the library part of the property object to assign to the element individually, the same as the index returned by GetAvailableLibraryParts. 0 removes the individually assigned property object."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elementId"
-                            ]
+                            "$ref": "#/LinkedPropertyObjectsByElement"
                         },
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementType": {
-                                    "$ref": "#/ElementType",
-                                    "description": "Set the links of the element defaults of this type instead of an element."
-                                },
-                                "linkByCriteria": {
-                                    "type": "boolean",
-                                    "description": "Link the property objects matching their criteria to the element defaults."
-                                },
-                                "individualLibraryPartIndex": {
-                                    "type": "integer",
-                                    "minimum": 0,
-                                    "description": "The index of the library part of the property object to assign to the element defaults individually, the same as the index returned by GetAvailableLibraryParts. 0 removes the individually assigned property object."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elementType"
-                            ]
+                            "$ref": "#/LinkedPropertyObjectsByToolDefault"
                         }
                     ]
                 }

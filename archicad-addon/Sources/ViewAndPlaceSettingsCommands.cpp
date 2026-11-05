@@ -488,16 +488,18 @@ GS::String SetGridSettingsCommand::GetName () const
 
 GS::Optional<GS::UniString> SetGridSettingsCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
-    "type": "object",
-    "properties": {
-        "settings": )") + GetGridSettingsSchema ("The grid settings to change, in the form GetGridSettings returns. Only the given keys are changed; a color may give only some of its components.") + R"(
-    },
-    "additionalProperties": false,
-    "required": [
-        "settings"
-    ]
-})";
+    return R"({
+        "type": "object",
+        "properties": {
+            "settings": {
+                "$ref": "#/GridSettingsUpdate"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "settings"
+        ]
+    })";
 }
 
 GS::Optional<GS::UniString> SetGridSettingsCommand::GetRawResponseSchema () const
@@ -641,20 +643,22 @@ GS::String Set3DFilterAndCutSettingsCommand::GetName () const
 
 GS::Optional<GS::UniString> Set3DFilterAndCutSettingsCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
-    "type": "object",
-    "properties": {
-        "settings": )") + GetFilterAndCutSettingsSchema ("The settings to change, in the form Get3DFilterAndCutSettings returns. Only the given keys are changed.") + R"(,
-        "rebuild": {
-            "type": "boolean",
-            "description": "If true, Archicad drops the partial conversion data, so the next rebuild of the 3D window is a full one. Default: false."
-        }
-    },
-    "additionalProperties": false,
-    "required": [
-        "settings"
-    ]
-})";
+    return R"({
+        "type": "object",
+        "properties": {
+            "settings": {
+                "$ref": "#/Filter3DSettingsUpdate"
+            },
+            "rebuild": {
+                "type": "boolean",
+                "description": "If true, Archicad drops the partial conversion data, so the next rebuild of the 3D window is a full one. Default: false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "settings"
+        ]
+    })";
 }
 
 GS::Optional<GS::UniString> Set3DFilterAndCutSettingsCommand::GetRawResponseSchema () const
@@ -802,7 +806,7 @@ GS::ObjectState FindDimensionStandardCommand::Execute (const GS::ObjectState& pa
 // ---------------------------------------------------------------------------------------------
 
 SetPlaceSettingsCommand::SetPlaceSettingsCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {}
 
 GS::String SetPlaceSettingsCommand::GetName () const
@@ -816,24 +820,7 @@ GS::Optional<GS::UniString> SetPlaceSettingsCommand::GetInputParametersSchema ()
     "type": "object",
     "properties": {
         "placeInfo": {
-            "type": "object",
-            "description": "The place settings to change (API_PlaceInfo), with its field names. Only the given keys are changed; an empty object changes nothing and returns the current settings.",
-            "properties": {
-                "longitude": { "type": "number", "description": "Longitude in degrees." },
-                "latitude": { "type": "number", "description": "Latitude in degrees." },
-                "altitude": { "type": "number", "description": "Altitude in meters." },
-                "north": { "type": "number", "description": "The north direction in radians." },
-                "year": { "type": "integer", "minimum": 0, "maximum": 65535 },
-                "month": { "type": "integer", "minimum": 1, "maximum": 12 },
-                "day": { "type": "integer", "minimum": 1, "maximum": 31 },
-                "hour": { "type": "integer", "minimum": 0, "maximum": 23 },
-                "minute": { "type": "integer", "minimum": 0, "maximum": 59 },
-                "second": { "type": "integer", "minimum": 0, "maximum": 59 },
-                "sumTime": { "type": "boolean", "description": "Whether summer time (+1 hour) is on." },
-                "timeZoneInMinutes": { "type": "integer", "description": "The time zone, in minutes from Greenwich." },
-                "timeZoneOffset": { "type": "integer", "description": "Tells apart time zones with the same timeZoneInMinutes." }
-            },
-            "additionalProperties": false
+            "$ref": "#/PlaceSettingsUpdate"
         }
     },
     "additionalProperties": false,
@@ -849,43 +836,8 @@ GS::Optional<GS::UniString> SetPlaceSettingsCommand::GetRawResponseSchema () con
     "type": "object",
     "properties": {
         "placeInfo": {
-            "type": "object",
-            "description": "The place settings read back after the change. sunAngXY and sunAngZ are the sun position Archicad calculated for the place, date and time, in radians.",
-            "properties": {
-                "longitude": { "type": "number" },
-                "latitude": { "type": "number" },
-                "altitude": { "type": "number" },
-                "north": { "type": "number" },
-                "year": { "type": "integer" },
-                "month": { "type": "integer" },
-                "day": { "type": "integer" },
-                "hour": { "type": "integer" },
-                "minute": { "type": "integer" },
-                "second": { "type": "integer" },
-                "sumTime": { "type": "boolean" },
-                "timeZoneInMinutes": { "type": "integer" },
-                "timeZoneOffset": { "type": "integer" },
-                "sunAngXY": { "type": "number" },
-                "sunAngZ": { "type": "number" }
-            },
-            "additionalProperties": false,
-            "required": [
-                "longitude",
-                "latitude",
-                "altitude",
-                "north",
-                "year",
-                "month",
-                "day",
-                "hour",
-                "minute",
-                "second",
-                "sumTime",
-                "timeZoneInMinutes",
-                "timeZoneOffset",
-                "sunAngXY",
-                "sunAngZ"
-            ]
+            "$ref": "#/PlaceInfo",
+            "description": "The place settings read back after the change."
         }
     },
     "additionalProperties": false,

@@ -191,9 +191,8 @@ GS::Optional<GS::UniString> PhotoRenderCommand::GetInputParametersSchema () cons
                 "description": "Absolute path of the image file to write. An existing file is overwritten."
             },
             "format": {
-                "type": "string",
-                "description": "Optional. The image file format; omitted, it comes from the extension of imageFilePath (.png, .jpg or .jpeg, .bmp, .tif or .tiff, .gif).",
-                "enum": ["png", "jpg", "bmp", "tiff", "gif"]
+                "$ref": "#/PhotoRenderFormat",
+                "description": "Optional. When omitted, the format comes from the extension of imageFilePath (.png, .jpg or .jpeg, .bmp, .tif or .tiff, .gif)."
             },
             "sceneName": {
                 "type": "string",

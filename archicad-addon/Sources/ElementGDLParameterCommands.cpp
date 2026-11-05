@@ -2915,70 +2915,7 @@ GS::Optional<GS::UniString> ChangeLibraryPartOfElementsCommand::GetInputParamete
             "type": "array",
             "description": "The elements with the library part to change them to. Components of stairs and railings are not supported, even when they are reported as Objects.",
             "items": {
-                "type": "object",
-                "properties": {
-                    "elementId": {
-                        "$ref": "#/ElementId"
-                    },
-                    "libraryPart": {
-                        "type": "object",
-                        "description": "The new library part, given by one of name, index or guid. It has to be a placeable library part of the element's type in the loaded libraries.",
-                        "oneOf": [
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "description": "The name of the library part, as GetAvailableLibraryParts returns it in documentName."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "name"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "index": {
-                                        "type": "integer",
-                                        "description": "The index of the library part, as GetAvailableLibraryParts returns it."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "index"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "guid": {
-                                        "type": "string",
-                                        "description": "The main guid of the library part, as GetAvailableLibraryParts returns it in guid."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "guid"
-                                ]
-                            }
-                        ]
-                    },
-                    "keepParameters": {
-                        "type": "boolean",
-                        "description": "Copies the values of the element's GDL parameters to the parameters of the new library part that have the same name, type and array dimensions; the other parameters get the new part's defaults. Default: true."
-                    },
-                    "keepSize": {
-                        "type": "boolean",
-                        "description": "Keeps the size (A and B) of the element; when false, the element gets the new part's default size. Default: true."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "elementId",
-                    "libraryPart"
-                ]
+                "$ref": "#/ElementLibraryPartChange"
             }
         }
     },
@@ -3285,20 +3222,7 @@ GS::Optional<GS::UniString> GetHotspotsOfElementsCommand::GetRawResponseSchema (
                 "type": "object",
                 "oneOf": [
                     {
-                        "type": "object",
-                        "properties": {
-                            "hotspots": {
-                                "type": "array",
-                                "description": "The 2D hotspots of the placed library part instance, as Archicad returns them.",
-                                "items": {
-                                    "$ref": "#/Coordinate2D"
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "hotspots"
-                        ]
+                        "$ref": "#/ElementHotspots"
                     },
                     {
                         "$ref": "#/ErrorItem"

@@ -287,202 +287,6 @@ static GSErrCode GetStoryControlPrimitives (API_DatabaseUnId& databaseUnId, Draw
 }
 
 // The schema of one item of the primitives list, shared by the commands of this file.
-static const char* DrawingPrimitiveSchema = R"({
-    "type": "object",
-    "properties": {
-        "type": {
-            "type": "string",
-            "description": "The API_PrimTypeID name without its API_Prim prefix and ID suffix.",
-            "enum": [
-                "Point", "Line", "Arc", "Text", "PLine", "Tri", "Poly", "Pict",
-                "Ctrl_Beg", "Ctrl_HatchBorderBeg", "Ctrl_HatchBorderEnd", "Ctrl_HatchLinesBeg", "Ctrl_HatchLinesEnd",
-                "Ctrl_HoledimLinesBeg", "Ctrl_HoledimLinesEnd", "Ctrl_ArrowBeg", "Ctrl_ArrowEnd", "Ctrl_ElementRef", "Ctrl_End",
-                "Ctrl_PlacedBorderBeg", "Ctrl_PlacedBorderEnd", "Ctrl_TextBeg", "Ctrl_TextEnd", "Ctrl_CWallPanelBeg", "Ctrl_CWallPanelEnd",
-                "Ctrl_BackgroundFillBeg", "Ctrl_BackgroundFillEnd", "Ctrl_FrameBeg", "Ctrl_FrameEnd", "Unknown"
-            ]
-        },
-        "layer": {
-            "$ref": "#/AttributeIdArrayItem",
-            "description": "The layer of the element."
-        },
-        "pen": {
-            "type": "integer",
-            "description": "The pen index of the primitive."
-        },
-        "drwIndex": {
-            "type": "integer"
-        },
-        "renovationStatus": {
-            "type": "string",
-            "enum": ["Undefined", "Existing", "New", "Demolished"]
-        },
-        "lineType": {
-            "$ref": "#/AttributeIdArrayItem",
-            "description": "Line, Arc, PLine, Tri and Poly: the line type."
-        },
-        "determination": {
-            "type": "integer",
-            "description": "How the type of the line or fill is determined (origin, inner line, contour line)."
-        },
-        "penWeight": {
-            "type": "number"
-        },
-        "solid": {
-            "type": "boolean"
-        },
-        "loc": {
-            "$ref": "#/Coordinate2D",
-            "description": "Point: the location. Text: the left baseline position."
-        },
-        "c1": {
-            "$ref": "#/Coordinate2D"
-        },
-        "c2": {
-            "$ref": "#/Coordinate2D"
-        },
-        "whole": {
-            "type": "boolean"
-        },
-        "reflected": {
-            "type": "boolean",
-            "description": "The arc goes clockwise."
-        },
-        "orig": {
-            "$ref": "#/Coordinate2D"
-        },
-        "r": {
-            "type": "number"
-        },
-        "begAng": {
-            "type": "number"
-        },
-        "endAng": {
-            "type": "number"
-        },
-        "angle": {
-            "type": "number"
-        },
-        "ratio": {
-            "type": "number"
-        },
-        "font": {
-            "type": "integer"
-        },
-        "faceBits": {
-            "type": "integer"
-        },
-        "effectBits": {
-            "type": "integer"
-        },
-        "anchor": {
-            "type": "string"
-        },
-        "just": {
-            "type": "string"
-        },
-        "heightMM": {
-            "type": "number"
-        },
-        "widthMM": {
-            "type": "number"
-        },
-        "widthFactor": {
-            "type": "number"
-        },
-        "charSpaceFactor": {
-            "type": "number"
-        },
-        "drawSegmentMode": {
-            "type": "integer"
-        },
-        "nCoords": {
-            "type": "integer"
-        },
-        "nSubPolys": {
-            "type": "integer"
-        },
-        "nArcs": {
-            "type": "integer",
-            "description": "The number of curved segments. Their geometry is not returned."
-        },
-        "useRgb": {
-            "type": "boolean"
-        },
-        "fillPen": {
-            "type": "integer"
-        },
-        "rgbColor": {
-            "type": "object",
-            "properties": {
-                "red": { "type": "number" },
-                "green": { "type": "number" },
-                "blue": { "type": "number" }
-            },
-            "additionalProperties": false,
-            "required": ["red", "green", "blue"]
-        },
-        "coordinates": {
-            "type": "array",
-            "description": "Tri: the three corners.",
-            "items": {
-                "$ref": "#/Coordinate2D"
-            }
-        },
-        "polygons": {
-            "type": "array",
-            "description": "Poly: the sub polygons, the first one is the outline, the others are holes.",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "coordinates": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/Coordinate2D"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": ["coordinates"]
-            }
-        },
-        "rotAngle": {
-            "type": "number"
-        },
-        "destBox": {
-            "type": "object",
-            "description": "Pict: the bounding box of the picture.",
-            "properties": {
-                "xMin": { "type": "number" },
-                "yMin": { "type": "number" },
-                "xMax": { "type": "number" },
-                "yMax": { "type": "number" }
-            },
-            "additionalProperties": false,
-            "required": ["xMin", "yMin", "xMax", "yMax"]
-        },
-        "hatchBorder": {
-            "type": "object",
-            "description": "Ctrl_HatchBorderBeg: the fill that follows.",
-            "properties": {
-                "doFrame": { "type": "boolean" },
-                "fill": { "$ref": "#/AttributeIdArrayItem" },
-                "fillPen": { "type": "integer" },
-                "fillbkgPen": { "type": "integer" },
-                "determination": { "type": "integer" }
-            },
-            "additionalProperties": false,
-            "required": ["doFrame", "fillPen", "fillbkgPen", "determination"]
-        }
-    },
-    "additionalProperties": false,
-    "required": [
-        "type",
-        "pen",
-        "drwIndex",
-        "renovationStatus"
-    ]
-})";
-
 // ── GetDrawingPrimitivesOfElements ────────────────────────────────────────────
 
 GetDrawingPrimitivesOfElementsCommand::GetDrawingPrimitivesOfElementsCommand () :
@@ -513,7 +317,7 @@ GS::Optional<GS::UniString> GetDrawingPrimitivesOfElementsCommand::GetInputParam
 
 GS::Optional<GS::UniString> GetDrawingPrimitivesOfElementsCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "drawingPrimitivesOfElements": {
@@ -522,18 +326,7 @@ GS::Optional<GS::UniString> GetDrawingPrimitivesOfElementsCommand::GetRawRespons
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "primitives": {
-                                    "type": "array",
-                                    "description": "The primitives in the order Archicad draws them. The Ctrl_* items mark the beginning and the end of sub-parts (hatch borders, hatch lines, texts, curtain wall panels, ...).",
-                                    "items": )") + DrawingPrimitiveSchema + R"(
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "primitives"
-                            ]
+                            "$ref": "#/ElementDrawingPrimitives"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -630,13 +423,15 @@ GS::Optional<GS::UniString> GetStoryControlPrimitivesCommand::GetInputParameters
 
 GS::Optional<GS::UniString> GetStoryControlPrimitivesCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "primitives": {
                 "type": "array",
                 "description": "The primitives of the story levels drawn in the database, in the order Archicad draws them. The Ctrl_* items mark the beginning and the end of sub-parts (texts, ...).",
-                "items": )") + DrawingPrimitiveSchema + R"(
+                "items": {
+                    "$ref": "#/DrawingPrimitive"
+                }
             }
         },
         "additionalProperties": false,
@@ -743,7 +538,7 @@ GS::Optional<GS::UniString> GetShapePrimitivesOfElementsCommand::GetInputParamet
 
 GS::Optional<GS::UniString> GetShapePrimitivesOfElementsCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "shapePrimitivesOfElements": {
@@ -757,7 +552,9 @@ GS::Optional<GS::UniString> GetShapePrimitivesOfElementsCommand::GetRawResponseS
                                 "primitives": {
                                     "type": "array",
                                     "description": "The primitives in the order Archicad draws them. The Ctrl_* items mark the beginning and the end of sub-parts (hatch borders, hatch lines, texts, curtain wall panels, ...).",
-                                    "items": )") + DrawingPrimitiveSchema + R"(
+                                    "items": {
+                                        "$ref": "#/DrawingPrimitive"
+                                    }
                                 }
                             },
                             "additionalProperties": false,
