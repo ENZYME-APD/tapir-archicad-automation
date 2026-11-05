@@ -1261,9 +1261,15 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
                 continue;
             }
 
+            // The values that passed the checks and the conversion, written together below,
+            // and the index of each one's execution result.
+            GS::Array<API_Property> propertiesToSet;
+            GS::Array<GSIndex> propertiesToSetResultIndices;
+
             for (API_Property& propertyValue : propertyValues) {
                 const auto guidPair = GS::NewPair (elemGuid, propertyValue.definition.guid);
-                auto& result = results[resultIndices[guidPair]];
+                const GSIndex resultIndex = resultIndices[guidPair];
+                auto& result = results[resultIndex];
 
                 const API_PropertyDefinition& definition = propertyValue.definition;
                 if (!ACAPI_Element_IsPropertyDefinitionValueEditable (elemGuid, definition.guid)) {
@@ -1293,14 +1299,28 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
                     continue;
                 }
 
-                err = ACAPI_Element_SetProperty (elemGuid, propertyValue);
+                propertiesToSet.Push (propertyValue);
+                propertiesToSetResultIndices.Push (resultIndex);
+            }
 
-                if (err != NoError) {
-                    result = CreateFailedExecutionResult (err, "Failed to set property value for element");
-                    continue;
+            if (propertiesToSet.IsEmpty ()) {
+                continue;
+            }
+
+            // One call writes all values of the element; if it fails, the values are written
+            // one by one, so each value gets its own error.
+            if (propertiesToSet.GetSize () > 1 && ACAPI_Element_SetProperties (elemGuid, propertiesToSet) == NoError) {
+                for (const GSIndex resultIndex : propertiesToSetResultIndices) {
+                    results[resultIndex] = CreateSuccessfulExecutionResult ();
                 }
+                continue;
+            }
 
-                result = CreateSuccessfulExecutionResult ();
+            for (UIndex i = 0; i < propertiesToSet.GetSize (); ++i) {
+                const GSErrCode err = ACAPI_Element_SetProperty (elemGuid, propertiesToSet[i]);
+                results[propertiesToSetResultIndices[i]] = err == NoError
+                    ? CreateSuccessfulExecutionResult ()
+                    : CreateFailedExecutionResult (err, "Failed to set property value for element");
             }
         }
 
