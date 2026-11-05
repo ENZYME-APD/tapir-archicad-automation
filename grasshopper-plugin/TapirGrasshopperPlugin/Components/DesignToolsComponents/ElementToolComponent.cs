@@ -636,7 +636,10 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             var details = new JObject();
             foreach (var setting in settings)
             {
-                if (setting.Key == "floorIndex")
+                // The home story goes with the Modify command when it takes it
+                // (e.g. ModifyCurtainWalls, which measures zCoordinate from it),
+                // otherwise to SetDetailsOfElements.
+                if (setting.Key == "floorIndex" && !ModifyKeys.Contains("floorIndex"))
                 {
                     details["floorIndex"] = setting.Value;
                 }
