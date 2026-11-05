@@ -223,6 +223,10 @@ GSErrCode Initialize (void)
             applicationCommands, "0.1.0",
             "Retrieves the version of the Tapir Additional JSON Commands Add-On."
         );
+        err |= RegisterCommand<GetCommandsCommand> (
+            applicationCommands, "1.8.1",
+            "Retrieves every command of the Tapir Add-On with its command group, the Tapir version it was introduced in and its description, so a script can check that a command exists before calling it."
+        );
         err |= RegisterCommand<GetArchicadLocationCommand> (
             applicationCommands, "0.1.0",
             "Retrieves the location of the currently running Archicad executable."
