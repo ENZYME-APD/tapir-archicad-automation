@@ -82,7 +82,7 @@
       "apiDescription": "The height of the column",
       "label": "Column Height",
       "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-33.htm (heading \"Column height\", in the Preview section; screenshot ColumnPositioning.png)",
-      "group": null,
+      "group": "Positioning",
       "subgroup": null
     },
     {

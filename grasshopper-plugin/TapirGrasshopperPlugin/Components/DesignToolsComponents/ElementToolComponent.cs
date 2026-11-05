@@ -125,6 +125,12 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         {
         }
 
+        // Settings (Add-On keys) that the geometry inputs define on Create,
+        // e.g. a column's base elevation: they are left out of a new
+        // element's settings, so a JSON read from another element never moves
+        // the new one.
+        protected virtual IEnumerable<string> GeometrySettingKeys => Enumerable.Empty<string>();
+
         // Lets a tool adjust a Create item after the settings were added.
         protected virtual void PrepareCreateItem(
             JObject item)
@@ -636,7 +642,9 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             var details = new JObject();
             foreach (var setting in settings)
             {
-                if (setting.Key == "floorIndex")
+                // The home story goes to SetDetailsOfElements unless the Modify
+                // command takes it (with the elevation, it pins the story).
+                if (setting.Key == "floorIndex" && !ModifyKeys.Contains("floorIndex"))
                 {
                     details["floorIndex"] = setting.Value;
                 }
@@ -738,6 +746,13 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 if (!TryMergeSettings(inputs, i, errors, out var settings))
                 {
                     continue;
+                }
+                if (existing[i] == null)
+                {
+                    foreach (var key in GeometrySettingKeys)
+                    {
+                        settings.Remove(key);
+                    }
                 }
                 PrepareSettings(settings, notes);
 
