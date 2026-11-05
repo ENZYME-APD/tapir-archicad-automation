@@ -94,27 +94,7 @@ void AddElementList (GS::ObjectState& response, const char* fieldName, const Ele
     }
 }
 
-GSErrCode ProjectEventHandler (API_NotifyEventID notifID, Int32 /*param*/)
-{
-    switch (notifID) {
-        case APINotify_New:
-        case APINotify_Open:
-        case APINotify_Close:
-        case APINotify_Quit:
-            ReleaseAllElementStates ();
-            break;
-        default:
-            break;
-    }
-    return NoError;
-}
-
 } // namespace
-
-GSErrCode InstallElementStateProjectEventHandler ()
-{
-    return ACAPI_ProjectOperation_CatchProjectEvent (APINotify_New | APINotify_Open | APINotify_Close | APINotify_Quit, ProjectEventHandler);
-}
 
 void ReleaseAllElementStates ()
 {
