@@ -1,4 +1,4 @@
-"""Creates a temporary Layer and deletes it again with DeleteAttributes."""
+"""Creates a temporary Layer and deletes it again with DeleteAttributes, first as a dry run that deletes nothing."""
 import aclib
 
 layerId = aclib.RunTapirCommand ('CreateLayers', {
@@ -7,6 +7,8 @@ layerId = aclib.RunTapirCommand ('CreateLayers', {
 if 'error' in layerId:
     raise SystemExit ('Could not create the layer: ' + layerId['error']['message'])
 
-aclib.PrintJson (aclib.RunTapirCommand ('DeleteAttributes', {
+parameters = {
     'attributesToDelete': [{'attributeType': 'Layer', 'attributeId': layerId}]
-}))
+}
+aclib.PrintJson (aclib.RunTapirCommand ('DeleteAttributes', dict (parameters, dryRun = True)))
+aclib.PrintJson (aclib.RunTapirCommand ('DeleteAttributes', parameters))
