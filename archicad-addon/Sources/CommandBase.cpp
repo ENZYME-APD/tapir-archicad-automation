@@ -1398,7 +1398,37 @@ GS::Optional<short> GetFontIndexFromName (const GS::UniString& fontName)
         }
     }
 
-    return caseInsensitiveMatch;
+    if (caseInsensitiveMatch.HasValue ()) {
+        return caseInsensitiveMatch;
+    }
+
+    // Last, Archicad's own font search, as GetFontsByName uses: it also resolves a family name
+    // ("Century Gothic") to the font Archicad lists with its script ("Century Gothic Western", or
+    // "Century Gothic Occidental" in Spanish), so scripts need not know the language's suffix
+    // (issue #1824). Fonts are their own API from Archicad 27 and attributes (API_FontID) before.
+    GS::UniString nameToSearch = fontName;
+#ifdef ServerMainVers_2700
+    API_FontType font = {};
+    font.head.uniStringNamePtr = &nameToSearch;
+    if (ACAPI_Font_SearchFont (font) != NoError) {
+        return GS::NoValue;
+    }
+    const short foundIndex = static_cast<short> (font.head.index);
+#else
+    API_Attr_Head attrHead = {};
+    attrHead.typeID = API_FontID;
+    attrHead.uniStringNamePtr = &nameToSearch;
+    if (ACAPI_Attribute_Search (&attrHead) != NoError) {
+        return GS::NoValue;
+    }
+    const short foundIndex = static_cast<short> (GetAttributeIndex (attrHead.index));
+#endif
+
+    // Only an index that names a loaded font is returned.
+    if (!GetFontNameFromIndex (foundIndex).HasValue ()) {
+        return GS::NoValue;
+    }
+    return foundIndex;
 }
 
 const DatabaseIdResolver& DatabaseIdResolver::Instance ()
