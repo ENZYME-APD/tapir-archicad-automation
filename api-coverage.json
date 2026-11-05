@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-05 14:45 UTC",
+ "generatedAt": "2026-11-05 16:44 UTC",
  "versions": [
   25,
   26,
@@ -2913,6 +2913,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1910,
+     "title": "Fix switching model view option combinations (#1873)"
+    },
     {
      "number": 1395,
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
@@ -9569,7 +9573,12 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "memory management",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1910,
+     "title": "Fix switching model view option combinations (#1873)"
+    }
+   ],
    "issues": []
   },
   {
@@ -13904,7 +13913,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1910,
+     "title": "Fix switching model view option combinations (#1873)"
+    }
+   ],
    "issues": []
   },
   {
@@ -14490,7 +14504,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1910,
+     "title": "Fix switching model view option combinations (#1873)"
+    }
+   ],
    "issues": []
   },
   {
@@ -14509,7 +14528,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1910,
+     "title": "Fix switching model view option combinations (#1873)"
+    }
+   ],
    "issues": []
   },
   {
@@ -14547,7 +14571,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1910,
+     "title": "Fix switching model view option combinations (#1873)"
+    }
+   ],
    "issues": []
   },
   {
