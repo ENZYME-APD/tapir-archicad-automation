@@ -9193,6 +9193,214 @@ GS::ObjectState ModifyCurtainWallsCommand::Execute (const GS::ObjectState& param
     });
 }
 
+ModifyCurtainWallFramesCommand::ModifyCurtainWallFramesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyCurtainWallFramesCommand::GetName () const
+{
+    return "ModifyCurtainWallFrames";
+}
+
+GS::Optional<GS::UniString> ModifyCurtainWallFramesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "framesWithDetails": {
+                "type": "array",
+                "description": "Curtain Wall Frames to modify (the GUIDs from GetSubelementsOfHierarchicalElements), with the fields to change. Only the given fields are changed. EXPERIMENTAL.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "frameId": { "$ref": "#/ElementId" },
+                        "frameContour": {
+                            "type": "object",
+                            "description": "The contour of the frame, as GetDetailsOfElements returns it. Only the given keys are changed.",
+                            "properties": {
+                                "a1": { "type": "number", "minimum": 0.0, "description": "Contour width inside." },
+                                "a2": { "type": "number", "minimum": 0.0, "description": "Contour width outside." },
+                                "b1": { "type": "number", "minimum": 0.0, "description": "Contour length inside." },
+                                "b2": { "type": "number", "minimum": 0.0, "description": "Contour length outside." }
+                            },
+                            "additionalProperties": false
+                        },
+                        "classIndex": {
+                            "type": "integer",
+                            "description": "The frame class (classID) of the frame: 0 to 3 for the built-in classes, 4 and up for the frame classes of the owner curtain wall."
+                        },
+                        "type": {
+                            "type": "string",
+                            "enum": ["Invisible", "GDL", "InvisibleConnectedTurning", "InvisibleConnectedStill"],
+                            "description": "The type of the frame (API_CWFrameObjectTypeID)."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["frameId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["framesWithDetails"]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyCurtainWallFramesCommand::GetRawResponseSchema () const
+{
+    return ModifyWallsCommand ().GetRawResponseSchema ();
+}
+
+namespace {
+
+// Experimental: ACAPI_Element_Change does not take a curtain wall frame on its own, so the frame is
+// changed in the memo of its owner curtain wall (cWallFrames), found there by its GUID.
+GS::ObjectState ModifyCurtainWallFrame (const GS::ObjectState& item)
+{
+    if (item.Get ("frameId") == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'frameId' field.");
+    }
+    const API_Guid frameGuid = GetGuidFromObjectState (*item.Get ("frameId"));
+
+    API_Element frameElement = {};
+    frameElement.header.guid = frameGuid;
+    GSErrCode err = ACAPI_Element_Get (&frameElement);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to load the frame.");
+    }
+    if (GetElemTypeId (frameElement.header) != API_CurtainWallFrameID) {
+        return CreateFailedExecutionResult (APIERR_BADID, "Element is not a Curtain Wall Frame.");
+    }
+
+    API_Element curtainWall = {};
+    curtainWall.header.guid = frameElement.cwFrame.owner;
+    err = ACAPI_Element_Get (&curtainWall);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to load the owner curtain wall of the frame.");
+    }
+
+    constexpr UInt64 memoMask = APIMemoMask_CWallFrames | APIMemoMask_CWallFrameClasses;
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    err = ACAPI_Element_GetMemo (curtainWall.header.guid, &memo, memoMask);
+    if (err != NoError || memo.cWallFrames == nullptr) {
+        return CreateFailedExecutionResult (err != NoError ? err : APIERR_GENERAL, "Failed to read the frames of the owner curtain wall.");
+    }
+
+    API_CWFrameType* frame = nullptr;
+    for (UInt32 i = 0; i < curtainWall.curtainWall.nFrames; ++i) {
+        if (memo.cWallFrames[i].head.guid == frameGuid) {
+            frame = &memo.cWallFrames[i];
+            break;
+        }
+    }
+    if (frame == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADID, "The frame was not found in the owner curtain wall.");
+    }
+
+    // Everything is validated before anything is written.
+    API_CWFrameType changedFrame = *frame;
+    bool hasChange = false;
+
+    GS::ObjectState contour;
+    if (item.Get ("frameContour", contour)) {
+        const auto setValue = [&] (const char* key, double& target) {
+            double value = 0.0;
+            if (contour.Get (key, value)) {
+                target = value;
+                hasChange = true;
+            }
+        };
+        setValue ("a1", changedFrame.a1);
+        setValue ("a2", changedFrame.a2);
+        setValue ("b1", changedFrame.b1);
+        setValue ("b2", changedFrame.b2);
+        if (changedFrame.a1 < 0.0 || changedFrame.a2 < 0.0 || changedFrame.b1 < 0.0 || changedFrame.b2 < 0.0) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "The frameContour values must not be negative.");
+        }
+    }
+
+    Int32 classIndex = 0;
+    if (item.Get ("classIndex", classIndex)) {
+        const UInt32 nFrameClasses = memo.cWallFrameDefaults != nullptr
+            ? static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSPtr> (memo.cWallFrameDefaults)) / sizeof (API_CWFrameType))
+            : curtainWall.curtainWall.nFrameDefaults;
+        const bool builtIn = classIndex == APICWFrameClass_Merged || classIndex == APICWFrameClass_Division ||
+                             classIndex == APICWFrameClass_Corner || classIndex == APICWFrameClass_Boundary;
+        const bool custom = classIndex >= APICWFrameClass_FirstCustomClass &&
+                            static_cast<UInt32> (classIndex - APICWFrameClass_FirstCustomClass) < nFrameClasses;
+        if (!builtIn && !custom) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf ("classIndex %d is not a frame class of the curtain wall (0 to 3, or 4 to %u).", classIndex, APICWFrameClass_FirstCustomClass + nFrameClasses - 1));
+        }
+        changedFrame.classID = static_cast<UInt32> (classIndex);
+        if (custom && memo.cWallFrameDefaults != nullptr) {
+            GS::ucscpy (changedFrame.className, memo.cWallFrameDefaults[classIndex - APICWFrameClass_FirstCustomClass].className);
+        }
+        hasChange = true;
+    }
+
+    GS::UniString typeName;
+    if (item.Get ("type", typeName)) {
+        if (typeName == "Invisible")                      changedFrame.objectType = APICWFrObjectType_Invisible;
+        else if (typeName == "GDL")                       changedFrame.objectType = APICWFrObjectType_GDL;
+        else if (typeName == "InvisibleConnectedTurning") changedFrame.objectType = APICWFrObjectType_InvisibleConnectedTurning;
+        else if (typeName == "InvisibleConnectedStill")   changedFrame.objectType = APICWFrObjectType_InvisibleConnectedStill;
+        else return CreateFailedExecutionResult (APIERR_BADPARS, "Unknown frame type.");
+        hasChange = true;
+    }
+
+    if (!hasChange) {
+        return CreateSuccessfulExecutionResult ();
+    }
+
+    *frame = changedFrame;
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    err = ACAPI_Element_Change (&curtainWall, &mask, &memo, APIMemoMask_CWallFrames, true);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to change the frame through the memo of the owner curtain wall.");
+    }
+
+    // Read it back: the experiment is only worth keeping when Archicad really applies the change.
+    API_ElementMemo checkMemo = {};
+    const GS::OnExit checkGuard ([&checkMemo] () { ACAPI_DisposeElemMemoHdls (&checkMemo); });
+    API_Element checkWall = {};
+    checkWall.header.guid = curtainWall.header.guid;
+    if (ACAPI_Element_Get (&checkWall) != NoError || ACAPI_Element_GetMemo (checkWall.header.guid, &checkMemo, APIMemoMask_CWallFrames) != NoError || checkMemo.cWallFrames == nullptr) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, "The change was written, but the frame could not be read back.");
+    }
+    for (UInt32 i = 0; i < checkWall.curtainWall.nFrames; ++i) {
+        const API_CWFrameType& actual = checkMemo.cWallFrames[i];
+        if (actual.head.guid != frameGuid) {
+            continue;
+        }
+        const auto differs = [] (double a, double b) { return std::fabs (a - b) > 1e-6; };
+        if (differs (actual.a1, changedFrame.a1) || differs (actual.a2, changedFrame.a2) || differs (actual.b1, changedFrame.b1) || differs (actual.b2, changedFrame.b2) ||
+            actual.classID != changedFrame.classID || actual.objectType != changedFrame.objectType) {
+            return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad accepted the change but did not apply it (or rebuilt the frame).");
+        }
+        return CreateSuccessfulExecutionResult ();
+    }
+    return CreateFailedExecutionResult (APIERR_GENERAL, "The frame is no longer in the curtain wall after the change (its GUID may have changed).");
+}
+
+}
+
+GS::ObjectState ModifyCurtainWallFramesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> items;
+    auto error = GetElementArray (parameters, "framesWithDetails", items);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+
+    return ExecuteModifyWithResults ("Modify Curtain Wall Frames", [&](GS::Array<GS::ObjectState>& results) {
+        for (const auto& item : items) {
+            results.Push (ModifyCurtainWallFrame (item));
+        }
+    });
+}
+
 ModifyRoofsCommand::ModifyRoofsCommand () :
     CommandBase (CommonSchema::Used)
 {

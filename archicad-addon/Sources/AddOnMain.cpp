@@ -1241,6 +1241,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.8.0",
             "Modifies Curtain Wall elements in place, keeping their GUID, properties and classifications: the height, the bottom elevation and story, the reference line (with the same number of segments), and the column (primary) and row (secondary) pattern with its cell assignments, in the fields of CreateCurtainWalls."
         );
+        err |= RegisterCommand<ModifyCurtainWallFramesCommand> (
+            elementCommands, "1.8.1",
+            "EXPERIMENTAL. Modifies single Curtain Wall Frames by their GUID: the frame contour (a1, a2, b1, b2), the frame class and the frame type. ACAPI_Element_Change does not take a frame on its own, so the change is written through the memo of the owner curtain wall, and read back to check that Archicad applied it."
+        );
         err |= RegisterCommand<ModifyStairsCommand> (
             elementCommands, "1.8.1",
             "Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the finish visibility, "
