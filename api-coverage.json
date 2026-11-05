@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-05 06:32 UTC",
+ "generatedAt": "2026-11-05 08:00 UTC",
  "versions": [
   25,
   26,
@@ -4037,10 +4037,6 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
-     "number": 1896,
-     "title": "[3/6] Share one helper for MoveElements, ElevateElements, RotateElements and MirrorElements"
-    },
-    {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
@@ -7255,12 +7251,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1896,
-     "title": "[3/6] Share one helper for MoveElements, ElevateElements, RotateElements and MirrorElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7717,10 +7708,6 @@
     {
      "number": 1842,
      "title": "SetElementNotificationClient: optional element types to observe, touch only changed observers"
-    },
-    {
-     "number": 1836,
-     "title": "[3/4] Report element changes made by the per-element setters to notification clients"
     },
     {
      "number": 1292,
@@ -10716,12 +10703,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1836,
-     "title": "[3/4] Report element changes made by the per-element setters to notification clients"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11535,12 +11517,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1887,
-     "title": "CreateLibraryParts: write the parameter section as the DevKit does, don't keep incomplete parts"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11876,12 +11853,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1887,
-     "title": "CreateLibraryParts: write the parameter section as the DevKit does, don't keep incomplete parts"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
@@ -12483,12 +12455,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1887,
-     "title": "CreateLibraryParts: write the parameter section as the DevKit does, don't keep incomplete parts"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
@@ -12841,12 +12808,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1887,
-     "title": "CreateLibraryParts: write the parameter section as the DevKit does, don't keep incomplete parts"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
@@ -25718,10 +25680,6 @@
      "title": "ModifyRoofs: change single-plane roofs (#1782)"
     },
     {
-     "number": 1836,
-     "title": "[3/4] Report element changes made by the per-element setters to notification clients"
-    },
-    {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
@@ -31482,10 +31440,6 @@
     {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
-    },
-    {
-     "number": 1836,
-     "title": "[3/4] Report element changes made by the per-element setters to notification clients"
     },
     {
      "number": 1748,
@@ -38033,16 +37987,8 @@
      "title": "[4/6] Share one helper among the grouping commands that list ids per item"
     },
     {
-     "number": 1896,
-     "title": "[3/6] Share one helper for MoveElements, ElevateElements, RotateElements and MirrorElements"
-    },
-    {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
-    },
-    {
-     "number": 1836,
-     "title": "[3/4] Report element changes made by the per-element setters to notification clients"
     },
     {
      "number": 1748,
@@ -44844,10 +44790,6 @@
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
     },
     {
-     "number": 1836,
-     "title": "[3/4] Report element changes made by the per-element setters to notification clients"
-    },
-    {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
@@ -48105,10 +48047,6 @@
     {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
-    },
-    {
-     "number": 1836,
-     "title": "[3/4] Report element changes made by the per-element setters to notification clients"
     },
     {
      "number": 1748,
