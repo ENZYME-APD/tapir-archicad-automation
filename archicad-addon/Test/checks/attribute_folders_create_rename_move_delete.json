@@ -1,0 +1,190 @@
+{
+  "title": "CreateAttributeFolders, RenameAttributeFolders, MoveAttributesAndFolders and DeleteAttributeFolders change the layer folders they report",
+  "minTapir": "1.8.1",
+  "minArchicad": "26",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "layer to put into the folders",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [ { "name": "Tapir check folder layer" } ]
+      },
+      "save": { "layer": "attributeIds[0].attributeId.guid" },
+      "expect": [
+        { "path": "attributeIds[0].attributeId.guid", "exists": true, "name": "layer created" }
+      ]
+    },
+    {
+      "id": "[new nested folder, the same folder again, root folder]",
+      "command": "CreateAttributeFolders",
+      "creates": false,
+      "params": {
+        "attributeFolders": [
+          { "attributeType": "Layer", "path": [ "Tapir check folder A", "Tapir check folder B" ] },
+          { "attributeType": "Layer", "path": [ "Tapir check folder A", "Tapir check folder B" ] },
+          { "attributeType": "Layer", "path": [] }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per folder" },
+        { "path": "executionResults[0].success", "eq": true, "name": "nested folder with its missing parent: success" },
+        { "path": "executionResults[1].success", "eq": true, "name": "existing folder: kept, success" },
+        { "path": "executionResults[2].success", "eq": false, "name": "root folder: failed" }
+      ]
+    },
+    {
+      "id": "layer into A/B (target found: the folder exists)",
+      "command": "MoveAttributesAndFolders",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layer}" } } ],
+        "targetFolder": { "attributeType": "Layer", "path": [ "Tapir check folder A", "Tapir check folder B" ] }
+      },
+      "expect": [
+        { "path": "error", "exists": false, "name": "target folder A/B found" },
+        { "path": "attributeExecutionResults", "len": 1, "name": "one result per attribute" },
+        { "path": "attributeExecutionResults[0].success", "eq": true, "name": "layer moved" },
+        { "path": "folderExecutionResults", "len": 0, "name": "no folder results" }
+      ]
+    },
+    {
+      "id": "[rename A/B to C, rename a folder that does not exist]",
+      "command": "RenameAttributeFolders",
+      "creates": false,
+      "params": {
+        "attributeFolders": [
+          { "attributeType": "Layer", "path": [ "Tapir check folder A", "Tapir check folder B" ], "newName": "Tapir check folder C" },
+          { "attributeType": "Layer", "path": [ "Tapir check folder A", "Tapir check folder missing" ], "newName": "Tapir check folder D" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per folder" },
+        { "path": "executionResults[0].success", "eq": true, "name": "rename: success" },
+        { "path": "executionResults[1].success", "eq": false, "name": "missing folder: failed" }
+      ]
+    },
+    {
+      "id": "read back: A/B is gone",
+      "command": "MoveAttributesAndFolders",
+      "creates": false,
+      "params": {
+        "targetFolder": { "attributeType": "Layer", "path": [ "Tapir check folder A", "Tapir check folder B" ] }
+      },
+      "expect": [
+        { "path": "error", "exists": true, "name": "old path not found" }
+      ]
+    },
+    {
+      "id": "read back: A/C holds the layer",
+      "command": "MoveAttributesAndFolders",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layer}" } } ],
+        "targetFolder": { "attributeType": "Layer", "path": [ "Tapir check folder A", "Tapir check folder C" ] }
+      },
+      "expect": [
+        { "path": "error", "exists": false, "name": "new path found" },
+        { "path": "attributeExecutionResults[0].success", "eq": true, "name": "layer already in A/C counts as moved" }
+      ]
+    },
+    {
+      "id": "[folder A/C to the root, an attribute that does not exist]",
+      "command": "MoveAttributesAndFolders",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } ],
+        "attributeFolders": [ { "attributeType": "Layer", "path": [ "Tapir check folder A", "Tapir check folder C" ] } ],
+        "targetFolder": { "attributeType": "Layer", "path": [] }
+      },
+      "expect": [
+        { "path": "error", "exists": false, "name": "root folder found" },
+        { "path": "attributeExecutionResults", "len": 1, "name": "one result per attribute" },
+        { "path": "attributeExecutionResults[0].success", "eq": false, "name": "missing attribute: failed" },
+        { "path": "folderExecutionResults", "len": 1, "name": "one result per folder" },
+        { "path": "folderExecutionResults[0].success", "eq": true, "name": "folder moved" }
+      ]
+    },
+    {
+      "id": "read back: A/C is gone",
+      "command": "MoveAttributesAndFolders",
+      "creates": false,
+      "params": {
+        "targetFolder": { "attributeType": "Layer", "path": [ "Tapir check folder A", "Tapir check folder C" ] }
+      },
+      "expect": [
+        { "path": "error", "exists": true, "name": "old path not found" }
+      ]
+    },
+    {
+      "id": "read back: C is in the root, with the layer",
+      "command": "MoveAttributesAndFolders",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layer}" } } ],
+        "targetFolder": { "attributeType": "Layer", "path": [ "Tapir check folder C" ] }
+      },
+      "expect": [
+        { "path": "error", "exists": false, "name": "new path found" },
+        { "path": "attributeExecutionResults[0].success", "eq": true, "name": "layer moved with its folder" }
+      ]
+    },
+    {
+      "id": "[delete C with its layer, delete a folder that does not exist]",
+      "command": "DeleteAttributeFolders",
+      "creates": false,
+      "params": {
+        "attributeFolders": [
+          { "attributeType": "Layer", "path": [ "Tapir check folder C" ] },
+          { "attributeType": "Layer", "path": [ "Tapir check folder A", "Tapir check folder missing" ] }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per folder" },
+        { "path": "executionResults[0].success", "eq": true, "name": "delete: success" },
+        { "path": "executionResults[1].success", "eq": false, "name": "missing folder: failed" }
+      ]
+    },
+    {
+      "id": "read back: C is gone",
+      "command": "MoveAttributesAndFolders",
+      "creates": false,
+      "params": {
+        "targetFolder": { "attributeType": "Layer", "path": [ "Tapir check folder C" ] }
+      },
+      "expect": [
+        { "path": "error", "exists": true, "name": "deleted folder not found" }
+      ]
+    },
+    {
+      "id": "read back: the layer in C is gone",
+      "command": "DeleteAttributes",
+      "creates": false,
+      "params": {
+        "attributesToDelete": [ { "attributeType": "Layer", "attributeId": { "attributeId": { "guid": "${layer}" } } } ],
+        "dryRun": true
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "layer deleted with its folder" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributeFolders",
+      "params": {
+        "attributeFolders": [
+          { "attributeType": "Layer", "path": [ "Tapir check folder A" ] },
+          { "attributeType": "Layer", "path": [ "Tapir check folder C" ] }
+        ]
+      }
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": {
+        "attributesToDelete": [ { "attributeType": "Layer", "attributeId": { "attributeId": { "guid": "${layer}" } } } ]
+      }
+    }
+  ]
+}
