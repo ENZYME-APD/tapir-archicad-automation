@@ -1,0 +1,185 @@
+{
+  "title": "GetSnapPointsOfElements, GetHotspotsOfElements and GetConnectedElements read a wall with a window and a door, and follow the wall when it moves",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "free-standing basic wall, 6 m x 0.2 m x 3 m",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 700, "y": 700 }, "endCoordinate": { "x": 706, "y": 700 }, "floorIndex": 0, "zCoordinate": 0,
+            "height": 3.0, "thickness": 0.2, "structureType": "Basic", "referenceLineLocation": "Center", "offset": 0.0 }
+        ]
+      },
+      "save": { "w1": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "window in the wall",
+      "command": "CreateWindows",
+      "params": {
+        "windowsData": [
+          { "ownerWallId": { "guid": "${w1}" }, "centerOffset": 1.5, "sillHeight": 0.9, "width": 1.0, "height": 1.2 }
+        ]
+      },
+      "save": { "win": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "door in the wall",
+      "command": "CreateDoors",
+      "params": {
+        "doorsData": [
+          { "ownerWallId": { "guid": "${w1}" }, "centerOffset": 4.5, "sillHeight": 0.0, "width": 0.9, "height": 2.1 }
+        ]
+      },
+      "save": { "door": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "basic slab, 4 m x 4 m",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          { "level": 0, "floorIndex": 0, "thickness": 0.3, "structureType": "Basic",
+            "polygonCoordinates": [ { "x": 710, "y": 700 }, { "x": 714, "y": 700 }, { "x": 714, "y": 704 }, { "x": 710, "y": 704 } ] }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "snap points [wall, slab, bogus]",
+      "command": "GetSnapPointsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${w1}" } },
+          { "elementId": { "guid": "${s1}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "save": {
+        "wSnapX": "snapPointsOfElements[0].snapPoints[0].coordinate.x",
+        "wSnapY": "snapPointsOfElements[0].snapPoints[0].coordinate.y",
+        "sSnapX": "snapPointsOfElements[1].snapPoints[0].coordinate.x",
+        "sSnapY": "snapPointsOfElements[1].snapPoints[0].coordinate.y"
+      },
+      "expect": [
+        { "path": "snapPointsOfElements", "len": 3, "name": "one item per element" },
+        { "path": "snapPointsOfElements[0].snapPoints[0].neigId", "exists": true, "name": "wall: snap point has its neig kind" },
+        { "path": "snapPointsOfElements[0].snapPoints[0].inIndex", "exists": true, "name": "wall: snap point has its subindex" },
+        { "path": "snapPointsOfElements[0].snapPoints[1].coordinate.z", "exists": true, "name": "wall: at least two snap points (its ends)" },
+        { "path": "snapPointsOfElements[1].snapPoints[3].coordinate", "exists": true, "name": "slab: at least its four vertices" },
+        { "path": "snapPointsOfElements[2].error", "exists": true, "name": "unknown element is an error item" }
+      ]
+    },
+    {
+      "id": "hotspots [window, wall, bogus]",
+      "command": "GetHotspotsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${win}" } },
+          { "elementId": { "guid": "${w1}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "save": { "hX": "hotspotsOfElements[0].hotspots[0].x", "hY": "hotspotsOfElements[0].hotspots[0].y" },
+      "expect": [
+        { "path": "hotspotsOfElements", "len": 3, "name": "one item per element" },
+        { "path": "hotspotsOfElements[0].hotspots[0].x", "exists": true, "name": "window: has hotspots" },
+        { "path": "hotspotsOfElements[1].error", "exists": true, "name": "wall: not a library part, an error item" },
+        { "path": "hotspotsOfElements[2].error", "exists": true, "name": "unknown element is an error item" }
+      ]
+    },
+    {
+      "id": "windows of [wall, slab, bogus]",
+      "command": "GetConnectedElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${w1}" } },
+          { "elementId": { "guid": "${s1}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ],
+        "connectedElementType": "Window"
+      },
+      "expect": [
+        { "path": "connectedElements", "len": 3, "name": "one item per owner" },
+        { "path": "connectedElements[0].elements", "len": 1, "name": "wall: hosts the window" },
+        { "path": "connectedElements[1].elements", "len": 0, "name": "slab: hosts no window" },
+        { "path": "connectedElements[2].error", "exists": true, "name": "unknown owner is an error item" }
+      ]
+    },
+    {
+      "id": "doors of the wall",
+      "command": "GetConnectedElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${w1}" } } ],
+        "connectedElementType": "Door"
+      },
+      "expect": [
+        { "path": "connectedElements[0].elements", "len": 1, "name": "wall: hosts the door" }
+      ]
+    },
+    {
+      "id": "move the wall 10 m in y, the slab 1 m in x",
+      "command": "MoveElements",
+      "creates": false,
+      "params": {
+        "elementsWithMoveVectors": [
+          { "elementId": { "guid": "${w1}" }, "moveVector": { "x": 0, "y": 10, "z": 0 } },
+          { "elementId": { "guid": "${s1}" }, "moveVector": { "x": 1, "y": 0, "z": 0 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "wall moved" },
+        { "path": "executionResults[1].success", "eq": true, "name": "slab moved" }
+      ]
+    },
+    {
+      "id": "snap points after the move",
+      "command": "GetSnapPointsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${w1}" } },
+          { "elementId": { "guid": "${s1}" } }
+        ]
+      },
+      "save": {
+        "wSnapXMoved": "snapPointsOfElements[0].snapPoints[0].coordinate.x",
+        "wSnapYMoved": "snapPointsOfElements[0].snapPoints[0].coordinate.y",
+        "sSnapXMoved": "snapPointsOfElements[1].snapPoints[0].coordinate.x",
+        "sSnapYMoved": "snapPointsOfElements[1].snapPoints[0].coordinate.y"
+      },
+      "expect": [
+        { "expr": "${wSnapYMoved} - ${wSnapY}", "approx": 10, "name": "wall: snap point moved 10 m in y" },
+        { "expr": "${wSnapXMoved} - ${wSnapX}", "approx": 0, "name": "wall: snap point kept its x" },
+        { "expr": "${sSnapXMoved} - ${sSnapX}", "approx": 1, "name": "slab: snap point moved 1 m in x" },
+        { "expr": "${sSnapYMoved} - ${sSnapY}", "approx": 0, "name": "slab: snap point kept its y" }
+      ]
+    },
+    {
+      "id": "window hotspots after the wall moved",
+      "command": "GetHotspotsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${win}" } } ] },
+      "save": { "hXMoved": "hotspotsOfElements[0].hotspots[0].x", "hYMoved": "hotspotsOfElements[0].hotspots[0].y" },
+      "expect": [
+        { "expr": "${hYMoved} - ${hY}", "approx": 10, "name": "window: hotspot moved with its wall" },
+        { "expr": "${hXMoved} - ${hX}", "approx": 0, "name": "window: hotspot kept its x" }
+      ]
+    },
+    {
+      "id": "windows of the moved wall",
+      "command": "GetConnectedElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${w1}" } } ],
+        "connectedElementType": "Window"
+      },
+      "expect": [
+        { "path": "connectedElements[0].elements", "len": 1, "name": "wall: still hosts the window" }
+      ]
+    }
+  ]
+}

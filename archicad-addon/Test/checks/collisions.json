@@ -1,0 +1,84 @@
+{
+  "title": "GetCollisions finds a slab cutting through a wall, not a slab apart, and honours the volume tolerance",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "free-standing basic wall, 6 m x 0.2 m x 3 m",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 700, "y": 700 }, "endCoordinate": { "x": 706, "y": 700 }, "floorIndex": 0, "zCoordinate": 0,
+            "height": 3.0, "thickness": 0.2, "structureType": "Basic", "referenceLineLocation": "Center", "offset": 0.0 }
+        ]
+      },
+      "save": { "w1": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "slab through the wall at mid height (2 m x 2 m x 0.3 m), slab apart",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          { "level": 1.5, "floorIndex": 0, "thickness": 0.3, "structureType": "Basic",
+            "polygonCoordinates": [ { "x": 702, "y": 699 }, { "x": 704, "y": 699 }, { "x": 704, "y": 701 }, { "x": 702, "y": 701 } ] },
+          { "level": 1.5, "floorIndex": 0, "thickness": 0.3, "structureType": "Basic",
+            "polygonCoordinates": [ { "x": 720, "y": 699 }, { "x": 722, "y": 699 }, { "x": 722, "y": 701 }, { "x": 720, "y": 701 } ] }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid", "s2": "elements[1].elementId.guid" }
+    },
+    {
+      "id": "wall against [crossing slab, slab apart], default-like tolerances",
+      "command": "GetCollisions",
+      "creates": false,
+      "params": {
+        "elementsGroup1": [ { "elementId": { "guid": "${w1}" } } ],
+        "elementsGroup2": [ { "elementId": { "guid": "${s1}" } }, { "elementId": { "guid": "${s2}" } } ],
+        "settings": { "volumeTolerance": 0.001, "performSurfaceCheck": false, "surfaceTolerance": 0.001 }
+      },
+      "expect": [
+        { "path": "collisions", "len": 1, "name": "only the crossing slab collides" },
+        { "path": "collisions[0].elementId1.guid", "exists": true, "name": "collision names the group 1 element" },
+        { "path": "collisions[0].elementId2.guid", "exists": true, "name": "collision names the group 2 element" },
+        { "path": "collisions[0].hasBodyCollision", "eq": true, "name": "the bodies intersect" },
+        { "path": "collisions[0].hasClearenceCollision", "exists": true, "name": "clearance flag under its documented key" }
+      ]
+    },
+    {
+      "id": "the same without settings (defaults 0.001)",
+      "command": "GetCollisions",
+      "creates": false,
+      "params": {
+        "elementsGroup1": [ { "elementId": { "guid": "${w1}" } } ],
+        "elementsGroup2": [ { "elementId": { "guid": "${s1}" } }, { "elementId": { "guid": "${s2}" } } ]
+      },
+      "expect": [
+        { "path": "collisions", "len": 1, "name": "only the crossing slab collides" }
+      ]
+    },
+    {
+      "id": "volume tolerance 1 m3, larger than the 0.12 m3 overlap",
+      "command": "GetCollisions",
+      "creates": false,
+      "params": {
+        "elementsGroup1": [ { "elementId": { "guid": "${w1}" } } ],
+        "elementsGroup2": [ { "elementId": { "guid": "${s1}" } }, { "elementId": { "guid": "${s2}" } } ],
+        "settings": { "volumeTolerance": 1.0, "performSurfaceCheck": false, "surfaceTolerance": 0.001 }
+      },
+      "expect": [
+        { "path": "collisions", "len": 0, "name": "no collision above the tolerance" }
+      ]
+    },
+    {
+      "id": "the slab apart only",
+      "command": "GetCollisions",
+      "creates": false,
+      "params": {
+        "elementsGroup1": [ { "elementId": { "guid": "${w1}" } } ],
+        "elementsGroup2": [ { "elementId": { "guid": "${s2}" } } ]
+      },
+      "expect": [
+        { "path": "collisions", "len": 0, "name": "no collision" }
+      ]
+    }
+  ]
+}
