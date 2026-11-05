@@ -267,6 +267,17 @@ GSErrCode ExecuteActionForEachDatabase (
     const std::function<void ()>& actionSuccess,
     const std::function<void (GSErrCode, const GS::UniString&)>& actionFailure);
 
+// The body of the commands that take a list of ids and do one thing per id (the Delete commands):
+// in one undoable command named undoName, calls perItem with the guid under idFieldName of every
+// item of the list listFieldName of parameters. Returns {"executionResults": [...]}, one result per
+// item in input order: "<idFieldName> is missing" for an item without the id, else perItem's result.
+GS::ObjectState ExecuteForEachIdInList (
+    const GS::ObjectState& parameters,
+    const char* listFieldName,
+    const char* idFieldName,
+    const GS::UniString& undoName,
+    const std::function<GS::ObjectState (const API_Guid&)>& perItem);
+
 // The Project Map item of an independent worksheet or detail database, found by its database;
 // NoValue for any other database type or when the Project Map has no such item.
 GS::Optional<API_Guid> FindProjectMapItemOfWorksheetOrDetail (const API_DatabaseInfo& database);
