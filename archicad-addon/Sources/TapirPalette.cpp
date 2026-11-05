@@ -1402,7 +1402,14 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
             command = uvCommand;
             argv = {"run"};
             argv.Append (uvManager.GetPythonSelectionArgs ());
-            argv.Append ({"--script", filePath, "--port", GS::ValueToUniString (GetConnectionPort ())});
+            if (popUpItemData.uvProjectPath.IsEmpty ()) {
+                argv.Append ({"--script", filePath});
+            } else {
+                // uv ignores pyproject.toml with --script; --project runs the script in the configured project
+                // (a script with inline metadata still runs with its own dependencies).
+                argv.Append ({"--project", popUpItemData.uvProjectPath, filePath});
+            }
+            argv.Append ({"--port", GS::ValueToUniString (GetConnectionPort ())});
             if (popUpItemData.repo != nullptr && !popUpItemData.repo->token.IsEmpty ()) {
                 argv.Append ({"--token", popUpItemData.repo->token});
             }
@@ -1479,6 +1486,46 @@ bool TapirPalette::AddScriptToPopUp (GS::Ref<PopUpItemData> popUpData, short ind
     return true;
 }
 
+// The folder of the uv project configured as uvProject (a path relative to baseFolderLoc, with '/' or '\'
+// separators, "." for baseFolderLoc itself, optionally ending in pyproject.toml), or empty when none is
+// configured or the path leaves baseFolderLoc.
+static GS::UniString GetUvProjectPath (const IO::Location& baseFolderLoc, const GS::UniString& configuredUvProject)
+{
+    GS::UniString uvProject = configuredUvProject;
+    uvProject.Trim ();
+    if (uvProject.IsEmpty ()) {
+        return GS::EmptyUniString;
+    }
+
+    IO::Location projectLoc = baseFolderLoc;
+    GS::UniString lastName;
+    UIndex nameStart = 0;
+    for (UIndex i = 0; i <= uvProject.GetLength (); ++i) {
+        if (i < uvProject.GetLength () && uvProject[i] != '/' && uvProject[i] != '\\') {
+            continue;
+        }
+        GS::UniString name (uvProject.GetSubstring (nameStart, i - nameStart));
+        name.Trim ();
+        nameStart = i + 1;
+        if (name.IsEmpty () || name == ".") {
+            continue;
+        }
+        if (name == "..") {
+            ACAPI_WriteReport ("Tapir: uvProject must not leave the repository or folder, ignoring it: " + uvProject, false);
+            return GS::EmptyUniString;
+        }
+        projectLoc.AppendToLocal (IO::Name (name));
+        lastName = name;
+    }
+    if (lastName.Compare ("pyproject.toml", CaseInsensitive) == GS::UniString::Equal) {
+        projectLoc.DeleteLastLocalName ();
+    }
+
+    GS::UniString projectPath;
+    projectLoc.ToPath (&projectPath);
+    return projectPath;
+}
+
 void TapirPalette::AddScriptsFromRepositories ()
 {
     IO::Location tapirTempFolder = GetTapirTemporaryFolder ();
@@ -1496,6 +1543,11 @@ void TapirPalette::AddScriptsFromRepositories ()
         if (!repo.relativeLoc.IsEmpty ()) {
             repoFolderRelativeLoc.Append (IO::RelativeLocation (repo.relativeLoc));
         };
+        // Only the files below relativeLoc are downloaded (under their path in the repository), so the project is
+        // looked for below that folder.
+        IO::Location repoFolderLoc = tapirTempFolder;
+        repoFolderLoc.AppendToLocal (repoFolderRelativeLoc);
+        const GS::UniString uvProjectPath = GetUvProjectPath (repoFolderLoc, repo.uvProject);
         std::map<GS::UniString, GS::UniString> headers;
         if (!repo.token.IsEmpty ()) {
             headers.emplace ("Authorization", "Bearer " + repo.token);
@@ -1546,7 +1598,9 @@ void TapirPalette::AddScriptsFromRepositories ()
                 }
             }
             ACAPI_WriteReport ("Added to the popup: " + repoLoc, false);
-            AddScriptToPopUp (GS::NewRef<PopUpItemData> (fileLoc, kv.first, &repo), DG::PopUp::BottomItem);
+            GS::Ref<PopUpItemData> popUpItemData = GS::NewRef<PopUpItemData> (fileLoc, kv.first, &repo);
+            popUpItemData->uvProjectPath = uvProjectPath;
+            AddScriptToPopUp (popUpItemData, DG::PopUp::BottomItem);
         }
     }
 }
@@ -1593,6 +1647,8 @@ void TapirPalette::AddScriptsFromLocalFolders ()
             sourceName = folderLoc.GetLastLocalName (&folderName) == NoError ? folderName.ToString () : localFolder.path;
         }
 
+        const GS::UniString uvProjectPath = GetUvProjectPath (folderLoc, localFolder.uvProject);
+
         ACAPI_WriteReport ("Tapir is loading scripts from local folder: " + localFolder.path, false);
         std::map<GS::UniString, IO::Location> files;
         CollectFilesInFolder (folderLoc, GS::EmptyUniString, files);
@@ -1623,6 +1679,7 @@ void TapirPalette::AddScriptsFromLocalFolders ()
             ACAPI_WriteReport ("Added to the popup: " + kv.first + " (" + sourceName + ")", false);
             GS::Ref<PopUpItemData> popUpItemData = GS::NewRef<PopUpItemData> (kv.second);
             popUpItemData->sourceName = sourceName;
+            popUpItemData->uvProjectPath = uvProjectPath;
             AddScriptToPopUp (popUpItemData, DG::PopUp::BottomItem);
         }
     }
