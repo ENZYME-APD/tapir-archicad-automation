@@ -121,6 +121,8 @@ public:
     explicit ElementChangeReporter (const GS::Array<API_Guid>& elementsToWatch);
 
     void Add (const API_Guid& element);
+    // Adds the "elementId" of each item (the items of a Modify<Tool> command); items without one are skipped.
+    void AddElementIdsOf (const GS::Array<GS::ObjectState>& items);
     void MarkChanged (const API_Guid& element);
     void Report () const;
 
