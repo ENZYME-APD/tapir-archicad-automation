@@ -91,7 +91,9 @@ static bool ApplySunFromObjectState (const GS::ObjectState& sun, API_SunAngleSet
         }
         return true;
     };
-    // The date and time fields of API_SunAngleSettings are unsigned short.
+    // The date and time fields of API_SunAngleSettings are unsigned short. Year, month
+    // and day accept 0: a sun given only by angles may carry no date, and what
+    // Get3DProjectionSettings returns must be accepted back.
     const auto getDateField = [&] (const char* name, Int32 minimum, Int32 maximum, unsigned short& target) -> bool {
         if (!sun.Contains (name)) {
             return true;
@@ -107,9 +109,9 @@ static bool ApplySunFromObjectState (const GS::ObjectState& sun, API_SunAngleSet
 
     if (!getAngle ("sunAzimuth", sunAngSets.sunAzimuth) ||
         !getAngle ("sunAltitude", sunAngSets.sunAltitude) ||
-        !getDateField ("year", 1, 9999, sunAngSets.year) ||
-        !getDateField ("month", 1, 12, sunAngSets.month) ||
-        !getDateField ("day", 1, 31, sunAngSets.day) ||
+        !getDateField ("year", 0, 9999, sunAngSets.year) ||
+        !getDateField ("month", 0, 12, sunAngSets.month) ||
+        !getDateField ("day", 0, 31, sunAngSets.day) ||
         !getDateField ("hour", 0, 23, sunAngSets.hour) ||
         !getDateField ("minute", 0, 59, sunAngSets.minute) ||
         !getDateField ("second", 0, 59, sunAngSets.second)) {
