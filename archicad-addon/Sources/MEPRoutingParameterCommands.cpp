@@ -7,6 +7,7 @@
 #include "ACAPI/MEPTypes.hpp"
 #include "ACAPI/MEPEnums.hpp"
 #include "ACAPI/MEPRoutingElement.hpp"
+#include "ACAPI/MEPRoutingElementDefault.hpp"
 #include "ACAPI/MEPRoutingSegment.hpp"
 #include "ACAPI/MEPRoutingNode.hpp"
 #include "ACAPI/MEPRoutingSegmentDefault.hpp"
@@ -122,6 +123,21 @@ static const RoutingParameterEnumName<PreferredTransitionPlacement> RoutingParam
     { PreferredTransitionPlacement::LargeToSmall, "LargeToSmall" }
 };
 
+// Reads the optional preferenceTableId of 'parameters'. Returns an error when it is given but is not a
+// guid string (Archicad does not check the type of a $ref field, see GetOptionalGuidField).
+static std::optional<GS::UniString> ReadRoutingParameterTableId (const GS::ObjectState& parameters, std::optional<ACAPI::MEP::UniqueID>& tableId)
+{
+    API_Guid guid = APINULLGuid;
+    const OptionalGuidField field = GetOptionalGuidField (parameters, "preferenceTableId", guid);
+    if (field == OptionalGuidField::Invalid) {
+        return GS::UniString ("preferenceTableId must be a guid string.");
+    }
+    if (field == OptionalGuidField::Valid) {
+        tableId = Adapter::UniqueID (guid);
+    }
+    return std::nullopt;
+}
+
 static GS::ObjectState CreateRoutingSegmentParametersObjectState (const RoutingSegmentDefault& segmentDefault)
 {
     GS::ObjectState segmentOs;
@@ -180,102 +196,356 @@ static GS::ObjectState CreateRoutingNodeParametersObjectState (const RoutingNode
     return nodeOs;
 }
 
-// Changes the given keys of a routing segment default; the same setters as CreateMEPRoutingElements.
-// Returns false when a value is not valid or a setter failed.
-static bool ApplyRoutingSegmentParameters (RoutingSegmentDefault& segmentDefault, const GS::ObjectState& parameters)
+static GS::UniString RoutingParameterErrorText (const ACAPI::Error& error)
 {
-    double width = 0.0;
-    double height = 0.0;
+    return GS::UniString (error.text.c_str ());
+}
+
+// Calls a setter and keeps the first error it gives; setters without a result cannot fail.
+static void CheckRoutingParameterSetter (const ACAPI::Result<void>& result, const char* what, std::optional<GS::UniString>& error)
+{
+    if (result.IsErr () && !error.has_value ()) {
+        error = GS::UniString ("Failed to set ") + what + ": " + RoutingParameterErrorText (result.UnwrapErr ());
+    }
+}
+
+// The keys of routingSegmentParameters, read once so that the default of a route and each of its
+// segments get the same changes.
+struct RoutingSegmentChanges {
+    std::optional<ConnectorShape>       shape;
+    std::optional<double>               width;
+    std::optional<double>               height;
+    std::optional<uint32_t>             referenceId;
+    std::optional<ACAPI::MEP::UniqueID> preferenceTableId;
+
+    bool IsEmpty () const
+    {
+        return !shape.has_value () && !width.has_value () && !height.has_value () && !referenceId.has_value () && !preferenceTableId.has_value ();
+    }
+};
+
+// Returns an error when a value is not valid.
+static std::optional<GS::UniString> ReadRoutingSegmentChanges (const GS::ObjectState& parameters, RoutingSegmentChanges& changes)
+{
+    double number = 0.0;
+    if (parameters.Get ("crossSectionWidth", number)) {
+        changes.width = number;
+    }
+    if (parameters.Get ("crossSectionHeight", number)) {
+        changes.height = number;
+    }
     GS::UniString shapeStr;
+    if (parameters.Get ("crossSectionShape", shapeStr)) {
+        changes.shape = RoutingParameterEnumFromName (RoutingParameterShapeNames, shapeStr);
+        if (!changes.shape.has_value ()) {
+            return GS::UniString ("Unknown crossSectionShape '") + shapeStr + "'.";
+        }
+    }
     Int32 referenceId = -1;
-    API_Guid preferenceTableGuid = APINULLGuid;
-    const bool hasWidth = parameters.Get ("crossSectionWidth", width);
-    const bool hasHeight = parameters.Get ("crossSectionHeight", height);
-    const bool hasShape = parameters.Get ("crossSectionShape", shapeStr);
-    const bool hasReferenceId = parameters.Get ("crossSectionReferenceId", referenceId);
-    const OptionalGuidField preferenceTableIdField = GetOptionalGuidField (parameters, "preferenceTableId", preferenceTableGuid);
-    if (preferenceTableIdField == OptionalGuidField::Invalid) {
-        return false;
-    }
-    const bool hasPreferenceTableId = preferenceTableIdField == OptionalGuidField::Valid;
-    if (!hasWidth && !hasHeight && !hasShape && !hasReferenceId && !hasPreferenceTableId) {
-        return true;
-    }
-    std::optional<ConnectorShape> shape;
-    if (hasShape) {
-        shape = RoutingParameterEnumFromName (RoutingParameterShapeNames, shapeStr);
-        if (!shape.has_value ()) {
-            return false;
+    if (parameters.Get ("crossSectionReferenceId", referenceId)) {
+        if (referenceId < 0) {
+            return GS::UniString ("crossSectionReferenceId cannot be negative.");
         }
+        changes.referenceId = static_cast<uint32_t> (referenceId);
     }
-    if (hasReferenceId && referenceId < 0) {
-        return false;
+    return ReadRoutingParameterTableId (parameters, changes.preferenceTableId);
+}
+
+// Applies the changes with the setters of a RoutingSegmentDefault::Modifier or a RoutingSegment::Modifier,
+// which have the same names. The preference table is set before the reference id, because the reference
+// id is resolved against the table the segment uses.
+template <typename ModifierT>
+static void ApplyRoutingSegmentChanges (ModifierT& modifier, const RoutingSegmentChanges& changes, std::optional<GS::UniString>& error)
+{
+    if (changes.preferenceTableId.has_value ()) {
+        CheckRoutingParameterSetter (modifier.SetPreferenceTableId (changes.preferenceTableId.value ()), "the segment preference table", error);
     }
-    bool settersSucceeded = true;
+    if (changes.shape.has_value ()) {
+        CheckRoutingParameterSetter (modifier.SetCrossSectionShape (changes.shape.value ()), "the cross section shape", error);
+    }
+    if (changes.width.has_value ()) {
+        CheckRoutingParameterSetter (modifier.SetCrossSectionWidth (changes.width.value ()), "the cross section width", error);
+    }
+    if (changes.height.has_value ()) {
+        CheckRoutingParameterSetter (modifier.SetCrossSectionHeight (changes.height.value ()), "the cross section height", error);
+    }
+    if (changes.referenceId.has_value ()) {
+        CheckRoutingParameterSetter (modifier.SetCrossSectionReferenceId (changes.referenceId.value ()), "the cross section reference id", error);
+    }
+}
+
+static std::optional<GS::UniString> ApplyRoutingSegmentChanges (RoutingSegmentDefault& segmentDefault, const RoutingSegmentChanges& changes)
+{
+    std::optional<GS::UniString> error;
     ACAPI::Result<void> result = segmentDefault.Modify ([&](RoutingSegmentDefault::Modifier& modifier) {
-        // The preference table is set before the reference id, because the reference id is resolved
-        // against the table the segment uses.
-        if (hasPreferenceTableId) {
-            settersSucceeded &= modifier.SetPreferenceTableId (Adapter::UniqueID (preferenceTableGuid)).IsOk ();
-        }
-        if (hasShape) {
-            settersSucceeded &= modifier.SetCrossSectionShape (shape.value ()).IsOk ();
-        }
-        if (hasWidth) {
-            settersSucceeded &= modifier.SetCrossSectionWidth (width).IsOk ();
-        }
-        if (hasHeight) {
-            settersSucceeded &= modifier.SetCrossSectionHeight (height).IsOk ();
-        }
-        if (hasReferenceId) {
-            settersSucceeded &= modifier.SetCrossSectionReferenceId (static_cast<uint32_t> (referenceId)).IsOk ();
-        }
+        ApplyRoutingSegmentChanges (modifier, changes, error);
     });
-    return result.IsOk () && settersSucceeded;
+    CheckRoutingParameterSetter (result, "the routing segment default", error);
+    return error;
 }
 
 #ifdef ServerMainVers_2900
-// Changes the given keys of an elbow default. Returns false when a setter failed.
-static bool ApplyElbowParameters (ElbowDefault& elbowDefault, const GS::ObjectState& parameters)
+// The keys of an elbow parameters object.
+struct ElbowChanges {
+    std::optional<double>               factorRadius;
+    std::optional<ACAPI::MEP::UniqueID> preferenceTableId;
+};
+
+// Returns an error when a value is not valid.
+static std::optional<GS::UniString> ReadElbowChanges (const GS::ObjectState& parameters, ElbowChanges& changes)
 {
     double factorRadius = 0.0;
-    API_Guid preferenceTableGuid = APINULLGuid;
-    const bool hasFactorRadius = parameters.Get ("factorRadius", factorRadius);
-    const OptionalGuidField preferenceTableIdField = GetOptionalGuidField (parameters, "preferenceTableId", preferenceTableGuid);
-    if (preferenceTableIdField == OptionalGuidField::Invalid) {
-        return false;
+    if (parameters.Get ("factorRadius", factorRadius)) {
+        changes.factorRadius = factorRadius;
     }
-    const bool hasPreferenceTableId = preferenceTableIdField == OptionalGuidField::Valid;
-    if (!hasFactorRadius && !hasPreferenceTableId) {
-        return true;
-    }
-    bool settersSucceeded = true;
-    elbowDefault.Modify ([&](ElbowDefault::Modifier& modifier) {
-        if (hasPreferenceTableId) {
-            settersSucceeded &= modifier.SetPreferenceTable (Adapter::UniqueID (preferenceTableGuid)).IsOk ();
-        }
-        if (hasFactorRadius) {
-            settersSucceeded &= modifier.SetFactorRadius (factorRadius).IsOk ();
-        }
-    });
-    return settersSucceeded;
+    return ReadRoutingParameterTableId (parameters, changes.preferenceTableId);
 }
 
-// Changes the given keys of a transition default. Returns false when a setter failed.
-static bool ApplyTransitionParameters (TransitionDefault& transitionDefault, const GS::ObjectState& parameters)
+static std::optional<GS::UniString> ApplyElbowChanges (ElbowDefault& elbowDefault, const ElbowChanges& changes)
 {
-    API_Guid preferenceTableGuid = APINULLGuid;
-    const OptionalGuidField preferenceTableIdField = GetOptionalGuidField (parameters, "preferenceTableId", preferenceTableGuid);
-    if (preferenceTableIdField != OptionalGuidField::Valid) {
-        return preferenceTableIdField == OptionalGuidField::NotGiven;
-    }
-    bool settersSucceeded = true;
-    transitionDefault.Modify ([&](TransitionDefault::Modifier& modifier) {
-        settersSucceeded &= modifier.SetPreferenceTable (Adapter::UniqueID (preferenceTableGuid)).IsOk ();
+    std::optional<GS::UniString> error;
+    ACAPI::Result<void> result = elbowDefault.Modify ([&](ElbowDefault::Modifier& modifier) {
+        if (changes.preferenceTableId.has_value ()) {
+            CheckRoutingParameterSetter (modifier.SetPreferenceTable (changes.preferenceTableId.value ()), "the elbow preference table", error);
+        }
+        if (changes.factorRadius.has_value ()) {
+            CheckRoutingParameterSetter (modifier.SetFactorRadius (changes.factorRadius.value ()), "the elbow radius factor", error);
+        }
     });
-    return settersSucceeded;
+    CheckRoutingParameterSetter (result, "the elbow default", error);
+    return error;
+}
+
+static std::optional<GS::UniString> ApplyTransitionTableChange (TransitionDefault& transitionDefault, const std::optional<ACAPI::MEP::UniqueID>& tableId)
+{
+    if (!tableId.has_value ()) {
+        return std::nullopt;
+    }
+    std::optional<GS::UniString> error;
+    ACAPI::Result<void> result = transitionDefault.Modify ([&](TransitionDefault::Modifier& modifier) {
+        CheckRoutingParameterSetter (modifier.SetPreferenceTable (tableId.value ()), "the transition preference table", error);
+    });
+    CheckRoutingParameterSetter (result, "the transition default", error);
+    return error;
 }
 #endif
+
+// The preference tables a change asks for. Archicad 29 answers OK to the table setters also when it keeps
+// the old table (fork issue #10), so they are read back after the change.
+struct RoutingTableChanges {
+    std::optional<ACAPI::MEP::UniqueID> segment;
+    std::optional<ACAPI::MEP::UniqueID> elbow;
+    std::optional<ACAPI::MEP::UniqueID> transition;
+
+    bool IsEmpty () const
+    {
+        return !segment.has_value () && !elbow.has_value () && !transition.has_value ();
+    }
+};
+
+template <typename IdT>
+static bool IsPreferenceTable (const IdT& tableId, const ACAPI::MEP::UniqueID& wanted)
+{
+    const auto value = RoutingParameterValueOf (tableId);
+    return value.has_value () && value.value ().GetGuid () == wanted.GetGuid ();
+}
+
+static bool SegmentUsesTable (const ACAPI::MEP::UniqueID& segmentId, const RoutingTableChanges& tables)
+{
+    if (!tables.segment.has_value ()) {
+        return true;
+    }
+    ACAPI::Result<RoutingSegment> segment = RoutingSegment::Get (segmentId);
+    return segment.IsOk () && IsPreferenceTable (segment->GetPreferenceTableId (), tables.segment.value ());
+}
+
+static bool NodeUsesTables (const ACAPI::MEP::UniqueID& nodeId, const RoutingTableChanges& tables)
+{
+#ifdef ServerMainVers_2900
+    if (!tables.elbow.has_value () && !tables.transition.has_value ()) {
+        return true;
+    }
+    ACAPI::Result<RoutingNode> node = RoutingNode::Get (nodeId);
+    if (node.IsErr ()) {
+        return false;
+    }
+    if (tables.elbow.has_value () && !IsPreferenceTable (node->GetElbowDefaultParameters ().GetPreferenceTable (), tables.elbow.value ())) {
+        return false;
+    }
+    if (tables.transition.has_value () && !IsPreferenceTable (node->GetTransitionDefaultParameters ().GetPreferenceTable (), tables.transition.value ())) {
+        return false;
+    }
+#else
+    (void) nodeId;
+    (void) tables;
+#endif
+    return true;
+}
+
+static bool RouteUsesTables (const RoutingElement& routingElement, const RoutingTableChanges& tables)
+{
+    for (const ACAPI::MEP::UniqueID& segmentId : routingElement.GetRoutingSegmentIds ()) {
+        if (!SegmentUsesTable (segmentId, tables)) {
+            return false;
+        }
+    }
+    for (const ACAPI::MEP::UniqueID& nodeId : routingElement.GetRoutingNodeIds ()) {
+        if (!NodeUsesTables (nodeId, tables)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Sets the tables on each segment and node of the route itself, the way ModifyMEPRoutingElements sets
+// its segments: the route's defaults only reach the segments and nodes that were not customized.
+static void SetTablesOnSegmentsAndNodes (const RoutingElement& routingElement, const RoutingSegmentChanges& segmentChanges, const RoutingTableChanges& tables, GS::Array<GS::UniString>& notes)
+{
+    if (!segmentChanges.IsEmpty ()) {
+        for (const ACAPI::MEP::UniqueID& segmentId : routingElement.GetRoutingSegmentIds ()) {
+            ACAPI::Result<RoutingSegment> segment = RoutingSegment::Get (segmentId);
+            if (segment.IsErr ()) {
+                continue;
+            }
+            std::optional<GS::UniString> error;
+            ACAPI::Result<void> result = segment->Modify ([&](RoutingSegment::Modifier& modifier) {
+                ApplyRoutingSegmentChanges (modifier, segmentChanges, error);
+            }, "Set Routing Parameters of Routing Segment");
+            CheckRoutingParameterSetter (result, "the routing segment", error);
+            if (error.has_value ()) {
+                notes.Push ("segment: " + error.value ());
+            }
+        }
+    }
+#ifdef ServerMainVers_2900
+    if (!tables.elbow.has_value () && !tables.transition.has_value ()) {
+        return;
+    }
+    for (const ACAPI::MEP::UniqueID& nodeId : routingElement.GetRoutingNodeIds ()) {
+        ACAPI::Result<RoutingNode> node = RoutingNode::Get (nodeId);
+        if (node.IsErr ()) {
+            continue;
+        }
+        ElbowDefault elbowDefault = node->GetElbowDefaultParameters ();
+        TransitionDefault transitionDefault = node->GetTransitionDefaultParameters ();
+        std::optional<GS::UniString> error;
+        if (tables.elbow.has_value ()) {
+            error = ApplyElbowChanges (elbowDefault, ElbowChanges { std::nullopt, tables.elbow });
+        }
+        if (!error.has_value ()) {
+            error = ApplyTransitionTableChange (transitionDefault, tables.transition);
+        }
+        ACAPI::Result<void> result = node->Modify ([&](RoutingNode::Modifier& modifier) {
+            if (tables.elbow.has_value ()) {
+                CheckRoutingParameterSetter (modifier.SetElbowDefaultParameters (elbowDefault), "the elbow parameters of the node", error);
+            }
+            if (tables.transition.has_value ()) {
+                CheckRoutingParameterSetter (modifier.SetTransitionDefaultParameters (transitionDefault), "the transition parameters of the node", error);
+            }
+        }, "Set Routing Parameters of Routing Node");
+        CheckRoutingParameterSetter (result, "the routing node", error);
+        if (error.has_value ()) {
+            notes.Push ("node: " + error.value ());
+        }
+    }
+#else
+    (void) tables;
+#endif
+}
+
+#ifdef ServerMainVers_2900
+// Picks up the settings of a node, changes the tables in them and injects them back, as Archicad's pick
+// up and inject parameters does.
+static void InjectTablesIntoNode (const ACAPI::MEP::UniqueID& nodeId, const RoutingTableChanges& tables, GS::Array<GS::UniString>& notes)
+{
+    if (!tables.elbow.has_value () && !tables.transition.has_value ()) {
+        return;
+    }
+    ACAPI::Result<RoutingNode> node = RoutingNode::Get (nodeId);
+    if (node.IsErr ()) {
+        return;
+    }
+    RoutingNodeDefault nodeDefault = node->PickUpDefault ();
+    ElbowDefault elbowDefault = nodeDefault.GetElbowDefault ();
+    TransitionDefault transitionDefault = nodeDefault.GetTransitionDefault ();
+    std::optional<GS::UniString> error;
+    if (tables.elbow.has_value ()) {
+        error = ApplyElbowChanges (elbowDefault, ElbowChanges { std::nullopt, tables.elbow });
+    }
+    if (!error.has_value ()) {
+        error = ApplyTransitionTableChange (transitionDefault, tables.transition);
+    }
+    CheckRoutingParameterSetter (nodeDefault.Modify ([&](RoutingNodeDefault::Modifier& modifier) {
+        modifier.SetElbowDefault (elbowDefault);
+        modifier.SetTransitionDefault (transitionDefault);
+    }), "the picked up node settings", error);
+    ACAPI::Result<void> result = node->Modify ([&](RoutingNode::Modifier& modifier) {
+        CheckRoutingParameterSetter (modifier.Inject (nodeDefault), "the picked up node settings", error);
+    }, "Inject Routing Parameters into Routing Node");
+    CheckRoutingParameterSetter (result, "the routing node", error);
+    if (error.has_value ()) {
+        notes.Push ("node inject: " + error.value ());
+    }
+}
+#endif
+
+// Picks up the settings of each segment and node, changes the tables in them and injects them back.
+static void InjectTablesIntoSegmentsAndNodes (const RoutingElement& routingElement, const RoutingSegmentChanges& segmentChanges, const RoutingTableChanges& tables, GS::Array<GS::UniString>& notes)
+{
+    if (!segmentChanges.IsEmpty ()) {
+        for (const ACAPI::MEP::UniqueID& segmentId : routingElement.GetRoutingSegmentIds ()) {
+            ACAPI::Result<RoutingSegment> segment = RoutingSegment::Get (segmentId);
+            if (segment.IsErr ()) {
+                continue;
+            }
+            RoutingSegmentDefault segmentDefault = segment->PickUpDefault ();
+            std::optional<GS::UniString> error = ApplyRoutingSegmentChanges (segmentDefault, segmentChanges);
+            ACAPI::Result<void> result = segment->Modify ([&](RoutingSegment::Modifier& modifier) {
+                CheckRoutingParameterSetter (modifier.Inject (segmentDefault), "the picked up segment settings", error);
+            }, "Inject Routing Parameters into Routing Segment");
+            CheckRoutingParameterSetter (result, "the routing segment", error);
+            if (error.has_value ()) {
+                notes.Push ("segment inject: " + error.value ());
+            }
+        }
+    }
+#ifdef ServerMainVers_2900
+    for (const ACAPI::MEP::UniqueID& nodeId : routingElement.GetRoutingNodeIds ()) {
+        InjectTablesIntoNode (nodeId, tables, notes);
+    }
+#else
+    (void) tables;
+#endif
+}
+
+// Picks up the settings of the whole route, puts the changed defaults in them and injects them back.
+static void InjectTablesIntoRoute (RoutingElement& routingElement, const RoutingSegmentDefault& segmentDefault, const RoutingNodeDefault& nodeDefault, GS::Array<GS::UniString>& notes)
+{
+    RoutingElementDefault routeDefault = routingElement.PickUpDefault ();
+    std::optional<GS::UniString> error;
+    CheckRoutingParameterSetter (routeDefault.Modify ([&](RoutingElementDefault::Modifier& modifier) {
+        modifier.SetRoutingSegmentDefault (segmentDefault);
+        modifier.SetRoutingNodeDefault (nodeDefault);
+    }), "the picked up route settings", error);
+    if (!error.has_value ()) {
+        ACAPI::Result<void> result = routingElement.Modify ([&](RoutingElement::Modifier& modifier) {
+            CheckRoutingParameterSetter (modifier.Inject (routeDefault), "the picked up route settings", error);
+        }, "Inject Routing Parameters into Routing Element");
+        CheckRoutingParameterSetter (result, "the routing element", error);
+    }
+    if (error.has_value ()) {
+        notes.Push ("route inject: " + error.value ());
+    }
+}
+
+static GS::UniString JoinRoutingParameterNotes (const GS::Array<GS::UniString>& notes)
+{
+    GS::UniString text;
+    for (const GS::UniString& note : notes) {
+        text += " " + note + ".";
+    }
+    return text;
+}
 
 static GS::ObjectState SetRoutingParametersOfRoutingElement (const ACAPI::MEP::UniqueID& elementId, const GS::ObjectState* nodeParameters, const GS::ObjectState* segmentParameters)
 {
@@ -289,53 +559,96 @@ static GS::ObjectState SetRoutingParametersOfRoutingElement (const ACAPI::MEP::U
     }
 #endif
 
-    bool settersSucceeded = true;
+    RoutingSegmentChanges segmentChanges;
+    if (segmentParameters != nullptr) {
+        std::optional<GS::UniString> invalid = ReadRoutingSegmentChanges (*segmentParameters, segmentChanges);
+        if (invalid.has_value ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, invalid.value ());
+        }
+    }
+    RoutingTableChanges tables;
+    tables.segment = segmentChanges.preferenceTableId;
+
     RoutingSegmentDefault segmentDefault = routingElement->GetRoutingSegmentDefaultParameters ();
-    if (segmentParameters != nullptr && !ApplyRoutingSegmentParameters (segmentDefault, *segmentParameters)) {
-        return CreateFailedExecutionResult (APIERR_BADPARS, "A value of routingSegmentParameters could not be set; nothing was changed.");
+    if (!segmentChanges.IsEmpty ()) {
+        std::optional<GS::UniString> error = ApplyRoutingSegmentChanges (segmentDefault, segmentChanges);
+        if (error.has_value ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, error.value () + " Nothing was changed.");
+        }
     }
     RoutingNodeDefault nodeDefault = routingElement->GetRoutingNodeDefaultParameters ();
 #ifdef ServerMainVers_2900
+    const GS::ObjectState* elbowParameters = nodeParameters != nullptr ? nodeParameters->Get ("elbow") : nullptr;
+    const GS::ObjectState* transitionParameters = nodeParameters != nullptr ? nodeParameters->Get ("transition") : nullptr;
     if (nodeParameters != nullptr) {
-        const GS::ObjectState* elbowParameters = nodeParameters->Get ("elbow");
-        const GS::ObjectState* transitionParameters = nodeParameters->Get ("transition");
         ElbowDefault elbowDefault = nodeDefault.GetElbowDefault ();
         TransitionDefault transitionDefault = nodeDefault.GetTransitionDefault ();
+        std::optional<GS::UniString> error;
         if (elbowParameters != nullptr) {
-            settersSucceeded &= ApplyElbowParameters (elbowDefault, *elbowParameters);
+            ElbowChanges elbowChanges;
+            error = ReadElbowChanges (*elbowParameters, elbowChanges);
+            if (!error.has_value ()) {
+                tables.elbow = elbowChanges.preferenceTableId;
+                error = ApplyElbowChanges (elbowDefault, elbowChanges);
+            }
         }
-        if (transitionParameters != nullptr) {
-            settersSucceeded &= ApplyTransitionParameters (transitionDefault, *transitionParameters);
+        if (transitionParameters != nullptr && !error.has_value ()) {
+            error = ReadRoutingParameterTableId (*transitionParameters, tables.transition);
+            if (!error.has_value ()) {
+                error = ApplyTransitionTableChange (transitionDefault, tables.transition);
+            }
         }
-        if (!settersSucceeded) {
-            return CreateFailedExecutionResult (APIERR_BADPARS, "A value of routingNodeParameters could not be set; nothing was changed.");
+        if (error.has_value ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, error.value () + " Nothing was changed.");
         }
-        nodeDefault.Modify ([&](RoutingNodeDefault::Modifier& modifier) {
+        CheckRoutingParameterSetter (nodeDefault.Modify ([&](RoutingNodeDefault::Modifier& modifier) {
             if (elbowParameters != nullptr) {
                 modifier.SetElbowDefault (elbowDefault);
             }
             if (transitionParameters != nullptr) {
                 modifier.SetTransitionDefault (transitionDefault);
             }
-        });
+        }), "the routing node default", error);
+        if (error.has_value ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, error.value () + " Nothing was changed.");
+        }
     }
 #endif
 
+    std::optional<GS::UniString> error;
     ACAPI::Result<void> result = routingElement->Modify ([&](RoutingElement::Modifier& modifier) {
         if (segmentParameters != nullptr) {
-            settersSucceeded &= modifier.SetRoutingSegmentDefaultParameters (segmentDefault).IsOk ();
+            CheckRoutingParameterSetter (modifier.SetRoutingSegmentDefaultParameters (segmentDefault), "the routing segment parameters of the route", error);
         }
         if (nodeParameters != nullptr) {
-            settersSucceeded &= modifier.SetRoutingNodeDefaultParameters (nodeDefault).IsOk ();
+            CheckRoutingParameterSetter (modifier.SetRoutingNodeDefaultParameters (nodeDefault), "the routing node parameters of the route", error);
         }
     }, "Set Routing Parameters of Routing Element");
     if (result.IsErr ()) {
-        return CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to modify the routing element.");
+        return CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to modify the routing element: " + RoutingParameterErrorText (result.UnwrapErr ()));
     }
-    if (!settersSucceeded) {
-        return CreateFailedExecutionResult (APIERR_GENERAL, "Some routing parameters of the routing element could not be set.");
+    if (error.has_value ()) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, error.value ());
     }
-    return CreateSuccessfulExecutionResult ();
+    if (tables.IsEmpty ()) {
+        return CreateSuccessfulExecutionResult ();
+    }
+
+    // Archicad reads the new tables back inside the command but keeps the old ones once it ends (fork
+    // issue #10), so the read-back cannot tell which way works: the tables are also set on each segment
+    // and node, and injected into them and into the route.
+    // Only the table goes to each segment: the other keys change the route's default, as without a table.
+    RoutingSegmentChanges segmentTableChange;
+    segmentTableChange.preferenceTableId = tables.segment;
+    GS::Array<GS::UniString> notes;
+    SetTablesOnSegmentsAndNodes (*routingElement, segmentTableChange, tables, notes);
+    InjectTablesIntoSegmentsAndNodes (*routingElement, segmentTableChange, tables, notes);
+    InjectTablesIntoRoute (*routingElement, segmentDefault, nodeDefault, notes);
+    if (RouteUsesTables (*routingElement, tables)) {
+        return CreateSuccessfulExecutionResult ();
+    }
+    return CreateFailedExecutionResult (APIERR_GENERAL,
+        "Archicad accepted the preference tables but the route's segments and nodes kept their old tables, also when set on each segment and node and when injected." + JoinRoutingParameterNotes (notes));
 }
 
 #ifdef ServerMainVers_2900
@@ -346,34 +659,52 @@ static GS::ObjectState SetRoutingParametersOfRoutingNode (const ACAPI::MEP::Uniq
         return CreateFailedExecutionResult (APIERR_BADID, "elbowParameters and transitionParameters need an existing MEP routing node.");
     }
 
-    bool settersSucceeded = true;
+    RoutingTableChanges tables;
     ElbowDefault elbowDefault = node->GetElbowDefaultParameters ();
     TransitionDefault transitionDefault = node->GetTransitionDefaultParameters ();
+    std::optional<GS::UniString> error;
     if (elbowParameters != nullptr) {
-        settersSucceeded &= ApplyElbowParameters (elbowDefault, *elbowParameters);
+        ElbowChanges elbowChanges;
+        error = ReadElbowChanges (*elbowParameters, elbowChanges);
+        if (!error.has_value ()) {
+            tables.elbow = elbowChanges.preferenceTableId;
+            error = ApplyElbowChanges (elbowDefault, elbowChanges);
+        }
     }
-    if (transitionParameters != nullptr) {
-        settersSucceeded &= ApplyTransitionParameters (transitionDefault, *transitionParameters);
+    if (transitionParameters != nullptr && !error.has_value ()) {
+        error = ReadRoutingParameterTableId (*transitionParameters, tables.transition);
+        if (!error.has_value ()) {
+            error = ApplyTransitionTableChange (transitionDefault, tables.transition);
+        }
     }
-    if (!settersSucceeded) {
-        return CreateFailedExecutionResult (APIERR_BADPARS, "A value of elbowParameters or transitionParameters could not be set; nothing was changed.");
+    if (error.has_value ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, error.value () + " Nothing was changed.");
     }
 
     ACAPI::Result<void> result = node->Modify ([&](RoutingNode::Modifier& modifier) {
         if (elbowParameters != nullptr) {
-            settersSucceeded &= modifier.SetElbowDefaultParameters (elbowDefault).IsOk ();
+            CheckRoutingParameterSetter (modifier.SetElbowDefaultParameters (elbowDefault), "the elbow parameters of the node", error);
         }
         if (transitionParameters != nullptr) {
-            settersSucceeded &= modifier.SetTransitionDefaultParameters (transitionDefault).IsOk ();
+            CheckRoutingParameterSetter (modifier.SetTransitionDefaultParameters (transitionDefault), "the transition parameters of the node", error);
         }
     }, "Set Routing Parameters of Routing Node");
     if (result.IsErr ()) {
-        return CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to modify the routing node.");
+        return CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to modify the routing node: " + RoutingParameterErrorText (result.UnwrapErr ()));
     }
-    if (!settersSucceeded) {
-        return CreateFailedExecutionResult (APIERR_GENERAL, "Some routing parameters of the routing node could not be set.");
+    if (error.has_value ()) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, error.value ());
     }
-    return CreateSuccessfulExecutionResult ();
+    if (tables.IsEmpty ()) {
+        return CreateSuccessfulExecutionResult ();
+    }
+    // As for a route (fork issue #10), the tables are also injected.
+    GS::Array<GS::UniString> notes;
+    InjectTablesIntoNode (elementId, tables, notes);
+    if (NodeUsesTables (elementId, tables)) {
+        return CreateSuccessfulExecutionResult ();
+    }
+    return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad accepted the preference tables but the node kept its old tables, also when injected." + JoinRoutingParameterNotes (notes));
 }
 #endif
 

@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <map>
+#include <mutex>
 
 enum class CommonSchema
 {
@@ -42,6 +43,10 @@ public:
 
 private:
     CommonSchema mCommonSchema;
+    // Only the common definitions the schemas reference (see GetCommonSchemaDefinitionsFor),
+    // worked out on the first GetSchemaDefinitions call.
+    mutable std::once_flag mSchemaDefinitionsOnce;
+    mutable GS::Optional<GS::UniString> mSchemaDefinitions;
 };
 
 GS::ObjectState CreateErrorResponse (GSErrCode errorCode, const GS::UniString& errorMessage);
@@ -49,6 +54,11 @@ GS::ObjectState CreateFailedExecutionResult (GSErrCode errorCode, const GS::UniS
 // The FailedExecutionResult shape for an error already built with CreateErrorResponse.
 GS::ObjectState CreateFailedExecutionResult (const GS::ObjectState& errorResponse);
 GS::ObjectState CreateSuccessfulExecutionResult ();
+// The optional boolean "overwrite" input of the commands that write a file to a path the caller
+// gives (#1856): omitted or true, an existing file is overwritten. When it is false and something
+// already exists at location (or that cannot be checked), returns the message to fail with, naming
+// the path; empty otherwise.
+GS::UniString GetOverwriteRefusal (const GS::ObjectState& parameters, const IO::Location& location);
 GS::UniString DescribeDefinitionChangeError (GSErrCode err);
 // Why Archicad refused to change an element the user could not edit in Archicad either, as the end
 // of a sentence ("its layer is hidden"); empty when the refusal has another cause. elemHead is the
@@ -236,8 +246,9 @@ GS::Optional<GS::UniString> ApplyColumnVeneer (const GS::ObjectState& veneer, AP
 // Text and Label fields reference fonts by index (from 1), which is what the commands carry as
 // fontIndex. These map that index to and from the font's name (the name the Text tool's font list
 // shows), through the Font API from Archicad 27 and the Font attributes (API_FontID) before. The
-// lookup by name is exact first, then case-insensitive; NoValue when no loaded font has the name,
-// or the index none.
+// lookup by name is exact first, then case-insensitive, then Archicad's font search (as
+// GetFontsByName does, which also finds "Century Gothic" as "Century Gothic Western"); NoValue
+// when no loaded font has the name, or the index none.
 GS::Optional<short> GetFontIndexFromName (const GS::UniString& fontName);
 GS::Optional<GS::UniString> GetFontNameFromIndex (short fontIndex);
 
@@ -261,9 +272,30 @@ GSErrCode ExecuteActionForEachDatabase (
     const std::function<void ()>& actionSuccess,
     const std::function<void (GSErrCode, const GS::UniString&)>& actionFailure);
 
+// The body of the commands that take a list of ids and do one thing per id (the Delete commands):
+// in one undoable command named undoName, calls perItem with the guid under idFieldName of every
+// item of the list listFieldName of parameters. Returns {"executionResults": [...]}, one result per
+// item in input order: "<idFieldName> is missing" for an item without the id, else perItem's result.
+GS::ObjectState ExecuteForEachIdInList (
+    const GS::ObjectState& parameters,
+    const char* listFieldName,
+    const char* idFieldName,
+    const GS::UniString& undoName,
+    const std::function<GS::ObjectState (const API_Guid&)>& perItem);
+
 // The Project Map item of an independent worksheet or detail database, found by its database;
 // NoValue for any other database type or when the Project Map has no such item.
 GS::Optional<API_Guid> FindProjectMapItemOfWorksheetOrDetail (const API_DatabaseInfo& database);
+
+// Makes the database with this id (as GetDatabases and the databaseId inputs give it) the current
+// database, without changing the front window.
+GSErrCode ChangeCurrentDatabaseTo (const API_Guid& databaseId);
+
+// A worksheet or detail whose window was never opened, e.g. one just made by CreateWorksheets,
+// cannot be made the current database (APIERR_BADDATABASE) until its Project Map item has been
+// opened once, as ChangeWindow does it (#1602). Called outside the undoable command; returns
+// whether a window was opened, so the caller can bring the starting window back.
+bool OpenDatabaseIfNeverOpened (const API_Guid& databaseId);
 
 // The name and the reference ID of a Detail or Worksheet marker. A Worksheet element reports an
 // empty detailIdStr (Archicad 29) while its viewpoint has the ID, so both are taken from the
