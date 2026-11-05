@@ -505,15 +505,15 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SaveProjectCommand> (
             projectCommands, "1.3.1",
-            "Saves the currently opened project."
+            "Saves the currently opened project, in place or to a given path. With overwrite false it refuses to replace an existing file at the path."
         );
         err |= RegisterCommand<SaveAsModuleFileCommand> (
             projectCommands, "1.5.9",
-            "Saves the given elements, or the current selection, as a hotlink module (.mod) file."
+            "Saves the given elements, or the current selection, as a hotlink module (.mod) file. With overwrite false it refuses to replace an existing file."
         );
         err |= RegisterCommand<SaveProjectAsArchiveCommand> (
             projectCommands, "1.6.0",
-            "Saves the open project as an archive (.pla) file, with the library parts it uses inside."
+            "Saves the open project as an archive (.pla) file, with the library parts it uses inside. With overwrite false it refuses to replace an existing file."
         );
         err |= RegisterCommand<GetRenderingScenesCommand> (
             projectCommands, "1.8.0",
@@ -525,11 +525,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<PhotoRenderCommand> (
             projectCommands, "1.8.0",
-            "Renders the 3D model with the current rendering scene, or with the given one, as Document > Creative Imaging > PhotoRender Projection does, and saves the image to a file (png, jpg, bmp, tiff or gif). The image size, resolution and quality come from the scene; a width, height or resolution given here is used for this render only, the scene is not changed."
+            "Renders the 3D model with the current rendering scene, or with the given one, as Document > Creative Imaging > PhotoRender Projection does, and saves the image to a file (png, jpg, bmp, tiff or gif). The image size, resolution and quality come from the scene; a width, height or resolution given here is used for this render only, the scene is not changed. With overwrite false it refuses to replace an existing file."
         );
         err |= RegisterCommand<SaveCurrentWindowAsImageCommand> (
             projectCommands, "1.7.2",
-            "Saves what the current window shows as an image file (png, jpg, bmp, tiff or gif), as File > Save as does with a picture format. Master layout windows are not supported: save a layout that uses the master layout instead."
+            "Saves what the current window shows as an image file (png, jpg, bmp, tiff or gif), as File > Save as does with a picture format. Master layout windows are not supported: save a layout that uses the master layout instead. With overwrite false it refuses to replace an existing file."
         );
         err |= RegisterCommand<GetCurrentViewImageCommand> (
             projectCommands, "1.7.3",
@@ -1409,7 +1409,8 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<ExportFavoritesCommand> (
             favoritesCommands, "1.5.0",
             "Export the project's Favorites to a .prefs file or folder. From Archicad 29 they can also be "
-            "exported to a folder of Favorite files (xml format) or to a legacy .prf file (legacyPRF format)."
+            "exported to a folder of Favorite files (xml format) or to a legacy .prf file (legacyPRF format). "
+            "With overwrite false an export to a single file refuses to replace an existing file."
         );
         err |= RegisterCommand<ApplyFavoritesToElementsCommand> (
             favoritesCommands, "1.5.4",
@@ -1979,7 +1980,7 @@ GSErrCode Initialize (void)
         CommandGroup ifcCommands ("IFC Commands");
         err |= RegisterCommand<IFCFileOperationCommand> (
             ifcCommands, "1.2.6",
-            "Executes an IFC file operation: opens or merges an IFC file, or saves the project as an IFC file. A save can name the export translator to use, a merge the story the IFC file's first storey is placed on."
+            "Executes an IFC file operation: opens or merges an IFC file, or saves the project as an IFC file. A save can name the export translator to use, a merge the story the IFC file's first storey is placed on. With overwrite false a save refuses to replace an existing file."
         );
         err |= RegisterCommand<GetIFCExportTranslatorsCommand> (
             ifcCommands, "1.6.0",
@@ -2715,7 +2716,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ExportIssuesToBCFCommand> (
             issueCommands, "1.0.6",
-            "Exports specified issues to a BCF file."
+            "Exports specified issues to a BCF file. With overwrite false it refuses to replace an existing file."
         );
         err |= RegisterCommand<ImportIssuesFromBCFCommand> (
             issueCommands, "1.0.6",

@@ -1371,6 +1371,10 @@ GS::Optional<GS::UniString> ExportFavoritesCommand::GetInputParametersSchema () 
             "format": {
                 "$ref": "#/FavoriteExportFormat",
                 "description": "prefs (the default) works in every Archicad version. xml exports each Favorite to its own file in the folder, and legacyPRF exports to a Favorites file of earlier Archicad versions; these two require Archicad 29 or newer."
+            },
+            "overwrite": {
+                "type": "boolean",
+                "description": "Optional, true by default: an existing file is overwritten. false refuses to export when a file already exists at path, and writes nothing. It needs an export to a single file (prefs format with a .prefs path, or legacyPRF format); with an export to a folder it is an error, as the names of the files written there are Archicad's."
             }
         },
         "required": ["path"],
@@ -1400,6 +1404,21 @@ GS::ObjectState ExportFavoritesCommand::Execute (const GS::ObjectState& paramete
     }
 
     const IO::Location location = LocationFromPath (path);
+
+    bool overwrite = true;
+    if (parameters.Get ("overwrite", overwrite) && !overwrite) {
+        // A folder export writes files Archicad names, which cannot be checked beforehand.
+        GS::UniString lowerPath = path;
+        lowerPath.SetToLowerCase ();
+        const bool singleFile = format == "legacyPRF" || (format == "prefs" && lowerPath.EndsWith (".prefs"));
+        if (!singleFile) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "overwrite false needs an export to a single file (prefs format with a .prefs path, or legacyPRF format), nothing was written.");
+        }
+        const GS::UniString overwriteRefusal = GetOverwriteRefusal (parameters, location);
+        if (!overwriteRefusal.IsEmpty ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, overwriteRefusal);
+        }
+    }
 
     GSErrCode err = NoError;
     GS::Array<GS::UniString> names;

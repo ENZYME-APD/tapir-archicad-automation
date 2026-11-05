@@ -188,7 +188,11 @@ GS::Optional<GS::UniString> PhotoRenderCommand::GetInputParametersSchema () cons
         "properties": {
             "imageFilePath": {
                 "type": "string",
-                "description": "Absolute path of the image file to write. An existing file is overwritten."
+                "description": "Absolute path of the image file to write. An existing file is overwritten, unless overwrite is false."
+            },
+            "overwrite": {
+                "type": "boolean",
+                "description": "Optional, true by default. false refuses to render when a file already exists at imageFilePath, and writes nothing."
             },
             "format": {
                 "type": "string",
@@ -259,6 +263,12 @@ GS::ObjectState PhotoRenderCommand::Execute (const GS::ObjectState& parameters, 
         return CreateFailedExecutionResult (APIERR_BADPARS, errorMessage);
     }
     const bool changeImageSettings = width.HasValue () || height.HasValue () || resolution.HasValue ();
+
+    // Checked before the scene is made current, so a refused render changes nothing.
+    const GS::UniString overwriteRefusal = GetOverwriteRefusal (parameters, IO::Location (imageFilePath));
+    if (!overwriteRefusal.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, overwriteRefusal);
+    }
 
     GS::UniString sceneName;
     if (parameters.Get ("sceneName", sceneName)) {
