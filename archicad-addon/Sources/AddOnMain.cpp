@@ -2081,6 +2081,14 @@ GSErrCode Initialize (void)
             libraryCommands, "1.5.0",
             "Lists library parts currently available to the project. Filter by typeId (e.g. 'Door', 'Window', 'Object', 'Lamp')."
         );
+        err |= RegisterCommand<GetLibraryPartSectionsCommand> (
+            libraryCommands, "1.8.1",
+            "Lists the sections of library parts given by index: their four-character type code, sub-identifier, size and whether they are text (scripts, comments) or binary (previews)."
+        );
+        err |= RegisterCommand<GetLibraryPartSectionCommand> (
+            libraryCommands, "1.8.1",
+            "Reads the text of a text section (a script or the comment) of a library part given by index, without opening it in the GDL editor. Takes the password of a protected library part."
+        );
         err |= RegisterCommand<GetLibrariesOfLibPartsCommand> (
             libraryCommands, "1.8.1",
             "Gets the library of each given library part (by file name or guid): display name, location, embedded/built-in/package/local/missing flags and the Library Manager tree path. Available from Archicad 29."
