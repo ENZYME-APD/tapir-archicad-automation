@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 61 | 53 | 8 |  |  |  | 8 | 70 |
 | C++ API (ACAPI::, IFCAPI::) | 99 % | 1423 | 1207 | 214 | 2 |  |  | 12 | 392 |
 
-Archicad 25–30 DevKits; updated 2026-11-05 18:28 UTC.
+Archicad 25–30 DevKits; updated 2026-11-05 20:02 UTC.
 
 | | Status |
 |---|---|
@@ -327,7 +327,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Attribute_DeleteFolder` <sub>AC26–30</sub> – Deletes an attribute folder and all the folders and attributes it contains.
 - ✅ `ACAPI_Attribute_DeleteMore` – Deletes more attributes of the same type.
 - 🔀 `ACAPI_Attribute_EnumerateAttributesByType` <sub>AC27–30</sub> – Iterates the instances of a given attribute type in the database.
-- ✅ `ACAPI_Attribute_Get` – Retrieves an attribute from the database. — [#1910](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1910 "Fix switching model view option combinations (#1873)"), [#1395](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1395 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex")
+- ✅ `ACAPI_Attribute_Get` – Retrieves an attribute from the database. — [#1395](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1395 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex")
 - ✅ `ACAPI_Attribute_GetAttributesByType` <sub>AC27–30</sub> – Returns the instances of a given attribute type in the database.
 - ✅ `ACAPI_Attribute_GetAttributesFromProject` – Loads the given attributes from a project file. — [#1615](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1615 "Import attributes from another project file (append / overwrite like the Attribute Manager) and export them to a file")
 - ✅ `ACAPI_Attribute_GetClassificationInSystem` – Retrieves a classification of an attribute in a given classification system.
@@ -467,7 +467,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Navigator_ChangeNavigatorVPItem` – Changes an existing Navigator viewpoint root, group or leaf node in the Project Map. <sub>(was `APINavigator_ChangeNavigatorVPItemID`)</sub>
 - ✅ `ACAPI_Navigator_ChangeNavigatorView` – Sets the given Project Navigator item and its view settings. <sub>(was `APINavigator_ChangeNavigatorViewID`)</sub> — [#688](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/688 "SetViewSettings fails at ACAPI_Navigator_ChangeNavigatorView (-2130313113) even when writing a view's current values")
 - ✅ `ACAPI_Navigator_ChangeStructureDisplay` – Changes the partial structure display options for the current database. <sub>(was `APIEnv_ChangeStructureDisplayID`)</sub>
-- ✅ `ACAPI_Navigator_ChangeViewOptions` – Changes the actual model view options. <sub>(was `APIEnv_ChangeViewOptionsID`)</sub> — [#1910](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1910 "Fix switching model view option combinations (#1873)")
+- ✅ `ACAPI_Navigator_ChangeViewOptions` – Changes the actual model view options. <sub>(was `APIEnv_ChangeViewOptionsID`)</sub>
 - ✅ `ACAPI_Navigator_CloneProjectMapItemToViewMap` – Clones a Navigator item from the project map to view map. <sub>(was `APINavigator_CloneProjectMapItemToViewMapID`)</sub>
 - ✅ `ACAPI_Navigator_CreateLayout` – Creates a new layout. <sub>(was `APIEnv_CreateLayoutID`)</sub>
 - ✅ `ACAPI_Navigator_CreateNavigatorVPItem` – Creates a new Navigator viewpoint root, group or leaf node in the Project Map. <sub>(was `APINavigator_CreateNavigatorVPItemID`)</sub>
@@ -493,10 +493,10 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Navigator_GetStructureDisplay` – Changes the partial structure display options for the current database. <sub>(was `APIEnv_GetStructureDisplayID`)</sub>
 - ✅ `ACAPI_Navigator_GetSubSet` – Retrieves the Subset settings of the given Layout Subset. <sub>(was `APIDb_GetSubSetID`)</sub>
 - ✅ `ACAPI_Navigator_GetSubSetDefault` – Retrieves the default Subset settings of the Layout Book. <sub>(was `APIDb_GetSubSetDefaultID`)</sub>
-- ✅ `ACAPI_Navigator_GetViewOptions` – Returns the actual view display options. <sub>(was `APIEnv_GetViewOptionsID`)</sub> — [#1910](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1910 "Fix switching model view option combinations (#1873)")
-- ✅ `ACAPI_Navigator_ModelViewOptions_Get` <sub>AC27–30</sub> – Get an API_ModelViewOptionsType by index. — [#1910](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1910 "Fix switching model view option combinations (#1873)")
+- ✅ `ACAPI_Navigator_GetViewOptions` – Returns the actual view display options. <sub>(was `APIEnv_GetViewOptionsID`)</sub>
+- ✅ `ACAPI_Navigator_ModelViewOptions_Get` <sub>AC27–30</sub> – Get an API_ModelViewOptionsType by index.
 - ✅ `ACAPI_Navigator_ModelViewOptions_GetNum` <sub>AC27–30</sub> – Get the number of API_ModelViewOptions.
-- ✅ `ACAPI_Navigator_ModelViewOptions_Search` <sub>AC27–30</sub> – Search an API_ModelViewOptions_Head by name or index. — [#1910](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1910 "Fix switching model view option combinations (#1873)")
+- ✅ `ACAPI_Navigator_ModelViewOptions_Search` <sub>AC27–30</sub> – Search an API_ModelViewOptions_Head by name or index.
 - ✅ `ACAPI_Navigator_NewNavigatorView` – Creates a new Navigator View. <sub>(was `APINavigator_NewNavigatorViewID`)</sub>
 - ➖ `ACAPI_Navigator_RegisterCallbackInterface` – Registers an object with virtual functions that are implemented by the AddOn. These are called by Archicad when certain events happen relating to the navigator items that are registered by the AddOn. <sub>(was `APINavigator_RegisterCallbackInterfaceID`)</sub> *(event handlers, not commands)*
 - ✅ `ACAPI_Navigator_SearchNavigatorItem` – Searches the navigator items of the requested database. <sub>(was `APINavigator_SearchNavigatorItemID`)</sub>
@@ -518,7 +518,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ➖ `ACAPI_DisposeRoomRelationHdls` – Frees the memory occupied by all allocated room relation handles. *(memory management)*
 - ➖ `ACAPI_DisposeWallRelationHdls` – Frees the memory occupied by all allocated wall relation handles. *(memory management)*
 - ➖ `ACAPI_FreeCWContourPtr` – Frees the curtain wall contour pointer. *(memory management)*
-- ➖ `ACAPI_FreeGDLModelViewOptionsPtr` – Frees the GDL model view options pointer. — [#1910](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1910 "Fix switching model view option combinations (#1873)") *(memory management)*
+- ➖ `ACAPI_FreeGDLModelViewOptionsPtr` – Frees the GDL model view options pointer. *(memory management)*
 - ➖ `ACAPI_GetExtensionInstance` – Returns the HINSTANCE of the add-on's DLL. *(add-on infrastructure)*
 - ➖ `ACAPI_GetMainWindow` – Returns the application's main window where the add-on works. *(user interface)*
 - ➖ `ACAPI_GetOwnLocation` – Returns the location of the add-on in the file system. *(add-on infrastructure)*
