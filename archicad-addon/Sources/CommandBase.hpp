@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <map>
+#include <mutex>
 
 enum class CommonSchema
 {
@@ -42,6 +43,10 @@ public:
 
 private:
     CommonSchema mCommonSchema;
+    // Only the common definitions the schemas reference (see GetCommonSchemaDefinitionsFor),
+    // worked out on the first GetSchemaDefinitions call.
+    mutable std::once_flag mSchemaDefinitionsOnce;
+    mutable GS::Optional<GS::UniString> mSchemaDefinitions;
 };
 
 GS::ObjectState CreateErrorResponse (GSErrCode errorCode, const GS::UniString& errorMessage);
