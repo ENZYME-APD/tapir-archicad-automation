@@ -1,0 +1,314 @@
+{
+  "title": "CreateObjects, ModifyObjects, CreateLamps and ModifyLamps write what they are sent, and refuse bad input without changing anything",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "an Object of the loaded library",
+      "command": "GetAvailableLibraryParts",
+      "creates": false,
+      "params": { "filterByTypeId": "Object" },
+      "save": { "objectParent": "libraryParts[0].guid" }
+    },
+    {
+      "id": "a Lamp of the loaded library",
+      "command": "GetAvailableLibraryParts",
+      "creates": false,
+      "params": { "filterByTypeId": "Lamp" },
+      "save": { "lampParent": "libraryParts[0].guid" }
+    },
+    {
+      "id": "own object and lamp library parts",
+      "command": "CreateLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          {
+            "name": "Tapir Check Object 1928",
+            "parentId": "${objectParent}",
+            "type": "Object",
+            "path": "TapirCheckObjectsLamps/Tapir Check Object 1928.gsm",
+            "a": 1.0,
+            "b": 0.5,
+            "script2D": "RECT2 0, 0, A, B",
+            "script3D": "BLOCK A, B, 0.5"
+          },
+          {
+            "name": "Tapir Check Lamp 1928",
+            "parentId": "${lampParent}",
+            "type": "Lamp",
+            "path": "TapirCheckObjectsLamps/Tapir Check Lamp 1928.gsm",
+            "a": 0.4,
+            "b": 0.4,
+            "script2D": "CIRCLE2 0, 0, A / 2",
+            "script3D": "SPHERE A / 2"
+          }
+        ],
+        "overwriteExisting": true
+      },
+      "expect": [
+        { "path": "libraryParts", "len": 2, "name": "one answer per part" },
+        { "path": "libraryParts[0].path", "exists": true, "name": "object part created" },
+        { "path": "libraryParts[1].path", "exists": true, "name": "lamp part created" }
+      ]
+    },
+    {
+      "id": "create object",
+      "command": "CreateObjects",
+      "params": {
+        "objectsData": [
+          {
+            "libraryPartName": "Tapir Check Object 1928",
+            "coordinates": { "x": 940.0, "y": 940.0, "z": 0.0 },
+            "dimensions": { "x": 1.2, "y": 0.6, "z": 0.5 },
+            "useFixSize": false,
+            "angle": 0.0,
+            "pen": 5,
+            "reflected": false
+          }
+        ]
+      },
+      "save": { "object": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "object created" }
+      ]
+    },
+    {
+      "id": "create lamp",
+      "command": "CreateLamps",
+      "params": {
+        "lampsData": [
+          {
+            "libraryPartName": "Tapir Check Lamp 1928",
+            "coordinates": { "x": 950.0, "y": 940.0, "z": 0.0 },
+            "angle": 0.0,
+            "pen": 5,
+            "reflected": false,
+            "lightIsOn": true
+          }
+        ]
+      },
+      "save": { "lamp": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "lamp created" }
+      ]
+    },
+    {
+      "id": "bad object to create",
+      "command": "CreateObjects",
+      "params": {
+        "objectsData": [
+          {
+            "libraryPartName": "Tapir Check No Such Part 1928",
+            "coordinates": { "x": 945.0, "y": 940.0, "z": 0.0 }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements", "len": 1, "name": "one answer" },
+        { "path": "elements[0].elementId", "exists": false, "name": "missing library part creates nothing" },
+        { "path": "elements[0].error.message", "exists": true, "name": "missing library part answers an error" }
+      ]
+    },
+    {
+      "id": "bad lamp to create",
+      "command": "CreateLamps",
+      "params": {
+        "lampsData": [
+          {
+            "libraryPartName": "Tapir Check No Such Part 1928",
+            "coordinates": { "x": 955.0, "y": 940.0, "z": 0.0 }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements", "len": 1, "name": "one answer" },
+        { "path": "elements[0].elementId", "exists": false, "name": "missing library part creates nothing" },
+        { "path": "elements[0].error.message", "exists": true, "name": "missing library part answers an error" }
+      ]
+    },
+    {
+      "id": "read as created",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${object}" } },
+          { "elementId": { "guid": "${lamp}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Object", "name": "first is an Object" },
+        { "path": "detailsOfElements[0].details.libPart.name", "eq": "Tapir Check Object 1928", "name": "object of the named library part" },
+        { "path": "detailsOfElements[0].details.origin.x", "approx": 940.0, "name": "object x as created" },
+        { "path": "detailsOfElements[0].details.origin.y", "approx": 940.0, "name": "object y as created" },
+        { "path": "detailsOfElements[0].details.dimensions.x", "approx": 1.2, "name": "object width as created" },
+        { "path": "detailsOfElements[0].details.dimensions.y", "approx": 0.6, "name": "object depth as created" },
+        { "path": "detailsOfElements[0].details.useFixSize", "eq": false, "name": "object not fixed size as created" },
+        { "path": "detailsOfElements[0].details.angle", "approx": 0.0, "name": "object angle as created" },
+        { "path": "detailsOfElements[0].details.pen", "eq": 5, "name": "object pen as created" },
+        { "path": "detailsOfElements[0].details.reflected", "eq": false, "name": "object not mirrored as created" },
+        { "path": "detailsOfElements[1].type", "eq": "Lamp", "name": "second is a Lamp" },
+        { "path": "detailsOfElements[1].details.libPart.name", "eq": "Tapir Check Lamp 1928", "name": "lamp of the named library part" },
+        { "path": "detailsOfElements[1].details.origin.x", "approx": 950.0, "name": "lamp x as created" },
+        { "path": "detailsOfElements[1].details.origin.y", "approx": 940.0, "name": "lamp y as created" },
+        { "path": "detailsOfElements[1].details.angle", "approx": 0.0, "name": "lamp angle as created" },
+        { "path": "detailsOfElements[1].details.pen", "eq": 5, "name": "lamp pen as created" },
+        { "path": "detailsOfElements[1].details.reflected", "eq": false, "name": "lamp not mirrored as created" },
+        { "path": "detailsOfElements[1].details.lightIsOn", "eq": true, "name": "lamp light on as created" }
+      ]
+    },
+    {
+      "id": "modify object",
+      "command": "ModifyObjects",
+      "creates": false,
+      "params": {
+        "objectsWithDetails": [
+          {
+            "elementId": { "guid": "${object}" },
+            "coordinates": { "x": 941.0, "y": 942.0, "z": 0.0 },
+            "dimensions": { "x": 1.6, "y": 0.8, "z": 0.5 },
+            "angle": 0.5,
+            "pen": 7,
+            "reflected": true
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result" },
+        { "path": "executionResults[0].success", "eq": true, "name": "object modified" }
+      ]
+    },
+    {
+      "id": "modify lamp",
+      "command": "ModifyLamps",
+      "creates": false,
+      "params": {
+        "lampsWithDetails": [
+          {
+            "elementId": { "guid": "${lamp}" },
+            "coordinates": { "x": 951.0, "y": 943.0, "z": 0.0 },
+            "angle": 1.0,
+            "pen": 7,
+            "reflected": true,
+            "lightIsOn": false
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result" },
+        { "path": "executionResults[0].success", "eq": true, "name": "lamp modified" }
+      ]
+    },
+    {
+      "id": "read back the changes",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${object}" } },
+          { "elementId": { "guid": "${lamp}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.origin.x", "approx": 941.0, "name": "object moved in x" },
+        { "path": "detailsOfElements[0].details.origin.y", "approx": 942.0, "name": "object moved in y" },
+        { "path": "detailsOfElements[0].details.dimensions.x", "approx": 1.6, "name": "object width changed" },
+        { "path": "detailsOfElements[0].details.dimensions.y", "approx": 0.8, "name": "object depth changed" },
+        { "path": "detailsOfElements[0].details.angle", "approx": 0.5, "name": "object rotated" },
+        { "path": "detailsOfElements[0].details.pen", "eq": 7, "name": "object pen changed" },
+        { "path": "detailsOfElements[0].details.reflected", "eq": true, "name": "object mirrored" },
+        { "path": "detailsOfElements[0].details.libPart.name", "eq": "Tapir Check Object 1928", "name": "object keeps its library part" },
+        { "path": "detailsOfElements[1].details.origin.x", "approx": 951.0, "name": "lamp moved in x" },
+        { "path": "detailsOfElements[1].details.origin.y", "approx": 943.0, "name": "lamp moved in y" },
+        { "path": "detailsOfElements[1].details.angle", "approx": 1.0, "name": "lamp rotated" },
+        { "path": "detailsOfElements[1].details.pen", "eq": 7, "name": "lamp pen changed" },
+        { "path": "detailsOfElements[1].details.reflected", "eq": true, "name": "lamp mirrored" },
+        { "path": "detailsOfElements[1].details.lightIsOn", "eq": false, "name": "lamp light switched off" }
+      ]
+    },
+    {
+      "id": "bad object input",
+      "command": "ModifyObjects",
+      "creates": false,
+      "params": {
+        "objectsWithDetails": [
+          {
+            "elementId": { "guid": "${object}" },
+            "pen": 9,
+            "lineTypeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }
+          },
+          {
+            "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "pen": 9
+          },
+          {
+            "elementId": { "guid": "${lamp}" },
+            "pen": 9
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": false, "name": "nonexistent line type refused" },
+        { "path": "executionResults[0].error.message", "exists": true, "name": "line type error has a message" },
+        { "path": "executionResults[1].success", "eq": false, "name": "nonexistent element refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "a lamp refused" }
+      ]
+    },
+    {
+      "id": "bad lamp input",
+      "command": "ModifyLamps",
+      "creates": false,
+      "params": {
+        "lampsWithDetails": [
+          {
+            "elementId": { "guid": "${lamp}" },
+            "pen": 9,
+            "surfaceId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }
+          },
+          {
+            "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "pen": 9
+          },
+          {
+            "elementId": { "guid": "${object}" },
+            "pen": 9
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": false, "name": "nonexistent surface refused" },
+        { "path": "executionResults[0].error.message", "exists": true, "name": "surface error has a message" },
+        { "path": "executionResults[1].success", "eq": false, "name": "nonexistent element refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "an object refused" }
+      ]
+    },
+    {
+      "id": "bad input changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${object}" } },
+          { "elementId": { "guid": "${lamp}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.pen", "eq": 7, "name": "object pen unchanged" },
+        { "path": "detailsOfElements[1].details.pen", "eq": 7, "name": "lamp pen unchanged" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteEmbeddedLibraryItems",
+      "params": {
+        "embeddedLibraryItems": [
+          { "path": "TapirCheckObjectsLamps" }
+        ]
+      }
+    }
+  ]
+}
