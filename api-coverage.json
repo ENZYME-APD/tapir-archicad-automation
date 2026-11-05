@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-05 16:44 UTC",
+ "generatedAt": "2026-11-05 16:58 UTC",
  "versions": [
   25,
   26,
@@ -6843,7 +6843,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1914,
+     "title": "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_ChangeDefaultsExt",
@@ -7029,6 +7034,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1914,
+     "title": "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found"
+    },
     {
      "number": 1580,
      "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
@@ -7325,6 +7334,10 @@
    ],
    "issues": [
     {
+     "number": 1914,
+     "title": "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found"
+    },
+    {
      "number": 1580,
      "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
     },
@@ -7549,7 +7562,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1914,
+     "title": "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetDefaultsExt",
@@ -7898,6 +7916,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1914,
+     "title": "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found"
+    },
     {
      "number": 1580,
      "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
