@@ -800,6 +800,36 @@ static GS::ObjectState DeleteProjectInfoField (const API_Guid& fieldGuid)
     return CreateSuccessfulExecutionResult ();
 }
 
+// The shared body of the commands that change a list of Project Info groups or fields one by one,
+// in one undo step named after the command: reads the list, checks the id of each item and passes
+// the item with its guid to applyItem, which returns the execution result of the item.
+template <typename ApplyItemFunc>
+static GS::ObjectState ApplyToProjectInfoItems (const GS::ObjectState& parameters, const char* commandName, const char* listName, const char* idName, const ApplyItemFunc& applyItem)
+{
+    GS::Array<GS::ObjectState> items;
+    if (!parameters.Get (listName, items) || items.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString (listName) + " is missing or empty.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand (commandName, [&]() -> GSErrCode {
+        for (const GS::ObjectState& item : items) {
+            const API_Guid guid = GetGuidFromArrayItem (idName, item);
+            if (guid == APINULLGuid) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString ("Missing or invalid '") + idName + "' parameter."));
+                continue;
+            }
+
+            executionResults (applyItem (item, guid));
+        }
+        return NoError;
+    });
+
+    return response;
+}
+
 #endif
 
 GetNoteAutotextsCommand::GetNoteAutotextsCommand () :
@@ -1476,41 +1506,21 @@ GS::Optional<GS::UniString> RenameProjectInfoFieldsCommand::GetRawResponseSchema
 GS::ObjectState RenameProjectInfoFieldsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_3000
-    GS::Array<GS::ObjectState> projectInfoFields;
-    if (!parameters.Get ("projectInfoFields", projectInfoFields) || projectInfoFields.IsEmpty ()) {
-        return CreateErrorResponse (APIERR_BADPARS, "projectInfoFields is missing or empty.");
-    }
-
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-
-    ACAPI_CallUndoableCommand ("RenameProjectInfoFields", [&]() -> GSErrCode {
-        for (const GS::ObjectState& projectInfoField : projectInfoFields) {
-            const API_Guid fieldGuid = GetGuidFromArrayItem ("projectInfoFieldId", projectInfoField);
-            if (fieldGuid == APINULLGuid) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'projectInfoFieldId' parameter."));
-                continue;
-            }
-
+    return ApplyToProjectInfoItems (parameters, "RenameProjectInfoFields", "projectInfoFields", "projectInfoFieldId",
+        [] (const GS::ObjectState& projectInfoField, const API_Guid& fieldGuid) -> GS::ObjectState {
             GS::UniString name;
             if (!projectInfoField.Get ("name", name) || name.IsEmpty ()) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "name is missing or empty."));
-                continue;
+                return CreateFailedExecutionResult (APIERR_BADPARS, "name is missing or empty.");
             }
 
             const GSErrCode err = ACAPI_ProjectInfo_RenameField (fieldGuid, name);
             if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to rename the project info field",
-                    "the field is a fixed (built-in) field and cannot be renamed")));
-                continue;
+                return CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to rename the project info field",
+                    "the field is a fixed (built-in) field and cannot be renamed"));
             }
 
-            executionResults (CreateSuccessfulExecutionResult ());
-        }
-        return NoError;
-    });
-
-    return response;
+            return CreateSuccessfulExecutionResult ();
+        });
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 30 or newer.");
@@ -1890,40 +1900,20 @@ GS::Optional<GS::UniString> RenameProjectInfoGroupsCommand::GetRawResponseSchema
 GS::ObjectState RenameProjectInfoGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_3000
-    GS::Array<GS::ObjectState> projectInfoGroups;
-    if (!parameters.Get ("projectInfoGroups", projectInfoGroups) || projectInfoGroups.IsEmpty ()) {
-        return CreateErrorResponse (APIERR_BADPARS, "projectInfoGroups is missing or empty.");
-    }
-
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-
-    ACAPI_CallUndoableCommand ("RenameProjectInfoGroups", [&]() -> GSErrCode {
-        for (const GS::ObjectState& projectInfoGroup : projectInfoGroups) {
-            const API_Guid groupGuid = GetGuidFromArrayItem ("projectInfoGroupId", projectInfoGroup);
-            if (groupGuid == APINULLGuid) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'projectInfoGroupId' parameter."));
-                continue;
-            }
-
+    return ApplyToProjectInfoItems (parameters, "RenameProjectInfoGroups", "projectInfoGroups", "projectInfoGroupId",
+        [] (const GS::ObjectState& projectInfoGroup, const API_Guid& groupGuid) -> GS::ObjectState {
             GS::UniString name;
             if (!projectInfoGroup.Get ("name", name) || name.IsEmpty ()) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "name is missing or empty."));
-                continue;
+                return CreateFailedExecutionResult (APIERR_BADPARS, "name is missing or empty.");
             }
 
             const GSErrCode err = ACAPI_ProjectInfo_RenameGroup (groupGuid, name);
             if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to rename the Project Info group")));
-                continue;
+                return CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to rename the Project Info group"));
             }
 
-            executionResults (CreateSuccessfulExecutionResult ());
-        }
-        return NoError;
-    });
-
-    return response;
+            return CreateSuccessfulExecutionResult ();
+        });
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 30 or newer.");
@@ -1980,35 +1970,16 @@ GS::Optional<GS::UniString> DeleteProjectInfoGroupsCommand::GetRawResponseSchema
 GS::ObjectState DeleteProjectInfoGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_3000
-    GS::Array<GS::ObjectState> projectInfoGroups;
-    if (!parameters.Get ("projectInfoGroups", projectInfoGroups) || projectInfoGroups.IsEmpty ()) {
-        return CreateErrorResponse (APIERR_BADPARS, "projectInfoGroups is missing or empty.");
-    }
-
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-
-    ACAPI_CallUndoableCommand ("DeleteProjectInfoGroups", [&]() -> GSErrCode {
-        for (const GS::ObjectState& projectInfoGroup : projectInfoGroups) {
-            const API_Guid groupGuid = GetGuidFromArrayItem ("projectInfoGroupId", projectInfoGroup);
-            if (groupGuid == APINULLGuid) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'projectInfoGroupId' parameter."));
-                continue;
-            }
-
+    return ApplyToProjectInfoItems (parameters, "DeleteProjectInfoGroups", "projectInfoGroups", "projectInfoGroupId",
+        [] (const GS::ObjectState& /*projectInfoGroup*/, const API_Guid& groupGuid) -> GS::ObjectState {
             const GSErrCode err = ACAPI_ProjectInfo_DeleteGroup (groupGuid);
             if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to delete the Project Info group",
-                    "the group contains fixed (built-in) fields and cannot be deleted")));
-                continue;
+                return CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to delete the Project Info group",
+                    "the group contains fixed (built-in) fields and cannot be deleted"));
             }
 
-            executionResults (CreateSuccessfulExecutionResult ());
-        }
-        return NoError;
-    });
-
-    return response;
+            return CreateSuccessfulExecutionResult ();
+        });
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 30 or newer.");
@@ -2078,46 +2049,26 @@ GS::Optional<GS::UniString> MoveProjectInfoGroupsCommand::GetRawResponseSchema (
 GS::ObjectState MoveProjectInfoGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_3000
-    GS::Array<GS::ObjectState> projectInfoGroups;
-    if (!parameters.Get ("projectInfoGroups", projectInfoGroups) || projectInfoGroups.IsEmpty ()) {
-        return CreateErrorResponse (APIERR_BADPARS, "projectInfoGroups is missing or empty.");
-    }
-
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-
-    ACAPI_CallUndoableCommand ("MoveProjectInfoGroups", [&]() -> GSErrCode {
-        for (const GS::ObjectState& projectInfoGroup : projectInfoGroups) {
-            const API_Guid groupGuid = GetGuidFromArrayItem ("projectInfoGroupId", projectInfoGroup);
-            if (groupGuid == APINULLGuid) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'projectInfoGroupId' parameter."));
-                continue;
-            }
-
+    return ApplyToProjectInfoItems (parameters, "MoveProjectInfoGroups", "projectInfoGroups", "projectInfoGroupId",
+        [] (const GS::ObjectState& projectInfoGroup, const API_Guid& groupGuid) -> GS::ObjectState {
             // No 'beforeProjectInfoGroupId' is "to the end", which the API takes as std::nullopt;
             // a given but invalid one is an error, not a silent move to the end.
             std::optional<API_Guid> beforeGroupGuid;
             if (projectInfoGroup.Contains ("beforeProjectInfoGroupId")) {
                 const API_Guid beforeGuid = GetGuidFromArrayItem ("beforeProjectInfoGroupId", projectInfoGroup);
                 if (beforeGuid == APINULLGuid) {
-                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Invalid 'beforeProjectInfoGroupId' parameter."));
-                    continue;
+                    return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid 'beforeProjectInfoGroupId' parameter.");
                 }
                 beforeGroupGuid = beforeGuid;
             }
 
             const GSErrCode err = ACAPI_ProjectInfo_MoveGroup (groupGuid, beforeGroupGuid);
             if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to move the Project Info group")));
-                continue;
+                return CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to move the Project Info group"));
             }
 
-            executionResults (CreateSuccessfulExecutionResult ());
-        }
-        return NoError;
-    });
-
-    return response;
+            return CreateSuccessfulExecutionResult ();
+        });
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 30 or newer.");
