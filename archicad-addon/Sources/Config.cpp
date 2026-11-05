@@ -16,6 +16,7 @@ Config::Repository Config::Repository::FromOS (const GS::ObjectState& os) {
     os.Get ("excludeFromDownloadPattern", repo.excludeFromDownloadPattern);
     os.Get ("includePattern", repo.includePattern);
     os.Get ("excludePattern", repo.excludePattern);
+    os.Get ("uvProject", repo.uvProject);
     return repo;
 }
 
@@ -28,7 +29,8 @@ GS::ObjectState Config::Repository::ToOS () const {
         "token", token,
         "excludeFromDownloadPattern", excludeFromDownloadPattern,
         "includePattern", includePattern,
-        "excludePattern", excludePattern
+        "excludePattern", excludePattern,
+        "uvProject", uvProject
     };
 }
 
@@ -38,6 +40,7 @@ Config::LocalFolder Config::LocalFolder::FromOS (const GS::ObjectState& os) {
     os.Get ("path", folder.path);
     os.Get ("includePattern", folder.includePattern);
     os.Get ("excludePattern", folder.excludePattern);
+    os.Get ("uvProject", folder.uvProject);
     return folder;
 }
 
@@ -46,7 +49,8 @@ GS::ObjectState Config::LocalFolder::ToOS () const {
         "displayName", displayName,
         "path", path,
         "includePattern", includePattern,
-        "excludePattern", excludePattern
+        "excludePattern", excludePattern,
+        "uvProject", uvProject
     };
 }
 
