@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-05 09:44 UTC",
+ "generatedAt": "2026-11-05 11:15 UTC",
  "versions": [
   25,
   26,
@@ -5692,10 +5692,6 @@
    "reason": "memory management",
    "pullRequests": [
     {
-     "number": 1899,
-     "title": "CreateDoors/CreateWindows: set libraryPartName on the element, not the tool defaults"
-    },
-    {
      "number": 1703,
      "title": "Add CreateSkylights: place skylights in roofs and shells"
     },
@@ -6863,18 +6859,8 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1899,
-     "title": "CreateDoors/CreateWindows: set libraryPartName on the element, not the tool defaults"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1895,
-     "title": "CreateDoors with libraryPartName: parameters unreadable, and the Door tool defaults stay broken"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Element_ChangeDefaultsExt",
@@ -7096,10 +7082,6 @@
     }
    ],
    "issues": [
-    {
-     "number": 1895,
-     "title": "CreateDoors with libraryPartName: parameters unreadable, and the Door tool defaults stay broken"
-    },
     {
      "number": 1377,
      "title": "Place Detail and Worksheet markers, and change their settings"
@@ -11857,12 +11839,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1899,
-     "title": "CreateDoors/CreateWindows: set libraryPartName on the element, not the tool defaults"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11931,12 +11908,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1899,
-     "title": "CreateDoors/CreateWindows: set libraryPartName on the element, not the tool defaults"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12061,12 +12033,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1899,
-     "title": "CreateDoors/CreateWindows: set libraryPartName on the element, not the tool defaults"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12368,12 +12335,7 @@
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
     }
    ],
-   "issues": [
-    {
-     "number": 1895,
-     "title": "CreateDoors with libraryPartName: parameters unreadable, and the Door tool defaults stay broken"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_GetSect_2DDrawHdl",
@@ -12575,12 +12537,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1899,
-     "title": "CreateDoors/CreateWindows: set libraryPartName on the element, not the tool defaults"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12744,10 +12701,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1899,
-     "title": "CreateDoors/CreateWindows: set libraryPartName on the element, not the tool defaults"
-    },
     {
      "number": 1703,
      "title": "Add CreateSkylights: place skylights in roofs and shells"
