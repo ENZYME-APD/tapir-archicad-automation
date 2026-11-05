@@ -86,7 +86,12 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 "mepSystemId ({\"guid\": ...}), shape (Rectangular, Circular, Oval or UShape), width, height " +
                 "(ventilation and cable carrier) and diameter (piping), in meters. Optional.");
 
-            SetOptionality(new[] { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 });
+            InIntegers(
+                "FloorIndices",
+                "Home story index of each element. The position stays absolute; a story that does not exist " +
+                "gives an error for the element (input only 1 to use the same story for all). Optional.");
+
+            SetOptionality(new[] { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 });
         }
 
         protected override void AddOutputs()
@@ -129,12 +134,15 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             directions = directions ?? new List<Vector3d>();
             da.TryGetList(4, out List<Vector3d> rotations);
             rotations = rotations ?? new List<Vector3d>();
+            da.TryGetList(12, out List<int> floorIndices);
+            floorIndices = floorIndices ?? new List<int>();
 
             foreach (var pair in new (string Name, int Count)[]
                      {
                          ("Domains", domains.Count),
                          ("OrientationDirections", directions.Count),
-                         ("OrientationRotations", rotations.Count)
+                         ("OrientationRotations", rotations.Count),
+                         ("FloorIndices", floorIndices.Count)
                      })
             {
                 if (pair.Count > 1 &&
@@ -206,6 +214,10 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 if (ports.Count > 0)
                 {
                     item["ports"] = ports[ports.Count == 1 ? 0 : i].DeepClone();
+                }
+                if (floorIndices.Count > 0)
+                {
+                    item["floorIndex"] = floorIndices[floorIndices.Count == 1 ? 0 : i];
                 }
                 items.Add(item);
             }

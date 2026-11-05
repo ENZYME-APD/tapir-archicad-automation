@@ -873,6 +873,28 @@ GS::ObjectState MergeElementsCommand::Execute (const GS::ObjectState& parameters
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to merge the elements: every element must be an existing construction element of the current database.");
     }
+
+    // Archicad can return NoError without recording any merge (#1863), so read the
+    // merges back: success means at least two of the given elements are merged.
+    bool anyMerged = false;
+    for (const API_Guid& guid : guids) {
+        GS::Array<API_Guid> merged;
+        if (ACAPI_Element_Merge_GetMergedElements (guid, &merged) != NoError) {
+            continue;
+        }
+        for (const API_Guid& m : merged) {
+            if (m != guid && guids.Contains (m)) {
+                anyMerged = true;
+                break;
+            }
+        }
+        if (anyMerged) {
+            break;
+        }
+    }
+    if (!anyMerged) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad reported no error, but no merge was established between the given elements (GetMergedElements reads none). Archicad decides which elements and type combinations it merges.");
+    }
     return CreateSuccessfulExecutionResult ();
 }
 
