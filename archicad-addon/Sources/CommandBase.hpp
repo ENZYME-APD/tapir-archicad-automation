@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <map>
+#include <mutex>
 
 enum class CommonSchema
 {
@@ -42,6 +43,10 @@ public:
 
 private:
     CommonSchema mCommonSchema;
+    // Only the common definitions the schemas reference (see GetCommonSchemaDefinitionsFor),
+    // worked out on the first GetSchemaDefinitions call.
+    mutable std::once_flag mSchemaDefinitionsOnce;
+    mutable GS::Optional<GS::UniString> mSchemaDefinitions;
 };
 
 GS::ObjectState CreateErrorResponse (GSErrCode errorCode, const GS::UniString& errorMessage);
@@ -241,8 +246,9 @@ GS::Optional<GS::UniString> ApplyColumnVeneer (const GS::ObjectState& veneer, AP
 // Text and Label fields reference fonts by index (from 1), which is what the commands carry as
 // fontIndex. These map that index to and from the font's name (the name the Text tool's font list
 // shows), through the Font API from Archicad 27 and the Font attributes (API_FontID) before. The
-// lookup by name is exact first, then case-insensitive; NoValue when no loaded font has the name,
-// or the index none.
+// lookup by name is exact first, then case-insensitive, then Archicad's font search (as
+// GetFontsByName does, which also finds "Century Gothic" as "Century Gothic Western"); NoValue
+// when no loaded font has the name, or the index none.
 GS::Optional<short> GetFontIndexFromName (const GS::UniString& fontName);
 GS::Optional<GS::UniString> GetFontNameFromIndex (short fontIndex);
 
@@ -265,6 +271,17 @@ GSErrCode ExecuteActionForEachDatabase (
     const std::function<GSErrCode ()>& action,
     const std::function<void ()>& actionSuccess,
     const std::function<void (GSErrCode, const GS::UniString&)>& actionFailure);
+
+// The body of the commands that take a list of ids and do one thing per id (the Delete commands):
+// in one undoable command named undoName, calls perItem with the guid under idFieldName of every
+// item of the list listFieldName of parameters. Returns {"executionResults": [...]}, one result per
+// item in input order: "<idFieldName> is missing" for an item without the id, else perItem's result.
+GS::ObjectState ExecuteForEachIdInList (
+    const GS::ObjectState& parameters,
+    const char* listFieldName,
+    const char* idFieldName,
+    const GS::UniString& undoName,
+    const std::function<GS::ObjectState (const API_Guid&)>& perItem);
 
 // The Project Map item of an independent worksheet or detail database, found by its database;
 // NoValue for any other database type or when the Project Map has no such item.

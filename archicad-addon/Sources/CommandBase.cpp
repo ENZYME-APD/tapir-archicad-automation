@@ -38,11 +38,26 @@ bool CommandBase::IsProcessWindowVisible () const
 
 GS::Optional<GS::UniString> CommandBase::GetSchemaDefinitions () const
 {
-    if (mCommonSchema == CommonSchema::Used) {
-        return GetCommonSchemaDefinitions ();
-    } else {
+    if (mCommonSchema != CommonSchema::Used) {
         return {};
     }
+
+    // Archicad checks requests against the definitions it is given, so hand it only the ones this
+    // command's schemas reference instead of the whole file. The schemas never change, so this is
+    // worked out once; call_once because Archicad may ask from more than one thread.
+    std::call_once (mSchemaDefinitionsOnce, [this] () {
+        GS::Array<GS::UniString> schemas;
+        const GS::Optional<GS::UniString> inputParametersSchema = GetInputParametersSchema ();
+        if (inputParametersSchema.HasValue ()) {
+            schemas.Push (inputParametersSchema.Get ());
+        }
+        const GS::Optional<GS::UniString> responseSchema = GetResponseSchema ();
+        if (responseSchema.HasValue ()) {
+            schemas.Push (responseSchema.Get ());
+        }
+        mSchemaDefinitions = GetCommonSchemaDefinitionsFor (schemas);
+    });
+    return mSchemaDefinitions;
 }
 
 GS::Optional<GS::UniString> CommandBase::GetInputParametersSchema () const
@@ -1416,7 +1431,37 @@ GS::Optional<short> GetFontIndexFromName (const GS::UniString& fontName)
         }
     }
 
-    return caseInsensitiveMatch;
+    if (caseInsensitiveMatch.HasValue ()) {
+        return caseInsensitiveMatch;
+    }
+
+    // Last, Archicad's own font search, as GetFontsByName uses: it also resolves a family name
+    // ("Century Gothic") to the font Archicad lists with its script ("Century Gothic Western", or
+    // "Century Gothic Occidental" in Spanish), so scripts need not know the language's suffix
+    // (issue #1824). Fonts are their own API from Archicad 27 and attributes (API_FontID) before.
+    GS::UniString nameToSearch = fontName;
+#ifdef ServerMainVers_2700
+    API_FontType font = {};
+    font.head.uniStringNamePtr = &nameToSearch;
+    if (ACAPI_Font_SearchFont (font) != NoError) {
+        return GS::NoValue;
+    }
+    const short foundIndex = static_cast<short> (font.head.index);
+#else
+    API_Attr_Head attrHead = {};
+    attrHead.typeID = API_FontID;
+    attrHead.uniStringNamePtr = &nameToSearch;
+    if (ACAPI_Attribute_Search (&attrHead) != NoError) {
+        return GS::NoValue;
+    }
+    const short foundIndex = static_cast<short> (GetAttributeIndex (attrHead.index));
+#endif
+
+    // Only an index that names a loaded font is returned.
+    if (!GetFontNameFromIndex (foundIndex).HasValue ()) {
+        return GS::NoValue;
+    }
+    return foundIndex;
 }
 
 const DatabaseIdResolver& DatabaseIdResolver::Instance ()
@@ -1489,6 +1534,36 @@ GSErrCode ExecuteActionForEachDatabase (
         return err;
     }
     return NoError;
+}
+
+GS::ObjectState ExecuteForEachIdInList (
+    const GS::ObjectState& parameters,
+    const char* listFieldName,
+    const char* idFieldName,
+    const GS::UniString& undoName,
+    const std::function<GS::ObjectState (const API_Guid&)>& perItem)
+{
+    GS::Array<GS::ObjectState> items;
+    parameters.Get (listFieldName, items);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand (undoName, [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : items) {
+            const GS::ObjectState* id = item.Get (idFieldName);
+            if (id == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString (idFieldName) + " is missing"));
+                continue;
+            }
+
+            executionResults (perItem (GetGuidFromObjectState (*id)));
+        }
+
+        return NoError;
+    });
+
+    return response;
 }
 
 void GetDetailMarkerNameAndId (const API_Element& element, GS::UniString& name, GS::UniString& id)

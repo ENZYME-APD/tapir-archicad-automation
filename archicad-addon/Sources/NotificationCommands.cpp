@@ -10,6 +10,7 @@
 #include "IChannelX.hpp"
 #include "ObjectStateJSONConversion.hpp"
 
+#include "ApplicationCommands.hpp"
 #include "MigrationHelper.hpp"
 
 static
@@ -70,6 +71,8 @@ std::map<GS::UniString, AddElementNotificationClientCommand::Client> AddElementN
 bool AddElementNotificationClientCommand::hasClientToNotifyOnNew = false;
 bool AddElementNotificationClientCommand::hasClientToNotifyOnModification = false;
 bool AddElementNotificationClientCommand::hasClientToNotifyOnReservationChanges = false;
+bool AddElementNotificationClientCommand::hasClientToNotifyOnSelectionChange = false;
+bool AddElementNotificationClientCommand::hasClientToNotifyOnAttributeReplacement = false;
 std::unique_ptr<AddElementNotificationClientCommand::EventQueue> AddElementNotificationClientCommand::queuedEvents;
 GS::Thread AddElementNotificationClientCommand::messageSenderThread;
 
@@ -117,11 +120,27 @@ GS::Optional<GS::UniString> AddElementNotificationClientCommand::GetInputParamet
             },
             "notifyOnModificationOfAnElement": {
                 "type": "boolean",
-                "description": "Notify on modification/deletion of an element. Optional parameter, by default true."
+                "description": "Notify on modification/deletion of an element. The observed elements are the ones ACAPI_Element_GetElemList (API_ZombieElemID) returns when the first client asking for these notifications is registered, and every element created after that. Optional parameter, by default true."
             },
             "notifyOnReservationChanges": {
                 "type": "boolean",
                 "description": "Notify on reservation changes of an element. Optional parameter, by default true."
+            },
+            "notifyOnSelectionChange": {
+                "type": "boolean",
+                "description": "Notify when the selection changes. The message is {\"selectedElements\": [...]}: the whole current selection, each item an elementId as in the response of GetSelectedElements, an empty list when nothing is selected. Optional parameter, by default false."
+            },
+            "notifyOnWindowChange": {
+                "type": "boolean",
+                "description": "Notify when the current (active) window changes or the user switches to another story. The message is {\"windowChanged\": {\"event\": \"Window\" or \"Floor\", \"windowType\": ..., \"databaseId\": ..., \"storyIndex\": ...}}: windowType and databaseId describe the new current window as in the response of GetCurrentWindowType (databaseId is missing when that response has none), storyIndex is the active story, missing when it cannot be read. Optional parameter, by default false."
+            },
+            "notifyOnProjectEvents": {
+                "type": "boolean",
+                "description": "Notify on project events. The message is {\"projectEvent\": ...}, one of \"New\", \"NewAndReset\", \"Open\", \"Close\", \"Quit\", \"SendChanges\" (a Teamwork send is about to start) and \"ReceiveChanges\" (Teamwork changes were received). The client stays registered when the project is closed or another one is opened. Optional parameter, by default false."
+            },
+            "notifyOnAttributeReplacement": {
+                "type": "boolean",
+                "description": "Notify when attributes are deleted and replaced by other attributes of the same type (for example Delete and Replace in the Attribute Manager). The message is {\"replacedAttributes\": [{\"attributeType\": ..., \"oldIndex\": ..., \"newIndex\": ..., \"newAttributeId\": ...}, ...]}: attributeType is one of the type names of GetAttributesByType (\"Layer\", \"Line\", \"Fill\", \"Composite\", \"Surface\", \"LayerCombination\", \"ZoneCategory\", \"Profile\", \"PenTable\", \"MEPSystem\", \"OperationProfile\", \"BuildingMaterial\", or \"Unknown\"), oldIndex is the index of the replaced attribute and newIndex the index of the attribute that replaces it, newAttributeId is the attributeId of that attribute, missing when it cannot be found. Not available in Archicad 25: setting it to true there fails. Optional parameter, by default false."
             }
         },
         "additionalProperties": false,
@@ -161,17 +180,43 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
     bool notifyOnReservationChanges = true;
     parameters.Get ("notifyOnReservationChanges", notifyOnReservationChanges);
 
+    bool notifyOnSelectionChange = false;
+    parameters.Get ("notifyOnSelectionChange", notifyOnSelectionChange);
+
+    // Both are served by the add-on's project event handler, which is installed for the whole
+    // session (ProjectEventHandler.cpp), so nothing is installed or removed for them here.
+    bool notifyOnWindowChange = false;
+    parameters.Get ("notifyOnWindowChange", notifyOnWindowChange);
+
+    bool notifyOnProjectEvents = false;
+    parameters.Get ("notifyOnProjectEvents", notifyOnProjectEvents);
+
+    bool notifyOnAttributeReplacement = false;
+    parameters.Get ("notifyOnAttributeReplacement", notifyOnAttributeReplacement);
+#ifndef ServerMainVers_2600
+    // Refused before the client is registered or changed, so a failed call changes nothing.
+    if (notifyOnAttributeReplacement) {
+        return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "notifyOnAttributeReplacement is not available in Archicad 25.");
+    }
+#endif
+
     const GS::UniString connectionUrlStr = GS::UniString::Printf ("http://%T:%d/", host.ToPrintf (), port);
     const IO::URI::URI connectionUrl (connectionUrlStr);
-    auto result = clients.emplace(std::piecewise_construct, std::forward_as_tuple(connectionUrlStr), std::forward_as_tuple(connectionUrl, notifyOnNew, notifyOnModification, notifyOnReservationChanges));
+    auto result = clients.emplace(std::piecewise_construct, std::forward_as_tuple(connectionUrlStr), std::forward_as_tuple(connectionUrl, notifyOnNew, notifyOnModification, notifyOnReservationChanges, notifyOnSelectionChange, notifyOnWindowChange, notifyOnProjectEvents, notifyOnAttributeReplacement));
     if (!result.second) {
         result.first->second.notifyOnNew = notifyOnNew;
         result.first->second.notifyOnModification = notifyOnModification;
         result.first->second.notifyOnReservationChanges = notifyOnReservationChanges;
+        result.first->second.notifyOnSelectionChange = notifyOnSelectionChange;
+        result.first->second.notifyOnWindowChange = notifyOnWindowChange;
+        result.first->second.notifyOnProjectEvents = notifyOnProjectEvents;
+        result.first->second.notifyOnAttributeReplacement = notifyOnAttributeReplacement;
         // A client registered again without modification notifications may have
         // been the last one that wanted them; detach the observers in that case,
         // as RemoveElementNotificationClient does.
         DetachElementObserversIfNotNeeded ();
+        UninstallSelectionChangeHandlerIfNotNeeded ();
+        UninstallAttributeReplacementHandlerIfNotNeeded ();
     }
 
     if (notifyOnNew && !hasClientToNotifyOnNew) {
@@ -192,6 +237,18 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
         ACAPI_Notification_CatchElementReservationChange (ElementReservationChangeHandler);
         hasClientToNotifyOnReservationChanges = true;
     }
+
+    if (notifyOnSelectionChange && !hasClientToNotifyOnSelectionChange) {
+        ACAPI_Notification_CatchSelectionChange (SelectionChangeHandler);
+        hasClientToNotifyOnSelectionChange = true;
+    }
+
+#ifdef ServerMainVers_2600
+    if (notifyOnAttributeReplacement && !hasClientToNotifyOnAttributeReplacement) {
+        ACAPI_Notification_CatchAttributeReplacement (AttributeReplacementHandler);
+        hasClientToNotifyOnAttributeReplacement = true;
+    }
+#endif
 
     ACAPI_Element_InstallElementObserver (ElementEventHandlerProc);
 
@@ -219,6 +276,239 @@ AddElementNotificationClientCommand::DetachElementObserversIfNotNeeded ()
         ACAPI_Element_DetachObserver (elemId);
     }
     hasClientToNotifyOnModification = false;
+}
+
+void
+AddElementNotificationClientCommand::UninstallSelectionChangeHandlerIfNotNeeded ()
+{
+    if (!hasClientToNotifyOnSelectionChange) {
+        return;
+    }
+
+    for (const auto& kv : clients) {
+        if (kv.second.notifyOnSelectionChange) {
+            return;
+        }
+    }
+
+    ACAPI_Notification_CatchSelectionChange (nullptr);
+    hasClientToNotifyOnSelectionChange = false;
+}
+
+GSErrCode
+AddElementNotificationClientCommand::SelectionChangeHandler (const API_Neig* /*selElemNeig*/)
+{
+    // The handler only gets the last selected element, so the whole selection is read here,
+    // as GetSelectedElements does (and the DevKit's Browser_Control example in its handler).
+    API_SelectionInfo selectionInfo = {};
+    GS::Array<API_Neig> selectedNeigs;
+    const GSErrCode err = ACAPI_Selection_Get (&selectionInfo, &selectedNeigs, false);
+    // The marquee polygon handle is owned by the caller (same as the Selection_Manager DevKit example).
+    BMKillHandle (reinterpret_cast<GSHandle*> (&selectionInfo.marquee.coords));
+    if (err != NoError && err != APIERR_NOSEL) {
+        return NoError;
+    }
+
+    GS::ObjectState message;
+    const auto& elementsList = message.AddList<GS::ObjectState> ("selectedElements");
+    if (err != APIERR_NOSEL && selectionInfo.typeID != API_SelEmpty) {
+        for (const API_Neig& selectedNeig : selectedNeigs) {
+            elementsList (CreateElementIdObjectState (GetParentElemOfSectElem (selectedNeig.guid)));
+        }
+    }
+
+    // Sent at once, not queued with the element events: a selection change is not an element
+    // event, and only the current selection matters to the client.
+    for (auto& kv : clients) {
+        auto& client = kv.second;
+        if (!client.notifyOnSelectionChange) {
+            continue;
+        }
+
+        SendMessageToNotificationClient (client, message);
+    }
+
+    return NoError;
+}
+
+void
+AddElementNotificationClientCommand::UninstallAttributeReplacementHandlerIfNotNeeded ()
+{
+    if (!hasClientToNotifyOnAttributeReplacement) {
+        return;
+    }
+
+    for (const auto& kv : clients) {
+        if (kv.second.notifyOnAttributeReplacement) {
+            return;
+        }
+    }
+
+#ifdef ServerMainVers_2600
+    ACAPI_Notification_CatchAttributeReplacement (nullptr);
+#endif
+    hasClientToNotifyOnAttributeReplacement = false;
+}
+
+#ifdef ServerMainVers_2600
+
+// The attribute type names of the official GetAttributesByType command (AttributeType).
+static GS::UniString AttributeTypeToString (API_AttrTypeID typeID)
+{
+    switch (typeID) {
+        case API_LayerID:               return "Layer";
+        case API_LinetypeID:            return "Line";
+        case API_FilltypeID:            return "Fill";
+        case API_CompWallID:            return "Composite";
+        case API_MaterialID:            return "Surface";
+        case API_LayerCombID:           return "LayerCombination";
+        case API_ZoneCatID:             return "ZoneCategory";
+        case API_ProfileID:             return "Profile";
+        case API_PenTableID:            return "PenTable";
+        case API_MEPSystemID:           return "MEPSystem";
+        case API_OperationProfileID:    return "OperationProfile";
+        case API_BuildingMaterialID:    return "BuildingMaterial";
+        default:                        return "Unknown";
+    }
+}
+
+GSErrCode
+AddElementNotificationClientCommand::AttributeReplacementHandler (const API_AttributeReplaceIndexTable& table)
+{
+    GS::ObjectState message;
+    const auto& replacedAttributes = message.AddList<GS::ObjectState> ("replacedAttributes");
+    bool isEmptyMessage = true;
+    for (const auto& typeEntry : table) {
+#ifdef ServerMainVers_2800
+        const API_AttrTypeID typeID = typeEntry.key;
+        const auto& indexTable = typeEntry.value;
+#else
+        const API_AttrTypeID typeID = *typeEntry.key;
+        const auto& indexTable = *typeEntry.value;
+#endif
+        const GS::UniString typeName = AttributeTypeToString (typeID);
+        for (const auto& indexEntry : indexTable) {
+#ifdef ServerMainVers_2800
+            const API_AttributeIndex& oldIndex = indexEntry.key;
+            const API_AttributeIndex& newIndex = indexEntry.value;
+#else
+            const API_AttributeIndex& oldIndex = *indexEntry.key;
+            const API_AttributeIndex& newIndex = *indexEntry.value;
+#endif
+            GS::ObjectState replacement (
+                "attributeType", typeName,
+                "oldIndex", GetAttributeIndex (oldIndex),
+                "newIndex", GetAttributeIndex (newIndex));
+            // The replaced attribute is deleted, so only the new one has an id to report.
+            const API_Guid newAttributeGuid = GetAttributeGuidFromIndex (typeID, newIndex);
+            if (newAttributeGuid != APINULLGuid) {
+                replacement.Add ("newAttributeId", CreateAttributeIdObjectState (newAttributeGuid));
+            }
+            replacedAttributes (replacement);
+            isEmptyMessage = false;
+        }
+    }
+
+    if (isEmptyMessage) {
+        return NoError;
+    }
+
+    // Sent at once, like the selection: these are not element events.
+    for (auto& kv : clients) {
+        auto& client = kv.second;
+        if (!client.notifyOnAttributeReplacement) {
+            continue;
+        }
+
+        SendMessageToNotificationClient (client, message);
+    }
+
+    return NoError;
+}
+
+#endif
+
+static GS::Optional<GS::UniString> ProjectEventToString (API_NotifyEventID notifID)
+{
+    switch (notifID) {
+        case APINotify_New:             return GS::UniString ("New");
+        case APINotify_NewAndReset:     return GS::UniString ("NewAndReset");
+        case APINotify_Open:            return GS::UniString ("Open");
+        case APINotify_Close:           return GS::UniString ("Close");
+        case APINotify_Quit:            return GS::UniString ("Quit");
+        case APINotify_SendChanges:     return GS::UniString ("SendChanges");
+        case APINotify_ReceiveChanges:  return GS::UniString ("ReceiveChanges");
+        default:                        return GS::NoValue;
+    }
+}
+
+static GS::ObjectState CreateWindowChangedMessage (API_NotifyEventID notifID)
+{
+    GS::ObjectState windowChanged ("event", GS::UniString (notifID == APINotify_ChangeFloor ? "Floor" : "Window"));
+
+    // The same window type and databaseId as GetCurrentWindowType returns: custom add-on windows
+    // and windows without a database of their own get no databaseId.
+    API_WindowInfo windowInfo = {};
+    if (ACAPI_Window_GetCurrentWindow (&windowInfo) == NoError) {
+        windowChanged.Add ("windowType", ConvertWindowTypeToString (windowInfo.typeID));
+        if (windowInfo.typeID != APIWind_MyDrawID && windowInfo.typeID != APIWind_MyTextID) {
+            const API_Guid databaseId = DatabaseIdResolver::Instance ().GetIdOfDatabase (windowInfo);
+            if (databaseId != APINULLGuid) {
+                windowChanged.Add ("databaseId", CreateGuidObjectState (databaseId));
+            }
+        }
+    } else {
+        windowChanged.Add ("windowType", ConvertWindowTypeToString (API_ZombieWindowID));
+    }
+
+    API_StoryInfo storyInfo = {};
+    const GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    BMKillHandle (reinterpret_cast<GSHandle*> (&storyInfo.data));
+    if (err == NoError) {
+        windowChanged.Add ("storyIndex", storyInfo.actStory);
+    }
+
+    return GS::ObjectState ("windowChanged", windowChanged);
+}
+
+void
+AddElementNotificationClientCommand::ProjectEventHandler (API_NotifyEventID notifID, Int32 /*param*/)
+{
+    const bool isWindowEvent = (notifID == APINotify_ChangeWindow || notifID == APINotify_ChangeFloor);
+    const GS::Optional<GS::UniString> projectEvent = ProjectEventToString (notifID);
+    if (!isWindowEvent && !projectEvent.HasValue ()) {
+        return;
+    }
+
+    const auto wantsEvent = [isWindowEvent] (const Client& client) {
+        return isWindowEvent ? client.notifyOnWindowChange : client.notifyOnProjectEvents;
+    };
+
+    // Most of the time no client wants these events: read nothing from Archicad then.
+    bool anyClientWantsEvent = false;
+    for (const auto& kv : clients) {
+        if (wantsEvent (kv.second)) {
+            anyClientWantsEvent = true;
+            break;
+        }
+    }
+    if (!anyClientWantsEvent) {
+        return;
+    }
+
+    const GS::ObjectState message = isWindowEvent
+        ? CreateWindowChangedMessage (notifID)
+        : GS::ObjectState ("projectEvent", projectEvent.Get ());
+
+    // Sent at once, like the selection: these are not element events.
+    for (auto& kv : clients) {
+        auto& client = kv.second;
+        if (!wantsEvent (client)) {
+            continue;
+        }
+
+        SendMessageToNotificationClient (client, message);
+    }
 }
 
 void
@@ -435,6 +725,8 @@ GS::ObjectState RemoveElementNotificationClientCommand::Execute (const GS::Objec
     }
 
     AddElementNotificationClientCommand::DetachElementObserversIfNotNeeded ();
+    AddElementNotificationClientCommand::UninstallSelectionChangeHandlerIfNotNeeded ();
+    AddElementNotificationClientCommand::UninstallAttributeReplacementHandlerIfNotNeeded ();
 
     return CreateSuccessfulExecutionResult ();
 }

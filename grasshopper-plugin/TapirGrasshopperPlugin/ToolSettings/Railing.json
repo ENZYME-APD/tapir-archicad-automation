@@ -81,6 +81,46 @@
       "labelSource": null,
       "group": "Segment Settings",
       "subgroup": null
+    },
+    {
+      "get": "visibility",
+      "set": null,
+      "apiMember": "API_RailingType::visibility",
+      "apiDescription": "The story visibility of the element.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "isAutoOnStoryVisibility",
+      "set": null,
+      "apiMember": "API_RailingType::isAutoOnStoryVisibility",
+      "apiDescription": "Recalculate the story visibility automatically according to the actual elevation of the railing.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "referenceLinePen",
+      "set": null,
+      "apiMember": "API_RailingType::referenceLinePen",
+      "apiDescription": "The pen index of the Railing's reference line.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "contourPen",
+      "set": null,
+      "apiMember": "API_RailingType::contourPen",
+      "apiDescription": "The pen index of the Railing's contour line.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
     }
   ]
 }
