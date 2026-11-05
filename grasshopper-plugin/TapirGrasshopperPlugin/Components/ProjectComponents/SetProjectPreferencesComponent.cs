@@ -20,7 +20,9 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             "WorkingUnits",
             "Dimensions",
             "CalculationUnits",
-            "Zones"
+            "Zones",
+            "ReferenceLevels",
+            "FloorPlanCutPlane"
         };
 
         // The keys of the pages in the commands' JSON, in the order of TypeNames.
@@ -29,7 +31,9 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             "workingUnits",
             "dimensions",
             "calculationUnits",
-            "zones"
+            "zones",
+            "referenceLevels",
+            "floorPlanCutPlane"
         };
 
         private static Dictionary<string, object> Fields(
@@ -92,6 +96,18 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                     ["heightLimits"] = Fields("height", "reductionPercent"),
                     ["reductionPercentAboveHeightLimits"] = null
                 }
+            },
+            new Dictionary<string, object>
+            {
+                ["level1"] = Fields("name", "elevation"),
+                ["level2"] = Fields("name", "elevation")
+            },
+            new Dictionary<string, object>
+            {
+                ["cutPlaneHeight"] = null,
+                ["topLevel"] = Fields("relativeStory", "offset"),
+                ["bottomLevel"] = Fields("relativeStory", "offset"),
+                ["absoluteDisplayLimit"] = null
             }
         };
 
@@ -157,7 +173,8 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             : base(
                 "SetProjectPreferences",
                 "Changes pages of the project preferences (Options > Project Preferences): the working units, " +
-                "the dimensions, the calculation units and the zones. Each page is a JSON text, as " +
+                "the dimensions, the calculation units, the zones and the reference levels, and the Floor Plan " +
+                "Cut Plane Settings. Each page is a JSON text, as " +
                 "GetProjectPreferences returns it; only the given fields change, the rest of each page keeps its " +
                 "value. In Teamwork the PreferencesDialog lockable object set has to be reserved first " +
                 "(ReserveLockableObjectSet). Available from Archicad 27.",
@@ -189,10 +206,20 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 "heightLimits: 1 to 3 items of height and reductionPercent changing the limit of the same index, " +
                 "reductionPercentAboveHeightLimits).");
 
+            InText(
+                "ReferenceLevels",
+                "The fields of the Reference Levels page to change, as JSON: level1 and level2 (name, " +
+                "elevation from Project Zero).");
+
+            InText(
+                "FloorPlanCutPlane",
+                "The fields of the Floor Plan Cut Plane Settings to change, as JSON: cutPlaneHeight, topLevel and " +
+                "bottomLevel (relativeStory, offset), absoluteDisplayLimit.");
+
             SetOptionality(
                 new[]
                 {
-                    0, 1, 2, 3
+                    0, 1, 2, 3, 4, 5
                 });
         }
 

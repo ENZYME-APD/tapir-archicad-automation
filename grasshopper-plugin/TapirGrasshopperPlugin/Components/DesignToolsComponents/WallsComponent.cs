@@ -46,6 +46,10 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             "viewDepthLimitation", "visibility", "zoneRel"
         };
 
+        // ModifyWalls takes the start and end point, so Create updates the
+        // walls this component made before instead of making new ones.
+        protected override bool CanUpdateCreatedElements => true;
+
         protected override ISet<string> CreateKeys => CreateWallsKeys;
         protected override ISet<string> ModifyKeys => ModifyWallsKeys;
 
@@ -102,7 +106,10 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 name,
                 "Reads (Refresh), writes (Execute) and creates (Create) walls, with the settings of the " +
                 "Wall Settings dialog as one JSON object per dialog panel. A new wall starts from the Wall " +
-                "tool defaults, or from FavoriteName, and the given settings override them.")
+                "tool defaults, or from FavoriteName, and the given settings override them. Create updates the " +
+                "walls this component created before (kept in the .gh file) instead of creating new ones; a wall " +
+                "deleted since then is reported in Errors, not created again. Switch this off or forget the " +
+                "walls in the component menu.")
         {
         }
 

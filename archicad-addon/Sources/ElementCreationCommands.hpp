@@ -284,6 +284,10 @@ public:
 // and marks the changed fields in the mask. Returns an error response for an invalid field.
 GS::Optional<GS::ObjectState> ApplyZoneSettings (const GS::ObjectState& details, API_Element& element, API_Element& mask);
 
+// Called after the ACAPI_Element_Change of ApplyZoneSettings' fields: writes topOffset again
+// when Archicad replaced it while linking the top of the zone to a story in the same change.
+GSErrCode ReapplyZoneTopOffset (const GS::ObjectState& details, const API_Guid& zoneGuid);
+
 class MeasureTextsCommand : public CommandBase
 {
 public:

@@ -113,15 +113,17 @@ GS::ObjectState GetTeamworkProjectInfoCommand::Execute (const GS::ObjectState& /
         return CreateErrorResponse (err, "Failed to retrieve project information. Check the opened project!");
     }
 
+    // ACAPI_Teamwork_HasConnection tells that the project is a Teamwork project, which is
+    // what the DevKit recommends for this check (the teamwork flag of the project info says
+    // the same); ACAPI_Teamwork_IsOnline tells whether this client works online with the server.
+    const bool isTeamwork = projectInfo.teamwork || ACAPI_Teamwork_HasConnection ();
     GS::ObjectState response;
-    response.Add ("isTeamwork", projectInfo.teamwork);
-    if (!projectInfo.teamwork) {
+    response.Add ("isTeamwork", isTeamwork);
+    if (!isTeamwork) {
         response.Add ("isOnline", false);
         return response;
     }
 
-    // ACAPI_Teamwork_HasConnection only tells that the project is a Teamwork project;
-    // ACAPI_Teamwork_IsOnline tells whether this client works online with the server.
     response.Add ("isOnline", ACAPI_Teamwork_IsOnline ());
     response.Add ("userId", projectInfo.userId);
 
@@ -144,6 +146,71 @@ GS::ObjectState GetTeamworkProjectInfoCommand::Execute (const GS::ObjectState& /
     }
 
     return response;
+}
+
+// ACAPI_Teamwork_ReserveElements and ACAPI_Teamwork_ReleaseElements return NoError for GUIDs that
+// are not elements (navigator items, databases, layout subsets, ...) and do nothing with them, so
+// the GUIDs are checked with ACAPI_Element_GetHeader first and only the elements are passed on.
+// ACAPI_Element_GetHeader only finds elements of the current database, so a GUID it does not find
+// there is looked up in the database that contains it (a layout, a worksheet, a section ...), and
+// the starting database is put back after the last GUID.
+static bool IsElementInContainingDatabase (const API_Guid& guid, const API_DatabaseInfo& startDatabase, bool& databaseChanged)
+{
+    API_DatabaseInfo elemDatabase = {};
+    if (ACAPI_Database_GetContainingDatabase (&guid, &elemDatabase) != NoError) {
+        return false;
+    }
+
+    const DatabaseIdResolver& resolver = DatabaseIdResolver::Instance ();
+    if (resolver.GetIdOfDatabase (elemDatabase) == resolver.GetIdOfDatabase (startDatabase)) {
+        return false;
+    }
+    if (ACAPI_Window_GetDatabaseInfo (&elemDatabase) != NoError ||
+        ACAPI_Database_ChangeCurrentDatabase (&elemDatabase) != NoError) {
+        return false;
+    }
+    databaseChanged = true;
+
+    API_Elem_Head elemHead = {};
+    elemHead.guid = guid;
+    return ACAPI_Element_GetHeader (&elemHead) == NoError;
+}
+
+static void SplitElementsAndNonElements (const GS::Array<API_Guid>& guids, GS::Array<API_Guid>& elemIds, GS::Array<API_Guid>& notElements)
+{
+    API_DatabaseInfo startDatabase = {};
+    const bool hasStartDatabase = ACAPI_Database_GetCurrentDatabase (&startDatabase) == NoError;
+    bool databaseChanged = false;
+
+    for (const API_Guid& guid : guids) {
+        if (databaseChanged) {
+            ACAPI_Database_ChangeCurrentDatabase (&startDatabase);
+            databaseChanged = false;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = guid;
+        if (ACAPI_Element_GetHeader (&elemHead) == NoError ||
+            (hasStartDatabase && IsElementInContainingDatabase (guid, startDatabase, databaseChanged))) {
+            elemIds.Push (guid);
+        } else {
+            notElements.Push (guid);
+        }
+    }
+
+    if (databaseChanged) {
+        ACAPI_Database_ChangeCurrentDatabase (&startDatabase);
+    }
+}
+
+static GS::UniString CreateNotElementsMessage (const GS::Array<API_Guid>& notElements, const char* action)
+{
+    GS::UniString message = GS::UniString::Printf ("%u of the given GUIDs are not elements, so they were not %s:", (unsigned) notElements.GetSize (), action);
+    for (const API_Guid& guid : notElements) {
+        message += " " + APIGuidToString (guid);
+    }
+    message += ". Navigator items, layouts and their settings cannot be reserved or released with this command.";
+    return message;
 }
 
 ReserveElementsCommand::ReserveElementsCommand () :
@@ -180,6 +247,13 @@ GS::Optional<GS::UniString> ReserveElementsCommand::GetRawResponseSchema () cons
             "executionResult": {
                 "$ref": "#/ExecutionResult"
             },
+            "notElements": {
+                "type": "array",
+                "description": "The given GUIDs that are not elements, e.g. navigator items, layouts or databases. They were not reserved, and executionResult fails because of them even if the other elements were reserved. Left out when every GUID is an element.",
+                "items": {
+                    "$ref": "#/ElementIdArrayItem"
+                }
+            },
             "conflicts": {
                 "type": "array",
                 "items": {
@@ -212,17 +286,32 @@ GS::ObjectState ReserveElementsCommand::Execute (const GS::ObjectState& paramete
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
 
-    const GS::Array<API_Guid> elemIds = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
+    GS::Array<API_Guid> elemIds;
+    GS::Array<API_Guid> notElements;
+    SplitElementsAndNonElements (elements.Transform<API_Guid> (GetGuidFromElementsArrayItem), elemIds, notElements);
 
-	GS::HashTable<API_Guid, short> conflicts;
-    constexpr bool enableDialogs = false;
-    const GSErrCode err = ACAPI_Teamwork_ReserveElements (elemIds, &conflicts, enableDialogs);
-
-    if (err != NoError) {
-        return GS::ObjectState ("executionResult", CreateFailedExecutionResult (err, "Failed to reserve elements."));
+    GS::HashTable<API_Guid, short> conflicts;
+    GSErrCode err = NoError;
+    if (!elemIds.IsEmpty () || notElements.IsEmpty ()) {
+        constexpr bool enableDialogs = false;
+        err = ACAPI_Teamwork_ReserveElements (elemIds, &conflicts, enableDialogs);
     }
 
-    GS::ObjectState response ("executionResult", CreateSuccessfulExecutionResult ());
+    GS::ObjectState response ("executionResult",
+        err != NoError ? CreateFailedExecutionResult (err, "Failed to reserve elements.")
+        : !notElements.IsEmpty () ? CreateFailedExecutionResult (APIERR_BADID, CreateNotElementsMessage (notElements, "reserved"))
+        : CreateSuccessfulExecutionResult ());
+
+    if (!notElements.IsEmpty ()) {
+        const auto& notElementsOutput = response.AddList<GS::ObjectState> ("notElements");
+        for (const API_Guid& guid : notElements) {
+            notElementsOutput (GS::ObjectState ("elementId", CreateGuidObjectState (guid)));
+        }
+    }
+
+    if (err != NoError) {
+        return response;
+    }
 
     if (!conflicts.IsEmpty ()) {
         const auto& conflictsOutput = response.AddList<GS::ObjectState> ("conflicts");
@@ -292,14 +381,23 @@ GS::ObjectState ReleaseElementsCommand::Execute (const GS::ObjectState& paramete
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
 
-    const GS::Array<API_Guid> elemIds = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
+    GS::Array<API_Guid> elemIds;
+    GS::Array<API_Guid> notElements;
+    SplitElementsAndNonElements (elements.Transform<API_Guid> (GetGuidFromElementsArrayItem), elemIds, notElements);
 
-    constexpr bool enableDialogs = false;
-    const GSErrCode err = ACAPI_Teamwork_ReleaseElements (elemIds, enableDialogs);
+    GSErrCode err = NoError;
+    if (!elemIds.IsEmpty () || notElements.IsEmpty ()) {
+        constexpr bool enableDialogs = false;
+        err = ACAPI_Teamwork_ReleaseElements (elemIds, enableDialogs);
+    }
 
-    return err == NoError
-        ? CreateSuccessfulExecutionResult ()
-        : CreateFailedExecutionResult (err, "Failed to release elements.");
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to release elements.");
+    }
+    if (!notElements.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADID, CreateNotElementsMessage (notElements, "released"));
+    }
+    return CreateSuccessfulExecutionResult ();
 }
 
 static GS::UniString GetTeamworkUserName (short userId)
@@ -318,7 +416,7 @@ static GS::UniString GetTeamworkUserName (short userId)
 // ACAPI_Teamwork_GetLockableStatus is for lockable object sets only, not for elements.
 
 GetReservationStatusOfElementsCommand::GetReservationStatusOfElementsCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -354,52 +452,7 @@ GS::Optional<GS::UniString> GetReservationStatusOfElementsCommand::GetRawRespons
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "status": {
-                                    "type": "string",
-                                    "description": "Free: nobody has reserved the element. Editable: the current user has reserved it. Locked: another user has reserved it (see reservedBy).",
-                                    "enum": ["Free", "Editable", "Locked"]
-                                },
-                                "reservedBy": {
-                                    "type": "object",
-                                    "description": "The user who has reserved the element. Left out when the element is free.",
-                                    "properties": {
-                                        "userId": {
-                                            "type": "number"
-                                        },
-                                        "userName": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "userId",
-                                        "userName"
-                                    ]
-                                },
-                                "owner": {
-                                    "type": "object",
-                                    "description": "The Teamwork owner of the element. In Teamwork the owner is the user who has reserved the element, so this is the same user as reservedBy; kept for compatibility. Left out when the element is free.",
-                                    "properties": {
-                                        "userId": {
-                                            "type": "number"
-                                        },
-                                        "userName": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "userId",
-                                        "userName"
-                                    ]
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "status"
-                            ]
+                            "$ref": "#/ElementReservationStatus"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -835,30 +888,7 @@ GS::Optional<GS::UniString> GetTeamworkStatusCommand::GetRawResponseSchema () co
                 "type": "array",
                 "description": "The members of the shared project. Only present when the project is shared.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "userId": {
-                            "type": "number"
-                        },
-                        "userName": {
-                            "type": "string",
-                            "description": "The login name of the user."
-                        },
-                        "fullName": {
-                            "type": "string"
-                        },
-                        "isConnected": {
-                            "type": "boolean",
-                            "description": "Whether the user has joined the project."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "userId",
-                        "userName",
-                        "fullName",
-                        "isConnected"
-                    ]
+                    "$ref": "#/TeamworkUser"
                 }
             },
             "hotlinkCacheManagementOwner": {
