@@ -3327,7 +3327,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<MergeElementsCommand> (
             solidElementOperationCommands, "1.8.0",
-            "Merges the given construction elements (the Merge command of Archicad, which cleans up the junctions of slabs, beams, walls and similar elements). Undoable. The element types are not filtered: Archicad reports the ones it cannot merge."
+            "Merges the given construction elements (the Merge command of Archicad, which cleans up the junctions of slabs, beams, walls and similar elements). Undoable. The element types are not filtered: Archicad reports the ones it cannot merge. The merge is read back: when Archicad records no merge between the given elements (it decides which elements and type combinations it merges), the result is a failure, not a success."
         );
         err |= RegisterCommand<UnmergeElementsCommand> (
             solidElementOperationCommands, "1.8.0",
