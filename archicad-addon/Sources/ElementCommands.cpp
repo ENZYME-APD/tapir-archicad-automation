@@ -7898,6 +7898,42 @@ static GSErrCode CalculateStairBounds (const API_Elem_Head& stairElemHead, API_B
     return NoError;
 }
 
+// A Railing, like a Stair, carries its 3D geometry in its subelements (posts, balusters, panels,
+// rails and their ends and connections), and ACAPI_Element_CalcBounds answers with
+// zMin == zMax == 0 for it (#1868). The bounds are the union of the solid bodies of the Railing
+// and of the same subelements Get3DGeometryOfElements collects for it.
+static GSErrCode CalculateRailingBounds (const API_Elem_Head& railingElemHead, API_Box3D& outBounds)
+{
+    InitializeEmptyBounds (outBounds);
+
+    bool foundSolidBody = false;
+    AccumulateSolidBodyBounds (railingElemHead, outBounds, foundSolidBody);
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (railingElemHead.guid, &memo, APIMemoMask_All) == NoError) {
+        AccumulateSubelementBounds (memo.railingPosts, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.railingInnerPosts, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.railingBalusters, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.railingPanels, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.railingRails, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.railingToprails, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.railingHandrails, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.railingRailEnds, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.railingToprailEnds, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.railingHandrailEnds, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.railingRailConnections, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.railingToprailConnections, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.railingHandrailConnections, outBounds, foundSolidBody);
+    }
+
+    if (!foundSolidBody) {
+        return APIERR_GENERAL;
+    }
+
+    return NoError;
+}
+
 // ACAPI_Element_CalcBounds only finds elements of the current database, and the 3D model of a
 // Slab, Zone or Roof can't be read while a layout or a section is the current database. So the
 // current database is switched to the one that contains the element (the floor plan for model
@@ -8033,6 +8069,12 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
             if (err != NoError) {
                 // The Stair has no solid body at all - for example it is filtered out of the 3D
                 // model - so fall back to the old answer instead of failing the whole element.
+                err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
+            }
+        } else if (typeID == API_RailingID) {
+            err = CalculateRailingBounds (elemHead, box3D);
+            if (err != NoError) {
+                // No solid body at all (e.g. the Railing is filtered out of the 3D model): the old answer.
                 err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
             }
         } else if (typeID == API_RiserID || typeID == API_TreadID || typeID == API_StairStructureID) {
