@@ -120,7 +120,7 @@ GS::Optional<GS::UniString> AddElementNotificationClientCommand::GetInputParamet
             },
             "notifyOnModificationOfAnElement": {
                 "type": "boolean",
-                "description": "Notify on modification/deletion of an element. The observed elements are the ones ACAPI_Element_GetElemList (API_ZombieElemID) returns when the first client asking for these notifications is registered, and every element created after that. Optional parameter, by default true. Archicad does not report the changes made by Tapir's own commands, so Tapir reports them itself for SetDetailsOfElements, SetPropertyValuesOfElements, MoveElements, RotateElements, MirrorElements (not for the copies they make, which are new elements), DeleteElements, DeleteSelectedElements, SetGDLParametersOfElements, RunParameterScriptOfElements (only when the script changed the element), SetMarkerParametersOfElements, SetMarkerLibraryPartOfElements, ChangeLibraryPartOfElements, SetClassificationsOfElements, SetCategoryValuesOfElements, ModifyPropertyValueOfElements, SetElementInfoStrings, SetURLReferencesOfElements, SetIFCAttributesOfElements, SetIFCPropertiesOfElements, RemoveIFCPropertiesOfElements, SetIFCClassificationReferencesOfElements, RemoveIFCClassificationReferencesOfElements, LockElements, UnlockElements, SetOpeningDetails, SetOpeningFloorPlanParameters and SetOpeningSymbolParameters. Of the elements these commands change, only the given ones are reported: an element deleted together with its owner (a door or window of a deleted wall) is not."
+                "description": "Notify on modification/deletion of an element. The observed elements are the ones ACAPI_Element_GetElemList (API_ZombieElemID) returns when the first client asking for these notifications is registered, and every element created after that. Archicad does not report the changes made by Tapir's own commands, so Tapir reports them itself for SetDetailsOfElements, SetPropertyValuesOfElements, MoveElements, RotateElements, MirrorElements (not for the copies they make, which are new elements), DeleteElements, DeleteSelectedElements, the Modify<Tool> commands (ModifyWalls, ModifyBeams, ModifySlabs, ModifyColumns, ModifyWindows, ModifyDoors, ModifyOpenings, ModifyMorphs, ModifyRoofs, ModifyShells, ModifyMeshes, ModifyObjects, ModifyLamps, ModifyTexts, ModifyLabels, ModifyCurtainWalls, ModifyCurtainWallFrames, ModifyZones, ModifySections, ModifyDetailMarkers, ModifyRailings, ModifyStairs), ChangeTextContent, SetGDLParametersOfElements, RunParameterScriptOfElements (only when the script changed the element), SetMarkerParametersOfElements, SetMarkerLibraryPartOfElements, ChangeLibraryPartOfElements, SetClassificationsOfElements, SetCategoryValuesOfElements, ModifyPropertyValueOfElements, SetElementInfoStrings, SetURLReferencesOfElements, SetIFCAttributesOfElements, SetIFCPropertiesOfElements, RemoveIFCPropertiesOfElements, SetIFCClassificationReferencesOfElements, RemoveIFCClassificationReferencesOfElements, LockElements, UnlockElements, SetOpeningDetails, SetOpeningFloorPlanParameters and SetOpeningSymbolParameters. Of the elements these commands change, only the given ones are reported: an element deleted together with its owner (a door or window of a deleted wall) is not. Optional parameter, by default true."
             },
             "notifyOnReservationChanges": {
                 "type": "boolean",
@@ -688,6 +688,21 @@ ElementChangeReporter::Add (const API_Guid& element)
 
     elements.Push (element);
     headersBefore.Add (element, header);
+}
+
+void
+ElementChangeReporter::AddElementIdsOf (const GS::Array<GS::ObjectState>& items)
+{
+    if (!enabled) {
+        return;
+    }
+
+    for (const GS::ObjectState& item : items) {
+        const GS::ObjectState* elementId = item.Get ("elementId");
+        if (elementId != nullptr) {
+            Add (GetGuidFromObjectState (*elementId));
+        }
+    }
 }
 
 void

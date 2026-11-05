@@ -1221,15 +1221,33 @@ GS::ObjectState ExecuteCreateWithElements (const GS::String& commandName, Func&&
     return CreateElementListResponse (results);
 }
 
+// Runs the Modify<Tool> commands' loop over items (each with an "elementId") in one undoable
+// command, and reports the modified elements to the notification clients (#1825): modifyFunc
+// pushes one result per item, in order, and the items with a successful result are reported
+// as changed, the others only when their modification stamp changed anyway.
 template<typename Func>
-GS::ObjectState ExecuteModifyWithResults (const GS::String& commandName, Func&& modifyFunc)
+GS::ObjectState ExecuteModifyWithResults (const GS::String& commandName, const GS::Array<GS::ObjectState>& items, Func&& modifyFunc)
 {
     GS::Array<GS::ObjectState> results;
+
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (items);
 
     ACAPI_CallUndoableCommand (commandName, [&]() -> GSErrCode {
         modifyFunc (results);
         return NoError;
     });
+
+    if (results.GetSize () == items.GetSize ()) {
+        for (UIndex i = 0; i < items.GetSize (); ++i) {
+            const GS::ObjectState* elementId = items[i].Get ("elementId");
+            bool success = false;
+            if (elementId != nullptr && results[i].Get ("success", success) && success) {
+                changeReporter.MarkChanged (GetGuidFromObjectState (*elementId));
+            }
+        }
+    }
+    changeReporter.Report ();
 
     return CreateExecutionResultResponse (results);
 }
@@ -5886,6 +5904,9 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (stairsWithDetails);
+
     ACAPI_CallUndoableCommand ("ModifyStairs", [&] () -> GSErrCode {
         for (const GS::ObjectState& item : stairsWithDetails) {
             const GS::ObjectState* elementId = item.Get ("elementId");
@@ -5921,10 +5942,13 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
                 continue;
             }
 
+            changeReporter.MarkChanged (element.header.guid);
             executionResults (CreateSuccessfulExecutionResult ());
         }
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }
@@ -8695,7 +8719,7 @@ GS::ObjectState ModifyWallsCommand::Execute (const GS::ObjectState& parameters, 
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
-    return ExecuteModifyWithResults ("Modify Walls", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Walls", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
@@ -8801,7 +8825,7 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
-    return ExecuteModifyWithResults ("Modify Beams", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Beams", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
@@ -9015,7 +9039,7 @@ GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, 
 
     const Stories stories = GetStories ();
 
-    return ExecuteModifyWithResults ("Modify Slabs", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Slabs", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
@@ -9424,7 +9448,7 @@ GS::ObjectState ModifyCurtainWallsCommand::Execute (const GS::ObjectState& param
 
     const Stories stories = GetStories ();
 
-    return ExecuteModifyWithResults ("Modify Curtain Walls", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Curtain Walls", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             results.Push (ModifyCurtainWall (item, stories));
         }
@@ -9632,7 +9656,14 @@ GS::ObjectState ModifyCurtainWallFramesCommand::Execute (const GS::ObjectState& 
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
-    return ExecuteModifyWithResults ("Modify Curtain Wall Frames", [&](GS::Array<GS::ObjectState>& results) {
+    // The frames are reported to the notification clients (#1825); their items name them by frameId.
+    GS::Array<GS::ObjectState> frameItems;
+    for (const auto& item : items) {
+        const GS::ObjectState* frameId = item.Get ("frameId");
+        frameItems.Push (frameId != nullptr ? GS::ObjectState ("elementId", *frameId) : GS::ObjectState ());
+    }
+
+    return ExecuteModifyWithResults ("Modify Curtain Wall Frames", frameItems, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             results.Push (ModifyCurtainWallFrame (item));
         }
@@ -9716,7 +9747,7 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
 
     const Stories stories = GetStories ();
 
-    return ExecuteModifyWithResults ("Modify Roofs", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Roofs", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
@@ -9839,7 +9870,7 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
-    return ExecuteModifyWithResults ("Modify Shells", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Shells", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
@@ -10334,7 +10365,7 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
 
     const Stories stories = GetStories ();
 
-    return ExecuteModifyWithResults ("Modify Columns", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Columns", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
@@ -10435,7 +10466,7 @@ GS::ObjectState ModifyWindowsCommand::Execute (const GS::ObjectState& parameters
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
-    return ExecuteModifyWithResults ("Modify Windows", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Windows", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
@@ -10513,7 +10544,7 @@ GS::ObjectState ModifyDoorsCommand::Execute (const GS::ObjectState& parameters, 
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
-    return ExecuteModifyWithResults ("Modify Doors", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Doors", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
@@ -10598,7 +10629,7 @@ GS::ObjectState ModifyOpeningsCommand::Execute (const GS::ObjectState& parameter
     const Stories stories = GetStories ();
 #endif
 
-    return ExecuteModifyWithResults ("Modify Openings", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Openings", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
@@ -10777,7 +10808,7 @@ GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters,
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
-    return ExecuteModifyWithResults ("Modify Morphs", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Morphs", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
@@ -11208,7 +11239,7 @@ GS::ObjectState ModifySectionsCommand::Execute (const GS::ObjectState& parameter
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
-    return ExecuteModifyWithResults ("Modify Sections", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Sections", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
@@ -11685,6 +11716,9 @@ GS::ObjectState ModifyMeshesCommand::Execute (const GS::ObjectState& parameters,
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (meshesData);
+
     ACAPI_CallUndoableCommand ("ModifyMeshes", [&] () -> GSErrCode {
         for (const GS::ObjectState& meshEntry : meshesData) {
             const GS::ObjectState* elementId = meshEntry.Get ("elementId");
@@ -11881,11 +11915,14 @@ GS::ObjectState ModifyMeshesCommand::Execute (const GS::ObjectState& parameters,
                 continue;
             }
 
+            changeReporter.MarkChanged (elem.header.guid);
             executionResults (CreateSuccessfulExecutionResult ());
         }
 
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }
@@ -13430,7 +13467,7 @@ GS::ObjectState ModifyDetailMarkersCommand::Execute (const GS::ObjectState& para
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
-    return ExecuteModifyWithResults ("Modify Detail Markers", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Detail Markers", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const GS::ObjectState& item : items) {
             GS::UniString name;
             GS::UniString id;
@@ -13612,7 +13649,7 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
     const Stories stories = GetStories ();
     const double tolerance = 1e-6;
 
-    return ExecuteModifyWithResults ("Modify Railings", [&](GS::Array<GS::ObjectState>& results) {
+    return ExecuteModifyWithResults ("Modify Railings", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));

@@ -2846,7 +2846,11 @@ GS::Optional<GS::UniString> SaveProjectCommand::GetInputParametersSchema () cons
         "properties": {
             "projectPath": {
                 "type": "string",
-                "description": "Optional. Full path of a .pln file to save the project to, as File > Save As does: the open project then refers to that file. This saves an untitled project, or one opened from an older Archicad version, which cannot be saved in place. An existing file at the path is overwritten. When omitted, or when it is the project's own file, the project is saved in place, which keeps the refusal of a project opened read-only."
+                "description": "Optional. Full path of a .pln file to save the project to, as File > Save As does: the open project then refers to that file. This saves an untitled project, or one opened from an older Archicad version, which cannot be saved in place. An existing file at the path is overwritten, unless overwrite is false. When omitted, or when it is the project's own file, the project is saved in place, which keeps the refusal of a project opened read-only."
+            },
+            "overwrite": {
+                "type": "boolean",
+                "description": "Optional, true by default. Only together with projectPath: false refuses to save when a file already exists at projectPath, the project's own file included, and writes nothing."
             }
         },
         "additionalProperties": false
@@ -2878,6 +2882,10 @@ GS::ObjectState SaveProjectCommand::Execute (const GS::ObjectState& parameters, 
     GS::UniString projectPath;
     if (parameters.Get ("projectPath", projectPath) && !projectPath.IsEmpty ()) {
         IO::Location fileLoc (projectPath);
+        const GS::UniString overwriteRefusal = GetOverwriteRefusal (parameters, fileLoc);
+        if (!overwriteRefusal.IsEmpty ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, overwriteRefusal);
+        }
         // The project's own file takes the plain save below: a Save As to its own location would
         // also overwrite a project that Archicad opened read-only, which the plain save refuses.
         if (!IsFileOfOpenProject (fileLoc)) {
@@ -2889,6 +2897,11 @@ GS::ObjectState SaveProjectCommand::Execute (const GS::ObjectState& parameters, 
                 return CreateFailedExecutionResult (err, "Failed to save the project to the given path.");
             }
             return CreateSuccessfulExecutionResult ();
+        }
+    } else {
+        bool overwrite = true;
+        if (parameters.Get ("overwrite", overwrite) && !overwrite) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "overwrite false needs projectPath: a save in place always overwrites the project's own file, nothing was written.");
         }
     }
 
@@ -2943,7 +2956,11 @@ GS::Optional<GS::UniString> SaveAsModuleFileCommand::GetInputParametersSchema ()
         "properties": {
             "moduleFilePath": {
                 "type": "string",
-                "description": "Absolute path of the .mod file to write. An existing file is overwritten. The current window must be a floor plan, section, elevation or detail."
+                "description": "Absolute path of the .mod file to write. An existing file is overwritten, unless overwrite is false. The current window must be a floor plan, section, elevation or detail."
+            },
+            "overwrite": {
+                "type": "boolean",
+                "description": "Optional, true by default. false refuses to save when a file already exists at moduleFilePath, and writes nothing."
             },
             "elements": {
                 "$ref": "#/Elements",
@@ -2994,6 +3011,10 @@ GS::ObjectState SaveAsModuleFileCommand::Execute (const GS::ObjectState& paramet
         return CreateFailedExecutionResult (APIERR_BADPARS, "An element list needs Archicad 27 or later; on 25 and 26 select the elements and omit the list.");
     }
 #endif
+    const GS::UniString overwriteRefusal = GetOverwriteRefusal (parameters, location);
+    if (!overwriteRefusal.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, overwriteRefusal);
+    }
     const GSErrCode err = ACAPI_ProjectOperation_SaveAsModuleFile (&location, heads.IsEmpty () ? nullptr : &heads);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to save the module file: no elements to save (nothing selected?), the current window is not a model window, or the file cannot be written.");
@@ -3018,7 +3039,11 @@ GS::Optional<GS::UniString> SaveProjectAsArchiveCommand::GetInputParametersSchem
         "properties": {
             "archiveFilePath": {
                 "type": "string",
-                "description": "Absolute path of the .pla archive to write. An existing file is overwritten. The archive becomes the open project, as Save As does."
+                "description": "Absolute path of the .pla archive to write. An existing file is overwritten, unless overwrite is false. The archive becomes the open project, as Save As does."
+            },
+            "overwrite": {
+                "type": "boolean",
+                "description": "Optional, true by default. false refuses to save when a file already exists at archiveFilePath, and writes nothing."
             },
             "includeLibraryParts": {
                 "type": "boolean",
@@ -3068,6 +3093,11 @@ GS::ObjectState SaveProjectAsArchiveCommand::Execute (const GS::ObjectState& par
     parameters.Get ("includeTextures", includeTextures);
     parameters.Get ("includeBackgroundPicture", includeBackgroundPicture);
 
+    const GS::UniString overwriteRefusal = GetOverwriteRefusal (parameters, location);
+    if (!overwriteRefusal.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, overwriteRefusal);
+    }
+
     API_FileSavePars fileSavePars = {};
     fileSavePars.fileTypeID = APIFType_A_PlanFile;
     fileSavePars.file = &location;
@@ -3103,7 +3133,11 @@ GS::Optional<GS::UniString> SaveCurrentWindowAsImageCommand::GetInputParametersS
         "properties": {
             "imageFilePath": {
                 "type": "string",
-                "description": "Absolute path of the image file to write. An existing file is overwritten."
+                "description": "Absolute path of the image file to write. An existing file is overwritten, unless overwrite is false."
+            },
+            "overwrite": {
+                "type": "boolean",
+                "description": "Optional, true by default. false refuses to save when a file already exists at imageFilePath, and writes nothing."
             },
             "format": {
                 "type": "string",
@@ -3263,6 +3297,11 @@ GS::ObjectState SaveCurrentWindowAsImageCommand::Execute (const GS::ObjectState&
         return CreateErrorResponse (APIERR_BADDATABASE, "The current window is a master layout, which cannot be saved as an image: Archicad would write another window instead. Activate a layout that uses this master layout and save that one (see ChangeWindow).");
     }
     const bool view2D = currentWindow.typeID != APIWind_3DModelID;
+
+    const GS::UniString overwriteRefusal = GetOverwriteRefusal (parameters, location);
+    if (!overwriteRefusal.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, overwriteRefusal);
+    }
 
     API_FileSavePars fileSavePars = {};
     fileSavePars.fileTypeID = fileTypeID;
@@ -6311,7 +6350,11 @@ GS::Optional<GS::UniString> IFCFileOperationCommand::GetInputParametersSchema ()
             },
             "ifcFilePath": {
                 "type": "string",
-                "description": "The target IFC file to use."
+                "description": "The target IFC file to use. The save method overwrites an existing file, unless overwrite is false."
+            },
+            "overwrite": {
+                "type": "boolean",
+                "description": "Optional, true by default. Only for the save method: false refuses to save when a file already exists at ifcFilePath, and writes nothing."
             },
             "fileType": {
                 "type": "string",
@@ -6391,6 +6434,15 @@ GS::ObjectState IFCFileOperationCommand::Execute (const GS::ObjectState& paramet
     IO::Name lastLocalName;
     if (ifcFileLocation.GetLastLocalName (&lastLocalName) != NoError) {
         return CreateFailedExecutionResult (APIERR_BADPARS, "ifcFilePath parameter is invalid");
+    }
+    if (parameters.Contains ("overwrite")) {
+        if (ioParams.method != IO_SAVEAS) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "overwrite is only valid with the save method");
+        }
+        const GS::UniString overwriteRefusal = GetOverwriteRefusal (parameters, ifcFileLocation);
+        if (!overwriteRefusal.IsEmpty ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, overwriteRefusal);
+        }
     }
     GS::UniString translatorName;
     if (parameters.Get ("translatorName", translatorName) && !translatorName.IsEmpty ()) {
