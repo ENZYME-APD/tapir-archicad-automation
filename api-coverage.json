@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-05 04:59 UTC",
+ "generatedAt": "2026-11-05 06:32 UTC",
  "versions": [
   25,
   26,
@@ -13716,12 +13716,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1883,
-     "title": "Get3DModelCounts: count polygons, edges, vertices and vectors over the bodies"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1580,
@@ -13763,12 +13758,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1883,
-     "title": "Get3DModelCounts: count polygons, edges, vertices and vectors over the bodies"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17717,12 +17707,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1836,
-     "title": "[3/4] Report element changes made by the per-element setters to notification clients"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25737,10 +25722,6 @@
      "title": "[3/4] Report element changes made by the per-element setters to notification clients"
     },
     {
-     "number": 1822,
-     "title": "CreateProfiles: moveVertices edits geometry in place; edgeOverrides take isInnerLine/isCutEndLine"
-    },
-    {
      "number": 1748,
      "title": "Roofs: read and set the planes of each pivot polygon edge (#569)"
     },
@@ -31499,20 +31480,12 @@
      "title": "ModifyRoofs: change single-plane roofs (#1782)"
     },
     {
-     "number": 1883,
-     "title": "Get3DModelCounts: count polygons, edges, vertices and vectors over the bodies"
-    },
-    {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
     },
     {
      "number": 1836,
      "title": "[3/4] Report element changes made by the per-element setters to notification clients"
-    },
-    {
-     "number": 1822,
-     "title": "CreateProfiles: moveVertices edits geometry in place; edgeOverrides take isInnerLine/isCutEndLine"
     },
     {
      "number": 1748,
@@ -38070,10 +38043,6 @@
     {
      "number": 1836,
      "title": "[3/4] Report element changes made by the per-element setters to notification clients"
-    },
-    {
-     "number": 1822,
-     "title": "CreateProfiles: moveVertices edits geometry in place; edgeOverrides take isInnerLine/isCutEndLine"
     },
     {
      "number": 1748,
@@ -44871,20 +44840,12 @@
      "title": "ModifyRoofs: change single-plane roofs (#1782)"
     },
     {
-     "number": 1883,
-     "title": "Get3DModelCounts: count polygons, edges, vertices and vectors over the bodies"
-    },
-    {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
     },
     {
      "number": 1836,
      "title": "[3/4] Report element changes made by the per-element setters to notification clients"
-    },
-    {
-     "number": 1822,
-     "title": "CreateProfiles: moveVertices edits geometry in place; edgeOverrides take isInnerLine/isCutEndLine"
     },
     {
      "number": 1748,
@@ -48142,20 +48103,12 @@
      "title": "ModifyRoofs: change single-plane roofs (#1782)"
     },
     {
-     "number": 1883,
-     "title": "Get3DModelCounts: count polygons, edges, vertices and vectors over the bodies"
-    },
-    {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
     },
     {
      "number": 1836,
      "title": "[3/4] Report element changes made by the per-element setters to notification clients"
-    },
-    {
-     "number": 1822,
-     "title": "CreateProfiles: moveVertices edits geometry in place; edgeOverrides take isInnerLine/isCutEndLine"
     },
     {
      "number": 1748,
