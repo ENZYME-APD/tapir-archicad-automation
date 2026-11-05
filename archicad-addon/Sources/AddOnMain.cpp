@@ -2235,11 +2235,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ReserveElementsCommand> (
             teamworkCommands, "1.1.4",
-            "Reserves elements in Teamwork mode."
+            "Reserves elements in Teamwork mode. GUIDs that are not elements (navigator items, layouts, databases) cannot be reserved with it: they are returned in notElements and the execution result fails."
         );
         err |= RegisterCommand<ReleaseElementsCommand> (
             teamworkCommands, "1.1.4",
-            "Releases elements in Teamwork mode."
+            "Releases elements in Teamwork mode. Fails, naming them, when any of the given GUIDs is not an element; the other elements are released."
         );
         err |= RegisterCommand<GetReservationStatusOfElementsCommand> (
             teamworkCommands, "1.7.3",
@@ -2379,7 +2379,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetLayoutSettingsCommand> (
             navigatorCommands, "1.1.7",
-            "Sets settings of layouts, including their master layout and Layout Info Panel custom data fields."
+            "Sets settings of layouts, including their master layout and Layout Info Panel custom data fields. In Teamwork the layout settings must be reserved first in Archicad (Layout Book > Reserve Layout Settings); the Archicad API cannot reserve them, and ReserveElements does not. GetTeamworkOwnersOfDatabases shows who holds a layout."
         );
         err |= RegisterCommand<GetLayoutCustomSchemeCommand> (
             navigatorCommands, "1.1.7",
