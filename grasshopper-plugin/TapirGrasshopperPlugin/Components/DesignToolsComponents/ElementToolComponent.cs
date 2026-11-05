@@ -91,6 +91,10 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         protected abstract ISet<string> CreateKeys { get; }
         protected abstract ISet<string> ModifyKeys { get; }
 
+        // The keys the Modify command does not take but SetDetailsOfElements
+        // does, in its typeSpecificDetails; Execute writes them there.
+        protected virtual ISet<string> TypeSpecificDetailsKeys { get; } = new HashSet<string>();
+
         // The inputs that define the geometry, drawn in Archicad (e.g. a
         // wall's start and end point). Only Create uses them.
         protected abstract int GeometryInputCount { get; }
@@ -643,6 +647,15 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 else if (ModifyKeys.Contains(setting.Key))
                 {
                     modify[setting.Key] = setting.Value;
+                }
+                else if (TypeSpecificDetailsKeys.Contains(setting.Key))
+                {
+                    if (!(details["typeSpecificDetails"] is JObject typeSpecific))
+                    {
+                        typeSpecific = new JObject();
+                        details["typeSpecificDetails"] = typeSpecific;
+                    }
+                    typeSpecific[setting.Key] = setting.Value;
                 }
                 else
                 {
