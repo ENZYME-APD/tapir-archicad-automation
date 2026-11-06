@@ -95,6 +95,7 @@ The Add-On adds a **Tapir** menu to Archicad; open the palette with **Tapir > Ta
   - [PropertyHighlighter](builtin-scripts/PropertyHighlighter.py): colors the elements by the value of a chosen property, with a legend of the values.
   - [SolidOperationExplorer](builtin-scripts/SolidOperationExplorer.py): lists the solid element operations, highlights their targets and operators, and finds and removes the ones that no longer have an effect.
   - [UnusedViewCleaner](builtin-scripts/UnusedViewCleaner.py): finds the views of the View Map that are neither placed on a layout nor published, and moves the chosen ones into a separate folder.
+- **[Your own palette scripts](builtin-scripts/README.md):** how to write a script for the palette, test it and share it in the [script marketplace](marketplace/README.md), with a [template](builtin-scripts/template/TEMPLATE.py) to start from.
 - **[Workflows](archicad-addon/Workflows/):** Python scripts that combine several commands into a task, such as auditing library parts, syncing attributes between two Archicads or exporting the 3D model to OBJ.
 - **[Grasshopper plugin](grasshopper-plugin/):** the commands as Grasshopper components, for visual scripting in Rhino. This is work in progress.
 - **[Tapir GitHub wiki](https://github.com/ENZYME-APD/tapir-archicad-automation/wiki):** developer documentation.
