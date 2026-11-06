@@ -1,0 +1,165 @@
+{
+  "title": "Project info fields: GetProjectInfo, CreateProjectInfoFields, SetProjectInfoField, InterpretAutoTexts and DeleteProjectInfoFields read back what they change",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "untitled project",
+      "command": "GetProjectInfo",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "isUntitled", "eq": true, "name": "untitled" },
+        { "path": "isTeamwork", "eq": false, "name": "not Teamwork" },
+        { "path": "projectName", "exists": false, "name": "no project name while untitled" },
+        { "path": "projectPath", "exists": false, "name": "no project path while untitled" }
+      ]
+    },
+    {
+      "id": "built-in fields",
+      "command": "GetProjectInfoFields",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "fields[0].projectInfoId", "exists": true, "name": "the project has project info fields" },
+        { "path": "fields[0].projectInfoName", "exists": true, "name": "with a name" },
+        { "path": "fields[0].projectInfoValue", "exists": true, "name": "and a value" }
+      ]
+    },
+    {
+      "id": "create a field with a value",
+      "command": "CreateProjectInfoFields",
+      "creates": false,
+      "params": {
+        "projectInfoFields": [
+          { "projectInfoName": "Tapir check field", "projectInfoValue": "Tapir check value" }
+        ]
+      },
+      "save": {
+        "key": "fields[0].projectInfoId"
+      },
+      "expect": [
+        { "path": "fields", "len": 1, "name": "one result per field" },
+        { "path": "fields[0].error", "exists": false, "name": "no error" },
+        { "path": "fields[0].projectInfoName", "eq": "Tapir check field", "name": "name answered" },
+        { "path": "fields[0].projectInfoValue", "eq": "Tapir check value", "name": "value answered" }
+      ]
+    },
+    {
+      "id": "read the new field, as written in a Text and as a bare key",
+      "command": "InterpretAutoTexts",
+      "creates": false,
+      "params": {
+        "autoTexts": [ "<${key}>", "${key}" ]
+      },
+      "expect": [
+        { "path": "values", "len": 2, "name": "one value per autotext" },
+        { "path": "values[0].value", "eq": "Tapir check value", "name": "<key> resolves to the initial value" },
+        { "path": "values[1].value", "eq": "Tapir check value", "name": "bare key resolves to the initial value" }
+      ]
+    },
+    {
+      "id": "set the field",
+      "command": "SetProjectInfoField",
+      "creates": false,
+      "params": {
+        "projectInfoId": "${key}",
+        "projectInfoValue": "Tapir check value 2"
+      },
+      "expect": [
+        { "path": "error", "exists": false, "name": "no error" }
+      ]
+    },
+    {
+      "id": "read the set value",
+      "command": "InterpretAutoTexts",
+      "creates": false,
+      "params": {
+        "autoTexts": [ "<${key}>" ]
+      },
+      "expect": [
+        { "path": "values[0].value", "eq": "Tapir check value 2", "name": "new value" }
+      ]
+    },
+    {
+      "id": "clear the field",
+      "command": "SetProjectInfoField",
+      "creates": false,
+      "params": {
+        "projectInfoId": "${key}",
+        "projectInfoValue": ""
+      },
+      "expect": [
+        { "path": "error", "exists": false, "name": "no error" }
+      ]
+    },
+    {
+      "id": "read the cleared value",
+      "command": "InterpretAutoTexts",
+      "creates": false,
+      "params": {
+        "autoTexts": [ "${key}" ]
+      },
+      "expect": [
+        { "path": "values[0].value", "eq": "", "name": "empty" }
+      ]
+    },
+    {
+      "id": "[set a field that does not exist]",
+      "command": "SetProjectInfoField",
+      "creates": false,
+      "params": {
+        "projectInfoId": "autotext-00000000-0000-0000-0000-00000000BEEF",
+        "projectInfoValue": "Tapir check value"
+      },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "failed" }
+      ]
+    },
+    {
+      "id": "[create a field in a group that does not exist]",
+      "command": "CreateProjectInfoFields",
+      "creates": false,
+      "params": {
+        "projectInfoFields": [
+          { "projectInfoName": "Tapir check field X", "projectInfoGroupId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "fields", "len": 1, "name": "one result per field" },
+        { "path": "fields[0].error.code", "exists": true, "name": "failed (needs Archicad 30, or no such group)" }
+      ]
+    },
+    {
+      "id": "delete the field",
+      "command": "DeleteProjectInfoFields",
+      "creates": false,
+      "params": {
+        "projectInfoIds": [ "${key}" ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per field" },
+        { "path": "executionResults[0].success", "eq": true, "name": "deleted" }
+      ]
+    },
+    {
+      "id": "[delete the deleted field again]",
+      "command": "DeleteProjectInfoFields",
+      "creates": false,
+      "params": {
+        "projectInfoIds": [ "${key}" ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "failed: the field is gone" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteProjectInfoFields",
+      "params": {
+        "projectInfoIds": [ "${key}" ]
+      }
+    }
+  ]
+}
