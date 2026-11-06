@@ -1,6 +1,6 @@
 {
   "tool": "Polyline",
-  "elementType": "Polyline",
+  "elementType": "PolyLine",
   "archicadVersion": 29,
   "commands": {
     "get": "GetDetailsOfElements",

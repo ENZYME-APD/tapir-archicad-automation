@@ -41,7 +41,7 @@ namespace TapirGrasshopperPlugin.Components.DocumentToolsComponents
 
         // What SetDetailsOfElements writes on a spline (ElementCommands.cpp,
         // API_SplineID); its points and closed state are read-only there.
-        protected override ISet<string> TypeSpecificDetailKeys { get; } = new HashSet<string>
+        protected override ISet<string> TypeSpecificDetailsKeys { get; } = new HashSet<string>
         {
             "linePenIndex", "lineTypeId", "roomSeparator"
         };

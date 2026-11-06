@@ -1,0 +1,144 @@
+{
+  "title": "Module data: store, get with and without content, overwrite and delete (#1938)",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "module data before",
+      "command": "GetModulData",
+      "creates": false,
+      "params": { "includeContent": false },
+      "stopOnFail": true,
+      "expect": [
+        { "path": "modulData", "len": 0, "name": "precondition: the untitled project has no Tapir module data" }
+      ]
+    },
+    {
+      "id": "[a with data version 3, b with the default version]",
+      "command": "StoreModulData",
+      "creates": false,
+      "params": {
+        "modulData": [
+          { "name": "tapir-check/a", "content": "{\"x\": \"Épület – ü\"}", "dataVersion": 3 },
+          { "name": "tapir-check/b", "content": "b" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per module data" },
+        { "path": "executionResults[0].success", "eq": true, "name": "a: success" },
+        { "path": "executionResults[1].success", "eq": true, "name": "b: success" }
+      ]
+    },
+    {
+      "id": "[without content]",
+      "command": "StoreModulData",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "modulData": [
+          { "name": "tapir-check/c" }
+        ]
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "rejected, no crash" }
+      ]
+    },
+    {
+      "id": "[get a, b, missing]",
+      "command": "GetModulData",
+      "creates": false,
+      "params": {
+        "names": [ "tapir-check/a", "tapir-check/b", "tapir-check/missing" ]
+      },
+      "expect": [
+        { "path": "modulData", "len": 3, "name": "one result per name" },
+        { "path": "modulData[0].name", "eq": "tapir-check/a" },
+        { "path": "modulData[0].dataVersion", "eq": 3, "name": "a: data version given" },
+        { "path": "modulData[0].content", "eq": "{\"x\": \"Épület – ü\"}", "name": "a: content, UTF-8 kept" },
+        { "path": "modulData[1].name", "eq": "tapir-check/b" },
+        { "path": "modulData[1].dataVersion", "eq": 1, "name": "b: default data version 1" },
+        { "path": "modulData[1].content", "eq": "b", "name": "b: content" },
+        { "path": "modulData[2].error", "exists": true, "name": "missing: error" }
+      ]
+    },
+    {
+      "id": "list without content",
+      "command": "GetModulData",
+      "creates": false,
+      "params": { "includeContent": false },
+      "expect": [
+        { "path": "modulData", "len": 2, "name": "a and b listed, not the rejected c" },
+        { "path": "modulData[0].content", "exists": false, "name": "first: no content" },
+        { "path": "modulData[1].content", "exists": false, "name": "second: no content" },
+        { "path": "modulData[0].dataVersion", "exists": true, "name": "first: data version" }
+      ]
+    },
+    {
+      "id": "[overwrite a]",
+      "command": "StoreModulData",
+      "creates": false,
+      "params": {
+        "modulData": [
+          { "name": "tapir-check/a", "content": "a2", "dataVersion": 4 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "a: success" }
+      ]
+    },
+    {
+      "id": "read the overwritten a",
+      "command": "GetModulData",
+      "creates": false,
+      "params": {
+        "names": [ "tapir-check/a" ]
+      },
+      "expect": [
+        { "path": "modulData[0].content", "eq": "a2", "name": "a: new content" },
+        { "path": "modulData[0].dataVersion", "eq": 4, "name": "a: new data version" }
+      ]
+    },
+    {
+      "id": "[delete b, missing]",
+      "command": "DeleteModulData",
+      "creates": false,
+      "params": {
+        "names": [ "tapir-check/b", "tapir-check/missing" ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per name" },
+        { "path": "executionResults[0].success", "eq": true, "name": "b: success" },
+        { "path": "executionResults[1].success", "eq": false, "name": "missing: failed" }
+      ]
+    },
+    {
+      "id": "read after deleting b",
+      "command": "GetModulData",
+      "creates": false,
+      "params": {
+        "names": [ "tapir-check/b", "tapir-check/a" ]
+      },
+      "expect": [
+        { "path": "modulData[0].error", "exists": true, "name": "b: gone" },
+        { "path": "modulData[1].content", "eq": "a2", "name": "a: kept" }
+      ]
+    },
+    {
+      "id": "list after deleting b",
+      "command": "GetModulData",
+      "creates": false,
+      "params": { "includeContent": false },
+      "expect": [
+        { "path": "modulData", "len": 1, "name": "only a left" },
+        { "path": "modulData[0].name", "eq": "tapir-check/a" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteModulData",
+      "params": {
+        "names": [ "tapir-check/a", "tapir-check/b", "tapir-check/c" ]
+      }
+    }
+  ]
+}

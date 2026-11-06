@@ -1,0 +1,305 @@
+{
+  "title": "ReindexAttributes moves a fill to a free index and DeleteAndReplaceAttributes replaces it, both rewriting the building material that uses it; GetAttributeIndexes counts the fills",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "fills A, B and C",
+      "command": "CreateFills",
+      "creates": false,
+      "params": {
+        "fillDataArray": [
+          {
+            "name": "Tapir check fill A", "subType": "Vector", "scaleWithPlan": true,
+            "useForWalls": true, "useForDraft": true, "useForCover": true,
+            "horizontalSpacing": 1.0, "verticalSpacing": 1.0, "angle": 0.0,
+            "lineItems": [ { "frequency": 0.1, "direction": 0.0, "offsetLine": 0.0, "offset": { "x": 0.0, "y": 0.0 } } ]
+          },
+          {
+            "name": "Tapir check fill B", "subType": "Vector", "scaleWithPlan": true,
+            "useForWalls": true, "useForDraft": true, "useForCover": true,
+            "horizontalSpacing": 1.0, "verticalSpacing": 1.0, "angle": 0.0,
+            "lineItems": [ { "frequency": 0.2, "direction": 0.0, "offsetLine": 0.0, "offset": { "x": 0.0, "y": 0.0 } } ]
+          },
+          {
+            "name": "Tapir check fill C", "subType": "Vector", "scaleWithPlan": true,
+            "useForWalls": true, "useForDraft": true, "useForCover": true,
+            "horizontalSpacing": 1.0, "verticalSpacing": 1.0, "angle": 0.0,
+            "lineItems": [ { "frequency": 0.3, "direction": 0.0, "offsetLine": 0.0, "offset": { "x": 0.0, "y": 0.0 } } ]
+          }
+        ]
+      },
+      "save": { "fillA": "attributeIds[0].attributeId.guid", "fillB": "attributeIds[1].attributeId.guid", "fillC": "attributeIds[2].attributeId.guid" }
+    },
+    {
+      "id": "indices of A, B and C",
+      "command": "GetFills",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${fillA}" } }, { "attributeId": { "guid": "${fillB}" } }, { "attributeId": { "guid": "${fillC}" } } ],
+        "fields": [ "subType" ]
+      },
+      "save": { "indexA": "fills[0].index", "indexB": "fills[1].index", "indexC": "fills[2].index" },
+      "expect": [
+        { "expr": "${indexB} - ${indexA}", "gt": 0, "name": "B was created above A" }
+      ]
+    },
+    {
+      "id": "fill indexes before the deletion",
+      "command": "GetAttributeIndexes",
+      "creates": false,
+      "params": { "attributeTypes": [ "Fill" ] },
+      "save": { "countBefore": "attributeIndexes[0].count", "lastBefore": "attributeIndexes[0].lastIndex" },
+      "expect": [
+        { "path": "attributeIndexes", "len": 1, "name": "one item per type" },
+        { "path": "attributeIndexes[0].attributeType", "eq": "Fill", "name": "the type" },
+        { "path": "attributeIndexes[0].freeIndexes", "exists": true, "name": "free indexes listed" },
+        { "expr": "${lastBefore} - ${indexC}", "gt": -0.5, "name": "lastIndex is at least C's index" }
+      ]
+    },
+    {
+      "id": "building material with cut fill B",
+      "command": "CreateBuildingMaterials",
+      "creates": false,
+      "params": {
+        "buildingMaterialDataArray": [
+          { "name": "Tapir check building material", "cutFillIndex": "${indexB}", "cutFillPen": 1, "cutFillBackgroundPen": 0, "cutSurfaceIndex": 1 }
+        ]
+      },
+      "save": { "material": "attributeIds[0].attributeId.guid" }
+    },
+    {
+      "id": "building material uses B",
+      "command": "GetBuildingMaterials",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${material}" } } ], "fields": [ "cutFillIndex" ] },
+      "save": { "cutFillStart": "buildingMaterials[0].cutFillIndex" },
+      "expect": [
+        { "expr": "${cutFillStart} - ${indexB}", "approx": 0, "name": "cut fill is B" }
+      ]
+    },
+    {
+      "id": "free the index of A",
+      "command": "DeleteAttributes",
+      "creates": false,
+      "params": {
+        "attributesToDelete": [ { "attributeType": "Fill", "attributeId": { "attributeId": { "guid": "${fillA}" } } } ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "A deleted" }
+      ]
+    },
+    {
+      "id": "fill indexes after the deletion",
+      "command": "GetAttributeIndexes",
+      "creates": false,
+      "params": { "attributeTypes": [ "Fill" ] },
+      "save": { "countAfter": "attributeIndexes[0].count" },
+      "expect": [
+        { "expr": "${countBefore} - ${countAfter}", "approx": 1, "name": "one fill fewer" },
+        { "path": "attributeIndexes[0].freeIndexes[0]", "exists": true, "name": "A's index is free" }
+      ]
+    },
+    {
+      "id": "B to the index of C, which is in use",
+      "command": "ReindexAttributes",
+      "creates": false,
+      "params": {
+        "attributeType": "Fill",
+        "attributes": [ { "attributeId": { "guid": "${fillB}" }, "newIndex": "${indexC}" } ]
+      },
+      "expect": [
+        { "path": "attributes", "len": 1, "name": "one item per attribute" },
+        { "path": "attributes[0].error", "exists": true, "name": "error item" }
+      ]
+    },
+    {
+      "id": "B to the free index, dry run",
+      "command": "ReindexAttributes",
+      "creates": false,
+      "params": {
+        "attributeType": "Fill",
+        "dryRun": true,
+        "attributes": [ { "attributeId": { "guid": "${fillB}" }, "newIndex": "${indexA}" } ]
+      },
+      "save": { "dryOld": "attributes[0].oldIndex", "dryNew": "attributes[0].newIndex" },
+      "expect": [
+        { "path": "attributes[0].error", "exists": false, "name": "no error" },
+        { "expr": "${dryOld} - ${indexB}", "approx": 0, "name": "oldIndex is B's index" },
+        { "expr": "${dryNew} - ${indexA}", "approx": 0, "name": "newIndex as given" },
+        { "path": "attributes[0].attributes", "len": 1, "name": "lists the building material" },
+        { "path": "attributes[0].attributes[0].name", "eq": "Tapir check building material", "name": "by name" }
+      ]
+    },
+    {
+      "id": "B not moved by the failed call and the dry run",
+      "command": "GetFills",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${fillB}" } } ], "fields": [ "subType" ] },
+      "save": { "indexBUnchanged": "fills[0].index" },
+      "expect": [
+        { "expr": "${indexBUnchanged} - ${indexB}", "approx": 0, "name": "same index" }
+      ]
+    },
+    {
+      "id": "B to the free index",
+      "command": "ReindexAttributes",
+      "creates": false,
+      "params": {
+        "attributeType": "Fill",
+        "attributes": [ { "attributeId": { "guid": "${fillB}" }, "newIndex": "${indexA}" } ]
+      },
+      "save": { "movedB": "attributes[0].attributeId.guid" },
+      "expect": [
+        { "path": "attributes[0].error", "exists": false, "name": "no error" },
+        { "path": "attributes[0].attributes", "len": 1, "name": "rewrote the building material" },
+        { "path": "attributes[0].warnings", "exists": false, "name": "no warnings" }
+      ]
+    },
+    {
+      "id": "[new B, old B]",
+      "command": "GetFills",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${movedB}" } }, { "attributeId": { "guid": "${fillB}" } } ],
+        "fields": [ "subType" ]
+      },
+      "save": { "indexMoved": "fills[0].index" },
+      "expect": [
+        { "expr": "${indexMoved} - ${indexA}", "approx": 0, "name": "new B at the free index" },
+        { "path": "fills[0].name", "eq": "Tapir check fill B", "name": "new B keeps the name" },
+        { "path": "fills[1].error", "exists": true, "name": "old B deleted" }
+      ]
+    },
+    {
+      "id": "building material follows B",
+      "command": "GetBuildingMaterials",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${material}" } } ], "fields": [ "cutFillIndex" ] },
+      "save": { "cutFillMoved": "buildingMaterials[0].cutFillIndex" },
+      "expect": [
+        { "expr": "${cutFillMoved} - ${indexA}", "approx": 0, "name": "cut fill at B's new index" }
+      ]
+    },
+    {
+      "id": "replace C by itself",
+      "command": "DeleteAndReplaceAttributes",
+      "creates": false,
+      "params": {
+        "attributeType": "Fill",
+        "attributes": [ { "attributeId": { "guid": "${fillC}" }, "replacementAttributeId": { "guid": "${fillC}" } } ]
+      },
+      "expect": [
+        { "path": "attributes", "len": 1, "name": "one item per attribute" },
+        { "path": "attributes[0].error", "exists": true, "name": "error item" }
+      ]
+    },
+    {
+      "id": "replace B by C, dry run",
+      "command": "DeleteAndReplaceAttributes",
+      "creates": false,
+      "params": {
+        "attributeType": "Fill",
+        "dryRun": true,
+        "attributes": [ { "attributeId": { "guid": "${movedB}" }, "replacementAttributeId": { "guid": "${fillC}" } } ]
+      },
+      "expect": [
+        { "path": "attributes[0].error", "exists": false, "name": "no error" },
+        { "path": "attributes[0].attributes", "len": 1, "name": "lists the building material" },
+        { "path": "attributes[0].attributes[0].name", "eq": "Tapir check building material", "name": "by name" }
+      ]
+    },
+    {
+      "id": "B and C kept by the failed call and the dry run",
+      "command": "GetFills",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${movedB}" } }, { "attributeId": { "guid": "${fillC}" } } ],
+        "fields": [ "subType" ]
+      },
+      "expect": [
+        { "path": "fills[0].name", "eq": "Tapir check fill B", "name": "B still there" },
+        { "path": "fills[1].name", "eq": "Tapir check fill C", "name": "C still there" }
+      ]
+    },
+    {
+      "id": "building material still uses B",
+      "command": "GetBuildingMaterials",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${material}" } } ], "fields": [ "cutFillIndex" ] },
+      "save": { "cutFillDry": "buildingMaterials[0].cutFillIndex" },
+      "expect": [
+        { "expr": "${cutFillDry} - ${indexA}", "approx": 0, "name": "cut fill unchanged" }
+      ]
+    },
+    {
+      "id": "replace B by C",
+      "command": "DeleteAndReplaceAttributes",
+      "creates": false,
+      "params": {
+        "attributeType": "Fill",
+        "attributes": [ { "attributeId": { "guid": "${movedB}" }, "replacementAttributeId": { "guid": "${fillC}" } } ]
+      },
+      "expect": [
+        { "path": "attributes[0].error", "exists": false, "name": "no error" },
+        { "path": "attributes[0].attributes", "len": 1, "name": "rewrote the building material" },
+        { "path": "attributes[0].warnings", "exists": false, "name": "no warnings" }
+      ]
+    },
+    {
+      "id": "[B, C] after the replacement",
+      "command": "GetFills",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${movedB}" } }, { "attributeId": { "guid": "${fillC}" } } ],
+        "fields": [ "subType" ]
+      },
+      "expect": [
+        { "path": "fills[0].error", "exists": true, "name": "B deleted" },
+        { "path": "fills[1].name", "eq": "Tapir check fill C", "name": "C kept" }
+      ]
+    },
+    {
+      "id": "building material uses C",
+      "command": "GetBuildingMaterials",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${material}" } } ], "fields": [ "cutFillIndex" ] },
+      "save": { "cutFillReplaced": "buildingMaterials[0].cutFillIndex" },
+      "expect": [
+        { "expr": "${cutFillReplaced} - ${indexC}", "approx": 0, "name": "cut fill is C" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": {
+        "attributesToDelete": [ { "attributeType": "BuildingMaterial", "attributeId": { "attributeId": { "guid": "${material}" } } } ]
+      }
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": {
+        "attributesToDelete": [ { "attributeType": "Fill", "attributeId": { "attributeId": { "guid": "${fillC}" } } } ]
+      }
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": {
+        "attributesToDelete": [ { "attributeType": "Fill", "attributeId": { "attributeId": { "guid": "${movedB}" } } } ]
+      }
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": {
+        "attributesToDelete": [ { "attributeType": "Fill", "attributeId": { "attributeId": { "guid": "${fillB}" } } } ]
+      }
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": {
+        "attributesToDelete": [ { "attributeType": "Fill", "attributeId": { "attributeId": { "guid": "${fillA}" } } } ]
+      }
+    }
+  ]
+}

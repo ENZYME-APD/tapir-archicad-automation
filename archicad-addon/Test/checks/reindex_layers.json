@@ -1,0 +1,185 @@
+{
+  "title": "ReindexLayers moves a layer with its element to a free index, keeps its name, changes nothing with dryRun and fails for an index in use",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "layers A and B",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [
+          { "name": "Tapir check reindex layer A", "isHidden": false, "isLocked": false },
+          { "name": "Tapir check reindex layer B", "isHidden": false, "isLocked": false }
+        ]
+      },
+      "save": { "layerA": "attributeIds[0].attributeId.guid", "layerB": "attributeIds[1].attributeId.guid" }
+    },
+    {
+      "id": "indices of A and B",
+      "command": "GetLayers",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layerA}" } }, { "attributeId": { "guid": "${layerB}" } } ],
+        "fields": [ "isHidden" ]
+      },
+      "save": { "indexA": "layers[0].index", "indexB": "layers[1].index" },
+      "expect": [
+        { "expr": "${indexB} - ${indexA}", "gt": 0, "name": "B was created above A" }
+      ]
+    },
+    {
+      "id": "wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 700, "y": 700 }, "endCoordinate": { "x": 704, "y": 700 }, "height": 2.5, "thickness": 0.2, "floorIndex": 0 }
+        ]
+      },
+      "save": { "wall": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "wall onto layer B",
+      "command": "SetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elementsWithDetails": [
+          { "elementId": { "guid": "${wall}" }, "details": { "layerIndex": "${indexB}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "success" }
+      ]
+    },
+    {
+      "id": "B to the index of A, which is in use",
+      "command": "ReindexLayers",
+      "creates": false,
+      "params": {
+        "layers": [ { "attributeId": { "guid": "${layerB}" }, "newIndex": "${indexA}" } ]
+      },
+      "expect": [
+        { "path": "layers", "len": 1, "name": "one item per layer" },
+        { "path": "layers[0].error", "exists": true, "name": "error item" }
+      ]
+    },
+    {
+      "id": "B not moved by the failed call",
+      "command": "GetLayers",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layerB}" } } ],
+        "fields": [ "isHidden" ]
+      },
+      "save": { "indexBAfterFailure": "layers[0].index" },
+      "expect": [
+        { "expr": "${indexBAfterFailure} - ${indexB}", "approx": 0, "name": "same index" }
+      ]
+    },
+    {
+      "id": "free the index of A",
+      "command": "DeleteAttributes",
+      "creates": false,
+      "params": {
+        "attributesToDelete": [ { "attributeType": "Layer", "attributeId": { "attributeId": { "guid": "${layerA}" } } } ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "A deleted" }
+      ]
+    },
+    {
+      "id": "B to the free index, dry run",
+      "command": "ReindexLayers",
+      "creates": false,
+      "params": {
+        "dryRun": true,
+        "layers": [ { "attributeId": { "guid": "${layerB}" }, "newIndex": "${indexA}" } ]
+      },
+      "save": { "dryOld": "layers[0].oldIndex", "dryNew": "layers[0].newIndex" },
+      "expect": [
+        { "path": "layers[0].error", "exists": false, "name": "no error" },
+        { "expr": "${dryOld} - ${indexB}", "approx": 0, "name": "oldIndex is B's index" },
+        { "expr": "${dryNew} - ${indexA}", "approx": 0, "name": "newIndex as given" },
+        { "path": "layers[0].elements", "len": 1, "name": "lists the wall" }
+      ]
+    },
+    {
+      "id": "B not moved by the dry run",
+      "command": "GetLayers",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layerB}" } } ],
+        "fields": [ "isHidden" ]
+      },
+      "save": { "indexBAfterDryRun": "layers[0].index" },
+      "expect": [
+        { "expr": "${indexBAfterDryRun} - ${indexB}", "approx": 0, "name": "same index" }
+      ]
+    },
+    {
+      "id": "B to the free index",
+      "command": "ReindexLayers",
+      "creates": false,
+      "params": {
+        "layers": [ { "attributeId": { "guid": "${layerB}" }, "newIndex": "${indexA}" } ]
+      },
+      "save": { "movedB": "layers[0].attributeId.guid", "movedNew": "layers[0].newIndex" },
+      "expect": [
+        { "path": "layers[0].error", "exists": false, "name": "no error" },
+        { "expr": "${movedNew} - ${indexA}", "approx": 0, "name": "newIndex as given" },
+        { "path": "layers[0].elements", "len": 1, "name": "moved the wall" },
+        { "path": "layers[0].warnings", "exists": false, "name": "no warnings" }
+      ]
+    },
+    {
+      "id": "[new B, old B]",
+      "command": "GetLayers",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${movedB}" } }, { "attributeId": { "guid": "${layerB}" } } ],
+        "fields": [ "isHidden", "isLocked" ]
+      },
+      "save": { "indexMoved": "layers[0].index" },
+      "expect": [
+        { "expr": "${indexMoved} - ${indexA}", "approx": 0, "name": "new B at the free index" },
+        { "path": "layers[0].name", "eq": "Tapir check reindex layer B", "name": "new B keeps the name" },
+        { "path": "layers[0].isHidden", "eq": false, "name": "new B shown" },
+        { "path": "layers[0].isLocked", "eq": false, "name": "new B unlocked" },
+        { "path": "layers[1].error", "exists": true, "name": "old B deleted" }
+      ]
+    },
+    {
+      "id": "wall on the new B",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${wall}" } } ],
+        "fields": [ "layerIndex" ]
+      },
+      "save": { "wallLayer": "detailsOfElements[0].layerIndex" },
+      "expect": [
+        { "expr": "${wallLayer} - ${indexA}", "approx": 0, "name": "wall moved with the layer" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": {
+        "attributesToDelete": [ { "attributeType": "Layer", "attributeId": { "attributeId": { "guid": "${movedB}" } } } ]
+      }
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": {
+        "attributesToDelete": [ { "attributeType": "Layer", "attributeId": { "attributeId": { "guid": "${layerB}" } } } ]
+      }
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": {
+        "attributesToDelete": [ { "attributeType": "Layer", "attributeId": { "attributeId": { "guid": "${layerA}" } } } ]
+      }
+    }
+  ]
+}

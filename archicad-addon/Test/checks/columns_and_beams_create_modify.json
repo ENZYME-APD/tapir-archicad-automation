@@ -1,0 +1,218 @@
+{
+  "title": "CreateColumns, CreateBeams, ModifyColumns and ModifyBeams write what they are given and refuse a bad element",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [ "Column", "Beam" ],
+  "steps": [
+    {
+      "id": "column with an explicit rectangular cross section",
+      "command": "CreateColumns",
+      "params": {
+        "columnsData": [
+          {
+            "coordinates": { "x": 600.0, "y": 600.0, "z": 0.0 },
+            "floorIndex": 0,
+            "height": 3.1,
+            "axisRotationAngle": 0.0,
+            "circleBased": false,
+            "isWidthAndHeightLinked": false,
+            "width": 0.45,
+            "depth": 0.35
+          }
+        ]
+      },
+      "save": { "c1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "column created" }
+      ]
+    },
+    {
+      "id": "column on a nonexistent layer",
+      "command": "CreateColumns",
+      "params": {
+        "columnsData": [
+          {
+            "coordinates": { "x": 610.0, "y": 600.0, "z": 0.0 },
+            "floorIndex": 0,
+            "height": 3.1,
+            "layerIndex": 99999
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "nonexistent layer refused" }
+      ]
+    },
+    {
+      "id": "only the valid column was created",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Column" },
+      "expect": [
+        { "path": "elements", "len": 1 }
+      ]
+    },
+    {
+      "id": "read the new column",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0 },
+        { "path": "detailsOfElements[0].details.origin.x", "approx": 600.0 },
+        { "path": "detailsOfElements[0].details.origin.y", "approx": 600.0 },
+        { "path": "detailsOfElements[0].details.zCoordinate", "approx": 0.0 },
+        { "path": "detailsOfElements[0].details.height", "approx": 3.1 },
+        { "path": "detailsOfElements[0].details.width", "approx": 0.45 },
+        { "path": "detailsOfElements[0].details.depth", "approx": 0.35 },
+        { "path": "detailsOfElements[0].details.circleBased", "eq": false }
+      ]
+    },
+    {
+      "id": "modify the column, and a nonexistent one",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": {
+        "columnsWithDetails": [
+          {
+            "elementId": { "guid": "${c1}" },
+            "origin": { "x": 605.0, "y": 601.0 },
+            "height": 2.6,
+            "axisRotationAngle": 0.5,
+            "width": 0.55,
+            "depth": 0.25
+          },
+          {
+            "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "height": 2.6
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "column modified" },
+        { "path": "executionResults[1].success", "eq": false, "name": "nonexistent column refused" }
+      ]
+    },
+    {
+      "id": "read the modified column",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.origin.x", "approx": 605.0 },
+        { "path": "detailsOfElements[0].details.origin.y", "approx": 601.0 },
+        { "path": "detailsOfElements[0].details.height", "approx": 2.6 },
+        { "path": "detailsOfElements[0].details.axisRotationAngle", "approx": 0.5 },
+        { "path": "detailsOfElements[0].details.width", "approx": 0.55 },
+        { "path": "detailsOfElements[0].details.depth", "approx": 0.25 },
+        { "path": "detailsOfElements[0].details.zCoordinate", "approx": 0.0, "name": "bottom kept" }
+      ]
+    },
+    {
+      "id": "beam with an explicit cross section",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": { "x": 600.0, "y": 620.0 },
+            "endCoordinate": { "x": 606.0, "y": 620.0 },
+            "zCoordinate": 3.0,
+            "floorIndex": 0,
+            "offset": 0.0,
+            "profileAngle": 0.0,
+            "circleBased": false,
+            "isWidthAndHeightLinked": false,
+            "width": 0.27,
+            "height": 0.53
+          }
+        ]
+      },
+      "save": { "b1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "beam created" }
+      ]
+    },
+    {
+      "id": "beam on a nonexistent layer",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": { "x": 600.0, "y": 630.0 },
+            "endCoordinate": { "x": 606.0, "y": 630.0 },
+            "zCoordinate": 3.0,
+            "floorIndex": 0,
+            "layerIndex": 99999
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "nonexistent layer refused" }
+      ]
+    },
+    {
+      "id": "only the valid beam was created",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Beam" },
+      "expect": [
+        { "path": "elements", "len": 1 }
+      ]
+    },
+    {
+      "id": "read the new beam",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0 },
+        { "path": "detailsOfElements[0].details.begCoordinate.x", "approx": 600.0 },
+        { "path": "detailsOfElements[0].details.endCoordinate.x", "approx": 606.0 },
+        { "path": "detailsOfElements[0].details.endCoordinate.y", "approx": 620.0 },
+        { "path": "detailsOfElements[0].details.zCoordinate", "approx": 3.0 },
+        { "path": "detailsOfElements[0].details.width", "approx": 0.27 },
+        { "path": "detailsOfElements[0].details.height", "approx": 0.53 }
+      ]
+    },
+    {
+      "id": "modify the beam, and a nonexistent one",
+      "command": "ModifyBeams",
+      "creates": false,
+      "params": {
+        "beamsWithDetails": [
+          {
+            "elementId": { "guid": "${b1}" },
+            "endCoordinate": { "x": 608.0, "y": 621.0 },
+            "offset": 0.1,
+            "profileAngle": 0.2,
+            "width": 0.33,
+            "height": 0.61
+          },
+          {
+            "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "offset": 0.1
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "beam modified" },
+        { "path": "executionResults[1].success", "eq": false, "name": "nonexistent beam refused" }
+      ]
+    },
+    {
+      "id": "read the modified beam",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.endCoordinate.x", "approx": 608.0 },
+        { "path": "detailsOfElements[0].details.endCoordinate.y", "approx": 621.0 },
+        { "path": "detailsOfElements[0].details.begCoordinate.x", "approx": 600.0, "name": "start kept" },
+        { "path": "detailsOfElements[0].details.offset", "approx": 0.1 },
+        { "path": "detailsOfElements[0].details.profileAngle", "approx": 0.2 },
+        { "path": "detailsOfElements[0].details.width", "approx": 0.33 },
+        { "path": "detailsOfElements[0].details.height", "approx": 0.61 },
+        { "path": "detailsOfElements[0].details.zCoordinate", "approx": 3.0, "name": "level kept" }
+      ]
+    }
+  ]
+}
