@@ -1,0 +1,485 @@
+{
+ "version": 1,
+ "generatedAt": "2026-11-06T12:22:16Z",
+ "months": [
+  {
+   "month": "2022-07",
+   "commits": 19,
+   "issuesOpened": 1,
+   "pullRequestsMerged": 0
+  },
+  {
+   "month": "2022-08",
+   "commits": 3,
+   "issuesOpened": 11,
+   "pullRequestsMerged": 0
+  },
+  {
+   "month": "2022-09",
+   "commits": 36,
+   "issuesOpened": 1,
+   "pullRequestsMerged": 2
+  },
+  {
+   "month": "2022-10",
+   "commits": 11,
+   "issuesOpened": 16,
+   "pullRequestsMerged": 1
+  },
+  {
+   "month": "2022-11",
+   "commits": 16,
+   "issuesOpened": 3,
+   "pullRequestsMerged": 3
+  },
+  {
+   "month": "2022-12",
+   "commits": 5,
+   "issuesOpened": 2,
+   "pullRequestsMerged": 2
+  },
+  {
+   "month": "2023-01",
+   "commits": 7,
+   "issuesOpened": 0,
+   "pullRequestsMerged": 0
+  },
+  {
+   "month": "2023-02",
+   "commits": 9,
+   "issuesOpened": 9,
+   "pullRequestsMerged": 2
+  },
+  {
+   "month": "2023-03",
+   "commits": 10,
+   "issuesOpened": 3,
+   "pullRequestsMerged": 3
+  },
+  {
+   "month": "2023-04",
+   "commits": 12,
+   "issuesOpened": 0,
+   "pullRequestsMerged": 1
+  },
+  {
+   "month": "2023-05",
+   "commits": 1,
+   "issuesOpened": 0,
+   "pullRequestsMerged": 1
+  },
+  {
+   "month": "2023-06",
+   "commits": 0,
+   "issuesOpened": 0,
+   "pullRequestsMerged": 0
+  },
+  {
+   "month": "2023-07",
+   "commits": 0,
+   "issuesOpened": 0,
+   "pullRequestsMerged": 0
+  },
+  {
+   "month": "2023-08",
+   "commits": 0,
+   "issuesOpened": 0,
+   "pullRequestsMerged": 0
+  },
+  {
+   "month": "2023-09",
+   "commits": 6,
+   "issuesOpened": 0,
+   "pullRequestsMerged": 4
+  },
+  {
+   "month": "2023-10",
+   "commits": 7,
+   "issuesOpened": 1,
+   "pullRequestsMerged": 3
+  },
+  {
+   "month": "2023-11",
+   "commits": 0,
+   "issuesOpened": 0,
+   "pullRequestsMerged": 0
+  },
+  {
+   "month": "2023-12",
+   "commits": 0,
+   "issuesOpened": 0,
+   "pullRequestsMerged": 0
+  },
+  {
+   "month": "2024-01",
+   "commits": 4,
+   "issuesOpened": 0,
+   "pullRequestsMerged": 1
+  },
+  {
+   "month": "2024-02",
+   "commits": 9,
+   "issuesOpened": 0,
+   "pullRequestsMerged": 1
+  },
+  {
+   "month": "2024-03",
+   "commits": 0,
+   "issuesOpened": 0,
+   "pullRequestsMerged": 0
+  },
+  {
+   "month": "2024-04",
+   "commits": 0,
+   "issuesOpened": 0,
+   "pullRequestsMerged": 0
+  },
+  {
+   "month": "2024-05",
+   "commits": 0,
+   "issuesOpened": 0,
+   "pullRequestsMerged": 0
+  },
+  {
+   "month": "2024-06",
+   "commits": 2,
+   "issuesOpened": 0,
+   "pullRequestsMerged": 2
+  },
+  {
+   "month": "2024-07",
+   "commits": 14,
+   "issuesOpened": 6,
+   "pullRequestsMerged": 6
+  },
+  {
+   "month": "2024-08",
+   "commits": 20,
+   "issuesOpened": 61,
+   "pullRequestsMerged": 13
+  },
+  {
+   "month": "2024-09",
+   "commits": 22,
+   "issuesOpened": 2,
+   "pullRequestsMerged": 7
+  },
+  {
+   "month": "2024-10",
+   "commits": 32,
+   "issuesOpened": 1,
+   "pullRequestsMerged": 12
+  },
+  {
+   "month": "2024-11",
+   "commits": 28,
+   "issuesOpened": 5,
+   "pullRequestsMerged": 10
+  },
+  {
+   "month": "2024-12",
+   "commits": 2,
+   "issuesOpened": 1,
+   "pullRequestsMerged": 2
+  },
+  {
+   "month": "2025-01",
+   "commits": 12,
+   "issuesOpened": 4,
+   "pullRequestsMerged": 5
+  },
+  {
+   "month": "2025-02",
+   "commits": 3,
+   "issuesOpened": 0,
+   "pullRequestsMerged": 4
+  },
+  {
+   "month": "2025-03",
+   "commits": 3,
+   "issuesOpened": 0,
+   "pullRequestsMerged": 1
+  },
+  {
+   "month": "2025-04",
+   "commits": 27,
+   "issuesOpened": 1,
+   "pullRequestsMerged": 8
+  },
+  {
+   "month": "2025-05",
+   "commits": 39,
+   "issuesOpened": 1,
+   "pullRequestsMerged": 13
+  },
+  {
+   "month": "2025-06",
+   "commits": 32,
+   "issuesOpened": 0,
+   "pullRequestsMerged": 10
+  },
+  {
+   "month": "2025-07",
+   "commits": 38,
+   "issuesOpened": 12,
+   "pullRequestsMerged": 13
+  },
+  {
+   "month": "2025-08",
+   "commits": 32,
+   "issuesOpened": 9,
+   "pullRequestsMerged": 8
+  },
+  {
+   "month": "2025-09",
+   "commits": 9,
+   "issuesOpened": 1,
+   "pullRequestsMerged": 4
+  },
+  {
+   "month": "2025-10",
+   "commits": 7,
+   "issuesOpened": 7,
+   "pullRequestsMerged": 2
+  },
+  {
+   "month": "2025-11",
+   "commits": 54,
+   "issuesOpened": 4,
+   "pullRequestsMerged": 5
+  },
+  {
+   "month": "2025-12",
+   "commits": 34,
+   "issuesOpened": 4,
+   "pullRequestsMerged": 6
+  },
+  {
+   "month": "2026-01",
+   "commits": 10,
+   "issuesOpened": 1,
+   "pullRequestsMerged": 3
+  },
+  {
+   "month": "2026-02",
+   "commits": 28,
+   "issuesOpened": 5,
+   "pullRequestsMerged": 10
+  },
+  {
+   "month": "2026-03",
+   "commits": 8,
+   "issuesOpened": 1,
+   "pullRequestsMerged": 2
+  },
+  {
+   "month": "2026-04",
+   "commits": 6,
+   "issuesOpened": 3,
+   "pullRequestsMerged": 0
+  },
+  {
+   "month": "2026-05",
+   "commits": 48,
+   "issuesOpened": 10,
+   "pullRequestsMerged": 16
+  },
+  {
+   "month": "2026-06",
+   "commits": 67,
+   "issuesOpened": 15,
+   "pullRequestsMerged": 22
+  },
+  {
+   "month": "2026-07",
+   "commits": 93,
+   "issuesOpened": 19,
+   "pullRequestsMerged": 42
+  },
+  {
+   "month": "2026-08",
+   "commits": 70,
+   "issuesOpened": 45,
+   "pullRequestsMerged": 50
+  },
+  {
+   "month": "2026-09",
+   "commits": 65,
+   "issuesOpened": 55,
+   "pullRequestsMerged": 54
+  },
+  {
+   "month": "2026-10",
+   "commits": 227,
+   "issuesOpened": 406,
+   "pullRequestsMerged": 380
+  }
+ ],
+ "totals": {
+  "commits": 1248,
+  "participants": 139
+ },
+ "topContributors": [
+  {
+   "name": "tlorantfy",
+   "commits": 397
+  },
+  {
+   "name": "Cri5chan",
+   "commits": 110
+  },
+  {
+   "name": "Viktor Kovacs",
+   "commits": 92
+  },
+  {
+   "name": "MathiasJon",
+   "commits": 82
+  },
+  {
+   "name": "SzamosiMate",
+   "commits": 54
+  },
+  {
+   "name": "fuzesArch",
+   "commits": 54
+  },
+  {
+   "name": "weltmaister",
+   "commits": 44
+  },
+  {
+   "name": "grzegorzwilk",
+   "commits": 39
+  },
+  {
+   "name": "kovacsv",
+   "commits": 32
+  },
+  {
+   "name": "Drew Parkinson",
+   "commits": 29
+  },
+  {
+   "name": "szamosi.mate",
+   "commits": 25
+  },
+  {
+   "name": "fertegi",
+   "commits": 24
+  },
+  {
+   "name": "ooki-atsufumi",
+   "commits": 24
+  },
+  {
+   "name": "Tibor Lorántfy",
+   "commits": 24
+  },
+  {
+   "name": "Kaushik",
+   "commits": 24
+  },
+  {
+   "name": "Lucas Becker",
+   "commits": 20
+  },
+  {
+   "name": "Parikshit Wadhwa",
+   "commits": 19
+  },
+  {
+   "name": "bimgeek",
+   "commits": 15
+  },
+  {
+   "name": "Aleš Dolenec",
+   "commits": 15
+  },
+  {
+   "name": "akunia",
+   "commits": 13
+  },
+  {
+   "name": "Ben Tristem",
+   "commits": 11
+  },
+  {
+   "name": "Gigiasso",
+   "commits": 10
+  },
+  {
+   "name": "Sven Neumann",
+   "commits": 10
+  },
+  {
+   "name": "JBENEITEZ",
+   "commits": 9
+  },
+  {
+   "name": "poco2018",
+   "commits": 8
+  },
+  {
+   "name": "Kaushik LS",
+   "commits": 7
+  },
+  {
+   "name": "Scott Yost",
+   "commits": 6
+  },
+  {
+   "name": "Barancsuk Ádám",
+   "commits": 5
+  },
+  {
+   "name": "Kappa-lo",
+   "commits": 5
+  },
+  {
+   "name": "parikshit99",
+   "commits": 5
+  },
+  {
+   "name": "Agnes Gaschitz",
+   "commits": 5
+  },
+  {
+   "name": "leceta",
+   "commits": 4
+  },
+  {
+   "name": "kozure-dev",
+   "commits": 3
+  },
+  {
+   "name": "KK6877aSKJ",
+   "commits": 3
+  },
+  {
+   "name": "Archigame",
+   "commits": 3
+  },
+  {
+   "name": "aitor leceta",
+   "commits": 3
+  },
+  {
+   "name": "iyur",
+   "commits": 3
+  },
+  {
+   "name": "Marcel Winklmüller",
+   "commits": 2
+  },
+  {
+   "name": "sdh001905",
+   "commits": 2
+  },
+  {
+   "name": "agmurf",
+   "commits": 2
+  }
+ ],
+ "memberHistory": []
+}
