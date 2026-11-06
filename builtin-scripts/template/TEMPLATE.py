@@ -3,14 +3,26 @@
 # dependencies = []
 # ///
 
+# /// tapir
+# category = "element-data-properties"
+# archicad-versions = [25, 26, 27, 28, 29, 30]
+# min-tapir-version = "1.5.7"
+# changes = "read-only"
+# ///
+
+# A starting point for a Tapir palette script. Copy this file next to the
+# utilities/ and aclib/ folders (into builtin-scripts/, or into a local script
+# folder that holds copies of them), rename it and change it, then delete this
+# comment. Set the # /// tapir keys to what your script does and where you
+# tried it. See builtin-scripts/README.md.
+
 '''
 Selected Elements Lister
-by <your name>
 
-A starting point for a Tapir palette script: a window that lists the elements
-selected in Archicad. Copy this file next to the utilities/ and aclib/ folders
-(into builtin-scripts/, or into a local script folder that holds copies of
-them), rename it and change it. See builtin-scripts/README.md.
+Lists the elements selected in Archicad with their Element ID, type and GUID.
+Select other elements and click Refresh to update the list.
+
+by <your name>
 '''
 
 from utilities.archicad import get_details_of_elements, run_tapir
