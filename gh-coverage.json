@@ -1,15 +1,15 @@
 {
- "generatedAt": "2026-11-06 09:29 UTC",
+ "generatedAt": "2026-11-06 09:45 UTC",
  "counts": {
   "done": 568,
   "merged": 175,
   "skipped": 1,
-  "open": 3,
+  "in progress": 3,
   "not applicable": 1
  },
  "parameters": {
-  "all": 707,
-  "json": 36
+  "all": 709,
+  "json": 34
  },
  "items": [
   {
@@ -2652,6 +2652,10 @@
      "path": "Components/DesignToolsComponents/BeamsComponent.cs"
     },
     {
+     "name": "ColumnsComponent",
+     "path": "Components/DesignToolsComponents/ColumnsComponent.cs"
+    },
+    {
      "name": "DoorsComponent",
      "path": "Components/DesignToolsComponents/DoorsComponent.cs"
     },
@@ -2796,10 +2800,6 @@
      "title": "Grasshopper: Roofs tool component"
     },
     {
-     "number": 1962,
-     "title": "Grasshopper: Columns tool component"
-    },
-    {
      "number": 1791,
      "title": "Grasshopper: Doors and Windows tool components, with their floor plan parameters"
     }
@@ -2820,6 +2820,10 @@
     {
      "name": "BeamsComponent",
      "path": "Components/DesignToolsComponents/BeamsComponent.cs"
+    },
+    {
+     "name": "ColumnsComponent",
+     "path": "Components/DesignToolsComponents/ColumnsComponent.cs"
     },
     {
      "name": "DoorsComponent",
@@ -4587,11 +4591,15 @@
    "reason": "",
    "components": [
     {
+     "name": "ColumnsComponent",
+     "path": "Components/DesignToolsComponents/ColumnsComponent.cs"
+    },
+    {
      "name": "CreateColumnsComponent",
      "path": "Components/ElementsComponents/CreateColumnsComponent.cs"
     }
    ],
-   "parameters": "json",
+   "parameters": "all",
    "parameterCount": 22,
    "coveredParameters": [
     "columnsData",
@@ -4607,30 +4615,19 @@
     "columnsData.favoriteName",
     "columnsData.floorIndex",
     "columnsData.height",
-    "columnsData.profileId",
-    "columnsData.slantAngle",
-    "columnsData.width"
-   ],
-   "missingParameters": [
     "columnsData.id",
     "columnsData.isSlanted",
     "columnsData.isWidthAndHeightLinked",
     "columnsData.layerIndex",
+    "columnsData.profileId",
+    "columnsData.slantAngle",
     "columnsData.slantDirectionAngle",
-    "columnsData.veneer"
+    "columnsData.veneer",
+    "columnsData.width"
    ],
-   "pullRequests": [
-    {
-     "number": 2027,
-     "title": "Grasshopper: Columns tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1962,
-     "title": "Grasshopper: Columns tool component"
-    }
-   ]
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "CreateWalls",
@@ -6595,11 +6592,15 @@
    "reason": "",
    "components": [
     {
+     "name": "ColumnsComponent",
+     "path": "Components/DesignToolsComponents/ColumnsComponent.cs"
+    },
+    {
      "name": "ModifyColumnsComponent",
      "path": "Components/ElementsComponents/ModifyColumnsComponent.cs"
     }
    ],
-   "parameters": "json",
+   "parameters": "all",
    "parameterCount": 26,
    "coveredParameters": [
     "columnsWithDetails",
@@ -6608,41 +6609,30 @@
     "columnsWithDetails.buildingMaterialId",
     "columnsWithDetails.circleBased",
     "columnsWithDetails.coreAnchor",
-    "columnsWithDetails.depth",
-    "columnsWithDetails.elementId",
-    "columnsWithDetails.height",
-    "columnsWithDetails.origin",
-    "columnsWithDetails.profileId",
-    "columnsWithDetails.slantAngle",
-    "columnsWithDetails.width",
-    "columnsWithDetails.zCoordinate"
-   ],
-   "missingParameters": [
     "columnsWithDetails.coverFill",
     "columnsWithDetails.cutFillBackgroundPen",
     "columnsWithDetails.cutFillPen",
+    "columnsWithDetails.depth",
+    "columnsWithDetails.elementId",
     "columnsWithDetails.floorIndex",
+    "columnsWithDetails.height",
     "columnsWithDetails.isFlipped",
     "columnsWithDetails.isSlanted",
     "columnsWithDetails.isWidthAndHeightLinked",
+    "columnsWithDetails.origin",
+    "columnsWithDetails.profileId",
     "columnsWithDetails.relativeTopStory",
+    "columnsWithDetails.slantAngle",
     "columnsWithDetails.slantDirectionAngle",
     "columnsWithDetails.topOffset",
     "columnsWithDetails.veneer",
-    "columnsWithDetails.wrapping"
+    "columnsWithDetails.width",
+    "columnsWithDetails.wrapping",
+    "columnsWithDetails.zCoordinate"
    ],
-   "pullRequests": [
-    {
-     "number": 2027,
-     "title": "Grasshopper: Columns tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1962,
-     "title": "Grasshopper: Columns tool component"
-    }
-   ]
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ModifyWindows",
@@ -8407,14 +8397,19 @@
    "group": "Favorites Commands",
    "version": "1.8.1",
    "brief": "Returns the Favorites of a folder of the Favorites palette and of its subfolders (every Favorite when no folder is given), each with its folder path, classifications, element category values and property values, read through the Favorite manager. Available from Archicad 29.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2114,
+     "title": "Grasshopper: components for GetFavoriteContents, DeleteFavoritesWithManager and GetLibraryPartParameterValues"
+    }
+   ],
    "issues": []
   },
   {
@@ -8422,14 +8417,19 @@
    "group": "Favorites Commands",
    "version": "1.8.1",
    "brief": "Deletes the given Favorites through the Favorite manager, each found by name, optionally only in the given folder. One execution result for each. Available from Archicad 29.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2114,
+     "title": "Grasshopper: components for GetFavoriteContents, DeleteFavoritesWithManager and GetLibraryPartParameterValues"
+    }
+   ],
    "issues": []
   },
   {
@@ -8557,6 +8557,10 @@
     {
      "name": "BeamsComponent",
      "path": "Components/DesignToolsComponents/BeamsComponent.cs"
+    },
+    {
+     "name": "ColumnsComponent",
+     "path": "Components/DesignToolsComponents/ColumnsComponent.cs"
     },
     {
      "name": "DoorsComponent",
@@ -12507,14 +12511,19 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Returns the parameters of loaded library parts, given by their file name as GetAvailableLibraryParts returns it, with their default values and descriptions, in the format of GetGDLParametersOfElements: the read counterpart of SetLibraryPartParameters. Unlike GetGDLParametersOfLibraryParts, which finds a part by its name and also returns the index, flags and value descriptions of each parameter, it reads through the Library Manager. Available from Archicad 28.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2114,
+     "title": "Grasshopper: components for GetFavoriteContents, DeleteFavoritesWithManager and GetLibraryPartParameterValues"
+    }
+   ],
    "issues": []
   },
   {
