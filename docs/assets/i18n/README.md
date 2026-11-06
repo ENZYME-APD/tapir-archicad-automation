@@ -3,7 +3,14 @@
 The site is written in English; `assets/site.js` translates it in the browser into the language
 picked in the header's language menu (or given as `?lang=<code>` in the address, or the browser's
 language on a first visit). Languages: `de` Deutsch, `fr` Français, `es` Español, `it` Italiano,
-`zh` 中文 (简体), `ja` 日本語. The list is `LANGUAGES` in `assets/site.js`.
+`zh` 中文 (简体), `ja` 日本語, `hi` हिन्दी. The list is `LANGUAGES` in `assets/site.js`.
+
+A language whose script the site's fonts (Fraunces, Inter, JetBrains Mono) lack names the web fonts
+to load for it in its `fonts` entry there (Hindi: Noto Serif and Noto Sans Devanagari), and adds them
+to the font stacks in `assets/site.css`, after the Latin fonts.
+
+Hindi is standard Hindi in Devanagari, written for architects: common technical words stay in
+English as Indian architects use them (Archicad, script, BIM, property, layer, API, JSON, ...).
 
 ## The dictionaries
 
