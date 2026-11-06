@@ -129,9 +129,17 @@ class MissingLibraryParts:
             details = get_details_of_elements(elements, ["id", "type", "floorIndex", "details"])
 
             self.missing = []
+            # GetMissingLibPartNames is only in newer Add-Ons; without it the name in the details is used.
+            names_supported = True
             for chunk_start, chunk in zip(range(0, len(elements), BATCH_SIZE), batched(elements)):
                 self.window.set_status(f"Reading the library part names... {chunk_start}/{len(elements)}")
-                names = run_tapir("GetMissingLibPartNames", {"elements": chunk}).get("libPartNames", [])
+                names: list[dict] = []
+                if names_supported:
+                    try:
+                        names = run_tapir("GetMissingLibPartNames", {"elements": chunk}).get("libPartNames", [])
+                    except ArchicadError:
+                        names_supported = False
+                names += [{"libPartName": ""}] * (len(chunk) - len(names))
                 for index, (element, name_item) in enumerate(zip(chunk, names)):
                     detail = details[chunk_start + index] if chunk_start + index < len(details) else {}
                     if "error" in detail:
@@ -139,8 +147,8 @@ class MissingLibraryParts:
                         continue
                     name = name_item.get("libPartName", "") if "error" not in name_item else ""
                     loaded_name = ((detail.get("details") or {}).get("libPart") or {}).get("name", "")
-                    # A missing library part cannot be read, so the element details have no name for it.
-                    # Its name from GetMissingLibPartNames is not among the loaded ones either.
+                    # A part is missing when no loaded library part has its name: neither the name in the
+                    # element details nor the one from GetMissingLibPartNames (when the Add-On has it).
                     is_missing = not loaded_name or not (_name_variants(loaded_name) & loaded_names
                                                          or (name and _name_variants(name) & loaded_names))
                     if not is_missing:
