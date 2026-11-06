@@ -407,7 +407,8 @@ function RenderCommands(parentElement, commands, schemaDefinitions) {
     for (let group of commands) {
         let section = CreateElement(parentElement, 'section', 'group', null);
         section.id = GroupId(group);
-        let heading = CreateElement(section, 'div', 'group_name', null);
+        // A heading inside the "All commands" section: the reference pages' fixed size (site.css).
+        let heading = CreateElement(section, 'h3', 'group_name ref-sub', null);
         CreateTextElement(heading, 'span', null, group.name);
         let count = CreateTextElement(heading, 'span', 'group_count', String(group.commands.length));
         let entries = [];

@@ -1,3 +1,4 @@
+using Grasshopper.Kernel;
 using System;
 using System.Collections.Generic;
 
@@ -10,11 +11,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public CreateSplinesComponent()
             : base(
                 "CreateSplines",
-                "Create 2D Spline elements based on the given parameters. " +
+                "Obsolete, use Splines instead. Create 2D Spline elements based on the given parameters. " +
                 "Only auto-smoothed curves are supported (bezier handles are calculated by Archicad).",
                 GroupNames.ElementCreation)
         {
         }
+
+        // Replaced by the Splines tool component (DocumentToolsComponents),
+        // which covers all of these inputs; hidden for one release, then removed.
+        public override GH_Exposure Exposure => GH_Exposure.hidden;
 
         protected override string ArrayKey => "splinesData";
 

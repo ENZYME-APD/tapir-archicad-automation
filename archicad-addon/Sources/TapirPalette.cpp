@@ -689,6 +689,56 @@ void TapirPalette::PopUpChanged (const DG::PopUpChangeEvent& ev)
     }
 }
 
+GS::UniString TapirPalette::GetScriptDescription (const ScriptInfo& info)
+{
+    GS::UniString badge;
+    if (info.ChangesModel ()) {
+        badge = RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_BADGE_CHANGES_MODEL, ACAPI_GetOwnResModule ());
+    } else if (info.WritesFiles ()) {
+        badge = RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_BADGE_WRITES_FILES, ACAPI_GetOwnResModule ());
+    } else if (info.IsReadOnly ()) {
+        badge = RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_BADGE_READ_ONLY, ACAPI_GetOwnResModule ());
+    }
+
+    if (info.summary.IsEmpty ()) {
+        return badge;
+    }
+    if (badge.IsEmpty ()) {
+        return info.summary;
+    }
+    return info.summary + "\n" + badge;
+}
+
+// The selected script's summary and badge, on the script list and on the Run button (while no script runs, when
+// the button is Stop).
+void TapirPalette::ItemToolTipRequested (const DG::ItemHelpEvent& ev, GS::UniString* toolTipText)
+{
+    const bool isPopUp = ev.GetSource () == &scriptSelectionPopUp;
+    const bool isRunButton = ev.GetSource () == &runScriptButton;
+    if (toolTipText == nullptr || !(isPopUp || isRunButton) || (isRunButton && IsProcessRunning ())) {
+        return;
+    }
+
+    const short selectedItem = scriptSelectionPopUp.GetSelectedItem ();
+    if (selectedItem <= 0 || scriptSelectionPopUp.IsSeparator (selectedItem)) {
+        return;
+    }
+    GS::Ref<PopUpItemData> popUpItemData = GS::DynamicCast<PopUpItemData> (scriptSelectionPopUp.GetItemObjectData (selectedItem));
+    if (popUpItemData == nullptr) {
+        return;
+    }
+
+    const GS::UniString description = GetScriptDescription (popUpItemData->info);
+    if (description.IsEmpty ()) {
+        return;
+    }
+    if (isRunButton) {
+        *toolTipText = RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_RUN_SCRIPT, ACAPI_GetOwnResModule ()) + "\n" + description;
+    } else {
+        *toolTipText = description;
+    }
+}
+
 void TapirPalette::RunShortcutSlot (short slotIndex)
 {
     // Uses DG_ERROR (pops an alert) rather than DG_WARNING (silently logged) for every failure
@@ -1490,6 +1540,7 @@ bool TapirPalette::AddScriptToPopUp (GS::Ref<PopUpItemData> popUpData, short ind
     } else {
         popUpData->baseDisplayText = name.ToString ();
     }
+    popUpData->info = ReadScriptInfo (popUpData->fileLocation);
     scriptSelectionPopUp.SetItemText (index, popUpData->baseDisplayText);
     scriptSelectionPopUp.SetItemObjectData (index, popUpData);
 

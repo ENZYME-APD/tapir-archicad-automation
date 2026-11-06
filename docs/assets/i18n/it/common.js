@@ -12,6 +12,7 @@
     'Light': 'Chiaro',
     'mode': 'modalità',
     'Language': 'Lingua',
+    'Menu': 'Menu',
     'Download': 'Scarica',
     'Copy': 'Copia',
     'Copied': 'Copiato',

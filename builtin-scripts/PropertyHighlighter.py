@@ -3,6 +3,10 @@
 # dependencies = []
 # ///
 
+# /// tapir
+# changes = "read-only"
+# ///
+
 """
 Property Highlighter
 

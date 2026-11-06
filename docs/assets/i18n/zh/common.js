@@ -12,6 +12,7 @@
     'Light': '浅色',
     'mode': '模式',
     'Language': '语言',
+    'Menu': '菜单',
     'Download': '下载',
     'Copy': '复制',
     'Copied': '已复制',

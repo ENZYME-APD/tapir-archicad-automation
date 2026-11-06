@@ -3,16 +3,19 @@
 # dependencies = []
 # ///
 
-##############################################
-# AUTOMATIC NUMBERING BASED ON POLYLINE
-# For Archicad with the Tapir Add-On
-#
-# Created by Mathias Jonathan
-#
-# Select one polyline and the elements to number. The elements get their
-# Element ID in the order they follow along the polyline, from its first point
-# to its last one.
-###############################################
+# /// tapir
+# changes = "model"
+# ///
+
+"""
+Automatic Numbering Based on Polyline
+
+Select one polyline and the elements to number. The elements get their
+Element ID in the order they follow along the polyline, from its first point
+to its last one.
+
+For Archicad with the Tapir Add-On. Created by Mathias Jonathan.
+"""
 
 import math
 import tkinter as tk

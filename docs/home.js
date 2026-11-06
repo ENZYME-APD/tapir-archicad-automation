@@ -1,6 +1,7 @@
 /* The home page (/): the floor-plan demo and the command ticker. The live figures are read by
    assets/site.js. The page is complete without it: without JavaScript the plan shows the numbered
-   doors and the tabs stay hidden. Every text it shows is in the page's HTML. Under
+   doors and the tabs stay hidden. Every text it shows is in the page's HTML, translated there
+   (data-i18n, see assets/i18n/README.md); the script names stay English, as in the palette. Under
    prefers-reduced-motion the demo shows each result at once and the ticker stands still. */
 (function () {
     'use strict';
@@ -126,6 +127,15 @@
     }
 
     function init () {
+        // The demo reads its texts (data-running, data-done) from the HTML, so it waits until
+        // assets/site.js has translated them.
+        if (window.TapirI18n) {
+            window.TapirI18n.ready (function () {
+                setUpPlan ();
+                setUpTicker ();
+            });
+            return;
+        }
         setUpPlan ();
         setUpTicker ();
     }

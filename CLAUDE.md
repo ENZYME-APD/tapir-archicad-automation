@@ -67,7 +67,8 @@ marketplace/             Shared scripts, one <slug>/ folder each (format in its 
 branding/                Logos, diagrams
 docs/                    Generated docs (archicad-addon command reference),
                          api-coverage/ page of the Archicad API coverage checklist,
-                         gh-coverage/ page of the Grasshopper coverage checklist
+                         gh-coverage/ page of the Grasshopper coverage checklist,
+                         community/ and about/ pages (growth chart, momentum, origin story)
 tools/                   Version bump scripts (update_version.py), package_info.json,
                          Add-On docs generator (generate_addon_docs.py),
                          command scaffolder (new_command.py),
@@ -77,7 +78,8 @@ tools/                   Version bump scripts (update_version.py), package_info.
                          fetch_api_coverage_github_data.py, api_coverage_rules.json),
                          Grasshopper coverage generator (generate_gh_coverage.py,
                          gh_coverage_rules.json),
-                         Archicad version list reader and updater (devkits.py)
+                         Archicad version list reader and updater (devkits.py),
+                         Community page data (generate_community_data.py)
   discord-issue-bot/     Discord -> GitHub issue bot (run by .github/workflows/discord_issue_bot.yml)
 sandbox/                 Experiments / scratch
 .github/workflows/       CI: build checks + release pipelines for both components
@@ -461,7 +463,7 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   request of this repository, however it was merged, when its tip is still the
   merged head and no open pull request uses it; run by hand (dry run by default)
   it sweeps the leftovers. `KEEP` in it lists the branches without a pull
-  request that must stay (`api-coverage`, image branches).
+  request that must stay (`api-coverage`, `site-data`, image branches).
 - `discord_issue_bot.yml` — files GitHub issues from bug reports and feature
   requests in the project's Discord channels, then dispatches
   `claude_issue_triage.yml` for each (issues created with `GITHUB_TOKEN` trigger
@@ -492,6 +494,16 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   rest through a JSON input, or miss some. It publishes `gh-coverage.*` to the
   same branch, read by `docs/gh-coverage/index.html`; commands that need no
   component go in `tools/gh_coverage_rules.json`.
+- `site_data.yml` — daily and by hand: `tools/generate_community_data.py` counts,
+  per month, the commits of `main`, the issues opened and pull requests merged, and
+  the Discord messages and members of the project's server (only counts, never the
+  text of a message), plus the totals and top contributors, and publishes
+  `community.json` to the `site-data` branch (never to `main`), read by
+  `docs/community/community.js` (the Momentum figures and the growth chart). The
+  Discord bot token is `DISCORD_STATS_TOKEN`, else `DISCORD_BOT_TOKEN`; members per
+  month need the bot's Server Members Intent, and without a token only the public
+  invite's member count is read. It never runs on pull request events and never
+  checks out pull request code; `SITE_DATA=false` turns it off.
 
 ## Installation (end users)
 

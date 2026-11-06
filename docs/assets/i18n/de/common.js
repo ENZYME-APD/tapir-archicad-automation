@@ -12,6 +12,7 @@
     'Light': 'Hell',
     'mode': 'Modus',
     'Language': 'Sprache',
+    'Menu': 'Menü',
     'Download': 'Herunterladen',
     'Copy': 'Kopieren',
     'Copied': 'Kopiert',
