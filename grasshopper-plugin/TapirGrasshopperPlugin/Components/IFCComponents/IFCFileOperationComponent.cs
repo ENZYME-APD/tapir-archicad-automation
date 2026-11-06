@@ -58,7 +58,13 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                 .WithTypeName("integerItem"),
                 GH_ParamAccess.item);
 
-            SetOptionality(new[] { 3, 4, 5 });
+            InBoolean(
+                "Overwrite",
+                "Only for the save method: false refuses to save when a file already exists at " +
+                "IfcFilePath, and writes nothing. Default is true.",
+                true);
+
+            SetOptionality(new[] { 3, 4, 5, 6 });
         }
 
         protected override void Solve(
@@ -113,7 +119,8 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                 ElementsToExport = string.IsNullOrEmpty(elementsToExport)
                     ? null
                     : elementsToExport,
-                StoryIndex = storyIndex
+                StoryIndex = storyIndex,
+                Overwrite = da.GetOptional(6, true) ? (bool?)null : false
             };
 
             SetCadValues(
