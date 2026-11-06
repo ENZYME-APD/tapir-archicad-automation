@@ -90,7 +90,8 @@ class DoorWindowNumbering:
         self.scope.trace_add("write", lambda *_: self._clear())
 
         ttk.Label(body, text="Doors and windows within each zone are numbered clockwise around the zone stamp, "
-                             "starting from the north.", style="Muted.TLabel").grid(row=1, column=0, sticky="w", pady=(6, 4))
+                             "starting from the north. Zones with the same number continue the count, "
+                             "from north to south.", style="Muted.TLabel").grid(row=1, column=0, sticky="w", pady=(6, 4))
 
         self.tree = make_tree(body, [
             ("zone", "Zone", 160, "w"),
@@ -275,6 +276,7 @@ class DoorWindowNumbering:
             item["zoneNumber"] = zone["number"] or zone["name"]
             item["zoneName"] = zone["name"]
             item["zoneKey"] = item["zoneNumber"]
+            item["zoneStamp"] = zone["stamp"]
             item["zoneLabel"] = " ".join(part for part in (zone["number"], zone["name"]) if part)
             if "boundingBox3D" in box:
                 bb = box["boundingBox3D"]
@@ -284,7 +286,11 @@ class DoorWindowNumbering:
                 item["angle"] = 0.0
             self.openings.append(item)
 
-        self.openings.sort(key=lambda item: (item["zoneKey"], item["type"], item["floorIndex"], item["angle"], item["currentId"]))
+        # Zones that share a number on a story are numbered one after the other, from north to south and
+        # then from west to east by their zone stamps, so the openings of one zone are not mixed with another's.
+        self.openings.sort(key=lambda item: (item["zoneKey"], item["type"], item["floorIndex"],
+                                             -item["zoneStamp"][1], item["zoneStamp"][0], item["zoneGuid"],
+                                             item["angle"], item["currentId"]))
         self.without_zone.sort(key=lambda item: (item["type"], item["currentId"]))
         self._update_preview()
 
