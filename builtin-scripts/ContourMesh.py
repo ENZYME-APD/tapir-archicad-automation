@@ -504,7 +504,7 @@ class ContourMesh:
                                        f"(from DXF $INSUNITS={unit_code})", "info")
             scale = dxf_units_to_meters(unit_code)
 
-            all_pts = [p for r in rings for p in r]
+            all_pts = [p for pts, _closed in rings for p in pts]
             min_x = min(p[0] for p in all_pts)
             min_y = min(p[1] for p in all_pts)
 
