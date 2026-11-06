@@ -11,9 +11,10 @@ namespace TapirGrasshopperPlugin.Components.DocumentToolsComponents
 {
     // The Hotspot tool: reads and creates hotspots with the settings of the
     // Hotspot Settings dialog, from ToolSettings/Hotspot.json. Position and
-    // Height define a new hotspot. There is no ModifyHotspots command, so
-    // Execute only writes the Element ID, the layer, the draw order and the
-    // story ({"floorIndex": ...}) of existing hotspots.
+    // Height define a new hotspot. There is no ModifyHotspots command:
+    // Execute writes the Color (and a position or height given in the JSON)
+    // through SetDetailsOfElements' typeSpecificDetails, and the Element ID,
+    // the layer, the draw order and the story ({"floorIndex": ...}).
     public class HotspotsComponent : ElementToolComponent
     {
         protected override string ToolName => "Hotspot";
@@ -36,6 +37,40 @@ namespace TapirGrasshopperPlugin.Components.DocumentToolsComponents
         protected override ISet<string> CreateKeys => CreateHotspotsKeys;
         protected override ISet<string> ModifyKeys { get; } = new HashSet<string>();
 
+        // SetDetailsOfElements writes these of a hotspot from
+        // typeSpecificDetails (HotspotSettings, ElementCommands.cpp).
+        protected override ISet<string> TypeSpecificDetailsKeys { get; } = new HashSet<string>
+        {
+            "penIndex", "position", "height"
+        };
+
+        // typeSpecificDetails is one of several settings schemas (oneOf):
+        // without penIndex, position and height also match TextSettings
+        // (height alone also WallSettings), so Archicad would refuse them.
+        protected override void PrepareTypeSpecificDetails(
+            JObject typeSpecificDetails,
+            ISet<string> notes)
+        {
+            if (typeSpecificDetails["penIndex"] != null)
+            {
+                return;
+            }
+            var dropped = new List<string>();
+            foreach (var key in new[] { "position", "height" })
+            {
+                if (typeSpecificDetails.Remove(key))
+                {
+                    dropped.Add(KeyOf(key));
+                }
+            }
+            if (dropped.Count > 0)
+            {
+                notes.Add(
+                    $"{string.Join(", ", dropped)} of existing hotspots can only be changed together with " +
+                    $"{KeyOf("penIndex")}; not changed.");
+            }
+        }
+
         // The Hotspot Settings dialog's panels, in its order;
         // append-only (see ElementToolComponent.JsonGroups).
         protected override IReadOnlyList<string> JsonGroups { get; } = new[]
@@ -46,11 +81,12 @@ namespace TapirGrasshopperPlugin.Components.DocumentToolsComponents
         public HotspotsComponent()
             : base(
                 "Hotspots",
-                "Reads (Refresh) and creates (Create) hotspots, with the settings of the Hotspot Settings dialog " +
-                "as one JSON object per dialog panel. A new hotspot starts from the Hotspot tool defaults, or from " +
-                "FavoriteName, and the given settings override them. The story can be given as " +
-                "{\"floorIndex\": ...} in any JSON input. Archicad has no command to modify hotspots, so Execute " +
-                "only writes ElementID, LayerIndex, DrawOrder and the story.",
+                "Reads (Refresh), modifies (Execute) and creates (Create) hotspots, with the settings of the " +
+                "Hotspot Settings dialog as one JSON object per dialog panel. A new hotspot starts from the Hotspot " +
+                "tool defaults, or from FavoriteName, and the given settings override them. The story can be given " +
+                "as {\"floorIndex\": ...} in any JSON input. Execute writes the given settings and ElementID, " +
+                "LayerIndex and DrawOrder to the hotspots in ElementGuid; the Position and Height inputs are used " +
+                "by Create only.",
                 GroupNames.DocumentTools)
         {
         }

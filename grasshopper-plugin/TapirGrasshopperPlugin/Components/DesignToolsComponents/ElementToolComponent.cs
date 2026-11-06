@@ -91,6 +91,19 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         protected abstract ISet<string> CreateKeys { get; }
         protected abstract ISet<string> ModifyKeys { get; }
 
+        // The item keys SetDetailsOfElements writes from typeSpecificDetails
+        // for this tool, for a tool without a Modify command (e.g. hotspots).
+        protected virtual ISet<string> TypeSpecificDetailsKeys { get; } = new HashSet<string>();
+
+        // Lets a tool drop typeSpecificDetails (Add-On keys) of an existing
+        // element that SetDetailsOfElements cannot take as given. Each note
+        // is shown once as a remark.
+        protected virtual void PrepareTypeSpecificDetails(
+            JObject typeSpecificDetails,
+            ISet<string> notes)
+        {
+        }
+
         // The inputs that define the geometry, drawn in Archicad (e.g. a
         // wall's start and end point). Only Create uses them.
         protected abstract int GeometryInputCount { get; }
@@ -594,7 +607,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                     continue;
                 }
                 PrepareSettings(settings, notes);
-                AddWriteItems(inputs, i, guids[i], settings, null, createOnly, modifyItems, detailItems);
+                AddWriteItems(inputs, i, guids[i], settings, null, createOnly, notes, modifyItems, detailItems);
             }
 
             SendModify(modifyItems, errors);
@@ -629,11 +642,13 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             JObject settings,
             JObject geometry,
             ISet<string> createOnly,
+            ISet<string> notes,
             List<KeyValuePair<int, JObject>> modifyItems,
             List<KeyValuePair<int, JObject>> detailItems)
         {
             var modify = new JObject();
             var details = new JObject();
+            var typeSpecific = new JObject();
             foreach (var setting in settings)
             {
                 if (setting.Key == "floorIndex")
@@ -643,6 +658,10 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 else if (ModifyKeys.Contains(setting.Key))
                 {
                     modify[setting.Key] = setting.Value;
+                }
+                else if (TypeSpecificDetailsKeys.Contains(setting.Key))
+                {
+                    typeSpecific[setting.Key] = setting.Value;
                 }
                 else
                 {
@@ -660,11 +679,23 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                     {
                         modify[property.Name] = property.Value;
                     }
+                    else if (TypeSpecificDetailsKeys.Contains(property.Name))
+                    {
+                        typeSpecific[property.Name] = property.Value;
+                    }
                     else
                     {
                         createOnly.Add(KeyOf(property.Name));
                     }
                 }
+            }
+            if (typeSpecific.Count > 0)
+            {
+                PrepareTypeSpecificDetails(typeSpecific, notes);
+            }
+            if (typeSpecific.Count > 0)
+            {
+                details["typeSpecificDetails"] = typeSpecific;
             }
             AddPlainDetails(inputs, i, details);
 
@@ -744,7 +775,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 if (existing[i] != null)
                 {
                     guids[i] = existing[i];
-                    AddWriteItems(inputs, i, guids[i], settings, geometry[i], createOnly, modifyItems, detailItems);
+                    AddWriteItems(inputs, i, guids[i], settings, geometry[i], createOnly, notes, modifyItems, detailItems);
                     if (!string.IsNullOrEmpty(ItemOf(inputs.FavoriteNames, i)))
                     {
                         createOnly.Add("FavoriteName");
@@ -1189,7 +1220,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         // Helpers
         // ---------------------------------------------------------------
 
-        private string KeyOf(
+        protected string KeyOf(
             string apiName)
         {
             return Table.Find(apiName)?.Key(UseLabels) ?? apiName;
