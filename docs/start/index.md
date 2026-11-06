@@ -6,18 +6,18 @@
 
 From download to your first script in about ten minutes. Steps 1 to 3 need no programming.
 
- Video Prefer watching? The [Tapir video tutorials](https://archicad-api.com/tutorials/) walk through installing Tapir and using it.
+**Video** Prefer watching? The [Tapir video tutorials](https://archicad-api.com/tutorials/) walk through installing Tapir and using it.
 
 ## Install Tapir
 
-With the installer (recommended). It finds every Archicad version on the computer and installs the matching add-on into each, so Archicad loads it on its next start.
+**With the installer (recommended).** It finds every Archicad version on the computer and installs the matching add-on into each, so Archicad loads it on its next start.
 
 [Download WINDOWS](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirInstaller_Win.exe) [Download MACOS](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirInstaller_Mac.zip)
 
-  - Windows: the installer asks for administrator rights, because it copies the add-on into the Archicad folder under Program Files.
-  - macOS: unzip the download and open the app.
+  - **Windows:** the installer asks for administrator rights, because it copies the add-on into the Archicad folder under Program Files.
+  - **macOS:** unzip the download and open the app.
 
-Prefer to install by hand? Download the `TapirAddOn_AC<version>_Win.apx` or `TapirAddOn_AC<version>_Mac.zip` file for your Archicad version from the [latest release](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest), then in Archicad: *Options > Add-On Manager > Edit List of Available Add-Ons > Add*, browse to the file and click *OK*.
+**Prefer to install by hand?** Download the `TapirAddOn_AC<version>_Win.apx` or `TapirAddOn_AC<version>_Mac.zip` file for your Archicad version from the [latest release](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest), then in Archicad: *Options > Add-On Manager > Edit List of Available Add-Ons > Add*, browse to the file and click *OK*.
 
 Tapir keeps itself up to date: it tells you when a new version is out and installs it for you.
 
@@ -33,7 +33,7 @@ Tapir runs the scripts with [uv](https://docs.astral.sh/uv/), which brings the P
 
 The [Scripts](https://archicad-api.com/scripts/) page collects scripts shared by the community, each one reviewed before it is listed. The Tapir palette is getting a window to find and install them in one click.
 
- Until then If your palette has no such window yet, add a script by hand, as below.
+**Until then** If your palette has no such window yet, add a script by hand, as below.
 
 Download the scripts you want into a folder, then tell Tapir about that folder in its configuration file, `Documents/Tapir/config.json` in your user folder (Tapir writes it the first time it runs). Add the folder to its `localFolders` list, keeping the rest of the file as it is:
 
@@ -88,32 +88,36 @@ print(run_tapir_command('GetAddOnVersion'))
 # prints the version of the add-on Archicad has loaded, e.g. {'version': '1.8.0'}
 ```
 
-Graphisoft's [`archicad` package](https://pypi.org/project/archicad/) sends the same commands and finds the port by itself, if you prefer it. Put your script in a [local folder](#marketplace) to run it from the Tapir palette.
+Graphisoft's [`archicad` package](https://pypi.org/project/archicad/) sends the same commands and finds the port by itself, if you prefer it. Put your script in a [local folder](https://archicad-api.com/start/#marketplace) to run it from the Tapir palette.
 
-[All commands, with schemas and examples →](https://archicad-api.com/archicad-addon/)
+[All commands, with schemas and examples](https://archicad-api.com/archicad-addon/)
 
 ## Use it from Grasshopper
 
 In Rhino, open the Package Manager (the `PackageManager` command, or *Tools > Package Manager*), search for tapir, install it and restart Rhino. Its components are on the *Tapir* tab in Grasshopper and work with the Archicad that runs Tapir. The Walls, Doors, Windows and Railings components read and change Archicad elements with the names you know from Archicad's settings dialogs.
 
-[The Grasshopper guide →](https://archicad-api.com/grasshopper/)
+[The Grasshopper guide](https://archicad-api.com/grasshopper/)
 
-[ Scripts
+Scripts
 
-### Find a script
+### [Find a script](https://archicad-api.com/scripts/)
 
 Scripts shared by architects, checked and adapted for any office.
 
-Browse scripts → ](https://archicad-api.com/scripts/) [ Commands
+Browse scripts
 
-### The command reference
+Commands
+
+### [The command reference](https://archicad-api.com/archicad-addon/)
 
 Every Tapir command with its parameters, its response and a Python example.
 
-Open the reference → ](https://archicad-api.com/archicad-addon/) [ Stuck?
+Open the reference
 
-### Ask on Discord
+Stuck?
+
+### [Ask on Discord](https://discord.gg/NAnSennmpY)
 
 Architects, developers and the maintainers answer there. Or open an issue on GitHub.
 
-Join Discord → ](https://discord.gg/NAnSennmpY)
+Join Discord

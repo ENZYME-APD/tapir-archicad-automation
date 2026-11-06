@@ -6341,7 +6341,7 @@ Returns:
 
 Grasshopper: `UpdatePropertyDefinitionsComponent`
 
-Example: [archicad-addon/Examples/Property/UpdatePropertyDefinitions.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/UpdatePropertyDefinitions.py): Creates a temporary custom property and changes its name, description and default value with UpdatePropertyDefinitions. The property keeps its guid. The script deletes the property and its group again at the end.
+Example: [archicad-addon/Examples/Property/UpdatePropertyDefinitions.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/UpdatePropertyDefinitions.py): Creates a temporary custom property and changes its name, description, default value and editability with UpdatePropertyDefinitions. The property keeps its guid. The script deletes the property and its group again at the end.
 
 ### UpdatePropertyGroups
 

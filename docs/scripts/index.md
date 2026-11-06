@@ -10,7 +10,7 @@ Scripts shared by architects. Each one is checked for safety and adapted to work
 
 These are five of the scripts that come with the Tapir palette: open it in Archicad, pick one and press Run Script. Each is a short Python file you can read and change.
 
--  Built-in script
+- Built-in script
 
 ### Number elements along a line
 
@@ -19,7 +19,7 @@ Select a polyline and the doors, zones or objects to number. Each one gets its E
 Changes the model `SetPropertyValuesOfElements`
 
 [Automatic Numbering Based on Polyline](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/AutomaticNumberingBasedOnPolyline.py)
--  Built-in script
+- Built-in script
 
 ### Colour the model by a property
 
@@ -28,7 +28,7 @@ Pick a property; every element gets a colour for its value, with a legend of the
 Read only `HighlightElements`
 
 [Property Highlighter](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/PropertyHighlighter.py)
--  Built-in script
+- Built-in script
 
 ### Check a project before it goes out
 
@@ -37,7 +37,7 @@ Lists elements without an ID, zones with the same number, unclassified and dupli
 Read only `GetClassificationsOfElements`
 
 [Project Health Check](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/ProjectHealthCheck.py)
--  Built-in script
+- Built-in script
 
 ### Publish on a schedule
 
@@ -46,7 +46,7 @@ Publishes the chosen Publisher Sets now or on a schedule, every few hours or dai
 Writes files `PublishPublisherSet`
 
 [Batch Publisher](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/BatchPublisher.py)
--  Built-in script
+- Built-in script
 
 ### Tidy up the View Map
 
@@ -56,7 +56,7 @@ Changes the model `API.MoveNavigatorItem`
 
 [Unused View Cleaner](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/UnusedViewCleaner.py)
 
- Opening soon The scripts move to this page, and the list appears here as soon as the first ones are in. Until then, the scripts shared so far are on the [current marketplace](https://tapir-marketplace.vercel.app/), and you can [share your own](https://archicad-api.com/scripts/share/).
+**Opening soon** The scripts move to this page, and the list appears here as soon as the first ones are in. Until then, the scripts shared so far are on the [current marketplace](https://tapir-marketplace.vercel.app/), and you can [share your own](https://archicad-api.com/scripts/share/).
 
 Install
 

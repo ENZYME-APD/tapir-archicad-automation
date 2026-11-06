@@ -2,8 +2,9 @@
 
 > Tapir is a free, open-source (MIT) add-on for Graphisoft Archicad 25–30, by
 > ENZYME-APD and its community. It adds 641 JSON commands to Archicad's own JSON API, a palette
-> that runs Python scripts in one click, a Grasshopper plugin (package `tapir` on the Rhino Package
-> Manager) and MCP servers so AI assistants can drive Archicad. A new release ships every Monday.
+> that runs Python scripts in one click and a Grasshopper plugin (package `tapir` on the Rhino Package
+> Manager); community MCP servers let AI assistants drive Archicad through it. A new release ships
+> every Monday.
 
 - Site: https://archicad-api.com/
 - Source, issues and releases: https://github.com/ENZYME-APD/tapir-archicad-automation
@@ -41,11 +42,11 @@ Number every door along a line. Colour the model by any property. Check a projec
 
 [Download WINDOWS](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirInstaller_Win.exe) [Download MACOS](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirInstaller_Mac.zip)
 
-100% freeOpen source (MIT)[Watch the tutorials](https://archicad-api.com/tutorials/)[All downloads](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest)
+100% free Open source (MIT) [Watch the tutorials](https://archicad-api.com/tutorials/) [All downloads](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest)
 
-Automatic Numbering Based on Polyline · 6 doors numbered D01–D06
+**Automatic Numbering Based on Polyline** · 6 doors numbered D01–D06
 
-Mon [A new release every week](https://github.com/ENZYME-APD/tapir-archicad-automation/releases)
+**Mon** [A new release every week](https://github.com/ENZYME-APD/tapir-archicad-automation/releases)
 
 ### Start where you *already work.*
 
@@ -79,7 +80,7 @@ Every command answers on port 19723, each with a schema and an example. Python's
 
 Five built-in scripts of the Tapir palette and one workflow script, each a short Python file you can read and change.
 
--  Built-in script
+- Built-in script
 
 #### Number elements along a line
 
@@ -88,7 +89,7 @@ Select a polyline and the doors, zones or objects to number. Each one gets its E
 Changes the model `SetPropertyValuesOfElements`
 
 [Automatic Numbering Based on Polyline](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/AutomaticNumberingBasedOnPolyline.py)
--  Built-in script
+- Built-in script
 
 #### Colour the model by a property
 
@@ -97,7 +98,7 @@ Pick a property; every element gets a colour for its value, with a legend of the
 Read only `HighlightElements`
 
 [Property Highlighter](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/PropertyHighlighter.py)
--  Built-in script
+- Built-in script
 
 #### Check a project before it goes out
 
@@ -106,7 +107,7 @@ Lists elements without an ID, zones with the same number, unclassified and dupli
 Read only `GetClassificationsOfElements`
 
 [Project Health Check](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/ProjectHealthCheck.py)
--  Built-in script
+- Built-in script
 
 #### Publish on a schedule
 
@@ -115,7 +116,7 @@ Publishes the chosen Publisher Sets now or on a schedule, every few hours or dai
 Writes files `PublishPublisherSet`
 
 [Batch Publisher](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/BatchPublisher.py)
--  Built-in script
+- Built-in script
 
 #### Tidy up the View Map
 
@@ -124,7 +125,7 @@ Finds the views that are neither placed on a layout nor published, and moves the
 Changes the model `API.MoveNavigatorItem`
 
 [Unused View Cleaner](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/UnusedViewCleaner.py)
--  Workflow
+- Workflow
 
 #### Export the model to OBJ
 
@@ -192,7 +193,7 @@ With a project open, Archicad answers JSON commands on `http://127.0.0.1:19723`.
 
 With several Archicads open, the next ones answer on 19724, 19725 and so on.
 
-[Your first Python script, step by step →](https://archicad-api.com/start/#python)
+[Your first Python script, step by step](https://archicad-api.com/start/#python)
 
 walls.pyport 19723
 
@@ -224,25 +225,29 @@ print(len(walls), 'walls')
 
 The reference, sharing your own scripts, and the people who build Tapir.
 
-[ Docs
+Docs
 
-#### The reference
+#### [The reference](https://archicad-api.com/docs/)
 
 Every command with its schema and an example, the Grasshopper guide, and what Tapir covers of the Archicad API.
 
-Open the docs → ](https://archicad-api.com/docs/) [ Share
+Open the docs
 
-#### Send yours in
+Share
+
+#### [Send yours in](https://archicad-api.com/scripts/share/)
 
 Post a script on Discord or as a pull request. It is checked, adapted for any office and listed with your name. No GitHub account needed.
 
-How sharing works → ](https://archicad-api.com/scripts/share/) [ Community
+How sharing works
 
-#### Ask, report, test
+Community
+
+#### [Ask, report, test](https://archicad-api.com/community/)
 
 Discord, the video series, and how a bug report becomes a fix.
 
-Join in → ](https://archicad-api.com/community/)
+Join in
 
 
 ---
@@ -255,18 +260,18 @@ Source: https://archicad-api.com/start/
 
 From download to your first script in about ten minutes. Steps 1 to 3 need no programming.
 
- Video Prefer watching? The [Tapir video tutorials](https://archicad-api.com/tutorials/) walk through installing Tapir and using it.
+**Video** Prefer watching? The [Tapir video tutorials](https://archicad-api.com/tutorials/) walk through installing Tapir and using it.
 
 ### Install Tapir
 
-With the installer (recommended). It finds every Archicad version on the computer and installs the matching add-on into each, so Archicad loads it on its next start.
+**With the installer (recommended).** It finds every Archicad version on the computer and installs the matching add-on into each, so Archicad loads it on its next start.
 
 [Download WINDOWS](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirInstaller_Win.exe) [Download MACOS](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirInstaller_Mac.zip)
 
-  - Windows: the installer asks for administrator rights, because it copies the add-on into the Archicad folder under Program Files.
-  - macOS: unzip the download and open the app.
+  - **Windows:** the installer asks for administrator rights, because it copies the add-on into the Archicad folder under Program Files.
+  - **macOS:** unzip the download and open the app.
 
-Prefer to install by hand? Download the `TapirAddOn_AC<version>_Win.apx` or `TapirAddOn_AC<version>_Mac.zip` file for your Archicad version from the [latest release](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest), then in Archicad: *Options > Add-On Manager > Edit List of Available Add-Ons > Add*, browse to the file and click *OK*.
+**Prefer to install by hand?** Download the `TapirAddOn_AC<version>_Win.apx` or `TapirAddOn_AC<version>_Mac.zip` file for your Archicad version from the [latest release](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest), then in Archicad: *Options > Add-On Manager > Edit List of Available Add-Ons > Add*, browse to the file and click *OK*.
 
 Tapir keeps itself up to date: it tells you when a new version is out and installs it for you.
 
@@ -282,7 +287,7 @@ Tapir runs the scripts with [uv](https://docs.astral.sh/uv/), which brings the P
 
 The [Scripts](https://archicad-api.com/scripts/) page collects scripts shared by the community, each one reviewed before it is listed. The Tapir palette is getting a window to find and install them in one click.
 
- Until then If your palette has no such window yet, add a script by hand, as below.
+**Until then** If your palette has no such window yet, add a script by hand, as below.
 
 Download the scripts you want into a folder, then tell Tapir about that folder in its configuration file, `Documents/Tapir/config.json` in your user folder (Tapir writes it the first time it runs). Add the folder to its `localFolders` list, keeping the rest of the file as it is:
 
@@ -337,35 +342,39 @@ print(run_tapir_command('GetAddOnVersion'))
 ## prints the version of the add-on Archicad has loaded, e.g. {'version': '1.8.0'}
 ```
 
-Graphisoft's [`archicad` package](https://pypi.org/project/archicad/) sends the same commands and finds the port by itself, if you prefer it. Put your script in a [local folder](#marketplace) to run it from the Tapir palette.
+Graphisoft's [`archicad` package](https://pypi.org/project/archicad/) sends the same commands and finds the port by itself, if you prefer it. Put your script in a [local folder](https://archicad-api.com/start/#marketplace) to run it from the Tapir palette.
 
-[All commands, with schemas and examples →](https://archicad-api.com/archicad-addon/)
+[All commands, with schemas and examples](https://archicad-api.com/archicad-addon/)
 
 ### Use it from Grasshopper
 
 In Rhino, open the Package Manager (the `PackageManager` command, or *Tools > Package Manager*), search for tapir, install it and restart Rhino. Its components are on the *Tapir* tab in Grasshopper and work with the Archicad that runs Tapir. The Walls, Doors, Windows and Railings components read and change Archicad elements with the names you know from Archicad's settings dialogs.
 
-[The Grasshopper guide →](https://archicad-api.com/grasshopper/)
+[The Grasshopper guide](https://archicad-api.com/grasshopper/)
 
-[ Scripts
+Scripts
 
-#### Find a script
+#### [Find a script](https://archicad-api.com/scripts/)
 
 Scripts shared by architects, checked and adapted for any office.
 
-Browse scripts → ](https://archicad-api.com/scripts/) [ Commands
+Browse scripts
 
-#### The command reference
+Commands
+
+#### [The command reference](https://archicad-api.com/archicad-addon/)
 
 Every Tapir command with its parameters, its response and a Python example.
 
-Open the reference → ](https://archicad-api.com/archicad-addon/) [ Stuck?
+Open the reference
 
-#### Ask on Discord
+Stuck?
+
+#### [Ask on Discord](https://discord.gg/NAnSennmpY)
 
 Architects, developers and the maintainers answer there. Or open an issue on GitHub.
 
-Join Discord → ](https://discord.gg/NAnSennmpY)
+Join Discord
 
 
 ---
@@ -378,45 +387,51 @@ Source: https://archicad-api.com/docs/
 
 Every command, what Tapir covers of the Archicad API, and how the Grasshopper components map to it.
 
-[ Commands
+Commands
 
-#### Tapir commands
+#### [Tapir commands](https://archicad-api.com/archicad-addon/)
 
 Search by name, filter by the version a command came in, and open any command for its input and output schema and a Python example.
 
-Open the reference → ](https://archicad-api.com/archicad-addon/) [ Grasshopper
+Open the reference
 
-#### Grasshopper guide
+Grasshopper
+
+#### [Grasshopper guide](https://archicad-api.com/grasshopper/)
 
 The tool components, one per Archicad tool, with inputs named after the settings dialog. Install, a first definition, and what the buttons do.
 
-Read the guide → ](https://archicad-api.com/grasshopper/) [ Archicad API
+Read the guide
 
-#### API coverage
+Archicad API
+
+#### [API coverage](https://archicad-api.com/api-coverage/)
 
 Every function of Graphisoft's Archicad API and whether Tapir uses it, is working on it, or skipped it, updated every hour.
 
-See the coverage → ](https://archicad-api.com/api-coverage/) [ Components
+See the coverage
 
-#### Grasshopper coverage
+Components
+
+#### [Grasshopper coverage](https://archicad-api.com/gh-coverage/)
 
 Which Tapir commands have a Grasshopper component, and which inputs each component still lacks.
 
-See the coverage → ](https://archicad-api.com/gh-coverage/)
+See the coverage
 
 ### How it *works.*
 
 Tapir is an Archicad add-on that turns native API functions into a stateless JSON server on port 19723. Anything that can send an HTTP request can drive Archicad.
 
-GrasshopperThe tapir components
+**Grasshopper**The tapir components
 
-Python scriptsThe palette, or your own
+**Python scripts**The palette, or your own
 
-AI and MCPAssistants and MCP servers
+**AI and MCP**Assistants and MCP servers
 
-Tapir Add-OnA stateless JSON layer: one command per request
+**Tapir Add-On**A stateless JSON layer: one command per request
 
-ArchicadThe BIM model and its C++ API
+**Archicad**The BIM model and its C++ API
 
 ### Anatomy of a call
 
@@ -444,27 +459,31 @@ response200
      ]}}}
 ```
 
-Every Tapir command is sent the same way; only `commandName` and `addOnCommandParameters` change. [Your first Python script →](https://archicad-api.com/start/#python)
+Every Tapir command is sent the same way; only `commandName` and `addOnCommandParameters` change. [Your first Python script](https://archicad-api.com/start/#python)
 
-[ Get started
+Get started
 
-#### Install and run a script
+#### [Install and run a script](https://archicad-api.com/start/)
 
 Install Tapir, run a script from the palette and write your first Python script.
 
-Get started → ](https://archicad-api.com/start/) [ AI
+Get started
 
-#### Tapir and AI
+AI
+
+#### [Tapir and AI](https://archicad-api.com/ai/)
 
 MCP servers and scripts an AI assistant writes for you.
 
-Use Tapir with AI → ](https://archicad-api.com/ai/) [ Tutorials
+Use Tapir with AI
 
-#### Learn by watching
+Tutorials
+
+#### [Learn by watching](https://archicad-api.com/tutorials/)
 
 Six videos, from installing Tapir to whole workflows.
 
-Watch the tutorials → ](https://archicad-api.com/tutorials/)
+Watch the tutorials
 
 
 ---
@@ -481,7 +500,7 @@ Scripts shared by architects. Each one is checked for safety and adapted to work
 
 These are five of the scripts that come with the Tapir palette: open it in Archicad, pick one and press Run Script. Each is a short Python file you can read and change.
 
--  Built-in script
+- Built-in script
 
 #### Number elements along a line
 
@@ -490,7 +509,7 @@ Select a polyline and the doors, zones or objects to number. Each one gets its E
 Changes the model `SetPropertyValuesOfElements`
 
 [Automatic Numbering Based on Polyline](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/AutomaticNumberingBasedOnPolyline.py)
--  Built-in script
+- Built-in script
 
 #### Colour the model by a property
 
@@ -499,7 +518,7 @@ Pick a property; every element gets a colour for its value, with a legend of the
 Read only `HighlightElements`
 
 [Property Highlighter](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/PropertyHighlighter.py)
--  Built-in script
+- Built-in script
 
 #### Check a project before it goes out
 
@@ -508,7 +527,7 @@ Lists elements without an ID, zones with the same number, unclassified and dupli
 Read only `GetClassificationsOfElements`
 
 [Project Health Check](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/ProjectHealthCheck.py)
--  Built-in script
+- Built-in script
 
 #### Publish on a schedule
 
@@ -517,7 +536,7 @@ Publishes the chosen Publisher Sets now or on a schedule, every few hours or dai
 Writes files `PublishPublisherSet`
 
 [Batch Publisher](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/BatchPublisher.py)
--  Built-in script
+- Built-in script
 
 #### Tidy up the View Map
 
@@ -527,7 +546,7 @@ Changes the model `API.MoveNavigatorItem`
 
 [Unused View Cleaner](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/UnusedViewCleaner.py)
 
- Opening soon The scripts move to this page, and the list appears here as soon as the first ones are in. Until then, the scripts shared so far are on the [current marketplace](https://tapir-marketplace.vercel.app/), and you can [share your own](https://archicad-api.com/scripts/share/).
+**Opening soon** The scripts move to this page, and the list appears here as soon as the first ones are in. Until then, the scripts shared so far are on the [current marketplace](https://tapir-marketplace.vercel.app/), and you can [share your own](https://archicad-api.com/scripts/share/).
 
 Install
 
@@ -558,9 +577,9 @@ No GitHub account, no setup. Your name stays on it, and everyone who uses Tapir 
 
 ### What happens
 
-1. Send itPost the script in `#share-a-script` on Discord, with a few words on what it does. The Tapir palette is getting a Share button that does the same: you see the whole file before anything is sent. It arrives as a GitHub issue labelled `script-share`.
-2. Adapted for any officeTapir's bot, an AI, opens a pull request: hard-coded layers, properties and paths become settings, risky code is removed, and it works in every Archicad language, in metric and imperial.
-3. You confirm, it's listedTry the adapted version and say it still does what you meant. Once the pull request is reviewed and merged, it appears on the [Scripts](https://archicad-api.com/scripts/) page with your name.
+1. **Send it**Post the script in `#share-a-script` on Discord, with a few words on what it does. The Tapir palette is getting a Share button that does the same: you see the whole file before anything is sent. It arrives as a GitHub issue labelled `script-share`.
+2. **Adapted for any office**Tapir's bot, an AI, opens a pull request: hard-coded layers, properties and paths become settings, risky code is removed, and it works in every Archicad language, in metric and imperial.
+3. **You confirm, it's listed**Try the adapted version and say it still does what you meant. Once the pull request is reviewed and merged, it appears on the [Scripts](https://archicad-api.com/scripts/) page with your name.
 
 ### Three ways to send it
 
@@ -670,15 +689,15 @@ The Tapir plugin connects Grasshopper to a running Archicad: read elements and t
 
 ### What the components *do.*
 
-Each component sends a Tapir command to Archicad and gives you the answer as Grasshopper data. You find them on the Tapir tab, grouped as in Archicad.
+Each component sends a Tapir command to Archicad and gives you the answer as Grasshopper data. You find them on the **Tapir** tab, grouped as in Archicad.
 
-READElements and their dataElements by type, story or selection; their properties, classifications, settings and geometry.
+**READ** **Elements and their data**Elements by type, story or selection; their properties, classifications, settings and geometry.
 
-CHANGEWhat you pass inProperty values, classifications, layers, IDs and tool settings of the elements you pass in.
+**CHANGE** **What you pass in**Property values, classifications, layers, IDs and tool settings of the elements you pass in.
 
-CREATEFrom Rhino geometryWalls, doors, windows, railings, level dimensions and more, from points and curves.
+**CREATE** **From Rhino geometry**Walls, doors, windows, railings, level dimensions and more, from points and curves.
 
-PROJECTThe rest of the fileStories, attributes, navigator views, layouts, issues, favorites and libraries.
+**PROJECT** **The rest of the file**Stories, attributes, navigator views, layouts, issues, favorites and libraries.
 
 Which Tapir commands have a component, and which settings each covers, is on the [Grasshopper coverage](https://archicad-api.com/gh-coverage/) page.
 
@@ -726,15 +745,15 @@ Placed at a `Position`, optionally on a parent element.
 
 Refresh Create
 
-REFRESHReadsReads the elements in `ElementGuid` and fills every output.
+**REFRESH** **Reads**Reads the elements in `ElementGuid` and fills every output.
 
-EXECUTEWritesWrites the given settings to those elements. Only the keys you give are written.
+**EXECUTE** **Writes**Writes the given settings to those elements. Only the keys you give are written.
 
-CREATEMakes new elementsFrom the geometry inputs, starting from the tool's defaults or from a `FavoriteName`.
+**CREATE** **Makes new elements**From the geometry inputs, starting from the tool's defaults or from a `FavoriteName`.
 
 Nothing is written to Archicad until you press Execute or Create. A JSON output read by Refresh can be fed straight back into the same input. Archicad has no command to change railings or level dimensions after they are placed, so for those Execute only writes the ID, layer and draw order.
 
- Note Walls remembers the walls its Create made, in the `.gh` file. The next Create updates them instead of making new ones. Turn this off, or forget them, in the component's menu.
+**Note** Walls remembers the walls its Create made, in the `.gh` file. The next Create updates them instead of making new ones. Turn this off, or forget them, in the component's menu.
 
 ### Install
 
@@ -744,23 +763,23 @@ The components talk to Archicad through the Add-On. [Get started](https://archic
 
 #### Install the tapir package in Rhino
 
-In Rhino 7 or 8, open *Tools > Package Manager* (or type `PackageManager`), search for tapir and click Install. Restart Rhino.
+In Rhino 7 or 8, open *Tools > Package Manager* (or type `PackageManager`), search for **tapir** and click Install. Restart Rhino.
 
 #### Open Archicad, then Grasshopper
 
-With a project open in Archicad, start Grasshopper. The Tapir tab appears in its toolbar. With more than one Archicad open, give the port of the one you want to the ConnectArchicad component (*Tapir > General*); the first Archicad uses 19723.
+With a project open in Archicad, start Grasshopper. The **Tapir** tab appears in its toolbar. With more than one Archicad open, give the port of the one you want to the **ConnectArchicad** component (*Tapir > General*); the first Archicad uses 19723.
 
 ### One *wall.*
 
 Build this in an empty Grasshopper canvas, with a project open in Archicad:
 
-1. Place two Point parameters and set them to 0,0,0 and 5,0,0. Archicad reads the numbers as metres.
-2. Place the Walls component from *Tapir > Design Tools*. Connect the points to `StartPoint` and `EndPoint`.
-3. Place a Panel with the text on the right and connect it to `GeometryAndPositioning_JSON`.
-4. Press Create. A 5 m wall appears in Archicad, 3 m high and 30 cm thick.
+1. Place two **Point** parameters and set them to 0,0,0 and 5,0,0. Archicad reads the numbers as metres.
+2. Place the **Walls** component from *Tapir > Design Tools*. Connect the points to `StartPoint` and `EndPoint`.
+3. Place a **Panel** with the text on the right and connect it to `GeometryAndPositioning_JSON`.
+4. Press **Create**. A 5 m wall appears in Archicad, 3 m high and 30 cm thick.
 5. Move a point and press Create again: the same wall moves. Change the panel and press Create: the same wall changes.
 
-Press Refresh to see every setting of the wall in the JSON outputs. Copy a key from there to set it the next time.
+Press **Refresh** to see every setting of the wall in the JSON outputs. Copy a key from there to set it the next time.
 
 Panel → GeometryAndPositioning_JSONJSON
 
@@ -768,25 +787,29 @@ Panel → GeometryAndPositioning_JSONJSON
 {"Wall Height": 3.0, "Wall Thickness": 0.3}
 ```
 
-[ Get started
+Get started
 
-#### Install the Add-On
+#### [Install the Add-On](https://archicad-api.com/start/)
 
 Install Tapir and the tapir package, then try the wall above.
 
-Get started → ](https://archicad-api.com/start/) [ Coverage
+Get started
 
-#### Grasshopper coverage
+Coverage
+
+#### [Grasshopper coverage](https://archicad-api.com/gh-coverage/)
 
 Which commands have a component, and which inputs each still lacks.
 
-See the coverage → ](https://archicad-api.com/gh-coverage/) [ Videos
+See the coverage
 
-#### Watch it work
+Videos
+
+#### [Watch it work](https://archicad-api.com/tutorials/)
 
 The Archicad and Grasshopper tutorials.
 
-Watch the tutorials → ](https://archicad-api.com/tutorials/)
+Watch the tutorials
 
 
 ---
@@ -809,7 +832,7 @@ While you chat
 
 The AI tool calls Tapir's commands itself, while you chat. Works with tools that support the Model Context Protocol (MCP), such as Claude Desktop.
 
-[Tapir MCP servers](#mcp-servers)
+[Tapir MCP servers](https://archicad-api.com/ai/#mcp-servers)
 
 Any AI tool
 
@@ -817,7 +840,7 @@ Any AI tool
 
 Any AI tool can write a short Python script that sends Tapir commands. You read it, then run it from the Tapir palette or a terminal.
 
-[How it works](#scripts)
+[How it works](https://archicad-api.com/ai/#scripts)
 
 ### Tapir MCP *servers.*
 
@@ -839,7 +862,7 @@ Versions of it that others changed and published. Check when each was last updat
 
 [See the forks](https://github.com/SzamosiMate/tapir-archicad-MCP/forks)
 
- Careful An MCP server can change your model. Try it on a copy of your project first, and read what the AI is about to do before you allow it.
+**Careful** An MCP server can change your model. Try it on a copy of your project first, and read what the AI is about to do before you allow it.
 
 ### Start by *reading.*
 
@@ -862,11 +885,11 @@ Tell me which Tapir commands you used.
 
 Without an MCP server, describe the task, give the AI the command list, and run the script it writes.
 
-01Describe what you wantFor example: "Extract all composite exterior walls on level 2 and calculate their net volume."
+**01** **Describe what you want**For example: "Extract all composite exterior walls on level 2 and calculate their net volume."
 
-02Share the command listGive the AI the [command reference](https://archicad-api.com/archicad-addon/) and the working example below. Ask for Python's standard library only, on port 19723.
+**02** **Share the command list**Give the AI the [command reference](https://archicad-api.com/archicad-addon/) and the working example below. Ask for Python's standard library only, on port 19723.
 
-03Read it, then run itRead the script before you run it, from the Tapir palette or a terminal. Try one that changes the model on a copy of your project first.
+**03** **Read it, then run it**Read the script before you run it, from the Tapir palette or a terminal. Try one that changes the model on a copy of your project first.
 
 promptfor Claude or any AI tool
 
@@ -905,25 +928,29 @@ def run_tapir_command(name, parameters=None, port=19723):
 print(run_tapir_command("GetAddOnVersion"))
 ```
 
-[ Get started
+Get started
 
-#### Install Tapir
+#### [Install Tapir](https://archicad-api.com/start/)
 
 Install Tapir, then give your AI tool the prompt above.
 
-Get started → ](https://archicad-api.com/start/) [ Commands
+Get started
 
-#### The command reference
+Commands
+
+#### [The command reference](https://archicad-api.com/archicad-addon/)
 
 The list to give the AI: every command with its schema.
 
-Open the reference → ](https://archicad-api.com/archicad-addon/) [ Discord
+Open the reference
 
-#### Show what you built
+Discord
+
+#### [Show what you built](https://discord.gg/NAnSennmpY)
 
 Ask about MCP servers and share your prompts.
 
-Join Discord → ](https://discord.gg/NAnSennmpY)
+Join Discord
 
 
 ---
@@ -938,88 +965,87 @@ Short videos that show Tapir at work in Archicad and Grasshopper, all in one pla
 
 ### Videos
 
--  [
+-
 
 Getting started
 
-#### Download and install
+#### [Download and install](https://www.youtube.com/watch?v=llWnPbS7zJU)
 
 Setting up the Tapir add-on in Archicad and running your first automation.
 
-](https://www.youtube.com/watch?v=llWnPbS7zJU)
--  [
+-
 
 Core workflow
 
-#### Selection methods
+#### [Selection methods](https://www.youtube.com/watch?v=Eh5hB756Oko)
 
 Ways to target, select and filter elements with Python and Grasshopper.
 
-](https://www.youtube.com/watch?v=Eh5hB756Oko)
--  [
+-
 
 Parametric BIM
 
-#### Column workflow
+#### [Column workflow](https://www.youtube.com/watch?v=sS6Uz8qClWo)
 
 Placing columns, setting their parameters and generating their geometry from Grasshopper.
 
-](https://www.youtube.com/watch?v=sS6Uz8qClWo)
--  [
+-
 
 Grasshopper
 
-#### Archicad and Grasshopper
+#### [Archicad and Grasshopper](https://www.youtube.com/watch?v=PfivmfXDv9o)
 
 Turning Grasshopper definitions into native Archicad elements.
 
-](https://www.youtube.com/watch?v=PfivmfXDv9o)
--  [
+-
 
 Data
 
-#### Excel and Airtable sync
+#### [Excel and Airtable sync](https://www.youtube.com/watch?v=rT4gEMrYuYw)
 
 Two-way property sync of quantities, schedules and custom properties with spreadsheets.
 
-](https://www.youtube.com/watch?v=rT4gEMrYuYw)
--  [
+-
 
 Power tools
 
-#### Advanced element filtering
+#### [Advanced element filtering](https://www.youtube.com/watch?v=tfiAvH_fAJo)
 
 Isolating elements by classification, layer combination and nested properties.
 
-](https://www.youtube.com/watch?v=tfiAvH_fAJo)
-
 [The whole playlist on YouTube](https://youtube.com/playlist?list=PLGc943dgyfjjqzeFglpYLIPrcn_HFicDn)
 
-[ Topic
+Topic
 
-#### Installing Tapir
+#### [Installing Tapir](https://archicad-api.com/start/)
 
 Install the Add-On with the Tapir Installer, load it in Archicad and open the Tapir palette.
 
-Written guide: Get started → ](https://archicad-api.com/start/) [ Topic
+Written guide: Get started
 
-#### Scripts from the palette
+Topic
+
+#### [Scripts from the palette](https://archicad-api.com/scripts/)
 
 Run the scripts that come with Tapir, and add your own, from the Tapir palette without writing code.
 
-Written guide: Scripts → ](https://archicad-api.com/scripts/) [ Topic
+Written guide: Scripts
 
-#### Python
+Topic
+
+#### [Python](https://archicad-api.com/archicad-addon/)
 
 Send Tapir commands from a Python script, read the answers and change elements.
 
-Written guide: the command reference → ](https://archicad-api.com/archicad-addon/) [ Topic
+Written guide: the command reference
 
-#### Grasshopper
+Topic
+
+#### [Grasshopper](https://archicad-api.com/grasshopper/)
 
 Connect Grasshopper to Archicad, read elements and create them from Rhino geometry.
 
-Written guide: Grasshopper → ](https://archicad-api.com/grasshopper/)
+Written guide: Grasshopper
 
 Missing a tutorial?
 
@@ -1070,15 +1096,15 @@ MCP servers let Claude and other assistants read and change a project through Ta
 
 Most fixes are written by bots and checked by people. The maintainers set the rules and can stop any change; you decide whether a fix works in your Archicad.
 
-01Post itDescribe the bug or idea on Discord or GitHub. A GitHub account is not needed on Discord.
+**01** **Post it**Describe the bug or idea on Discord or GitHub. A GitHub account is not needed on Discord.
 
-02An issueEvery half hour, Discord posts that read like a bug report or a feature request become GitHub issues, and the bot replies with the link.
+**02** **An issue**Every half hour, Discord posts that read like a bug report or a feature request become GitHub issues, and the bot replies with the link.
 
-03A draft fixThe issue bot answers, asks for what it is missing, or writes the fix and opens a pull request. It is built for every Archicad version and reviewed.
+**03** **A draft fix**The issue bot answers, asks for what it is missing, or writes the fix and opens a pull request. It is built for every Archicad version and reviewed.
 
-04You testA comment on the pull request links the built add-on and asks the person who reported it to try it.
+**04** **You test**A comment on the pull request links the built add-on and asks the person who reported it to try it.
 
-05ReleasedGreen and reviewed, it is merged three days later unless a maintainer stops it, and ships in Monday's [release](https://github.com/ENZYME-APD/tapir-archicad-automation/releases).
+**05** **Released**Green and reviewed, it is merged three days later unless a maintainer stops it, and ships in Monday's [release](https://github.com/ENZYME-APD/tapir-archicad-automation/releases).
 
 Report
 
@@ -1092,7 +1118,7 @@ Post it on Discord or open an issue on GitHub; both reach the same place. A repo
 - what you expected and what happened instead, with the error message;
 - whether the project is a Teamwork project, and which libraries are loaded, when it matters.
 
- Public Issues and Discord channels are public. Leave out client names, project names and file paths you don't want to share.
+**Public** Issues and Discord channels are public. Leave out client names, project names and file paths you don't want to share.
 
 [Open an issue on GitHub](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new) [Post on Discord](https://discord.gg/NAnSennmpY)
 
@@ -1112,25 +1138,29 @@ Testing often? The [community test runner](https://github.com/ENZYME-APD/tapir-a
 
 ### Help build it
 
-[ Share
+Share
 
-#### Share a script
+#### [Share a script](https://archicad-api.com/scripts/share/)
 
 Made a script your office uses? Share it, and any office can install it from the palette.
 
-How to share → ](https://archicad-api.com/scripts/share/) [ Roadmap
+How to share
 
-#### Ask for a feature
+Roadmap
+
+#### [Ask for a feature](https://archicad-api.com/roadmap/)
 
 How features are requested, and what is being asked for now.
 
-See the roadmap → ](https://archicad-api.com/roadmap/) [ Code
+See the roadmap
 
-#### Write a command
+Code
+
+#### [Write a command](https://github.com/ENZYME-APD/tapir-archicad-automation/wiki/Archicad-Add-On-Development)
 
 The add-on is C++ on the Archicad API. The development guide shows how to add a command.
 
-Read the guide → ](https://github.com/ENZYME-APD/tapir-archicad-automation/wiki/Archicad-Add-On-Development)
+Read the guide
 
 Get involved
 
@@ -1173,31 +1203,37 @@ Merged changes are released every Monday. The release notes list them, and the a
 
 ### What is being asked for now
 
-[ Requests
+Requests
 
-#### Open feature requests
+#### [Open feature requests](https://github.com/ENZYME-APD/tapir-archicad-automation/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement)
 
 Every open issue labelled `enhancement`. Add a comment or a reaction to one you need too.
 
-See the requests → ](https://github.com/ENZYME-APD/tapir-archicad-automation/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement) [ Plan
+See the requests
 
-#### Project board
+Plan
+
+#### [Project board](https://github.com/orgs/ENZYME-APD/projects/4/views/1)
 
 The maintainers' board of planned and ongoing work.
 
-Open the board → ](https://github.com/orgs/ENZYME-APD/projects/4/views/1) [ In progress
+Open the board
 
-#### Open pull requests
+In progress
+
+#### [Open pull requests](https://github.com/ENZYME-APD/tapir-archicad-automation/pulls)
 
 Changes being built, reviewed and tested right now.
 
-See the pull requests → ](https://github.com/ENZYME-APD/tapir-archicad-automation/pulls) [ Shipped
+See the pull requests
 
-#### Releases
+Shipped
+
+#### [Releases](https://github.com/ENZYME-APD/tapir-archicad-automation/releases)
 
 Every release, with its notes and downloads. The command reference shows the version each command came in.
 
-See the releases → ](https://github.com/ENZYME-APD/tapir-archicad-automation/releases)
+See the releases
 
 ### Already *here.*
 
@@ -1278,10 +1314,10 @@ Revisions · Tapir
 
 | Rev | Date | Description | By |
 | --- | --- | --- | --- |
-| A | 5 July 2022 | Born in Enzyme's R&DArchicad's JSON interface was a step forward, but Grasshopper users still needed C++ add-ons to reach native elements. The first commit, with the MIT licence. | Grzeg Wilk, Jorge Beneitez |
-| B | 7 July 2022 | A place to talkThe Discord server opens, where architects and developers say what they need and show what they made. | The first members |
-| C | July 2024 | The templateTibor Lorántfy, whose archicad-additional-json-commands the add-on is built on, joins the project. Almost any function of the Archicad API can now become a JSON command. | Tibor Lorántfy |
-| D | 2026 | Built by its communityA release every Monday. Reports on Discord become GitHub issues, bots draft the fixes and people test them in their own Archicad. [See the growth](https://archicad-api.com/community/#activity). | Everyone who reports, tests and contributes |
+| A | 5 July 2022 | Born in Enzyme's R&D Archicad's JSON interface was a step forward, but Grasshopper users still needed C++ add-ons to reach native elements. The first commit, with the MIT licence. | Grzeg Wilk, Jorge Beneitez |
+| B | 7 July 2022 | A place to talk The Discord server opens, where architects and developers say what they need and show what they made. | The first members |
+| C | July 2024 | The template Tibor Lorántfy, whose archicad-additional-json-commands the add-on is built on, joins the project. Almost any function of the Archicad API can now become a JSON command. | Tibor Lorántfy |
+| D | 2026 | Built by its community A release every Monday. Reports on Discord become GitHub issues, bots draft the fixes and people test them in their own Archicad. [See the growth](https://archicad-api.com/community/#activity). | Everyone who reports, tests and contributes |
 
 ### The people *behind it.*
 
@@ -1325,17 +1361,17 @@ ENZYME-APD runs the project and publishes Tapir under the MIT licence. Everyone 
 - [Viktor Kovács @kovacsv](https://github.com/kovacsv)
 - [@weltmaister](https://github.com/weltmaister)
 
-Many more report bugs, test fixes in their own Archicad and share scripts; bots draft fixes, and people test and approve them. [All contributors on GitHub →](https://github.com/ENZYME-APD/tapir-archicad-automation/graphs/contributors)
+Many more report bugs, test fixes in their own Archicad and share scripts; bots draft fixes, and people test and approve them. [All contributors on GitHub](https://github.com/ENZYME-APD/tapir-archicad-automation/graphs/contributors)
 
 ### Principles
 
-FREENo price, everMIT licence for the add-on, the plugin and every shared script.
+**FREE** **No price, ever**MIT licence for the add-on, the plugin and every shared script.
 
-OPENBuilt in publicEvery issue, pull request and review is on GitHub.
+**OPEN** **Built in public**Every issue, pull request and review is on GitHub.
 
-SIGNEDSafe to installThe Windows installer is signed through SignPath; the macOS installer and add-ons are signed and notarized.
+**SIGNED** **Safe to install**The Windows installer is signed through SignPath; the macOS installer and add-ons are signed and notarized.
 
-WEEKLYSmall, steady releasesA release every Monday when something changed.
+**WEEKLY** **Small, steady releases**A release every Monday when something changed.
 
 ### Support *Tapir.*
 
@@ -1359,7 +1395,7 @@ Your office
 
 Training sessions, implementation workshops and custom development for offices moving to computational BIM workflows with Tapir.
 
-Talk to us: contact@enzyme-apd.com
+Talk to us: **contact@enzyme-apd.com**
 
 Free code signing provided by SignPath.io, certificate by SignPath Foundation. Archicad is a trademark of Graphisoft SE; Tapir is not made by Graphisoft.
 
@@ -1368,7 +1404,7 @@ Free code signing provided by SignPath.io, certificate by SignPath Foundation. A
 
 ## Scripts in the Tapir palette
 
-- **Automatic Numbering Based on Polyline**:  ([source](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/AutomaticNumberingBasedOnPolyline.py))
+- **Automatic Numbering Based on Polyline**: Select one polyline and the elements to number. The elements get their Element ID in the order they follow along the polyline, from its first point to its last one. ([source](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/AutomaticNumberingBasedOnPolyline.py))
 - **Batch Publisher**: Publishes the chosen Publisher Sets in one go, now or on a schedule (every N minutes or hours, or daily at a given time on the chosen weekdays). Before publishing it can receive the Teamwork changes and update the drawings on the layouts. The schedule runs while this window is open. The settings are saved per project, the runs are logged in the window and in a CSV file next to the settings (Documents/Tapir). ([source](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/BatchPublisher.py))
 - **Building Material Property Audit**: Lists the value of a custom property for every Building Material of the project, so the materials with an empty value stand out. Export the list to Excel or CSV, or give the chosen materials a value: the script shows which materials it will change and asks before changing them, then reports the materials it could not change. Based on the audit_building_material_properties.py workflow example. ([source](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/BuildingMaterialPropertyAudit.py))
 - **Bulk View Renamer**: Lists the views of the View Map, or of one of its folders, and renames them in one go: find and replace (optionally a regular expression), a prefix and a suffix, or a pattern with a counter. A table shows the old and the new name of every view with name clashes marked, and nothing is renamed until you confirm. The views are renamed one by one with RenameNavigatorItem, and every view that could not be renamed is reported. ([source](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/BulkViewRenamer.py))
@@ -1376,7 +1412,7 @@ Free code signing provided by SignPath.io, certificate by SignPath Foundation. A
 - **Complex Element Finder**: Finds the elements that make the project heavy: polylines, fills, slabs and other polygonal elements with too many points in their outline, and elements whose 3D model has too many polygons (imported objects, morphs, detailed library parts). Lists them, highlights them in red and selects them in Archicad on request. ([source](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/ComplexElementFinder.py))
 - **Copy Settings to Selection**: Copies the settings of one element to the selected elements of the same type, without their geometry: the eyedropper and syringe for many elements at once. The source's settings are saved as a temporary Favorite, applied to the selected elements with ApplyFavoritesToElements, and the Favorite is deleted again. ([source](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/CopySettingsToSelection.py))
 - **Distribution Board Schedule**: Lists the circuits of every distribution board with their loads, totals each board and its phases, flags the circuits over a load limit and the boards whose phases are out of balance, and saves the schedule as CSV or Excel. It only reads the project. ([source](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/DistributionBoardSchedule.py))
-- **Door and Window Numbering by Zone**:  ([source](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/DoorWindowNumberingByZone.py))
+- **Door and Window Numbering by Zone**: Gives every door and window an Element ID built from the zone it opens into, such as 1.04-D1 or 1.04-W2, numbered within each zone. ([source](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/DoorWindowNumberingByZone.py))
 - **Drawing Status Report**: Lists every Drawing placed on the layouts of the Layout Book with the columns of Archicad's Drawing Manager: status, update type, stored in project, source and path. Export the list to Excel or CSV, or update the drawings whose source has changed: the script shows which drawings it will update and asks before updating them, then reports the drawings it could not update. Reading opens each layout in turn (Archicad gives a drawing's data only from its own layout) and then goes back to the window that was active. Based on the get_drawing_manager_data.py workflow example. ([source](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/DrawingStatusReport.py))
 - **Electrical and Plumbing Check**: Before drawings are issued, lists the electrical and plumbing symbols that miss data: GDL symbols whose circuit, board or number parameter (chosen by the user) is empty or names a board that does not exist, Archicad 30 electrical devices that are not connected to a circuit, Archicad 30 circuits without devices, and sanitary objects that are outside every zone. Each group can be highlighted and selected in Archicad. The script only reads the model; it changes nothing but the highlight and the selection. ([source](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/ElectricalPlumbingCheck.py))
 - **Material Take-Off**: Totals the volume (m³) and the projected area (m²) of every building material used by the walls, columns, beams, slabs, roofs and shells, per story and optionally per element type, from the quantities Archicad calculates for each skin. The table can be copied to the clipboard or saved as Excel or CSV for a bill of quantities. It only reads the project. ([source](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/MaterialTakeOff.py))

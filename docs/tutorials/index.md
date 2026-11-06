@@ -8,88 +8,87 @@ Short videos that show Tapir at work in Archicad and Grasshopper, all in one pla
 
 ## Videos
 
--  [
+-
 
 Getting started
 
-### Download and install
+### [Download and install](https://www.youtube.com/watch?v=llWnPbS7zJU)
 
 Setting up the Tapir add-on in Archicad and running your first automation.
 
-](https://www.youtube.com/watch?v=llWnPbS7zJU)
--  [
+-
 
 Core workflow
 
-### Selection methods
+### [Selection methods](https://www.youtube.com/watch?v=Eh5hB756Oko)
 
 Ways to target, select and filter elements with Python and Grasshopper.
 
-](https://www.youtube.com/watch?v=Eh5hB756Oko)
--  [
+-
 
 Parametric BIM
 
-### Column workflow
+### [Column workflow](https://www.youtube.com/watch?v=sS6Uz8qClWo)
 
 Placing columns, setting their parameters and generating their geometry from Grasshopper.
 
-](https://www.youtube.com/watch?v=sS6Uz8qClWo)
--  [
+-
 
 Grasshopper
 
-### Archicad and Grasshopper
+### [Archicad and Grasshopper](https://www.youtube.com/watch?v=PfivmfXDv9o)
 
 Turning Grasshopper definitions into native Archicad elements.
 
-](https://www.youtube.com/watch?v=PfivmfXDv9o)
--  [
+-
 
 Data
 
-### Excel and Airtable sync
+### [Excel and Airtable sync](https://www.youtube.com/watch?v=rT4gEMrYuYw)
 
 Two-way property sync of quantities, schedules and custom properties with spreadsheets.
 
-](https://www.youtube.com/watch?v=rT4gEMrYuYw)
--  [
+-
 
 Power tools
 
-### Advanced element filtering
+### [Advanced element filtering](https://www.youtube.com/watch?v=tfiAvH_fAJo)
 
 Isolating elements by classification, layer combination and nested properties.
 
-](https://www.youtube.com/watch?v=tfiAvH_fAJo)
-
 [The whole playlist on YouTube](https://youtube.com/playlist?list=PLGc943dgyfjjqzeFglpYLIPrcn_HFicDn)
 
-[ Topic
+Topic
 
-### Installing Tapir
+### [Installing Tapir](https://archicad-api.com/start/)
 
 Install the Add-On with the Tapir Installer, load it in Archicad and open the Tapir palette.
 
-Written guide: Get started → ](https://archicad-api.com/start/) [ Topic
+Written guide: Get started
 
-### Scripts from the palette
+Topic
+
+### [Scripts from the palette](https://archicad-api.com/scripts/)
 
 Run the scripts that come with Tapir, and add your own, from the Tapir palette without writing code.
 
-Written guide: Scripts → ](https://archicad-api.com/scripts/) [ Topic
+Written guide: Scripts
 
-### Python
+Topic
+
+### [Python](https://archicad-api.com/archicad-addon/)
 
 Send Tapir commands from a Python script, read the answers and change elements.
 
-Written guide: the command reference → ](https://archicad-api.com/archicad-addon/) [ Topic
+Written guide: the command reference
 
-### Grasshopper
+Topic
+
+### [Grasshopper](https://archicad-api.com/grasshopper/)
 
 Connect Grasshopper to Archicad, read elements and create them from Rhino geometry.
 
-Written guide: Grasshopper → ](https://archicad-api.com/grasshopper/)
+Written guide: Grasshopper
 
 Missing a tutorial?
 

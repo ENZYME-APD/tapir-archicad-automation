@@ -8,11 +8,11 @@ Number every door along a line. Colour the model by any property. Check a projec
 
 [Download WINDOWS](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirInstaller_Win.exe) [Download MACOS](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirInstaller_Mac.zip)
 
-100% freeOpen source (MIT)[Watch the tutorials](https://archicad-api.com/tutorials/)[All downloads](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest)
+100% free Open source (MIT) [Watch the tutorials](https://archicad-api.com/tutorials/) [All downloads](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest)
 
-Automatic Numbering Based on Polyline · 6 doors numbered D01–D06
+**Automatic Numbering Based on Polyline** · 6 doors numbered D01–D06
 
-Mon [A new release every week](https://github.com/ENZYME-APD/tapir-archicad-automation/releases)
+**Mon** [A new release every week](https://github.com/ENZYME-APD/tapir-archicad-automation/releases)
 
 ## Start where you *already work.*
 
@@ -46,7 +46,7 @@ Every command answers on port 19723, each with a schema and an example. Python's
 
 Five built-in scripts of the Tapir palette and one workflow script, each a short Python file you can read and change.
 
--  Built-in script
+- Built-in script
 
 ### Number elements along a line
 
@@ -55,7 +55,7 @@ Select a polyline and the doors, zones or objects to number. Each one gets its E
 Changes the model `SetPropertyValuesOfElements`
 
 [Automatic Numbering Based on Polyline](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/AutomaticNumberingBasedOnPolyline.py)
--  Built-in script
+- Built-in script
 
 ### Colour the model by a property
 
@@ -64,7 +64,7 @@ Pick a property; every element gets a colour for its value, with a legend of the
 Read only `HighlightElements`
 
 [Property Highlighter](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/PropertyHighlighter.py)
--  Built-in script
+- Built-in script
 
 ### Check a project before it goes out
 
@@ -73,7 +73,7 @@ Lists elements without an ID, zones with the same number, unclassified and dupli
 Read only `GetClassificationsOfElements`
 
 [Project Health Check](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/ProjectHealthCheck.py)
--  Built-in script
+- Built-in script
 
 ### Publish on a schedule
 
@@ -82,7 +82,7 @@ Publishes the chosen Publisher Sets now or on a schedule, every few hours or dai
 Writes files `PublishPublisherSet`
 
 [Batch Publisher](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/BatchPublisher.py)
--  Built-in script
+- Built-in script
 
 ### Tidy up the View Map
 
@@ -91,7 +91,7 @@ Finds the views that are neither placed on a layout nor published, and moves the
 Changes the model `API.MoveNavigatorItem`
 
 [Unused View Cleaner](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/UnusedViewCleaner.py)
--  Workflow
+- Workflow
 
 ### Export the model to OBJ
 
@@ -159,7 +159,7 @@ With a project open, Archicad answers JSON commands on `http://127.0.0.1:19723`.
 
 With several Archicads open, the next ones answer on 19724, 19725 and so on.
 
-[Your first Python script, step by step →](https://archicad-api.com/start/#python)
+[Your first Python script, step by step](https://archicad-api.com/start/#python)
 
 walls.pyport 19723
 
@@ -191,22 +191,26 @@ print(len(walls), 'walls')
 
 The reference, sharing your own scripts, and the people who build Tapir.
 
-[ Docs
+Docs
 
-### The reference
+### [The reference](https://archicad-api.com/docs/)
 
 Every command with its schema and an example, the Grasshopper guide, and what Tapir covers of the Archicad API.
 
-Open the docs → ](https://archicad-api.com/docs/) [ Share
+Open the docs
 
-### Send yours in
+Share
+
+### [Send yours in](https://archicad-api.com/scripts/share/)
 
 Post a script on Discord or as a pull request. It is checked, adapted for any office and listed with your name. No GitHub account needed.
 
-How sharing works → ](https://archicad-api.com/scripts/share/) [ Community
+How sharing works
 
-### Ask, report, test
+Community
+
+### [Ask, report, test](https://archicad-api.com/community/)
 
 Discord, the video series, and how a bug report becomes a fix.
 
-Join in → ](https://archicad-api.com/community/)
+Join in

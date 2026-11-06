@@ -36,15 +36,15 @@ MCP servers let Claude and other assistants read and change a project through Ta
 
 Most fixes are written by bots and checked by people. The maintainers set the rules and can stop any change; you decide whether a fix works in your Archicad.
 
-01Post itDescribe the bug or idea on Discord or GitHub. A GitHub account is not needed on Discord.
+**01** **Post it**Describe the bug or idea on Discord or GitHub. A GitHub account is not needed on Discord.
 
-02An issueEvery half hour, Discord posts that read like a bug report or a feature request become GitHub issues, and the bot replies with the link.
+**02** **An issue**Every half hour, Discord posts that read like a bug report or a feature request become GitHub issues, and the bot replies with the link.
 
-03A draft fixThe issue bot answers, asks for what it is missing, or writes the fix and opens a pull request. It is built for every Archicad version and reviewed.
+**03** **A draft fix**The issue bot answers, asks for what it is missing, or writes the fix and opens a pull request. It is built for every Archicad version and reviewed.
 
-04You testA comment on the pull request links the built add-on and asks the person who reported it to try it.
+**04** **You test**A comment on the pull request links the built add-on and asks the person who reported it to try it.
 
-05ReleasedGreen and reviewed, it is merged three days later unless a maintainer stops it, and ships in Monday's [release](https://github.com/ENZYME-APD/tapir-archicad-automation/releases).
+**05** **Released**Green and reviewed, it is merged three days later unless a maintainer stops it, and ships in Monday's [release](https://github.com/ENZYME-APD/tapir-archicad-automation/releases).
 
 Report
 
@@ -58,7 +58,7 @@ Post it on Discord or open an issue on GitHub; both reach the same place. A repo
 - what you expected and what happened instead, with the error message;
 - whether the project is a Teamwork project, and which libraries are loaded, when it matters.
 
- Public Issues and Discord channels are public. Leave out client names, project names and file paths you don't want to share.
+**Public** Issues and Discord channels are public. Leave out client names, project names and file paths you don't want to share.
 
 [Open an issue on GitHub](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new) [Post on Discord](https://discord.gg/NAnSennmpY)
 
@@ -78,25 +78,29 @@ Testing often? The [community test runner](https://github.com/ENZYME-APD/tapir-a
 
 ## Help build it
 
-[ Share
+Share
 
-### Share a script
+### [Share a script](https://archicad-api.com/scripts/share/)
 
 Made a script your office uses? Share it, and any office can install it from the palette.
 
-How to share → ](https://archicad-api.com/scripts/share/) [ Roadmap
+How to share
 
-### Ask for a feature
+Roadmap
+
+### [Ask for a feature](https://archicad-api.com/roadmap/)
 
 How features are requested, and what is being asked for now.
 
-See the roadmap → ](https://archicad-api.com/roadmap/) [ Code
+See the roadmap
 
-### Write a command
+Code
+
+### [Write a command](https://github.com/ENZYME-APD/tapir-archicad-automation/wiki/Archicad-Add-On-Development)
 
 The add-on is C++ on the Archicad API. The development guide shows how to add a command.
 
-Read the guide → ](https://github.com/ENZYME-APD/tapir-archicad-automation/wiki/Archicad-Add-On-Development)
+Read the guide
 
 Get involved
 

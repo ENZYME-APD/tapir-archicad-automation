@@ -6,45 +6,51 @@
 
 Every command, what Tapir covers of the Archicad API, and how the Grasshopper components map to it.
 
-[ Commands
+Commands
 
-### Tapir commands
+### [Tapir commands](https://archicad-api.com/archicad-addon/)
 
 Search by name, filter by the version a command came in, and open any command for its input and output schema and a Python example.
 
-Open the reference → ](https://archicad-api.com/archicad-addon/) [ Grasshopper
+Open the reference
 
-### Grasshopper guide
+Grasshopper
+
+### [Grasshopper guide](https://archicad-api.com/grasshopper/)
 
 The tool components, one per Archicad tool, with inputs named after the settings dialog. Install, a first definition, and what the buttons do.
 
-Read the guide → ](https://archicad-api.com/grasshopper/) [ Archicad API
+Read the guide
 
-### API coverage
+Archicad API
+
+### [API coverage](https://archicad-api.com/api-coverage/)
 
 Every function of Graphisoft's Archicad API and whether Tapir uses it, is working on it, or skipped it, updated every hour.
 
-See the coverage → ](https://archicad-api.com/api-coverage/) [ Components
+See the coverage
 
-### Grasshopper coverage
+Components
+
+### [Grasshopper coverage](https://archicad-api.com/gh-coverage/)
 
 Which Tapir commands have a Grasshopper component, and which inputs each component still lacks.
 
-See the coverage → ](https://archicad-api.com/gh-coverage/)
+See the coverage
 
 ## How it *works.*
 
 Tapir is an Archicad add-on that turns native API functions into a stateless JSON server on port 19723. Anything that can send an HTTP request can drive Archicad.
 
-GrasshopperThe tapir components
+**Grasshopper**The tapir components
 
-Python scriptsThe palette, or your own
+**Python scripts**The palette, or your own
 
-AI and MCPAssistants and MCP servers
+**AI and MCP**Assistants and MCP servers
 
-Tapir Add-OnA stateless JSON layer: one command per request
+**Tapir Add-On**A stateless JSON layer: one command per request
 
-ArchicadThe BIM model and its C++ API
+**Archicad**The BIM model and its C++ API
 
 ## Anatomy of a call
 
@@ -72,24 +78,28 @@ response200
      ]}}}
 ```
 
-Every Tapir command is sent the same way; only `commandName` and `addOnCommandParameters` change. [Your first Python script →](https://archicad-api.com/start/#python)
+Every Tapir command is sent the same way; only `commandName` and `addOnCommandParameters` change. [Your first Python script](https://archicad-api.com/start/#python)
 
-[ Get started
+Get started
 
-### Install and run a script
+### [Install and run a script](https://archicad-api.com/start/)
 
 Install Tapir, run a script from the palette and write your first Python script.
 
-Get started → ](https://archicad-api.com/start/) [ AI
+Get started
 
-### Tapir and AI
+AI
+
+### [Tapir and AI](https://archicad-api.com/ai/)
 
 MCP servers and scripts an AI assistant writes for you.
 
-Use Tapir with AI → ](https://archicad-api.com/ai/) [ Tutorials
+Use Tapir with AI
 
-### Learn by watching
+Tutorials
+
+### [Learn by watching](https://archicad-api.com/tutorials/)
 
 Six videos, from installing Tapir to whole workflows.
 
-Watch the tutorials → ](https://archicad-api.com/tutorials/)
+Watch the tutorials

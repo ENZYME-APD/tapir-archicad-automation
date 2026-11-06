@@ -8,15 +8,15 @@ The Tapir plugin connects Grasshopper to a running Archicad: read elements and t
 
 ## What the components *do.*
 
-Each component sends a Tapir command to Archicad and gives you the answer as Grasshopper data. You find them on the Tapir tab, grouped as in Archicad.
+Each component sends a Tapir command to Archicad and gives you the answer as Grasshopper data. You find them on the **Tapir** tab, grouped as in Archicad.
 
-READElements and their dataElements by type, story or selection; their properties, classifications, settings and geometry.
+**READ** **Elements and their data**Elements by type, story or selection; their properties, classifications, settings and geometry.
 
-CHANGEWhat you pass inProperty values, classifications, layers, IDs and tool settings of the elements you pass in.
+**CHANGE** **What you pass in**Property values, classifications, layers, IDs and tool settings of the elements you pass in.
 
-CREATEFrom Rhino geometryWalls, doors, windows, railings, level dimensions and more, from points and curves.
+**CREATE** **From Rhino geometry**Walls, doors, windows, railings, level dimensions and more, from points and curves.
 
-PROJECTThe rest of the fileStories, attributes, navigator views, layouts, issues, favorites and libraries.
+**PROJECT** **The rest of the file**Stories, attributes, navigator views, layouts, issues, favorites and libraries.
 
 Which Tapir commands have a component, and which settings each covers, is on the [Grasshopper coverage](https://archicad-api.com/gh-coverage/) page.
 
@@ -64,15 +64,15 @@ Placed at a `Position`, optionally on a parent element.
 
 Refresh Create
 
-REFRESHReadsReads the elements in `ElementGuid` and fills every output.
+**REFRESH** **Reads**Reads the elements in `ElementGuid` and fills every output.
 
-EXECUTEWritesWrites the given settings to those elements. Only the keys you give are written.
+**EXECUTE** **Writes**Writes the given settings to those elements. Only the keys you give are written.
 
-CREATEMakes new elementsFrom the geometry inputs, starting from the tool's defaults or from a `FavoriteName`.
+**CREATE** **Makes new elements**From the geometry inputs, starting from the tool's defaults or from a `FavoriteName`.
 
 Nothing is written to Archicad until you press Execute or Create. A JSON output read by Refresh can be fed straight back into the same input. Archicad has no command to change railings or level dimensions after they are placed, so for those Execute only writes the ID, layer and draw order.
 
- Note Walls remembers the walls its Create made, in the `.gh` file. The next Create updates them instead of making new ones. Turn this off, or forget them, in the component's menu.
+**Note** Walls remembers the walls its Create made, in the `.gh` file. The next Create updates them instead of making new ones. Turn this off, or forget them, in the component's menu.
 
 ## Install
 
@@ -82,23 +82,23 @@ The components talk to Archicad through the Add-On. [Get started](https://archic
 
 ### Install the tapir package in Rhino
 
-In Rhino 7 or 8, open *Tools > Package Manager* (or type `PackageManager`), search for tapir and click Install. Restart Rhino.
+In Rhino 7 or 8, open *Tools > Package Manager* (or type `PackageManager`), search for **tapir** and click Install. Restart Rhino.
 
 ### Open Archicad, then Grasshopper
 
-With a project open in Archicad, start Grasshopper. The Tapir tab appears in its toolbar. With more than one Archicad open, give the port of the one you want to the ConnectArchicad component (*Tapir > General*); the first Archicad uses 19723.
+With a project open in Archicad, start Grasshopper. The **Tapir** tab appears in its toolbar. With more than one Archicad open, give the port of the one you want to the **ConnectArchicad** component (*Tapir > General*); the first Archicad uses 19723.
 
 ## One *wall.*
 
 Build this in an empty Grasshopper canvas, with a project open in Archicad:
 
-1. Place two Point parameters and set them to 0,0,0 and 5,0,0. Archicad reads the numbers as metres.
-2. Place the Walls component from *Tapir > Design Tools*. Connect the points to `StartPoint` and `EndPoint`.
-3. Place a Panel with the text on the right and connect it to `GeometryAndPositioning_JSON`.
-4. Press Create. A 5 m wall appears in Archicad, 3 m high and 30 cm thick.
+1. Place two **Point** parameters and set them to 0,0,0 and 5,0,0. Archicad reads the numbers as metres.
+2. Place the **Walls** component from *Tapir > Design Tools*. Connect the points to `StartPoint` and `EndPoint`.
+3. Place a **Panel** with the text on the right and connect it to `GeometryAndPositioning_JSON`.
+4. Press **Create**. A 5 m wall appears in Archicad, 3 m high and 30 cm thick.
 5. Move a point and press Create again: the same wall moves. Change the panel and press Create: the same wall changes.
 
-Press Refresh to see every setting of the wall in the JSON outputs. Copy a key from there to set it the next time.
+Press **Refresh** to see every setting of the wall in the JSON outputs. Copy a key from there to set it the next time.
 
 Panel → GeometryAndPositioning_JSONJSON
 
@@ -106,22 +106,26 @@ Panel → GeometryAndPositioning_JSONJSON
 {"Wall Height": 3.0, "Wall Thickness": 0.3}
 ```
 
-[ Get started
+Get started
 
-### Install the Add-On
+### [Install the Add-On](https://archicad-api.com/start/)
 
 Install Tapir and the tapir package, then try the wall above.
 
-Get started → ](https://archicad-api.com/start/) [ Coverage
+Get started
 
-### Grasshopper coverage
+Coverage
+
+### [Grasshopper coverage](https://archicad-api.com/gh-coverage/)
 
 Which commands have a component, and which inputs each still lacks.
 
-See the coverage → ](https://archicad-api.com/gh-coverage/) [ Videos
+See the coverage
 
-### Watch it work
+Videos
+
+### [Watch it work](https://archicad-api.com/tutorials/)
 
 The Archicad and Grasshopper tutorials.
 
-Watch the tutorials → ](https://archicad-api.com/tutorials/)
+Watch the tutorials

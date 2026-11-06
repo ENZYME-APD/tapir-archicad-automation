@@ -16,7 +16,7 @@ While you chat
 
 The AI tool calls Tapir's commands itself, while you chat. Works with tools that support the Model Context Protocol (MCP), such as Claude Desktop.
 
-[Tapir MCP servers](#mcp-servers)
+[Tapir MCP servers](https://archicad-api.com/ai/#mcp-servers)
 
 Any AI tool
 
@@ -24,7 +24,7 @@ Any AI tool
 
 Any AI tool can write a short Python script that sends Tapir commands. You read it, then run it from the Tapir palette or a terminal.
 
-[How it works](#scripts)
+[How it works](https://archicad-api.com/ai/#scripts)
 
 ## Tapir MCP *servers.*
 
@@ -46,7 +46,7 @@ Versions of it that others changed and published. Check when each was last updat
 
 [See the forks](https://github.com/SzamosiMate/tapir-archicad-MCP/forks)
 
- Careful An MCP server can change your model. Try it on a copy of your project first, and read what the AI is about to do before you allow it.
+**Careful** An MCP server can change your model. Try it on a copy of your project first, and read what the AI is about to do before you allow it.
 
 ## Start by *reading.*
 
@@ -69,11 +69,11 @@ Tell me which Tapir commands you used.
 
 Without an MCP server, describe the task, give the AI the command list, and run the script it writes.
 
-01Describe what you wantFor example: "Extract all composite exterior walls on level 2 and calculate their net volume."
+**01** **Describe what you want**For example: "Extract all composite exterior walls on level 2 and calculate their net volume."
 
-02Share the command listGive the AI the [command reference](https://archicad-api.com/archicad-addon/) and the working example below. Ask for Python's standard library only, on port 19723.
+**02** **Share the command list**Give the AI the [command reference](https://archicad-api.com/archicad-addon/) and the working example below. Ask for Python's standard library only, on port 19723.
 
-03Read it, then run itRead the script before you run it, from the Tapir palette or a terminal. Try one that changes the model on a copy of your project first.
+**03** **Read it, then run it**Read the script before you run it, from the Tapir palette or a terminal. Try one that changes the model on a copy of your project first.
 
 promptfor Claude or any AI tool
 
@@ -112,22 +112,26 @@ def run_tapir_command(name, parameters=None, port=19723):
 print(run_tapir_command("GetAddOnVersion"))
 ```
 
-[ Get started
+Get started
 
-### Install Tapir
+### [Install Tapir](https://archicad-api.com/start/)
 
 Install Tapir, then give your AI tool the prompt above.
 
-Get started → ](https://archicad-api.com/start/) [ Commands
+Get started
 
-### The command reference
+Commands
+
+### [The command reference](https://archicad-api.com/archicad-addon/)
 
 The list to give the AI: every command with its schema.
 
-Open the reference → ](https://archicad-api.com/archicad-addon/) [ Discord
+Open the reference
 
-### Show what you built
+Discord
+
+### [Show what you built](https://discord.gg/NAnSennmpY)
 
 Ask about MCP servers and share your prompts.
 
-Join Discord → ](https://discord.gg/NAnSennmpY)
+Join Discord

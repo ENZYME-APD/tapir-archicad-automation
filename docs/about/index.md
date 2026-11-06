@@ -18,10 +18,10 @@ Revisions · Tapir
 
 | Rev | Date | Description | By |
 | --- | --- | --- | --- |
-| A | 5 July 2022 | Born in Enzyme's R&DArchicad's JSON interface was a step forward, but Grasshopper users still needed C++ add-ons to reach native elements. The first commit, with the MIT licence. | Grzeg Wilk, Jorge Beneitez |
-| B | 7 July 2022 | A place to talkThe Discord server opens, where architects and developers say what they need and show what they made. | The first members |
-| C | July 2024 | The templateTibor Lorántfy, whose archicad-additional-json-commands the add-on is built on, joins the project. Almost any function of the Archicad API can now become a JSON command. | Tibor Lorántfy |
-| D | 2026 | Built by its communityA release every Monday. Reports on Discord become GitHub issues, bots draft the fixes and people test them in their own Archicad. [See the growth](https://archicad-api.com/community/#activity). | Everyone who reports, tests and contributes |
+| A | 5 July 2022 | Born in Enzyme's R&D Archicad's JSON interface was a step forward, but Grasshopper users still needed C++ add-ons to reach native elements. The first commit, with the MIT licence. | Grzeg Wilk, Jorge Beneitez |
+| B | 7 July 2022 | A place to talk The Discord server opens, where architects and developers say what they need and show what they made. | The first members |
+| C | July 2024 | The template Tibor Lorántfy, whose archicad-additional-json-commands the add-on is built on, joins the project. Almost any function of the Archicad API can now become a JSON command. | Tibor Lorántfy |
+| D | 2026 | Built by its community A release every Monday. Reports on Discord become GitHub issues, bots draft the fixes and people test them in their own Archicad. [See the growth](https://archicad-api.com/community/#activity). | Everyone who reports, tests and contributes |
 
 ## The people *behind it.*
 
@@ -65,17 +65,17 @@ ENZYME-APD runs the project and publishes Tapir under the MIT licence. Everyone 
 - [Viktor Kovács @kovacsv](https://github.com/kovacsv)
 - [@weltmaister](https://github.com/weltmaister)
 
-Many more report bugs, test fixes in their own Archicad and share scripts; bots draft fixes, and people test and approve them. [All contributors on GitHub →](https://github.com/ENZYME-APD/tapir-archicad-automation/graphs/contributors)
+Many more report bugs, test fixes in their own Archicad and share scripts; bots draft fixes, and people test and approve them. [All contributors on GitHub](https://github.com/ENZYME-APD/tapir-archicad-automation/graphs/contributors)
 
 ## Principles
 
-FREENo price, everMIT licence for the add-on, the plugin and every shared script.
+**FREE** **No price, ever**MIT licence for the add-on, the plugin and every shared script.
 
-OPENBuilt in publicEvery issue, pull request and review is on GitHub.
+**OPEN** **Built in public**Every issue, pull request and review is on GitHub.
 
-SIGNEDSafe to installThe Windows installer is signed through SignPath; the macOS installer and add-ons are signed and notarized.
+**SIGNED** **Safe to install**The Windows installer is signed through SignPath; the macOS installer and add-ons are signed and notarized.
 
-WEEKLYSmall, steady releasesA release every Monday when something changed.
+**WEEKLY** **Small, steady releases**A release every Monday when something changed.
 
 ## Support *Tapir.*
 
@@ -99,6 +99,6 @@ Your office
 
 Training sessions, implementation workshops and custom development for offices moving to computational BIM workflows with Tapir.
 
-Talk to us: contact@enzyme-apd.com
+Talk to us: **contact@enzyme-apd.com**
 
 Free code signing provided by SignPath.io, certificate by SignPath Foundation. Archicad is a trademark of Graphisoft SE; Tapir is not made by Graphisoft.

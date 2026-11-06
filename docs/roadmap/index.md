@@ -28,31 +28,37 @@ Merged changes are released every Monday. The release notes list them, and the a
 
 ## What is being asked for now
 
-[ Requests
+Requests
 
-### Open feature requests
+### [Open feature requests](https://github.com/ENZYME-APD/tapir-archicad-automation/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement)
 
 Every open issue labelled `enhancement`. Add a comment or a reaction to one you need too.
 
-See the requests → ](https://github.com/ENZYME-APD/tapir-archicad-automation/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement) [ Plan
+See the requests
 
-### Project board
+Plan
+
+### [Project board](https://github.com/orgs/ENZYME-APD/projects/4/views/1)
 
 The maintainers' board of planned and ongoing work.
 
-Open the board → ](https://github.com/orgs/ENZYME-APD/projects/4/views/1) [ In progress
+Open the board
 
-### Open pull requests
+In progress
+
+### [Open pull requests](https://github.com/ENZYME-APD/tapir-archicad-automation/pulls)
 
 Changes being built, reviewed and tested right now.
 
-See the pull requests → ](https://github.com/ENZYME-APD/tapir-archicad-automation/pulls) [ Shipped
+See the pull requests
 
-### Releases
+Shipped
+
+### [Releases](https://github.com/ENZYME-APD/tapir-archicad-automation/releases)
 
 Every release, with its notes and downloads. The command reference shows the version each command came in.
 
-See the releases → ](https://github.com/ENZYME-APD/tapir-archicad-automation/releases)
+See the releases
 
 ## Already *here.*
 

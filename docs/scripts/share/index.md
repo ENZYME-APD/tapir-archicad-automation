@@ -8,9 +8,9 @@ No GitHub account, no setup. Your name stays on it, and everyone who uses Tapir 
 
 ## What happens
 
-1. Send itPost the script in `#share-a-script` on Discord, with a few words on what it does. The Tapir palette is getting a Share button that does the same: you see the whole file before anything is sent. It arrives as a GitHub issue labelled `script-share`.
-2. Adapted for any officeTapir's bot, an AI, opens a pull request: hard-coded layers, properties and paths become settings, risky code is removed, and it works in every Archicad language, in metric and imperial.
-3. You confirm, it's listedTry the adapted version and say it still does what you meant. Once the pull request is reviewed and merged, it appears on the [Scripts](https://archicad-api.com/scripts/) page with your name.
+1. **Send it**Post the script in `#share-a-script` on Discord, with a few words on what it does. The Tapir palette is getting a Share button that does the same: you see the whole file before anything is sent. It arrives as a GitHub issue labelled `script-share`.
+2. **Adapted for any office**Tapir's bot, an AI, opens a pull request: hard-coded layers, properties and paths become settings, risky code is removed, and it works in every Archicad language, in metric and imperial.
+3. **You confirm, it's listed**Try the adapted version and say it still does what you meant. Once the pull request is reviewed and merged, it appears on the [Scripts](https://archicad-api.com/scripts/) page with your name.
 
 ## Three ways to send it
 

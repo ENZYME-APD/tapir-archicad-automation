@@ -26,7 +26,6 @@ import argparse
 import html
 import html.parser
 import json
-import os
 import pathlib
 import re
 import sys
@@ -87,24 +86,61 @@ class MarkdownWriter (html.parser.HTMLParser):
         self.lists = []
         self.pre = 0
         self.href = []
+        self.marks = []
         self.row = None
         self.rows = []
         self.cell = None
 
     def absolute (self, href):
-        if re.match (r'^[a-z]+:', href) or href.startswith ('#'):
+        # Fragments too: the Markdown copy is read away from the page, so #section names the page.
+        if re.match (r'^[a-z]+:', href):
             return href
         return urllib.parse.urljoin (self.base, href)
 
+    def target (self):
+        return self.cell if self.cell is not None else self.out
+
     def text (self, value):
-        if self.cell is not None:
-            self.cell.append (value)
+        self.target ().append (value)
+
+    def open_mark (self, mark):
+        """Writes the opening of a link or emphasis and remembers where, for close_mark."""
+        target = self.target ()
+        if mark != '[' and target and target[-1].endswith ('*'):
+            target.append (' ')     # two bold labels in a row (<strong>01</strong><strong>Post it</strong>)
+        self.marks.append ((target, len (target)))
+        target.append (mark)
+
+    def close_mark (self, mark, href=None):
+        """Closes what open_mark opened. Leaves out empty emphasis and links without text; a link
+        around blocks (a card: tagline, heading, text) becomes a link on its heading instead,
+        as a Markdown link cannot hold blocks."""
+        if not self.marks:
+            return
+        target, start = self.marks.pop ()
+        inner = ''.join (target[start + 1:])
+        if not inner.strip ():
+            del target[start:]
+            target.append (inner)
+        elif href is not None and '\n' in inner.strip ():
+            heading = re.search (r'^(#+ )(.+)$', inner, re.M)
+            if heading:
+                inner = inner[:heading.start (2)] + f'[{heading.group (2).strip ()}]({href})' + inner[heading.end (2):]
+            else:
+                inner += f'\n\n<{href}>'
+            target[start:] = ['\n\n' + inner.strip () + '\n\n']
+        elif href is None:
+            # Markdown emphasis may not start or end with a space: move it outside.
+            lead, trail = inner[:len (inner) - len (inner.lstrip ())], inner[len (inner.rstrip ()):]
+            target[start:] = [lead + target[start] + inner.strip () + mark + trail]
         else:
-            self.out.append (value)
+            target.append (mark)
 
     def block (self):
         if self.cell is None:
             self.out.append ('\n\n')
+        else:
+            self.cell.append (' ')      # a table cell stays on one line, its blocks apart
 
     def handle_starttag (self, tag, attrs):
         attrs = dict (attrs)
@@ -119,6 +155,8 @@ class MarkdownWriter (html.parser.HTMLParser):
             return
         hidden = 'hidden' in attrs or attrs.get ('aria-hidden') == 'true'
         if self.skip or tag in self.SKIP or hidden:
+            if hidden and not self.skip and not self.pre:
+                self.text (' ')     # a separator drawn for the eye (·) still separates the words
             self.stack.append ((tag, 'skip'))
             self.skip += 1
             return
@@ -145,12 +183,12 @@ class MarkdownWriter (html.parser.HTMLParser):
         elif tag == 'code' and not self.pre:
             self.text ('`')
         elif tag in ('strong', 'b'):
-            self.text ('**')
+            self.open_mark ('**')
         elif tag in ('em', 'i'):
-            self.text ('*')
+            self.open_mark ('*')
         elif tag == 'a' and attrs.get ('href'):
             self.href.append (self.absolute (attrs['href']))
-            self.text ('[')
+            self.open_mark ('[')
         elif tag == 'a':
             self.href.append (None)
         elif tag == 'table':
@@ -190,13 +228,13 @@ class MarkdownWriter (html.parser.HTMLParser):
         elif tag == 'code' and not self.pre:
             self.text ('`')
         elif tag in ('strong', 'b'):
-            self.text ('**')
+            self.close_mark ('**')
         elif tag in ('em', 'i'):
-            self.text ('*')
+            self.close_mark ('*')
         elif tag == 'a':
             href = self.href.pop () if self.href else None
             if href:
-                self.text (f']({href})')
+                self.close_mark (f']({href})', href)
         elif tag in ('td', 'th'):
             if self.row is not None and self.cell is not None:
                 self.row.append (re.sub (r'\s+', ' ', ''.join (self.cell)).strip ().replace ('|', '\\|'))
@@ -232,8 +270,8 @@ class MarkdownWriter (html.parser.HTMLParser):
                 fence = not fence
             if not fence:
                 line = re.sub (r'^ +(?=\S)', lambda m: m.group (0) if re.match (r' *(- |\d+\. )', line) else '', line)
-                line = re.sub (r'\[\s*\]\([^)]*\)', '', line)     # links without text
-                line = re.sub (r'\*\*\s*\*\*|(?<!\*)\*\s*\*(?!\*)', '', line)
+                line = re.sub (r'^( *(?:-|\d+\.)) {2,}', r'\1 ', line)    # a list marker before a skipped icon
+                line = re.sub (r'(?<=\S) {2,}', ' ', line)
             if not line.strip () and not fence:
                 blank += 1
                 if blank > 1:
@@ -252,8 +290,10 @@ def page_markdown (path, base):
 
 def page_meta (path):
     text = path.read_text (encoding='utf-8')
-    title = re.search (r'<title>(.*?)</title>', text, re.S)
-    description = re.search (r'<meta name="description" content="([^"]*)"', text)
+    # The first <title> is the page's (an SVG on the page can have its own); both tags may carry
+    # data-i18n attributes for the translations.
+    title = re.search (r'<title\b[^>]*>(.*?)</title>', text, re.S)
+    description = re.search (r'<meta\s[^>]*\bname="description"[^>]*\bcontent="([^"]*)"', text)
     title = html.unescape (title.group (1)).strip () if title else path.parent.name
     title = re.sub (r'\s+-\s+Tapir( documentation)?$', '', title)
     return title, html.unescape (description.group (1)) if description else ''
@@ -380,8 +420,9 @@ def intro (site, commands, versions):
 
 > Tapir is a free, open-source (MIT) add-on for Graphisoft Archicad {versions[0]}–{versions[-1]}, by
 > ENZYME-APD and its community. It adds {len (commands)} JSON commands to Archicad's own JSON API, a palette
-> that runs Python scripts in one click, a Grasshopper plugin (package `tapir` on the Rhino Package
-> Manager) and MCP servers so AI assistants can drive Archicad. A new release ships every Monday.
+> that runs Python scripts in one click and a Grasshopper plugin (package `tapir` on the Rhino Package
+> Manager); community MCP servers let AI assistants drive Archicad through it. A new release ships
+> every Monday.
 
 - Site: {site}
 - Source, issues and releases: {GITHUB}
@@ -400,7 +441,7 @@ def builtin_scripts ():
         header = re.search (r'^#{10,}\n(.*?)^#{10,}', text, re.S | re.M)
         docstring = re.search (r'^(?:\s*#[^\n]*\n)*\s*("""|\'\'\')(.*?)\1', text, re.S)
         about = ''
-        if docstring and not header:
+        if docstring:     # the module docstring; ##### lines further down are section banners
             paragraphs = [p.strip () for p in docstring.group (2).strip ().split ('\n\n')]
             if not name and paragraphs:
                 name = re.match (r'(.*)', paragraphs[0])
