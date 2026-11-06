@@ -76,6 +76,21 @@ def dedup_ring(ring, tol=0.001):
     return out
 
 
+def is_contour_ring(pts):
+    """A genuine contour line has the SAME Z value at every vertex.
+
+    Contours are computed at exact elevations, so all points on one contour
+    share an identical Z (to floating-point precision). Other 3D geometry
+    (fence tops, roof eaves, etc.) has Z that varies along the line, so it
+    fails this test and is filtered out. No tolerance: a real contour is
+    exactly flat in Z.
+    """
+    if not pts:
+        return False
+    z0 = pts[0][2]
+    return all(p[2] == z0 for p in pts)
+
+
 def parse_dxf(path):
     with open(path, 'r', encoding='utf-8', errors='replace') as f:
         content = f.read()
@@ -97,7 +112,11 @@ def parse_dxf(path):
             # Apply elevation to all points if they're all at z=0
             if all(abs(p[2]) < 1e-10 for p in cur_pts) and abs(cur_elev) > 1e-10:
                 cur_pts = [(p[0], p[1], cur_elev) for p in cur_pts]
-            rings.append((cur_pts[:], cur_closed))
+            # Keep only genuine contour rings: Z must be constant along the
+            # whole ring. Other 3D geometry (fence tops, roof eaves, ...) has
+            # Z that varies along the line and is filtered out here.
+            if is_contour_ring(cur_pts):
+                rings.append((cur_pts[:], cur_closed))
         cur_pts = []
         cur_closed = False
         cur_elev = 0.0
