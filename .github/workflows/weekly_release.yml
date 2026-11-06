@@ -354,7 +354,10 @@ jobs:
           # is staged.
           if ! python3 tools/generate_llm_files.py; then
             echo "::warning::tools/generate_llm_files.py failed; the LLM files were not updated."
-            git checkout -- docs/llms.txt docs/llms-full.txt docs/commands.json docs/commands.md docs/sitemap.xml docs/robots.txt 2>/dev/null || true
+            # Undo everything it wrote, tracked or new, but keep the
+            # docs/archicad-addon the step above regenerated.
+            git checkout -- docs ':!docs/archicad-addon'
+            git clean -fdq -- docs ':!docs/archicad-addon'
           fi
           git add -A -- docs
           if git diff --cached --quiet -- docs; then
