@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-06 21:03 UTC",
+ "generatedAt": "2026-11-06 21:37 UTC",
  "versions": [
   25,
   26,
@@ -5243,7 +5243,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2157,
+     "title": "Archicad 29 crashes during a read-only script after GetLayoutSettings in batches (Tapir 1.8.0)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Database_NewDatabase",
@@ -20271,7 +20276,12 @@
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 2157,
+     "title": "Archicad 29 crashes during a read-only script after GetLayoutSettings in batches (Tapir 1.8.0)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Window_GetGridSettings",

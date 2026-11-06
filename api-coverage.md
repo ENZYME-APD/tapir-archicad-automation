@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 61 | 53 | 8 |  |  |  | 8 | 70 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1423 | 1207 | 216 |  |  |  | 12 | 392 |
 
-Archicad 25–30 DevKits; updated 2026-11-06 21:03 UTC.
+Archicad 25–30 DevKits; updated 2026-11-06 21:37 UTC.
 
 | | Status |
 |---|---|
@@ -602,7 +602,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Database_GetSectionDatabases` – Returns all the section databases in the project. <sub>(was `APIDb_GetSectionDatabasesID`)</sub>
 - ✅ `ACAPI_Database_GetWorksheetDatabases` – Returns the list of unique IDs of all detail databases. <sub>(was `APIDb_GetWorksheetDatabasesID`)</sub>
 - ✅ `ACAPI_Database_JsonQuery` – Helper function to call various functions inside Archicad. <sub>(was `APIDb_JsonQueryID`)</sub>
-- ✅ `ACAPI_Database_ModifyDatabase` – Modifies the parameters of an independent detail, worksheet, layout or master layout database. <sub>(was `APIDb_ModifyDatabaseID`)</sub>
+- ✅ `ACAPI_Database_ModifyDatabase` – Modifies the parameters of an independent detail, worksheet, layout or master layout database. <sub>(was `APIDb_ModifyDatabaseID`)</sub> — [#2157](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2157 "Archicad 29 crashes during a read-only script after GetLayoutSettings in batches (Tapir 1.8.0)")
 - ✅ `ACAPI_Database_NewDatabase` – Creates a new independent detail, worksheet, layout or master layout database. <sub>(was `APIDb_NewDatabaseID`)</sub>
 - ✅ `ACAPI_Database_RebuildCurrentDatabase` – Rebuilds the current database, even it's associated window is in the background. <sub>(was `APIDb_RebuildCurrentDatabaseID`)</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
 - ➖ `ACAPI_Database_RebuildWindowValidator` – Sets the element and checksum list for an already added validator with given guid. <sub>(was `APIDb_RebuildWindowValidatorID`)</sub> *(validators of the add-on's own windows (add-on infrastructure))*
@@ -871,7 +871,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Window_CloseWindow` – Closes a window. <sub>(was `APIDb_CloseWindowID`)</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
 - ➖ `ACAPI_Window_DestroyWindowValidator` – Destroys an already registered validator for the given guid. <sub>(was `APIDb_DestroyWindowValidatorID`)</sub> *(validators of the add-on's own windows (add-on infrastructure))*
 - ✅ `ACAPI_Window_GetCurrentWindow` – Returns the identifier of the current (active) window. <sub>(was `APIDb_GetCurrentWindowID`)</sub>
-- ✅ `ACAPI_Window_GetDatabaseInfo` – Retrieves information of the given database. <sub>(was `APIDb_GetDatabaseInfoID`)</sub> — [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
+- ✅ `ACAPI_Window_GetDatabaseInfo` – Retrieves information of the given database. <sub>(was `APIDb_GetDatabaseInfoID`)</sub> — [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#2157](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2157 "Archicad 29 crashes during a read-only script after GetLayoutSettings in batches (Tapir 1.8.0)")
 - ✅ `ACAPI_Window_GetGridSettings` – Returns the grid setting parameters of the current database. <sub>(was `APIDb_GetGridSettingsID`)</sub>
 - ➖ `ACAPI_Window_GetOwnWindows` – Returns the ids of the opened windows in an array. <sub>(was `APIDb_GetOwnWindowsID`)</sub> *(the add-on's own windows (user interface))*
 - ➖ `ACAPI_Window_NewWindow` – Opens a new window. <sub>(was `APIDb_NewWindowID`)</sub> *(the add-on's own windows (user interface))*
