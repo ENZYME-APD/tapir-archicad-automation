@@ -55,6 +55,7 @@ private:
         const Config::Repository* repo = nullptr;
         GS::UniString sourceName;        // shown after the file name for scripts from a configured local folder; empty for repository and user-added scripts
         GS::UniString baseDisplayText;   // label as computed by AddScriptToPopUp, before any shortcut-slot suffix
+        GS::UniString uvProjectPath;     // the folder of the uv project (uvProject in the config) the script runs in; empty: run it with --script
 
         explicit PopUpItemData (
             const IO::Location& _fileLocation,

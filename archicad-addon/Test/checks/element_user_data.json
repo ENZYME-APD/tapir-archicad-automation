@@ -1,0 +1,171 @@
+{
+  "title": "Element user data: store, merge, filter by key, delete keys and delete the whole user data",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "two walls",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 870, "y": 870 }, "endCoordinate": { "x": 873, "y": 870 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2, "floorIndex": 0 },
+          { "begCoordinate": { "x": 870, "y": 872 }, "endCoordinate": { "x": 873, "y": 872 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2, "floorIndex": 0 }
+        ]
+      },
+      "save": { "w1": "elements[0].elementId.guid", "w2": "elements[1].elementId.guid" },
+      "expect": [
+        { "path": "elements", "len": 2 }
+      ]
+    },
+    {
+      "id": "no user data yet",
+      "command": "GetElementUserData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } } ] },
+      "expect": [
+        { "path": "elementUserData[0].userData", "len": 0 }
+      ]
+    },
+    {
+      "id": "a and b on w1, a on w2",
+      "command": "SetElementUserData",
+      "creates": false,
+      "params": {
+        "elementUserData": [
+          {
+            "elementId": { "guid": "${w1}" },
+            "userData": [ { "key": "tapircheck.a", "value": "1" }, { "key": "tapircheck.b", "value": "2" } ]
+          },
+          {
+            "elementId": { "guid": "${w2}" },
+            "userData": [ { "key": "tapircheck.a", "value": "x" } ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true },
+        { "path": "executionResults[1].success", "eq": true }
+      ]
+    },
+    {
+      "id": "every pair",
+      "command": "GetElementUserData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } } ] },
+      "expect": [
+        { "path": "elementUserData[0].userData", "len": 2 },
+        { "path": "elementUserData[0].userData[0].key", "eq": "tapircheck.a" },
+        { "path": "elementUserData[0].userData[0].value", "eq": "1" },
+        { "path": "elementUserData[0].userData[1].key", "eq": "tapircheck.b" },
+        { "path": "elementUserData[0].userData[1].value", "eq": "2" },
+        { "path": "elementUserData[1].userData", "len": 1 },
+        { "path": "elementUserData[1].userData[0].value", "eq": "x" }
+      ]
+    },
+    {
+      "id": "only key b",
+      "command": "GetElementUserData",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } } ],
+        "keys": [ "tapircheck.b" ]
+      },
+      "expect": [
+        { "path": "elementUserData[0].userData", "len": 1 },
+        { "path": "elementUserData[0].userData[0].value", "eq": "2" },
+        { "path": "elementUserData[1].userData", "len": 0, "name": "w2 has no b" }
+      ]
+    },
+    {
+      "id": "change a and delete b on w1",
+      "command": "SetElementUserData",
+      "creates": false,
+      "params": {
+        "elementUserData": [
+          {
+            "elementId": { "guid": "${w1}" },
+            "userData": [ { "key": "tapircheck.a", "value": "3" } ],
+            "keysToDelete": [ "tapircheck.b" ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "w1 holds a=3 only, w2 is unchanged",
+      "command": "GetElementUserData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } } ] },
+      "expect": [
+        { "path": "elementUserData[0].userData", "len": 1 },
+        { "path": "elementUserData[0].userData[0].key", "eq": "tapircheck.a" },
+        { "path": "elementUserData[0].userData[0].value", "eq": "3" },
+        { "path": "elementUserData[1].userData", "len": 1 },
+        { "path": "elementUserData[1].userData[0].value", "eq": "x" }
+      ]
+    },
+    {
+      "id": "an element that does not exist, and an item without userData or keysToDelete",
+      "command": "SetElementUserData",
+      "creates": false,
+      "params": {
+        "elementUserData": [
+          {
+            "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "userData": [ { "key": "tapircheck.a", "value": "4" } ]
+          },
+          {
+            "elementId": { "guid": "${w2}" }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "no such element" },
+        { "path": "executionResults[1].success", "eq": false, "name": "nothing to change" }
+      ]
+    },
+    {
+      "id": "w2 is still unchanged, a missing element is an error",
+      "command": "GetElementUserData",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${w2}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "elementUserData[0].userData", "len": 1 },
+        { "path": "elementUserData[0].userData[0].value", "eq": "x" },
+        { "path": "elementUserData[1].error.code", "exists": true, "name": "no such element" }
+      ]
+    },
+    {
+      "id": "delete the user data of w1, and of an element that does not exist",
+      "command": "DeleteUserDataOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${w1}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true },
+        { "path": "executionResults[1].success", "eq": false, "name": "no such element" }
+      ]
+    },
+    {
+      "id": "w1 holds nothing, w2 still holds a=x",
+      "command": "GetElementUserData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } } ] },
+      "expect": [
+        { "path": "elementUserData[0].userData", "len": 0 },
+        { "path": "elementUserData[1].userData", "len": 1 },
+        { "path": "elementUserData[1].userData[0].value", "eq": "x" }
+      ]
+    }
+  ]
+}

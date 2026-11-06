@@ -1,0 +1,156 @@
+{
+  "title": "CreateComposites creates and overwrites a Composite, read back with GetComposites",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "a building material",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": {"attributeType": "BuildingMaterial"},
+      "save": {"bm": "attributes[0].attributeId.guid"}
+    },
+    {
+      "id": "a line type",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": {"attributeType": "Line"},
+      "save": {"lt": "attributes[0].attributeId.guid"}
+    },
+    {
+      "id": "create",
+      "command": "CreateComposites",
+      "creates": false,
+      "params": {
+        "compositeDataArray": [
+          {
+            "name": "TapirCheck Composite 1924",
+            "useWith": ["Wall", "Roof"],
+            "skins": [
+              {"type": "Finish", "buildingMaterialId": {"attributeId": {"guid": "${bm}"}}, "framePen": 3, "thickness": 0.02},
+              {"type": "Core", "buildingMaterialId": {"attributeId": {"guid": "${bm}"}}, "framePen": 5, "thickness": 0.15},
+              {"type": "Other", "buildingMaterialId": {"attributeId": {"guid": "${bm}"}}, "framePen": 7, "thickness": 0.03}
+            ],
+            "separators": [
+              {"lineTypeId": {"attributeId": {"guid": "${lt}"}}, "linePen": 3},
+              {"lineTypeId": {"attributeId": {"guid": "${lt}"}}, "linePen": 5},
+              {"lineTypeId": {"attributeId": {"guid": "${lt}"}}, "linePen": 6},
+              {"lineTypeId": {"attributeId": {"guid": "${lt}"}}, "linePen": 7}
+            ]
+          }
+        ]
+      },
+      "save": {"c1": "attributeIds[0].attributeId.guid"},
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"}
+      ]
+    },
+    {
+      "id": "read back the created Composite",
+      "command": "GetComposites",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${c1}"}}]},
+      "expect": [
+        {"path": "composites", "len": 1},
+        {"path": "composites[0].name", "eq": "TapirCheck Composite 1924"},
+        {"path": "composites[0].index", "exists": true},
+        {"path": "composites[0].useWith", "eq": ["Wall", "Roof"]},
+        {"path": "composites[0].skins", "len": 3},
+        {"path": "composites[0].skins[0].type", "eq": "Finish"},
+        {"path": "composites[0].skins[1].type", "eq": "Core"},
+        {"path": "composites[0].skins[2].type", "eq": "Other"},
+        {"path": "composites[0].skins[0].thickness", "approx": 0.02, "tol": 0.0001},
+        {"path": "composites[0].skins[1].thickness", "approx": 0.15, "tol": 0.0001},
+        {"path": "composites[0].skins[2].thickness", "approx": 0.03, "tol": 0.0001},
+        {"path": "composites[0].skins[0].framePen", "eq": 3},
+        {"path": "composites[0].skins[1].framePen", "eq": 5},
+        {"path": "composites[0].skins[2].framePen", "eq": 7},
+        {"path": "composites[0].skins[1].buildingMaterialId.attributeId.guid", "exists": true, "name": "skin has a building material"},
+        {"path": "composites[0].separators", "len": 4},
+        {"path": "composites[0].separators[0].linePen", "eq": 3},
+        {"path": "composites[0].separators[1].linePen", "eq": 5},
+        {"path": "composites[0].separators[2].linePen", "eq": 6},
+        {"path": "composites[0].separators[3].linePen", "eq": 7},
+        {"path": "composites[0].separators[0].lineTypeId.attributeId.guid", "exists": true, "name": "separator has a line type"}
+      ]
+    },
+    {
+      "id": "bad input: one skin, one separator",
+      "command": "CreateComposites",
+      "creates": false,
+      "params": {
+        "compositeDataArray": [
+          {
+            "name": "TapirCheck Composite 1924 bad separators",
+            "useWith": ["Wall"],
+            "skins": [
+              {"type": "Core", "buildingMaterialId": {"attributeId": {"guid": "${bm}"}}, "framePen": 1, "thickness": 0.1}
+            ],
+            "separators": [
+              {"lineTypeId": {"attributeId": {"guid": "${lt}"}}, "linePen": 1}
+            ]
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": true, "name": "failed"},
+        {"path": "attributeIds[0].attributeId", "exists": false, "name": "nothing created"}
+      ]
+    },
+    {
+      "id": "overwrite: rename and useWith only",
+      "command": "CreateComposites",
+      "creates": false,
+      "params": {
+        "overwriteExisting": true,
+        "compositeDataArray": [
+          {
+            "attributeId": {"guid": "${c1}"},
+            "name": "TapirCheck Composite 1924 renamed",
+            "useWith": ["Slab"]
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"},
+        {"path": "attributeIds[0].attributeId.guid", "exists": true}
+      ]
+    },
+    {
+      "id": "read back the overwritten Composite",
+      "command": "GetComposites",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${c1}"}}]},
+      "expect": [
+        {"path": "composites", "len": 1},
+        {"path": "composites[0].name", "eq": "TapirCheck Composite 1924 renamed", "name": "renamed"},
+        {"path": "composites[0].useWith", "eq": ["Slab"], "name": "useWith replaced"},
+        {"path": "composites[0].skins", "len": 3},
+        {"path": "composites[0].skins[1].type", "eq": "Core", "name": "skins kept"},
+        {"path": "composites[0].skins[1].thickness", "approx": 0.15, "tol": 0.0001, "name": "skin thickness kept"},
+        {"path": "composites[0].skins[2].framePen", "eq": 7, "name": "skin pen kept"},
+        {"path": "composites[0].separators", "len": 4},
+        {"path": "composites[0].separators[2].linePen", "eq": 6, "name": "separators kept"}
+      ]
+    },
+    {
+      "id": "GetComposites with a nonexistent guid",
+      "command": "GetComposites",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "00000000-0000-0000-0000-00000000BEEF"}}]},
+      "expect": [
+        {"path": "composites", "len": 1},
+        {"path": "composites[0].error", "exists": true, "name": "failed"}
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": {"attributesToDelete": [{"attributeType": "Composite", "attributeId": {"attributeId": {"guid": "${c1}"}}}]}
+    }
+  ]
+}

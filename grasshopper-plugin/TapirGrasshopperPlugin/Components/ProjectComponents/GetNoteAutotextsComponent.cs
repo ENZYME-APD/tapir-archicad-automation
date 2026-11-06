@@ -29,6 +29,14 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 "NoteOwnerType",
                 "The type of the element that owns the note, e.g. Dimension, RadialDimension, " +
                 "LevelDimension or AngleDimension.");
+
+            InText(
+                "DimensionAppearance",
+                "Optional dimension type (Linear, Cumulative, Baseline or Elevation) whose autotexts " +
+                "are listed when NoteOwnerType is Dimension. Defaults to Linear. Leave it empty " +
+                "for other owner types.");
+
+            SetOptionality(1);
         }
 
         protected override void AddOutputs()
@@ -65,6 +73,14 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             {
                 ["noteOwnerType"] = noteOwnerType.Trim()
             };
+
+            if (da.TryGet(
+                    1,
+                    out string dimensionAppearance) &&
+                !string.IsNullOrWhiteSpace(dimensionAppearance))
+            {
+                parameters["dimensionAppearance"] = dimensionAppearance.Trim();
+            }
 
             if (!TryGetCadResponse(
                     CommandName,

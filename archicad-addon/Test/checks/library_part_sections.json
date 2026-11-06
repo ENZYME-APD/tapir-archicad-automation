@@ -1,0 +1,245 @@
+{
+  "title": "CreateLibraryParts, GetLibraryPartSections, GetLibraryPartSection and UpdateLibraryPartSections on a new library part",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "[part, no parent, unknown parent GUID]",
+      "command": "CreateLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          {
+            "name": "TapirCheckSections",
+            "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+            "path": "TapirCheckLibSections/TapirCheckSections.gsm",
+            "a": 0.6,
+            "b": 0.4,
+            "masterScript": "tapirMaster = 1",
+            "script2D": "RECT2 0, 0, A, B",
+            "script3D": "BLOCK A, B, 1"
+          },
+          {
+            "name": "TapirCheckSectionsNoParent",
+            "path": "TapirCheckLibSections/TapirCheckSectionsNoParent.gsm"
+          },
+          {
+            "name": "TapirCheckSectionsBadParent",
+            "parentId": "0BADBEEF-0000-4000-8000-00000000BEEF",
+            "path": "TapirCheckLibSections/TapirCheckSectionsBadParent.gsm"
+          }
+        ]
+      },
+      "save": { "idx": "libraryParts[0].index" },
+      "expect": [
+        { "path": "libraryParts", "len": 3, "name": "one item per library part" },
+        { "path": "libraryParts[0].name", "eq": "TapirCheckSections", "name": "created under its name" },
+        { "path": "libraryParts[0].path", "eq": "TapirCheckLibSections/TapirCheckSections.gsm", "name": "created on the given path" },
+        { "path": "libraryParts[0].unId", "contains": "}-{", "name": "unique ID returned" },
+        { "path": "libraryParts[1].error", "exists": true, "name": "no parent is an error" },
+        { "path": "libraryParts[2].error", "exists": true, "name": "a parent GUID no loaded part has is an error" }
+      ]
+    },
+    {
+      "id": "same path again, without overwriteExisting",
+      "command": "CreateLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          {
+            "name": "TapirCheckSections",
+            "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+            "path": "TapirCheckLibSections/TapirCheckSections.gsm",
+            "masterScript": "tapirMaster = 99"
+          }
+        ]
+      },
+      "expect": [
+        { "path": "libraryParts[0].error", "exists": true, "name": "an existing file is not replaced" }
+      ]
+    },
+    {
+      "id": "[new part, index 0]",
+      "command": "GetLibraryPartSections",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "index": "${idx}" },
+          { "index": 0 }
+        ]
+      },
+      "save": { "listedIdx": "libraryParts[0].index" },
+      "expect": [
+        { "path": "libraryParts", "len": 2, "name": "one item per library part" },
+        { "expr": "${listedIdx} - ${idx}", "eq": 0, "name": "the index of the new part is echoed" },
+        { "path": "libraryParts[0].sections[0].sectionType", "exists": true, "name": "the new part has sections" },
+        { "path": "libraryParts[1].error", "exists": true, "name": "index 0 is an error" }
+      ]
+    },
+    {
+      "id": "master script as written",
+      "command": "GetLibraryPartSection",
+      "creates": false,
+      "params": { "index": "${idx}", "sectionType": "1DSC" },
+      "expect": [
+        { "path": "content", "contains": "tapirMaster = 1", "name": "master script of the new part" },
+        { "path": "error", "exists": false, "name": "no error" }
+      ]
+    },
+    {
+      "id": "2D script as written",
+      "command": "GetLibraryPartSection",
+      "creates": false,
+      "params": { "index": "${idx}", "sectionType": "2DSC" },
+      "expect": [
+        { "path": "content", "contains": "RECT2 0, 0, A, B", "name": "2D script of the new part" }
+      ]
+    },
+    {
+      "id": "3D script as written",
+      "command": "GetLibraryPartSection",
+      "creates": false,
+      "params": { "index": "${idx}", "sectionType": "3DSC" },
+      "expect": [
+        { "path": "content", "contains": "BLOCK A, B, 1", "name": "3D script of the new part" }
+      ]
+    },
+    {
+      "id": "UI script, never written",
+      "command": "GetLibraryPartSection",
+      "creates": false,
+      "params": { "index": "${idx}", "sectionType": "UISC" },
+      "expect": [
+        { "path": "error", "exists": true, "name": "a section the part does not have is an error" }
+      ]
+    },
+    {
+      "id": "index 0",
+      "command": "GetLibraryPartSection",
+      "creates": false,
+      "params": { "index": 0, "sectionType": "1DSC" },
+      "expect": [
+        { "path": "error", "exists": true, "name": "index 0 is an error" }
+      ]
+    },
+    {
+      "id": "[master, 3D, missing UI script]",
+      "command": "UpdateLibraryPartSections",
+      "creates": false,
+      "params": {
+        "name": "TapirCheckSections",
+        "sections": [
+          { "type": "MasterScript", "text": "tapirMaster = 2" },
+          { "type": "3DScript", "text": "BLOCK A, B, 2" },
+          { "type": "UIScript", "text": "UI_DIALOG \"Tapir\"" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per section" },
+        { "path": "executionResults[0].success", "eq": true, "name": "master script updated" },
+        { "path": "executionResults[1].success", "eq": true, "name": "3D script updated" },
+        { "path": "executionResults[2].success", "eq": false, "name": "a section the part does not have is not added" }
+      ]
+    },
+    {
+      "id": "master script after the update",
+      "command": "GetLibraryPartSection",
+      "creates": false,
+      "params": { "index": "${idx}", "sectionType": "1DSC" },
+      "expect": [
+        { "path": "content", "contains": "tapirMaster = 2", "name": "new master script" }
+      ]
+    },
+    {
+      "id": "3D script after the update",
+      "command": "GetLibraryPartSection",
+      "creates": false,
+      "params": { "index": "${idx}", "sectionType": "3DSC" },
+      "expect": [
+        { "path": "content", "contains": "BLOCK A, B, 2", "name": "new 3D script" }
+      ]
+    },
+    {
+      "id": "2D script after the update",
+      "command": "GetLibraryPartSection",
+      "creates": false,
+      "params": { "index": "${idx}", "sectionType": "2DSC" },
+      "expect": [
+        { "path": "content", "contains": "RECT2 0, 0, A, B", "name": "2D script not given, so unchanged" }
+      ]
+    },
+    {
+      "id": "UI script after the update",
+      "command": "GetLibraryPartSection",
+      "creates": false,
+      "params": { "index": "${idx}", "sectionType": "UISC" },
+      "expect": [
+        { "path": "error", "exists": true, "name": "the refused UI script was not added" }
+      ]
+    },
+    {
+      "id": "part that does not exist",
+      "command": "UpdateLibraryPartSections",
+      "creates": false,
+      "params": {
+        "name": "TapirCheckNoSuchPart",
+        "sections": [
+          { "type": "MasterScript", "text": "tapirMaster = 3" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "a missing part fails" }
+      ]
+    },
+    {
+      "id": "same path again, with overwriteExisting",
+      "command": "CreateLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          {
+            "name": "TapirCheckSections",
+            "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+            "path": "TapirCheckLibSections/TapirCheckSections.gsm",
+            "masterScript": "tapirMaster = 3"
+          }
+        ],
+        "overwriteExisting": true
+      },
+      "save": { "idx2": "libraryParts[0].index" },
+      "expect": [
+        { "path": "libraryParts[0].name", "eq": "TapirCheckSections", "name": "replaced" }
+      ]
+    },
+    {
+      "id": "master script of the replaced part",
+      "command": "GetLibraryPartSection",
+      "creates": false,
+      "params": { "index": "${idx2}", "sectionType": "1DSC" },
+      "expect": [
+        { "path": "content", "contains": "tapirMaster = 3", "name": "the new part replaced the old one" }
+      ]
+    },
+    {
+      "id": "3D script of the replaced part",
+      "command": "GetLibraryPartSection",
+      "creates": false,
+      "params": { "index": "${idx2}", "sectionType": "3DSC" },
+      "expect": [
+        { "path": "error", "exists": true, "name": "the old 3D script is gone" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteEmbeddedLibraryItems",
+      "params": {
+        "embeddedLibraryItems": [
+          { "path": "TapirCheckLibSections/TapirCheckSections.gsm" },
+          { "path": "TapirCheckLibSections" }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,248 @@
+{
+  "title": "MEP preference tables: an angle added to the pipe angle set keys a row of a new branch table, which is added, read, set, changed by index and deleted, and bad rows and angles are refused",
+  "minTapir": "1.8.1",
+  "minArchicad": "29",
+  "steps": [
+    {
+      "id": "pipe reference set and tables",
+      "command": "GetMEPPreferenceTables",
+      "creates": false,
+      "params": { "domain": "Piping", "includeFittingTables": true },
+      "save": { "ref": "referenceSet.referenceIds[0]" },
+      "expect": [
+        { "path": "referenceSet.referenceIds[0]", "exists": true, "name": "the reference set has a reference id" },
+        { "path": "angleSet", "exists": true },
+        { "path": "branchTables", "exists": true },
+        { "path": "elbowTables", "exists": true },
+        { "path": "transitionTables", "exists": true }
+      ]
+    },
+    {
+      "id": "add an angle and a branch table",
+      "command": "ModifyMEPPreferenceTables",
+      "creates": false,
+      "params": {
+        "domain": "Piping",
+        "anglesToAdd": [ 37.5 ],
+        "tablesToAdd": [ { "type": "Branch", "name": "Tapir check branch table" } ]
+      },
+      "save": { "br": "addedTables[0].guid" },
+      "expect": [
+        { "path": "addedAngles.success", "eq": true, "name": "angle added" },
+        { "path": "addedTables[0].guid", "exists": true, "name": "table added" }
+      ]
+    },
+    {
+      "id": "add the same angle again",
+      "command": "ModifyMEPPreferenceTables",
+      "creates": false,
+      "params": { "domain": "Piping", "anglesToAdd": [ 37.5 ] },
+      "expect": [
+        { "path": "addedAngles.success", "eq": false, "name": "refused, the angle is in the set now" }
+      ]
+    },
+    {
+      "id": "add an angle above 90",
+      "command": "ModifyMEPPreferenceTables",
+      "creates": false,
+      "params": { "domain": "Piping", "anglesToAdd": [ 120 ] },
+      "expect": [
+        { "path": "addedAngles.success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "add a branch row",
+      "command": "AddMEPPreferenceTableRows",
+      "creates": false,
+      "params": {
+        "tableId": { "guid": "${br}" },
+        "rows": [
+          {
+            "key": { "mainAxisReferenceId": "${ref}", "branchAxisReferenceId": "${ref}", "branchAxisAngle": 37.5 },
+            "values": { "mainAxisDiameter": 0.1, "branchAxisDiameter": 0.05, "length": 0.2, "branchOffset": 0.1, "connectionLength": 0.03, "description": "Tapir check branch" }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true },
+        { "path": "executionResults[0].index", "eq": 0, "name": "first row of the new table" }
+      ]
+    },
+    {
+      "id": "read the branch row",
+      "command": "GetMEPPreferenceTableRows",
+      "creates": false,
+      "params": {
+        "tableId": { "guid": "${br}" },
+        "keys": [ { "mainAxisReferenceId": "${ref}", "branchAxisReferenceId": "${ref}", "branchAxisAngle": 37.5 } ]
+      },
+      "expect": [
+        { "path": "exists", "eq": true },
+        { "path": "rows[0].valid", "eq": true, "name": "row valid" },
+        { "path": "rows[0].values.mainAxisDiameter", "approx": 0.1, "tol": 1e-6 },
+        { "path": "rows[0].values.branchAxisDiameter", "approx": 0.05, "tol": 1e-6 },
+        { "path": "rows[0].values.length", "approx": 0.2, "tol": 1e-6 },
+        { "path": "rows[0].values.branchOffset", "approx": 0.1, "tol": 1e-6 },
+        { "path": "rows[0].values.connectionLength", "approx": 0.03, "tol": 1e-6 },
+        { "path": "rows[0].values.description", "eq": "Tapir check branch" }
+      ]
+    },
+    {
+      "id": "add the same branch row again",
+      "command": "AddMEPPreferenceTableRows",
+      "creates": false,
+      "params": {
+        "tableId": { "guid": "${br}" },
+        "rows": [ { "key": { "mainAxisReferenceId": "${ref}", "branchAxisReferenceId": "${ref}", "branchAxisAngle": 37.5 } } ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused, the key is taken" }
+      ]
+    },
+    {
+      "id": "set the length and description",
+      "command": "SetMEPPreferenceTableRows",
+      "creates": false,
+      "params": {
+        "tableId": { "guid": "${br}" },
+        "rows": [
+          {
+            "key": { "mainAxisReferenceId": "${ref}", "branchAxisReferenceId": "${ref}", "branchAxisAngle": 37.5 },
+            "values": { "length": 0.25, "description": "Tapir check branch set" }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the set row",
+      "command": "GetMEPPreferenceTableRows",
+      "creates": false,
+      "params": {
+        "tableId": { "guid": "${br}" },
+        "keys": [ { "mainAxisReferenceId": "${ref}", "branchAxisReferenceId": "${ref}", "branchAxisAngle": 37.5 } ]
+      },
+      "expect": [
+        { "path": "rows[0].values.length", "approx": 0.25, "tol": 1e-6, "name": "new length" },
+        { "path": "rows[0].values.description", "eq": "Tapir check branch set" },
+        { "path": "rows[0].values.mainAxisDiameter", "approx": 0.1, "tol": 1e-6, "name": "main axis diameter kept" }
+      ]
+    },
+    {
+      "id": "set a branch row without its angle",
+      "command": "SetMEPPreferenceTableRows",
+      "creates": false,
+      "params": {
+        "tableId": { "guid": "${br}" },
+        "rows": [ { "key": { "mainAxisReferenceId": "${ref}", "branchAxisReferenceId": "${ref}" }, "values": { "length": 0.3 } } ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "change the connection length by index",
+      "command": "ModifyMEPPreferenceTables",
+      "creates": false,
+      "params": {
+        "domain": "Piping",
+        "tables": [ { "guid": "${br}", "rows": [ { "index": 0, "connectionLength": 0.04 } ] } ]
+      },
+      "expect": [
+        { "path": "tables[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the changed row",
+      "command": "GetMEPPreferenceTableRows",
+      "creates": false,
+      "params": {
+        "tableId": { "guid": "${br}" },
+        "keys": [ { "mainAxisReferenceId": "${ref}", "branchAxisReferenceId": "${ref}", "branchAxisAngle": 37.5 } ]
+      },
+      "expect": [
+        { "path": "rows[0].values.connectionLength", "approx": 0.04, "tol": 1e-6, "name": "new connection length" },
+        { "path": "rows[0].values.length", "approx": 0.25, "tol": 1e-6, "name": "length kept" }
+      ]
+    },
+    {
+      "id": "give a branch row a wall thickness",
+      "command": "ModifyMEPPreferenceTables",
+      "creates": false,
+      "params": {
+        "domain": "Piping",
+        "tables": [ { "guid": "${br}", "rows": [ { "index": 0, "wallThickness": 0.003 } ] } ]
+      },
+      "expect": [
+        { "path": "tables[0].success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "delete with a segment key",
+      "command": "DeleteMEPPreferenceTableRows",
+      "creates": false,
+      "params": { "tableId": { "guid": "${br}" }, "keys": [ { "referenceId": "${ref}" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "delete the branch row",
+      "command": "DeleteMEPPreferenceTableRows",
+      "creates": false,
+      "params": {
+        "tableId": { "guid": "${br}" },
+        "keys": [ { "mainAxisReferenceId": "${ref}", "branchAxisReferenceId": "${ref}", "branchAxisAngle": 37.5 } ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "the branch row is gone",
+      "command": "GetMEPPreferenceTableRows",
+      "creates": false,
+      "params": {
+        "tableId": { "guid": "${br}" },
+        "keys": [ { "mainAxisReferenceId": "${ref}", "branchAxisReferenceId": "${ref}", "branchAxisAngle": 37.5 } ]
+      },
+      "expect": [
+        { "path": "rows[0].valid", "ne": true, "name": "no valid row with the key" }
+      ]
+    },
+    {
+      "id": "delete the table and the angle",
+      "command": "ModifyMEPPreferenceTables",
+      "creates": false,
+      "params": { "domain": "Piping", "tablesToDelete": [ "${br}" ], "anglesToDelete": [ 37.5 ] },
+      "expect": [
+        { "path": "deletedTables[0].success", "eq": true },
+        { "path": "angleSet.success", "eq": true }
+      ]
+    },
+    {
+      "id": "the table is gone",
+      "command": "GetMEPPreferenceTableRows",
+      "creates": false,
+      "params": { "tableId": { "guid": "${br}" }, "keys": [] },
+      "expect": [
+        { "path": "exists", "ne": true }
+      ]
+    },
+    {
+      "id": "delete the angle again",
+      "command": "ModifyMEPPreferenceTables",
+      "creates": false,
+      "params": { "domain": "Piping", "anglesToDelete": [ 37.5 ] },
+      "expect": [
+        { "path": "angleSet.success", "eq": false, "name": "refused, the angle is gone" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "ModifyMEPPreferenceTables", "params": { "domain": "Piping", "tablesToDelete": [ "${br}" ] } },
+    { "command": "ModifyMEPPreferenceTables", "params": { "domain": "Piping", "anglesToDelete": [ 37.5 ] } }
+  ]
+}

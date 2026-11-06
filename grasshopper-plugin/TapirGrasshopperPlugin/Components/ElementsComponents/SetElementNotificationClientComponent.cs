@@ -13,7 +13,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "SetElementNotificationClient",
                 "Sets up a new notification client to receive element events: Archicad posts the new, changed, " +
-                "deleted, reserved and released elements as JSON to http://<Host>:<Port>/element_notification. " +
+                "deleted, reserved and released elements, and on request the selection, window, project and " +
+                "attribute replacement events, as JSON to " +
+                "http://<Host>:<Port>/element_notification. " +
                 "Setting up the same client again changes which events it gets. The client (an HTTP server) is " +
                 "not part of this component; remove it with RemoveElementNotificationClient.",
                 GroupNames.Elements)
@@ -54,7 +56,45 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     .WithTypeName("booleanItem"),
                 GH_ParamAccess.item);
 
-            SetOptionality(new[] { 0, 2, 3, 4 });
+            inManager.AddBooleanParameter(
+                "NotifyOnSelectionChange",
+                "NotifyOnSelectionChange",
+                "Notify when the selection changes, with the whole current selection as selectedElements. Defaults to false. Optional."
+                    .WithTypeName("booleanItem"),
+                GH_ParamAccess.item);
+
+            inManager.AddBooleanParameter(
+                "NotifyOnWindowChange",
+                "NotifyOnWindowChange",
+                "Notify when the current window or the active story changes, as windowChanged with the new window's type, databaseId and story index. Defaults to false. Optional."
+                    .WithTypeName("booleanItem"),
+                GH_ParamAccess.item);
+
+            inManager.AddBooleanParameter(
+                "NotifyOnProjectEvents",
+                "NotifyOnProjectEvents",
+                "Notify on project events (New, NewAndReset, Open, Close, Quit, Teamwork SendChanges and ReceiveChanges) as projectEvent. Defaults to false. Optional."
+                    .WithTypeName("booleanItem"),
+                GH_ParamAccess.item);
+
+            inManager.AddBooleanParameter(
+                "NotifyOnAttributeReplacement",
+                "NotifyOnAttributeReplacement",
+                "Notify when attributes are deleted and replaced by others (Delete and Replace, Attribute Manager), as replacedAttributes with the attribute type and the old and new index. Not available in Archicad 25. Defaults to false. Optional."
+                    .WithTypeName("booleanItem"),
+                GH_ParamAccess.item);
+
+            inManager.AddTextParameter(
+                "ElementTypesToObserve",
+                "ElementTypesToObserve",
+                ("Only the modification or deletion of elements of these types (e.g. Wall, Column) is notified. " +
+                 "Defaults to every element. Archicad is blocked while it attaches an observer to each element " +
+                 "to observe, for minutes on projects with thousands of elements, so limit the types on large " +
+                 "projects. Optional.")
+                    .WithTypeName("textList"),
+                GH_ParamAccess.list);
+
+            SetOptionality(new[] { 0, 2, 3, 4, 5, 6, 7, 8, 9 });
         }
 
         protected override void Solve(
@@ -91,6 +131,37 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (da.GetData(4, ref notifyOnReservationChanges))
             {
                 parameters["notifyOnReservationChanges"] = notifyOnReservationChanges;
+            }
+
+            var notifyOnSelectionChange = false;
+            if (da.GetData(5, ref notifyOnSelectionChange))
+            {
+                parameters["notifyOnSelectionChange"] = notifyOnSelectionChange;
+            }
+
+            var notifyOnWindowChange = false;
+            if (da.GetData(6, ref notifyOnWindowChange))
+            {
+                parameters["notifyOnWindowChange"] = notifyOnWindowChange;
+            }
+
+            var notifyOnProjectEvents = false;
+            if (da.GetData(7, ref notifyOnProjectEvents))
+            {
+                parameters["notifyOnProjectEvents"] = notifyOnProjectEvents;
+            }
+
+            var notifyOnAttributeReplacement = false;
+            if (da.GetData(8, ref notifyOnAttributeReplacement))
+            {
+                parameters["notifyOnAttributeReplacement"] = notifyOnAttributeReplacement;
+            }
+
+            var elementTypesToObserve = new System.Collections.Generic.List<string>();
+            if (da.GetDataList(9, elementTypesToObserve) &&
+                elementTypesToObserve.Count > 0)
+            {
+                parameters["elementTypesToObserve"] = new JArray(elementTypesToObserve);
             }
 
             if (TryGetCadResponse(

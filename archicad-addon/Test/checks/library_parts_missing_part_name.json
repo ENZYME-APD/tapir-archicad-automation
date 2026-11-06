@@ -1,0 +1,115 @@
+{
+  "title": "GetMissingLibPartNames names the library part of a placed object, also after the part was removed from the libraries",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "part in the embedded library",
+      "command": "CreateLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          {
+            "name": "TapirCheckLibMissing Box",
+            "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+            "path": "TapirCheckLibMissing/TapirCheckLibMissing Box.gsm",
+            "a": 1.0,
+            "b": 1.0,
+            "script2D": "RECT2 0, 0, A, B",
+            "script3D": "BLOCK A, B, 1"
+          }
+        ],
+        "overwriteExisting": true
+      },
+      "save": {
+        "partPath": "libraryParts[0].path"
+      },
+      "expect": [
+        { "path": "libraryParts[0].error", "exists": false, "name": "part created" }
+      ]
+    },
+    {
+      "id": "object placed from it",
+      "command": "CreateObjects",
+      "params": {
+        "objectsData": [
+          {
+            "libraryPartName": "TapirCheckLibMissing Box",
+            "coordinates": { "x": 700, "y": 700, "z": 0 },
+            "angle": 0.0
+          }
+        ]
+      },
+      "save": {
+        "o1": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "[object, nonexistent guid] while the part is loaded",
+      "command": "GetMissingLibPartNames",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${o1}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "libPartNames", "len": 2, "name": "one item per input" },
+        { "path": "libPartNames[0].libPartName", "contains": "TapirCheckLibMissing Box", "name": "object: the name of its part" },
+        { "path": "libPartNames[0].elementId.guid", "exists": true, "name": "object: with its id" },
+        { "path": "libPartNames[1].error", "exists": true, "name": "nonexistent guid: an error item" }
+      ]
+    },
+    {
+      "id": "the part removed from the embedded library",
+      "command": "DeleteEmbeddedLibraryItems",
+      "creates": false,
+      "params": {
+        "embeddedLibraryItems": [
+          { "path": "${partPath}" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "deleted" }
+      ]
+    },
+    {
+      "id": "the part is no longer loaded",
+      "command": "GetLibraryPartTypeDetails",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "name": "TapirCheckLibMissing Box" }
+        ]
+      },
+      "expect": [
+        { "path": "libraryParts[0].error", "exists": true, "name": "not found by name" }
+      ]
+    },
+    {
+      "id": "object whose part is missing",
+      "command": "GetMissingLibPartNames",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${o1}" } }
+        ]
+      },
+      "expect": [
+        { "path": "libPartNames[0].libPartName", "contains": "TapirCheckLibMissing Box", "name": "still the name of its part" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteEmbeddedLibraryItems",
+      "params": {
+        "embeddedLibraryItems": [
+          { "path": "TapirCheckLibMissing" }
+        ]
+      }
+    }
+  ]
+}

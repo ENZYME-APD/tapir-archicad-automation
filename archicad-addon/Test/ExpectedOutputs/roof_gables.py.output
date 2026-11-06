@@ -1,0 +1,41 @@
+Command: ModifyRoofs
+Parameters:
+{
+    "roofsWithDetails": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "pivotEdges": [
+                {},
+                {
+                    "levels": [
+                        {
+                            "angleType": "Gable"
+                        }
+                    ]
+                },
+                {},
+                {
+                    "levels": [
+                        {
+                            "angleType": "Gable"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        }
+    ]
+}
+Sloped
+Gable
+Sloped
+Gable

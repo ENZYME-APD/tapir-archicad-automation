@@ -234,6 +234,22 @@ static GSErrCode CollectDrawingPrimitives (const API_PrimElement* primElem,
                 "yMax", pict.destBox.yMax));
             break;
         }
+        case API_PrimCtrl_ElementRefID: {
+            // par1 is the referenced element (API_PrimElemRef), e.g. the owning wall of a window or door.
+            const auto* ref = static_cast<const API_PrimElemRef*> (par1);
+            if (ref != nullptr) {
+#ifdef ServerMainVers_2600
+                const API_ElemTypeID refTypeID = GetElemTypeId (ref->type);
+#else
+                const API_ElemTypeID refTypeID = ref->typeID;
+#endif
+                os.Add ("referencedElement", GS::ObjectState (
+                    "elementId", CreateGuidObjectState (ref->guid),
+                    "type", GetElementTypeNonLocalizedName (refTypeID),
+                    "drwIndex", static_cast<Int32> (ref->drwIndex)));
+            }
+            break;
+        }
         case API_PrimCtrl_HatchBorderBegID: {
             // par1 read as CollectCutFillPolygons in ElementCommands.cpp reads it.
             const auto* border = static_cast<const API_PrimHatchBorder*> (par1);
@@ -472,6 +488,17 @@ static const char* DrawingPrimitiveSchema = R"({
             },
             "additionalProperties": false,
             "required": ["doFrame", "fillPen", "fillbkgPen", "determination"]
+        },
+        "referencedElement": {
+            "type": "object",
+            "description": "Ctrl_ElementRef: the element the item refers to. The drawing of a Wall ends with one such item for each Window and Door in it.",
+            "properties": {
+                "elementId": { "$ref": "#/ElementId" },
+                "type": { "$ref": "#/ElementType" },
+                "drwIndex": { "type": "integer", "description": "The drawing order index of the referenced element." }
+            },
+            "additionalProperties": false,
+            "required": ["elementId", "type", "drwIndex"]
         }
     },
     "additionalProperties": false,
@@ -819,6 +846,12 @@ GS::ObjectState GetShapePrimitivesOfElementsCommand::Execute (const GS::ObjectSt
 
         DrawingPrimitiveCollectorContext ctx;
         err = GetShapePrimitives (elemHead, includeMarkers, ctx);
+        if (err == APIERR_REFUSEDCMD) {
+            // ACAPI_DrawingPrimitive_ShapePrims draws on the current story only and refuses
+            // an element of another story.
+            shapePrimitivesOfElements (CreateErrorResponse (err, "The element is not on the current story. Open its story first, or use GetDrawingPrimitivesOfElements, which draws on every story."));
+            continue;
+        }
         if (err != NoError) {
             shapePrimitivesOfElements (CreateErrorResponse (err, "Failed to get the drawing primitives of the element"));
             continue;

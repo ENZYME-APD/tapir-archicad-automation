@@ -1,0 +1,314 @@
+{
+  "title": "RegularizePolylines feeds CreatePolylines; CreatePolylines, CreateSplines and CreateHotspots keep the geometry, pen, story, layer and id, and refuse bad items",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [ "PolyLine", "Spline", "Hotspot" ],
+  "steps": [
+    {
+      "id": "regularize a polyline with a repeated point, and a degenerate one",
+      "command": "RegularizePolylines",
+      "creates": false,
+      "params": {
+        "polylines": [
+          {
+            "coordinates": [
+              { "x": 700.0, "y": 700.0 },
+              { "x": 700.0, "y": 700.0 },
+              { "x": 704.0, "y": 700.0 },
+              { "x": 704.0, "y": 703.0 }
+            ],
+            "arcs": [ { "begIndex": 2, "endIndex": 3, "arcAngle": 0.5 } ]
+          },
+          {
+            "coordinates": [ { "x": 700.0, "y": 720.0 }, { "x": 700.0, "y": 720.0 } ]
+          }
+        ],
+        "withAncestry": true
+      },
+      "save": { "rc": "results[0].coordinates", "ra": "results[0].arcs" },
+      "expect": [
+        { "path": "results[0].coordinates", "len": 3, "name": "repeated point removed" },
+        { "path": "results[0].coordinates[0].x", "approx": 700.0 },
+        { "path": "results[0].coordinates[0].y", "approx": 700.0 },
+        { "path": "results[0].coordinates[1].x", "approx": 704.0 },
+        { "path": "results[0].coordinates[1].y", "approx": 700.0 },
+        { "path": "results[0].coordinates[2].x", "approx": 704.0 },
+        { "path": "results[0].coordinates[2].y", "approx": 703.0 },
+        { "path": "results[0].arcs", "len": 1, "name": "arc kept" },
+        { "path": "results[0].arcs[0].begIndex", "eq": 1, "name": "arc re-indexed to the new points (begin)" },
+        { "path": "results[0].arcs[0].endIndex", "eq": 2, "name": "arc re-indexed to the new points (end)" },
+        { "path": "results[0].arcs[0].arcAngle", "approx": 0.5, "name": "arc angle kept" },
+        { "path": "results[0].ancestry.vertices[1].index", "eq": 2, "name": "second point came from input point 2" },
+        { "path": "results[0].ancestry.vertices[2].index", "eq": 3, "name": "third point came from input point 3" },
+        { "path": "results[0].ancestry.edges[1].index", "eq": 2, "name": "arc segment came from input segment 2" },
+        { "path": "results[1].coordinates", "len": 0, "name": "nothing valid left of a polyline whose points coincide" }
+      ]
+    },
+    {
+      "id": "two polylines, the first one regularized",
+      "command": "CreatePolylines",
+      "params": {
+        "polylinesData": [
+          {
+            "coordinates": "${rc}",
+            "arcs": "${ra}",
+            "floorInd": 0,
+            "layerIndex": 1,
+            "linePenIndex": 5,
+            "roomSeparator": false,
+            "id": "CHK-POLYLINE-1"
+          },
+          {
+            "coordinates": [ { "x": 700.0, "y": 710.0 }, { "x": 703.0, "y": 710.0 } ],
+            "floorInd": 1,
+            "layerIndex": 1,
+            "linePenIndex": 7,
+            "roomSeparator": true
+          }
+        ]
+      },
+      "save": { "p1": "elements[0].elementId.guid", "p2": "elements[1].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "polyline on story 0 created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "polyline on story 1 created" }
+      ]
+    },
+    {
+      "id": "read the polylines back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${p1}" } }, { "elementId": { "guid": "${p2}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "PolyLine" },
+        { "path": "detailsOfElements[0].details.coordinates", "len": 3, "name": "three points kept" },
+        { "path": "detailsOfElements[0].details.coordinates[1].x", "approx": 704.0, "name": "second point x kept" },
+        { "path": "detailsOfElements[0].details.coordinates[2].y", "approx": 703.0, "name": "last point y kept" },
+        { "path": "detailsOfElements[0].details.arcs", "len": 1, "name": "arc kept" },
+        { "path": "detailsOfElements[0].details.arcs[0].begIndex", "eq": 1, "name": "arc begin index kept" },
+        { "path": "detailsOfElements[0].details.arcs[0].endIndex", "eq": 2, "name": "arc end index kept" },
+        { "path": "detailsOfElements[0].details.arcs[0].arcAngle", "approx": 0.5, "name": "arc angle kept" },
+        { "path": "detailsOfElements[0].details.linePenIndex", "eq": 5, "name": "pen 5 applied" },
+        { "path": "detailsOfElements[0].details.roomSeparator", "eq": false },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "floorInd 0 applied" },
+        { "path": "detailsOfElements[0].layerIndex", "eq": 1, "name": "layerIndex applied" },
+        { "path": "detailsOfElements[0].id", "eq": "CHK-POLYLINE-1", "name": "id applied" },
+        { "path": "detailsOfElements[1].details.coordinates", "len": 2, "name": "straight polyline has two points" },
+        { "path": "detailsOfElements[1].details.coordinates[1].x", "approx": 703.0, "name": "straight polyline's end kept" },
+        { "path": "detailsOfElements[1].details.linePenIndex", "eq": 7, "name": "pen 7 applied" },
+        { "path": "detailsOfElements[1].details.roomSeparator", "eq": true, "name": "roomSeparator applied" },
+        { "path": "detailsOfElements[1].floorIndex", "eq": 1, "name": "floorInd 1 applied" }
+      ]
+    },
+    {
+      "id": "an open and a closed spline",
+      "command": "CreateSplines",
+      "params": {
+        "splinesData": [
+          {
+            "coordinates": [
+              { "x": 720.0, "y": 700.0 },
+              { "x": 723.0, "y": 702.0 },
+              { "x": 726.0, "y": 700.0 },
+              { "x": 729.0, "y": 703.0 }
+            ],
+            "closed": false,
+            "floorInd": 0,
+            "layerIndex": 1,
+            "linePenIndex": 4,
+            "roomSeparator": false,
+            "id": "CHK-SPLINE-1"
+          },
+          {
+            "coordinates": [
+              { "x": 720.0, "y": 710.0 },
+              { "x": 724.0, "y": 710.0 },
+              { "x": 722.0, "y": 713.0 }
+            ],
+            "closed": true,
+            "floorInd": 1,
+            "layerIndex": 1,
+            "linePenIndex": 6,
+            "roomSeparator": true
+          }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid", "s2": "elements[1].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "open spline created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "closed spline created" }
+      ]
+    },
+    {
+      "id": "read the splines back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${s1}" } }, { "elementId": { "guid": "${s2}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Spline" },
+        { "path": "detailsOfElements[0].details.coordinates", "len": 4, "name": "four fit points kept" },
+        { "path": "detailsOfElements[0].details.coordinates[0].x", "approx": 720.0, "name": "first point x kept" },
+        { "path": "detailsOfElements[0].details.coordinates[1].y", "approx": 702.0, "name": "second point y kept" },
+        { "path": "detailsOfElements[0].details.coordinates[3].x", "approx": 729.0, "name": "last point x kept" },
+        { "path": "detailsOfElements[0].details.coordinates[3].y", "approx": 703.0, "name": "last point y kept" },
+        { "path": "detailsOfElements[0].details.closed", "eq": false, "name": "open spline stays open" },
+        { "path": "detailsOfElements[0].details.linePenIndex", "eq": 4, "name": "pen 4 applied" },
+        { "path": "detailsOfElements[0].details.roomSeparator", "eq": false },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "floorInd 0 applied" },
+        { "path": "detailsOfElements[0].layerIndex", "eq": 1, "name": "layerIndex applied" },
+        { "path": "detailsOfElements[0].id", "eq": "CHK-SPLINE-1", "name": "id applied" },
+        { "path": "detailsOfElements[1].details.coordinates", "len": 3, "name": "closed spline stores no closing point" },
+        { "path": "detailsOfElements[1].details.coordinates[2].y", "approx": 713.0, "name": "closed spline's last point kept" },
+        { "path": "detailsOfElements[1].details.closed", "eq": true, "name": "closed applied" },
+        { "path": "detailsOfElements[1].details.linePenIndex", "eq": 6, "name": "pen 6 applied" },
+        { "path": "detailsOfElements[1].details.roomSeparator", "eq": true, "name": "roomSeparator applied" },
+        { "path": "detailsOfElements[1].floorIndex", "eq": 1, "name": "floorInd 1 applied" }
+      ]
+    },
+    {
+      "id": "two hotspots",
+      "command": "CreateHotspots",
+      "params": {
+        "hotspotsData": [
+          {
+            "position": { "x": 740.0, "y": 700.0 },
+            "height": 1.25,
+            "penIndex": 5,
+            "floorInd": 0,
+            "layerIndex": 1
+          },
+          {
+            "position": { "x": 742.0, "y": 701.0 },
+            "height": 0.0,
+            "penIndex": 8,
+            "floorInd": 1,
+            "layerIndex": 1
+          }
+        ]
+      },
+      "save": { "h1": "elements[0].elementId.guid", "h2": "elements[1].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "hotspot on story 0 created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "hotspot on story 1 created" }
+      ]
+    },
+    {
+      "id": "read the hotspots back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${h1}" } }, { "elementId": { "guid": "${h2}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Hotspot" },
+        { "path": "detailsOfElements[0].details.position.x", "approx": 740.0, "name": "position x kept" },
+        { "path": "detailsOfElements[0].details.position.y", "approx": 700.0, "name": "position y kept" },
+        { "path": "detailsOfElements[0].details.height", "approx": 1.25, "name": "height kept" },
+        { "path": "detailsOfElements[0].details.penIndex", "eq": 5, "name": "pen 5 applied" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "floorInd 0 applied" },
+        { "path": "detailsOfElements[0].layerIndex", "eq": 1, "name": "layerIndex applied" },
+        { "path": "detailsOfElements[1].details.position.x", "approx": 742.0, "name": "second position x kept" },
+        { "path": "detailsOfElements[1].details.position.y", "approx": 701.0, "name": "second position y kept" },
+        { "path": "detailsOfElements[1].details.height", "approx": 0.0, "name": "height 0 kept" },
+        { "path": "detailsOfElements[1].details.penIndex", "eq": 8, "name": "pen 8 applied" },
+        { "path": "detailsOfElements[1].floorIndex", "eq": 1, "name": "floorInd 1 applied" }
+      ]
+    },
+    {
+      "id": "regularize with an arc past the last point",
+      "command": "RegularizePolylines",
+      "creates": false,
+      "params": {
+        "polylines": [
+          {
+            "coordinates": [ { "x": 700.0, "y": 730.0 }, { "x": 704.0, "y": 730.0 }, { "x": 704.0, "y": 733.0 } ],
+            "arcs": [ { "begIndex": 1, "endIndex": 5, "arcAngle": 0.5 } ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "results[0].error.code", "exists": true, "name": "arc index past the last point refused" }
+      ]
+    },
+    {
+      "id": "polyline with an unknown favorite",
+      "command": "CreatePolylines",
+      "params": {
+        "polylinesData": [
+          {
+            "coordinates": [ { "x": 700.0, "y": 740.0 }, { "x": 704.0, "y": 740.0 } ],
+            "favoriteName": "Tapir check: no such favorite"
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "polyline with an unknown favorite refused" }
+      ]
+    },
+    {
+      "id": "spline with an unknown favorite",
+      "command": "CreateSplines",
+      "params": {
+        "splinesData": [
+          {
+            "coordinates": [ { "x": 720.0, "y": 740.0 }, { "x": 723.0, "y": 742.0 }, { "x": 726.0, "y": 740.0 } ],
+            "favoriteName": "Tapir check: no such favorite"
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "spline with an unknown favorite refused" }
+      ]
+    },
+    {
+      "id": "hotspot with an unknown favorite",
+      "command": "CreateHotspots",
+      "params": {
+        "hotspotsData": [
+          {
+            "position": { "x": 740.0, "y": 740.0 },
+            "favoriteName": "Tapir check: no such favorite"
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "hotspot with an unknown favorite refused" }
+      ]
+    },
+    {
+      "id": "polyline whose points coincide",
+      "command": "CreatePolylines",
+      "params": {
+        "polylinesData": [
+          { "coordinates": [ { "x": 700.0, "y": 750.0 }, { "x": 700.0, "y": 750.0 } ], "floorInd": 0 }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "polyline with nothing left after regularization refused" }
+      ]
+    },
+    {
+      "id": "only the valid polylines were created",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "PolyLine" },
+      "expect": [ { "path": "elements", "len": 2 } ]
+    },
+    {
+      "id": "only the valid splines were created",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Spline" },
+      "expect": [ { "path": "elements", "len": 2 } ]
+    },
+    {
+      "id": "only the valid hotspots were created",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Hotspot" },
+      "expect": [ { "path": "elements", "len": 2 } ]
+    }
+  ]
+}
