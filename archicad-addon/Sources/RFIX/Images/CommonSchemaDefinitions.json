@@ -7189,7 +7189,18 @@
         "description": "A wrapper containing a list of element classification identifiers or errors.",
         "properties": {
             "classificationIds": {
-                "$ref": "#/ClassificationIdsOrErrors"
+                "type": "array",
+                "description": "A list of element classification identifiers or errors, one per classification system.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "$ref": "#/ClassificationId"
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
             }
         },
         "additionalProperties": false,
