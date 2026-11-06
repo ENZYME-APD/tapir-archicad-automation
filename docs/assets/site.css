@@ -5,7 +5,8 @@
    Archicad schedule (.schedule) and the footer is a drawing title block (.tblock).
 
    Every page links it as <root>/assets/site.css, together with <root>/assets/site.js, and repeats the
-   same header and footer (between the site-header and site-footer comments).
+   same header and footer (between the site-header and site-footer comments), and the head's two
+   inline scripts: the stored theme, and data-i18n-loading while a translation loads (see site.js).
 
    Light is the default. Dark applies under prefers-color-scheme: dark, unless the header's toggle
    chose a theme: it sets data-theme="light" or "dark" on <html> (remembered in localStorage).
@@ -102,6 +103,11 @@ main { display: block }
 .site-header .right { margin-left: auto; display: flex; gap: 10px; align-items: center }
 .toggle { background: transparent; color: var(--cream); border: 1px solid rgba(244, 241, 234, .3); border-radius: 8px; padding: 7px 11px; font: 500 12px var(--mono); cursor: pointer }
 .toggle:hover { border-color: var(--ochre-light); color: var(--ochre-light) }
+/* The language menu (site.js adds it), drawn like the toggle; the open list in the brand's colours. */
+.lang-select { max-width: 9.5em }
+.lang-select option { background: var(--moss); color: var(--cream) }
+/* Until site.js has translated the page (the head's inline script sets it, for two seconds at most). */
+:root[data-i18n-loading] body { visibility: hidden }
 
 /* ---------- buttons ---------- */
 .btn { display: inline-flex; align-items: center; gap: 10px; border-radius: 8px; padding: 14px 22px; font: 700 15px/1 var(--body); text-decoration: none; border: 1.5px solid transparent; cursor: pointer; white-space: nowrap; transition: transform .15s ease, box-shadow .15s ease }
