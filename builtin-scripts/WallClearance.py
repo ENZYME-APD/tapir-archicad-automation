@@ -26,11 +26,11 @@ move, and the ones that cannot be moved (they would come too close to another
 wall, run past the end of their wall or into another opening). They are
 highlighted in Archicad. Apply moves them only after a confirmation.
 
-The walls are taken from their floor plan cut fill (GetDetailsOfElements
-floorPlanPolygons), so wall joins are as Archicad draws them. Only the walls of
-the element's own story are used. The settings and the table are saved in
-Documents/Tapir/WallClearance.json; the table can also be saved to and loaded
-from a file of its own, for the office's standards.
+The walls, columns and curtain walls are taken from their floor plan cut fill
+(GetDetailsOfElements floorPlanPolygons), so wall joins are as Archicad draws
+them. Only the ones of the element's own story are used. The settings and the
+table are saved in Documents/Tapir/WallClearance.json; the table can also be
+saved to and loaded from a file of its own, for the office's standards.
 """
 
 import fnmatch
@@ -130,17 +130,41 @@ def clip(points, axis: int, limit: float, keep_below: bool):
     return result
 
 
-class Wall:
+class Obstruction:
+    """ An element that shows cut in the floor plan and keeps elements away (a column or a curtain wall): its body
+    is its floor plan cut fill. It has no reference line, so being parallel to a wall does not matter. """
+
+    length = 0.0
+    u = (1.0, 0.0)
+    curved = False
+    approximate = False
+
+    def __init__(self, element_id: dict, detail: dict, kind: str = "element"):
+        self.elementId = element_id
+        self.guid = element_id["guid"]
+        self.floorIndex = int(detail.get("floorIndex", 0))
+        self.label = detail.get("id") or kind.lower()
+        self.polygons = [p for p in (read_polygon(item.get("coordinates")) for item in detail.get("floorPlanPolygons") or [])
+                         if len(p) > 2]
+
+    def faces(self):
+        """ (a, b, outward unit normal) for each edge of the body. """
+        for polygon in self.polygons:
+            turn = 1.0 if signed_area(polygon) > 0 else -1.0
+            for a, b in zip(polygon, polygon[1:] + polygon[:1]):
+                length = math.hypot(b[0] - a[0], b[1] - a[1])
+                if length > EPSILON:
+                    yield a, b, (turn * (b[1] - a[1]) / length, -turn * (b[0] - a[0]) / length)
+
+
+class Wall(Obstruction):
     """ A wall with its reference line (from begCoordinate to endCoordinate) as the t axis and its left normal as
     the s axis, and its body: the floor plan cut fill polygons, or a rectangle around the reference line when
     Archicad gives none. """
 
     def __init__(self, element_id: dict, detail: dict):
+        super().__init__(element_id, detail, "wall")
         d = detail.get("details") or {}
-        self.elementId = element_id
-        self.guid = element_id["guid"]
-        self.floorIndex = int(detail.get("floorIndex", 0))
-        self.label = detail.get("id") or "wall"
         self.beg = _xy(d["begCoordinate"])
         end = _xy(d["endCoordinate"])
         self.length = math.hypot(end[0] - self.beg[0], end[1] - self.beg[1])
@@ -148,8 +172,6 @@ class Wall:
             if self.length > EPSILON else (1.0, 0.0)
         self.n = (-self.u[1], self.u[0])
         self.curved = d.get("geometryType") == "Straight" and abs(float(d.get("arcAngle") or 0.0)) > EPSILON
-        self.polygons = [p for p in (read_polygon(item.get("coordinates")) for item in detail.get("floorPlanPolygons") or [])
-                         if len(p) > 2]
         self.approximate = not self.polygons
         if self.approximate and self.length > EPSILON:
             thickness = max(float(d.get("begThickness") or 0.0), float(d.get("endThickness") or 0.0)) or 0.3
@@ -171,19 +193,11 @@ class Wall:
     def world(self, t: float, s: float) -> tuple[float, float]:
         return (self.beg[0] + self.u[0] * t + self.n[0] * s, self.beg[1] + self.u[1] * t + self.n[1] * s)
 
-    def faces(self):
-        """ (a, b, outward unit normal) for each edge of the body. """
-        for polygon in self.polygons:
-            turn = 1.0 if signed_area(polygon) > 0 else -1.0
-            for a, b in zip(polygon, polygon[1:] + polygon[:1]):
-                length = math.hypot(b[0] - a[0], b[1] - a[1])
-                if length > EPSILON:
-                    yield a, b, (turn * (b[1] - a[1]) / length, -turn * (b[0] - a[0]) / length)
 
-
-def obstacles_along(owner: Wall, walls: list[Wall]) -> list[dict]:
-    """ The stretches of the owner wall (as t intervals) that other walls of its story take where they end at it or
-    cross it. A wall touching its face counts; walls nearly parallel to it do not. """
+def obstacles_along(owner: Wall, walls: list[Obstruction]) -> list[dict]:
+    """ The stretches of the owner wall (as t intervals) that other walls, columns and curtain walls of its story
+    take where they end at it, stand in it or cross it. One touching its face counts; walls nearly parallel to it
+    do not (columns and curtain walls have no length, so the parallel test does not apply to them). """
     s_low, s_high = owner.s_range[0] - TOUCH, owner.s_range[1] + TOUCH
     t_low, t_high = owner.t_range[0] - TOUCH, owner.t_range[1] + TOUCH
     parallel = math.cos(math.radians(PARALLEL_DEGREES))
@@ -559,16 +573,33 @@ class WallClearance:
             raise ArchicadError("Archicad returned a different number of property values than elements asked for.")
         return values
 
-    def _read_walls(self, floors: set[int]) -> list[Wall]:
-        wall_ids = run_tapir("GetElementsByType", {"elementType": "Wall"}).get("elements", [])
-        floor_details = get_details_of_elements(wall_ids, ["floorIndex"])
-        wall_ids = [w for w, d in zip(wall_ids, floor_details) if int(d.get("floorIndex", 0)) in floors]
-        walls = []
-        details = get_details_of_elements(wall_ids, ["type", "id", "floorIndex", "details", "floorPlanPolygons"])
-        for wall_id, detail in zip(wall_ids, details):
-            d = detail.get("details") or {}
-            if detail.get("type") == "Wall" and "begCoordinate" in d and "endCoordinate" in d:
-                walls.append(Wall(wall_id["elementId"], detail))
+    def _read_walls(self, floors: set[int]) -> list[Obstruction]:
+        """ The walls, columns and curtain walls of the given stories. Columns and curtain walls count only by their
+        floor plan cut fill; one without it is left out. """
+        walls: list[Obstruction] = []
+        for kind in ("Wall", "Column", "CurtainWall"):
+            try:
+                ids = run_tapir("GetElementsByType", {"elementType": kind}).get("elements", [])
+            except ArchicadError as e:
+                if kind == "Wall":
+                    raise
+                print(f"Cannot read the {kind} elements: {e}")
+                continue
+            floor_details = get_details_of_elements(ids, ["floorIndex"])
+            ids = [i for i, d in zip(ids, floor_details) if int(d.get("floorIndex", 0)) in floors]
+            if kind == "Wall":
+                details = get_details_of_elements(ids, ["type", "id", "floorIndex", "details", "floorPlanPolygons"])
+                for wall_id, detail in zip(ids, details):
+                    d = detail.get("details") or {}
+                    if detail.get("type") == "Wall" and "begCoordinate" in d and "endCoordinate" in d:
+                        walls.append(Wall(wall_id["elementId"], detail))
+            else:
+                label = "column" if kind == "Column" else "curtain wall"
+                details = get_details_of_elements(ids, ["type", "id", "floorIndex", "floorPlanPolygons"])
+                for element_id, detail in zip(ids, details):
+                    obstruction = Obstruction(element_id["elementId"], detail, label)
+                    if obstruction.polygons:
+                        walls.append(obstruction)
         return walls
 
     def _distance_for(self, kind: str, part: str, value: float | None, settings: dict) -> tuple[float, float]:
@@ -625,7 +656,7 @@ class WallClearance:
                 values = self._property_values([{"elementId": e["elementId"]} for e in elements], settings["property"])
             for element, value in zip(elements, values):
                 element["value"] = value
-            self.window.set_status("Reading the walls...")
+            self.window.set_status("Reading the walls, columns and curtain walls...")
             walls = self._read_walls({e["floorIndex"] for e in elements})
             stories = get_story_names()
             openings = [e for e in elements if e["kind"] in ("Door", "Window")]
@@ -658,7 +689,7 @@ class WallClearance:
         return True
 
     def _check_openings(self, openings: list[dict], walls: list[Wall], settings: dict) -> list[dict]:
-        wall_by_guid = {w.guid: w for w in walls}
+        wall_by_guid = {w.guid: w for w in walls if isinstance(w, Wall)}
         # every door and window in the owner walls, so a moved one does not run into another
         positions: dict[str, dict] = {}
         owners = {(e["details"].get("ownerElementId") or {}).get("guid") for e in openings}
@@ -703,7 +734,7 @@ class WallClearance:
             crossing = [o for o in obstacles if o["end"] > low + TOLERANCE and o["start"] < high - TOLERANCE]
             if crossing:
                 rows.append({**row, "status": "problem", "wall": crossing[0]["wall"].label,
-                             "result": "A wall crosses the opening."})
+                             "result": "A wall or column crosses the opening."})
                 continue
             before = [o for o in obstacles if o["end"] <= low + TOLERANCE]
             after = [o for o in obstacles if o["start"] >= high - TOLERANCE]
@@ -770,7 +801,7 @@ class WallClearance:
             corners = box_corners(box)
             center = ((box["xMin"] + box["xMax"]) / 2, (box["yMin"] + box["yMax"]) / 2)
             if any(inside(center, polygon) for wall in walls if wall.floorIndex == floor for polygon in wall.polygons):
-                rows.append({**row, "status": "skipped", "result": "It is inside a wall; not checked."})
+                rows.append({**row, "status": "skipped", "result": "It is inside a wall or column; not checked."})
                 continue
             need = self._distance_for("Object", element["part"], element["value"], settings)[0]
 
