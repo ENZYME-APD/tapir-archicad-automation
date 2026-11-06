@@ -182,6 +182,8 @@ jobs:
           # Whole minutes from 1 to 60; anything else uses the default.
           case "${INTERVAL:-}" in
             ''|*[!0-9]*) INTERVAL=10 ;;
+            # Base 10: bash would read a leading zero (08) as octal.
+            *) INTERVAL=$((10#$INTERVAL)) ;;
           esac
           if [ "$INTERVAL" -lt 1 ] || [ "$INTERVAL" -gt 60 ]; then
             INTERVAL=10
