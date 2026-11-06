@@ -1,14 +1,25 @@
-/* The activity charts of the Community page (/community/). It reads community.json from the
-   site-data branch on raw.githubusercontent.com (never GitHub's API). Only counts per month,
-   never the text of a message:
+/* The Community page (/community/): the Momentum figures, the top code contributors and the
+   activity charts. It reads community.json from the site-data branch on raw.githubusercontent.com
+   (never GitHub's API). Only counts, never the text of a message:
        {"version": 1,
         "months": [{"month": "2026-10", "issuesOpened": 41, "pullRequestsMerged": 37,
-                    "discordMessages": 512}, ...]}
-   The months follow one another without gaps; the current, unfinished month is best left out,
-   or its bar reads as a drop. Each series key is optional. A series is drawn only when every month shown has a whole number
-   of at least 0 for it; the page shows the last 12 months (6 on phones). When the file cannot be
-   read, or nothing in it looks right, the section stays hidden: a number that can't be read is
-   left out, not shown wrong. Every text shown is in the page's HTML. */
+                    "discordMessages": 512}, ...],
+        "totals": {"commits": 4321, "discordMessages": 12345, "discordMembers": 678,
+                   "discordMembersChange": {"diff": 23, "days": 30}, "participants": 234},
+        "topContributors": [{"name": "Jane Doe", "commits": 120}, ...]}
+   Every key but "version" is optional, and so is every key inside "totals".
+   months: the months follow one another without gaps; the current, unfinished month is best left
+   out, or its bar reads as a drop. A series is drawn only when every month shown has a whole number
+   of at least 0 for it; the page shows the last 12 months (6 on phones).
+   totals: each figure is shown only when it is a whole number of at least 0. discordMembersChange
+   is the change in members between the two member counts compared, "days" apart ("+23 in 30
+   days"); it is left out unless both are whole numbers and days is at least 1.
+   topContributors: commits per person. Bots are left out (Claude, claude[bot], github-actions[bot]
+   and any name ending in [bot]), and a person listed under two names is counted once: names that
+   only differ in case or accents are one person, and so are the names in ALIASES. The five with
+   the most commits are shown.
+   When the file cannot be read, or a part of it does not look right, that part stays hidden: a
+   number that can't be read is left out, not shown wrong. Every text shown is in the page's HTML. */
 (function () {
     'use strict';
 
@@ -16,8 +27,12 @@
     var MONTH_PATTERN = /^([0-9]{4})-(0[1-9]|1[0-2])$/;
     var SVG_NS = 'http://www.w3.org/2000/svg';
 
+    // Names one person committed under, by their key (see personKey), and the name to show.
+    var ALIASES = { 'tlorantfy': 'Tibor Lorántfy' };
+
     var section = document.getElementById ('activity-section');
-    if (!section || !window.fetch || !window.matchMedia) {
+    var momentum = document.getElementById ('momentum-section');
+    if (!section || !momentum || !window.fetch || !window.matchMedia) {
         return;
     }
     var figures = Array.prototype.slice.call (section.querySelectorAll ('figure[data-series]'));
@@ -197,12 +212,108 @@
         section.hidden = false;
     }
 
+    // ---- Momentum ----
+
+    function personKey (name) {
+        return name.normalize ('NFD').replace (/[\u0300-\u036f]/g, '').toLowerCase ().replace (/\s+/g, ' ').trim ();
+    }
+
+    function isBot (name) {
+        var key = personKey (name);
+        return key === 'claude' || /\[bot\]$/.test (key);
+    }
+
+    function topContributors (list) {
+        if (!Array.isArray (list)) {
+            return [];
+        }
+        var aliasOf = {};
+        Object.keys (ALIASES).forEach (function (alias) {
+            aliasOf[personKey (alias)] = ALIASES[alias];
+        });
+        var people = {};
+        list.forEach (function (entry) {
+            if (!entry || typeof entry.name !== 'string' || !entry.name.trim () || !isCount (entry.commits) || isBot (entry.name)) {
+                return;
+            }
+            var alias = aliasOf[personKey (entry.name)];
+            var name = alias || entry.name.trim ();
+            var key = personKey (name);
+            var person = people[key] || (people[key] = { name: name, commits: 0, shownBy: -1 });
+            person.commits += entry.commits;
+            // An alias's name wins; otherwise the spelling with the most commits.
+            if (alias) {
+                person.name = alias;
+                person.shownBy = Infinity;
+            } else if (entry.commits > person.shownBy) {
+                person.name = name;
+                person.shownBy = entry.commits;
+            }
+        });
+        return Object.keys (people).map (function (key) { return people[key]; }).filter (function (person) {
+            return person.commits > 0;
+        }).sort (function (a, b) {
+            return b.commits - a.commits || a.name.localeCompare (b.name, 'en');
+        }).slice (0, 5);
+    }
+
+    function renderMomentum (data) {
+        var totals = data && data.version === 1 && data.totals && typeof data.totals === 'object' ? data.totals : {};
+        var shown = 0;
+        var figures = momentum.querySelectorAll ('[data-total]');
+        for (var i = 0; i < figures.length; i++) {
+            var key = figures[i].getAttribute ('data-total');
+            var value = totals[key];
+            if (!isCount (value)) {
+                continue;
+            }
+            figures[i].querySelector ('strong').textContent = value.toLocaleString ('en-US');
+            if (key === 'discordMembers') {
+                var change = totals.discordMembersChange;
+                var changeElement = figures[i].querySelector ('.change');
+                if (change && typeof change.diff === 'number' && Math.floor (change.diff) === change.diff && isCount (change.days) && change.days >= 1) {
+                    changeElement.textContent = format (momentum.getAttribute ('data-change'), {
+                        sign: change.diff > 0 ? '+' : (change.diff < 0 ? '\u2212' : ''),
+                        diff: Math.abs (change.diff).toLocaleString ('en-US'),
+                        days: change.days
+                    });
+                }
+            }
+            figures[i].hidden = false;
+            shown++;
+        }
+        var people = data && data.version === 1 ? topContributors (data.topContributors) : [];
+        var box = document.getElementById ('top-contributors');
+        var list = box.querySelector ('ol');
+        list.textContent = '';
+        people.forEach (function (person) {
+            var item = document.createElement ('li');
+            var name = document.createElement ('span');
+            name.className = 'name';
+            name.textContent = person.name;
+            var commits = document.createElement ('span');
+            commits.className = 'commits';
+            commits.textContent = format (list.getAttribute ('data-commits'), { count: person.commits.toLocaleString ('en-US') });
+            item.appendChild (name);
+            item.appendChild (commits);
+            list.appendChild (item);
+        });
+        box.hidden = people.length === 0;
+        document.getElementById ('momentum-figures').hidden = shown === 0;
+        momentum.hidden = shown === 0 && people.length === 0;
+    }
+
     fetch (COMMUNITY_URL, { cache: 'no-cache' }).then (function (response) {
         if (!response.ok) {
             throw new Error (String (response.status));
         }
         return response.json ();
     }).then (function (data) {
+        try {
+            renderMomentum (data);
+        } catch (e) {
+            momentum.hidden = true;
+        }
         allMonths = readMonths (data);
         render ();
         if (phone.addEventListener) {
@@ -212,5 +323,6 @@
         }
     }).catch (function () {
         section.hidden = true;
+        momentum.hidden = true;
     });
 }) ();
