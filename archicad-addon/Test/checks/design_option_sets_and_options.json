@@ -1,0 +1,537 @@
+{
+  "title": "Design option sets and options: create, reorder, rename, move to another set, set as default and delete",
+  "minTapir": "1.8.1",
+  "minArchicad": "29",
+  "steps": [
+    {
+      "id": "no design option sets yet",
+      "command": "GetDesignOptionSets",
+      "creates": false,
+      "stopOnFail": true,
+      "params": {},
+      "expect": [
+        { "path": "designOptionSets", "len": 0, "name": "the project has no design option sets" }
+      ]
+    },
+    {
+      "id": "no design options yet",
+      "command": "GetDesignOptions",
+      "creates": false,
+      "stopOnFail": true,
+      "params": {},
+      "expect": [
+        { "path": "designOptions", "len": 0, "name": "the project has no design options" }
+      ]
+    },
+    {
+      "id": "create set A",
+      "command": "CreateDesignOptionSets",
+      "creates": false,
+      "params": { "designOptionSets": [ "Tapir check set A" ] },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per set" },
+        { "path": "executionResults[0].success", "eq": true, "name": "set A: success" }
+      ]
+    },
+    {
+      "id": "read set A",
+      "command": "GetDesignOptionSets",
+      "creates": false,
+      "params": {},
+      "save": { "setA": "designOptionSets[0].designOptionSetId.guid" },
+      "expect": [
+        { "path": "designOptionSets", "len": 1, "name": "one set" },
+        { "path": "designOptionSets[0].name", "eq": "Tapir check set A", "name": "named as given" },
+        { "path": "designOptionSets[0].designOptions", "len": 0, "name": "without options" },
+        { "path": "designOptionSets[0].isEditable", "eq": true, "name": "editable" }
+      ]
+    },
+    {
+      "id": "create set B",
+      "command": "CreateDesignOptionSets",
+      "creates": false,
+      "params": { "designOptionSets": [ "Tapir check set B" ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "set B: success" }
+      ]
+    },
+    {
+      "id": "read: two sets",
+      "command": "GetDesignOptionSets",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "designOptionSets", "len": 2, "name": "two sets" }
+      ]
+    },
+    {
+      "id": "move set A to the end",
+      "command": "ReorderDesignOptionSets",
+      "creates": false,
+      "params": { "designOptionSets": [ { "designOptionSetId": { "guid": "${setA}" } } ] },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per set" },
+        { "path": "executionResults[0].success", "eq": true, "name": "success" }
+      ]
+    },
+    {
+      "id": "read: B, A",
+      "command": "GetDesignOptionSets",
+      "creates": false,
+      "params": {},
+      "save": { "setB": "designOptionSets[0].designOptionSetId.guid" },
+      "expect": [
+        { "path": "designOptionSets[0].name", "eq": "Tapir check set B", "name": "B first" },
+        { "path": "designOptionSets[1].name", "eq": "Tapir check set A", "name": "A at the end" }
+      ]
+    },
+    {
+      "id": "move set A before set B",
+      "command": "ReorderDesignOptionSets",
+      "creates": false,
+      "params": { "designOptionSets": [ { "designOptionSetId": { "guid": "${setA}" }, "beforeDesignOptionSetId": { "guid": "${setB}" } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "success" }
+      ]
+    },
+    {
+      "id": "read: A, B",
+      "command": "GetDesignOptionSets",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "designOptionSets[0].name", "eq": "Tapir check set A", "name": "A first" },
+        { "path": "designOptionSets[1].name", "eq": "Tapir check set B", "name": "B second" }
+      ]
+    },
+    {
+      "id": "[reorder a set that does not exist]",
+      "command": "ReorderDesignOptionSets",
+      "creates": false,
+      "params": { "designOptionSets": [ { "designOptionSetId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "failed" },
+        { "path": "executionResults[0].error.code", "exists": true, "name": "with an error" }
+      ]
+    },
+    {
+      "id": "rename set B",
+      "command": "RenameDesignOptionSets",
+      "creates": false,
+      "params": { "designOptionSets": [ { "designOptionSetId": { "guid": "${setB}" }, "name": "Tapir check set B2" } ] },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per set" },
+        { "path": "executionResults[0].success", "eq": true, "name": "success" }
+      ]
+    },
+    {
+      "id": "read the new name of set B",
+      "command": "GetDesignOptionSets",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "designOptionSets[0].name", "eq": "Tapir check set A", "name": "set A unchanged" },
+        { "path": "designOptionSets[1].name", "eq": "Tapir check set B2", "name": "set B renamed" }
+      ]
+    },
+    {
+      "id": "[rename a set that does not exist]",
+      "command": "RenameDesignOptionSets",
+      "creates": false,
+      "params": { "designOptionSets": [ { "designOptionSetId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "name": "Tapir check set X" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "failed" },
+        { "path": "executionResults[0].error.code", "exists": true, "name": "with an error" }
+      ]
+    },
+    {
+      "id": "create options 1 and 2 in set A, option 3 in set B",
+      "command": "CreateDesignOptions",
+      "creates": false,
+      "params": {
+        "designOptions": [
+          { "name": "Tapir check option 1", "id": "T1", "ownerSetName": "Tapir check set A" },
+          { "name": "Tapir check option 2", "id": "T2", "ownerSetName": "Tapir check set A" },
+          { "name": "Tapir check option 3", "id": "T3", "ownerSetName": "Tapir check set B2" }
+        ]
+      },
+      "save": {
+        "o1": "designOptionIdsOrErrors[0].designOptionId.guid",
+        "o2": "designOptionIdsOrErrors[1].designOptionId.guid",
+        "o3": "designOptionIdsOrErrors[2].designOptionId.guid"
+      },
+      "expect": [
+        { "path": "designOptionIdsOrErrors", "len": 3, "name": "one id per option" },
+        { "path": "designOptionIdsOrErrors[0].designOptionId.guid", "exists": true, "name": "id of option 1" },
+        { "path": "designOptionIdsOrErrors[1].designOptionId.guid", "exists": true, "name": "id of option 2" },
+        { "path": "designOptionIdsOrErrors[2].designOptionId.guid", "exists": true, "name": "id of option 3" }
+      ]
+    },
+    {
+      "id": "[option in a set that does not exist]",
+      "command": "CreateDesignOptions",
+      "creates": false,
+      "params": { "designOptions": [ { "name": "Tapir check option X", "id": "TX", "ownerSetName": "Tapir check no such set" } ] },
+      "expect": [
+        { "path": "designOptionIdsOrErrors", "len": 1, "name": "one item per option" },
+        { "path": "designOptionIdsOrErrors[0].error.code", "exists": true, "name": "an error" },
+        { "path": "designOptionIdsOrErrors[0].designOptionId", "exists": false, "name": "no id" }
+      ]
+    },
+    {
+      "id": "read the options of the sets",
+      "command": "GetDesignOptionSets",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "designOptionSets[0].designOptions", "len": 2, "name": "set A has options 1 and 2" },
+        { "path": "designOptionSets[1].designOptions", "len": 1, "name": "set B has option 3" }
+      ]
+    },
+    {
+      "id": "read all options",
+      "command": "GetDesignOptions",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "designOptions", "len": 3, "name": "three options" },
+        { "path": "designOptions[*].isEditable", "eq": [ true, true, true ], "name": "all editable" }
+      ]
+    },
+    {
+      "id": "probe wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [ { "begCoordinate": { "x": 700, "y": 700 }, "endCoordinate": { "x": 703, "y": 700 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 } ]
+      },
+      "save": { "wall": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "put the probe wall into option 1",
+      "command": "MoveElementsToDesignOptions",
+      "creates": false,
+      "params": { "elementDesignOptionPairs": [ { "elementId": { "guid": "${wall}" }, "designOptionId": { "guid": "${o1}" } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "success" }
+      ]
+    },
+    {
+      "id": "read option 1 through the wall",
+      "command": "GetDesignOptionForElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${wall}" } } ] },
+      "expect": [
+        { "path": "designOptionForElements[0].type", "eq": "LinkedToDesignOption", "name": "the wall is in an option" },
+        { "path": "designOptionForElements[0].designOption.name", "eq": "Tapir check option 1", "name": "name as created" },
+        { "path": "designOptionForElements[0].designOption.id", "eq": "T1", "name": "id as created" },
+        { "path": "designOptionForElements[0].designOption.ownerSetName", "eq": "Tapir check set A", "name": "in set A" }
+      ]
+    },
+    {
+      "id": "move option 1 to the end of set A",
+      "command": "ReorderDesignOptionsInSet",
+      "creates": false,
+      "params": { "designOptions": [ { "designOptionId": { "guid": "${o1}" } } ] },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per option" },
+        { "path": "executionResults[0].success", "eq": true, "name": "success" }
+      ]
+    },
+    {
+      "id": "read the order of set A (option 1 last)",
+      "command": "GetDesignOptionSets",
+      "creates": false,
+      "params": {},
+      "save": {
+        "endFirst": "designOptionSets[0].designOptions[0].designOptionId.guid",
+        "endLast": "designOptionSets[0].designOptions[1].designOptionId.guid"
+      }
+    },
+    {
+      "id": "option 1 (holding the wall) is last",
+      "command": "GetElementsOfDesignOptions",
+      "creates": false,
+      "params": { "designOptions": [ { "designOptionId": { "guid": "${endFirst}" } }, { "designOptionId": { "guid": "${endLast}" } } ] },
+      "expect": [
+        { "path": "elementsOfDesignOptions[0].elements", "len": 0, "name": "first option is option 2" },
+        { "path": "elementsOfDesignOptions[1].elements", "len": 1, "name": "last option is option 1" }
+      ]
+    },
+    {
+      "id": "move option 1 before option 2",
+      "command": "ReorderDesignOptionsInSet",
+      "creates": false,
+      "params": { "designOptions": [ { "designOptionId": { "guid": "${o1}" }, "beforeDesignOptionId": { "guid": "${o2}" } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "success" }
+      ]
+    },
+    {
+      "id": "read the order of set A (option 1 first)",
+      "command": "GetDesignOptionSets",
+      "creates": false,
+      "params": {},
+      "save": {
+        "beforeFirst": "designOptionSets[0].designOptions[0].designOptionId.guid",
+        "beforeLast": "designOptionSets[0].designOptions[1].designOptionId.guid"
+      }
+    },
+    {
+      "id": "option 1 (holding the wall) is first",
+      "command": "GetElementsOfDesignOptions",
+      "creates": false,
+      "params": { "designOptions": [ { "designOptionId": { "guid": "${beforeFirst}" } }, { "designOptionId": { "guid": "${beforeLast}" } } ] },
+      "expect": [
+        { "path": "elementsOfDesignOptions[0].elements", "len": 1, "name": "first option is option 1" },
+        { "path": "elementsOfDesignOptions[1].elements", "len": 0, "name": "last option is option 2" }
+      ]
+    },
+    {
+      "id": "[reorder an option that does not exist]",
+      "command": "ReorderDesignOptionsInSet",
+      "creates": false,
+      "params": { "designOptions": [ { "designOptionId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "failed" },
+        { "path": "executionResults[0].error.code", "exists": true, "name": "with an error" }
+      ]
+    },
+    {
+      "id": "rename option 1, then change only its id",
+      "command": "RenameDesignOptions",
+      "creates": false,
+      "params": {
+        "designOptions": [
+          { "designOptionId": { "guid": "${o1}" }, "name": "Tapir check option 1 renamed" },
+          { "designOptionId": { "guid": "${o1}" }, "id": "T1R" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "name only: success" },
+        { "path": "executionResults[1].success", "eq": true, "name": "id only: success" }
+      ]
+    },
+    {
+      "id": "read the new name and id of option 1",
+      "command": "GetDesignOptionForElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${wall}" } } ] },
+      "expect": [
+        { "path": "designOptionForElements[0].designOption.name", "eq": "Tapir check option 1 renamed", "name": "new name, kept by the id-only rename" },
+        { "path": "designOptionForElements[0].designOption.id", "eq": "T1R", "name": "new id" }
+      ]
+    },
+    {
+      "id": "[rename an option without name and id]",
+      "command": "RenameDesignOptions",
+      "creates": false,
+      "params": { "designOptions": [ { "designOptionId": { "guid": "${o1}" } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "failed" },
+        { "path": "executionResults[0].error.code", "exists": true, "name": "with an error" }
+      ]
+    },
+    {
+      "id": "move option 1 to set B",
+      "command": "MoveDesignOptionsToAnotherSet",
+      "creates": false,
+      "params": { "designOptionAndSetPairs": [ { "designOptionId": { "guid": "${o1}" }, "setName": "Tapir check set B2" } ] },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per pair" },
+        { "path": "executionResults[0].success", "eq": true, "name": "success" }
+      ]
+    },
+    {
+      "id": "read the set of option 1",
+      "command": "GetDesignOptionForElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${wall}" } } ] },
+      "expect": [
+        { "path": "designOptionForElements[0].designOption.ownerSetName", "eq": "Tapir check set B2", "name": "option 1 is in set B" }
+      ]
+    },
+    {
+      "id": "read the options of the sets after the move",
+      "command": "GetDesignOptionSets",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "designOptionSets[0].designOptions", "len": 1, "name": "set A has option 2" },
+        { "path": "designOptionSets[1].designOptions", "len": 2, "name": "set B has options 3 and 1" }
+      ]
+    },
+    {
+      "id": "[move an option that does not exist]",
+      "command": "MoveDesignOptionsToAnotherSet",
+      "creates": false,
+      "params": { "designOptionAndSetPairs": [ { "designOptionId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "setName": "Tapir check set A" } ] },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per pair" },
+        { "path": "executionResults[0].success", "eq": false, "name": "failed" }
+      ]
+    },
+    {
+      "id": "option 2 as the default",
+      "command": "SetDefaultDesignOption",
+      "creates": false,
+      "params": { "designOptionId": { "guid": "${o2}" } },
+      "expect": [
+        { "path": "success", "eq": true, "name": "success" }
+      ]
+    },
+    {
+      "id": "[default option that does not exist]",
+      "command": "SetDefaultDesignOption",
+      "creates": false,
+      "params": { "designOptionId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } },
+      "expect": [
+        { "path": "success", "eq": false, "name": "failed" },
+        { "path": "error.code", "exists": true, "name": "with an error" }
+      ]
+    },
+    {
+      "id": "Main Model as the default",
+      "command": "SetDefaultDesignOption",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "success", "eq": true, "name": "success" }
+      ]
+    },
+    {
+      "id": "probe wall back to the main model",
+      "command": "MoveElementsToDesignOptions",
+      "creates": false,
+      "params": { "elementDesignOptionPairs": [ { "elementId": { "guid": "${wall}" }, "designOptionId": { "guid": "00000000-0000-0000-0000-000000000000" } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "success" }
+      ]
+    },
+    {
+      "id": "delete option 1",
+      "command": "DeleteDesignOptions",
+      "creates": false,
+      "params": { "designOptions": [ { "designOptionId": { "guid": "${o1}" } } ] },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per option" },
+        { "path": "executionResults[0].success", "eq": true, "name": "success" }
+      ]
+    },
+    {
+      "id": "read: two options left",
+      "command": "GetDesignOptions",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "designOptions", "len": 2, "name": "options 2 and 3 left" }
+      ]
+    },
+    {
+      "id": "[delete an option that does not exist]",
+      "command": "DeleteDesignOptions",
+      "creates": false,
+      "params": { "designOptions": [ { "designOptionId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "failed" },
+        { "path": "executionResults[0].error.code", "exists": true, "name": "with an error" }
+      ]
+    },
+    {
+      "id": "delete options 2 and 3",
+      "command": "DeleteDesignOptions",
+      "creates": false,
+      "params": { "designOptions": [ { "designOptionId": { "guid": "${o2}" } }, { "designOptionId": { "guid": "${o3}" } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "option 2: success" },
+        { "path": "executionResults[1].success", "eq": true, "name": "option 3: success" }
+      ]
+    },
+    {
+      "id": "read: no options left",
+      "command": "GetDesignOptions",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "designOptions", "len": 0, "name": "no options" }
+      ]
+    },
+    {
+      "id": "delete sets A and B",
+      "command": "DeleteDesignOptionSets",
+      "creates": false,
+      "params": { "designOptionSets": [ { "designOptionSetId": { "guid": "${setA}" } }, { "designOptionSetId": { "guid": "${setB}" } } ] },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per set" },
+        { "path": "executionResults[0].success", "eq": true, "name": "set A: success" },
+        { "path": "executionResults[1].success", "eq": true, "name": "set B: success" }
+      ]
+    },
+    {
+      "id": "read: no sets left",
+      "command": "GetDesignOptionSets",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "designOptionSets", "len": 0, "name": "no sets" }
+      ]
+    },
+    {
+      "id": "[delete a set that does not exist]",
+      "command": "DeleteDesignOptionSets",
+      "creates": false,
+      "params": { "designOptionSets": [ { "designOptionSetId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "failed" },
+        { "path": "executionResults[0].error.code", "exists": true, "name": "with an error" }
+      ]
+    },
+    {
+      "id": "create set C",
+      "command": "CreateDesignOptionSets",
+      "creates": false,
+      "params": { "designOptionSets": [ "Tapir check set C" ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "success" }
+      ]
+    },
+    {
+      "id": "read set C",
+      "command": "GetDesignOptionSets",
+      "creates": false,
+      "params": {},
+      "save": { "setC": "designOptionSets[0].designOptionSetId.guid" },
+      "expect": [
+        { "path": "designOptionSets", "len": 1, "name": "one set" },
+        { "path": "designOptionSets[0].name", "eq": "Tapir check set C", "name": "set C" }
+      ]
+    },
+    {
+      "id": "[a second set named like set C]",
+      "command": "CreateDesignOptionSets",
+      "creates": false,
+      "params": { "designOptionSets": [ "Tapir check set C" ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "failed: the name is taken" }
+      ]
+    },
+    {
+      "id": "read: still one set",
+      "command": "GetDesignOptionSets",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "designOptionSets", "len": 1, "name": "no second set C" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "SetDefaultDesignOption", "params": {} },
+    { "command": "DeleteDesignOptions", "params": { "designOptions": [ { "designOptionId": { "guid": "${o1}" } } ] } },
+    { "command": "DeleteDesignOptions", "params": { "designOptions": [ { "designOptionId": { "guid": "${o2}" } } ] } },
+    { "command": "DeleteDesignOptions", "params": { "designOptions": [ { "designOptionId": { "guid": "${o3}" } } ] } },
+    { "command": "DeleteDesignOptionSets", "params": { "designOptionSets": [ { "designOptionSetId": { "guid": "${setA}" } } ] } },
+    { "command": "DeleteDesignOptionSets", "params": { "designOptionSets": [ { "designOptionSetId": { "guid": "${setB}" } } ] } },
+    { "command": "DeleteDesignOptionSets", "params": { "designOptionSets": [ { "designOptionSetId": { "guid": "${setC}" } } ] } }
+  ]
+}

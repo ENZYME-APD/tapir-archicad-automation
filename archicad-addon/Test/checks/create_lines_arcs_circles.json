@@ -1,0 +1,262 @@
+{
+  "title": "CreateLineElements, CreateArcs and CreateCircles keep the geometry, pen, story, layer and id, and refuse degenerate items",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [ "Line", "Arc", "Circle" ],
+  "steps": [
+    {
+      "id": "two lines",
+      "command": "CreateLineElements",
+      "params": {
+        "linesData": [
+          {
+            "begCoordinate": { "x": 600.0, "y": 600.0 },
+            "endCoordinate": { "x": 604.0, "y": 603.0 },
+            "floorInd": 0,
+            "layerIndex": 1,
+            "linePenIndex": 5,
+            "roomSeparator": false,
+            "id": "CHK-LINE-1"
+          },
+          {
+            "begCoordinate": { "x": 600.0, "y": 610.0 },
+            "endCoordinate": { "x": 600.0, "y": 615.0 },
+            "floorInd": 1,
+            "layerIndex": 1,
+            "linePenIndex": 7,
+            "roomSeparator": true
+          }
+        ]
+      },
+      "save": { "l1": "elements[0].elementId.guid", "l2": "elements[1].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "line on story 0 created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "line on story 1 created" }
+      ]
+    },
+    {
+      "id": "read the lines back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${l1}" } }, { "elementId": { "guid": "${l2}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Line" },
+        { "path": "detailsOfElements[0].details.begCoordinate.x", "approx": 600.0, "name": "begin x kept" },
+        { "path": "detailsOfElements[0].details.begCoordinate.y", "approx": 600.0, "name": "begin y kept" },
+        { "path": "detailsOfElements[0].details.endCoordinate.x", "approx": 604.0, "name": "end x kept" },
+        { "path": "detailsOfElements[0].details.endCoordinate.y", "approx": 603.0, "name": "end y kept" },
+        { "path": "detailsOfElements[0].details.linePenIndex", "eq": 5, "name": "pen 5 applied" },
+        { "path": "detailsOfElements[0].details.roomSeparator", "eq": false },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "floorInd 0 applied" },
+        { "path": "detailsOfElements[0].layerIndex", "eq": 1, "name": "layerIndex applied" },
+        { "path": "detailsOfElements[0].id", "eq": "CHK-LINE-1", "name": "id applied" },
+        { "path": "detailsOfElements[1].floorIndex", "eq": 1, "name": "floorInd 1 applied" },
+        { "path": "detailsOfElements[1].details.endCoordinate.y", "approx": 615.0, "name": "second line's end kept" },
+        { "path": "detailsOfElements[1].details.linePenIndex", "eq": 7, "name": "pen 7 applied" },
+        { "path": "detailsOfElements[1].details.roomSeparator", "eq": true, "name": "roomSeparator applied" }
+      ]
+    },
+    {
+      "id": "a quarter arc",
+      "command": "CreateArcs",
+      "params": {
+        "arcsData": [
+          {
+            "origin": { "x": 620.0, "y": 600.0 },
+            "radius": 2.5,
+            "begAngle": 0.0,
+            "endAngle": 1.5707963267948966,
+            "floorInd": 0,
+            "layerIndex": 1,
+            "linePenIndex": 4,
+            "roomSeparator": false,
+            "id": "CHK-ARC-1"
+          }
+        ]
+      },
+      "save": { "a1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "arc created" }
+      ]
+    },
+    {
+      "id": "read the arc back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${a1}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Arc" },
+        { "path": "detailsOfElements[0].details.origin.x", "approx": 620.0, "name": "origin x kept" },
+        { "path": "detailsOfElements[0].details.origin.y", "approx": 600.0, "name": "origin y kept" },
+        { "path": "detailsOfElements[0].details.radius", "approx": 2.5, "name": "radius kept" },
+        { "path": "detailsOfElements[0].details.begAngle", "approx": 0.0, "name": "begin angle kept" },
+        { "path": "detailsOfElements[0].details.endAngle", "approx": 1.5707963267948966, "name": "end angle kept" },
+        { "path": "detailsOfElements[0].details.ratio", "approx": 1.0, "name": "circular, not elliptic" },
+        { "path": "detailsOfElements[0].details.linePenIndex", "eq": 4, "name": "pen applied" },
+        { "path": "detailsOfElements[0].id", "eq": "CHK-ARC-1", "name": "id applied" }
+      ]
+    },
+    {
+      "id": "two circles",
+      "command": "CreateCircles",
+      "params": {
+        "circlesData": [
+          {
+            "origin": { "x": 640.0, "y": 600.0 },
+            "radius": 1.5,
+            "floorInd": 0,
+            "layerIndex": 1,
+            "linePenIndex": 3,
+            "roomSeparator": false,
+            "id": "CHK-CIRCLE-1"
+          },
+          {
+            "origin": { "x": 650.0, "y": 600.0 },
+            "radius": 0.75,
+            "floorInd": 1,
+            "layerIndex": 1,
+            "linePenIndex": 6,
+            "roomSeparator": true
+          }
+        ]
+      },
+      "save": { "c1": "elements[0].elementId.guid", "c2": "elements[1].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "circle on story 0 created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "circle on story 1 created" }
+      ]
+    },
+    {
+      "id": "read the circles back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${c1}" } }, { "elementId": { "guid": "${c2}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Circle" },
+        { "path": "detailsOfElements[0].details.origin.x", "approx": 640.0, "name": "origin x kept" },
+        { "path": "detailsOfElements[0].details.origin.y", "approx": 600.0, "name": "origin y kept" },
+        { "path": "detailsOfElements[0].details.radius", "approx": 1.5, "name": "radius kept" },
+        { "path": "detailsOfElements[0].details.ratio", "approx": 1.0, "name": "circular, not elliptic" },
+        { "path": "detailsOfElements[0].details.linePenIndex", "eq": 3, "name": "pen 3 applied" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0 },
+        { "path": "detailsOfElements[0].id", "eq": "CHK-CIRCLE-1", "name": "id applied" },
+        { "path": "detailsOfElements[1].details.radius", "approx": 0.75, "name": "second radius kept" },
+        { "path": "detailsOfElements[1].details.linePenIndex", "eq": 6, "name": "pen 6 applied" },
+        { "path": "detailsOfElements[1].details.roomSeparator", "eq": true, "name": "roomSeparator applied" },
+        { "path": "detailsOfElements[1].floorIndex", "eq": 1, "name": "floorInd 1 applied" }
+      ]
+    },
+    {
+      "id": "line with an unknown favorite",
+      "command": "CreateLineElements",
+      "params": {
+        "linesData": [
+          {
+            "begCoordinate": { "x": 600.0, "y": 620.0 },
+            "endCoordinate": { "x": 604.0, "y": 620.0 },
+            "favoriteName": "Tapir check: no such favorite"
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "line with an unknown favorite refused" }
+      ]
+    },
+    {
+      "id": "arc with an unknown favorite",
+      "command": "CreateArcs",
+      "params": {
+        "arcsData": [
+          {
+            "origin": { "x": 620.0, "y": 620.0 },
+            "radius": 1.0,
+            "begAngle": 0.0,
+            "endAngle": 1.0,
+            "favoriteName": "Tapir check: no such favorite"
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "arc with an unknown favorite refused" }
+      ]
+    },
+    {
+      "id": "circle with an unknown favorite",
+      "command": "CreateCircles",
+      "params": {
+        "circlesData": [
+          {
+            "origin": { "x": 640.0, "y": 620.0 },
+            "radius": 1.0,
+            "favoriteName": "Tapir check: no such favorite"
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "circle with an unknown favorite refused" }
+      ]
+    },
+    {
+      "id": "zero-length line",
+      "command": "CreateLineElements",
+      "params": {
+        "linesData": [
+          { "begCoordinate": { "x": 600.0, "y": 630.0 }, "endCoordinate": { "x": 600.0, "y": 630.0 }, "floorInd": 0 }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "line whose ends coincide refused" }
+      ]
+    },
+    {
+      "id": "arc with zero radius",
+      "command": "CreateArcs",
+      "params": {
+        "arcsData": [
+          { "origin": { "x": 620.0, "y": 630.0 }, "radius": 0.0, "begAngle": 0.0, "endAngle": 1.0, "floorInd": 0 }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "arc with radius 0 refused" }
+      ]
+    },
+    {
+      "id": "circle with a negative radius",
+      "command": "CreateCircles",
+      "params": {
+        "circlesData": [
+          { "origin": { "x": 640.0, "y": 630.0 }, "radius": -1.0, "floorInd": 0 }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "circle with a negative radius refused" }
+      ]
+    },
+    {
+      "id": "only the valid lines were created",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Line" },
+      "expect": [ { "path": "elements", "len": 2 } ]
+    },
+    {
+      "id": "only the valid arc was created",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Arc" },
+      "expect": [ { "path": "elements", "len": 1 } ]
+    },
+    {
+      "id": "only the valid circles were created",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Circle" },
+      "expect": [ { "path": "elements", "len": 2 } ]
+    }
+  ]
+}

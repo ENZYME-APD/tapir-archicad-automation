@@ -1,0 +1,233 @@
+{
+  "title": "CreateGraphicalOverrideRule and CreateGraphicalOverrideCombination create and overwrite by name; combinations are renamed and listed; the style of elements is read",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "create a rule",
+      "command": "CreateGraphicalOverrideRule",
+      "creates": false,
+      "params": {
+        "name": "TapirCheck legacy rule",
+        "ruleGroupName": "TapirCheck legacy",
+        "criterionXML": "",
+        "surfaceRGB": { "red": 1.0, "green": 0.5, "blue": 0.25 },
+        "linePenIndex": 21,
+        "overrideContours": true
+      },
+      "save": { "rule": "ruleId.guid" }
+    },
+    {
+      "id": "read the rule",
+      "command": "GetGraphicOverrideRulesByName",
+      "creates": false,
+      "params": { "graphicOverrideRules": [{ "name": "TapirCheck legacy rule" }] },
+      "expect": [
+        { "path": "graphicOverrideRules[0].ruleGroupName", "eq": "TapirCheck legacy" },
+        { "path": "graphicOverrideRules[0].style.lineMarkerTextPen", "eq": 21 },
+        { "path": "graphicOverrideRules[0].style.surfaceColor.red", "approx": 1, "tol": 1e-3 },
+        { "path": "graphicOverrideRules[0].style.surfaceColor.green", "approx": 0.5, "tol": 1e-3 },
+        { "path": "graphicOverrideRules[0].style.surfaceColor.blue", "approx": 0.25, "tol": 1e-3 },
+        { "path": "graphicOverrideRules[0].style.surfaceAppliesTo.cutSurface", "eq": true },
+        { "path": "graphicOverrideRules[0].style.surfaceAppliesTo.uncutSurface", "eq": true },
+        { "path": "graphicOverrideRules[0].style.overrideContours", "eq": true }
+      ]
+    },
+    {
+      "id": "overwrite the rule by name",
+      "command": "CreateGraphicalOverrideRule",
+      "creates": false,
+      "params": {
+        "name": "TapirCheck legacy rule",
+        "ruleGroupName": "TapirCheck legacy other",
+        "criterionXML": "",
+        "linePenIndex": 22,
+        "overrideContours": false
+      },
+      "expect": [
+        { "path": "ruleId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "read the overwritten rule",
+      "command": "GetGraphicOverrideRulesByName",
+      "creates": false,
+      "params": { "graphicOverrideRules": [{ "name": "TapirCheck legacy rule" }, { "name": "TapirCheck legacy rule", "ruleGroupName": "TapirCheck legacy other" }] },
+      "expect": [
+        { "path": "graphicOverrideRules[0].ruleGroupName", "eq": "TapirCheck legacy", "name": "stayed in its own group" },
+        { "path": "graphicOverrideRules[0].style.lineMarkerTextPen", "eq": 22 },
+        { "path": "graphicOverrideRules[0].style.surfaceColor", "exists": false, "name": "the whole style was replaced" },
+        { "path": "graphicOverrideRules[0].style.overrideContours", "eq": false },
+        { "path": "graphicOverrideRules[1].error.message", "contains": "No rule group", "name": "the other group was not created" }
+      ]
+    },
+    {
+      "id": "same rule, overwritten in place",
+      "command": "SetGraphicOverrideRuleOrder",
+      "creates": false,
+      "params": {
+        "graphicOverrideRuleGroups": [
+          { "name": "TapirCheck legacy", "graphicOverrideRuleIds": [{ "graphicOverrideRuleId": { "guid": "${rule}" } }] }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the first rule's guid is still in the group" }
+      ]
+    },
+    {
+      "id": "rule with an empty name",
+      "command": "CreateGraphicalOverrideRule",
+      "creates": false,
+      "params": { "name": "", "ruleGroupName": "TapirCheck legacy", "linePenIndex": 21 },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "refused" }
+      ]
+    },
+    {
+      "id": "all rules with their criterion XML",
+      "command": "GetGraphicalOverrideRules",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "rules[0].ruleId.guid", "exists": true, "name": "the project has rules" },
+        { "path": "rules[0].ruleGroupName", "exists": true },
+        { "path": "rules[0].criterionXML", "exists": true }
+      ]
+    },
+    {
+      "id": "a second rule",
+      "command": "CreateGraphicalOverrideRule",
+      "creates": false,
+      "params": { "name": "TapirCheck legacy rule 2", "ruleGroupName": "TapirCheck legacy", "criterionXML": "", "linePenIndex": 23 },
+      "save": { "rule2": "ruleId.guid" }
+    },
+    {
+      "id": "create a combination",
+      "command": "CreateGraphicalOverrideCombination",
+      "creates": false,
+      "params": { "name": "TapirCheck legacy combination", "ruleNames": ["TapirCheck legacy rule", "TapirCheck legacy rule 2"] },
+      "save": { "combination": "combinationId.guid" }
+    },
+    {
+      "id": "combination with an unknown rule",
+      "command": "CreateGraphicalOverrideCombination",
+      "creates": false,
+      "params": { "name": "TapirCheck legacy bad combination", "ruleNames": ["TapirCheck no such rule"] },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "refused" }
+      ]
+    },
+    {
+      "id": "replace the rules of the combination by name",
+      "command": "CreateGraphicalOverrideCombination",
+      "creates": false,
+      "params": { "name": "TapirCheck legacy combination", "ruleNames": ["TapirCheck legacy rule 2"] },
+      "expect": [
+        { "path": "combinationId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "all combinations",
+      "command": "GetGraphicOverrideCombinations",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "graphicOverrideCombinations[0].graphicOverrideCombinationId.guid", "exists": true, "name": "the project has combinations" },
+        { "path": "graphicOverrideCombinations[0].name", "exists": true },
+        { "path": "graphicOverrideCombinations[0].graphicOverrideRuleIds", "exists": true }
+      ]
+    },
+    {
+      "id": "rename the combination",
+      "command": "ModifyGraphicOverrideCombinations",
+      "creates": false,
+      "params": { "graphicOverrideCombinations": [{ "graphicOverrideCombinationId": { "guid": "${combination}" }, "name": "TapirCheck legacy combination renamed" }] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "new name taken, old name free",
+      "command": "CreateGraphicOverrideCombinations",
+      "creates": false,
+      "params": {
+        "graphicOverrideCombinations": [
+          { "name": "TapirCheck legacy combination renamed", "graphicOverrideRuleIds": [] },
+          { "name": "TapirCheck legacy combination", "graphicOverrideRuleIds": [] }
+        ]
+      },
+      "save": { "freed": "graphicOverrideCombinationIds[1].graphicOverrideCombinationId.guid" },
+      "expect": [
+        { "path": "graphicOverrideCombinationIds[0].error.code", "exists": true, "name": "the new name is in use" },
+        { "path": "graphicOverrideCombinationIds[1].graphicOverrideCombinationId.guid", "exists": true, "name": "the old name is free" }
+      ]
+    },
+    {
+      "id": "set the rules of the combination",
+      "command": "ModifyGraphicOverrideCombinations",
+      "creates": false,
+      "params": {
+        "graphicOverrideCombinations": [
+          { "graphicOverrideCombinationId": { "guid": "${combination}" }, "graphicOverrideRuleIds": [{ "graphicOverrideRuleId": { "guid": "${rule}" } }, { "graphicOverrideRuleId": { "guid": "${rule2}" } }] }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "modify a combination that does not exist",
+      "command": "ModifyGraphicOverrideCombinations",
+      "creates": false,
+      "params": { "graphicOverrideCombinations": [{ "graphicOverrideCombinationId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "name": "TapirCheck legacy nothing" }] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    },
+    {
+      "id": "a wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [{ "begCoordinate": { "x": 0, "y": 0 }, "endCoordinate": { "x": 4, "y": 0 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 }]
+      },
+      "save": { "wall": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "style of the wall and of a missing element",
+      "command": "GetGraphicalOverrideStyleOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${wall}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "styles[0].lineMarkerTextPen.overridden", "exists": true },
+        { "path": "styles[0].cutSurface.overridden", "exists": true },
+        { "path": "styles[0].showSkinSeparators", "exists": true },
+        { "path": "styles[1].error.code", "exists": true, "name": "missing element gives an error" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteGraphicOverrideCombinations",
+      "params": { "graphicOverrideCombinationIds": [{ "graphicOverrideCombinationId": { "guid": "${combination}" } }] }
+    },
+    {
+      "command": "DeleteGraphicOverrideCombinations",
+      "params": { "graphicOverrideCombinationIds": [{ "graphicOverrideCombinationId": { "guid": "${freed}" } }] }
+    },
+    {
+      "command": "DeleteGraphicOverrideRuleGroups",
+      "params": { "ruleGroupNames": ["TapirCheck legacy", "TapirCheck legacy other"], "deleteRules": true }
+    }
+  ]
+}

@@ -1,0 +1,135 @@
+{
+  "title": "GetMEPRoutingParameters reads a route, its node and its segment; SetMEPRoutingParameters changes the route's segment parameters, and an invalid reference id changes nothing",
+  "minTapir": "1.8.1",
+  "minArchicad": "28",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 0
+      }
+    },
+    {
+      "id": "duct with one elbow",
+      "command": "CreateMEPRoutingElements",
+      "params": {
+        "routingElementsData": [
+          {
+            "domain": "Ventilation",
+            "crossSectionShape": "Rectangular",
+            "crossSectionWidth": 0.3,
+            "crossSectionHeight": 0.2,
+            "nodeCoordinates": [
+              { "x": 0.0, "y": -50.0, "z": 3.0 },
+              { "x": 4.0, "y": -50.0, "z": 3.0 },
+              { "x": 4.0, "y": -47.0, "z": 3.0 }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "duct": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "its node and segment",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${duct}" } } ]
+      },
+      "save": {
+        "node": "routingElements[0].nodes[1].elementId.guid",
+        "segment": "routingElements[0].segments[0].elementId.guid"
+      }
+    },
+    {
+      "id": "read route, node, segment and an unknown guid",
+      "command": "GetMEPRoutingParameters",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${duct}" } },
+          { "elementId": { "guid": "${node}" } },
+          { "elementId": { "guid": "${segment}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "routingParameters[0].type", "eq": "RoutingElement" },
+        { "path": "routingParameters[0].routingSegmentParameters", "exists": true },
+        { "path": "routingParameters[0].routingNodeParameters", "exists": true },
+        { "path": "routingParameters[1].type", "eq": "RoutingNode" },
+        { "path": "routingParameters[1].transitionParameters", "exists": true },
+        { "path": "routingParameters[2].type", "eq": "RoutingSegment" },
+        { "path": "routingParameters[3].error.code", "exists": true, "name": "unknown guid gives an error item" }
+      ]
+    },
+    {
+      "id": "new segment parameters",
+      "command": "SetMEPRoutingParameters",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": { "guid": "${duct}" },
+            "routingSegmentParameters": {
+              "crossSectionShape": "Rectangular",
+              "crossSectionWidth": 0.5,
+              "crossSectionHeight": 0.25
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the new segment parameters",
+      "command": "GetMEPRoutingParameters",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${duct}" } } ]
+      },
+      "expect": [
+        { "path": "routingParameters[0].routingSegmentParameters.crossSectionShape", "eq": "Rectangular" },
+        { "path": "routingParameters[0].routingSegmentParameters.crossSectionWidth", "approx": 0.5 },
+        { "path": "routingParameters[0].routingSegmentParameters.crossSectionHeight", "approx": 0.25 }
+      ]
+    },
+    {
+      "id": "negative reference id with a new width",
+      "command": "SetMEPRoutingParameters",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": { "guid": "${duct}" },
+            "routingSegmentParameters": {
+              "crossSectionWidth": 0.7,
+              "crossSectionReferenceId": -1
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "width unchanged",
+      "command": "GetMEPRoutingParameters",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${duct}" } } ]
+      },
+      "expect": [
+        { "path": "routingParameters[0].routingSegmentParameters.crossSectionWidth", "approx": 0.5, "name": "nothing was changed" }
+      ]
+    }
+  ]
+}
