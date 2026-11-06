@@ -5,8 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Grasshopper - Tapir</title>
 <meta name="description" content="Read, change and create Archicad elements from Grasshopper with the Tapir plugin: what the components do, the tool components, installing the tapir package and a first definition.">
+<!-- link-preview: the preview of a link to this page shared on Discord, WhatsApp and the like -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tapir">
+<meta property="og:title" content="Grasshopper - Tapir">
+<meta property="og:description" content="Read, change and create Archicad elements from Grasshopper with the Tapir plugin: what the components do, the tool components, installing the tapir package and a first definition.">
+<meta property="og:url" content="https://archicad-api.com/grasshopper/">
+<meta name="twitter:card" content="summary">
 <!-- site-assets -->
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#2D3A30" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#2D3A30">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
@@ -14,6 +23,8 @@
 <script>try { var t = localStorage.getItem ('tapir-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute ('data-theme', t); } catch (e) {}</script>
 <script>try { var l = /[?&]lang=([A-Za-z]{2})(?:[&#]|$)/.exec (location.search); l = l ? l[1].toLowerCase () : localStorage.getItem ('tapir-lang') || (navigator.language || '').slice (0, 2).toLowerCase (); if (l && l !== 'en') { document.documentElement.setAttribute ('data-i18n-loading', ''); setTimeout (function () { document.documentElement.removeAttribute ('data-i18n-loading'); }, 2000); } } catch (e) {}</script>
 <script src="../assets/site.js" defer></script>
+<link rel="stylesheet" href="../assets/motion.css"><script src="../assets/motion.js" defer></script>
+<script>try { if ((!sessionStorage.getItem ('tapir-splash') || /[?&]splash/.test (location.search)) && !/nomotion/.test (location.search + location.hash) && 'IntersectionObserver' in window && !matchMedia ('(prefers-reduced-motion: reduce)').matches) { var h = document.documentElement; h.classList.add ('m-splash'); var f = function () { h.classList.add ('m-font'); }; setTimeout (f, 2500); if (document.fonts && document.fonts.load) document.fonts.load ('900 56px Fraunces').then (f, f); else f (); } } catch (e) {}</script>
 <!-- /site-assets -->
 </head>
 <body>
@@ -184,19 +195,19 @@
                     <span class="tagline">Get started</span>
                     <h3>Install the Add-On</h3>
                     <p>Install Tapir and the <span class="mono">tapir</span> package, then try the wall above.</p>
-                    <span class="go">Get started &rarr;</span>
+                    <span class="go">Get started</span>
                 </a>
                 <a class="teaser" href="../gh-coverage/">
                     <span class="tagline">Coverage</span>
                     <h3>Grasshopper coverage</h3>
                     <p>Which commands have a component, and which inputs each still lacks.</p>
-                    <span class="go">See the coverage &rarr;</span>
+                    <span class="go">See the coverage</span>
                 </a>
                 <a class="teaser dark" href="../tutorials/">
                     <span class="tagline">Videos</span>
                     <h3>Watch it work</h3>
                     <p>The Archicad and Grasshopper tutorials.</p>
-                    <span class="go">Watch the tutorials &rarr;</span>
+                    <span class="go">Watch the tutorials</span>
                 </a>
             </div>
         </section>

@@ -5,8 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Roadmap - Tapir</title>
 <meta name="description" content="How to ask for a feature in Tapir, what is being asked for now, and what shipped recently.">
+<!-- link-preview: the preview of a link to this page shared on Discord, WhatsApp and the like -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tapir">
+<meta property="og:title" content="Roadmap - Tapir">
+<meta property="og:description" content="How to ask for a feature in Tapir, what is being asked for now, and what shipped recently.">
+<meta property="og:url" content="https://archicad-api.com/roadmap/">
+<meta name="twitter:card" content="summary">
 <!-- site-assets -->
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#2D3A30" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#2D3A30">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
@@ -14,6 +23,8 @@
 <script>try { var t = localStorage.getItem ('tapir-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute ('data-theme', t); } catch (e) {}</script>
 <script>try { var l = /[?&]lang=([A-Za-z]{2})(?:[&#]|$)/.exec (location.search); l = l ? l[1].toLowerCase () : localStorage.getItem ('tapir-lang') || (navigator.language || '').slice (0, 2).toLowerCase (); if (l && l !== 'en') { document.documentElement.setAttribute ('data-i18n-loading', ''); setTimeout (function () { document.documentElement.removeAttribute ('data-i18n-loading'); }, 2000); } } catch (e) {}</script>
 <script src="../assets/site.js" defer></script>
+<link rel="stylesheet" href="../assets/motion.css"><script src="../assets/motion.js" defer></script>
+<script>try { if ((!sessionStorage.getItem ('tapir-splash') || /[?&]splash/.test (location.search)) && !/nomotion/.test (location.search + location.hash) && 'IntersectionObserver' in window && !matchMedia ('(prefers-reduced-motion: reduce)').matches) { var h = document.documentElement; h.classList.add ('m-splash'); var f = function () { h.classList.add ('m-font'); }; setTimeout (f, 2500); if (document.fonts && document.fonts.load) document.fonts.load ('900 56px Fraunces').then (f, f); else f (); } } catch (e) {}</script>
 <!-- /site-assets -->
 </head>
 <body>
@@ -104,25 +115,25 @@
                     <span class="tagline">Requests</span>
                     <h3>Open feature requests</h3>
                     <p>Every open issue labelled <code>enhancement</code>. Add a comment or a reaction to one you need too.</p>
-                    <span class="go">See the requests &rarr;</span>
+                    <span class="go">See the requests</span>
                 </a>
                 <a class="teaser" href="https://github.com/orgs/ENZYME-APD/projects/4/views/1">
                     <span class="tagline">Plan</span>
                     <h3>Project board</h3>
                     <p>The maintainers' board of planned and ongoing work.</p>
-                    <span class="go">Open the board &rarr;</span>
+                    <span class="go">Open the board</span>
                 </a>
                 <a class="teaser" href="https://github.com/ENZYME-APD/tapir-archicad-automation/pulls">
                     <span class="tagline">In progress</span>
                     <h3>Open pull requests</h3>
                     <p>Changes being built, reviewed and tested right now.</p>
-                    <span class="go">See the pull requests &rarr;</span>
+                    <span class="go">See the pull requests</span>
                 </a>
                 <a class="teaser" href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases">
                     <span class="tagline">Shipped</span>
                     <h3>Releases</h3>
                     <p>Every release, with its notes and downloads. The <span class="nowrap">command reference</span> shows the version each command came in.</p>
-                    <span class="go">See the releases &rarr;</span>
+                    <span class="go">See the releases</span>
                 </a>
             </div>
         </section>

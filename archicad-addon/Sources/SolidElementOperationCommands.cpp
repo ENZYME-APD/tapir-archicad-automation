@@ -23,6 +23,30 @@ static GS::UniString OperationToString (API_SolidOperationID op)
     }
 }
 
+// The causes ACAPI_Element_SolidLink_Create documents for its error codes (ACAPinc.h). The code
+// alone was hard to read from the response, and the same message for every cause hid, for example,
+// that the two elements were already linked in this direction (APIERR_LINKEXIST).
+static GS::UniString SolidLinkCreateErrorMessage (GSErrCode err)
+{
+    const GS::UniString prefix = "Failed to create solid element link.";
+    switch (err) {
+        case APIERR_LINKEXIST:
+            return prefix + " The operator is already linked to this target; GetSolidElementLinks lists the existing links, RemoveSolidElementLinks removes one.";
+        case APIERR_BADINDEX:
+        case APIERR_BADID:
+            return prefix + " targetId or operatorId is not a valid element, or both are the same element.";
+        case APIERR_BADPARS:
+            return prefix + " Archicad does not accept this operation for a solid element link.";
+        case APIERR_REFUSEDPAR:
+            return prefix + " Hotlinked elements cannot be linked.";
+        case APIERR_BADDATABASE:
+        case APIERR_NOTMINE:
+            return prefix + " Archicad cannot change these elements in the current database, or a Teamwork element is not reserved.";
+        default:
+            return prefix;
+    }
+}
+
 static GSFlags FlagsFromObjectState (const GS::ObjectState& os)
 {
     GSFlags flags = 0;
@@ -146,7 +170,7 @@ GS::ObjectState CreateSolidElementLinksCommand::Execute (const GS::ObjectState& 
 
             const GSErrCode err = ACAPI_Element_SolidLink_Create (targetGuid, operatorGuid, operation, flags);
             if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (err, "Failed to create solid element link."));
+                executionResults (CreateFailedExecutionResult (err, SolidLinkCreateErrorMessage (err)));
             } else {
                 executionResults (CreateSuccessfulExecutionResult ());
             }

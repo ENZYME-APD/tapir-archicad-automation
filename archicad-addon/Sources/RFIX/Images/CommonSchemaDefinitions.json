@@ -5789,6 +5789,10 @@
                 "type": "string",
                 "description": "New description of the property."
             },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Whether users may edit the value of the property on elements (Property Manager: Editable)."
+            },
             "groupId": {
                 "$ref": "#/PropertyGroupId",
                 "description": "Move the property into this custom property group."

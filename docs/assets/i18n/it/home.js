@@ -22,9 +22,8 @@
     'running…': 'in esecuzione…',
     'Ground Floor · 1:100': 'Piano terra · 1:100',
     'Try a built-in script': 'Prova uno script incluso',
-    'Number doors': 'Numera le porte',
-    'Colour by area': 'Colora per area',
-    'Health check': 'Controllo progetto',
+    'Script': 'Script',
+    'Run': 'Esegui',
     '6 doors numbered D01–D06': '6 porte numerate D01–D06',
     '6 zones coloured by area': '6 zone colorate per area',
     '3 problems found': '3 problemi trovati',
@@ -142,7 +141,7 @@
         'Con un progetto aperto, Archicad risponde ai comandi JSON su <code>http://127.0.0.1:19723</code>. I comandi di Tapir passano per <code>API.ExecuteAddOnCommand</code> di Archicad. Salva questo come <code>walls.py</code> ed eseguilo con qualsiasi Python 3.',
     'With several Archicads open, the next ones answer on 19724, 19725 and so on.':
         'Con più Archicad aperti, i successivi rispondono su 19724, 19725 e così via.',
-    'Your first Python script, step by step →': 'Il tuo primo script Python, passo dopo passo →',
+    'Your first Python script, step by step': 'Il tuo primo script Python, passo dopo passo',
 
     // More
     'More': 'Altro',
@@ -152,12 +151,12 @@
     'The reference': 'Il riferimento',
     'Every command with its schema and an example, the Grasshopper guide, and what Tapir covers of the Archicad API.':
         'Ogni comando con il suo schema e un esempio, la guida a Grasshopper e quanto Tapir copre dell\'API di Archicad.',
-    'Open the docs →': 'Apri la documentazione →',
+    'Open the docs': 'Apri la documentazione',
     'Send yours in': 'Invia il tuo',
     'Post a script on Discord or as a pull request. It is checked, adapted for any office and listed with your name. No GitHub account needed.':
         'Pubblica uno script su Discord o come pull request. Viene controllato, adattato per qualsiasi studio e pubblicato con il tuo nome. Non serve un account GitHub.',
-    'How sharing works →': 'Come funziona la condivisione →',
+    'How sharing works': 'Come funziona la condivisione',
     'Ask, report, test': 'Chiedi, segnala, prova',
     'Discord, the video series, and how a bug report becomes a fix.': 'Discord, la serie di video e come una segnalazione diventa una correzione.',
-    'Join in →': 'Partecipa →'
+    'Join in': 'Partecipa'
 });

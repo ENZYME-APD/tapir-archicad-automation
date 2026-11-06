@@ -44,17 +44,17 @@
     'Installing Tapir': 'Installare Tapir',
     'Install the Add-On with the Tapir Installer, load it in Archicad and open the Tapir palette.':
         'Installare l\'add-on con il Tapir Installer, caricarlo in Archicad e aprire la palette di Tapir.',
-    'Written guide: Get started →': 'Guida scritta: Inizia →',
+    'Written guide: Get started': 'Guida scritta: Inizia',
     'Scripts from the palette': 'Script dalla palette',
     'Run the scripts that come with Tapir, and add your own, from the Tapir palette without writing code.':
         'Eseguire gli script forniti con Tapir, e aggiungere i tuoi, dalla palette di Tapir senza scrivere codice.',
-    'Written guide: Scripts →': 'Guida scritta: Script →',
+    'Written guide: Scripts': 'Guida scritta: Script',
     'Send Tapir commands from a Python script, read the answers and change elements.':
         'Inviare comandi Tapir da uno script Python, leggere le risposte e modificare gli elementi.',
-    'Written guide: the command reference →': 'Guida scritta: il riferimento dei comandi →',
+    'Written guide: the command reference': 'Guida scritta: il riferimento dei comandi',
     'Connect Grasshopper to Archicad, read elements and create them from Rhino geometry.':
         'Collegare Grasshopper ad Archicad, leggere gli elementi e crearli dalla geometria di Rhino.',
-    'Written guide: Grasshopper →': 'Guida scritta: Grasshopper →',
+    'Written guide: Grasshopper': 'Guida scritta: Grasshopper',
 
     // Next step
     'Next step': 'Prossimo passo',

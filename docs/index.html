@@ -5,8 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title data-i18n>Tapir - automation for Archicad</title>
 <meta name="description" data-i18n-attrs="content" content="Tapir is a free, open-source Archicad add-on: hundreds of extra JSON commands, a palette that runs scripts in one click, and a Grasshopper plugin.">
+<!-- link-preview: the preview of a link to this page shared on Discord, WhatsApp and the like -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tapir">
+<meta property="og:title" content="Tapir - automation for Archicad">
+<meta property="og:description" content="Tapir is a free, open-source Archicad add-on: hundreds of extra JSON commands, a palette that runs scripts in one click, and a Grasshopper plugin.">
+<meta property="og:url" content="https://archicad-api.com/">
+<meta name="twitter:card" content="summary">
 <!-- site-assets -->
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#2D3A30" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#2D3A30">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
@@ -14,6 +23,8 @@
 <script>try { var t = localStorage.getItem ('tapir-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute ('data-theme', t); } catch (e) {}</script>
 <script>try { var l = /[?&]lang=([A-Za-z]{2})(?:[&#]|$)/.exec (location.search); l = l ? l[1].toLowerCase () : localStorage.getItem ('tapir-lang') || (navigator.language || '').slice (0, 2).toLowerCase (); if (l && l !== 'en') { document.documentElement.setAttribute ('data-i18n-loading', ''); setTimeout (function () { document.documentElement.removeAttribute ('data-i18n-loading'); }, 2000); } } catch (e) {}</script>
 <script src="assets/site.js" defer></script>
+<link rel="stylesheet" href="assets/motion.css"><script src="assets/motion.js" defer></script>
+<script>try { if ((!sessionStorage.getItem ('tapir-splash') || /[?&]splash/.test (location.search)) && !/nomotion/.test (location.search + location.hash) && 'IntersectionObserver' in window && !matchMedia ('(prefers-reduced-motion: reduce)').matches) { var h = document.documentElement; h.classList.add ('m-splash'); var f = function () { h.classList.add ('m-font'); }; setTimeout (f, 2500); if (document.fonts && document.fonts.load) document.fonts.load ('900 56px Fraunces').then (f, f); else f (); } } catch (e) {}</script>
 <!-- /site-assets -->
 <link rel="stylesheet" href="home.css">
 <script src="home.js" defer></script>
@@ -42,7 +53,7 @@
 
 <main id="main">
     <!-- The hero: the pitch, the installers and a floor plan on which three built-in scripts run.
-         Without JavaScript the plan shows the numbered doors and the tabs stay hidden. -->
+         Without JavaScript the plan shows the numbered doors and the palette bar stays hidden. -->
     <div class="hero">
         <div class="wrap">
             <div>
@@ -62,20 +73,26 @@
                 </p>
             </div>
 
-            <!-- The script names stay English, as the Tapir palette shows them. -->
+            <!-- The bar is drawn like the Tapir palette in Archicad: pick a script, press Run.
+                 The script names and "Run Script" stay English, as the palette shows them. -->
             <figure class="plan-card" id="plan" data-running="running…" data-i18n-attrs="data-running">
-                <div class="plan-head" aria-hidden="true"><span class="dots"><i></i><i></i><i></i></span><span data-i18n>Ground Floor · 1:100</span><span>Tapir</span></div>
-                <div class="plan-tabs" id="plan-tabs" role="group" aria-label="Try a built-in script" data-i18n-attrs="aria-label" hidden>
-                    <button type="button" data-demo="number" data-name="Automatic Numbering Based on Polyline" data-done="6 doors numbered D01–D06" data-i18n-attrs="data-done" aria-pressed="true" data-i18n>Number doors</button>
-                    <button type="button" data-demo="heat" data-name="Property Highlighter" data-done="6 zones coloured by area" data-i18n-attrs="data-done" aria-pressed="false" data-i18n>Colour by area</button>
-                    <button type="button" data-demo="check" data-name="Project Health Check" data-done="3 problems found" data-i18n-attrs="data-done" aria-pressed="false" data-i18n>Health check</button>
+                <div class="plan-bar" id="plan-bar" role="group" aria-label="Try a built-in script" data-i18n-attrs="aria-label" hidden>
+                    <span class="plan-mark"><img src="assets/tapir_mark_cream.svg" alt="" width="18" height="18"></span>
+                    <label class="visually-hidden" for="plan-script" data-i18n>Script</label>
+                    <select id="plan-script">
+                        <option value="number" data-done="6 doors numbered D01–D06" data-i18n-attrs="data-done" selected>Automatic Numbering Based on Polyline</option>
+                        <option value="heat" data-done="6 zones coloured by area" data-i18n-attrs="data-done">Property Highlighter</option>
+                        <option value="check" data-done="3 problems found" data-i18n-attrs="data-done">Project Health Check</option>
+                    </select>
+                    <button type="button" class="plan-run" id="plan-run" title="Run Script"><svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true"><path d="M2 1 L9 5 L2 9 Z" fill="currentColor"/></svg><span data-i18n>Run</span></button>
+                    <span class="plan-sheet" data-i18n>Ground Floor · 1:100</span>
                 </div>
                 <svg viewBox="0 0 560 340" role="img" aria-labelledby="plan-title">
                     <title id="plan-title" data-i18n>A floor plan of six rooms on which a script numbers the doors, colours the rooms by area or marks problems</title>
                     <defs>
                         <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#1C1E1F" stroke-width="2.2"/></pattern>
                     </defs>
-                    <g font-family="Inter, sans-serif" font-size="11" fill="#5F6A6E">
+                    <g class="plan-rooms" font-family="Inter, sans-serif" font-size="11" fill="#5F6A6E">
                         <rect class="zone" data-area="24" x="30" y="30" width="170" height="130" fill="#FFFFFF"/>
                         <rect class="zone" data-area="18" x="200" y="30" width="130" height="130" fill="#FFFFFF"/>
                         <rect class="zone" data-area="32" x="330" y="30" width="200" height="130" fill="#FFFFFF"/>
@@ -102,25 +119,25 @@
                     <g id="plan-numbering">
                         <polyline points="40,175 120,175 250,175 410,175 450,175" fill="none" stroke="#BD8D53" stroke-width="2" stroke-dasharray="6 4"/>
                         <g font-family="JetBrains Mono, monospace" font-size="11" font-weight="600">
-                            <g class="tagnum"><rect x="104" y="138" width="34" height="18" rx="3" fill="#1C1E1F"/><text x="121" y="151" fill="#F4F1EA" text-anchor="middle">D01</text></g>
-                            <g class="tagnum"><rect x="62" y="196" width="34" height="18" rx="3" fill="#1C1E1F"/><text x="79" y="209" fill="#F4F1EA" text-anchor="middle">D02</text></g>
-                            <g class="tagnum"><rect x="234" y="138" width="34" height="18" rx="3" fill="#1C1E1F"/><text x="251" y="151" fill="#F4F1EA" text-anchor="middle">D03</text></g>
-                            <g class="tagnum"><rect x="172" y="196" width="34" height="18" rx="3" fill="#1C1E1F"/><text x="189" y="209" fill="#F4F1EA" text-anchor="middle">D04</text></g>
-                            <g class="tagnum"><rect x="332" y="196" width="34" height="18" rx="3" fill="#1C1E1F"/><text x="349" y="209" fill="#F4F1EA" text-anchor="middle">D05</text></g>
-                            <g class="tagnum"><rect x="394" y="138" width="34" height="18" rx="3" fill="#1C1E1F"/><text x="411" y="151" fill="#F4F1EA" text-anchor="middle">D06</text></g>
+                            <g class="tagnum"><rect x="104" y="138" width="34" height="18" rx="3" fill="#BD8D53"/><text x="121" y="151" fill="#1C1E1F" text-anchor="middle">D01</text></g>
+                            <g class="tagnum"><rect x="62" y="196" width="34" height="18" rx="3" fill="#BD8D53"/><text x="79" y="209" fill="#1C1E1F" text-anchor="middle">D02</text></g>
+                            <g class="tagnum"><rect x="234" y="138" width="34" height="18" rx="3" fill="#BD8D53"/><text x="251" y="151" fill="#1C1E1F" text-anchor="middle">D03</text></g>
+                            <g class="tagnum"><rect x="172" y="196" width="34" height="18" rx="3" fill="#BD8D53"/><text x="189" y="209" fill="#1C1E1F" text-anchor="middle">D04</text></g>
+                            <g class="tagnum"><rect x="332" y="196" width="34" height="18" rx="3" fill="#BD8D53"/><text x="349" y="209" fill="#1C1E1F" text-anchor="middle">D05</text></g>
+                            <g class="tagnum"><rect x="394" y="138" width="34" height="18" rx="3" fill="#BD8D53"/><text x="411" y="151" fill="#1C1E1F" text-anchor="middle">D06</text></g>
                         </g>
                     </g>
                     <g id="plan-check" font-family="Inter, sans-serif" font-size="10.5" font-weight="600" style="display:none">
-                        <circle cx="265" cy="95" r="16" fill="none" stroke="#BD8D53" stroke-width="2.5"/><rect x="284" y="84" width="128" height="20" rx="3" fill="#1C1E1F"/><text x="292" y="98" fill="#F4F1EA" data-i18n>Zone number used twice</text>
-                        <circle cx="85" cy="250" r="16" fill="none" stroke="#BD8D53" stroke-width="2.5"/><rect x="104" y="240" width="108" height="20" rx="3" fill="#1C1E1F"/><text x="112" y="254" fill="#F4F1EA" data-i18n>Door without an ID</text>
-                        <circle cx="470" cy="260" r="16" fill="none" stroke="#BD8D53" stroke-width="2.5"/><rect x="352" y="282" width="134" height="20" rx="3" fill="#1C1E1F"/><text x="360" y="296" fill="#F4F1EA" data-i18n>Unclassified object</text>
+                        <circle cx="265" cy="95" r="16" fill="rgba(189, 141, 83, .18)" stroke="#BD8D53" stroke-width="2.5"/><rect x="284" y="84" width="128" height="20" rx="3" fill="#1C1E1F"/><text x="292" y="98" fill="#F4F1EA" data-i18n>Zone number used twice</text>
+                        <circle cx="85" cy="250" r="16" fill="rgba(189, 141, 83, .18)" stroke="#BD8D53" stroke-width="2.5"/><rect x="104" y="240" width="108" height="20" rx="3" fill="#1C1E1F"/><text x="112" y="254" fill="#F4F1EA" data-i18n>Door without an ID</text>
+                        <circle cx="470" cy="260" r="16" fill="rgba(189, 141, 83, .18)" stroke="#BD8D53" stroke-width="2.5"/><rect x="352" y="282" width="134" height="20" rx="3" fill="#1C1E1F"/><text x="360" y="296" fill="#F4F1EA" data-i18n>Unclassified object</text>
                     </g>
                     <g id="plan-legend" font-family="Inter, sans-serif" font-size="10" fill="#1C1E1F" style="display:none">
                         <rect x="390" y="232" width="128" height="66" rx="4" fill="#FFFFFF" stroke="#1C1E1F" stroke-width="1"/>
                         <text x="400" y="248" font-weight="600" data-i18n>Zone area</text>
-                        <rect x="400" y="256" width="12" height="10" fill="#E9DCC6"/><text x="418" y="265" data-i18n>under 15 m²</text>
-                        <rect x="400" y="270" width="12" height="10" fill="#D4A876"/><text x="418" y="279" data-i18n>15 to 25 m²</text>
-                        <rect x="400" y="284" width="12" height="10" fill="#8A6235"/><text x="418" y="293" data-i18n>over 25 m²</text>
+                        <rect x="400" y="256" width="12" height="10" fill="#E3E9E1"/><text x="418" y="265" data-i18n>under 15 m²</text>
+                        <rect x="400" y="270" width="12" height="10" fill="#B9C7B4"/><text x="418" y="279" data-i18n>15 to 25 m²</text>
+                        <rect x="400" y="284" width="12" height="10" fill="#8FA58C"/><text x="418" y="293" data-i18n>over 25 m²</text>
                     </g>
                 </svg>
                 <figcaption class="plan-status" id="plan-status" aria-live="polite"><span class="pulse" aria-hidden="true"></span><span id="plan-status-text" data-i18n><b>Automatic Numbering Based on Polyline</b> · 6 doors numbered D01–D06</span></figcaption>
@@ -278,7 +295,7 @@
                     <code>walls.py</code> and run it with any Python 3.
                 </p>
                 <p data-i18n>With several Archicads open, the next ones answer on 19724, 19725 and so on.</p>
-                <p><a href="start/#python" data-i18n>Your first Python script, step by step &rarr;</a></p>
+                <p><a href="start/#python" data-i18n>Your first Python script, step by step</a></p>
             </div>
             <div class="term">
                 <div class="bar"><span>walls.py</span><span>port 19723</span></div>
@@ -317,19 +334,19 @@ print(len(walls), <span class="s">'walls'</span>)</code></pre>
                     <span class="tagline" data-i18n>Docs</span>
                     <h3 data-i18n>The reference</h3>
                     <p data-i18n>Every command with its schema and an example, the Grasshopper guide, and what Tapir covers of the Archicad API.</p>
-                    <span class="go" data-i18n>Open the docs &rarr;</span>
+                    <span class="go" data-i18n>Open the docs</span>
                 </a>
                 <a class="teaser dark" href="scripts/share/">
                     <span class="tagline" data-i18n>Share</span>
                     <h3 data-i18n>Send yours in</h3>
                     <p data-i18n>Post a script on Discord or as a pull request. It is checked, adapted for any office and listed with your name. No GitHub account needed.</p>
-                    <span class="go" data-i18n>How sharing works &rarr;</span>
+                    <span class="go" data-i18n>How sharing works</span>
                 </a>
                 <a class="teaser" id="learn" href="community/">
                     <span class="tagline" data-i18n>Community</span>
                     <h3 data-i18n>Ask, report, test</h3>
                     <p data-i18n>Discord, the video series, and how a bug report becomes a fix.</p>
-                    <span class="go" data-i18n>Join in &rarr;</span>
+                    <span class="go" data-i18n>Join in</span>
                 </a>
             </div>
         </section>

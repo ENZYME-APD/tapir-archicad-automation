@@ -1,7 +1,8 @@
 /* The home page (/): the floor-plan demo and the command ticker. The live figures are read by
    assets/site.js. The page is complete without it: without JavaScript the plan shows the numbered
-   doors and the tabs stay hidden. Every text it shows is in the page's HTML, translated there
-   (data-i18n, see assets/i18n/README.md); the script names stay English, as in the palette. Under
+   doors and the palette bar (script menu and Run) stays hidden. Every text it shows is in the
+   page's HTML, translated there (data-i18n, see assets/i18n/README.md); the script names stay
+   English, as in the palette. Under
    prefers-reduced-motion the demo shows each result at once and the ticker stands still. */
 (function () {
     'use strict';
@@ -17,12 +18,13 @@
     // ---- The floor-plan demo ----
 
     function setUpPlan () {
-        var tabs = byId ('plan-tabs');
+        var bar = byId ('plan-bar');
+        var select = byId ('plan-script');
+        var runButton = byId ('plan-run');
         var plan = byId ('plan');
-        if (!tabs || !plan) {
+        if (!bar || !select || !runButton || !plan) {
             return;
         }
-        var buttons = tabs.querySelectorAll ('button');
         var zones = plan.querySelectorAll ('.zone');
         var tags = plan.querySelectorAll ('.tagnum');
         var numbering = byId ('plan-numbering');
@@ -33,8 +35,10 @@
         var runningText = plan.getAttribute ('data-running') || '';
         var timers = [];
 
+        // Moss shades: the Property Highlighter only colours the view. Ochre is kept for what a
+        // script changes in the model (the door numbers) and for the check's markers.
         function heatColor (area) {
-            return area < 15 ? '#E9DCC6' : area <= 25 ? '#D4A876' : '#8A6235';
+            return area < 15 ? '#E3E9E1' : area <= 25 ? '#B9C7B4' : '#8FA58C';
         }
 
         function setStatus (name, text) {
@@ -55,13 +59,15 @@
             }
         }
 
-        function run (button) {
-            var kind = button.getAttribute ('data-demo');
-            var name = button.getAttribute ('data-name');
-            var done = button.getAttribute ('data-done');
+        function run (option) {
+            var kind = option.value;
+            var name = option.textContent;
+            var done = option.getAttribute ('data-done');
             timers.forEach (clearTimeout);
             timers = [];
             status.classList.remove ('running');
+            runButton.removeAttribute ('aria-busy');
+            plan.classList.toggle ('heat', kind === 'heat');
 
             for (var i = 0; i < zones.length; i++) {
                 zones[i].setAttribute ('fill', '#FFFFFF');
@@ -82,6 +88,7 @@
             }
 
             status.classList.add ('running');
+            runButton.setAttribute ('aria-busy', 'true');
             setStatus (name, runningText);
             if (kind === 'number') {
                 Array.prototype.forEach.call (tags, function (tag, index) {
@@ -97,19 +104,19 @@
             }
             later (function () {
                 status.classList.remove ('running');
+                runButton.removeAttribute ('aria-busy');
                 setStatus (name, done);
             }, 2000);
         }
 
-        Array.prototype.forEach.call (buttons, function (button) {
-            button.addEventListener ('click', function () {
-                Array.prototype.forEach.call (buttons, function (other) {
-                    other.setAttribute ('aria-pressed', String (other === button));
-                });
-                run (button);
-            });
+        // As in the Tapir palette: the menu picks a script, Run runs it.
+        runButton.addEventListener ('click', function () {
+            var option = select.options[select.selectedIndex];
+            if (option) {
+                run (option);
+            }
         });
-        tabs.hidden = false;
+        bar.hidden = false;
     }
 
     // ---- The command ticker: its names twice, so the loop has no seam. ----

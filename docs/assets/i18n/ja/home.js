@@ -22,9 +22,8 @@
     'running…': '実行中…',
     'Ground Floor · 1:100': '1階 · 1:100',
     'Try a built-in script': '組み込みスクリプトを試す',
-    'Number doors': 'ドアに番号付け',
-    'Colour by area': '面積で色分け',
-    'Health check': 'プロジェクトチェック',
+    'Script': 'スクリプト',
+    'Run': '実行',
     '6 doors numbered D01–D06': '6 つのドアに番号 D01–D06',
     '6 zones coloured by area': '6 つのゾーンを面積で色分け',
     '3 problems found': '3 件の問題を検出',
@@ -142,7 +141,7 @@
         'プロジェクトを開いていれば、Archicad は <code>http://127.0.0.1:19723</code> で JSON コマンドに応答します。Tapir のコマンドは Archicad の <code>API.ExecuteAddOnCommand</code> を通ります。これを <code>walls.py</code> として保存し、任意の Python 3 で実行してください。',
     'With several Archicads open, the next ones answer on 19724, 19725 and so on.':
         '複数の Archicad を開いている場合、2 つ目以降は 19724、19725 … で応答します。',
-    'Your first Python script, step by step →': '最初の Python スクリプトをステップごとに →',
+    'Your first Python script, step by step': '最初の Python スクリプトをステップごとに',
 
     // More
     'More': 'さらに',
@@ -152,12 +151,12 @@
     'The reference': 'リファレンス',
     'Every command with its schema and an example, the Grasshopper guide, and what Tapir covers of the Archicad API.':
         'すべてのコマンドのスキーマと例、Grasshopper ガイド、そして Tapir が Archicad API のどこまでをカバーしているか。',
-    'Open the docs →': 'ドキュメントを開く →',
+    'Open the docs': 'ドキュメントを開く',
     'Send yours in': 'あなたのスクリプトを送る',
     'Post a script on Discord or as a pull request. It is checked, adapted for any office and listed with your name. No GitHub account needed.':
         'Discord に投稿するか、pull request で送ってください。チェックされ、どの事務所でも使えるよう調整され、あなたの名前で掲載されます。GitHub アカウントは不要です。',
-    'How sharing works →': '共有の仕組み →',
+    'How sharing works': '共有の仕組み',
     'Ask, report, test': '質問、報告、テスト',
     'Discord, the video series, and how a bug report becomes a fix.': 'Discord、動画シリーズ、そしてバグ報告が修正になるまで。',
-    'Join in →': '参加する →'
+    'Join in': '参加する'
 });
