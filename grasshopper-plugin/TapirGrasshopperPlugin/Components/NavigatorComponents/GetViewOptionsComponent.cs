@@ -11,8 +11,8 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         public GetViewOptionsComponent()
             : base(
                 "GetViewOptions",
-                "Gets the model view options and on-screen view options of the current plan window, and the index of " +
-                "the model view option combination it applies.",
+                "Gets the model view options and on-screen view options of the current plan window, and the index and " +
+                "name of the model view option combination it applies.",
                 GroupNames.Navigator)
         {
         }
@@ -21,8 +21,8 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         {
             OutInteger(
                 "ModelViewOptionIndex",
-                "The index of the model view option combination the window applies, in the order of " +
-                "GetModelViewOptions, starting from 1.");
+                "The index of the model view option combination the window applies, 0 for Custom options. It is the " +
+                "index FindModelViewOption returns, not always the position in the list of GetModelViewOptions.");
 
             OutText(
                 "ModelViewOptions_JSON",
@@ -33,6 +33,12 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             OutText(
                 "OnScreenViewOptions_JSON",
                 "The on-screen view options as a JSON object, every field by its API_OnScreenViewOptions name.");
+
+            OutText(
+                "ModelViewOptionName",
+                "The name of the model view option combination the window applies, empty when there is none. " +
+                "Archicad may renumber the combinations when the view options of a window change, so find the " +
+                "index by this name (FindModelViewOption) before switching back to it.");
         }
 
         protected override void Solve(
@@ -50,6 +56,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             da.SetData(0, (int?)response["modelViewOptionIndex"]);
             da.SetData(1, NavigatorComponentHelp.JsonText(response["viewOptions"]?["modelViewOptions"]));
             da.SetData(2, NavigatorComponentHelp.JsonText(response["viewOptions"]?["onScreenViewOptions"]));
+            da.SetData(3, response["modelViewOptionName"]?.ToString());
         }
 
         protected override System.Drawing.Bitmap Icon =>

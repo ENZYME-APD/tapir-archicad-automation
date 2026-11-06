@@ -1,0 +1,364 @@
+{
+  "title": "Fills, surfaces and building materials: CreateFills, GetFills, CreateSurfaces, GetSurfaces, CreateBuildingMaterials, GetBuildingMaterials, GetBuildingMaterialPhysicalProperties",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "create a vector fill and a 37 % fill",
+      "command": "CreateFills",
+      "creates": false,
+      "params": {
+        "fillDataArray": [
+          {
+            "name": "Tapir check fill vector",
+            "subType": "Vector",
+            "scaleWithPlan": true,
+            "useForWalls": true,
+            "useForDraft": true,
+            "useForCover": false,
+            "horizontalSpacing": 1.0,
+            "verticalSpacing": 1.0,
+            "angle": 0.5,
+            "bitPattern": "AA55AA55AA55AA55",
+            "lineItems": [
+              { "frequency": 0.2, "direction": 0.7853981633974483, "offsetLine": 0.0, "offset": { "x": 0.0, "y": 0.0 } }
+            ]
+          },
+          {
+            "name": "Tapir check fill percent",
+            "subType": "Solid",
+            "percent": 0.37,
+            "useForWalls": false,
+            "useForDraft": true,
+            "useForCover": true
+          }
+        ],
+        "overwriteExisting": false
+      },
+      "save": {
+        "fillVector": "attributeIds[0].attributeId.guid",
+        "fillPercent": "attributeIds[1].attributeId.guid"
+      },
+      "expect": [
+        { "path": "attributeIds", "len": 2, "name": "one id per fill" }
+      ]
+    },
+    {
+      "id": "read both fills",
+      "command": "GetFills",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${fillVector}" } },
+          { "attributeId": { "guid": "${fillPercent}" } },
+          { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "save": { "fillVectorIndex": "fills[0].index" },
+      "expect": [
+        { "path": "fills", "len": 3, "name": "one item per id" },
+        { "path": "fills[0].name", "eq": "Tapir check fill vector", "name": "vector: name" },
+        { "path": "fills[0].subType", "eq": "Vector", "name": "vector: type" },
+        { "path": "fills[0].scaleWithPlan", "eq": true, "name": "vector: scales with the plan" },
+        { "path": "fills[0].useForWalls", "eq": true, "name": "vector: cut fill" },
+        { "path": "fills[0].useForDraft", "eq": true, "name": "vector: drafting fill" },
+        { "path": "fills[0].useForCover", "eq": false, "name": "vector: not a cover fill" },
+        { "path": "fills[0].angle", "approx": 0.5, "name": "vector: angle" },
+        { "path": "fills[0].bitPattern", "eq": "AA55AA55AA55AA55", "name": "vector: bit pattern" },
+        { "path": "fills[0].lineItems", "len": 1, "name": "vector: one line item" },
+        { "path": "fills[0].lineItems[0].frequency", "approx": 0.2, "name": "vector: line frequency" },
+        { "path": "fills[0].lineItems[0].direction", "approx": 0.7854, "name": "vector: line direction" },
+        { "path": "fills[1].name", "eq": "Tapir check fill percent", "name": "percent: name" },
+        { "path": "fills[1].subType", "eq": "Solid", "name": "percent: type" },
+        { "path": "fills[1].percent", "approx": 0.37, "tol": 0.01, "name": "percent: 37 % (#1613)" },
+        { "path": "fills[1].useForCover", "eq": true, "name": "percent: cover fill" },
+        { "path": "fills[2].error", "exists": true, "name": "unknown guid: error item" }
+      ]
+    },
+    {
+      "id": "[fill with an existing name, no overwrite]",
+      "command": "CreateFills",
+      "creates": false,
+      "params": {
+        "fillDataArray": [
+          { "name": "Tapir check fill vector", "subType": "Vector" }
+        ],
+        "overwriteExisting": false
+      },
+      "expect": [
+        { "path": "attributeIds[0].error", "exists": true, "name": "rejected" },
+        { "path": "attributeIds[0].attributeId", "exists": false, "name": "no id" }
+      ]
+    },
+    {
+      "id": "overwrite the vector fill by attributeId: only the angle",
+      "command": "CreateFills",
+      "creates": false,
+      "params": {
+        "fillDataArray": [
+          { "attributeId": { "guid": "${fillVector}" }, "name": "Tapir check fill vector", "angle": 1.0 }
+        ],
+        "overwriteExisting": true
+      },
+      "expect": [
+        { "path": "attributeIds[0].attributeId.guid", "exists": true, "name": "id of the overwritten fill" }
+      ]
+    },
+    {
+      "id": "vector fill after the overwrite",
+      "command": "GetFills",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${fillVector}" } } ]
+      },
+      "expect": [
+        { "path": "fills[0].angle", "approx": 1.0, "name": "angle changed" },
+        { "path": "fills[0].subType", "eq": "Vector", "name": "still a vector fill" },
+        { "path": "fills[0].lineItems", "len": 1, "name": "line item kept" },
+        { "path": "fills[0].useForWalls", "eq": true, "name": "flags kept" }
+      ]
+    },
+    {
+      "id": "create a surface with the vector fill",
+      "command": "CreateSurfaces",
+      "creates": false,
+      "params": {
+        "surfaceDataArray": [
+          {
+            "name": "Tapir check surface",
+            "materialType": "Plastic",
+            "ambientReflection": 40,
+            "diffuseReflection": 60,
+            "specularReflection": 30,
+            "transparency": 25,
+            "shine": 1500,
+            "transparencyAttenuation": 200,
+            "emissionAttenuation": 0,
+            "surfaceColor": { "red": 0.2, "green": 0.4, "blue": 0.6 },
+            "specularColor": { "red": 1.0, "green": 1.0, "blue": 1.0 },
+            "emissionColor": { "red": 0.0, "green": 0.0, "blue": 0.0 },
+            "fillId": { "attributeId": { "guid": "${fillVector}" } }
+          }
+        ],
+        "overwriteExisting": false
+      },
+      "save": { "surface": "attributeIds[0].attributeId.guid" },
+      "expect": [
+        { "path": "attributeIds", "len": 1, "name": "one id per surface" }
+      ]
+    },
+    {
+      "id": "read the surface",
+      "command": "GetSurfaces",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${surface}" } },
+          { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "save": { "surfaceIndex": "surfaces[0].index" },
+      "expect": [
+        { "path": "surfaces", "len": 2, "name": "one item per id" },
+        { "path": "surfaces[0].name", "eq": "Tapir check surface", "name": "name" },
+        { "path": "surfaces[0].materialType", "eq": "Plastic", "name": "type" },
+        { "path": "surfaces[0].ambientReflection", "approx": 40, "name": "ambient" },
+        { "path": "surfaces[0].diffuseReflection", "approx": 60, "name": "diffuse" },
+        { "path": "surfaces[0].specularReflection", "approx": 30, "name": "specular" },
+        { "path": "surfaces[0].transparency", "approx": 25, "name": "transparency" },
+        { "path": "surfaces[0].shine", "approx": 1500, "name": "shine" },
+        { "path": "surfaces[0].transparencyAttenuation", "approx": 200, "name": "transparency attenuation" },
+        { "path": "surfaces[0].surfaceColor.red", "approx": 0.2, "tol": 0.01, "name": "surface color red" },
+        { "path": "surfaces[0].surfaceColor.green", "approx": 0.4, "tol": 0.01, "name": "surface color green" },
+        { "path": "surfaces[0].surfaceColor.blue", "approx": 0.6, "tol": 0.01, "name": "surface color blue" },
+        { "path": "surfaces[0].fillId.attributeId.guid", "exists": true, "name": "has a vectorial hatch" },
+        { "path": "surfaces[1].error", "exists": true, "name": "unknown guid: error item" }
+      ]
+    },
+    {
+      "id": "[surface with an existing name, no overwrite]",
+      "command": "CreateSurfaces",
+      "creates": false,
+      "params": {
+        "surfaceDataArray": [
+          { "name": "Tapir check surface", "materialType": "Matte" }
+        ],
+        "overwriteExisting": false
+      },
+      "expect": [
+        { "path": "attributeIds[0].error", "exists": true, "name": "rejected" },
+        { "path": "attributeIds[0].attributeId", "exists": false, "name": "no id" }
+      ]
+    },
+    {
+      "id": "create a building material cut with the fill and the surface",
+      "command": "CreateBuildingMaterials",
+      "creates": false,
+      "params": {
+        "buildingMaterialDataArray": [
+          {
+            "name": "Tapir check building material",
+            "id": "TC-BM-1",
+            "manufacturer": "Tapir check manufacturer",
+            "description": "Made by a Tapir check",
+            "connPriority": 7,
+            "cutFillIndex": "${fillVectorIndex}",
+            "cutFillPen": 3,
+            "cutFillBackgroundPen": 5,
+            "cutSurfaceIndex": "${surfaceIndex}",
+            "thermalConductivity": 0.5,
+            "density": 1200.0,
+            "heatCapacity": 900.0,
+            "embodiedEnergy": 10.0,
+            "embodiedCarbon": 2.0,
+            "showUncutLines": true,
+            "collisionDetection": false,
+            "cutFillOrientation": "FitToSkin"
+          }
+        ],
+        "overwriteExisting": false
+      },
+      "save": { "buildingMaterial": "attributeIds[0].attributeId.guid" },
+      "expect": [
+        { "path": "attributeIds", "len": 1, "name": "one id per building material" }
+      ]
+    },
+    {
+      "id": "read the building material",
+      "command": "GetBuildingMaterials",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${buildingMaterial}" } },
+          { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "save": {
+        "bmCutFillIndex": "buildingMaterials[0].cutFillIndex",
+        "bmCutSurfaceIndex": "buildingMaterials[0].cutSurfaceIndex"
+      },
+      "expect": [
+        { "path": "buildingMaterials", "len": 2, "name": "one item per id" },
+        { "path": "buildingMaterials[0].name", "eq": "Tapir check building material", "name": "name" },
+        { "path": "buildingMaterials[0].id", "eq": "TC-BM-1", "name": "id" },
+        { "path": "buildingMaterials[0].manufacturer", "eq": "Tapir check manufacturer", "name": "manufacturer" },
+        { "path": "buildingMaterials[0].description", "eq": "Made by a Tapir check", "name": "description" },
+        { "path": "buildingMaterials[0].connPriority", "eq": 7, "name": "intersection priority" },
+        { "expr": "${bmCutFillIndex} - ${fillVectorIndex}", "eq": 0, "name": "cut fill is the vector fill" },
+        { "expr": "${bmCutSurfaceIndex} - ${surfaceIndex}", "eq": 0, "name": "cut surface is the surface" },
+        { "path": "buildingMaterials[0].cutFillPen", "eq": 3, "name": "cut fill pen" },
+        { "path": "buildingMaterials[0].cutFillBackgroundPen", "eq": 5, "name": "cut fill background pen" },
+        { "path": "buildingMaterials[0].cutFillOrientation", "eq": "FitToSkin", "name": "cut fill orientation" },
+        { "path": "buildingMaterials[0].thermalConductivity", "approx": 0.5, "name": "thermal conductivity" },
+        { "path": "buildingMaterials[0].density", "approx": 1200.0, "name": "density" },
+        { "path": "buildingMaterials[0].heatCapacity", "approx": 900.0, "name": "heat capacity" },
+        { "path": "buildingMaterials[0].embodiedEnergy", "approx": 10.0, "name": "embodied energy" },
+        { "path": "buildingMaterials[0].embodiedCarbon", "approx": 2.0, "name": "embodied carbon" },
+        { "path": "buildingMaterials[0].showUncutLines", "eq": true, "name": "shows contours" },
+        { "path": "buildingMaterials[0].collisionDetection", "eq": false, "name": "no collision detection" },
+        { "path": "buildingMaterials[1].error", "exists": true, "name": "unknown guid: error item" }
+      ]
+    },
+    {
+      "id": "read the physical properties",
+      "command": "GetBuildingMaterialPhysicalProperties",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${buildingMaterial}" } },
+          { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "properties", "len": 2, "name": "one item per id" },
+        { "path": "properties[0].properties.thermalConductivity", "approx": 0.5, "name": "thermal conductivity" },
+        { "path": "properties[0].properties.density", "approx": 1200.0, "name": "density" },
+        { "path": "properties[0].properties.heatCapacity", "approx": 900.0, "name": "heat capacity" },
+        { "path": "properties[0].properties.embodiedEnergy", "approx": 10.0, "name": "embodied energy" },
+        { "path": "properties[0].properties.embodiedCarbon", "approx": 2.0, "name": "embodied carbon" },
+        { "path": "properties[1].error", "exists": true, "name": "unknown guid: error item" }
+      ]
+    },
+    {
+      "id": "[building material with an existing name, no overwrite]",
+      "command": "CreateBuildingMaterials",
+      "creates": false,
+      "params": {
+        "buildingMaterialDataArray": [
+          { "name": "Tapir check building material", "density": 1.0 }
+        ],
+        "overwriteExisting": false
+      },
+      "expect": [
+        { "path": "attributeIds[0].error", "exists": true, "name": "rejected" },
+        { "path": "attributeIds[0].attributeId", "exists": false, "name": "no id" }
+      ]
+    },
+    {
+      "id": "overwrite the building material by attributeId: density",
+      "command": "CreateBuildingMaterials",
+      "creates": false,
+      "params": {
+        "buildingMaterialDataArray": [
+          { "attributeId": { "guid": "${buildingMaterial}" }, "name": "Tapir check building material", "density": 1500.0 }
+        ],
+        "overwriteExisting": true
+      },
+      "expect": [
+        { "path": "attributeIds[0].attributeId.guid", "exists": true, "name": "id of the overwritten building material" }
+      ]
+    },
+    {
+      "id": "physical properties after the overwrite",
+      "command": "GetBuildingMaterialPhysicalProperties",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${buildingMaterial}" } } ]
+      },
+      "expect": [
+        { "path": "properties[0].properties.density", "approx": 1500.0, "name": "density changed" },
+        { "path": "properties[0].properties.heatCapacity", "approx": 900.0, "name": "heat capacity kept" }
+      ]
+    },
+    {
+      "id": "the surface's vectorial hatch",
+      "command": "GetSurfaces",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${surface}" } } ],
+        "fields": [ "fillId" ]
+      },
+      "save": { "surfaceFill": "surfaces[0].fillId.attributeId.guid" }
+    },
+    {
+      "id": "is the vector fill",
+      "command": "GetFills",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${surfaceFill}" } } ],
+        "fields": [ "subType" ]
+      },
+      "expect": [
+        { "path": "fills[0].name", "eq": "Tapir check fill vector", "name": "surface fill is the vector fill" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "BuildingMaterial", "attributeId": { "attributeId": { "guid": "${buildingMaterial}" } } } ] }
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "Surface", "attributeId": { "attributeId": { "guid": "${surface}" } } } ] }
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "Fill", "attributeId": { "attributeId": { "guid": "${fillVector}" } } } ] }
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "Fill", "attributeId": { "attributeId": { "guid": "${fillPercent}" } } } ] }
+    }
+  ]
+}

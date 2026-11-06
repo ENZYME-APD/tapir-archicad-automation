@@ -149,7 +149,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             return polyline;
         }
 
-        private static Mesh ToFaceMesh(
+        // Also used by the Morphs tool component for the faces of a Morph body.
+        internal static Mesh ToFaceMesh(
             IReadOnlyList<Point3d> vertices,
             Polygon3D polygon)
         {

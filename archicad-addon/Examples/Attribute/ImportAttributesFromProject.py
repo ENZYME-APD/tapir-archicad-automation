@@ -2,6 +2,7 @@
 
 Set the TAPIR_ATTRIBUTE_SOURCE environment variable to the absolute path of a .pln or .tpl file.
 Line types whose name already exists in the open project are kept as they are; the others are added.
+The dry run also shows how the composites of the file would map their line types and building materials.
 Requires Archicad 27 or later.
 """
 import os
@@ -17,5 +18,7 @@ parameters = {
     'overwriteExisting': False
 }
 
-aclib.PrintJson (aclib.RunTapirCommand ('ImportAttributesFromProject', dict (parameters, dryRun = True)))
+# Building materials keep their index only with referencesByIndex, so without it a composite that
+# uses one is reported as failed, with its references.
+aclib.PrintJson (aclib.RunTapirCommand ('ImportAttributesFromProject', dict (parameters, attributeTypes = ['Line', 'Composite'], dryRun = True)))
 aclib.PrintJson (aclib.RunTapirCommand ('ImportAttributesFromProject', parameters))

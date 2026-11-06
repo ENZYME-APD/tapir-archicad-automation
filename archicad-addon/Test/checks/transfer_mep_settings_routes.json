@@ -1,0 +1,114 @@
+{
+  "title": "TransferMEPSettings injects the cross section and MEP system of a duct route into another duct route, and refuses a pipe route as target without changing it",
+  "minTapir": "1.8.1",
+  "minArchicad": "28",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    },
+    {
+      "id": "a ventilation MEP System",
+      "command": "CreateMEPSystems",
+      "creates": false,
+      "params": {
+        "mepSystemDataArray": [ { "name": "Tapir Check Supply Air", "domain": "Ventilation" } ]
+      },
+      "save": { "sys": "attributeIds[0].attributeId.guid" }
+    },
+    {
+      "id": "source duct, target duct and a pipe",
+      "command": "CreateMEPRoutingElements",
+      "params": {
+        "routingElementsData": [
+          {
+            "domain": "Ventilation",
+            "mepSystemId": { "guid": "${sys}" },
+            "crossSectionShape": "Rectangular",
+            "crossSectionWidth": 0.6,
+            "crossSectionHeight": 0.4,
+            "nodeCoordinates": [ { "x": 0.0, "y": -30.0, "z": 3.0 }, { "x": 5.0, "y": -30.0, "z": 3.0 } ]
+          },
+          {
+            "domain": "Ventilation",
+            "crossSectionShape": "Rectangular",
+            "crossSectionWidth": 0.2,
+            "crossSectionHeight": 0.15,
+            "nodeCoordinates": [ { "x": 0.0, "y": -32.0, "z": 3.0 }, { "x": 5.0, "y": -32.0, "z": 3.0 } ]
+          },
+          {
+            "domain": "Piping",
+            "nodeCoordinates": [ { "x": 0.0, "y": -34.0, "z": 3.0 }, { "x": 5.0, "y": -34.0, "z": 3.0 } ]
+          }
+        ]
+      },
+      "save": {
+        "source": "elements[0].elementId.guid",
+        "target": "elements[1].elementId.guid",
+        "pipe": "elements[2].elementId.guid"
+      }
+    },
+    {
+      "id": "before",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${target}" } }, { "elementId": { "guid": "${pipe}" } } ] },
+      "save": { "pipeWidthBefore": "routingElements[1].segments[0].crossSectionWidth" },
+      "expect": [
+        { "path": "routingElements[0].segments[0].crossSectionWidth", "approx": 0.2, "name": "target starts narrow" },
+        { "path": "routingElements[0].segments[0].crossSectionHeight", "approx": 0.15, "name": "target starts low" }
+      ]
+    },
+    {
+      "id": "transfer to the duct and the pipe",
+      "command": "TransferMEPSettings",
+      "creates": false,
+      "params": {
+        "sourceElementId": { "guid": "${source}" },
+        "targetElements": [ { "elementId": { "guid": "${target}" } }, { "elementId": { "guid": "${pipe}" } } ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per target" },
+        { "path": "executionResults[0].success", "eq": true, "name": "duct target" },
+        { "path": "executionResults[1].success", "eq": false, "name": "pipe target refused (other domain)" }
+      ]
+    },
+    {
+      "id": "after",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${target}" } }, { "elementId": { "guid": "${pipe}" } } ] },
+      "save": { "pipeWidthAfter": "routingElements[1].segments[0].crossSectionWidth" },
+      "expect": [
+        { "path": "routingElements[0].segments[0].crossSectionWidth", "approx": 0.6, "name": "target takes the source's width" },
+        { "path": "routingElements[0].segments[0].crossSectionHeight", "approx": 0.4, "name": "target takes the source's height" },
+        { "path": "routingElements[0].polyline[0].y", "approx": -32.0, "name": "target stays where it was" },
+        { "expr": "${pipeWidthAfter} - ${pipeWidthBefore}", "approx": 0, "name": "pipe unchanged" }
+      ]
+    },
+    {
+      "id": "the target's MEP system",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${target}" } } ] },
+      "save": { "targetSystem": "routingElements[0].mepSystemId.guid" }
+    },
+    {
+      "id": "is the source's",
+      "command": "GetMEPSystems",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${targetSystem}" } } ] },
+      "expect": [
+        { "path": "mepSystems[0].name", "eq": "Tapir Check Supply Air", "name": "MEP system transferred" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "MEPSystem", "attributeId": { "attributeId": { "guid": "${sys}" } } } ] }
+    }
+  ]
+}

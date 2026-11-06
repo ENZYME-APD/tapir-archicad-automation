@@ -1,0 +1,195 @@
+{
+  "title": "Element sets: create, read the data and the sets of each element, delete; the elements stay",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "four walls",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 850, "y": 850 }, "endCoordinate": { "x": 853, "y": 850 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2, "floorIndex": 0 },
+          { "begCoordinate": { "x": 850, "y": 852 }, "endCoordinate": { "x": 853, "y": 852 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2, "floorIndex": 0 },
+          { "begCoordinate": { "x": 850, "y": 854 }, "endCoordinate": { "x": 853, "y": 854 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2, "floorIndex": 0 },
+          { "begCoordinate": { "x": 850, "y": 856 }, "endCoordinate": { "x": 853, "y": 856 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2, "floorIndex": 0 }
+        ]
+      },
+      "save": {
+        "w1": "elements[0].elementId.guid",
+        "w2": "elements[1].elementId.guid",
+        "w3": "elements[2].elementId.guid",
+        "w4": "elements[3].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements", "len": 4 }
+      ]
+    },
+    {
+      "id": "no wall is in a set yet",
+      "command": "GetElementSetsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } } ] },
+      "expect": [
+        { "path": "elementSetsOfElements[0].elementSets", "len": 0 },
+        { "path": "elementSetsOfElements[1].elementSets", "len": 0 }
+      ]
+    },
+    {
+      "id": "set A of w1 and w2, set B of w2, w3 and w4",
+      "command": "CreateElementSets",
+      "creates": false,
+      "params": {
+        "elementSets": [
+          { "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } } ] },
+          { "elements": [ { "elementId": { "guid": "${w2}" } }, { "elementId": { "guid": "${w3}" } }, { "elementId": { "guid": "${w4}" } } ] }
+        ]
+      },
+      "save": { "sA": "elementSets[0].elementSetId", "sB": "elementSets[1].elementSetId" },
+      "expect": [
+        { "path": "elementSets", "len": 2 },
+        { "path": "elementSets[0].elementSetId.guid", "exists": true, "name": "set A created" },
+        { "path": "elementSets[1].elementSetId.guid", "exists": true, "name": "set B created" }
+      ],
+      "stopOnFail": true
+    },
+    {
+      "id": "set without elements",
+      "command": "CreateElementSets",
+      "creates": false,
+      "params": { "elementSets": [ { "elements": [] } ] },
+      "expect": [
+        { "path": "elementSets", "len": 1 },
+        { "path": "elementSets[0].error.code", "exists": true, "name": "refused" }
+      ]
+    },
+    {
+      "id": "data of the sets",
+      "command": "GetElementSetData",
+      "creates": false,
+      "params": {
+        "elementSets": [
+          { "elementSetId": "${sA}" },
+          { "elementSetId": "${sB}" },
+          { "elementSetId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "elementSets[0].elements", "len": 2, "name": "set A: w1 and w2" },
+        { "path": "elementSets[0].userData.data", "eq": "", "name": "set A has no custom data" },
+        { "path": "elementSets[1].elements", "len": 3, "name": "set B: w2, w3 and w4" },
+        { "path": "elementSets[2].error.code", "exists": true, "name": "no such set" }
+      ]
+    },
+    {
+      "id": "sets of each wall",
+      "command": "GetElementSetsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${w1}" } },
+          { "elementId": { "guid": "${w2}" } },
+          { "elementId": { "guid": "${w4}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-000000000000" } }
+        ]
+      },
+      "save": { "setOfW1": "elementSetsOfElements[0].elementSets[0]", "setOfW4": "elementSetsOfElements[2].elementSets[0]" },
+      "expect": [
+        { "path": "elementSetsOfElements[0].elementSets", "len": 1, "name": "w1 is in A" },
+        { "path": "elementSetsOfElements[1].elementSets", "len": 2, "name": "w2 is in A and B" },
+        { "path": "elementSetsOfElements[2].elementSets", "len": 1, "name": "w4 is in B" },
+        { "path": "elementSetsOfElements[3].error.code", "exists": true, "name": "null guid refused" }
+      ]
+    },
+    {
+      "id": "the set of w1 is A, the set of w4 is B",
+      "command": "GetElementSetData",
+      "creates": false,
+      "params": { "elementSets": [ "${setOfW1}", "${setOfW4}" ] },
+      "expect": [
+        { "path": "elementSets[0].elements", "len": 2 },
+        { "path": "elementSets[1].elements", "len": 3 }
+      ]
+    },
+    {
+      "id": "delete set A, and a set that does not exist",
+      "command": "DeleteElementSets",
+      "creates": false,
+      "params": {
+        "elementSets": [
+          { "elementSetId": "${sA}" },
+          { "elementSetId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "set A deleted" },
+        { "path": "executionResults[1].success", "eq": false, "name": "no such set" }
+      ]
+    },
+    {
+      "id": "set A is gone, set B is left",
+      "command": "GetElementSetData",
+      "creates": false,
+      "params": { "elementSets": [ { "elementSetId": "${sA}" }, { "elementSetId": "${sB}" } ] },
+      "expect": [
+        { "path": "elementSets[0].error.code", "exists": true, "name": "set A deleted" },
+        { "path": "elementSets[1].elements", "len": 3, "name": "set B unchanged" }
+      ]
+    },
+    {
+      "id": "w1 is in no set, w2 only in B",
+      "command": "GetElementSetsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } } ] },
+      "expect": [
+        { "path": "elementSetsOfElements[0].elementSets", "len": 0 },
+        { "path": "elementSetsOfElements[1].elementSets", "len": 1 }
+      ]
+    },
+    {
+      "id": "delete set B",
+      "command": "DeleteElementSets",
+      "creates": false,
+      "params": { "elementSets": [ { "elementSetId": "${sB}" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "deleting set B again",
+      "command": "DeleteElementSets",
+      "creates": false,
+      "params": { "elementSets": [ { "elementSetId": "${sB}" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "already deleted" }
+      ]
+    },
+    {
+      "id": "no wall is in a set any more",
+      "command": "GetElementSetsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w2}" } }, { "elementId": { "guid": "${w4}" } } ] },
+      "expect": [
+        { "path": "elementSetsOfElements[0].elementSets", "len": 0 },
+        { "path": "elementSetsOfElements[1].elementSets", "len": 0 }
+      ]
+    },
+    {
+      "id": "the walls of the deleted sets are still there",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Wall" },
+      "expect": [
+        { "path": "elements", "len": 4 }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteElementSets",
+      "params": { "elementSets": [ { "elementSetId": "${sA}" } ] }
+    },
+    {
+      "command": "DeleteElementSets",
+      "params": { "elementSets": [ { "elementSetId": "${sB}" } ] }
+    }
+  ]
+}
