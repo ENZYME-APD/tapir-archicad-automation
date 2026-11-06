@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html lang="en" data-copy="Copy" data-copied="Copied">
+<html lang="en" data-copy="Copy" data-copied="Copied" data-i18n-pages="scripts">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Scripts - Tapir</title>
-<meta name="description" content="Scripts shared by architects for the Tapir palette in Archicad, each one reviewed and adapted to work in any office before it is listed.">
+<title data-i18n>Scripts - Tapir</title>
+<meta name="description" data-i18n-attrs="content" content="Scripts shared by architects for the Tapir palette in Archicad, each one reviewed and adapted to work in any office before it is listed.">
 <!-- site-assets -->
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#2D3A30" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#2D3A30">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
@@ -46,14 +48,14 @@
     <div id="scripts-list-view">
         <div class="page-head">
             <div class="wrap">
-                <p class="crumb"><a href="../">Tapir</a> / Scripts</p>
-                <h1>The script <em>schedule.</em></h1>
-                <p>Scripts shared by architects. Each one is checked for safety and adapted to work in any office and any Archicad language before it is listed.</p>
+                <p class="crumb" data-i18n><a href="../">Tapir</a> / Scripts</p>
+                <h1 data-i18n>The script <em>schedule.</em></h1>
+                <p data-i18n>Scripts shared by architects. Each one is checked for safety and adapted to work in any office and any Archicad language before it is listed.</p>
             </div>
         </div>
 
         <div class="wrap page-body">
-            <p class="callout" id="scripts-opening">
+            <p class="callout" id="scripts-opening" data-i18n>
                 <strong class="callout-label"><span aria-hidden="true">&#9432;</span> Opening soon</strong>
                 The scripts move to this page, and the list appears here as soon as the first ones are in.
                 Until then, the scripts shared so far are on the <a href="https://tapir-marketplace.vercel.app/">current marketplace</a>,
@@ -68,19 +70,20 @@
             </noscript>
 
             <section id="scripts-browser" aria-labelledby="browse-scripts" hidden>
-                <h2 id="browse-scripts" class="visually-hidden">Browse scripts</h2>
+                <h2 id="browse-scripts" class="visually-hidden" data-i18n>Browse scripts</h2>
                 <form class="filters" role="search" id="script-filters">
-                    <label class="visually-hidden" for="script-search">Search scripts</label>
-                    <input class="chip script-search" type="search" id="script-search" placeholder="Search: name, task or author" autocomplete="off">
+                    <label class="visually-hidden" for="script-search" data-i18n>Search scripts</label>
+                    <input class="chip script-search" type="search" id="script-search" placeholder="Search: name, task or author" data-i18n-attrs="placeholder" autocomplete="off">
                 </form>
-                <div class="filters" role="group" aria-label="Category" id="category-chips" data-all="All"></div>
-                <div class="filters" role="group" aria-label="Archicad version" id="version-chips" data-all="Any Archicad" data-option="Archicad {version}"></div>
+                <div class="filters" role="group" aria-label="Category" id="category-chips" data-all="All" data-i18n-attrs="aria-label data-all"></div>
+                <div class="filters" role="group" aria-label="Archicad version" id="version-chips" data-all="Any Archicad" data-option="Archicad {version}" data-i18n-attrs="aria-label data-all"></div>
                 <p class="script-count" id="script-count" aria-live="polite"
-                   data-one="1 script" data-many="{count} scripts" data-none="No script matches. Try fewer words or another filter."></p>
+                   data-one="1 script" data-many="{count} scripts" data-none="No script matches. Try fewer words or another filter."
+                   data-i18n-attrs="data-one data-many data-none"></p>
                 <div class="schedule-wrap">
                     <table class="schedule">
-                        <caption>Marketplace · sorted by category</caption>
-                        <thead><tr><th scope="col">ID</th><th scope="col">Script</th><th scope="col">Category</th><th scope="col">Effect</th><th scope="col">Archicad</th><th scope="col">Author</th></tr></thead>
+                        <caption data-i18n>Marketplace · sorted by category</caption>
+                        <thead><tr><th scope="col">ID</th><th scope="col" data-i18n>Script</th><th scope="col" data-i18n>Category</th><th scope="col" data-i18n>Effect</th><th scope="col">Archicad</th><th scope="col" data-i18n>Author</th></tr></thead>
                         <tbody id="script-rows"></tbody>
                     </table>
                 </div>
@@ -89,39 +92,39 @@
             <!-- The categories, in the schedule's order, with the code its IDs start with
                  (the same keys as marketplace/README.md). -->
             <ul id="script-categories" hidden>
-                <li data-value="quality-assurance" data-code="QA">Quality assurance</li>
-                <li data-value="quantities-scheduling" data-code="QS">Quantities and scheduling</li>
-                <li data-value="documentation-layouts" data-code="DL">Documentation and layouts</li>
-                <li data-value="zones-areas" data-code="ZA">Zones and areas</li>
-                <li data-value="element-data-properties" data-code="EP">Element data and properties</li>
-                <li data-value="modeling-geometry" data-code="MG">Modeling and geometry</li>
-                <li data-value="classification-attributes" data-code="CA">Classifications and attributes</li>
-                <li data-value="navigator-views" data-code="NV">Navigator and views</li>
-                <li data-value="libraries-objects" data-code="LO">Libraries and objects</li>
-                <li data-value="import-export" data-code="IE">Import and export</li>
-                <li data-value="batch-automation" data-code="BA">Batch automation</li>
-                <li data-value="utilities" data-code="UT">Utilities</li>
+                <li data-value="quality-assurance" data-i18n data-code="QA">Quality assurance</li>
+                <li data-value="quantities-scheduling" data-i18n data-code="QS">Quantities and scheduling</li>
+                <li data-value="documentation-layouts" data-i18n data-code="DL">Documentation and layouts</li>
+                <li data-value="zones-areas" data-i18n data-code="ZA">Zones and areas</li>
+                <li data-value="element-data-properties" data-i18n data-code="EP">Element data and properties</li>
+                <li data-value="modeling-geometry" data-i18n data-code="MG">Modeling and geometry</li>
+                <li data-value="classification-attributes" data-i18n data-code="CA">Classifications and attributes</li>
+                <li data-value="navigator-views" data-i18n data-code="NV">Navigator and views</li>
+                <li data-value="libraries-objects" data-i18n data-code="LO">Libraries and objects</li>
+                <li data-value="import-export" data-i18n data-code="IE">Import and export</li>
+                <li data-value="batch-automation" data-i18n data-code="BA">Batch automation</li>
+                <li data-value="utilities" data-i18n data-code="UT">Utilities</li>
             </ul>
 
-            <div class="dim" aria-hidden="true"><i></i><span>Install and share</span><i></i></div>
+            <div class="dim" aria-hidden="true"><i></i><span data-i18n>Install and share</span><i></i></div>
             <section>
                 <div class="two">
                     <article class="way">
-                        <span class="who">Install</span>
-                        <h3 id="install-a-script">Install a script</h3>
-                        <p>
+                        <span class="who" data-i18n>Install</span>
+                        <h3 id="install-a-script" data-i18n>Install a script</h3>
+                        <p data-i18n>
                             Open a script here and follow its <em>Install in Tapir</em> steps. In short: download it into a folder
                             and add that folder to the Tapir palette. The website is for browsing; scripts run in Archicad.
                         </p>
-                        <a href="../start/#marketplace">Step by step in Get started</a>
+                        <a href="../start/#marketplace" data-i18n>Step by step in Get started</a>
                     </article>
                     <article class="teaser dark">
-                        <span class="tagline">Share</span>
-                        <h3 id="share-a-script">Share a script</h3>
-                        <p>Wrote a script that saves you time? Share it, and we help you make it ready for other offices. No GitHub account needed.</p>
+                        <span class="tagline" data-i18n>Share</span>
+                        <h3 id="share-a-script" data-i18n>Share a script</h3>
+                        <p data-i18n>Wrote a script that saves you time? Share it, and we help you make it ready for other offices. No GitHub account needed.</p>
                         <div class="ctas">
-                            <a class="btn btn-primary btn-sm" href="share/">How to share a script</a>
-                            <a class="btn btn-ghost btn-sm" href="https://discord.gg/NAnSennmpY">Join Discord</a>
+                            <a class="btn btn-primary btn-sm" href="share/" data-i18n>How to share a script</a>
+                            <a class="btn btn-ghost btn-sm" href="https://discord.gg/NAnSennmpY" data-i18n>Join Discord</a>
                         </div>
                     </article>
                 </div>
@@ -132,13 +135,13 @@
     <div id="script-not-found" hidden>
         <div class="page-head">
             <div class="wrap">
-                <p class="crumb"><a href="../">Tapir</a> / <a href="./">Scripts</a> / Not found</p>
-                <h1>Script not <em>found.</em></h1>
-                <p>There is no script with this name on the list, or the list could not be read just now.</p>
+                <p class="crumb" data-i18n><a href="../">Tapir</a> / <a href="./">Scripts</a> / Not found</p>
+                <h1 data-i18n>Script not <em>found.</em></h1>
+                <p data-i18n>There is no script with this name on the list, or the list could not be read just now.</p>
             </div>
         </div>
         <div class="wrap page-body">
-            <p class="callout">
+            <p class="callout" data-i18n>
                 <strong class="callout-label"><span aria-hidden="true">&#9432;</span> Not found</strong>
                 Try again later, or see <a href="./">all scripts</a>.
             </p>
@@ -148,7 +151,7 @@
     <article id="script-detail" hidden>
         <div class="page-head">
             <div class="wrap">
-                <p class="crumb"><a href="../">Tapir</a> / <a href="./">Scripts</a> / <span id="detail-crumb"></span></p>
+                <p class="crumb" data-i18n><a href="../">Tapir</a> / <a href="./">Scripts</a> / <span id="detail-crumb"></span></p>
                 <h1 id="detail-name"></h1>
                 <p id="detail-summary"></p>
             </div>
@@ -156,21 +159,21 @@
         <div class="wrap page-body">
             <div class="detail">
                 <div>
-                    <div class="shot" id="detail-shot" data-alt="Screenshot {number} of {name}" hidden></div>
+                    <div class="shot" id="detail-shot" data-alt="Screenshot {number} of {name}" data-i18n-attrs="data-alt" hidden></div>
                     <section class="script-section" id="detail-readme-section" aria-labelledby="about-script" hidden>
-                        <h2 id="about-script">What it does</h2>
+                        <h2 id="about-script" data-i18n>What it does</h2>
                         <div class="readme" id="detail-readme"></div>
                     </section>
                     <section class="script-section" id="detail-screenshots-section" aria-labelledby="script-screenshots" hidden>
-                        <h2 id="script-screenshots">More screenshots</h2>
+                        <h2 id="script-screenshots" data-i18n>More screenshots</h2>
                         <div class="screenshots" id="detail-screenshots"></div>
                     </section>
                     <section class="script-section" aria-labelledby="script-versions">
-                        <h2 id="script-versions">Versions</h2>
+                        <h2 id="script-versions" data-i18n>Versions</h2>
                         <ol class="script-versions" id="detail-versions"></ol>
                     </section>
                     <section class="script-section" id="detail-code-section" aria-labelledby="script-code" hidden>
-                        <h2 id="script-code">Code</h2>
+                        <h2 id="script-code" data-i18n>Code</h2>
                         <div class="term">
                             <div class="bar"><span id="detail-entry"></span><span>Python</span></div>
                             <pre><code id="detail-code" class="language-python"></code></pre>
@@ -178,81 +181,83 @@
                     </section>
                 </div>
 
-                <aside class="spec" aria-label="About this script">
+                <aside class="spec" aria-label="About this script" data-i18n-attrs="aria-label">
                     <dl>
-                        <dt>Version</dt><dd id="detail-version"></dd>
+                        <dt data-i18n>Version</dt><dd id="detail-version"></dd>
                         <dt>Archicad</dt><dd id="detail-archicad"></dd>
-                        <dt>Tapir</dt><dd><span id="detail-tapir"></span> or later</dd>
-                        <dt>Effect</dt><dd id="detail-effect"></dd>
-                        <dt>Category</dt><dd id="detail-category"></dd>
-                        <dt>Author</dt><dd id="detail-author"></dd>
-                        <dt>Licence</dt><dd id="detail-license"></dd>
+                        <dt>Tapir</dt><dd data-i18n><span id="detail-tapir"></span> or later</dd>
+                        <dt data-i18n>Effect</dt><dd id="detail-effect"></dd>
+                        <dt data-i18n>Category</dt><dd id="detail-category"></dd>
+                        <dt data-i18n>Author</dt><dd id="detail-author"></dd>
+                        <dt data-i18n>Licence</dt><dd id="detail-license"></dd>
                         <dt class="detail-sha" hidden>SHA-256</dt><dd class="detail-sha" hidden><code id="detail-sha"></code></dd>
                     </dl>
                     <div class="install" id="install-from-palette">
-                        <strong>Install in Tapir</strong>
+                        <strong data-i18n>Install in Tapir</strong>
                         <ol class="bullets">
-                            <li>Check that Archicad and Tapir are new enough: see <em>Archicad</em> and <em>Tapir</em> above.</li>
-                            <li>When your Tapir palette lists scripts to install, find <strong class="detail-name-ref"></strong> there and install it.</li>
-                            <li>Until then, download the script into a folder and add that folder to the palette, as <a href="../start/#marketplace">Get started</a> shows.</li>
-                            <li>Open the project, select what the script asks for, and run it from the palette.</li>
+                            <li data-i18n>Check that Archicad and Tapir are new enough: see <em>Archicad</em> and <em>Tapir</em> above.</li>
+                            <li data-i18n>When your Tapir palette lists scripts to install, find <strong class="detail-name-ref"></strong> there and install it.</li>
+                            <li data-i18n>Until then, download the script into a folder and add that folder to the palette, as <a href="../start/#marketplace">Get started</a> shows.</li>
+                            <li data-i18n>Open the project, select what the script asks for, and run it from the palette.</li>
                         </ol>
-                        <p id="detail-changes-model" hidden>This script changes the model: read what it changes under <em>What it does</em> before you run it, and try it on a copy first.</p>
-                        <p id="detail-changes-files" hidden>This script writes files, for example a report or an export, and changes nothing in the model.</p>
-                        <p id="detail-changes-read-only" hidden>This script only reads: it changes nothing in the model and writes no files.</p>
+                        <p id="detail-changes-model" data-i18n hidden>This script changes the model: read what it changes under <em>What it does</em> before you run it, and try it on a copy first.</p>
+                        <p id="detail-changes-files" data-i18n hidden>This script writes files, for example a report or an export, and changes nothing in the model.</p>
+                        <p id="detail-changes-read-only" data-i18n hidden>This script only reads: it changes nothing in the model and writes no files.</p>
                         <div class="ctas">
-                            <a class="btn btn-primary btn-sm" id="detail-download" hidden>Download the script</a>
-                            <a class="btn btn-line btn-sm" id="detail-source" hidden>View on GitHub</a>
+                            <a class="btn btn-primary btn-sm" id="detail-download" data-i18n hidden>Download the script</a>
+                            <a class="btn btn-line btn-sm" id="detail-source" data-i18n hidden>View on GitHub</a>
                         </div>
-                        <a id="detail-report"
+                        <!-- The issue's title and text stay English: they are read by the maintainers. -->
+                        <a id="detail-report" data-i18n
                            data-title="Marketplace script &quot;{name}&quot; ({slug} {version}): "
                            data-body="**Script:** {name} ({slug}), version {version}&#10;**Archicad version and build:** &#10;**Tapir Add-On version:** &#10;&#10;**What happened:**&#10;&#10;**What you expected:**&#10;">Report a problem</a>
                     </div>
                 </aside>
             </div>
 
-            <div class="dim" aria-hidden="true"><i></i><span>Next step</span><i></i></div>
+            <div class="dim" aria-hidden="true"><i></i><span data-i18n>Next step</span><i></i></div>
             <section>
                 <div class="teasers">
                     <a class="teaser" href="./">
-                        <span class="tagline">Scripts</span>
-                        <h3>All scripts</h3>
-                        <p>Back to the schedule of every script.</p>
-                        <span class="go">Browse scripts &rarr;</span>
+                        <span class="tagline" data-i18n>Scripts</span>
+                        <h3 data-i18n>All scripts</h3>
+                        <p data-i18n>Back to the schedule of every script.</p>
+                        <span class="go" data-i18n>Browse scripts &rarr;</span>
                     </a>
                     <a class="teaser dark" href="share/">
-                        <span class="tagline">Share</span>
-                        <h3>Made one of your own?</h3>
-                        <p>Share it, and any office can install it from the palette.</p>
-                        <span class="go">How sharing works &rarr;</span>
+                        <span class="tagline" data-i18n>Share</span>
+                        <h3 data-i18n>Made one of your own?</h3>
+                        <p data-i18n>Share it, and any office can install it from the palette.</p>
+                        <span class="go" data-i18n>How sharing works &rarr;</span>
                     </a>
                 </div>
             </section>
         </div>
     </article>
 
+    <!-- scripts.js translates the templates' marked texts before it uses them. -->
     <template id="script-row-template">
         <tr>
             <td class="id" data-label="ID"></td>
             <td class="cell-script"><a class="nm" href="./"></a><div class="ds"></div></td>
-            <td class="cell-category" data-label="Category"></td>
-            <td class="cell-effect" data-label="Effect"></td>
+            <td class="cell-category" data-label="Category" data-i18n-attrs="data-label"></td>
+            <td class="cell-effect" data-label="Effect" data-i18n-attrs="data-label"></td>
             <td class="cell-archicad" data-label="Archicad"></td>
-            <td class="cell-author" data-label="Author"></td>
+            <td class="cell-author" data-label="Author" data-i18n-attrs="data-label"></td>
         </tr>
     </template>
 
     <template id="script-effect-templates">
-        <span class="pill chg" data-effect="model">Changes the model</span>
-        <span class="pill" data-effect="files">Writes files</span>
-        <span class="pill ro" data-effect="read-only">Read only</span>
-        <span class="muted" data-effect="unknown">Not stated</span>
+        <span class="pill chg" data-effect="model" data-i18n>Changes the model</span>
+        <span class="pill" data-effect="files" data-i18n>Writes files</span>
+        <span class="pill ro" data-effect="read-only" data-i18n>Read only</span>
+        <span class="muted" data-effect="unknown" data-i18n>Not stated</span>
     </template>
 
     <template id="script-version-template">
         <li>
-            <p class="version-head">Version <span class="version-number"></span></p>
-            <p class="muted">Archicad <span class="version-archicad"></span> · Tapir <span class="version-tapir"></span> or later</p>
+            <p class="version-head" data-i18n>Version <span class="version-number"></span></p>
+            <p class="muted" data-i18n>Archicad <span class="version-archicad"></span> · Tapir <span class="version-tapir"></span> or later</p>
             <p class="version-changelog"></p>
         </li>
     </template>

@@ -2,16 +2,14 @@
 
 /* The command reference's own layout on top of ../assets/site.css, which gives it the site's
    fonts, colours (light, and dark under prefers-color-scheme: dark or the header's toggle), header,
-   page head and footer. The page's code blocks get site.js's copy button, the examples too: it
-   watches for the code blocks renderer.js adds when an example is opened. */
+   page head, links, code, headings (.sec-head.ref and .ref-sub) and footer. Everything here uses
+   site.css's tokens (--fg, --muted, --surface, --line, --link, --badge, --mono), and the sidebar
+   is drawn like the coverage pages' one. The page's code blocks get site.js's copy button, the
+   examples too: it watches for the code blocks renderer.js adds when an example is opened. */
 
 :root {
-    /* The names this page and json-schema-view-js.min.css use, mapped onto the site's palette. */
-    --text-color: var(--text);
-    --background: var(--bg);
-    --gray-10: var(--card-hover);
-    --gray-30: var(--border-strong);
-    --gray-70: var(--text-muted);
+    /* The one name json-schema-view-js.min.css uses, mapped onto the site's palette. */
+    --gray-70: var(--muted);
 }
 
 /* The toolbar and the sidebar stick to the top of the window, so the site header scrolls away. */
@@ -39,11 +37,6 @@ section.intro {
     margin: 0 0 32px;
 }
 
-section.intro h2 {
-    margin: 32px 0 12px;
-    font-size: 30px;
-}
-
 main.frame p {
     margin: 0 0 14px;
     max-width: var(--text-width);
@@ -61,7 +54,7 @@ div.call_examples {
 
 div.call_example h3 {
     font-size: 15px;
-    color: var(--text-secondary);
+    color: var(--fg);
     margin: 8px 0 8px;
 }
 
@@ -75,21 +68,21 @@ nav.sidebar {
     align-self: start;
     max-height: 100vh;
     overflow-y: auto;
-    padding: 36px 0.5em 2em 20px;
-    font-size: 0.9em;
+    padding: 36px 8px 32px 16px;
+    font-size: 14px;
+    border-right: 1px solid var(--line);
 }
 
 div.sidebar_title {
-    color: var(--eyebrow);
-    font-size: 0.75em;
-    font-weight: 700;
+    font: 700 12px/1.2 var(--mono);
+    letter-spacing: .14em;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin: 1.4em 0 0.5em;
+    color: var(--link);
+    margin: 18px 0 6px;
 }
 
 div.sidebar_title:first-child {
-    margin-top: 0.4em;
+    margin-top: 0;
 }
 
 ul.sidebar_list {
@@ -102,23 +95,21 @@ a.sidebar_link {
     display: flex;
     justify-content: space-between;
     gap: 0.5em;
-    padding: 0.25em 0.6em;
-    border-radius: var(--radius-small);
-    color: var(--text-secondary);
+    padding: 3px 8px;
+    border-radius: 4px;
+    color: var(--fg);
     text-decoration: none;
-    font-weight: 500;
 }
 
 a.sidebar_link:hover {
-    background: var(--card-hover);
-    color: var(--text);
+    background: var(--badge);
+    color: var(--fg);
 }
 
 a.sidebar_link[aria-current] {
-    background: var(--card);
-    color: var(--text);
+    background: var(--badge);
     font-weight: 700;
-    box-shadow: inset 2px 0 0 var(--accent);
+    box-shadow: inset 2px 0 0 var(--link);
 }
 
 a.sidebar_link.sidebar_empty {
@@ -126,7 +117,7 @@ a.sidebar_link.sidebar_empty {
 }
 
 span.sidebar_count {
-    color: var(--text-muted);
+    color: var(--muted);
     font-variant-numeric: tabular-nums;
 }
 
@@ -137,24 +128,23 @@ div.sidebar_versions {
 }
 
 button.sidebar_version {
-    font: inherit;
-    font-size: 0.9em;
-    color: var(--text-secondary);
-    background: var(--card);
+    font: 600 13px var(--body);
+    color: var(--fg);
+    background: transparent;
     border: 1px solid var(--border-strong);
-    border-radius: var(--radius-small);
-    padding: 0.2em 0.55em;
+    border-radius: 999px;
+    padding: 2px 10px;
     cursor: pointer;
 }
 
 button.sidebar_version:hover {
-    border-color: var(--accent);
+    background: var(--badge);
 }
 
 button.sidebar_version[aria-pressed="true"] {
-    background: var(--button-bg);
-    border-color: var(--button-bg);
-    color: var(--button-text);
+    background: var(--fg);
+    border-color: var(--fg);
+    color: var(--bg);
 }
 
 button.toolbar_sections {
@@ -164,9 +154,9 @@ button.toolbar_sections {
 details.command_container {
     margin: 0.7em 0;
     transition: box-shadow 0.15s ease;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-small);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
 }
 
 details.command_container[open] {
@@ -175,17 +165,7 @@ details.command_container[open] {
 }
 
 details ::marker {
-    color: var(--text-muted);
-}
-
-div.group_name {
-    font-family: var(--display);
-    font-size: 26px;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    color: var(--text);
-    margin-top: 2.0em;
-    margin-bottom: 0.4em;
+    color: var(--muted);
 }
 
 section.group {
@@ -200,7 +180,7 @@ details.command_container {
 }
 
 span.group_count {
-    color: var(--text-muted);
+    color: var(--muted);
     font-size: 0.6em;
     font-weight: 600;
     margin-left: 0.6em;
@@ -216,26 +196,26 @@ div.toolbar {
     gap: 0.5em;
     padding: 0.7em 0;
     background: var(--bg);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--line);
 }
 
 div.toolbar input,
 div.toolbar button {
     font: inherit;
     font-size: 0.9em;
-    color: var(--text);
-    background: var(--card);
+    color: var(--fg);
+    background: var(--surface);
     border: 1px solid var(--border-strong);
-    border-radius: var(--radius-small);
+    border-radius: 4px;
     padding: 0.4em 0.7em;
 }
 
 div.toolbar input::placeholder {
-    color: var(--text-muted);
+    color: var(--muted);
 }
 
 div.toolbar input:focus {
-    border-color: var(--accent);
+    border-color: var(--link);
 }
 
 input.toolbar_search {
@@ -249,21 +229,21 @@ button.toolbar_button {
 }
 
 button.toolbar_button:hover {
-    background: var(--card-hover);
-    border-color: var(--accent);
+    background: var(--badge);
+    border-color: var(--link);
 }
 
 span.toolbar_status {
-    color: var(--text-muted);
+    color: var(--muted);
     font-size: 0.9em;
 }
 
 div.overview {
     margin: 1.5em 0 0;
     padding: 16px 20px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
 }
 
 div.overview_title {
@@ -280,7 +260,7 @@ table.overview_table th,
 table.overview_table td {
     text-align: left;
     padding: 0.3em 0.6em;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--line);
 }
 
 table.overview_table tr:last-child td {
@@ -288,13 +268,13 @@ table.overview_table tr:last-child td {
 }
 
 table.overview_table th {
-    color: var(--text-muted);
+    color: var(--muted);
     font-weight: 600;
     font-size: 0.85em;
 }
 
 table.overview_table td {
-    color: var(--text-secondary);
+    color: var(--fg);
 }
 
 table.overview_table .number {
@@ -303,29 +283,20 @@ table.overview_table .number {
     font-variant-numeric: tabular-nums;
 }
 
-table.overview_table a {
-    color: var(--link);
-    text-decoration: none;
-}
-
-table.overview_table a:hover {
-    text-decoration: underline;
-}
-
 summary.command_header {
     padding: 0.55em 0.75em;
-    border-radius: var(--radius-small);
+    border-radius: 4px;
     cursor: pointer;
     transition: background 0.1s;
 }
 
 details summary.command_header:hover {
-    background: var(--card-hover);
+    background: var(--badge);
 }
 
 details[open] summary.command_header {
-    background: var(--card-hover);
-    border-bottom: 1px solid var(--border);
+    background: var(--badge);
+    border-bottom: 1px solid var(--line);
     border-bottom-right-radius: 0px;
     border-bottom-left-radius: 0px;
 }
@@ -333,10 +304,10 @@ details[open] summary.command_header {
 span.command_name {
     display: inline-block;
     word-break: break-word;
-    font-family: var(--font-mono);
+    font-family: var(--mono);
     font-weight: 600;
     font-size: 0.95em;
-    color: var(--text);
+    color: var(--fg);
 }
 
 span.command_summary {
@@ -345,7 +316,7 @@ span.command_summary {
     -webkit-line-clamp: 2;
     line-clamp: 2;
     overflow: hidden;
-    color: var(--text-muted);
+    color: var(--muted);
     font-size: 0.87em;
     line-height: 1.45em;
     margin-top: 0.2em;
@@ -359,7 +330,7 @@ details[open] span.command_summary {
 }
 
 span.command_version {
-    color: var(--eyebrow);
+    color: var(--link);
     font-size: 0.7em;
     font-weight: 700;
     margin-left: 0.7em;
@@ -369,24 +340,24 @@ span.command_version {
 div.command_content {
     padding: 0 1.0em;
     margin: 1.0em 0.5em;
-    color: var(--text-secondary);
+    color: var(--fg);
 }
 
 div.command_example_file {
     margin-top: 0.8em;
     font-size: 0.9em;
-    color: var(--text-muted);
+    color: var(--muted);
 }
 
 div.command_example_file a {
-    font-family: var(--font-mono);
+    font-family: var(--mono);
     font-size: 0.92em;
     word-break: break-all;
 }
 
 div.scheme_title {
     font-weight: 700;
-    color: var(--text);
+    color: var(--fg);
     margin-top: 1.2em;
     margin-bottom: 0.5em;
 }
@@ -401,7 +372,7 @@ div.scheme_container .description {
 
 .json-schema-view,
 json-schema-view {
-    font-family: var(--font-mono);
+    font-family: var(--mono);
 }
 
 .json-schema-view>*,
@@ -411,7 +382,7 @@ json-schema-view>* {
 
 .json-schema-view .description,
 json-schema-view .description {
-    color: var(--text-muted);
+    color: var(--muted);
 }
 
 details.command_example {
@@ -421,7 +392,7 @@ details.command_example {
 details.command_example > summary {
     cursor: pointer;
     font-weight: 700;
-    color: var(--text);
+    color: var(--fg);
     width: fit-content;
 }
 
@@ -438,7 +409,7 @@ p.command_example_description {
 }
 
 div.command_example_status {
-    color: var(--text-muted);
+    color: var(--muted);
     font-style: italic;
 }
 
@@ -492,8 +463,8 @@ pre .hljs-subst { color: var(--pre-text); }
         padding-top: 1em;
         /* align-self: start from the wide layout would shrink the drawer to its content. */
         align-self: stretch;
-        background: var(--bg-raised);
-        border-right: 1px solid var(--border);
+        background: var(--surface);
+        border-right: 1px solid var(--line);
         box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
         transform: translateX(-105%);
         visibility: hidden;
