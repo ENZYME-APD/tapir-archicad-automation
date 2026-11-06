@@ -445,12 +445,12 @@ class ContourMesh:
         ttk.Label(placement_frame, text="e.g. 1234.5, 6789.0, 0.0  (leave blank to use origin/raw coordinates)",
                   style="Muted.TLabel").grid(row=3, column=0, columnspan=2, sticky="w", pady=(4, 0))
 
-        skirt_frame = ttk.LabelFrame(body, text="Skirt height (meters)", padding=(10, 6))
+        skirt_frame = ttk.LabelFrame(body, text="Thickness below lowest contour (meters)", padding=(10, 6))
         skirt_frame.grid(row=3, column=0, sticky="ew", pady=(8, 0))
         skirt_frame.columnconfigure(1, weight=1)
         self.skirt_var = tk.StringVar(value="1.0")
         ttk.Entry(skirt_frame, textvariable=self.skirt_var).grid(row=0, column=0, columnspan=2, sticky="ew")
-        ttk.Label(skirt_frame, text="Height of the mesh skirt below the base level. Must be >= 0.",
+        ttk.Label(skirt_frame, text="Thickness of the mesh below the lowest contour. Must be >= 0.",
                   style="Muted.TLabel").grid(row=1, column=0, columnspan=2, sticky="w", pady=(4, 0))
 
     def _browse(self) -> None:
