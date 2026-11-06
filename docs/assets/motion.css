@@ -94,6 +94,9 @@ html.m-splash::after { content: "Tapir"; position: fixed; left: 50%; top: 50%; z
    html.m-fly; the name and mark shrink to 24/56 onto the brand, the veil fades, then motion.js
    removes the splash and the real brand, hidden until then, is in the same place. */
 html.m-splash .site-header .brand { visibility: hidden }
+/* If motion.js never lifts the splash, the brand comes back with the 5 s fallback above. */
+html.m-splash:not(.m-still) .site-header .brand { animation: m-brand-back 0s 5s forwards }
+@keyframes m-brand-back { to { visibility: visible } }
 /* m-still stops the waiting animations one frame before m-fly: removing an animation in the same
    style change as the new transform cancels the transition, and the logo would jump. */
 html.m-splash.m-still::before, html.m-splash.m-still::after { animation: none }

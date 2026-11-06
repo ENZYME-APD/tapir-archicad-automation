@@ -2,8 +2,9 @@
 (function () {
     'use strict';
     var reduced = window.matchMedia && matchMedia ('(prefers-reduced-motion: reduce)').matches;
-    if (reduced || !('IntersectionObserver' in window) || /nomotion/.test (location.search + location.hash)) return;
     var root = document.documentElement;
+    // The inline splash script makes the same checks; drop a splash it set anyway.
+    if (reduced || !('IntersectionObserver' in window) || /nomotion/.test (location.search + location.hash)) { root.classList.remove ('m-splash', 'm-font'); return; }
     root.classList.add ('motion');
     var splashing = root.classList.contains ('m-splash');
     if (splashing) root.classList.add ('m-hold');
@@ -100,6 +101,8 @@
         var node = null; strong.childNodes.forEach (function (n) { if (!node && n.nodeType === 3 && /\d/.test (n.nodeValue)) node = n; });
         if (!node) return;
         var m = /([\d,.]+)/.exec (node.nodeValue); if (!m) return;
+        // Only plain digits or en-US grouping (12,345): a translated page writes 12.345 or 12 345, leave those alone.
+        if (!/^(\d+|\d{1,3}(,\d{3})+)$/.test (m[1])) return;
         var target = parseFloat (m[1].replace (/,/g, '')); if (!isFinite (target) || target < 2) return;
         var comma = m[1].indexOf (',') >= 0, before = node.nodeValue.slice (0, m.index), after = node.nodeValue.slice (m.index + m[1].length);
         var t0 = null, dur = 1200;
