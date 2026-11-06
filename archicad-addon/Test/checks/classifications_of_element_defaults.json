@@ -1,0 +1,207 @@
+{
+  "title": "Classifications of tool defaults: SetClassificationsOfElementDefaults, GetClassificationsOfElementDefaults and GetClassificationsOfToolDefaults",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "create a system",
+      "command": "CreateClassificationSystems",
+      "creates": false,
+      "params": {
+        "classificationSystemsWithItems": [
+          {
+            "classificationSystem": { "name": "Tapir check defaults system", "description": "", "source": "", "version": "1", "date": "2026-01-01" },
+            "classificationItems": []
+          }
+        ]
+      },
+      "save": { "sys": "classificationSystemIds[0].classificationSystemId.guid" },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "system created" }
+      ]
+    },
+    {
+      "id": "create T1 and T2",
+      "command": "CreateClassificationItems",
+      "creates": false,
+      "params": {
+        "newClassificationItems": [
+          { "classificationSystemId": { "guid": "${sys}" }, "classificationItemDetails": { "id": "T1", "name": "Tapir check item T1", "description": "" } },
+          { "classificationSystemId": { "guid": "${sys}" }, "classificationItemDetails": { "id": "T2", "name": "Tapir check item T2", "description": "" } }
+        ]
+      },
+      "save": {
+        "t1": "classificationItemIds[0].classificationItemId.guid",
+        "t2": "classificationItemIds[1].classificationItemId.guid"
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "T1 created" },
+        { "path": "executionResults[1].success", "eq": true, "name": "T2 created" }
+      ]
+    },
+    {
+      "id": "GetClassificationsOfElementDefaults [Wall, Unknown] x [system, bogus system]",
+      "command": "GetClassificationsOfElementDefaults",
+      "creates": false,
+      "params": {
+        "elementTypes": [ "Wall", "Unknown" ],
+        "classificationSystemIds": [
+          { "classificationSystemId": { "guid": "${sys}" } },
+          { "classificationSystemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "elementDefaultClassifications", "len": 2, "name": "one entry per element type" },
+        { "path": "elementDefaultClassifications[0].classificationIds", "len": 2, "name": "Wall: one entry per system" },
+        { "path": "elementDefaultClassifications[0].classificationIds[0].classificationSystemId.guid", "exists": true, "name": "Wall: the system is listed" },
+        { "path": "elementDefaultClassifications[0].classificationIds[0].classificationItemId", "exists": false, "name": "Wall: unclassified in a new system" },
+        { "path": "elementDefaultClassifications[0].classificationIds[1].error", "exists": true, "name": "Wall, bogus system: error" },
+        { "path": "elementDefaultClassifications[1].error", "exists": true, "name": "Unknown element type: error" }
+      ]
+    },
+    {
+      "id": "SetClassificationsOfElementDefaults [Wall to T1, Line to T2, Wall to a bogus item, Unknown to T1]",
+      "command": "SetClassificationsOfElementDefaults",
+      "creates": false,
+      "params": {
+        "elementDefaultClassifications": [
+          { "elementType": "Wall", "classificationId": { "classificationSystemId": { "guid": "${sys}" }, "classificationItemId": { "guid": "${t1}" } } },
+          { "elementType": "Line", "classificationId": { "classificationSystemId": { "guid": "${sys}" }, "classificationItemId": { "guid": "${t2}" } } },
+          { "elementType": "Wall", "classificationId": { "classificationSystemId": { "guid": "${sys}" }, "classificationItemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } },
+          { "elementType": "Unknown", "classificationId": { "classificationSystemId": { "guid": "${sys}" }, "classificationItemId": { "guid": "${t1}" } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 4, "name": "one result per input" },
+        { "path": "executionResults[0].success", "eq": true, "name": "Wall to T1: success" },
+        { "path": "executionResults[1].success", "eq": true, "name": "Line to T2: success" },
+        { "path": "executionResults[2].success", "eq": false, "name": "bogus item: failed" },
+        { "path": "executionResults[3].success", "eq": false, "name": "Unknown element type: failed" }
+      ]
+    },
+    {
+      "id": "read the Wall and Line defaults back",
+      "command": "GetClassificationsOfElementDefaults",
+      "creates": false,
+      "params": {
+        "elementTypes": [ "Wall", "Line" ],
+        "classificationSystemIds": [ { "classificationSystemId": { "guid": "${sys}" } } ]
+      },
+      "save": {
+        "wallDefault": "elementDefaultClassifications[0].classificationIds[0].classificationItemId.guid",
+        "lineDefault": "elementDefaultClassifications[1].classificationIds[0].classificationItemId.guid"
+      }
+    },
+    {
+      "id": "Wall default is T1 (the bogus item changed nothing), Line default is T2",
+      "command": "API.GetDetailsOfClassificationItems",
+      "creates": false,
+      "params": {
+        "classificationItemIds": [
+          { "classificationItemId": { "guid": "${wallDefault}" } },
+          { "classificationItemId": { "guid": "${lineDefault}" } }
+        ]
+      },
+      "expect": [
+        { "path": "classificationItems[0].classificationItem.id", "eq": "T1", "name": "Wall default: T1" },
+        { "path": "classificationItems[1].classificationItem.id", "eq": "T2", "name": "Line default: T2" }
+      ]
+    },
+    {
+      "id": "GetClassificationsOfToolDefaults [Line, Unknown]",
+      "command": "GetClassificationsOfToolDefaults",
+      "creates": false,
+      "params": { "elementTypes": [ "Line", "Unknown" ] },
+      "save": { "lineToolDefault": "classificationsOfToolDefaults[0].classificationIds[0].classificationItemId.guid" },
+      "expect": [
+        { "path": "classificationsOfToolDefaults", "len": 2, "name": "one entry per element type" },
+        { "path": "classificationsOfToolDefaults[0].classificationIds", "len": 1, "name": "Line: classified in the new system only" },
+        { "path": "classificationsOfToolDefaults[1].error", "exists": true, "name": "Unknown element type: error" }
+      ]
+    },
+    {
+      "id": "the Line tool default is T2",
+      "command": "API.GetDetailsOfClassificationItems",
+      "creates": false,
+      "params": { "classificationItemIds": [ { "classificationItemId": { "guid": "${lineToolDefault}" } } ] },
+      "expect": [
+        { "path": "classificationItems[0].classificationItem.id", "eq": "T2", "name": "T2" }
+      ]
+    },
+    {
+      "id": "a new wall gets the default",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [ { "begCoordinate": { "x": 700, "y": 700 }, "endCoordinate": { "x": 703, "y": 700 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 } ]
+      },
+      "save": { "wall": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "read the new wall's classification",
+      "command": "GetClassificationsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${wall}" } } ],
+        "classificationSystemIds": [ { "classificationSystemId": { "guid": "${sys}" } } ]
+      },
+      "save": { "wallItem": "elementClassifications[0].classificationIds[0].classificationItemId.guid" }
+    },
+    {
+      "id": "the new wall is T1",
+      "command": "API.GetDetailsOfClassificationItems",
+      "creates": false,
+      "params": { "classificationItemIds": [ { "classificationItemId": { "guid": "${wallItem}" } } ] },
+      "expect": [
+        { "path": "classificationItems[0].classificationItem.id", "eq": "T1", "name": "T1" }
+      ]
+    },
+    {
+      "id": "SetClassificationsOfElementDefaults [Wall and Line unclassified]",
+      "command": "SetClassificationsOfElementDefaults",
+      "creates": false,
+      "params": {
+        "elementDefaultClassifications": [
+          { "elementType": "Wall", "classificationId": { "classificationSystemId": { "guid": "${sys}" } } },
+          { "elementType": "Line", "classificationId": { "classificationSystemId": { "guid": "${sys}" } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "Wall: success" },
+        { "path": "executionResults[1].success", "eq": true, "name": "Line: success" }
+      ]
+    },
+    {
+      "id": "Wall and Line defaults are unclassified",
+      "command": "GetClassificationsOfElementDefaults",
+      "creates": false,
+      "params": {
+        "elementTypes": [ "Wall", "Line" ],
+        "classificationSystemIds": [ { "classificationSystemId": { "guid": "${sys}" } } ]
+      },
+      "expect": [
+        { "path": "elementDefaultClassifications[0].classificationIds[0].classificationItemId", "exists": false, "name": "Wall: no item" },
+        { "path": "elementDefaultClassifications[1].classificationIds[0].classificationItemId", "exists": false, "name": "Line: no item" }
+      ]
+    },
+    {
+      "id": "the Line tool default has no classification left",
+      "command": "GetClassificationsOfToolDefaults",
+      "creates": false,
+      "params": { "elementTypes": [ "Line" ] },
+      "expect": [
+        { "path": "classificationsOfToolDefaults[0].classificationIds", "len": 0, "name": "Line: none" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "SetClassificationsOfElementDefaults",
+      "params": {
+        "elementDefaultClassifications": [
+          { "elementType": "Wall", "classificationId": { "classificationSystemId": { "guid": "${sys}" } } },
+          { "elementType": "Line", "classificationId": { "classificationSystemId": { "guid": "${sys}" } } }
+        ]
+      }
+    },
+    { "command": "DeleteClassificationSystems", "params": { "classificationSystemIds": [ { "classificationSystemId": { "guid": "${sys}" } } ] } }
+  ]
+}
