@@ -302,7 +302,7 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
 .prose strong { color: var(--fg) }
 .callout { padding: 14px 18px; border: 1.5px solid var(--fg); border-left-width: 6px; border-left-color: var(--ochre); border-radius: 4px; background: var(--surface); color: var(--muted) }
 .callout strong.callout-label { color: var(--fg); margin-right: 6px }
-.lead-out { margin-top: 18px; color: var(--muted) }
+.lead-out { margin-top: 28px; color: var(--muted) }
 
 /* ---------- footer: the drawing's title block ---------- */
 .site-footer { margin-top: 72px; border-top: 1.5px solid var(--fg); background: var(--surface) }
@@ -351,11 +351,11 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
     /* The schedule becomes one card per script. */
     table.schedule, .schedule tbody, .schedule tr, .schedule td, .schedule caption { display: block }
     .schedule thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0) }
-    .schedule tr { padding: 14px 16px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: auto 1fr; gap: 6px 12px }
+    .schedule tr { padding: 14px 16px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px }
     .schedule tbody tr:last-child { border-bottom: 0 }
-    .schedule td { padding: 0; border: 0 }
+    .schedule td { padding: 0; border: 0; min-width: 0 }
     .schedule td.cell-script { grid-column: 1 / -1; order: -1 }
-    .schedule td[data-label]::before { content: attr(data-label) " "; font: 700 10.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-right: 6px }
+    .schedule td[data-label]::before { content: attr(data-label); display: block; font: 700 10.5px/1.6 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
 }
 @media (max-width: 400px) {
     .uses-grid, .uses-grid.three { grid-template-columns: 1fr }
