@@ -10,25 +10,26 @@
 """
 Wall Clearance
 
-Finds the doors, windows and objects that are too close to a wall and moves
-them away just enough:
-- a door or window is measured along its own wall, from each side of the
-  opening to the nearest wall that ends at or crosses that wall, and is moved
-  along its wall (its centerOffset, with ModifyDoors / ModifyWindows);
-- an object is measured from its 2D outline (Get2DBoundingBoxes) to the
-  nearest wall face, and is moved straight away from that wall (MoveElements).
+Finds the doors, windows and objects whose space is too close to a wall and
+moves them just enough. One rule for every kind:
+- the element's space is its own floor plan outline (the convex hull of what
+  Archicad draws for it: a door's swing, an object's symbol, rotated with it)
+  plus a margin;
+- the obstructions are the walls, columns and curtain walls cut on its story
+  (their floor plan cut fill, GetDetailsOfElements floorPlanPolygons), except
+  the wall a door or window sits in and the wall an object stands against;
+- the space must not come closer to an obstruction than the margin. Now in the
+  list is the smallest gap (negative when they overlap), Needed is the margin.
 
-The minimum distance comes, in this order, from a property picked in the
-window, from a table per library part, or from the defaults (doors and windows
-have one for the hinge side and one for the handle side). Check lists every
-element that is too close, with the distance now, the distance needed and the
-move, and the ones that cannot be moved (they would come too close to another
-wall, run past the end of their wall or into another opening). They are
-highlighted in Archicad. Apply moves them only after a confirmation.
+The fix has one direction per kind: a door or window slides along its own wall
+(its centerOffset, ModifyDoors / ModifyWindows), an object slides along the wall
+it stands against, or moves straight away from the obstruction when it stands
+against none (MoveElements). Each is moved by the smallest amount that clears
+it; one that does not clear within its wall, or would run into another door,
+window or checked object, is listed and not moved.
 
-The walls, columns and curtain walls are taken from their floor plan cut fill
-(GetDetailsOfElements floorPlanPolygons), so wall joins are as Archicad draws
-them. Only the ones of the element's own story are used. The settings and the
+The margin comes, in this order, from a property picked in the window, from a
+table per library part, or from the default of its kind. The settings and the
 table are saved in Documents/Tapir/WallClearance.json; the table can also be
 saved to and loaded from a file of its own, for the office's standards.
 """
@@ -41,17 +42,21 @@ from pathlib import Path
 from tkinter import filedialog, simpledialog, ttk
 
 from utilities.archicad import (ArchicadError, batched, get_details_of_elements, get_elements, get_story_names,
-                                run_command, run_tapir, select_elements)
+                                run_tapir, select_elements)
 from utilities.ui import ScriptWindow, make_tree, require_archicad
 
 SCRIPT_NAME = "Wall Clearance"
 EPSILON = 1e-6
 TOLERANCE = 0.0005
-# how far from a wall's face another wall still counts as joining it
-TOUCH = 0.02
-# walls closer to parallel than this do not end at or cross each other
+# how far behind an object's back edge (and in front of it) a wall face still counts as the wall it stands against
+BACK_TOLERANCE = 0.05
+# a face this close to parallel to the object's back edge can be the wall it stands against
 PARALLEL_DEGREES = 20.0
-MAX_OBJECT_STEPS = 8
+# the step of the search for the smallest move; the found move is refined to well below a millimetre
+SEARCH_STEP = 0.01
+# how far an object that stands against no wall may move away from an obstruction
+MAX_FREE_MOVE = 1.0
+ARC_SEGMENTS = 32
 
 TOO_CLOSE_COLOR = [230, 140, 0, 255]
 PROBLEM_COLOR = [200, 40, 40, 255]
@@ -60,11 +65,7 @@ DIMMED_COLOR = [200, 200, 200, 160]
 
 KINDS = ["Door", "Window", "Object"]
 KIND_LABELS = {"Door": "Doors", "Window": "Windows", "Object": "Objects"}
-DEFAULT_DISTANCES = {
-    "Door": {"hinge": "0.10", "handle": "0.10"},
-    "Window": {"hinge": "0.10", "handle": "0.10"},
-    "Object": {"clearance": "0.20"},
-}
+DEFAULT_MARGINS = {"Door": "0.10", "Window": "0.10", "Object": "0.20"}
 NO_PROPERTY = "(none)"
 
 
@@ -102,13 +103,17 @@ def read_polygon(coordinates: list[dict]) -> list[tuple[float, float]]:
     return points
 
 
+def edges(points):
+    return zip(points, points[1:] + points[:1])
+
+
 def signed_area(points) -> float:
-    return sum(a[0] * b[1] - b[0] * a[1] for a, b in zip(points, points[1:] + points[:1])) / 2.0
+    return sum(a[0] * b[1] - b[0] * a[1] for a, b in edges(points)) / 2.0
 
 
 def inside(p, points) -> bool:
     result = False
-    for a, b in zip(points, points[1:] + points[:1]):
+    for a, b in edges(points):
         if (a[1] > p[1]) != (b[1] > p[1]):
             x = a[0] + (p[1] - a[1]) * (b[0] - a[0]) / (b[1] - a[1])
             if p[0] < x:
@@ -116,26 +121,148 @@ def inside(p, points) -> bool:
     return result
 
 
-def clip(points, axis: int, limit: float, keep_below: bool):
-    """ The part of the polygon (in local (t, s) coordinates) on one side of the line coordinate[axis] = limit. """
-    def keeps(p):
-        return p[axis] <= limit if keep_below else p[axis] >= limit
+def bbox(points) -> tuple[float, float, float, float]:
+    return (min(p[0] for p in points), min(p[1] for p in points), max(p[0] for p in points), max(p[1] for p in points))
+
+
+def centroid(points) -> tuple[float, float]:
+    return sum(p[0] for p in points) / len(points), sum(p[1] for p in points) / len(points)
+
+
+def convex_hull(points) -> list[tuple[float, float]]:
+    """ The convex hull, counterclockwise (Andrew's monotone chain). """
+    pts = sorted(set((round(x, 6), round(y, 6)) for x, y in points))
+    if len(pts) < 3:
+        return pts
+
+    def cross(o, a, b):
+        return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+
+    lower, upper = [], []
+    for p in pts:
+        while len(lower) >= 2 and cross(lower[-2], lower[-1], p) <= 0:
+            lower.pop()
+        lower.append(p)
+    for p in reversed(pts):
+        while len(upper) >= 2 and cross(upper[-2], upper[-1], p) <= 0:
+            upper.pop()
+        upper.append(p)
+    return lower[:-1] + upper[:-1]
+
+
+def shifted(points, d, t):
+    return [(x + d[0] * t, y + d[1] * t) for x, y in points]
+
+
+def closest_on_segment(p, a, b) -> tuple[float, float]:
+    dx, dy = b[0] - a[0], b[1] - a[1]
+    length2 = dx * dx + dy * dy
+    r = 0.0 if length2 < EPSILON * EPSILON else max(0.0, min(1.0, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / length2))
+    return a[0] + dx * r, a[1] + dy * r
+
+
+def point_segment_distance(p, a, b) -> float:
+    c = closest_on_segment(p, a, b)
+    return math.hypot(p[0] - c[0], p[1] - c[1])
+
+
+def closest_on_boundary(p, points) -> tuple[float, float]:
+    return min((closest_on_segment(p, a, b) for a, b in edges(points)),
+               key=lambda c: (c[0] - p[0]) ** 2 + (c[1] - p[1]) ** 2)
+
+
+def boundary_distance(p, points) -> float:
+    return min(point_segment_distance(p, a, b) for a, b in edges(points))
+
+
+def segments_cross(a, b, c, d) -> bool:
+    def orient(p, q, r):
+        v = (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0])
+        return 0 if abs(v) < EPSILON * EPSILON else (1 if v > 0 else -1)
+    return orient(a, b, c) * orient(a, b, d) < 0 and orient(c, d, a) * orient(c, d, b) < 0
+
+
+def polygon_gap(first, second, limit: float = math.inf) -> float:
+    """ The smallest distance between two polygons; when they overlap, minus how deep one reaches into the other.
+    Returns limit (or more) without computing when their bounding boxes are at least limit apart. """
+    b1, b2 = bbox(first), bbox(second)
+    box_gap = max(b2[0] - b1[2], b1[0] - b2[2], b2[1] - b1[3], b1[1] - b2[3])
+    if box_gap >= limit:
+        return box_gap
+    depth = 0.0
+    overlap = False
+    for points, other in ((first, second), (second, first)):
+        for p in points:
+            if inside(p, other):
+                overlap = True
+                depth = max(depth, boundary_distance(p, other))
+    if not overlap:
+        overlap = any(segments_cross(a, b, c, d) for a, b in edges(first) for c, d in edges(second))
+    if overlap:
+        return -depth
+    return min(min(point_segment_distance(p, a, b) for p in first for a, b in edges(second)),
+               min(point_segment_distance(p, a, b) for p in second for a, b in edges(first)))
+
+
+def arc_points(primitive: dict) -> list[tuple[float, float]]:
+    cx, cy = _xy(primitive["orig"])
+    r = float(primitive.get("r", 0.0))
+    ratio = float(primitive.get("ratio") or 1.0)
+    rotation = float(primitive.get("angle") or 0.0)
+    if primitive.get("whole"):
+        start, sweep = 0.0, 2 * math.pi
+    else:
+        start, end = float(primitive.get("begAng", 0.0)), float(primitive.get("endAng", 0.0))
+        if primitive.get("reflected"):
+            # a clockwise arc from begAng to endAng covers the counterclockwise one from endAng to begAng
+            start, end = end, start
+        sweep = (end - start) % (2 * math.pi) or 2 * math.pi
+    steps = max(2, math.ceil(ARC_SEGMENTS * sweep / (2 * math.pi)))
+    cos_r, sin_r = math.cos(rotation), math.sin(rotation)
     result = []
-    for a, b in zip(points, points[1:] + points[:1]):
-        if keeps(a):
-            result.append(a)
-        if keeps(a) != keeps(b) and abs(b[axis] - a[axis]) > EPSILON:
-            r = (limit - a[axis]) / (b[axis] - a[axis])
-            result.append((a[0] + (b[0] - a[0]) * r, a[1] + (b[1] - a[1]) * r))
+    for i in range(steps + 1):
+        angle = start + sweep * i / steps
+        x, y = r * math.cos(angle), r * ratio * math.sin(angle)
+        result.append((cx + x * cos_r - y * sin_r, cy + x * sin_r + y * cos_r))
     return result
 
 
+def outline_from_primitives(primitives: list[dict]) -> list[tuple[float, float]]:
+    """ The convex hull of the lines, arcs, fills and pictures Archicad draws the element from (texts and hotspots
+    left out), in plan coordinates; empty when it draws none. """
+    points = []
+    in_text = False
+    for primitive in primitives or []:
+        kind = primitive.get("type")
+        if kind == "Ctrl_TextBeg":
+            in_text = True
+        elif kind == "Ctrl_TextEnd":
+            in_text = False
+        elif in_text:
+            continue
+        elif kind == "Line":
+            points += [_xy(primitive["c1"]), _xy(primitive["c2"])]
+        elif kind == "Arc":
+            points += arc_points(primitive)
+        elif kind == "Tri":
+            points += [_xy(p) for p in primitive.get("coordinates") or []]
+        elif kind == "Poly":
+            polygons = primitive.get("polygons") or []
+            if polygons:
+                points += [_xy(p) for p in polygons[0].get("coordinates") or []]
+        elif kind == "Pict" and primitive.get("destBox"):
+            box = primitive["destBox"]
+            points += [(box["xMin"], box["yMin"]), (box["xMax"], box["yMax"]),
+                       (box["xMin"], box["yMax"]), (box["xMax"], box["yMin"])]
+    hull = convex_hull(points)
+    return hull if len(hull) > 2 else []
+
+
 class Obstruction:
-    """ An element that shows cut in the floor plan and keeps elements away (a column or a curtain wall): its body
-    is its floor plan cut fill. It has no reference line, so being parallel to a wall does not matter. """
+    """ An element that shows cut in the floor plan (a wall, a column or a curtain wall): its body is its floor plan
+    cut fill. """
 
     length = 0.0
-    u = (1.0, 0.0)
     curved = False
     approximate = False
 
@@ -143,7 +270,7 @@ class Obstruction:
         self.elementId = element_id
         self.guid = element_id["guid"]
         self.floorIndex = int(detail.get("floorIndex", 0))
-        self.label = detail.get("id") or kind.lower()
+        self.label = detail.get("id") or kind
         self.polygons = [p for p in (read_polygon(item.get("coordinates")) for item in detail.get("floorPlanPolygons") or [])
                          if len(p) > 2]
 
@@ -151,7 +278,7 @@ class Obstruction:
         """ (a, b, outward unit normal) for each edge of the body. """
         for polygon in self.polygons:
             turn = 1.0 if signed_area(polygon) > 0 else -1.0
-            for a, b in zip(polygon, polygon[1:] + polygon[:1]):
+            for a, b in edges(polygon):
                 length = math.hypot(b[0] - a[0], b[1] - a[1])
                 if length > EPSILON:
                     yield a, b, (turn * (b[1] - a[1]) / length, -turn * (b[0] - a[0]) / length)
@@ -180,11 +307,7 @@ class Wall(Obstruction):
             self.polygons = [[self.world(0.0, low), self.world(self.length, low),
                               self.world(self.length, high), self.world(0.0, high)]]
         local = [self.local(p) for polygon in self.polygons for p in polygon]
-        if local:
-            self.t_range = (min(p[0] for p in local), max(p[0] for p in local))
-            self.s_range = (min(p[1] for p in local), max(p[1] for p in local))
-        else:
-            self.t_range, self.s_range = (0.0, self.length), (0.0, 0.0)
+        self.t_range = (min(p[0] for p in local), max(p[0] for p in local)) if local else (0.0, self.length)
 
     def local(self, p) -> tuple[float, float]:
         dx, dy = p[0] - self.beg[0], p[1] - self.beg[1]
@@ -194,65 +317,69 @@ class Wall(Obstruction):
         return (self.beg[0] + self.u[0] * t + self.n[0] * s, self.beg[1] + self.u[1] * t + self.n[1] * s)
 
 
-def obstacles_along(owner: Wall, walls: list[Obstruction]) -> list[dict]:
-    """ The stretches of the owner wall (as t intervals) that other walls, columns and curtain walls of its story
-    take where they end at it, stand in it or cross it. One touching its face counts; walls nearly parallel to it
-    do not (columns and curtain walls have no length, so the parallel test does not apply to them). """
-    s_low, s_high = owner.s_range[0] - TOUCH, owner.s_range[1] + TOUCH
-    t_low, t_high = owner.t_range[0] - TOUCH, owner.t_range[1] + TOUCH
-    parallel = math.cos(math.radians(PARALLEL_DEGREES))
-    result = []
-    for wall in walls:
-        if wall.guid == owner.guid or wall.floorIndex != owner.floorIndex:
-            continue
-        if wall.length > EPSILON and abs(wall.u[0] * owner.u[0] + wall.u[1] * owner.u[1]) > parallel:
-            continue
-        ts = []
-        for polygon in wall.polygons:
-            part = [owner.local(p) for p in polygon]
-            for axis, limit, below in ((1, s_high, True), (1, s_low, False), (0, t_high, True), (0, t_low, False)):
-                part = clip(part, axis, limit, below)
-                if not part:
-                    break
-            ts += [p[0] for p in part]
-        if ts:
-            result.append({"start": min(ts), "end": max(ts), "wall": wall})
-    return result
+def nearest_obstruction(outline, obstructions: list[Obstruction]) -> tuple[float, Obstruction] | None:
+    found = None
+    for obstruction in obstructions:
+        for polygon in obstruction.polygons:
+            gap = polygon_gap(outline, polygon, math.inf if found is None else found[0])
+            if found is None or gap < found[0]:
+                found = (gap, obstruction)
+    return found
 
 
-def box_corners(box: dict) -> list[tuple[float, float]]:
-    return [(box["xMin"], box["yMin"]), (box["xMax"], box["yMin"]), (box["xMax"], box["yMax"]), (box["xMin"], box["yMax"])]
+def side_of(outline, obstruction: Obstruction, front) -> str:
+    """ Which side of the element the obstruction is on, seen from the element facing its front. """
+    center = centroid(outline)
+    point = min((closest_on_boundary(center, polygon) for polygon in obstruction.polygons),
+                key=lambda c: (c[0] - center[0]) ** 2 + (c[1] - center[1]) ** 2)
+    v = (point[0] - center[0], point[1] - center[1])
+    ahead = v[0] * front[0] + v[1] * front[1]
+    leftward = -v[0] * front[1] + v[1] * front[0]
+    if abs(ahead) >= abs(leftward):
+        return "front" if ahead > 0 else "back"
+    return "left" if leftward > 0 else "right"
 
 
-def face_distance(corners, face) -> float | None:
-    """ The distance of the outline from the face, when it is in front of it (its centre is on the face's outer
-    side and it overlaps the face along the face); None otherwise. Negative when it reaches into the wall. """
-    a, b, m = face
-    length = math.hypot(b[0] - a[0], b[1] - a[1])
-    ux, uy = (b[0] - a[0]) / length, (b[1] - a[1]) / length
-    along = [(c[0] - a[0]) * ux + (c[1] - a[1]) * uy for c in corners]
-    if max(along) <= TOLERANCE or min(along) >= length - TOLERANCE:
+def smallest_move(t_low: float, t_high: float, clears) -> float | None:
+    """ The move t (t_low <= t <= t_high) of the smallest size for which clears(t) holds: searched in SEARCH_STEP
+    steps on both sides of 0, then refined between the last step that does not clear and the first one that does.
+    None when no step clears. """
+    if t_low > t_high:
         return None
-    cx = sum(c[0] for c in corners) / len(corners)
-    cy = sum(c[1] for c in corners) / len(corners)
-    if (cx - a[0]) * m[0] + (cy - a[1]) * m[1] <= 0:
-        return None
-    return min((c[0] - a[0]) * m[0] + (c[1] - a[1]) * m[1] for c in corners)
+    limit = max(abs(t_low), abs(t_high))
+    tried = set()
+    for k in range(1, math.ceil(limit / SEARCH_STEP) + 2):
+        for sign in (1.0, -1.0):
+            t = max(t_low, min(t_high, sign * k * SEARCH_STEP))
+            if t in tried or (t != 0.0 and (t > 0) != (sign > 0)):
+                continue
+            tried.add(t)
+            if not clears(t):
+                continue
+            fails = max(t_low, min(t_high, sign * (k - 1) * SEARCH_STEP))
+            for _ in range(14):
+                middle = (fails + t) / 2
+                if clears(middle):
+                    t = middle
+                else:
+                    fails = middle
+            return t
+    return None
 
 
 class WallClearance:
     def __init__(self):
         self.window = ScriptWindow(
             SCRIPT_NAME,
-            "Finds the doors, windows and objects that are too close to a wall and moves them away just enough. "
-            "Set the distances, press Check to see the list, then Apply.",
-            min_width=900, min_height=780)
+            "Finds the doors, windows and objects whose floor plan outline is too close to a wall or column and "
+            "moves them just enough. Set the margins, press Check to see the list, then Apply.",
+            min_width=980, min_height=760)
         self.properties: dict[str, dict] = {}
         self.table: list[dict] = []
         self.rows: list[dict] = []
         self.checked_snapshot = None
         self.applied = False
-        self.distance_vars: dict[str, dict[str, tk.StringVar]] = {}
+        self.margin_vars: dict[str, tk.StringVar] = {}
         self._build_body()
         self.window.add_button("Clear highlight", self.clear_highlight)
         self.window.add_button("Select in Archicad", self.select_rows)
@@ -280,45 +407,31 @@ class WallClearance:
         self.part_filter = tk.StringVar()
         ttk.Entry(scope, textvariable=self.part_filter).grid(row=1, column=2, columnspan=5, sticky="ew", pady=(6, 0))
 
-        distances = ttk.LabelFrame(body, text="Minimum distances (m)", padding=(10, 6))
-        distances.grid(row=1, column=0, sticky="ew", pady=(8, 0))
-        distances.columnconfigure(5, weight=1)
-        fields = [("Door", "hinge", "Hinge side:"), ("Door", "handle", "Handle side:"),
-                  ("Window", "hinge", "Hinge side:"), ("Window", "handle", "Handle side:"),
-                  ("Object", "clearance", "From the nearest wall:")]
-        for row, kind in enumerate(KINDS):
-            ttk.Label(distances, text=KIND_LABELS[kind] + ":").grid(row=row, column=0, sticky="w", pady=(2, 0))
-            self.distance_vars[kind] = {}
-            column = 1
-            for field_kind, key, label in fields:
-                if field_kind != kind:
-                    continue
-                ttk.Label(distances, text=label).grid(row=row, column=column, sticky="w", padx=(10, 0), pady=(2, 0))
-                var = tk.StringVar(value=DEFAULT_DISTANCES[kind][key])
-                ttk.Entry(distances, textvariable=var, width=8).grid(row=row, column=column + 1, sticky="w",
-                                                                     padx=(6, 0), pady=(2, 0))
-                self.distance_vars[kind][key] = var
-                column += 2
-        self.swap_hinge = tk.BooleanVar(value=False)
-        ttk.Checkbutton(distances, text="The hinge is at the other end of the opening (swap the hinge and handle sides)",
-                        variable=self.swap_hinge).grid(row=3, column=0, columnspan=6, sticky="w", pady=(6, 0))
-        ttk.Label(distances, text="Take the distance from a property:").grid(row=4, column=0, columnspan=2,
-                                                                            sticky="w", pady=(6, 0))
+        margins = ttk.LabelFrame(body, text="Margin around the element's floor plan outline (m)", padding=(10, 6))
+        margins.grid(row=1, column=0, sticky="ew", pady=(8, 0))
+        margins.columnconfigure(7, weight=1)
+        for index, kind in enumerate(KINDS):
+            ttk.Label(margins, text=KIND_LABELS[kind] + ":").grid(row=0, column=index * 2, sticky="w",
+                                                                  padx=(0 if index == 0 else 16, 0))
+            var = tk.StringVar(value=DEFAULT_MARGINS[kind])
+            ttk.Entry(margins, textvariable=var, width=8).grid(row=0, column=index * 2 + 1, sticky="w", padx=(6, 0))
+            self.margin_vars[kind] = var
+        ttk.Label(margins, text="Take the margin from a property:").grid(row=1, column=0, columnspan=2,
+                                                                          sticky="w", pady=(6, 0))
         self.property = tk.StringVar(value=NO_PROPERTY)
-        self.property_box = ttk.Combobox(distances, textvariable=self.property, values=[NO_PROPERTY], state="readonly",
+        self.property_box = ttk.Combobox(margins, textvariable=self.property, values=[NO_PROPERTY], state="readonly",
                                          width=50)
-        self.property_box.grid(row=4, column=2, columnspan=4, sticky="w", padx=(6, 0), pady=(6, 0))
-        ttk.Label(distances, text="An element whose property has a number uses it on every side, before the table "
-                                  "and the defaults. Length values are in metres.", style="Muted.TLabel").grid(
-            row=5, column=0, columnspan=6, sticky="w")
+        self.property_box.grid(row=1, column=2, columnspan=6, sticky="w", padx=(6, 0), pady=(6, 0))
+        ttk.Label(margins, text="An element whose property has a number uses it instead of the table and the "
+                                "margin of its kind. Length values are in metres.", style="Muted.TLabel").grid(
+            row=2, column=0, columnspan=8, sticky="w")
 
         table = ttk.LabelFrame(body, text="Per library part (the first matching row wins; * matches any text)",
                                padding=(10, 6))
         table.grid(row=2, column=0, sticky="ew", pady=(8, 0))
         table.columnconfigure(0, weight=1)
-        self.table_tree = make_tree(table, [("pattern", "Library part name", 380, "w"),
-                                            ("first", "Hinge side, or object", 150, "e"),
-                                            ("second", "Handle side", 110, "e")], height=4)
+        self.table_tree = make_tree(table, [("pattern", "Library part name", 460, "w"),
+                                            ("margin", "Margin", 110, "e")], height=4)
         self.table_tree.container.grid(row=0, column=0, sticky="ew")
         self.table_tree.bind("<Double-1>", lambda _e: self.window.guarded(self.edit_row)())
         buttons = ttk.Frame(table)
@@ -333,10 +446,11 @@ class WallClearance:
         results.rowconfigure(1, weight=1)
         self.summary = ttk.Label(results, text="Press Check to find the elements that are too close to a wall.")
         self.summary.grid(row=0, column=0, sticky="w", pady=(0, 4))
-        self.tree = make_tree(results, [("element", "Element", 150, "w"), ("part", "Library part", 170, "w"),
-                                        ("story", "Story", 80, "w"), ("wall", "Too close to", 160, "w"),
-                                        ("now", "Now", 60, "e"), ("needed", "Needed", 60, "e"),
-                                        ("move", "Move", 70, "e"), ("result", "Result", 220, "w")], height=10)
+        self.tree = make_tree(results, [("element", "Element", 140, "w"), ("part", "Library part", 160, "w"),
+                                        ("story", "Story", 80, "w"), ("obstruction", "Obstruction", 140, "w"),
+                                        ("side", "Side", 50, "w"), ("now", "Now", 60, "e"),
+                                        ("needed", "Needed", 60, "e"), ("move", "Move", 60, "e"),
+                                        ("result", "Result", 230, "w")], height=10)
         self.tree.container.grid(row=1, column=0, sticky="nsew")
         self.tree.tag_configure("fix", foreground="#a15c00")
         self.tree.tag_configure("problem", foreground="#c62828")
@@ -349,8 +463,7 @@ class WallClearance:
     def _list_table(self) -> None:
         self.table_tree.delete(*self.table_tree.get_children())
         for index, row in enumerate(self.table):
-            self.table_tree.insert("", "end", iid=str(index),
-                                   values=(row["pattern"], fmt(row["first"]), fmt(row.get("second"))))
+            self.table_tree.insert("", "end", iid=str(index), values=(row["pattern"], fmt(row["margin"])))
 
     def _ask_row(self, row: dict | None) -> dict | None:
         root = self.window.root
@@ -358,25 +471,15 @@ class WallClearance:
                                          initialvalue=row["pattern"] if row else "", parent=root)
         if not pattern or not pattern.strip():
             return None
-        first_text = simpledialog.askstring(SCRIPT_NAME, "Hinge side of a door or window, or the distance of an "
-                                                         "object from the walls (m):",
-                                            initialvalue=fmt(row["first"]) if row else "", parent=root)
-        if first_text is None:
+        margin_text = simpledialog.askstring(SCRIPT_NAME, "Margin around its floor plan outline (m):",
+                                             initialvalue=fmt(row["margin"]) if row else "", parent=root)
+        if margin_text is None:
             return None
-        first = parse_length(first_text)
-        if first is None or first < 0:
-            self.window.set_status(f"'{first_text}' is not a distance in metres.", "warning")
+        margin = parse_length(margin_text)
+        if margin is None or margin < 0:
+            self.window.set_status(f"'{margin_text}' is not a distance in metres.", "warning")
             return None
-        second_text = simpledialog.askstring(SCRIPT_NAME, "Handle side of a door or window (m); leave it empty to use "
-                                                          "the same as the hinge side:",
-                                             initialvalue=fmt(row.get("second")) if row else "", parent=root)
-        if second_text is None:
-            return None
-        second = parse_length(second_text) if second_text.strip() else None
-        if second_text.strip() and (second is None or second < 0):
-            self.window.set_status(f"'{second_text}' is not a distance in metres.", "warning")
-            return None
-        return {"pattern": pattern.strip(), "first": first, "second": second}
+        return {"pattern": pattern.strip(), "margin": margin}
 
     def add_row(self) -> None:
         row = self._ask_row(None)
@@ -406,15 +509,14 @@ class WallClearance:
         for item in data if isinstance(data, list) else []:
             if not isinstance(item, dict) or not str(item.get("pattern", "")).strip():
                 continue
-            first = parse_length(item.get("first"))
-            second = parse_length(item.get("second")) if item.get("second") not in (None, "") else None
-            if first is not None and first >= 0:
-                rows.append({"pattern": str(item["pattern"]).strip(), "first": first,
-                             "second": second if second is not None and second >= 0 else None})
+            # "first" is the key of tables saved by the first version of this script
+            margin = parse_length(item.get("margin", item.get("first")))
+            if margin is not None and margin >= 0:
+                rows.append({"pattern": str(item["pattern"]).strip(), "margin": margin})
         return rows
 
     def load_table(self) -> None:
-        path = filedialog.askopenfilename(parent=self.window.root, title="Load the distances",
+        path = filedialog.askopenfilename(parent=self.window.root, title="Load the margins",
                                           filetypes=[("Wall Clearance table", "*.json"), ("All files", "*.*")])
         if not path:
             return
@@ -428,39 +530,36 @@ class WallClearance:
             self.window.set_status(f"{path} is not a Wall Clearance table.", "error")
             return
         self.table = self._read_table(data.get("table"))
-        self._apply_distances(data.get("defaults"))
+        self._apply_margins(data.get("margins"))
         self._list_table()
-        self.window.set_status(f"Loaded {len(self.table)} row(s) and the default distances from {path}.", "ok")
+        self.window.set_status(f"Loaded {len(self.table)} row(s) and the margins from {path}.", "ok")
 
     def save_table(self) -> None:
-        path = filedialog.asksaveasfilename(parent=self.window.root, title="Save the distances",
+        path = filedialog.asksaveasfilename(parent=self.window.root, title="Save the margins",
                                             defaultextension=".json", initialfile="Wall Clearance.json",
                                             filetypes=[("Wall Clearance table", "*.json")])
         if not path:
             return
-        data = {"defaults": self._distance_texts(), "table": self.table}
+        data = {"margins": self._margin_texts(), "table": self.table}
         try:
             with open(path, "w", encoding="utf-8") as file:
                 json.dump(data, file, indent=2, ensure_ascii=False)
         except OSError as e:
             self.window.set_status(f"Cannot save {path}: {e}", "error")
             return
-        self.window.set_status(f"Saved the default distances and {len(self.table)} row(s) to {path}.", "ok")
+        self.window.set_status(f"Saved the margins and {len(self.table)} row(s) to {path}.", "ok")
 
     # ---- settings ----
 
-    def _distance_texts(self) -> dict:
-        return {kind: {key: var.get() for key, var in fields.items()} for kind, fields in self.distance_vars.items()}
+    def _margin_texts(self) -> dict:
+        return {kind: var.get() for kind, var in self.margin_vars.items()}
 
-    def _apply_distances(self, data) -> None:
+    def _apply_margins(self, data) -> None:
         if not isinstance(data, dict):
             return
-        for kind, fields in self.distance_vars.items():
-            values = data.get(kind)
-            if isinstance(values, dict):
-                for key, var in fields.items():
-                    if values.get(key) is not None:
-                        var.set(str(values[key]))
+        for kind, var in self.margin_vars.items():
+            if isinstance(data.get(kind), (str, int, float)):
+                var.set(str(data[kind]))
 
     def _settings_data(self) -> dict:
         prop = self.properties.get(self.property.get())
@@ -468,8 +567,7 @@ class WallClearance:
             "scope": self.scope.get(),
             "kinds": {kind: var.get() for kind, var in self.kind_vars.items()},
             "partFilter": self.part_filter.get(),
-            "defaults": self._distance_texts(),
-            "swapHinge": self.swap_hinge.get(),
+            "margins": self._margin_texts(),
             "property": {"label": self.property.get(), "guid": prop["propertyId"]["guid"]} if prop else None,
             "table": self.table,
         }
@@ -488,8 +586,7 @@ class WallClearance:
             if isinstance(data.get("kinds"), dict) and kind in data["kinds"]:
                 var.set(bool(data["kinds"][kind]))
         self.part_filter.set(str(data.get("partFilter") or ""))
-        self._apply_distances(data.get("defaults"))
-        self.swap_hinge.set(bool(data.get("swapHinge")))
+        self._apply_margins(data.get("margins"))
         self.table = self._read_table(data.get("table"))
         self._list_table()
         prop = data.get("property")
@@ -513,20 +610,17 @@ class WallClearance:
         if not kinds:
             self.window.set_status("Tick Doors, Windows or Objects.", "warning")
             return None
-        defaults = {}
-        for kind, fields in self.distance_vars.items():
-            defaults[kind] = {}
-            for key, var in fields.items():
-                value = parse_length(var.get())
-                if value is None or value < 0:
-                    self.window.set_status(f"The {key} distance of the {KIND_LABELS[kind].lower()} must be a "
-                                           "non-negative number of metres.", "warning")
-                    return None
-                defaults[kind][key] = value
+        margins = {}
+        for kind, var in self.margin_vars.items():
+            value = parse_length(var.get())
+            if value is None or value < 0:
+                self.window.set_status(f"The margin of the {KIND_LABELS[kind].lower()} must be a non-negative "
+                                       "number of metres.", "warning")
+                return None
+            margins[kind] = value
         prop = self.properties.get(self.property.get())
         return {"scope": self.scope.get(), "kinds": kinds, "partFilter": self.part_filter.get().lower().split(),
-                "defaults": defaults, "swapHinge": self.swap_hinge.get(),
-                "property": prop["propertyId"] if prop else None,
+                "margins": margins, "property": prop["propertyId"] if prop else None,
                 "table": [dict(row) for row in self.table]}
 
     # ---- start ----
@@ -547,7 +641,7 @@ class WallClearance:
             self.properties[label] = p
         self.property_box.configure(values=[NO_PROPERTY] + list(self.properties))
         self.load_settings()
-        self.window.set_status("Set the distances and press Check.")
+        self.window.set_status("Set the margins and press Check.")
 
     # ---- reading ----
 
@@ -573,10 +667,10 @@ class WallClearance:
             raise ArchicadError("Archicad returned a different number of property values than elements asked for.")
         return values
 
-    def _read_walls(self, floors: set[int]) -> list[Obstruction]:
+    def _read_obstructions(self, floors: set[int]) -> list[Obstruction]:
         """ The walls, columns and curtain walls of the given stories. Columns and curtain walls count only by their
         floor plan cut fill; one without it is left out. """
-        walls: list[Obstruction] = []
+        obstructions: list[Obstruction] = []
         for kind in ("Wall", "Column", "CurtainWall"):
             try:
                 ids = run_tapir("GetElementsByType", {"elementType": kind}).get("elements", [])
@@ -592,29 +686,39 @@ class WallClearance:
                 for wall_id, detail in zip(ids, details):
                     d = detail.get("details") or {}
                     if detail.get("type") == "Wall" and "begCoordinate" in d and "endCoordinate" in d:
-                        walls.append(Wall(wall_id["elementId"], detail))
+                        obstructions.append(Wall(wall_id["elementId"], detail))
             else:
                 label = "column" if kind == "Column" else "curtain wall"
                 details = get_details_of_elements(ids, ["type", "id", "floorIndex", "floorPlanPolygons"])
                 for element_id, detail in zip(ids, details):
                     obstruction = Obstruction(element_id["elementId"], detail, label)
                     if obstruction.polygons:
-                        walls.append(obstruction)
-        return walls
+                        obstructions.append(obstruction)
+        return obstructions
 
-    def _distance_for(self, kind: str, part: str, value: float | None, settings: dict) -> tuple[float, float]:
-        """ (hinge side, handle side) of a door or window, (distance, distance) of an object. """
+    @staticmethod
+    def _read_outlines(command: str, key: str, elements: list[dict], extra: dict) -> list[tuple[list, str]]:
+        """ (outline, error) of each element from the 2D primitives the command returns. """
+        result = []
+        for chunk in batched([{"elementId": e["elementId"]} for e in elements]):
+            items = run_tapir(command, {"elements": chunk, **extra}).get(key, [])
+            for item in items:
+                if not isinstance(item, dict) or "error" in item:
+                    error = (item.get("error") or {}).get("message", "") if isinstance(item, dict) else ""
+                    result.append(([], error))
+                else:
+                    result.append((outline_from_primitives(item.get("primitives")), ""))
+        result += [([], "no result")] * (len(elements) - len(result))
+        return result
+
+    def _margin_for(self, kind: str, part: str, value: float | None, settings: dict) -> float:
         if value is not None:
-            return value, value
+            return value
         name = part.lower()
         for row in settings["table"]:
             if fnmatch.fnmatchcase(name, row["pattern"].lower()):
-                second = row["second"] if row.get("second") is not None and kind != "Object" else row["first"]
-                return row["first"], second
-        defaults = settings["defaults"][kind]
-        if kind == "Object":
-            return defaults["clearance"], defaults["clearance"]
-        return defaults["hinge"], defaults["handle"]
+                return row["margin"]
+        return settings["margins"][kind]
 
     # ---- checking ----
 
@@ -655,19 +759,35 @@ class WallClearance:
                 self.window.set_status("Reading the property values...")
                 values = self._property_values([{"elementId": e["elementId"]} for e in elements], settings["property"])
             for element, value in zip(elements, values):
-                element["value"] = value
-            self.window.set_status("Reading the walls, columns and curtain walls...")
-            walls = self._read_walls({e["floorIndex"] for e in elements})
-            stories = get_story_names()
+                element["margin"] = self._margin_for(element["kind"], element["part"], value, settings)
+
+            self.window.set_status("Reading the floor plan outlines...")
             openings = [e for e in elements if e["kind"] in ("Door", "Window")]
             objects = [e for e in elements if e["kind"] == "Object"]
+            try:
+                # GetShapePrimitivesOfElements draws on the current story only; a door or window elsewhere gets an
+                # error item and is listed as not checked. Objects are drawn on every story.
+                for element, (outline, error) in zip(openings, self._read_outlines(
+                        "GetShapePrimitivesOfElements", "shapePrimitivesOfElements", openings, {"includeMarkers": False})):
+                    element["outline"], element["outlineError"] = outline, error
+                for element, (outline, error) in zip(objects, self._read_outlines(
+                        "GetDrawingPrimitivesOfElements", "drawingPrimitivesOfElements", objects, {})):
+                    element["outline"], element["outlineError"] = outline, error
+            except ArchicadError as e:
+                self.window.set_status(f"Cannot read the floor plan outlines ({e}). The floor plan must be the current "
+                                       "window, and the Tapir Add-On 1.8.1 or later is needed.", "error")
+                return False
+
+            self.window.set_status("Reading the walls, columns and curtain walls...")
+            obstructions = self._read_obstructions({e["floorIndex"] for e in elements})
+            stories = get_story_names()
             rows = []
             if openings:
                 self.window.set_status("Measuring the doors and windows...")
-                rows += self._check_openings(openings, walls, settings)
+                rows += self._check_openings(openings, obstructions)
             if objects:
                 self.window.set_status("Measuring the objects...")
-                rows += self._check_objects(objects, walls, settings)
+                rows += self._check_objects(objects, obstructions)
             for row in rows:
                 row["story"] = stories.get(row["floorIndex"], str(row["floorIndex"]))
 
@@ -680,16 +800,37 @@ class WallClearance:
         fix = sum(1 for r in self.rows if r["status"] == "fix")
         problems = sum(1 for r in self.rows if r["status"] == "problem")
         skipped = sum(1 for r in self.rows if r["status"] == "skipped")
-        approximate = any(w.approximate for w in walls)
         message = (f"Checked {len(elements)} element(s): {fix} to move, {problems} that cannot be moved, "
-                   f"{skipped} not checked, {len(elements) - fix - problems - skipped} far enough from the walls.")
-        if approximate:
+                   f"{skipped} not checked, {len(elements) - fix - problems - skipped} clear of the walls.")
+        if any(o.approximate for o in obstructions):
             message += " Some walls have no floor plan outline; they are measured from their reference line."
         self.window.set_status(message, "warning" if fix or problems else "ok")
         return True
 
-    def _check_openings(self, openings: list[dict], walls: list[Wall], settings: dict) -> list[dict]:
-        wall_by_guid = {w.guid: w for w in walls if isinstance(w, Wall)}
+    @staticmethod
+    def _clears(outline, margin: float, obstructions: list[Obstruction], others: list) -> bool:
+        """ Whether the outline keeps the margin from every obstruction and does not run into another element. """
+        for obstruction in obstructions:
+            for polygon in obstruction.polygons:
+                if polygon_gap(outline, polygon, margin) < margin - TOLERANCE:
+                    return False
+        return all(polygon_gap(outline, other, TOLERANCE) > -TOLERANCE for other in others)
+
+    @staticmethod
+    def _near(outline, obstructions: list[Obstruction], reach: float) -> list[Obstruction]:
+        """ The obstructions within reach of the outline's bounding box, so the search measures only those. """
+        x0, y0, x1, y1 = bbox(outline)
+        result = []
+        for obstruction in obstructions:
+            for polygon in obstruction.polygons:
+                b = bbox(polygon)
+                if b[0] < x1 + reach and b[2] > x0 - reach and b[1] < y1 + reach and b[3] > y0 - reach:
+                    result.append(obstruction)
+                    break
+        return result
+
+    def _check_openings(self, openings: list[dict], obstructions: list[Obstruction]) -> list[dict]:
+        wall_by_guid = {o.guid: o for o in obstructions if isinstance(o, Wall)}
         # every door and window in the owner walls, so a moved one does not run into another
         positions: dict[str, dict] = {}
         owners = {(e["details"].get("ownerElementId") or {}).get("guid") for e in openings}
@@ -699,8 +840,7 @@ class WallClearance:
             except ArchicadError as e:
                 print(f"Cannot read the {kind.lower()}s: {e}")
                 continue
-            ids_and_details = zip(ids, get_details_of_elements(ids, ["id", "details"]))
-            for element_id, detail in ids_and_details:
+            for element_id, detail in zip(ids, get_details_of_elements(ids, ["id", "details"])):
                 d = detail.get("details") or {}
                 owner = (d.get("ownerElementId") or {}).get("guid")
                 if owner in owners and "centerOffset" in d:
@@ -710,7 +850,6 @@ class WallClearance:
                         "low": float(d["centerOffset"]) - half, "high": float(d["centerOffset"]) + half}
 
         rows = []
-        obstacles_of: dict[str, list] = {}
         for element in openings:
             d = element["details"]
             row = self._row(element)
@@ -721,125 +860,166 @@ class WallClearance:
             if owner.curved:
                 rows.append({**row, "status": "skipped", "result": "In a curved wall; not checked."})
                 continue
-            if owner.guid not in obstacles_of:
-                obstacles_of[owner.guid] = obstacles_along(owner, walls)
-            obstacles = obstacles_of[owner.guid]
-            center, half = float(d["centerOffset"]), float(d.get("width", 0.0)) / 2.0
-            low, high = center - half, center + half
-            hinge, handle = self._distance_for(element["kind"], element["part"], element["value"], settings)
-            hinge_at_begin = (bool(d.get("reflected")) == bool(d.get("oSide"))) != settings["swapHinge"]
-            need_begin, need_end = (hinge, handle) if hinge_at_begin else (handle, hinge)
-            name_begin, name_end = ("hinge side", "handle side") if hinge_at_begin else ("handle side", "hinge side")
+            outline = element["outline"]
+            if not outline:
+                reason = element["outlineError"] or "Archicad draws no floor plan outline for it"
+                rows.append({**row, "status": "skipped",
+                             "result": f"Its swing and space outline cannot be read ({reason}); not checked."})
+                continue
+            margin = element["margin"]
+            active = [o for o in obstructions if o.floorIndex == owner.floorIndex and o.guid != owner.guid]
+            nearest = nearest_obstruction(outline, active)
+            if nearest is None or nearest[0] >= margin - TOLERANCE:
+                continue
+            offset = (centroid(outline)[0] - owner.beg[0]) * owner.n[0] + (centroid(outline)[1] - owner.beg[1]) * owner.n[1]
+            front = owner.n if offset >= 0 else (-owner.n[0], -owner.n[1])
+            row.update(obstruction=nearest[1].label, side=side_of(outline, nearest[1], front), now=nearest[0],
+                       needed=margin)
 
-            crossing = [o for o in obstacles if o["end"] > low + TOLERANCE and o["start"] < high - TOLERANCE]
-            if crossing:
-                rows.append({**row, "status": "problem", "wall": crossing[0]["wall"].label,
-                             "result": "A wall or column crosses the opening."})
-                continue
-            before = [o for o in obstacles if o["end"] <= low + TOLERANCE]
-            after = [o for o in obstacles if o["start"] >= high - TOLERANCE]
-            near_begin = max(before, key=lambda o: o["end"]) if before else None
-            near_end = min(after, key=lambda o: o["start"]) if after else None
-            gap_begin = low - near_begin["end"] if near_begin else None
-            gap_end = near_end["start"] - high if near_end else None
-            short_begin = gap_begin is not None and gap_begin < need_begin - TOLERANCE
-            short_end = gap_end is not None and gap_end < need_end - TOLERANCE
-            if not short_begin and not short_end:
-                continue
-
-            if short_begin and short_end:
-                rows.append({**row, "status": "problem", "wall": f"{near_begin['wall'].label}, {near_end['wall'].label}",
-                             "now": min(gap_begin, gap_end), "needed": max(need_begin, need_end),
-                             "result": f"Too close on both sides: {fmt(gap_begin)} m on the {name_begin}, "
-                                       f"{fmt(gap_end)} m on the {name_end}."})
-                continue
-            if short_begin:
-                shift = need_begin - gap_begin
-                row.update(wall=f"{near_begin['wall'].label} ({name_begin})", now=gap_begin, needed=need_begin)
-                other_gap, other_need, other_name = gap_end, need_end, name_end
-            else:
-                shift = -(need_end - gap_end)
-                row.update(wall=f"{near_end['wall'].label} ({name_end})", now=gap_end, needed=need_end)
-                other_gap, other_need, other_name = gap_begin, need_begin, name_begin
-            row["move"] = abs(shift)
-            new_low, new_high = low + shift, high + shift
             guid = element["elementId"]["guid"]
-            blocked_by = next((p for g, p in positions.items() if g != guid and p["owner"] == owner.guid
-                               and p["high"] > new_low + TOLERANCE and p["low"] < new_high - TOLERANCE), None)
-            if other_gap is not None and other_gap - abs(shift) < other_need - TOLERANCE:
-                result = (f"Not enough room between the walls: moving it {fmt(abs(shift))} m leaves "
-                          f"{fmt(other_gap - abs(shift))} m on the {other_name}, {fmt(other_need)} m needed.")
-                rows.append({**row, "status": "problem", "result": result})
-            elif (new_low < owner.t_range[0] - TOLERANCE or new_high > owner.t_range[1] + TOLERANCE
-                  or center + shift < 0):
-                rows.append({**row, "status": "problem", "result": "Moving it would take it past the end of its wall."})
-            elif blocked_by is not None:
-                rows.append({**row, "status": "problem", "result": f"Moving it would run into {blocked_by['label']}."})
-            else:
-                if guid in positions:
-                    positions[guid].update(low=new_low, high=new_high)
-                rows.append({**row, "status": "fix", "result": "", "action": {"centerOffset": center + shift}})
+            center = float(d["centerOffset"])
+            half = float(d.get("width", 0.0)) / 2.0
+            low, high = center - half, center + half
+            t_low = max(owner.t_range[0] - low, -center)
+            t_high = owner.t_range[1] - high
+            near = self._near(outline, active, max(abs(t_low), abs(t_high)) + margin)
+            neighbours = [p for g, p in positions.items() if g != guid and p["owner"] == owner.guid]
+
+            def clears(t):
+                if any(p["high"] > low + t + TOLERANCE and p["low"] < high + t - TOLERANCE for p in neighbours):
+                    return False
+                return self._clears(shifted(outline, owner.u, t), margin, near, [])
+
+            shift = smallest_move(t_low, t_high, clears)
+            if shift is None:
+                rows.append({**row, "status": "problem",
+                             "result": "Sliding it along its wall does not clear it within the wall's length "
+                                       "without running into another door or window."})
+                continue
+            row["move"] = abs(shift)
+            if guid in positions:
+                positions[guid].update(low=low + shift, high=high + shift)
+            rows.append({**row, "status": "fix", "result": "", "action": {"centerOffset": center + shift}})
         return rows
 
-    def _check_objects(self, objects: list[dict], walls: list[Wall], settings: dict) -> list[dict]:
-        boxes = []
-        for chunk in batched([{"elementId": e["elementId"]} for e in objects]):
-            result = run_command("Get2DBoundingBoxes", {"elements": chunk}).get("boundingBoxes2D", [])
-            boxes += [item.get("boundingBox2D") if isinstance(item, dict) else None for item in result]
-        boxes += [None] * (len(objects) - len(boxes))
-        faces_of: dict[int, list] = {}
+    @staticmethod
+    def _back_face(element: dict, outline, obstructions: list[Obstruction]):
+        """ The face (a, b, outward normal) and obstruction the object stands against: the face nearest the back edge
+        of its outline (the side its insertion point and rotation face), parallel to it and facing the object,
+        within BACK_TOLERANCE. None when it stands against none. """
+        d = element["details"]
+        angle = float(d.get("angle") or 0.0)
+        origin = _xy(d.get("origin") or {"x": centroid(outline)[0], "y": centroid(outline)[1]})
+        along = (math.cos(angle), math.sin(angle))
+        front = (-math.sin(angle), math.cos(angle))
+        back = min((p[0] - origin[0]) * front[0] + (p[1] - origin[1]) * front[1] for p in outline)
+        extent = [(p[0] - origin[0]) * along[0] + (p[1] - origin[1]) * along[1] for p in outline]
+        parallel = math.cos(math.radians(PARALLEL_DEGREES))
+        found = None
+        for obstruction in obstructions:
+            for a, b, m in obstruction.faces():
+                if m[0] * front[0] + m[1] * front[1] < parallel:
+                    continue
+                # where the face is, measured from the back edge towards the front (negative: behind it, positive:
+                # the object reaches into the wall)
+                position = (a[0] - origin[0]) * front[0] + (a[1] - origin[1]) * front[1] - back
+                if abs(position) > BACK_TOLERANCE:
+                    continue
+                fa = (a[0] - origin[0]) * along[0] + (a[1] - origin[1]) * along[1]
+                fb = (b[0] - origin[0]) * along[0] + (b[1] - origin[1]) * along[1]
+                if max(fa, fb) <= min(extent) + TOLERANCE or min(fa, fb) >= max(extent) - TOLERANCE:
+                    continue
+                if found is None or abs(position) < found[0]:
+                    found = (abs(position), (a, b, m), obstruction)
+        if found is None:
+            return None
+        # the whole straight face: the cut fill may split it where another wall joins the wall's other side
+        (a, b, m), obstruction = found[1], found[2]
+        length = math.hypot(b[0] - a[0], b[1] - a[1])
+        u = ((b[0] - a[0]) / length, (b[1] - a[1]) / length)
+        ts = [0.0, length]
+        changed = True
+        while changed:
+            changed = False
+            for c, e, n in obstruction.faces():
+                if n[0] * m[0] + n[1] * m[1] < 1 - EPSILON or abs((c[0] - a[0]) * m[0] + (c[1] - a[1]) * m[1]) > TOLERANCE:
+                    continue
+                tc = (c[0] - a[0]) * u[0] + (c[1] - a[1]) * u[1]
+                te = (e[0] - a[0]) * u[0] + (e[1] - a[1]) * u[1]
+                if min(tc, te) <= max(ts) + TOLERANCE and max(tc, te) >= min(ts) - TOLERANCE \
+                        and (min(tc, te) < min(ts) - EPSILON or max(tc, te) > max(ts) + EPSILON):
+                    ts += [tc, te]
+                    changed = True
+        start, end = min(ts), max(ts)
+        return ((a[0] + u[0] * start, a[1] + u[1] * start), (a[0] + u[0] * end, a[1] + u[1] * end), m), obstruction
+
+    def _check_objects(self, objects: list[dict], obstructions: list[Obstruction]) -> list[dict]:
         rows = []
-        for element, box in zip(objects, boxes):
+        # the outlines of the checked objects, moved as they are fixed, so a moved object does not run into another
+        placed = {e["elementId"]["guid"]: e["outline"] for e in objects if e["outline"]}
+        for element in objects:
             row = self._row(element)
-            if not box:
-                rows.append({**row, "status": "skipped", "result": "Its 2D outline cannot be read; not checked."})
+            outline = element["outline"]
+            if not outline:
+                reason = element["outlineError"] or "Archicad draws no floor plan symbol for it"
+                rows.append({**row, "status": "skipped", "result": f"Its outline cannot be read ({reason}); not checked."})
                 continue
             floor = element["floorIndex"]
-            if floor not in faces_of:
-                faces_of[floor] = [(face, wall) for wall in walls if wall.floorIndex == floor for face in wall.faces()]
-            faces = faces_of[floor]
-            corners = box_corners(box)
-            center = ((box["xMin"] + box["xMax"]) / 2, (box["yMin"] + box["yMax"]) / 2)
-            if any(inside(center, polygon) for wall in walls if wall.floorIndex == floor for polygon in wall.polygons):
+            on_floor = [o for o in obstructions if o.floorIndex == floor]
+            if any(inside(centroid(outline), polygon) for o in on_floor for polygon in o.polygons):
                 rows.append({**row, "status": "skipped", "result": "It is inside a wall or column; not checked."})
                 continue
-            need = self._distance_for("Object", element["part"], element["value"], settings)[0]
-
-            def worst(points):
-                found = None
-                for face, wall in faces:
-                    distance = face_distance(points, face)
-                    if distance is not None and distance < need - TOLERANCE and (found is None or distance < found[0]):
-                        found = (distance, face, wall)
-                return found
-
-            first = worst(corners)
-            if first is None:
+            margin = element["margin"]
+            back = self._back_face(element, outline, on_floor)
+            active = [o for o in on_floor if back is None or o.guid != back[1].guid]
+            nearest = nearest_obstruction(outline, active)
+            if nearest is None or nearest[0] >= margin - TOLERANCE:
                 continue
-            row.update(wall=first[2].label, now=first[0], needed=need)
-            dx = dy = 0.0
-            remaining = first
-            for _ in range(MAX_OBJECT_STEPS):
-                if remaining is None:
-                    break
-                distance, (_, _, m), _ = remaining
-                dx += m[0] * (need - distance)
-                dy += m[1] * (need - distance)
-                remaining = worst([(x + dx, y + dy) for x, y in corners])
-            row["move"] = math.hypot(dx, dy)
-            if remaining is not None:
-                rows.append({**row, "status": "problem",
-                             "result": f"Not enough room: it cannot keep {fmt(need)} m from {remaining[2].label} "
-                                       "and the other walls around it."})
+            angle = float(element["details"].get("angle") or 0.0)
+            row.update(obstruction=nearest[1].label, now=nearest[0], needed=margin,
+                       side=side_of(outline, nearest[1], (-math.sin(angle), math.cos(angle))))
+
+            guid = element["elementId"]["guid"]
+            # another checked object counts only when it does not overlap this one already (a chair at a table)
+            others = [o for g, o in placed.items() if g != guid and polygon_gap(outline, o, TOLERANCE) > -TOLERANCE]
+            if back is not None:
+                (a, b, _), wall = back
+                length = math.hypot(b[0] - a[0], b[1] - a[1])
+                direction = ((b[0] - a[0]) / length, (b[1] - a[1]) / length)
+                along = [(p[0] - a[0]) * direction[0] + (p[1] - a[1]) * direction[1] for p in outline]
+                t_low, t_high = -min(along), length - max(along)
+                failure = f"Sliding it along {wall.label}, the wall it stands against, does not clear it within " \
+                          "that wall or without running into another object."
             else:
-                rows.append({**row, "status": "fix", "result": "", "action": {"moveVector": {"x": dx, "y": dy, "z": 0.0}}})
+                center = centroid(outline)
+                a, b, m = min((face for face in nearest[1].faces()),
+                              key=lambda f: point_segment_distance(center, f[0], f[1]))
+                direction = m
+                t_low, t_high = 0.0, MAX_FREE_MOVE
+                failure = f"Moving it up to {fmt(MAX_FREE_MOVE)} m away from {nearest[1].label} does not clear it " \
+                          "or runs into another object."
+            near = self._near(outline, active, max(abs(t_low), abs(t_high)) + margin)
+            near_others = [o for o in others if polygon_gap(outline, o, max(abs(t_low), abs(t_high)) + margin)
+                           < max(abs(t_low), abs(t_high)) + margin]
+
+            def clears(t):
+                return self._clears(shifted(outline, direction, t), margin, near, near_others)
+
+            shift = smallest_move(t_low, t_high, clears)
+            if shift is None:
+                rows.append({**row, "status": "problem", "result": failure})
+                continue
+            row["move"] = abs(shift)
+            placed[guid] = shifted(outline, direction, shift)
+            rows.append({**row, "status": "fix", "result": "",
+                         "action": {"moveVector": {"x": direction[0] * shift, "y": direction[1] * shift, "z": 0.0}}})
         return rows
 
     @staticmethod
     def _row(element: dict) -> dict:
         return {"elementId": element["elementId"], "kind": element["kind"], "label": element["label"],
-                "part": element["part"], "floorIndex": element["floorIndex"], "wall": "", "now": None,
-                "needed": None, "move": None, "result": ""}
+                "part": element["part"], "floorIndex": element["floorIndex"], "obstruction": "", "side": "",
+                "now": None, "needed": None, "move": None, "result": ""}
 
     # ---- showing ----
 
@@ -848,13 +1028,14 @@ class WallClearance:
         for index, row in enumerate(self.rows):
             result = row["result"] or ("Moved." if row.get("moved") else "To move.")
             self.tree.insert("", "end", iid=str(index), tags=("moved" if row.get("moved") else row["status"],),
-                             values=(row["label"], row["part"], row.get("story", ""), row["wall"], fmt(row["now"]),
-                                     fmt(row["needed"]), fmt(row["move"]), result))
+                             values=(row["label"], row["part"], row.get("story", ""), row["obstruction"],
+                                     row["side"], fmt(row["now"]), fmt(row["needed"]), fmt(row["move"]), result))
         fix = sum(1 for r in self.rows if r["status"] == "fix")
         problems = sum(1 for r in self.rows if r["status"] == "problem")
         self.summary.configure(text=f"{fix} to move (orange), {problems} that cannot be moved (red). Distances in "
-                                    "metres. Double-click a row to select it in Archicad." if self.rows
-                               else "Nothing to list.")
+                                    "metres; Now is the smallest gap (negative: overlap). Side is seen from the "
+                                    "element, facing its front. Double-click a row to select it in Archicad."
+                               if self.rows else "Nothing to list.")
 
     def _highlight(self) -> None:
         rows = [r for r in self.rows if r["status"] in ("fix", "problem")]
@@ -896,7 +1077,7 @@ class WallClearance:
             return
         counts = {kind: sum(1 for r in rows if r["kind"] == kind) for kind in KINDS}
         problems = sum(1 for r in self.rows if r["status"] == "problem")
-        message = (f"Move {len(rows)} element(s) away from the walls?\n\n"
+        message = (f"Move {len(rows)} element(s) clear of the walls?\n\n"
                    + "\n".join(f"{KIND_LABELS[k]}: {n}" for k, n in counts.items() if n)
                    + (f"\n\n{problems} element(s) that cannot be moved are left as they are." if problems else ""))
         if not self.window.ask_ok_cancel(SCRIPT_NAME, message):
