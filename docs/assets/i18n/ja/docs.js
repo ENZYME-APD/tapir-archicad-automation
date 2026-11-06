@@ -13,16 +13,16 @@
     'Tapir commands': 'Tapir コマンド',
     'Search by name, filter by the version a command came in, and open any command for its input and output schema and a Python example.':
         '名前で検索し、コマンドが追加されたバージョンで絞り込み、各コマンドの入力・出力スキーマと Python の例を表示できます。',
-    'Open the reference →': 'リファレンスを開く →',
+    'Open the reference': 'リファレンスを開く',
     'Grasshopper guide': 'Grasshopper ガイド',
     'The tool components, one per Archicad tool, with inputs named after the settings dialog. Install, a first definition, and what the buttons do.':
         'Archicad のツールごとに 1 つのツールコンポーネント。入力名は設定ダイアログに合わせてあります。インストール、最初の定義、各ボタンの働き。',
-    'Read the guide →': 'ガイドを読む →',
+    'Read the guide': 'ガイドを読む',
     'Archicad API': 'Archicad API',
     '· <span data-live-value="coverage"></span> covered': '· <span data-live-value="coverage"></span> をカバー',
     'Every function of Graphisoft\'s Archicad API and whether Tapir uses it, is working on it, or skipped it, updated every hour.':
         'Graphisoft の Archicad API のすべての関数と、Tapir がそれを使っているか、対応中か、見送ったか。1 時間ごとに更新。',
-    'See the coverage →': 'カバー状況を見る →',
+    'See the coverage': 'カバー状況を見る',
     'Components': 'コンポーネント',
     'Which Tapir commands have a Grasshopper component, and which inputs each component still lacks.':
         'どの Tapir コマンドに Grasshopper コンポーネントがあり、各コンポーネントにどの入力がまだ足りないか。',
@@ -44,19 +44,19 @@
 
     // Anatomy of a call
     'Anatomy of a call': '呼び出しの構造',
-    'Every Tapir command is sent the same way; only <code>commandName</code> and <code>addOnCommandParameters</code> change. <a href="../start/#python">Your first Python script →</a>':
-        'Tapir のコマンドはどれも同じ方法で送ります。変わるのは <code>commandName</code> と <code>addOnCommandParameters</code> だけです。<a href="../start/#python">最初の Python スクリプト →</a>',
+    'Every Tapir command is sent the same way; only <code>commandName</code> and <code>addOnCommandParameters</code> change. <a href="../start/#python">Your first Python script</a>':
+        'Tapir のコマンドはどれも同じ方法で送ります。変わるのは <code>commandName</code> と <code>addOnCommandParameters</code> だけです。<a href="../start/#python">最初の Python スクリプト</a>',
 
     // More guides
     'More guides': 'その他のガイド',
     'Install and run a script': 'インストールしてスクリプトを実行',
     'Install Tapir, run a script from the palette and write your first Python script.':
         'Tapir をインストールし、パレットからスクリプトを実行し、最初の Python スクリプトを書きます。',
-    'Get started →': 'はじめる →',
+    'Get started': 'はじめる',
     'AI': 'AI',
     'MCP servers and scripts an AI assistant writes for you.': 'MCP サーバーと、AI アシスタントが書いてくれるスクリプト。',
-    'Use Tapir with AI →': 'AI で Tapir を使う →',
+    'Use Tapir with AI': 'AI で Tapir を使う',
     'Learn by watching': '見て学ぶ',
     'Six videos, from installing Tapir to whole workflows.': 'Tapir のインストールからワークフロー全体まで、6 本の動画。',
-    'Watch the tutorials →': 'チュートリアルを見る →'
+    'Watch the tutorials': 'チュートリアルを見る'
 });

@@ -58,28 +58,28 @@
         'プロジェクトを開いている間、Archicad は <code>http://127.0.0.1:19723</code> で JSON コマンドに応答します（複数の Archicad を開いている場合、2 つ目以降は 19724、19725 と順に使います）。Tapir のコマンドは Archicad の <code>API.ExecuteAddOnCommand</code> コマンドを通じて、<code>TapirCommand</code> 名前空間で呼び出します。Python の標準ライブラリだけで十分で、インストールするパッケージはありません。',
     'Graphisoft\'s <a href="https://pypi.org/project/archicad/"><code>archicad</code> package</a> sends the same commands and finds the port by itself, if you prefer it. Put your script in a <a href="#marketplace">local folder</a> to run it from the Tapir palette.':
         'お好みで、Graphisoft の <a href="https://pypi.org/project/archicad/"><code>archicad</code> パッケージ</a>も使えます。同じコマンドを送り、ポートも自動で見つけます。スクリプトを<a href="#marketplace">ローカルフォルダー</a>に置けば、Tapir パレットから実行できます。',
-    '<a href="../archicad-addon/">All commands, with schemas and examples →</a>':
-        '<a href="../archicad-addon/">すべてのコマンド（スキーマと例付き）→</a>',
+    '<a href="../archicad-addon/">All commands, with schemas and examples</a>':
+        '<a href="../archicad-addon/">すべてのコマンド（スキーマと例付き）</a>',
 
     // 5. Grasshopper
     'Use it from Grasshopper': 'Grasshopper から使う',
     'In Rhino, open the Package Manager (the <code>PackageManager</code> command, or <em>Tools &gt; Package Manager</em>), search for <span class="mono">tapir</span>, install it and restart Rhino. Its components are on the <em>Tapir</em> tab in Grasshopper and work with the Archicad that runs Tapir. The Walls, Doors, Windows and Railings components read and change Archicad elements with the names you know from Archicad\'s settings dialogs.':
         'Rhino で Package Manager（<code>PackageManager</code> コマンド、または <em>Tools &gt; Package Manager</em>）を開き、<span class="mono">tapir</span> を検索してインストールし、Rhino を再起動します。コンポーネントは Grasshopper の <em>Tapir</em> タブにあり、Tapir が動いている Archicad と連携します。Walls、Doors、Windows、Railings の各コンポーネントは、Archicad の設定ダイアログでおなじみの名前で Archicad の要素を読み取り、変更します。',
-    '<a href="../grasshopper/">The Grasshopper guide →</a>': '<a href="../grasshopper/">Grasshopper ガイド →</a>',
+    '<a href="../grasshopper/">The Grasshopper guide</a>': '<a href="../grasshopper/">Grasshopper ガイド</a>',
 
     // Next step
     'Next step': '次のステップ',
     'Find a script': 'スクリプトを探す',
     'Scripts shared by architects, checked and adapted for any office.':
         '建築家が共有したスクリプトを、チェックしてどの事務所でも使えるようにしたものです。',
-    'Browse scripts →': 'スクリプトを見る →',
+    'Browse scripts': 'スクリプトを見る',
     'The command reference': 'コマンドリファレンス',
     'Every Tapir command with its parameters, its response and a Python example.':
         'すべての Tapir コマンドを、パラメーター、レスポンス、Python の例とともに。',
-    'Open the reference →': 'リファレンスを開く →',
+    'Open the reference': 'リファレンスを開く',
     'Stuck?': '困ったら',
     'Ask on Discord': 'Discord で質問',
     'Architects, developers and the maintainers answer there. Or open an issue on GitHub.':
         '建築家、開発者、メンテナーが答えてくれます。GitHub で issue を作成することもできます。',
-    'Join Discord →': 'Discord に参加 →'
+    'Join Discord': 'Discord に参加'
 });

@@ -58,28 +58,28 @@
         '项目打开时，Archicad 在 <code>http://127.0.0.1:19723</code> 上响应 JSON 命令（同时打开多个 Archicad 时，后面的依次使用 19724、19725 等）。Tapir 的命令通过 Archicad 的 <code>API.ExecuteAddOnCommand</code> 命令调用，命名空间为 <code>TapirCommand</code>。Python 标准库就足够了，无需安装任何软件包。',
     'Graphisoft\'s <a href="https://pypi.org/project/archicad/"><code>archicad</code> package</a> sends the same commands and finds the port by itself, if you prefer it. Put your script in a <a href="#marketplace">local folder</a> to run it from the Tapir palette.':
         '如果你愿意，也可以使用 Graphisoft 的 <a href="https://pypi.org/project/archicad/"><code>archicad</code> 软件包</a>，它发送同样的命令，并会自己找到端口。把脚本放进一个<a href="#marketplace">本地文件夹</a>，即可从 Tapir 面板运行它。',
-    '<a href="../archicad-addon/">All commands, with schemas and examples →</a>':
-        '<a href="../archicad-addon/">所有命令，附结构定义和示例 →</a>',
+    '<a href="../archicad-addon/">All commands, with schemas and examples</a>':
+        '<a href="../archicad-addon/">所有命令，附结构定义和示例</a>',
 
     // 5. Grasshopper
     'Use it from Grasshopper': '在 Grasshopper 中使用',
     'In Rhino, open the Package Manager (the <code>PackageManager</code> command, or <em>Tools &gt; Package Manager</em>), search for <span class="mono">tapir</span>, install it and restart Rhino. Its components are on the <em>Tapir</em> tab in Grasshopper and work with the Archicad that runs Tapir. The Walls, Doors, Windows and Railings components read and change Archicad elements with the names you know from Archicad\'s settings dialogs.':
         '在 Rhino 中打开 Package Manager（<code>PackageManager</code> 命令，或 <em>Tools &gt; Package Manager</em>），搜索 <span class="mono">tapir</span>，安装后重启 Rhino。它的运算器位于 Grasshopper 的 <em>Tapir</em> 选项卡中，与运行 Tapir 的 Archicad 协同工作。Walls、Doors、Windows 和 Railings 运算器使用你在 Archicad 设置对话框中熟悉的名称来读取和修改 Archicad 构件。',
-    '<a href="../grasshopper/">The Grasshopper guide →</a>': '<a href="../grasshopper/">Grasshopper 指南 →</a>',
+    '<a href="../grasshopper/">The Grasshopper guide</a>': '<a href="../grasshopper/">Grasshopper 指南</a>',
 
     // Next step
     'Next step': '下一步',
     'Find a script': '查找脚本',
     'Scripts shared by architects, checked and adapted for any office.':
         '建筑师分享的脚本，经过检查并调整为适用于任何事务所。',
-    'Browse scripts →': '浏览脚本 →',
+    'Browse scripts': '浏览脚本',
     'The command reference': '命令参考',
     'Every Tapir command with its parameters, its response and a Python example.':
         '每个 Tapir 命令及其参数、响应和 Python 示例。',
-    'Open the reference →': '打开参考 →',
+    'Open the reference': '打开参考',
     'Stuck?': '遇到问题？',
     'Ask on Discord': '在 Discord 上提问',
     'Architects, developers and the maintainers answer there. Or open an issue on GitHub.':
         '建筑师、开发者和维护者会在那里解答。也可以在 GitHub 上提交 issue。',
-    'Join Discord →': '加入 Discord →'
+    'Join Discord': '加入 Discord'
 });

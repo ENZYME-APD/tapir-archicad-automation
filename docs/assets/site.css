@@ -148,7 +148,6 @@ main { display: block }
 .way .who { font: 700 11.5px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--link) }
 .way p, .way li { color: var(--muted) }
 .way > a, .way .go-links a { font-weight: 700; text-decoration: none }
-.way > a::after, .way .go-links a::after { content: " \2192" }
 .way > a:hover, .way .go-links a:hover { text-decoration: underline }
 .way .go-links { display: flex; flex-wrap: wrap; gap: 6px 20px }
 .way svg { width: 44px; height: 44px; color: var(--fg) }

@@ -58,28 +58,28 @@
         'Archicad répond aux commandes JSON sur <code>http://127.0.0.1:19723</code> tant qu\'un projet est ouvert (avec plusieurs Archicad ouverts, les suivants utilisent 19724, 19725, etc.). Les commandes de Tapir sont appelées via la commande <code>API.ExecuteAddOnCommand</code> d\'Archicad, dans l\'espace de noms <code>TapirCommand</code>. La bibliothèque standard de Python suffit ; aucun paquet à installer.',
     'Graphisoft\'s <a href="https://pypi.org/project/archicad/"><code>archicad</code> package</a> sends the same commands and finds the port by itself, if you prefer it. Put your script in a <a href="#marketplace">local folder</a> to run it from the Tapir palette.':
         'Le <a href="https://pypi.org/project/archicad/">paquet <code>archicad</code></a> de Graphisoft envoie les mêmes commandes et trouve le port tout seul, si vous le préférez. Placez votre script dans un <a href="#marketplace">dossier local</a> pour le lancer depuis la palette Tapir.',
-    '<a href="../archicad-addon/">All commands, with schemas and examples →</a>':
-        '<a href="../archicad-addon/">Toutes les commandes, avec schémas et exemples →</a>',
+    '<a href="../archicad-addon/">All commands, with schemas and examples</a>':
+        '<a href="../archicad-addon/">Toutes les commandes, avec schémas et exemples</a>',
 
     // 5. Grasshopper
     'Use it from Grasshopper': 'L\'utiliser depuis Grasshopper',
     'In Rhino, open the Package Manager (the <code>PackageManager</code> command, or <em>Tools &gt; Package Manager</em>), search for <span class="mono">tapir</span>, install it and restart Rhino. Its components are on the <em>Tapir</em> tab in Grasshopper and work with the Archicad that runs Tapir. The Walls, Doors, Windows and Railings components read and change Archicad elements with the names you know from Archicad\'s settings dialogs.':
         'Dans Rhino, ouvrez le Package Manager (la commande <code>PackageManager</code>, ou <em>Tools &gt; Package Manager</em>), cherchez <span class="mono">tapir</span>, installez-le et redémarrez Rhino. Ses composants sont dans l\'onglet <em>Tapir</em> de Grasshopper et travaillent avec l\'Archicad où tourne Tapir. Les composants Walls, Doors, Windows et Railings lisent et modifient les éléments d\'Archicad avec les noms que vous connaissez de ses dialogues de paramètres.',
-    '<a href="../grasshopper/">The Grasshopper guide →</a>': '<a href="../grasshopper/">Le guide Grasshopper →</a>',
+    '<a href="../grasshopper/">The Grasshopper guide</a>': '<a href="../grasshopper/">Le guide Grasshopper</a>',
 
     // Next step
     'Next step': 'Étape suivante',
     'Find a script': 'Trouver un script',
     'Scripts shared by architects, checked and adapted for any office.':
         'Des scripts partagés par des architectes, vérifiés et adaptés à toute agence.',
-    'Browse scripts →': 'Parcourir les scripts →',
+    'Browse scripts': 'Parcourir les scripts',
     'The command reference': 'La référence des commandes',
     'Every Tapir command with its parameters, its response and a Python example.':
         'Chaque commande Tapir avec ses paramètres, sa réponse et un exemple Python.',
-    'Open the reference →': 'Ouvrir la référence →',
+    'Open the reference': 'Ouvrir la référence',
     'Stuck?': 'Bloqué ?',
     'Ask on Discord': 'Demander sur Discord',
     'Architects, developers and the maintainers answer there. Or open an issue on GitHub.':
         'Architectes, développeurs et mainteneurs y répondent. Ou ouvrez une issue sur GitHub.',
-    'Join Discord →': 'Rejoindre Discord →'
+    'Join Discord': 'Rejoindre Discord'
 });

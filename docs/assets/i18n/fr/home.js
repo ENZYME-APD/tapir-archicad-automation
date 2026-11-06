@@ -22,9 +22,8 @@
     'running…': 'en cours…',
     'Ground Floor · 1:100': 'Rez-de-chaussée · 1:100',
     'Try a built-in script': 'Essayer un script intégré',
-    'Number doors': 'Numéroter les portes',
-    'Colour by area': 'Colorer par surface',
-    'Health check': 'Contrôle du projet',
+    'Script': 'Script',
+    'Run': 'Exécuter',
     '6 doors numbered D01–D06': '6 portes numérotées D01–D06',
     '6 zones coloured by area': '6 zones colorées par surface',
     '3 problems found': '3 problèmes trouvés',
@@ -142,7 +141,7 @@
         'Avec un projet ouvert, Archicad répond aux commandes JSON sur <code>http://127.0.0.1:19723</code>. Les commandes de Tapir passent par <code>API.ExecuteAddOnCommand</code> d\'Archicad. Enregistrez ceci sous <code>walls.py</code> et lancez-le avec n\'importe quel Python 3.',
     'With several Archicads open, the next ones answer on 19724, 19725 and so on.':
         'Avec plusieurs Archicad ouverts, les suivants répondent sur 19724, 19725 et ainsi de suite.',
-    'Your first Python script, step by step →': 'Votre premier script Python, pas à pas →',
+    'Your first Python script, step by step': 'Votre premier script Python, pas à pas',
 
     // More
     'More': 'Plus',
@@ -152,12 +151,12 @@
     'The reference': 'La référence',
     'Every command with its schema and an example, the Grasshopper guide, and what Tapir covers of the Archicad API.':
         'Chaque commande avec son schéma et un exemple, le guide Grasshopper et ce que Tapir couvre de l\'API Archicad.',
-    'Open the docs →': 'Ouvrir la doc →',
+    'Open the docs': 'Ouvrir la doc',
     'Send yours in': 'Envoyez le vôtre',
     'Post a script on Discord or as a pull request. It is checked, adapted for any office and listed with your name. No GitHub account needed.':
         'Publiez un script sur Discord ou en pull request. Il est vérifié, adapté à toute agence et listé avec votre nom. Aucun compte GitHub nécessaire.',
-    'How sharing works →': 'Comment fonctionne le partage →',
+    'How sharing works': 'Comment fonctionne le partage',
     'Ask, report, test': 'Demander, signaler, tester',
     'Discord, the video series, and how a bug report becomes a fix.': 'Discord, la série de vidéos et comment un rapport de bug devient une correction.',
-    'Join in →': 'Participer →'
+    'Join in': 'Participer'
 });

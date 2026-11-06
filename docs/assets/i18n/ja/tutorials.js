@@ -44,17 +44,17 @@
     'Installing Tapir': 'Tapir のインストール',
     'Install the Add-On with the Tapir Installer, load it in Archicad and open the Tapir palette.':
         'Tapir Installer でアドオンをインストールし、Archicad で読み込んで Tapir パレットを開きます。',
-    'Written guide: Get started →': 'ガイド：はじめる →',
+    'Written guide: Get started': 'ガイド：はじめる',
     'Scripts from the palette': 'パレットのスクリプト',
     'Run the scripts that come with Tapir, and add your own, from the Tapir palette without writing code.':
         'Tapir 付属のスクリプトを実行し、自分のスクリプトも追加します。Tapir パレットから、コードを書かずに。',
-    'Written guide: Scripts →': 'ガイド：スクリプト →',
+    'Written guide: Scripts': 'ガイド：スクリプト',
     'Send Tapir commands from a Python script, read the answers and change elements.':
         'Python スクリプトから Tapir コマンドを送り、応答を読み取り、要素を変更します。',
-    'Written guide: the command reference →': 'ガイド：コマンドリファレンス →',
+    'Written guide: the command reference': 'ガイド：コマンドリファレンス',
     'Connect Grasshopper to Archicad, read elements and create them from Rhino geometry.':
         'Grasshopper を Archicad につなぎ、要素を読み取り、Rhino の形状から要素を作成します。',
-    'Written guide: Grasshopper →': 'ガイド：Grasshopper →',
+    'Written guide: Grasshopper': 'ガイド：Grasshopper',
 
     // Next step
     'Next step': '次のステップ',
