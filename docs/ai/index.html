@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" data-copy="Copy" data-copied="Copied">
+<html lang="en" data-copy="Copy" data-copied="Copied" data-i18n-pages="ai">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tapir and AI - Tapir</title>
-<meta name="description" content="Use Tapir from Claude and other AI tools: Tapir MCP servers, a prompt to start with, and how to let an AI write a script that sends Tapir commands.">
+<title data-i18n>Tapir and AI - Tapir</title>
+<meta name="description" data-i18n-attrs="content" content="Use Tapir from Claude and other AI tools: Tapir MCP servers, a prompt to start with, and how to let an AI write a script that sends Tapir commands.">
 <!-- link-preview: the preview of a link to this page shared on Discord, WhatsApp and the like -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Tapir">
@@ -52,39 +52,39 @@
 <main id="main">
     <div class="page-head">
         <div class="wrap">
-            <p class="crumb"><a href="../">Tapir</a> / <a href="../docs/">Docs</a> / AI</p>
-            <h1>Tapir and <em>AI.</em></h1>
-            <p>An AI assistant can read your Archicad project and change it through Tapir. You ask in plain words; it sends the commands to the Archicad running on your computer.</p>
+            <p class="crumb" data-i18n><a href="../">Tapir</a> / <a href="../docs/">Docs</a> / AI</p>
+            <h1 data-i18n>Tapir and <em>AI.</em></h1>
+            <p data-i18n>An AI assistant can read your Archicad project and change it through Tapir. You ask in plain words; it sends the commands to the Archicad running on your computer.</p>
         </div>
     </div>
 
     <div class="wrap page-body">
         <section aria-labelledby="two-ways">
             <div class="sec-head">
-                <h2 id="two-ways">Two ways to <em>connect.</em></h2>
-                <p>Both talk to the same Tapir commands on port 19723, on your own computer.</p>
+                <h2 id="two-ways" data-i18n>Two ways to <em>connect.</em></h2>
+                <p data-i18n>Both talk to the same Tapir commands on port 19723, on your own computer.</p>
             </div>
             <div class="two">
                 <article class="way">
-                    <span class="who">While you chat</span>
-                    <h3>An MCP server</h3>
-                    <p>The AI tool calls Tapir's commands itself, while you chat. Works with tools that support the Model Context Protocol (MCP), such as Claude Desktop.</p>
-                    <a href="#mcp-servers">Tapir MCP servers</a>
+                    <span class="who" data-i18n>While you chat</span>
+                    <h3 data-i18n>An MCP server</h3>
+                    <p data-i18n>The AI tool calls Tapir's commands itself, while you chat. Works with tools that support the Model Context Protocol (MCP), such as Claude Desktop.</p>
+                    <a href="#mcp-servers" data-i18n>Tapir MCP servers</a>
                 </article>
                 <article class="way">
-                    <span class="who">Any AI tool</span>
-                    <h3>A script the AI writes</h3>
-                    <p>Any AI tool can write a short Python script that sends Tapir commands. You read it, then run it from the Tapir palette or a terminal.</p>
-                    <a href="#scripts">How it works</a>
+                    <span class="who" data-i18n>Any AI tool</span>
+                    <h3 data-i18n>A script the AI writes</h3>
+                    <p data-i18n>Any AI tool can write a short Python script that sends Tapir commands. You read it, then run it from the Tapir palette or a terminal.</p>
+                    <a href="#scripts" data-i18n>How it works</a>
                 </article>
             </div>
         </section>
 
-        <div class="dim" aria-hidden="true"><i></i><span>MCP servers</span><i></i></div>
+        <div class="dim" aria-hidden="true"><i></i><span data-i18n>MCP servers</span><i></i></div>
         <section aria-labelledby="mcp-servers">
             <div class="sec-head">
-                <h2 id="mcp-servers">Tapir MCP <em>servers.</em></h2>
-                <p>
+                <h2 id="mcp-servers" data-i18n>Tapir MCP <em>servers.</em></h2>
+                <p data-i18n>
                     These are community projects, not part of Tapir. Each has its own install steps in its README.
                     Which one Tapir recommends is still being decided in
                     <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2070">issue #2070</a>,
@@ -93,43 +93,43 @@
             </div>
             <div class="two">
                 <article class="way">
-                    <span class="who">By SzamosiMate</span>
+                    <span class="who" data-i18n>By SzamosiMate</span>
                     <h3>tapir-archicad-MCP</h3>
-                    <p>The MCP server for Tapir that the others started from. It is also published on PyPI as the <span class="mono">tapir-archicad-mcp</span> package.</p>
+                    <p data-i18n>The MCP server for Tapir that the others started from. It is also published on PyPI as the <span class="mono">tapir-archicad-mcp</span> package.</p>
                     <p class="go-links">
-                        <a href="https://github.com/SzamosiMate/tapir-archicad-MCP">Its repository</a>
-                        <a href="https://pypi.org/project/tapir-archicad-mcp/">The package on PyPI</a>
+                        <a href="https://github.com/SzamosiMate/tapir-archicad-MCP" data-i18n>Its repository</a>
+                        <a href="https://pypi.org/project/tapir-archicad-mcp/" data-i18n>The package on PyPI</a>
                     </p>
                 </article>
                 <article class="way">
-                    <span class="who">By the community</span>
-                    <h3>Its forks</h3>
-                    <p>Versions of it that others changed and published. Check when each was last updated.</p>
-                    <a href="https://github.com/SzamosiMate/tapir-archicad-MCP/forks">See the forks</a>
+                    <span class="who" data-i18n>By the community</span>
+                    <h3 data-i18n>Its forks</h3>
+                    <p data-i18n>Versions of it that others changed and published. Check when each was last updated.</p>
+                    <a href="https://github.com/SzamosiMate/tapir-archicad-MCP/forks" data-i18n>See the forks</a>
                 </article>
             </div>
-            <p class="callout" style="margin-top: 24px">
+            <p class="callout" style="margin-top: 24px" data-i18n>
                 <strong class="callout-label"><span aria-hidden="true">&#9888;</span> Careful</strong>
                 An MCP server can change your model. Try it on a copy of your project first, and read what the AI is about to do before you allow it.
             </p>
         </section>
 
-        <div class="dim" aria-hidden="true"><i></i><span>A prompt to start with</span><i></i></div>
+        <div class="dim" aria-hidden="true"><i></i><span data-i18n>A prompt to start with</span><i></i></div>
         <section class="two" aria-labelledby="prompt">
             <div class="prose">
-                <h2 id="prompt" style="font-size: clamp(30px, 4vw, 48px)">Start by <em>reading.</em></h2>
-                <p>
+                <h2 id="prompt" style="font-size: clamp(30px, 4vw, 48px)" data-i18n>Start by <em>reading.</em></h2>
+                <p data-i18n>
                     Open a project in Archicad, with the Tapir Add-On loaded, and give your AI tool this prompt.
                     It only reads, so it is safe to try on any project.
                 </p>
-                <p>
+                <p data-i18n>
                     When the answer looks right, ask for a change in the same plain words, and say exactly which elements it
                     may change: "Set the property X to Y on the selected walls only."
                 </p>
             </div>
             <div class="term">
-                <div class="bar"><span>prompt</span><span>read only</span></div>
-<pre><code>Use Tapir to look at the Archicad project I have open.
+                <div class="bar"><span data-i18n>prompt</span><span data-i18n>read only</span></div>
+<pre><code data-i18n>Use Tapir to look at the Archicad project I have open.
 Do not change anything; only read.
 1. List the stories with their names and levels.
 2. Count the walls, slabs, columns, doors and windows on each story.
@@ -138,21 +138,21 @@ Tell me which Tapir commands you used.</code></pre>
             </div>
         </section>
 
-        <div class="dim" aria-hidden="true"><i></i><span>When the AI writes a script</span><i></i></div>
+        <div class="dim" aria-hidden="true"><i></i><span data-i18n>When the AI writes a script</span><i></i></div>
         <section aria-labelledby="scripts">
             <div class="sec-head">
-                <h2 id="scripts">Describe it, <em>run it.</em></h2>
-                <p>Without an MCP server, describe the task, give the AI the command list, and run the script it writes.</p>
+                <h2 id="scripts" data-i18n>Describe it, <em>run it.</em></h2>
+                <p data-i18n>Without an MCP server, describe the task, give the AI the command list, and run the script it writes.</p>
             </div>
             <div class="flow flow-3">
-                <div><b>01</b><strong>Describe what you want</strong><span>For example: "Extract all composite exterior walls on level 2 and calculate their net volume."</span></div>
-                <div><b>02</b><strong>Share the command list</strong><span>Give the AI the <a href="../archicad-addon/">command reference</a> and the working example below. Ask for Python's standard library only, on port 19723.</span></div>
-                <div><b>03</b><strong>Read it, then run it</strong><span>Read the script before you run it, from the Tapir palette or a terminal. Try one that changes the model on a copy of your project first.</span></div>
+                <div data-i18n><b>01</b><strong>Describe what you want</strong><span>For example: "Extract all composite exterior walls on level 2 and calculate their net volume."</span></div>
+                <div data-i18n><b>02</b><strong>Share the command list</strong><span>Give the AI the <a href="../archicad-addon/">command reference</a> and the working example below. Ask for Python's standard library only, on port 19723.</span></div>
+                <div data-i18n><b>03</b><strong>Read it, then run it</strong><span>Read the script before you run it, from the Tapir palette or a terminal. Try one that changes the model on a copy of your project first.</span></div>
             </div>
             <div class="two" style="margin-top: 32px">
                 <div class="term">
-                    <div class="bar"><span>prompt</span><span>for Claude or any AI tool</span></div>
-<pre><code>Write a Python script that uses only the standard
+                    <div class="bar"><span data-i18n>prompt</span><span data-i18n>for Claude or any AI tool</span></div>
+<pre><code data-i18n>Write a Python script that uses only the standard
 library and sends Tapir commands to Archicad on
 http://127.0.0.1:19723, like the example I attach.
 Use the Tapir command reference I attach.
@@ -186,26 +186,26 @@ print(run_tapir_command(<span class="s">"GetAddOnVersion"</span>))</code></pre>
             </div>
         </section>
 
-        <div class="dim" aria-hidden="true"><i></i><span>Next step</span><i></i></div>
+        <div class="dim" aria-hidden="true"><i></i><span data-i18n>Next step</span><i></i></div>
         <section>
             <div class="teasers">
                 <a class="teaser" href="../start/">
-                    <span class="tagline">Get started</span>
-                    <h3 id="ai-next-step">Install Tapir</h3>
-                    <p>Install Tapir, then give your AI tool the prompt above.</p>
-                    <span class="go">Get started</span>
+                    <span class="tagline" data-i18n>Get started</span>
+                    <h3 id="ai-next-step" data-i18n>Install Tapir</h3>
+                    <p data-i18n>Install Tapir, then give your AI tool the prompt above.</p>
+                    <span class="go" data-i18n>Get started</span>
                 </a>
                 <a class="teaser" href="../archicad-addon/">
-                    <span class="tagline">Commands</span>
-                    <h3>The command reference</h3>
-                    <p>The list to give the AI: every command with its schema.</p>
-                    <span class="go">Open the reference</span>
+                    <span class="tagline" data-i18n>Commands</span>
+                    <h3 data-i18n>The command reference</h3>
+                    <p data-i18n>The list to give the AI: every command with its schema.</p>
+                    <span class="go" data-i18n>Open the reference</span>
                 </a>
                 <a class="teaser dark" href="https://discord.gg/NAnSennmpY">
-                    <span class="tagline">Discord</span>
-                    <h3>Show what you built</h3>
-                    <p>Ask about MCP servers and share your prompts.</p>
-                    <span class="go">Join Discord</span>
+                    <span class="tagline" data-i18n>Discord</span>
+                    <h3 data-i18n>Show what you built</h3>
+                    <p data-i18n>Ask about MCP servers and share your prompts.</p>
+                    <span class="go" data-i18n>Join Discord</span>
                 </a>
             </div>
         </section>
