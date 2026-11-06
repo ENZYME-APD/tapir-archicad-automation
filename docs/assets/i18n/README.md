@@ -1,0 +1,40 @@
+# Translations of the site
+
+The site is written in English; `assets/site.js` translates it in the browser into the language
+picked in the header's language menu (or given as `?lang=<code>` in the address, or the browser's
+language on a first visit). Languages: `de` Deutsch, `fr` Français, `es` Español, `it` Italiano,
+`zh` 中文 (简体), `ja` 日本語. The list is `LANGUAGES` in `assets/site.js`.
+
+## The dictionaries
+
+One folder per language, each with:
+
+- `common.js`: what every page shares (header, footer, the dark mode and copy buttons). These parts
+  are translated without being marked (`SHARED_TEXT` and `SHARED_ATTRS` in `site.js`).
+- one file per page or page group, loaded by the pages that name it in their `<html>` element:
+  `<html ... data-i18n-pages="home">` loads `<language>/home.js` too. Only a page with
+  `data-i18n-pages` gets the language in its `<html lang>`; on the others each translated element
+  gets its own `lang`, as the rest of the page is still English.
+
+Each file pushes one object of English → translation:
+
+```js
+(window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
+    'Get started': 'Loslegen',
+    'Every command, <em>documented.</em>': 'Jeder Befehl, <em>dokumentiert.</em>'
+});
+```
+
+## Marking a page
+
+- `data-i18n` on an element translates its inner HTML. The key is that HTML as the browser reads
+  it back (whitespace collapsed to single spaces, entities such as `&rarr;` as their characters,
+  attributes in double quotes); the translation keeps the same tags and attributes. Do not nest
+  `data-i18n` elements.
+- `data-i18n-attrs="alt title aria-label"` translates those attributes by their English value.
+- A script that writes text uses `TapirI18n.t ('English text')`, one that adds marked HTML calls
+  `TapirI18n.apply (element)`, and one that runs before the translation is applied waits with
+  `TapirI18n.ready (callback)`.
+
+A text a dictionary lacks stays English, so a page can be translated piece by piece. Command names,
+JSON keys, code and Archicad's own terms stay as Archicad shows them in English.
