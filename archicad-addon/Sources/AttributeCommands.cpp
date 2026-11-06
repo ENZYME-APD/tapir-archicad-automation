@@ -9418,6 +9418,7 @@ API_AttrTypeID GetReindexableAttributeType (const GS::UniString& typeStr)
     if (typeStr == "Line")             return API_LinetypeID;
     if (typeStr == "Surface")          return API_MaterialID;
     if (typeStr == "BuildingMaterial") return API_BuildingMaterialID;
+    if (typeStr == "ZoneCategory")     return API_ZoneCatID;
     return API_ZombieAttrID;
 }
 
@@ -9647,6 +9648,7 @@ bool RewriteElementFields (API_Element& element, API_Element& mask, const Reinde
             REINDEX_FIELD (API_FilltypeID,         API_LabelType, label, u.symbol.sectFill);
             break;
         case API_ZoneID:
+            REINDEX_FIELD (API_ZoneCatID,          API_ZoneType, zone, catInd);
             REINDEX_FIELD (API_MaterialID,         API_ZoneType, zone, material);
             REINDEX_FIELD (API_FilltypeID,         API_ZoneType, zone, floorFillInd);
             REINDEX_FIELD (API_LinetypeID,         API_ZoneType, zone, floorContLType);
@@ -10574,6 +10576,7 @@ GS::UniString GetReindexableAttributeTypeName (API_AttrTypeID typeID)
         case API_LinetypeID:         return "line type";
         case API_MaterialID:         return "surface";
         case API_BuildingMaterialID: return "building material";
+        case API_ZoneCatID:          return "zone category";
         default:                     return "attribute";
     }
 }
@@ -10764,7 +10767,7 @@ GS::Optional<GS::UniString> ReindexAttributesCommand::GetInputParametersSchema (
         "properties": {
             "attributeType": {
                 "type": "string",
-                "enum": ["Fill", "Line", "Surface", "BuildingMaterial"],
+                "enum": ["Fill", "Line", "Surface", "BuildingMaterial", "ZoneCategory"],
                 "description": "The type of the attributes to move. Layers are moved by ReindexLayers; pens and the other attribute types cannot be moved."
             },
             "attributes": {
@@ -10938,7 +10941,7 @@ GS::ObjectState ReindexAttributesCommand::Execute (const GS::ObjectState& parame
     parameters.Get ("attributeType", typeStr);
     const API_AttrTypeID typeID = GetReindexableAttributeType (typeStr);
     if (typeID == API_ZombieAttrID) {
-        return CreateErrorResponse (APIERR_BADPARS, "attributeType must be Fill, Line, Surface or BuildingMaterial. Layers are moved by ReindexLayers.");
+        return CreateErrorResponse (APIERR_BADPARS, "attributeType must be Fill, Line, Surface, BuildingMaterial or ZoneCategory. Layers are moved by ReindexLayers.");
     }
     GS::Array<GS::ObjectState> attributes;
     parameters.Get ("attributes", attributes);

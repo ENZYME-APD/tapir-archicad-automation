@@ -17,7 +17,10 @@
    A script's README, screenshots and code are read at the commit its newest version names. Anything
    that is missing or does not look right is left out rather than shown wrong; when the catalogue
    cannot be read, the page keeps saying the scripts are opening soon. Every text shown is in the
-   page's HTML. */
+   page's HTML, so it is translated like the rest of the page (assets/i18n/README.md): the page
+   starts once the translation is applied (TapirI18n.ready), and translates the marked texts of its
+   <template>s, which the translation of the page does not reach, before it copies them. The
+   catalogue's own texts (names, summaries, READMEs, changelogs) stay as their authors wrote them. */
 (function () {
     'use strict';
 
@@ -658,9 +661,31 @@
         });
     }
 
+    // The page's translation does not reach into <template>s: their texts are translated here, once.
+    function translateTemplates () {
+        var templates = document.querySelectorAll ('template');
+        for (var i = 0; i < templates.length; i++) {
+            if (templates[i].content) {
+                window.TapirI18n.apply (templates[i].content);
+            }
+        }
+    }
+
+    // The category names and the other labels are read from the page, so it starts once translated.
+    function start () {
+        if (window.TapirI18n && typeof window.TapirI18n.ready === 'function') {
+            window.TapirI18n.ready (function () {
+                translateTemplates ();
+                init ();
+            });
+        } else {
+            init ();
+        }
+    }
+
     if (document.readyState === 'loading') {
-        document.addEventListener ('DOMContentLoaded', init);
+        document.addEventListener ('DOMContentLoaded', start);
     } else {
-        init ();
+        start ();
     }
 }) ();
