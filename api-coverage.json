@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-05 23:37 UTC",
+ "generatedAt": "2026-11-06 00:34 UTC",
  "versions": [
   25,
   26,
@@ -8740,7 +8740,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1956,
+     "title": "Add JSON checks for the classification commands"
+    }
+   ],
    "issues": []
   },
   {

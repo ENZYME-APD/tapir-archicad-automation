@@ -34,7 +34,7 @@ Parameters of the 716 used commands: 🟢 656 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-05 23:37 UTC.
+Updated 2026-11-06 00:34 UTC.
 
 | | Status |
 |---|---|
@@ -863,7 +863,7 @@ A parameter counts as covered when the component's code names it (a static check
 
 ## Script UI Commands
 
-- ✅ `ShowScriptUI` 🟢 13/13 parameters – `ShowScriptUIComponent`
+- ✅ `ShowScriptUI` 🟢 13/13 parameters – `ShowScriptUIComponent` — [#2093](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2093 "New Tapir website at archicad-api.com: brand, home, script marketplace and community pages")
 - ✅ `GetScriptUIResult` 🟢 0/0 parameters – `GetScriptUIResultComponent`
 
 ## Developer Commands

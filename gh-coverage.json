@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-05 23:37 UTC",
+ "generatedAt": "2026-11-06 00:34 UTC",
  "counts": {
   "done": 568,
   "open": 27,
@@ -18990,7 +18990,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2093,
+     "title": "New Tapir website at archicad-api.com: brand, home, script marketplace and community pages"
+    }
+   ]
   },
   {
    "id": "GetScriptUIResult",

@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 61 | 53 | 8 |  |  |  | 8 | 70 |
 | C++ API (ACAPI::, IFCAPI::) | 99 % | 1423 | 1207 | 214 | 2 |  |  | 12 | 392 |
 
-Archicad 25–30 DevKits; updated 2026-11-05 23:37 UTC.
+Archicad 25–30 DevKits; updated 2026-11-06 00:34 UTC.
 
 | | Status |
 |---|---|
@@ -210,7 +210,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ➖ `ACAPI_Element_NeigIDToElemType` – Returns the element type assigned to a neig. <sub>(was `ACAPI_Goodies_NeigIDToElemType`, `APIAny_NeigIDToElemTypeID`)</sub> *(neig ids, an internal of interactive input and selection)*
 - ✅ `ACAPI_Element_NeigToCoord` – Returns the coordinate of a neig. <sub>(was `APIAny_NeigToCoordID`)</sub>
 - ✅ `ACAPI_Element_RefreshElement` – Rebuilds (refreshes) a library part instance. <sub>(was `APIDb_RefreshElementID`)</sub>
-- ✅ `ACAPI_Element_RemoveClassificationItem` – Removes a classification from an element.
+- ✅ `ACAPI_Element_RemoveClassificationItem` – Removes a classification from an element. — [#1956](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1956 "Add JSON checks for the classification commands")
 - ✅ `ACAPI_Element_RemoveClassificationItemDefault` – Removes a classification from an element.
 - ✅ `ACAPI_Element_RoomReductions` – Returns reduction data assigned to a room in the current database. <sub>(was `APIDb_RoomReductionsID`)</sub>
 - ✅ `ACAPI_Element_SearchElementByCoord` – Searches for an element by coordinate. <sub>(was `APIAny_SearchElementByCoordID`)</sub>
