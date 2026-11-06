@@ -125,6 +125,16 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         {
         }
 
+        // Lets a tool drop settings (Add-On keys) of a new element that its
+        // geometry inputs define, e.g. a beam's offset to its home story,
+        // which the Z of its reference line sets. Called after PrepareSettings,
+        // only for the elements Create makes (not for the ones it updates).
+        protected virtual void PrepareCreateSettings(
+            JObject settings,
+            ISet<string> notes)
+        {
+        }
+
         // Lets a tool adjust a Create item after the settings were added.
         protected virtual void PrepareCreateItem(
             JObject item)
@@ -752,6 +762,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                     updated++;
                     continue;
                 }
+                PrepareCreateSettings(settings, notes);
 
                 var item = new JObject();
                 var rest = new JObject();
