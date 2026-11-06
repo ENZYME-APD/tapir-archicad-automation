@@ -140,6 +140,15 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         {
         }
 
+        // The Add-On key a field of the JSON inputs is written to; null for
+        // a read-only field. A tool overrides it where a command takes a
+        // value under another field's name (e.g. a roof's absolute level).
+        protected virtual string SetKeyOf(
+            ToolSettingsField field)
+        {
+            return field.Set;
+        }
+
         // Settings (Add-On keys) that the geometry inputs define on Create,
         // e.g. a column's base elevation: they are left out of a new
         // element's settings, so a JSON read from another element never moves
@@ -1058,11 +1067,12 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                         AddMessage(errors, i, $"Unknown setting \"{property.Name}\" in {GroupParamName(Groups[g])}; it was ignored.");
                         continue;
                     }
-                    if (field.Set == null || property.Value.Type == JTokenType.Null)
+                    var setKey = SetKeyOf(field);
+                    if (setKey == null || property.Value.Type == JTokenType.Null)
                     {
                         continue;
                     }
-                    settings[field.Set] = property.Value.DeepClone();
+                    settings[setKey] = property.Value.DeepClone();
                 }
             }
             return true;
