@@ -1,0 +1,86 @@
+name: Decide whether to build
+description: >-
+  Tells the build checks (archicad_addon_build_check.yml,
+  installer_build_check.yml) whether a pull request needs the expensive
+  Archicad Add-On and Tapir Installer builds: not when every file it changes is
+  in the skip list below. Needs a checkout with full history (blobs are not
+  needed: fetch-depth 0, filter blob:none).
+
+# The skip list - the one copy; the build checks' headers and CLAUDE.md
+# describe it, keep them in step:
+#   docs/**, archicad-addon/Test/**, archicad-addon/Examples/**,
+#   archicad-addon/Workflows/**, builtin-scripts/**, marketplace/**,
+#   branding/**, **/*.md
+# Nothing there is an input of the add-on or the installer build. Anything
+# else - sources, CMake, tools/, .github/, Installer/, devkits.json - builds
+# as before, and so does every push to main and every run that is neither a
+# pull request nor a dispatch on a branch other than main. Changes that
+# cannot be listed, or an empty list, build too: the gate fails open.
+#
+# The changed files are those of the pull request (base...head, what GitHub
+# shows), or for a workflow_dispatch on a branch - how claude_bot_pr_steward.yml
+# starts the builds of the issue bot's pull requests - those of the branch
+# since it left main (origin/main...HEAD). Renames count with both paths.
+#
+# win-build: the Windows add-on build still runs for a change under
+# archicad-addon/Test/checks/, because the community test runner
+# (tools/community-test-runner) tests such a pull request with the add-on
+# the Archicad Add-On Build Check built for exactly its head commit.
+
+outputs:
+  build:
+    description: "'false' when every changed file is in the skip list, else 'true'."
+    value: ${{ steps.gate.outputs.build }}
+  win-build:
+    description: "'false' when the Windows add-on build can be skipped too, else 'true'."
+    value: ${{ steps.gate.outputs.win-build }}
+
+runs:
+  using: composite
+  steps:
+    - name: List the changed files
+      id: gate
+      shell: bash
+      env:
+        EVENT: ${{ github.event_name }}
+        REF: ${{ github.ref }}
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      run: |
+        build=true winBuild=true range=""
+        case "$EVENT" in
+          pull_request) range="$BASE_SHA...$HEAD_SHA" ;;
+          workflow_dispatch)
+            case "$REF" in
+              refs/heads/main) ;;
+              refs/heads/*) range="origin/main...HEAD" ;;
+            esac ;;
+        esac
+        if [ -z "$range" ]; then
+          echo "Building: $EVENT on $REF always builds."
+        elif ! files=$(git diff --name-only --no-renames "$range"); then
+          echo "::warning::Could not list the changed files of $range - building."
+        elif [ -z "$files" ]; then
+          echo "Building: $range changes no files."
+        else
+          build=false winBuild=false
+          while IFS= read -r f; do
+            case "$f" in
+              archicad-addon/Test/checks/*) winBuild=true ;;
+              docs/*|archicad-addon/Test/*|archicad-addon/Examples/*|archicad-addon/Workflows/*|builtin-scripts/*|marketplace/*|branding/*|*.md) ;;
+              *) build=true winBuild=true; echo "Building: $f is not in the skip list."; break ;;
+            esac
+          done <<<"$files"
+          if [ "$build" = false ]; then
+            echo "Skipping the builds: every file $range changes is in the skip list$([ "$winBuild" = true ] && echo ', but a check under archicad-addon/Test/checks/ changed, so the Windows add-on build runs for the community test runner')."
+            printf '%s\n' "$files"
+          fi
+        fi
+        echo "build=$build" >> "$GITHUB_OUTPUT"
+        echo "win-build=$winBuild" >> "$GITHUB_OUTPUT"
+        if [ "$build" = false ]; then
+          {
+            echo "### Builds skipped"
+            echo "Every file this change touches is in the skip list of \`.github/actions/build-gate\`, so the jobs that build show as skipped$([ "$winBuild" = true ] && echo ', except the Windows add-on build, which the community test runner needs for the changed checks')."
+          } >> "$GITHUB_STEP_SUMMARY"
+        fi
