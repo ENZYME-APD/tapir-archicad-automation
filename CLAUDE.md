@@ -63,6 +63,7 @@ grasshopper-plugin/      C# Grasshopper plugin (.NET, produces .gha), packaged v
   TapirGrasshopperPlugin/  Components/, Types/, Helps/, Resources/,
                          ToolSettings/ (API field -> Archicad GUI label tables per tool)
 builtin-scripts/         Bundled automation scripts
+marketplace/             Shared scripts, one <slug>/ folder each (format in its README.md)
 branding/                Logos, diagrams
 docs/                    Generated docs (archicad-addon command reference),
                          api-coverage/ page of the Archicad API coverage checklist,
@@ -287,6 +288,16 @@ twin); new work on an element tool follows these rules:
   `Exposure` `GH_Exposure.hidden` for one release and are removed in the next. Keep a component's
   GUID when moving it. Archicad attributes (building materials, surfaces, composites, …) will follow
   the same pattern later.
+
+## Script marketplace
+
+Scripts shared by users live in [marketplace/](marketplace/), one `<slug>/` folder each
+(`listing.json`, the script, `README.md`, optional `screenshots/`). They are never added to
+`builtin-scripts/`. [marketplace/README.md](marketplace/README.md) is the format (with
+[listing.schema.json](marketplace/listing.schema.json)), the `# /// tapir` header and its
+`changes` key, and the rules for adapting a shared script for public use. An issue labelled
+`script-share` becomes one pull request adding its folder, adapted by those rules, keeping what
+the script does, listing every change in plain words and asking the author to confirm it.
 
 ## Versioning
 
