@@ -122,8 +122,8 @@
     'Next step': '次のステップ',
     'All scripts': 'すべてのスクリプト',
     'Back to the schedule of every script.': 'すべてのスクリプトの一覧に戻ります。',
-    'Browse scripts →': 'スクリプトを見る →',
+    'Browse scripts': 'スクリプトを見る',
     'Made one of your own?': '自分でも作りましたか？',
     'Share it, and any office can install it from the palette.': '共有すれば、どの事務所でもパレットからインストールできます。',
-    'How sharing works →': '共有の流れ →'
+    'How sharing works': '共有の流れ'
 });

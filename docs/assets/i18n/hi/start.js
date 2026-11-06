@@ -58,28 +58,28 @@
         'प्रोजेक्ट खुला रहने तक Archicad <code>http://127.0.0.1:19723</code> पर JSON कमांड का जवाब देता है (कई Archicad खुले हों तो अगले वाले 19724, 19725 इत्यादि इस्तेमाल करते हैं)। Tapir के कमांड Archicad के <code>API.ExecuteAddOnCommand</code> कमांड से, <code>TapirCommand</code> namespace में, बुलाए जाते हैं। Python की standard library काफ़ी है; कोई package इंस्टॉल नहीं करना है।',
     'Graphisoft\'s <a href="https://pypi.org/project/archicad/"><code>archicad</code> package</a> sends the same commands and finds the port by itself, if you prefer it. Put your script in a <a href="#marketplace">local folder</a> to run it from the Tapir palette.':
         'चाहें तो Graphisoft का <a href="https://pypi.org/project/archicad/"><code>archicad</code> package</a> भी यही कमांड भेजता है और port ख़ुद ढूँढ लेता है। अपनी script को Tapir palette से चलाने के लिए उसे एक <a href="#marketplace">local folder</a> में रखें।',
-    '<a href="../archicad-addon/">All commands, with schemas and examples →</a>':
-        '<a href="../archicad-addon/">सभी कमांड, schemas और उदाहरणों के साथ →</a>',
+    '<a href="../archicad-addon/">All commands, with schemas and examples</a>':
+        '<a href="../archicad-addon/">सभी कमांड, schemas और उदाहरणों के साथ</a>',
 
     // 5. Grasshopper
     'Use it from Grasshopper': 'Grasshopper से इस्तेमाल करें',
     'In Rhino, open the Package Manager (the <code>PackageManager</code> command, or <em>Tools &gt; Package Manager</em>), search for <span class="mono">tapir</span>, install it and restart Rhino. Its components are on the <em>Tapir</em> tab in Grasshopper and work with the Archicad that runs Tapir. The Walls, Doors, Windows and Railings components read and change Archicad elements with the names you know from Archicad\'s settings dialogs.':
         'Rhino में Package Manager खोलें (<code>PackageManager</code> कमांड, या <em>Tools &gt; Package Manager</em>), <span class="mono">tapir</span> खोजें, उसे इंस्टॉल करें और Rhino दोबारा शुरू करें। इसके components Grasshopper में <em>Tapir</em> tab पर हैं और उस Archicad के साथ काम करते हैं जिसमें Tapir चल रहा है। Walls, Doors, Windows और Railings components, Archicad elements को उन्हीं नामों से पढ़ते और बदलते हैं जो आप Archicad के settings dialogs से जानते हैं।',
-    '<a href="../grasshopper/">The Grasshopper guide →</a>': '<a href="../grasshopper/">Grasshopper गाइड →</a>',
+    '<a href="../grasshopper/">The Grasshopper guide</a>': '<a href="../grasshopper/">Grasshopper गाइड</a>',
 
     // Next step
     'Next step': 'अगला क़दम',
     'Find a script': 'एक script ढूँढें',
     'Scripts shared by architects, checked and adapted for any office.':
         'आर्किटेक्ट्स द्वारा शेयर की गई scripts, जाँची हुई और किसी भी ऑफ़िस के लिए ढाली गई।',
-    'Browse scripts →': 'Scripts देखें →',
+    'Browse scripts': 'Scripts देखें',
     'The command reference': 'कमांड संदर्भ',
     'Every Tapir command with its parameters, its response and a Python example.':
         'हर Tapir कमांड, अपने parameters, अपने response और एक Python उदाहरण के साथ।',
-    'Open the reference →': 'संदर्भ खोलें →',
+    'Open the reference': 'संदर्भ खोलें',
     'Stuck?': 'कहीं अटक गए?',
     'Ask on Discord': 'Discord पर पूछें',
     'Architects, developers and the maintainers answer there. Or open an issue on GitHub.':
         'वहाँ आर्किटेक्ट्स, डेवलपर्स और maintainers जवाब देते हैं। या GitHub पर एक issue खोलें।',
-    'Join Discord →': 'Discord से जुड़ें →'
+    'Join Discord': 'Discord से जुड़ें'
 });

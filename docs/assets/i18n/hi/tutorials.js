@@ -44,17 +44,17 @@
     'Installing Tapir': 'Tapir इंस्टॉल करना',
     'Install the Add-On with the Tapir Installer, load it in Archicad and open the Tapir palette.':
         'Tapir Installer से Add-On इंस्टॉल करें, उसे Archicad में load करें और Tapir palette खोलें।',
-    'Written guide: Get started →': 'लिखित गाइड: शुरू करें →',
+    'Written guide: Get started': 'लिखित गाइड: शुरू करें',
     'Scripts from the palette': 'Palette से scripts',
     'Run the scripts that come with Tapir, and add your own, from the Tapir palette without writing code.':
         'Tapir के साथ आने वाली scripts चलाएँ, और अपनी scripts जोड़ें, Tapir palette से, बिना code लिखे।',
-    'Written guide: Scripts →': 'लिखित गाइड: Scripts →',
+    'Written guide: Scripts': 'लिखित गाइड: Scripts',
     'Send Tapir commands from a Python script, read the answers and change elements.':
         'Python script से Tapir कमांड भेजें, जवाब पढ़ें और elements बदलें।',
-    'Written guide: the command reference →': 'लिखित गाइड: कमांड संदर्भ →',
+    'Written guide: the command reference': 'लिखित गाइड: कमांड संदर्भ',
     'Connect Grasshopper to Archicad, read elements and create them from Rhino geometry.':
         'Grasshopper को Archicad से जोड़ें, elements पढ़ें और Rhino geometry से उन्हें बनाएँ।',
-    'Written guide: Grasshopper →': 'लिखित गाइड: Grasshopper →',
+    'Written guide: Grasshopper': 'लिखित गाइड: Grasshopper',
 
     // Next step
     'Next step': 'अगला क़दम',
