@@ -134,6 +134,12 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         {
         }
 
+        // Settings (Add-On keys) that the geometry inputs define on Create,
+        // e.g. a column's base elevation: they are left out of a new
+        // element's settings, so a JSON read from another element never moves
+        // the new one.
+        protected virtual IEnumerable<string> GeometrySettingKeys => Enumerable.Empty<string>();
+
         // Lets a tool drop settings (Add-On keys) of a new element that its
         // geometry inputs define, e.g. a beam's offset to its home story,
         // which the Z of its reference line sets. Called after PrepareSettings,
@@ -769,6 +775,13 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 if (!TryMergeSettings(inputs, i, errors, out var settings))
                 {
                     continue;
+                }
+                if (existing[i] == null)
+                {
+                    foreach (var key in GeometrySettingKeys)
+                    {
+                        settings.Remove(key);
+                    }
                 }
                 PrepareSettings(settings, notes);
 
